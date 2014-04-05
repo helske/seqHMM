@@ -1,0 +1,8 @@
+S3method(logLik,HMModel)
+export(HMModel)
+export(backwardProbs)
+export(fitHMM)
+export(forwardProbs)
+export(mostProbablePath)
+export(posteriorProbs)
+useDynLib(MVHMM)

@@ -1,0 +1,21 @@
+\name{posteriorProbs}
+\alias{posteriorProbs}
+\title{Posterior Probabilities for Hidden Markov Model}
+\usage{
+posteriorProbs(model)
+}
+\arguments{
+  \item{model}{Hidden Markov model of class
+  \code{HMModel}.}
+}
+\value{
+Posterior probabilities in logarithm scale. In case of
+multiple observations, these are computed independently for
+each sequence.
+}
+\description{
+Function \code{posteriorProbs} computes the posterior
+probabilities of hidden states of hidden Markov model given
+the observations in logarithm scale.
+}
+
