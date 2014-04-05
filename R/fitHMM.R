@@ -5,11 +5,12 @@
 #' are taken from the corresponding components of model with preservation of original zero probabilities.
 #' 
 #' @export 
-#' @param model Hidden Markov model of class \code{HMModel}.
-#' @param method Function used in optimization. Default is \code{bobyqa}, a derivative free method. 
+#' @param model Hidden Markov model of class \link{\code{HMModel}}.
+#' @param method Function used in optimization. Default is \link{\code{bobyqa}}, a derivative free method. 
 #' Another option is \code{nlm} which uses Newton-type algorithm.
-#' @param ... Further arguments to \code{nlm} or \code{bobyqa}.
-#' @return List with two components: First component is output from \code{nlm} and second is the estimated model.
+#' @param ... Further arguments to \link{\code{nlm}} or \link{\code{bobyqa}}, such as arguments controlling the 
+#' amount printing and number of iterations. See corresponding functions for details.
+#' @return List with two components: First component is output from \link{\code{nlm}} and second is the estimated model.
 fitHMM<-function(model,method=c("bobyqa","nlm"),...){
   
   method<-match.arg(method,choices=c("bobyqa","nlm"))
@@ -141,12 +142,12 @@ fitHMM<-function(model,method=c("bobyqa","nlm"),...){
       if(estimate){
         
         if(model$numberOfSequences==1){
-          ll<-.Fortran("mchmmloglik",PACKAGE="MVHMM",NAOK = TRUE,
+          ll<-.Fortran("mchmmloglik",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
                        model$transitionMatrix,emissionArray,model$initialProbs,
                        obsArray,model$numberOfStates,maxNumberOfSymbols,
                        model$lengthOfSequences,miss,logLik=double(1),model$numberOfChannels)$logLik
         } else{
-          ll<-.Fortran("mvmchmmloglik",PACKAGE="MVHMM",NAOK = TRUE,
+          ll<-.Fortran("mvmchmmloglik",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
                        model$transitionMatrix,emissionArray,model$initialProbs,
                        obsArray,model$numberOfStates,maxNumberOfSymbols,
                        model$lengthOfSequences,miss,model$numberOfSequences,logLik=double(1),
@@ -171,6 +172,8 @@ fitHMM<-function(model,method=c("bobyqa","nlm"),...){
   out<-list(opt=fit,model=likfn(fit$e,model,FALSE))
   } else{
     fit<-bobyqa(fn=likfn, par=initialvalues, lower=0, model=model,...)
+    if(fit$ierr!=0)
+      print(fit$msg)
     out<-list(opt=fit,model=likfn(fit$p,model,FALSE))
   }
   out

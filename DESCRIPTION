@@ -1,12 +1,15 @@
-Package: MVHMM
-Title: Multivariate Discrete Hidden Markov Models
-Version: 0.1
-Date: 2014-03-13
+Package: LifeSequenceHMM
+Title: Hidden Markov Models for Life Sequences and Other Multivariate,
+    Multichannel Categorical Time Series
+Version: 0.2
+Imports: minqa
+Date: 2014-04-05
 Author: Jouni Helske
 Maintainer: Jouni Helske <jouni.helske@jyu.fi>
-Description: Package MVHMM is designed for inference of hidden Markov models
-    where both the hidden state space and the symbol space of observations is
-    discrete. MVHMM supports maximum likelihood estimation of hidden Markov
-    models when multiple observation sequences are available. Currently only
-    numerical maximization is supported. Main functions of MVHMM are written in
-    Fortran 95.
+Description: Package LifeSequenceHMM is designed for inference of hidden Markov
+    models where both the hidden state space and the symbol space of
+    observations is discrete, and observations consists of multiple sequences
+    as channels such as life calendar data with multiple life domains.
+    LifeSequenceHMM supports maximum likelihood estimation of hidden Markov
+    models via numerical optimization routines. Main functions of
+    LifeSequenceHMM are written in Fortran for improved performance.

@@ -4,7 +4,7 @@
 #' 
 
 #' @export
-#' @useDynLib MVHMM
+#' @useDynLib LifeSequenceHMM
 #' @param observations Observations. Can be either vector (single sequence ), data.frame 
 #' (multiple sequences, each row corresponds to one sequence), or list of vectors/data.frames
 #' where each component corresponds to one channel.

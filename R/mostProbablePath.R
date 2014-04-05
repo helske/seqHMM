@@ -33,7 +33,7 @@ mostProbablePath<-function(model,tol=1e-15){
       miss<-is.na(obs)
       #if(miss[1]) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
-      out<-.Fortran("viterbi",PACKAGE="MVHMM",NAOK = TRUE,
+      out<-.Fortran("viterbi",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
                     model$transitionMatrix,model$emissionMatrix,model$initialProbs,
                     obs,model$numberOfStates,
                     model$numberOfSymbols,model$lengthOfSequences,miss
@@ -48,7 +48,7 @@ mostProbablePath<-function(model,tol=1e-15){
       storage.mode(miss)<-"integer"
       q<-matrix(0,model$numberOfSequences,model$lengthOfSequences)
       storage.mode(q)<-"integer"
-      out<-.Fortran("mvviterbi",PACKAGE="MVHMM",NAOK = TRUE,
+      out<-.Fortran("mvviterbi",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
                     model$transitionMatrix,model$emissionMatrix,model$initialProbs,
                     obs,model$numberOfStates,
                     model$numberOfSymbols,
@@ -69,7 +69,7 @@ mostProbablePath<-function(model,tol=1e-15){
       miss<-is.na(obsArray)
       #if(any(miss[1,1,])) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
-      out<-.Fortran("mcviterbi",PACKAGE="MVHMM",NAOK = TRUE,
+      out<-.Fortran("mcviterbi",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
                     model$transitionMatrix,emissionArray,model$initialProbs,
                     obsArray,model$numberOfStates,
                     maxNumberOfSymbols,model$lengthOfSequences,miss
@@ -85,7 +85,7 @@ mostProbablePath<-function(model,tol=1e-15){
       storage.mode(miss)<-"integer"
       q<-matrix(0,model$numberOfSequences,model$lengthOfSequences)
       storage.mode(q)<-"integer"
-      out<-.Fortran("mvmcviterbi",PACKAGE="MVHMM",NAOK = TRUE,
+      out<-.Fortran("mvmcviterbi",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
                     model$transitionMatrix,emissionArray,model$initialProbs,
                     obsArray,model$numberOfStates,
                     maxNumberOfSymbols,
