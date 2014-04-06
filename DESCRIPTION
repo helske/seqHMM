@@ -1,4 +1,4 @@
-Package: LifeSequenceHMM
+Package: seqHMM
 Title: Hidden Markov Models for Life Sequences and Other Multivariate,
     Multichannel Categorical Time Series
 Version: 0.2
@@ -6,10 +6,10 @@ Imports: minqa
 Date: 2014-04-05
 Author: Jouni Helske
 Maintainer: Jouni Helske <jouni.helske@jyu.fi>
-Description: Package LifeSequenceHMM is designed for inference of hidden Markov
+Description: Package seqHMM is designed for inference of hidden Markov
     models where both the hidden state space and the symbol space of
     observations is discrete, and observations consists of multiple sequences
     as channels such as life calendar data with multiple life domains.
-    LifeSequenceHMM supports maximum likelihood estimation of hidden Markov
+    seqHMM supports maximum likelihood estimation of hidden Markov
     models via numerical optimization routines. Main functions of
-    LifeSequenceHMM are written in Fortran for improved performance.
+    seqHMM are written in Fortran for improved performance.

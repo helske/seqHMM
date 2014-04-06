@@ -13,7 +13,7 @@ forwardProbs<-function(model){
       miss<-is.na(obs)
       #if(miss[1]) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
-      out<-.Fortran("forward",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      out<-.Fortran("forward",PACKAGE="seqHMM",NAOK = TRUE,
                     model$transitionMatrix,model$emissionMatrix,model$initialProbs,
                     obs,model$numberOfStates,
                     model$numberOfSymbols,model$lengthOfSequences,miss,
@@ -25,7 +25,7 @@ forwardProbs<-function(model){
       miss<-is.na(obs)
       #if(any(miss[,1])) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
-      out<-.Fortran("mvforward",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      out<-.Fortran("mvforward",PACKAGE="seqHMM",NAOK = TRUE,
                     object$transitionMatrix,object$emissionMatrix,object$initialProbs,
                     obs,model$numberOfStates,
                     model$numberOfSymbols,
@@ -45,7 +45,7 @@ forwardProbs<-function(model){
       miss<-is.na(obsArray)
       #if(any(miss[1,1,])) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
-      out<-.Fortran("mcforward",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      out<-.Fortran("mcforward",PACKAGE="seqHMM",NAOK = TRUE,
                     model$transitionMatrix,emissionArray,model$initialProbs,
                     obsArray,model$numberOfStates,
                     maxNumberOfSymbols,model$lengthOfSequences,miss,
@@ -59,7 +59,7 @@ forwardProbs<-function(model){
       miss<-is.na(obsArray)
       #if(any(miss[,1,])) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
-      out<-.Fortran("mcforward",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      out<-.Fortran("mcforward",PACKAGE="seqHMM",NAOK = TRUE,
                     model$transitionMatrix,emissionArray,model$initialProbs,
                     obsArray,model$numberOfStates,
                     maxNumberOfSymbols, model$lengthOfSequences,miss,model$numberOfSequences,
@@ -87,7 +87,7 @@ backwardProbs<-function(model){
       miss<-is.na(obs)
       #if(miss[1]) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
-      out<-.Fortran("backward",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      out<-.Fortran("backward",PACKAGE="seqHMM",NAOK = TRUE,
                     model$transitionMatrix,model$emissionMatrix,model$initialProbs,
                     obs,model$numberOfStates,
                     model$numberOfSymbols,model$lengthOfSequences,miss,
@@ -99,7 +99,7 @@ backwardProbs<-function(model){
       miss<-is.na(obs)
       #if(any(miss[,1])) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
-      out<-.Fortran("mvbackward",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      out<-.Fortran("mvbackward",PACKAGE="seqHMM",NAOK = TRUE,
                     object$transitionMatrix,object$emissionMatrix,object$initialProbs,
                     obs,model$numberOfStates,
                     model$numberOfSymbols,
@@ -119,7 +119,7 @@ backwardProbs<-function(model){
       miss<-is.na(obsArray)
       #if(any(miss[1,1,])) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
-      out<-.Fortran("mcbackward",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      out<-.Fortran("mcbackward",PACKAGE="seqHMM",NAOK = TRUE,
                     model$transitionMatrix,emissionArray,model$initialProbs,
                     obsArray,model$numberOfStates,
                     maxNumberOfSymbols,model$lengthOfSequences,miss,
@@ -133,7 +133,7 @@ backwardProbs<-function(model){
       miss<-is.na(obsArray)
       #if(any(miss[,1,])) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
-      out<-.Fortran("mcbackward",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      out<-.Fortran("mcbackward",PACKAGE="seqHMM",NAOK = TRUE,
                     model$transitionMatrix,emissionArray,model$initialProbs,
                     obsArray,model$numberOfStates,
                     maxNumberOfSymbols, model$lengthOfSequences,miss,model$numberOfSequences,

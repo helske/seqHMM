@@ -142,12 +142,12 @@ fitHMM<-function(model,method=c("bobyqa","nlm"),...){
       if(estimate){
         
         if(model$numberOfSequences==1){
-          ll<-.Fortran("mchmmloglik",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+          ll<-.Fortran("mchmmloglik",PACKAGE="seqHMM",NAOK = TRUE,
                        model$transitionMatrix,emissionArray,model$initialProbs,
                        obsArray,model$numberOfStates,maxNumberOfSymbols,
                        model$lengthOfSequences,miss,logLik=double(1),model$numberOfChannels)$logLik
         } else{
-          ll<-.Fortran("mvmchmmloglik",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+          ll<-.Fortran("mvmchmmloglik",PACKAGE="seqHMM",NAOK = TRUE,
                        model$transitionMatrix,emissionArray,model$initialProbs,
                        obsArray,model$numberOfStates,maxNumberOfSymbols,
                        model$lengthOfSequences,miss,model$numberOfSequences,logLik=double(1),

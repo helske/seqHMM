@@ -15,7 +15,7 @@ logLik.HMModel<-function(object,...){
       obs<-as.integer(factor(object$observations,labels=1:object$numberOfSymbols,levels=object$symbolNames))
       miss<-is.na(obs)
       storage.mode(miss)<-"integer"
-      ll<-.Fortran("hmmloglik",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      ll<-.Fortran("hmmloglik",PACKAGE="seqHMM",NAOK = TRUE,
                    object$transitionMatrix,object$emissionMatrix,object$initialProbs,
                    obs,object$numberOfStates,object$numberOfSymbols,object$lengthOfSequences,
                    miss,logLik=double(1))$logLik
@@ -26,7 +26,7 @@ logLik.HMModel<-function(object,...){
       storage.mode(obs)<-"integer"
       miss<-is.na(obs)
       storage.mode(miss)<-"integer"
-      ll<-.Fortran("LifeSequenceHMMloglik",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      ll<-.Fortran("mvhmmloglik",PACKAGE="seqHMM",NAOK = TRUE,
                    object$transitionMatrix,object$emissionMatrix,object$initialProbs,
                    obs,object$numberOfStates,object$numberOfSymbols,object$lengthOfSequences,
                    miss,object$numberOfSequences,logLik=double(1))$logLik
@@ -44,7 +44,7 @@ logLik.HMModel<-function(object,...){
         obsArray[,,i]<-as.integer(as.factor(object$observations[[i]]))
       miss<-is.na(obsArray)
       storage.mode(miss)<-"integer"
-      ll<-.Fortran("mchmmloglik",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      ll<-.Fortran("mchmmloglik",PACKAGE="seqHMM",NAOK = TRUE,
                    object$transitionMatrix,emissionArray,object$initialProbs,
                    obsArray,object$numberOfStates,maxNumberOfSymbols,
                    object$lengthOfSequences,miss,logLik=double(1),object$numberOfChannels)$logLik
@@ -56,7 +56,7 @@ logLik.HMModel<-function(object,...){
       miss<-is.na(obsArray)
       storage.mode(miss)<-"integer"
       
-      ll<-.Fortran("mvmchmmloglik",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      ll<-.Fortran("mvmchmmloglik",PACKAGE="seqHMM",NAOK = TRUE,
                    object$transitionMatrix,emissionArray,object$initialProbs,
                    obsArray,object$numberOfStates,maxNumberOfSymbols,
                    object$lengthOfSequences,miss,object$numberOfSequences,logLik=double(1),

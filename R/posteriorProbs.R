@@ -14,7 +14,7 @@ posteriorProbs<-function(model){
       miss<-is.na(obs)
       #if(miss[1]) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
-      out<-.Fortran("posterior",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      out<-.Fortran("posterior",PACKAGE="seqHMM",NAOK = TRUE,
                     model$transitionMatrix,model$emissionMatrix,model$initialProbs,
                     obs,model$numberOfStates,
                     model$numberOfSymbols,model$lengthOfSequences,miss,
@@ -26,7 +26,7 @@ posteriorProbs<-function(model){
       miss<-is.na(obs)
       #if(any(miss[,1])) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
-      out<-.Fortran("mvposterior",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      out<-.Fortran("mvposterior",PACKAGE="seqHMM",NAOK = TRUE,
                     object$transitionMatrix,object$emissionMatrix,object$initialProbs,
                     obs,model$numberOfStates,
                     model$numberOfSymbols,
@@ -46,7 +46,7 @@ posteriorProbs<-function(model){
       miss<-is.na(obsArray)
       #if(any(miss[1,1,])) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
-      out<-.Fortran("mcposterior",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      out<-.Fortran("mcposterior",PACKAGE="seqHMM",NAOK = TRUE,
                     model$transitionMatrix,emissionArray,model$initialProbs,
                     obsArray,model$numberOfStates,
                     maxNumberOfSymbols,model$lengthOfSequences,miss,
@@ -60,7 +60,7 @@ posteriorProbs<-function(model){
       miss<-is.na(obsArray)
       #if(any(miss[,1,])) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
-      out<-.Fortran("mcposterior",PACKAGE="LifeSequenceHMM",NAOK = TRUE,
+      out<-.Fortran("mcposterior",PACKAGE="seqHMM",NAOK = TRUE,
                     model$transitionMatrix,emissionArray,model$initialProbs,
                     obsArray,model$numberOfStates,
                     maxNumberOfSymbols,model$lengthOfSequences,miss,model$numberOfSequences,
