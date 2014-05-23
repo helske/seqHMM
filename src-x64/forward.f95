@@ -1,4 +1,4 @@
-subroutine posterior(a,b,init,obs,m,p,n,miss,post)
+subroutine forward(a,b,init,obs,m,p,n,miss,alpha)
 
     implicit none
 
@@ -7,19 +7,17 @@ subroutine posterior(a,b,init,obs,m,p,n,miss,post)
     double precision, intent(in), dimension(m,p) :: b
     double precision, intent(in), dimension(m) :: init
     integer, intent(in), dimension(n) :: obs,miss
-    double precision, intent(inout), dimension(m,n) :: post
-    double precision, dimension(m,n) :: beta,alpha
-    double precision sumtmp,logscale,loglik
+    double precision, intent(inout), dimension(m,n) :: alpha
+    double precision sumtmp,logscale
     double precision, dimension(m) :: tmp,tmp2
     integer i
-
-    !forward
 
     if(miss(1)==0) then !check this!
         tmp = init*b(:,obs(1))
     else
         tmp = init
     end if
+
     alpha(:,1) = log(tmp)
     sumtmp = sum(tmp)
     logscale =log(sumtmp)
@@ -36,37 +34,9 @@ subroutine posterior(a,b,init,obs,m,p,n,miss,post)
         tmp = tmp/sumtmp
         alpha(:,i) = log(tmp)+logscale
     end do
+end subroutine forward
 
-    !loglik
-    loglik = logscale
-
-    ! backward
-    beta(:,n) = 0.0d0
-    tmp = 1.0d0/dble(m)
-    logscale =log(dble(m))
-    do i = (n-1),1,-1
-
-        if(miss(i+1)==0) then !check this!
-            tmp2 = tmp*b(:,obs(i+1))
-        else
-            tmp2 = tmp
-        end if
-        call dgemv('n', m, m, 1.0d0, a, m, tmp2, 1,0.0d0, tmp,1)
-        beta(:,i) = log(tmp)+logscale
-        sumtmp = sum(tmp)
-        tmp = tmp/sumtmp
-        logscale =logscale+log(sumtmp)
-
-    end do
-
-   do i=1, n
-    post(:,i) = alpha(:,i) + beta(:,i)
-   end do
-   post = post - loglik
-
-end subroutine posterior
-
-subroutine mvposterior(a,b,init,obs,m,p,n,miss,k,post)
+subroutine mvforward(a,b,init,obs,m,p,n,miss,k,alpha)
 
     implicit none
 
@@ -75,9 +45,10 @@ subroutine mvposterior(a,b,init,obs,m,p,n,miss,k,post)
     double precision, intent(in), dimension(m,p) :: b
     double precision, intent(in), dimension(m) :: init
     integer, intent(in), dimension(k,n) :: obs,miss
-    double precision, intent(inout), dimension(m,n,k) :: post
+    double precision, intent(inout), dimension(m,n,k) :: alpha
     integer i
-    do i=1,k
-        call posterior(a,b,init,obs(i,:),m,p,n,miss(i,:),post(:,:,i))
+
+    do i = 1,k
+        call forward(a,b,init,obs(i,:),m,p,n,miss(i,:),alpha(:,:,i))
     end do
-end subroutine mvposterior
+end subroutine mvforward

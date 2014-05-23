@@ -21,30 +21,30 @@ forwardProbs<-function(model){
     } else {
       obs<-apply(model$observations,2,factor,labels=1:model$numberOfSymbols,
                  levels=model$symbolNames)
-      storage.mode(obs)<-"integer"
       miss<-is.na(obs)
       #if(any(miss[,1])) stop("First observation cannot be missing!")
-      storage.mode(miss)<-"integer"
+      storage.mode(miss)<-storage.mode(obs)<-"integer"
       out<-.Fortran("mvforward",PACKAGE="seqHMM",NAOK = TRUE,
-                    object$transitionMatrix,object$emissionMatrix,object$initialProbs,
+                    model$transitionMatrix,model$emissionMatrix,model$initialProbs,
                     obs,model$numberOfStates,
                     model$numberOfSymbols,
                     model$lengthOfSequences,miss,model$numberOfSequences,
                     alpha=array(0,dim=c(model$numberOfStates,model$lengthOfSequences,model$numberOfSequences)))$alpha
     }
   } else {
-    obsArray<-array(0,c(model$numberOfSequences,model$lengthOfSequences,model$numberOfChannels))
     maxNumberOfSymbols<-max(model$numberOfSymbols)
     emissionArray<-array(NA,c(model$numberOfStates,maxNumberOfSymbols,model$numberOfChannels))
     for(i in 1:model$numberOfChannels)
       emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
     
     if(model$numberOfSequences==1){
+      obsArray<-array(0,c(model$lengthOfSequences,model$numberOfChannels))
+      
       for(i in 1:model$numberOfChannels)
-        obsArray[,,i]<-as.integer(as.factor(model$observations[[i]]))
+        obsArray[,i]<-as.integer(as.factor(unlist(model$observations[[i]])))
       miss<-is.na(obsArray)
       #if(any(miss[1,1,])) stop("First observation cannot be missing!")
-      storage.mode(miss)<-"integer"
+      storage.mode(miss)<-storage.mode(obsArray)<-"integer"
       out<-.Fortran("mcforward",PACKAGE="seqHMM",NAOK = TRUE,
                     model$transitionMatrix,emissionArray,model$initialProbs,
                     obsArray,model$numberOfStates,
@@ -52,14 +52,16 @@ forwardProbs<-function(model){
                     alpha=matrix(0,model$numberOfStates,model$lengthOfSequences),
                     model$numberOfChannels)$alpha
     } else {
+      obsArray<-array(0,c(model$numberOfSequences,model$lengthOfSequences,model$numberOfChannels))
+      
       for(i in 1:model$numberOfChannels)
         obsArray[,,i]<-apply(model$observations[[i]],2,factor,labels=1:model$numberOfSymbols[[i]],
                              levels=model$symbolNames[[i]])
-      storage.mode(obsArray)<-"integer"
+      
       miss<-is.na(obsArray)
       #if(any(miss[,1,])) stop("First observation cannot be missing!")
-      storage.mode(miss)<-"integer"
-      out<-.Fortran("mcforward",PACKAGE="seqHMM",NAOK = TRUE,
+      storage.mode(miss)<-storage.mode(obsArray)<-"integer"
+      out<-.Fortran("mvmcforward",PACKAGE="seqHMM",NAOK = TRUE,
                     model$transitionMatrix,emissionArray,model$initialProbs,
                     obsArray,model$numberOfStates,
                     maxNumberOfSymbols, model$lengthOfSequences,miss,model$numberOfSequences,
@@ -88,53 +90,55 @@ backwardProbs<-function(model){
       #if(miss[1]) stop("First observation cannot be missing!")
       storage.mode(miss)<-"integer"
       out<-.Fortran("backward",PACKAGE="seqHMM",NAOK = TRUE,
-                    model$transitionMatrix,model$emissionMatrix,model$initialProbs,
+                    model$transitionMatrix,model$emissionMatrix,
                     obs,model$numberOfStates,
                     model$numberOfSymbols,model$lengthOfSequences,miss,
                     beta=matrix(0,model$numberOfStates,model$lengthOfSequences))$beta
     } else {
       obs<-apply(model$observations,2,factor,labels=1:model$numberOfSymbols,
                  levels=model$symbolNames)
-      storage.mode(obs)<-"integer"
       miss<-is.na(obs)
       #if(any(miss[,1])) stop("First observation cannot be missing!")
-      storage.mode(miss)<-"integer"
+      storage.mode(miss)<-storage.mode(obs)<-"integer"
       out<-.Fortran("mvbackward",PACKAGE="seqHMM",NAOK = TRUE,
-                    object$transitionMatrix,object$emissionMatrix,object$initialProbs,
+                    model$transitionMatrix,model$emissionMatrix,
                     obs,model$numberOfStates,
                     model$numberOfSymbols,
                     model$lengthOfSequences,miss,model$numberOfSequences,
                     beta=array(0,dim=c(model$numberOfStates,model$lengthOfSequences,model$numberOfSequences)))$beta
     }
   } else {
-    obsArray<-array(0,c(model$numberOfSequences,model$lengthOfSequences,model$numberOfChannels))
     maxNumberOfSymbols<-max(model$numberOfSymbols)
     emissionArray<-array(NA,c(model$numberOfStates,maxNumberOfSymbols,model$numberOfChannels))
     for(i in 1:model$numberOfChannels)
       emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
     
     if(model$numberOfSequences==1){
+      obsArray<-array(0,c(model$lengthOfSequences,model$numberOfChannels))
+      
       for(i in 1:model$numberOfChannels)
-        obsArray[,,i]<-as.integer(as.factor(model$observations[[i]]))
+        obsArray[,i]<-as.integer(as.factor(unlist(model$observations[[i]])))
       miss<-is.na(obsArray)
       #if(any(miss[1,1,])) stop("First observation cannot be missing!")
-      storage.mode(miss)<-"integer"
+      storage.mode(miss)<-storage.mode(obsArray)<-"integer"
       out<-.Fortran("mcbackward",PACKAGE="seqHMM",NAOK = TRUE,
-                    model$transitionMatrix,emissionArray,model$initialProbs,
+                    model$transitionMatrix,emissionArray,
                     obsArray,model$numberOfStates,
                     maxNumberOfSymbols,model$lengthOfSequences,miss,
                     beta=matrix(0,model$numberOfStates,model$lengthOfSequences),
                     model$numberOfChannels)$beta
     } else {
+      obsArray<-array(0,c(model$numberOfSequences,model$lengthOfSequences,model$numberOfChannels))
+      
       for(i in 1:model$numberOfChannels)
         obsArray[,,i]<-apply(model$observations[[i]],2,factor,labels=1:model$numberOfSymbols[[i]],
                              levels=model$symbolNames[[i]])
-      storage.mode(obsArray)<-"integer"
+      
       miss<-is.na(obsArray)
       #if(any(miss[,1,])) stop("First observation cannot be missing!")
-      storage.mode(miss)<-"integer"
-      out<-.Fortran("mcbackward",PACKAGE="seqHMM",NAOK = TRUE,
-                    model$transitionMatrix,emissionArray,model$initialProbs,
+      storage.mode(miss)<-storage.mode(obsArray)<-"integer"
+      out<-.Fortran("mvmcbackward",PACKAGE="seqHMM",NAOK = TRUE,
+                    model$transitionMatrix,emissionArray,
                     obsArray,model$numberOfStates,
                     maxNumberOfSymbols, model$lengthOfSequences,miss,model$numberOfSequences,
                     beta=array(0,dim=c(model$numberOfStates,model$lengthOfSequences,model$numberOfSequences)),

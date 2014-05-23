@@ -3,7 +3,7 @@
 \title{Build a Hidden Markov Model}
 \usage{
 HMModel(observations, transitionMatrix, emissionMatrix, initialProbs,
-  stateNames = NULL)
+  stateNames = NULL, symbolNames = NULL)
 }
 \arguments{
   \item{observations}{Observations. Can be either vector

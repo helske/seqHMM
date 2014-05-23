@@ -5,16 +5,14 @@
 #' are taken from the corresponding components of model with preservation of original zero probabilities.
 #' 
 #' @export 
-#' @param model Hidden Markov model of class \link{\code{HMModel}}.
-#' @param method Function used in optimization. Default is \link{\code{bobyqa}}, a derivative free method. 
-#' Another option is \code{nlm} which uses Newton-type algorithm.
-#' @param ... Further arguments to \link{\code{nlm}} or \link{\code{bobyqa}}, such as arguments controlling the 
-#' amount printing and number of iterations. See corresponding functions for details.
-#' @return List with two components: First component is output from \link{\code{nlm}} and second is the estimated model.
-fitHMM<-function(model,method=c("bobyqa","nlm"),...){
+#' @param model Hidden Markov model of class HMModel.
+#' @param ... Further arguments to nlm, such as arguments controlling the 
+#' amount printing and number of iterations.
+#' @return List with two components: First component is output from nlm and second is the estimated model.
+fitHMM<-function(model,method="nlm",criterion=c("ML","L1"),...){
   
-  method<-match.arg(method,choices=c("bobyqa","nlm"))
-    
+  
+  
   maxIP<-which.max(model$initialProbs)
   maxIPvalue<-model$initialProbs[maxIP]
   paramIP<-{function(x) which(x>0 & x<max(x))}(model$initialProbs)
@@ -42,10 +40,11 @@ fitHMM<-function(model,method=c("bobyqa","nlm"),...){
       if(npEM>0) model$emissionMatrix[paramEM],
       if(npIP>0) model$initialProbs[paramIP]
     )
-    if(method=="nlm") initialvalues <- log(initialvalues)
-      
+    initialvalues <- log(initialvalues)
+    
+    
     likfn<-function(pars,model,estimate=TRUE){
-      if(method=="nlm") pars<-exp(pars) 
+      pars<-exp(pars) 
       if(npTM>0){
         A<-matrix(0,model$numberOfStates,model$numberOfStates)
         A[maxTM]<-maxTMvalue     
@@ -89,7 +88,7 @@ fitHMM<-function(model,method=c("bobyqa","nlm"),...){
                                     function(x) model$emissionMatrix[[x]][paramEM[[x]]])),
       if(npIP>0) model$initialProbs[paramIP]
     )
-    if(method=="nlm") initialvalues<-log(initialvalues)
+    initialvalues<-log(initialvalues)
     
     obsArray<-array(0,c(model$numberOfSequences,model$lengthOfSequences,model$numberOfChannels))
     maxNumberOfSymbols<-max(model$numberOfSymbols)
@@ -110,7 +109,7 @@ fitHMM<-function(model,method=c("bobyqa","nlm"),...){
     
     
     likfn<-function(pars,model,estimate=TRUE){
-      if(method=="nlm") pars<-exp(pars)
+      pars<-exp(pars)
       if(any(!is.finite(pars)) && estimate)
         return(.Machine$double.xmax)
       if(npTM>0){
@@ -140,20 +139,46 @@ fitHMM<-function(model,method=c("bobyqa","nlm"),...){
       }
       
       if(estimate){
-        
-        if(model$numberOfSequences==1){
-          ll<-.Fortran("mchmmloglik",PACKAGE="seqHMM",NAOK = TRUE,
-                       model$transitionMatrix,emissionArray,model$initialProbs,
-                       obsArray,model$numberOfStates,maxNumberOfSymbols,
-                       model$lengthOfSequences,miss,logLik=double(1),model$numberOfChannels)$logLik
-        } else{
-          ll<-.Fortran("mvmchmmloglik",PACKAGE="seqHMM",NAOK = TRUE,
-                       model$transitionMatrix,emissionArray,model$initialProbs,
-                       obsArray,model$numberOfStates,maxNumberOfSymbols,
-                       model$lengthOfSequences,miss,model$numberOfSequences,logLik=double(1),
-                       model$numberOfChannels)$logLik
+        if(criterion=="ML"){
+          if(model$numberOfSequences==1){
+            ll<-.Fortran("mchmmloglik",PACKAGE="seqHMM",NAOK = TRUE,
+                         model$transitionMatrix,emissionArray,model$initialProbs,
+                         obsArray,model$numberOfStates,maxNumberOfSymbols,
+                         model$lengthOfSequences,miss,logLik=double(1),model$numberOfChannels)$logLik
+          } else{
+            ll<-.Fortran("mvmchmmloglik",PACKAGE="seqHMM",NAOK = TRUE,
+                         model$transitionMatrix,emissionArray,model$initialProbs,
+                         obsArray,model$numberOfStates,maxNumberOfSymbols,
+                         model$lengthOfSequences,miss,model$numberOfSequences,logLik=double(1),
+                         model$numberOfChannels)$logLik
+          }
+          -ll
+        } else {
+          
+          n<-model$lengthOfSequences
+          k<-model$numberOfSequences
+          
+          #polkujen todennäköisyydet (yksi jokaiselle sekvenssille)
+          viterbi<-mostProbablePath(model)$mpp
+          
+          #pStates<-viterbi$logP
+          
+          #sekvenssien ja piilotilojen todennäköisyydet ehdolla polut
+          pSeq<-pStates<-numeric(k)               
+          names(model$initialProbs)<-rownames(model$transitionMatrix)
+          for(j in 1:k){
+            pStates[j]<-log(model$initialProbs[viterbi[j,1]])+
+              sum(log(model$trans[cbind(viterbi[j,-n],viterbi[j,-1])]))
+            
+            for(s in 1:model$numberOfChannels)
+              pSeq[j]<-pSeq[j]+sum(log(
+                emissionArray[cbind(viterbi[j,],obsArray[j,,s],s)]),na.rm=TRUE)
+            
+          }
+          
+          sum(pStates)+sum(pSeq)
+          
         }
-        -ll
       } else {
         if(sum(npEM)>0){    
           model$emissionMatrix[[1]][]<-emissionArray[,1:model$numberOfSymbols[1],1]
@@ -163,18 +188,19 @@ fitHMM<-function(model,method=c("bobyqa","nlm"),...){
         }
         model
       }
-    }
-    
+      
+    }   
   }
-  if(method=="nlm"){
+  browser()
+  #if(method=="nlm"){
   fit<-nlm(f=likfn,p=initialvalues,
            model=model,...)
-  out<-list(opt=fit,model=likfn(fit$e,model,FALSE))
-  } else{
-    fit<-bobyqa(fn=likfn, par=initialvalues, lower=0, model=model,...)
-    if(fit$ierr!=0)
-      print(fit$msg)
-    out<-list(opt=fit,model=likfn(fit$p,model,FALSE))
-  }
-  out
+  list(opt=fit,model=likfn(fit$e,model,FALSE))
+  #} else{
+  #  fit<-bobyqa(fn=likfn, par=initialvalues, lower=0, model=model,...)
+  #  if(fit$ierr!=0)
+  #    print(fit$msg)
+  #  out<-list(opt=fit,model=likfn(fit$p,model,FALSE))
+  #}
+  #out
 }

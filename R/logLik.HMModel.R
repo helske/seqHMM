@@ -23,9 +23,9 @@ logLik.HMModel<-function(object,...){
     } else {
       obs<-apply(object$observations,2,factor,labels=1:dim(object$emissionMatrix)[2],
                  levels=object$symbolNames)
-      storage.mode(obs)<-"integer"
+    
       miss<-is.na(obs)
-      storage.mode(miss)<-"integer"
+      storage.mode(miss)<-storage.mode(obs)<-"integer"
       ll<-.Fortran("mvhmmloglik",PACKAGE="seqHMM",NAOK = TRUE,
                    object$transitionMatrix,object$emissionMatrix,object$initialProbs,
                    obs,object$numberOfStates,object$numberOfSymbols,object$lengthOfSequences,

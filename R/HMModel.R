@@ -16,7 +16,7 @@
 #' @return Object of class \code{HMModel}
 #' 
 HMModel<-function(observations,transitionMatrix,emissionMatrix,initialProbs,
-                  stateNames=NULL){
+                  stateNames=NULL,symbolNames=NULL){
   
   # determine number of states
   numberOfStates<-length(initialProbs)
@@ -28,24 +28,25 @@ HMModel<-function(observations,transitionMatrix,emissionMatrix,initialProbs,
        numberOfStates!=dim(transitionMatrix)[1])
     stop("Dimensions of transitionMatrix and length of initialProbs do not match.")
   
-  if(!isTRUE(all.equal(rowSums(transitionMatrix),rep(1,dim(transitionMatrix)[1]))))
+  if(!isTRUE(all.equal(rowSums(transitionMatrix),rep(1,dim(transitionMatrix)[1]),check.attributes=FALSE)))
     stop("Transition probabilities in transitionMatrix do not sum to one.")
-  if(!isTRUE(all.equal(sum(initialProbs),1)))
-    stop("Initial state probabilites do not sum to one.")
+  if(!isTRUE(all.equal(sum(initialProbs),1,check.attributes=FALSE)))
+    stop("Initial state probabilities do not sum to one.")
   dimnames(transitionMatrix)<-list(from=stateNames,to=stateNames)
   
   # determine the type of HMM from observations:
   if(is.null(dim(observations)) && !is.list(observations)){
     numberOfSequences<-numberOfChannels<-as.integer(1)
     lengthOfSequences<-length(observations)
-    symbolNames<-sort(unique(c(as.character(observations))))
+    if(is.null(symbolNames))
+      symbolNames<-sort(unique(c(as.character(observations))))
     numberOfSymbols<-length(symbolNames)
     
     if(numberOfStates!=dim(emissionMatrix)[1])
       stop("Number of rows in emissionMatrix is not equal to the number of states.")
     if(numberOfSymbols!=dim(emissionMatrix)[2])
       stop("Number of columns in emissionMatrix is not equal to the number of symbols.")
-    if(!isTRUE(all.equal(rep(1,numberOfStates),rowSums(emissionMatrix))))
+    if(!isTRUE(all.equal(rep(1,numberOfStates),rowSums(emissionMatrix),check.attributes=FALSE)))
       stop("Emission probabilities in emissionMatrix do not sum to one.")
     dimnames(emissionMatrix)<-list(stateNames=stateNames,symbolNames=symbolNames)
   } else {
@@ -53,6 +54,7 @@ HMModel<-function(observations,transitionMatrix,emissionMatrix,initialProbs,
       numberOfSequences<-nrow(observations)
       lengthOfSequences<-ncol(observations)
       numberOfChannels<-as.integer(1)
+      if(is.null(symbolNames))
       symbolNames<-sort(unique(as.character(unlist(observations))))
       numberOfSymbols<-length(symbolNames)
       
@@ -61,7 +63,7 @@ HMModel<-function(observations,transitionMatrix,emissionMatrix,initialProbs,
         stop("Number of rows in emissionMatrix is not equal to the number of states.")
       if(numberOfSymbols!=dim(emissionMatrix)[2])
         stop("Number of columns in emissionMatrix is not equal to the number of symbols.")
-      if(!isTRUE(all.equal(rep(1,numberOfStates),rowSums(emissionMatrix))))
+      if(!isTRUE(all.equal(rep(1,numberOfStates),rowSums(emissionMatrix),check.attributes=FALSE)))
         stop("Emission probabilities in emissionMatrix do not sum to one.")
       dimnames(emissionMatrix)<-list(stateNames=stateNames,symbolNames=symbolNames)
       
@@ -72,6 +74,7 @@ HMModel<-function(observations,transitionMatrix,emissionMatrix,initialProbs,
         if(is.data.frame(observations[[1]])){
           numberOfSequences<-nrow(observations[[1]])
           lengthOfSequences<-ncol(observations[[1]])
+          if(is.null(symbolNames))
           symbolNames<-lapply(observations,function(x) sort(unique(as.character(unlist(x)))))
           numberOfSymbols<-sapply(symbolNames,length)
           
@@ -79,14 +82,15 @@ HMModel<-function(observations,transitionMatrix,emissionMatrix,initialProbs,
         } else {
           numberOfSequences<-as.integer(1)
           lengthOfSequences<-length(observations[[1]])
+          if(is.null(symbolNames))
           symbolNames<-lapply(observations,function(x) sort(unique(c(as.character(x)))))
           numberOfSymbols<-sapply(symbolNames,length)
         }
-        if(!isTRUE(all.equal(rep(numberOfStates,numberOfChannels),sapply(emissionMatrix,nrow))))
+        if(!isTRUE(all.equal(rep(numberOfStates,numberOfChannels),sapply(emissionMatrix,nrow),check.attributes=FALSE)))
           stop("Number of rows in emissionMatrix is not equal to the number of states.")
-        if(!isTRUE(all.equal(numberOfSymbols,sapply(emissionMatrix,ncol))))
+        if(!isTRUE(all.equal(numberOfSymbols,sapply(emissionMatrix,ncol),check.attributes=FALSE)))
           stop("Number of columns in emissionMatrix is not equal to the number of symbols.")
-        if(!isTRUE(all.equal(c(sapply(emissionMatrix,rowSums)),rep(1,numberOfChannels*numberOfStates))))
+        if(!isTRUE(all.equal(c(sapply(emissionMatrix,rowSums)),rep(1,numberOfChannels*numberOfStates),check.attributes=FALSE)))
           stop("Emission probabilities in emissionMatrix do not sum to one.")
         
         channelNames<-names(observations)  
