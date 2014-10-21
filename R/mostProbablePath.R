@@ -4,7 +4,7 @@
 #' hidden Markov model given the observed sequence.
 #'
 #' @export 
-#' @param model Hidden Markov model of class \code{HMModel}.#'
+#' @param model Hidden Markov model of class \code{HMModel}.
 #' @return List which contains the most probable path of states given the observations and its log-probability. In case of multiple observations,
 #' most probable path is computed independently for each sequence.
 mostProbablePath<-function(model){

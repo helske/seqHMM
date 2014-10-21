@@ -1,5 +1,4 @@
 #' @export
-#' @S3method BIC HMModel
 BIC.HMModel<-function(object,expand=FALSE, trim=FALSE,maxit=0,zerotol=1e-8,lltol=.Machine$double.eps ^ 0.5,...){
   
   if(expand)
