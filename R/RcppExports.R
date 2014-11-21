@@ -29,20 +29,16 @@ gradient <- function(transitionMatrix, emissionArray, initialProbs, obsArray, ro
     .Call('seqHMM_gradient', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB, sumInit, transNZ, emissNZ, initNZ, expPsi)
 }
 
-gradientLog <- function(transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB, sumInit, transNZ, emissNZ, initNZ, expPsi) {
-    .Call('seqHMM_gradientLog', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB, sumInit, transNZ, emissNZ, initNZ, expPsi)
+gradientMC <- function(transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB_, sumInit, transNZ, emissNZ, initNZ, expPsi) {
+    .Call('seqHMM_gradientMC', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB_, sumInit, transNZ, emissNZ, initNZ, expPsi)
 }
 
-gradientLogMC <- function(transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB, sumInit, transNZ, emissNZ, initNZ, expPsi) {
-    .Call('seqHMM_gradientLogMC', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB, sumInit, transNZ, emissNZ, initNZ, expPsi)
+logLikHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
+    .Call('seqHMM_logLikHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
 
-logLikHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, logScale) {
-    .Call('seqHMM_logLikHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, logScale)
-}
-
-logLikMCHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, logScale) {
-    .Call('seqHMM_logLikMCHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, logScale)
+logLikMCHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
+    .Call('seqHMM_logLikMCHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
 
 viterbi <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {

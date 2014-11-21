@@ -1,3 +1,7 @@
 .Rproj.user
 .Rhistory
 .RData
+.o
+.dll
+.so
+.settings

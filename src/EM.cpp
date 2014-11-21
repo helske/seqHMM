@@ -31,8 +31,8 @@ IntegerVector obsArray, int nSymbols, int itermax=100, double tol=1e-8, int trac
   arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k
   
   
-  internalForwardLog(transition, emission, init, obs, alpha);
-  internalBackwardLog(transition, emission, obs, beta);
+  internalForward(transition, emission, init, obs, alpha);
+  internalBackward(transition, emission, obs, beta);
   
   
   arma::vec ll(oDims[0]);
@@ -115,8 +115,8 @@ Rcout<<"Log-likelihood of initial model: "<< sumlogLik<<std::endl;
     transition = log(ksii);
     emission.cols(0,nSymbols-1) = log(gamma);
     
-    internalForwardLog(transition, emission, init, obs, alpha);
-    internalBackwardLog(transition, emission, obs, beta);
+    internalForward(transition, emission, init, obs, alpha);
+    internalBackward(transition, emission, obs, beta);
     
     for(int k=0;k<oDims[0];k++){
       tmp =neginf;

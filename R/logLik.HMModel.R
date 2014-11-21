@@ -5,11 +5,9 @@
 #'
 #' @export
 #' @param object Hidden Markov model of class \code{HMModel}.
-#' @param logScale Use logarithm tranform instead of sum-to-one constraint. 
-#' Computation becomes significantly slower but can be numerically more stable in case of multiple channels. Default is FALSE.
 #' @param ... Ignored.
 #' @return Log-likelihood of hidden Markov model.
-logLik.HMModel<-function(object,logScale=FALSE,...){
+logLik.HMModel<-function(object,...){
   
   if(object$numberOfChannels==1){
   obsArray<-data.matrix(object$observations)-1
@@ -17,7 +15,7 @@ logLik.HMModel<-function(object,logScale=FALSE,...){
   storage.mode(obsArray)<-"integer"
   
   logLikHMM(object$transitionMatrix, cbind(object$emissionMatrix,1), 
-            object$initialProbs, obsArray,logScale)
+            object$initialProbs, obsArray)
   } else {
     obsArray<-array(0,c(object$numberOfSequences,object$lengthOfSequences,object$numberOfChannels))
     for(i in 1:object$numberOfChannels){
@@ -31,6 +29,6 @@ logLik.HMModel<-function(object,logScale=FALSE,...){
       emissionArray[,1:object$numberOfSymbols[i],i]<-object$emissionMatrix[[i]]
     
     logLikMCHMM(object$transitionMatrix, emissionArray, 
-                object$initialProbs, obsArray,logScale)
+                object$initialProbs, obsArray)
   }
 }

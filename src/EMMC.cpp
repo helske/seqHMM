@@ -30,8 +30,8 @@ IntegerVector obsArray, IntegerVector nSymbols, int itermax=100, double tol=1e-8
   arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k
   arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k
   
-  internalForwardMCLog(transition, emission, init, obs, alpha);
-  internalBackwardMCLog(transition, emission, obs, beta);
+  internalForwardMC(transition, emission, init, obs, alpha);
+  internalBackwardMC(transition, emission, obs, beta);
   
   arma::vec ll(oDims[0]);
   
@@ -46,12 +46,8 @@ IntegerVector obsArray, IntegerVector nSymbols, int itermax=100, double tol=1e-8
         tmp = logSumExp(alpha(i,oDims[1]-1,k),tmp); 
       }
     }
-    ll(k) = tmp;// + log(sum(exp(alpha.slice(k).col(oDims[1]-1)-tmp)));
+    ll(k) = tmp;
   }
-  //  for(int k=0;k<oDims[0];k++){   
-  //    tmp = max(alpha.slice(k).col(oDims[1]-1)); 
-  //    ll(k) = tmp + log(sum(exp(alpha.slice(k).col(oDims[1]-1)-tmp)));
-  //  }
   
   double sumlogLik = sum(ll);
   if(trace>0){
@@ -68,8 +64,6 @@ IntegerVector obsArray, IntegerVector nSymbols, int itermax=100, double tol=1e-8
   
   
   
-  //arma::vec tmpvec(eDims[0]);
-  //arma::vec sumtmpvec(eDims[0]);
   while((change>tol) & (iter<itermax)){   
     iter++;
     gamma.zeros();
@@ -131,8 +125,8 @@ IntegerVector obsArray, IntegerVector nSymbols, int itermax=100, double tol=1e-8
     delta /= arma::as_scalar(arma::accu(delta));
     init = log(delta);
     
-    internalForwardMCLog(transition, emission, init, obs, alpha);
-    internalBackwardMCLog(transition, emission, obs, beta);
+    internalForwardMC(transition, emission, init, obs, alpha);
+    internalBackwardMC(transition, emission, obs, beta);
     
     for(int k=0;k<oDims[0];k++){
       tmp =neginf;
