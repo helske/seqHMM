@@ -9,12 +9,12 @@ backwardMC <- function(transitionMatrix, emissionArray, obsArray) {
     .Call('seqHMM_backwardMC', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, obsArray)
 }
 
-EM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax = 100L, tol = 1e-8) {
-    .Call('seqHMM_EM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol)
+EM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax = 100L, tol = 1e-8, trace = 0L) {
+    .Call('seqHMM_EM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol, trace)
 }
 
-EMMC <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax = 100L, tol = 1e-8) {
-    .Call('seqHMM_EMMC', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol)
+EMMC <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax = 100L, tol = 1e-8, trace = 0L) {
+    .Call('seqHMM_EMMC', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol, trace)
 }
 
 forward <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
@@ -25,11 +25,31 @@ forwardMC <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
     .Call('seqHMM_forwardMC', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
 
-logLikHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
-    .Call('seqHMM_logLikHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
+gradient <- function(transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB, sumInit, transNZ, emissNZ, initNZ, expPsi) {
+    .Call('seqHMM_gradient', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB, sumInit, transNZ, emissNZ, initNZ, expPsi)
 }
 
-logLikMCHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
-    .Call('seqHMM_logLikMCHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
+gradientLog <- function(transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB, sumInit, transNZ, emissNZ, initNZ, expPsi) {
+    .Call('seqHMM_gradientLog', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB, sumInit, transNZ, emissNZ, initNZ, expPsi)
+}
+
+gradientLogMC <- function(transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB, sumInit, transNZ, emissNZ, initNZ, expPsi) {
+    .Call('seqHMM_gradientLogMC', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB, sumInit, transNZ, emissNZ, initNZ, expPsi)
+}
+
+logLikHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, logScale) {
+    .Call('seqHMM_logLikHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, logScale)
+}
+
+logLikMCHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, logScale) {
+    .Call('seqHMM_logLikMCHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, logScale)
+}
+
+viterbi <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
+    .Call('seqHMM_viterbi', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
+}
+
+viterbiMC <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
+    .Call('seqHMM_viterbiMC', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
 

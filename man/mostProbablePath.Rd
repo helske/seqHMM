@@ -6,11 +6,11 @@
 mostProbablePath(model)
 }
 \arguments{
-\item{model}{Hidden Markov model of class \code{HMModel}.}
+\item{model}{Hidden Markov model of class \code{HMModel} or \code{MCHMModel}.}
 }
 \value{
-List which contains the most probable path of states given the observations and its log-probability. In case of multiple observations,
-most probable path is computed independently for each sequence.
+List which contains the most probable path of states (mpp) given the observations and its
+log-probability (logP). In case of multiple observations, most probable path is computed independently for each sequence.
 }
 \description{
 Function \code{mostProbablePath} computes the most probable path of the hidden states of the

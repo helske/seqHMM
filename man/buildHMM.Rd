@@ -4,33 +4,26 @@
 \title{Build a Hidden Markov Model}
 \usage{
 buildHMM(observations, transitionMatrix, emissionMatrix, initialProbs, X,
-  stateNames = NULL, symbolNames = NULL)
+  stateNames = NULL)
 }
 \arguments{
-\item{observations}{Data frame containing observations where each row corresponds to one sequence and
-each column one time point which must be a factor.}
+\item{observations}{TraMineR stslist containing the sequences, or a list of such objects (one for each channel).}
 
 \item{transitionMatrix}{Matrix of transition probabilities.}
 
-\item{emissionMatrix}{Matrix of emission probabilities.}
+\item{emissionMatrix}{Matrix of emission probabilities or a list of such objects (one for each channel).}
 
 \item{initialProbs}{Vector of initial state probabilities.}
 
 \item{X}{NOT YET IMPLEMENTED. Time-constant covariates for initial state probabilities.
 Must be a matrix with dimensions p x k where p is the number of sequences and k is the number of covariates.}
 
-\item{stateNames}{Optional labels for the observations.}
+\item{stateNames}{Optional labels for the hidden states}
 }
 \value{
 Object of class \code{HMModel}
 }
 \description{
 Function buildHMM constructs an object of class \code{HMModel}.
-}
-\details{
-The set of unique observed symbols and it's ordering (which is used in emissionMatrix) is taken
-from internal representation of
-factor levels after removing unused levels. More precisely following code is used:
-\code{intersect(levels(observations[,1]),as.character(unlist(observations))))}.
 }
 

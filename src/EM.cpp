@@ -12,7 +12,7 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 
 List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-IntegerVector obsArray, int nSymbols, int itermax=100, double tol=1e-8) {  
+IntegerVector obsArray, int nSymbols, int itermax=100, double tol=1e-8, int trace=0) {  
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
@@ -31,8 +31,8 @@ IntegerVector obsArray, int nSymbols, int itermax=100, double tol=1e-8) {
   arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k
   
   
-  internalForward(transition, emission, init, obs, alpha);
-  internalBackward(transition, emission, obs, beta);
+  internalForwardLog(transition, emission, init, obs, alpha);
+  internalBackwardLog(transition, emission, obs, beta);
   
   
   arma::vec ll(oDims[0]);
@@ -53,7 +53,9 @@ IntegerVector obsArray, int nSymbols, int itermax=100, double tol=1e-8) {
   
   double sumlogLik = sum(ll);
   
-  Rcout<<"logLik of initial model: "<< sumlogLik<<std::endl;
+  if(trace>0){
+Rcout<<"Log-likelihood of initial model: "<< sumlogLik<<std::endl;
+  }
   //  
   //  //EM-algorithm begins
   //  
@@ -64,7 +66,7 @@ IntegerVector obsArray, int nSymbols, int itermax=100, double tol=1e-8) {
   arma::vec delta(eDims[0]);
   
   while((change>tol) & (iter<itermax)){   
-    
+    iter++;
     gamma.zeros();
     ksii.zeros();
     delta.zeros();
@@ -113,8 +115,8 @@ IntegerVector obsArray, int nSymbols, int itermax=100, double tol=1e-8) {
     transition = log(ksii);
     emission.cols(0,nSymbols-1) = log(gamma);
     
-    internalForward(transition, emission, init, obs, alpha);
-    internalBackward(transition, emission, obs, beta);
+    internalForwardLog(transition, emission, init, obs, alpha);
+    internalBackwardLog(transition, emission, obs, beta);
     
     for(int k=0;k<oDims[0];k++){
       tmp =neginf;
@@ -128,14 +130,23 @@ IntegerVector obsArray, int nSymbols, int itermax=100, double tol=1e-8) {
     
     
     tmp = sum(ll);
-    change = (tmp - sumlogLik)/abs(sumlogLik);
+    change = (tmp - sumlogLik)/(abs(sumlogLik)+0.1);
     sumlogLik = tmp;
+    if(trace>1){
+      Rcout<<"iter: "<< iter;
+      Rcout<<" logLik: "<< sumlogLik;
+      Rcout<<" relative change: "<<change<<std::endl;
+    }
     
-    Rcout<<"iter: "<< iter+1;
-    Rcout<<" logLik: "<< sumlogLik;
-    Rcout<<" relative change: "<<change<<std::endl;
-    
-    iter++;
+  }
+  if(trace>0){
+    if(iter==itermax){
+      Rcpp::Rcout<<"EM algorithm stopped after reaching the maximum number of "<<iter<<" iterations."<<std::endl;     
+    } else{
+       Rcpp::Rcout<<"EM algorithm stopped after reaching the relative change of "<<change;
+       Rcpp::Rcout<<" after "<<iter<<" iterations."<<std::endl;
+    }
+     Rcpp::Rcout<<"Final log-likelihood: "<< sumlogLik<<std::endl;
   }
   return List::create(Named("initialProbs") = wrap(exp(init)), Named("transitionMatrix") = wrap(exp(transition)),
   Named("emissionMatrix") = wrap(exp(emission)),Named("logLik") = sumlogLik,Named("iterations")=iter,Named("change")=change);

@@ -3,7 +3,7 @@
 #' @export
 #' @param model Object of class HMModel.
 MCtoSC<-function(model){
-  
+  stop("Under maintenance :) ")
   if(model$numberOfChannels==1)
     return(model)
     
@@ -22,8 +22,6 @@ MCtoSC<-function(model){
     
     
   }
-  
-  
   
   modelx<-model
   modelx$emissionMatrix<-B

@@ -3,17 +3,22 @@
 \alias{fitHMM}
 \title{Estimate parameters of Hidden Markov Model}
 \usage{
-fitHMM(model, maxit1 = 50, maxit2 = 10000, ...)
+fitHMM(model, em.control = list(), optim.control = list(), ...)
 }
 \arguments{
 \item{model}{Hidden Markov model of class HMModel or MCHMModel.}
 
-\item{maxit1}{Number of iterations for EM algorithm.}
+\item{em.control}{Optional list of control parameters for for EM algorithm. Possible arguments are
+\itemize{
+ \item{maxit}{Maximum number of iterations, default is 100.}
+ \item{trace}{Level of printing. Possible values are 0 (prints nothing),
+  1 (prints information at start and end of algorithm), and 2 (prints at every iteration).}
+  \item{reltol}{Relative tolerance for convergence defined as \eqn{(tmp - sumlogLik)/(abs(sumlogLik)+0.1)}.}
+}}
 
-\item{maxit2}{Number of iterations for direct numerical optimization algorithm.}
+\item{optim.control}{Optional list of control parameters for \code{\link{optim}}}
 
-\item{...}{Further arguments to \code{nlm}, such as arguments controlling the
-amount printing.}
+\item{...}{Further arguments to \code{\link{optim}}, such as \code{method}.}
 }
 \value{
 List with two components: First component is output from nlm and second is the estimated model.
