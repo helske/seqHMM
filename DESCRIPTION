@@ -1,16 +1,16 @@
 Package: seqHMM
 Title: Hidden Markov Models for Life Sequences and Other Multivariate,
     Multichannel Categorical Time Series
-Version: 0.6.0
-Date: 2014-11-21
+Version: 0.6.1
+Date: 2014-12-04
 Author: Jouni Helske
 Maintainer: Jouni Helske <jouni.helske@jyu.fi>
 Description: Package seqHMM is designed for inference of hidden Markov models
     where both the hidden state space and the symbol space of observations is
     discrete, and observations consists of multiple sequences possibly with
     multiply channels such as life calendar data with multiple life domains.
-    Maximum likelihood estimation via direct numerical maximization with 
-    analytical gradients and EM algorithm is supported. All main algorithms 
+    Maximum likelihood estimation via direct numerical maximization with
+    analytical gradients and EM algorithm is supported. All main algorithms
     are written in C++.
 LinkingTo: Rcpp, RcppArmadillo
 Imports:

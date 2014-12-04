@@ -60,10 +60,8 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       resEM<-EM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
                 obsArray, model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
       if(resEM$change<0)
-        warning("EM algorithm stopped due to the decreasing log-likelihood. ")
+        warning("EM algorithm stopped due to the decreasing log-likelihood. ")      
       
-      model$initialProbs[]<-resEM$initialProbs
-      model$transitionMatrix[]<-resEM$transitionMatrix
       model$emissionMatrix[]<-resEM$emissionMatrix[,1:model$numberOfSymbols]
       
     } else {    
@@ -77,12 +75,14 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       if(resEM$change<0)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")
       
-      model$initialProbs[]<-resEM$initialProbs
-      model$transitionMatrix[]<-resEM$transitionMatrix
+      
       model$emissionMatrix<-lapply(seq(dim(resEM$emissionArray)[3]), 
                                    function(i) resEM$emissionArray[ , 1:model$numberOfSymbols[i], i])
       names(model$emissionMatrix)<-model$channelNames
     }
+    
+    model$initialProbs[]<-resEM$initialProbs
+    model$transitionMatrix[]<-resEM$transitionMatrix
     
   } else resEM <-NULL
   
@@ -96,10 +96,10 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
     
     x<-which(model$transitionMatrix>0,arr.ind=TRUE)  
     transNZ<-x[order(x[,1]),]
-    maxTM<-cbind(1:model$numberOfStates,max.col(model$transitionMatrix,ties.method="first")) #-1)*model$numberOfStates+1:model$numberOfStates
+    maxTM<-cbind(1:model$numberOfStates,max.col(model$transitionMatrix,ties.method="first"))
     maxTMvalue<-apply(model$transitionMatrix,1,max)
     paramTM <- rbind(transNZ,maxTM)
-    paramTM <- paramTM[!(duplicated(paramTM)|duplicated(paramTM,fromLast=TRUE)),]
+    paramTM <- paramTM[!(duplicated(paramTM)|duplicated(paramTM,fromLast=TRUE)),,drop=FALSE]
     npTM<-nrow(paramTM)
     transNZ<-model$transitionMatrix>0
     transNZ[maxTM]<-2    
@@ -192,16 +192,10 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       
       paramEM<-lapply(1:model$numberOfChannels,function(i) {
         x<-rbind(emissNZ[[i]],maxEM[[i]])
-        x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),]
+        x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
       })
       npEM<-sapply(paramEM,nrow)
-      
-      #       emissNZ<-sapply(1:model$numberOfChannels,function(i){
-      #         x<-model$emissionMatrix[[i]]>0
-      #         x[maxEM[[i]]]<-2
-      #         x
-      #       },simplify="array")  
-      
+            
       emissNZ<-array(0,c(model$numberOfStates,max(model$numberOfSymbols),model$numberOfChannels))
       for(i in 1:model$numberOfChannels){
         emissNZ[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]] > 0
@@ -266,7 +260,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       
       gradfn<-function(pars,model){
         pars<-exp(pars)
-        if(any(!is.finite(pars)) && estimate)
+        if(any(!is.finite(pars)))
           return(.Machine$double.xmax)
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
@@ -312,5 +306,5 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
     model<-likfn(as.numeric(resoptimx[1:length(initialvalues)]),model,FALSE)
   } else resoptimx<-NULL
   
-  list(model=model,logLik=ifelse(use.optimx,-resoptimx$value,resEM$logLik),em.result=resEM,optimx.result=resoptimx)
+  list(model=model,logLik=ifelse(use.optimx,-resoptimx$value,resEM$logLik),em.result=resEM[4:6],optimx.result=resoptimx)
 }

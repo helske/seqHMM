@@ -56,7 +56,7 @@ backwardProbs<-function(model){
     for(i in 1:model$numberOfChannels)
       emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
     
-    out<-bacwardMC(model$transitionMatrix, emissionArray, obsArray)
+    out<-backwardMC(model$transitionMatrix, emissionArray, obsArray)
   }
   out
   
