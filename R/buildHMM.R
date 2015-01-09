@@ -12,24 +12,23 @@
 #' @param initialProbs Vector of initial state probabilities.
 #' @param X NOT YET IMPLEMENTED. Time-constant covariates for initial state probabilities. 
 #' Must be a matrix with dimensions p x k where p is the number of sequences and k is the number of covariates.
+#' @param beta An k x m matrix of regression coefficients for time-constant covariates for initial state 
+#' probabilities, where m is the number of states and k is the number of covariates.
 #' @param stateNames Optional labels for the hidden states
 #' @return Object of class \code{HMModel}
 #' 
-buildHMM<-function(observations,transitionMatrix,emissionMatrix,initialProbs,X,stateNames=NULL){
+buildHMM<-function(observations,transitionMatrix,emissionMatrix,initialProbs,X,beta,stateNames=NULL){
   
-  # determine number of states
-  numberOfStates<-length(initialProbs)
+  
+  if(dim(transitionMatrix)[1]!=dim(transitionMatrix)[2])
+    stop("transitionMatrix must be a square matrix.")
+  numberOfStates<-nrow(transitionMatrix)
   if(is.null(stateNames))
     stateNames<-as.character(1:numberOfStates)
   
-  if(dim(transitionMatrix)[1]!=dim(transitionMatrix)[2] ||
-       numberOfStates!=dim(transitionMatrix)[1])
-    stop("Dimensions of transitionMatrix and length of initialProbs do not match.")
-  
   if(!isTRUE(all.equal(rowSums(transitionMatrix),rep(1,dim(transitionMatrix)[1]),check.attributes=FALSE)))
     stop("Transition probabilities in transitionMatrix do not sum to one.")
-  if(!isTRUE(all.equal(sum(initialProbs),1,check.attributes=FALSE)))
-    stop("Initial state probabilities do not sum to one.")
+
   dimnames(transitionMatrix)<-list(from=stateNames,to=stateNames)
   
   if(is.list(emissionMatrix) && length(emissionMatrix)==1){
@@ -81,18 +80,27 @@ buildHMM<-function(observations,transitionMatrix,emissionMatrix,initialProbs,X,s
   }
   
   if(!missing(X)){
-    warning("Covariates not yet implemented.")
     if(nrow(X)!=numberOfSequences)
-      stop("Wrong dimensions in X.")
+      stop("Wrong dimensions of X.")
     numberOfCovariates<-ncol(X)
+    if(missing(beta))
+      beta<-matrix(1,numberOfCovariates,numberOfStates)
+    if(ncol(beta)!=numberOfStates | nrow(beta)!=numberOfCovariates)
+      stop("Wrong dimensions of beta.")
+    initialProbs<-NULL
+  } else {
+    numberOfCovariates <-0
+    beta<-X<-NULL
+    if(!isTRUE(all.equal(sum(initialProbs),1,check.attributes=FALSE)))
+      stop("Initial state probabilities do not sum to one.")
   }
   
   model<-list(observations=observations,transitionMatrix=transitionMatrix,
-              emissionMatrix=emissionMatrix,initialProbs=initialProbs,stateNames=stateNames,
+              emissionMatrix=emissionMatrix,initialProbs=initialProbs,beta=beta,X=X,stateNames=stateNames,
               symbolNames=symbolNames,channelNames=channelNames,lengthOfSequences=lengthOfSequences,
               numberOfSequences=numberOfSequences,
               numberOfSymbols=numberOfSymbols,numberOfStates=numberOfStates,
-              numberOfChannels=numberOfChannels)
+              numberOfChannels=numberOfChannels,numberOfCovariates=numberOfCovariates)
   class(model)<-"HMModel"
   model
 }

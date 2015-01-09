@@ -4,31 +4,36 @@ using namespace Rcpp;
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
-NumericVector gradient(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-IntegerVector obsArray,NumericVector rowSumsA,NumericVector rowSumsB, double sumInit,
-IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, NumericVector expPsi) { 
-    
-  NumericVector grad(expPsi.size());
+NumericVector gradientx(NumericVector transitionMatrix, NumericVector emissionArray,
+IntegerVector obsArray,NumericVector rowSumsA,NumericVector rowSumsB, 
+IntegerVector transNZ, IntegerVector emissNZ, NumericVector expPsi, NumericMatrix coef_, NumericMatrix X_) { 
+  
+  
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
   
-  arma::vec init(initialProbs.begin(),eDims[0],false);
   arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0],false);
   arma::mat emission(emissionArray.begin(), eDims[0], eDims[1],false);
   arma::imat obs(obsArray.begin(), oDims[0], oDims[1],false); 
   arma::imat ANZ(transNZ.begin(),eDims[0],eDims[0],false);
   arma::imat BNZ(emissNZ.begin(), eDims[0], eDims[1]-1,false);
-  arma::ivec INZ(initNZ.begin(), eDims[0],false);
+  
+  int q = coef_.nrow();
+  arma::mat coef(coef_.begin(),q,eDims[0]); // qxm
+  arma::mat X(X_.begin(),oDims[0],q);       // kxq
+  arma::mat init = exp(X*coef).t(); // m x k
+  arma::rowvec sumInit = sum(init,0); // k
+  init.each_row() /= sumInit;
+  init = log(init); 
   
   
   arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k
   arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k 
   
-  arma::vec initLog = log(init);
   arma::mat transitionLog = log(transition); 
   arma::mat emissionLog = log(emission);
   
-  internalForward(transitionLog, emissionLog, initLog, obs, alpha);
+  internalForwardx(transitionLog, emissionLog, init, obs, alpha);
   internalBackward(transitionLog, emissionLog, obs, beta);     
   
   arma::vec ll(oDims[0]);
@@ -46,6 +51,7 @@ IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, NumericVecto
     ll(k) = tmp;
   }
   
+  arma::vec grad(expPsi.size()+q*(eDims[0]-1),arma::fill::zeros);
   int countgrad=0;
   // transitionMatrix
   for(unsigned int i = 0; i < eDims[0]; i++){   
@@ -82,11 +88,11 @@ IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, NumericVecto
       for(unsigned int j = 0; j < ind.n_elem; j++){
         for(int k = 0; k < oDims[0]; k++){ 
           if(obs(k,0)==ind(j)){
-            gradRow(j) += exp(initLog(i)+beta(i,0,k)-ll(k));
-            }
+            gradRow(j) += exp(init(i,k)+beta(i,0,k)-ll(k));
+          }
           for(int t = 0; t < (oDims[1]-1); t++){
             if(obs(k,t+1)==ind(j)){
-            gradRow(j) += arma::accu(exp(alpha.slice(k).col(t)+transitionLog.col(i)+beta(i,t+1,k)-ll(k)));
+              gradRow(j) += arma::accu(exp(alpha.slice(k).col(t)+transitionLog.col(i)+beta(i,t+1,k)-ll(k)));
             }
           }
         }
@@ -104,25 +110,23 @@ IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, NumericVecto
       }
     }
   }
-  // InitProbs  
-    arma::uvec ind = arma::find(INZ);    
-    if(ind.n_elem>1){ 
-      arma::vec gradRow(ind.n_elem,arma::fill::zeros);  
-      for(unsigned int j = 0; j < ind.n_elem; j++){
-        for(int k = 0; k < oDims[0]; k++){ 
-            gradRow(j) += exp(emissionLog(j,obs(k,0))+beta(j,0,k)-ll(k));
+  // InitProbs
+  for(int k = 0; k < oDims[0]; k++){ 
+    for(unsigned int j = 1; j < eDims[0]; j++){
+      double tmp = 0.0;
+      double tmp2 = 0.0;
+      for(int i = 0; i< eDims[0]; i++){
+        if(i!=j){
+          tmp += arma::as_scalar(exp(dot(coef.col(i),X.row(k))));
+          tmp2 += arma::as_scalar(exp(emissionLog(i,obs(k,0))+beta(i,0,k)-ll(k)));
         }
       }
-      for(unsigned int j = 0; j < ind.n_elem; j++){
-        if(INZ(ind(j))!=2){
-          arma::rowvec dpsi(ind.n_elem,arma::fill::zeros);
-          dpsi(j) = 1.0;    
-          dpsi = (dpsi-init(ind).t())*expPsi(countgrad)/sumInit;  
-          grad(countgrad) = arma::as_scalar(dpsi*gradRow);
-          countgrad ++;
-        }
-      }
+      
+      grad.subvec(expPsi.size()+q*(j-1),expPsi.size()+q*j-1) += X.row(k).t()*
+      arma::as_scalar(exp(dot(coef.col(j),X.row(k)))/pow(sumInit(k),2)*
+      (exp(emissionLog(j,obs(k,0))+beta(j,0,k)-ll(k))*tmp - tmp2));
     }
+  }
   
-  return grad;
+  return wrap(grad);
 }

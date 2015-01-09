@@ -10,12 +10,15 @@
 logLik.HMModel<-function(object,...){
   
   if(object$numberOfChannels==1){
-  obsArray<-data.matrix(object$observations)-1
-  obsArray[obsArray>object$numberOfSymbols]<-object$numberOfSymbols
-  storage.mode(obsArray)<-"integer"
-  
-  logLikHMM(object$transitionMatrix, cbind(object$emissionMatrix,1), 
-            object$initialProbs, obsArray)
+    obsArray<-data.matrix(object$observations)-1
+    obsArray[obsArray>object$numberOfSymbols]<-object$numberOfSymbols
+    storage.mode(obsArray)<-"integer"
+    
+    if(object$numberOfCovariates==0){
+      logLikHMM(object$transitionMatrix, cbind(object$emissionMatrix,1), 
+                object$initialProbs, obsArray)
+    } else   logLikHMMx(object$transitionMatrix, cbind(object$emissionMatrix,1), 
+                        obsArray, object$beta, object$X)
   } else {
     obsArray<-array(0,c(object$numberOfSequences,object$lengthOfSequences,object$numberOfChannels))
     for(i in 1:object$numberOfChannels){
@@ -28,7 +31,12 @@ logLik.HMModel<-function(object,...){
     for(i in 1:object$numberOfChannels)
       emissionArray[,1:object$numberOfSymbols[i],i]<-object$emissionMatrix[[i]]
     
-    logLikMCHMM(object$transitionMatrix, emissionArray, 
-                object$initialProbs, obsArray)
+    if(object$numberOfCovariates==0){
+      logLikMCHMM(object$transitionMatrix, emissionArray, 
+                  object$initialProbs, obsArray)
+    }else{
+      logLikMCHMMx(object$transitionMatrix, emissionArray, 
+                   obsArray, object$beta, object$X)
+    }
   }
 }

@@ -74,7 +74,7 @@ IntegerVector obsArray, IntegerVector nSymbols, int itermax=100, double tol=1e-8
     for(int k = 0; k < oDims[0]; k++){
       
       delta += exp(alpha.slice(k).col(0)+beta.slice(k).col(0)-ll(k));
-      
+ 
       for(int i = 0; i < eDims[0]; i++){
         for(int j = 0; j < eDims[0]; j++){
           sumtmp = neginf;
@@ -121,8 +121,9 @@ IntegerVector obsArray, IntegerVector nSymbols, int itermax=100, double tol=1e-8
       gamma.slice(r).cols(0,nSymbols(r)-1).each_col() /= sum(gamma.slice(r).cols(0,nSymbols(r)-1),1);
       emission.slice(r).cols(0,nSymbols(r)-1) = log(gamma.slice(r).cols(0,nSymbols(r)-1));
     }
-    
+        
     delta /= arma::as_scalar(arma::accu(delta));
+  
     init = log(delta);
     
     internalForwardMC(transition, emission, init, obs, alpha);

@@ -9,7 +9,8 @@
 #' @export 
 #' @import optimx
 #' @param model Hidden Markov model of class HMModel or MCHMModel.
-#' @param use.em Logical, use EM algorithm at the start of parameter estimation. Default is TRUE.
+#' @param use.em Logical, use EM algorithm at the start of parameter estimation. 
+#' Default is TRUE. Currently not supported for models with covariates.
 #' @param use.optimx Logical, use direct numerical optimization via \code{\link{optimx}} after EM algorithm. Default is TRUE. 
 #' @param em.control Optional list of control parameters for for EM algorithm. Possible arguments are 
 #' \itemize{
@@ -49,6 +50,8 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
   }
   #storage.mode(obsArray)<-"integer"
   if(use.em){
+    if(model$numberOfCovariates>0)
+      stop("EM algorithm is not supported for models with covariates.")
     em.con <- list(trace = 0, maxit=100,reltol=1e-8)
     nmsC <- names(em.con)  
     em.con[(namc <- names(em.control))] <- em.control
@@ -87,12 +90,20 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
   } else resEM <-NULL
   
   if(use.optimx){
-    maxIP<-which.max(model$initialProbs)
-    maxIPvalue<-model$initialProbs[maxIP]
-    paramIP<-{function(x) which(x>0 & x<max(x))}(model$initialProbs)
-    npIP<-length(paramIP)
-    initNZ<-model$initialProbs>0
-    initNZ[maxIP]<-2
+    
+    if(model$numberOfCovariates==0){
+      maxIP<-which.max(model$initialProbs)
+      maxIPvalue<-model$initialProbs[maxIP]
+      paramIP<-setdiff(which(model$initialProbs>0),maxIP)
+      
+      npIP<-length(paramIP)
+      initNZ<-model$initialProbs>0
+      initNZ[maxIP]<-2
+      npBeta<-0
+    } else {
+      npBeta<-(model$numberOfStates-1)*model$numberOfCovariates
+      npIP<-0
+    }
     
     x<-which(model$transitionMatrix>0,arr.ind=TRUE)  
     transNZ<-x[order(x[,1]),]
@@ -117,36 +128,44 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       emissNZ<-model$emissionMatrix>0
       emissNZ[maxEM]<-2
       
-      initialvalues<-c(
+      initialvalues<-c(log(c(
         if(npTM>0) model$transitionMatrix[paramTM],
         if(npEM>0) model$emissionMatrix[paramEM],
-        if(npIP>0) model$initialProbs[paramIP]
+        if(npIP>0) model$initialProbs[paramIP])),
+        if(npBeta>0) model$beta[,-1]
       )
-      initialvalues <- log(initialvalues)
       
       
       
       likfn<-function(pars,model,estimate=TRUE){
-        pars<-exp(pars)         
+        
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
-          model$transitionMatrix[paramTM]<-pars[1:npTM]
+          model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
           model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)  
         }
         if(npEM>0){
           model$emissionMatrix[maxEM]<-maxEMvalue     
-          model$emissionMatrix[paramEM]<-pars[(npTM+1):(npTM+npEM)]
+          model$emissionMatrix[paramEM]<-exp(pars[(npTM+1):(npTM+npEM)])
           model$emissionMatrix<-model$emissionMatrix/rowSums(model$emissionMatrix) 
         }
         
         if(npIP>0){
           model$initialProbs[maxIP]<-maxIPvalue
-          model$initialProbs[paramIP]<-pars[(npTM+npEM+1):length(pars)]
+          model$initialProbs[paramIP]<-exp(pars[npTM+npEM+1:npIP])
           model$initialProbs[]<-model$initialProbs/sum(model$initialProbs)
+        } else{
+          if(npBeta>0){
+            model$beta[,1]<-0
+            model$beta[,-1]<-pars[npTM+npEM+1:npBeta]
+          }
+          
         }
         
         if(estimate){
-          - logLikHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray)        
+          if(npBeta==0){
+            - logLikHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray)      
+          } else - logLikHMMx(model$transitionMatrix, cbind(model$emissionMatrix,1), obsArray, model$beta, model$X)      
         } else model
       }
       
@@ -154,28 +173,38 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       sumInit<-1
       
       gradfn<-function(pars,model){
-        pars<-exp(pars)         
+           
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
-          model$transitionMatrix[paramTM]<-pars[1:npTM]
+          model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
           rowSumsA<-rowSums(model$transitionMatrix)
           model$transitionMatrix<-model$transitionMatrix/rowSumsA          
         }
         if(npEM>0){
           model$emissionMatrix[maxEM]<-maxEMvalue     
-          model$emissionMatrix[paramEM]<-pars[(npTM+1):(npTM+npEM)]
+          model$emissionMatrix[paramEM]<-exp(pars[(npTM+1):(npTM+npEM)])
           rowSumsB<-rowSums(model$emissionMatrix)
           model$emissionMatrix<-model$emissionMatrix/rowSumsB          
         }
         
         if(npIP>0){
           model$initialProbs[maxIP]<-maxIPvalue
-          model$initialProbs[paramIP]<-pars[(npTM+npEM+1):length(pars)]
+          model$initialProbs[paramIP]<-exp(pars[(npTM+npEM+1):length(pars)])
           sumInit<-sum(model$initialProbs)
           model$initialProbs[]<-model$initialProbs/sumInit
-        }         
-        - gradient(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray, 
-                   rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,pars) 
+        } else{
+          if(npBeta>0){
+            model$beta[,1]<-0
+            model$beta[,-1]<-pars[npTM+npEM+1:npBeta]
+          }
+          
+        }
+        if(npBeta==0){
+          - gradient(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray, 
+                     rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars)) 
+        } else -gradientx(model$transitionMatrix, cbind(model$emissionMatrix,1), obsArray, 
+                          rowSumsA,rowSumsB,transNZ,emissNZ,exp(pars[1:(npTM+npEM)]), model$beta, model$X) 
+        
         
       }
     } else {      
@@ -195,7 +224,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
         x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
       })
       npEM<-sapply(paramEM,nrow)
-            
+      
       emissNZ<-array(0,c(model$numberOfStates,max(model$numberOfSymbols),model$numberOfChannels))
       for(i in 1:model$numberOfChannels){
         emissNZ[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]] > 0
@@ -203,13 +232,13 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
         
       }       
       
-      initialvalues<-c(
+      initialvalues<-c(log(c(
         if(npTM>0) model$transitionMatrix[paramTM],
         if(sum(npEM)>0) unlist(sapply(1:model$numberOfChannels,
                                       function(x) model$emissionMatrix[[x]][paramEM[[x]]])),
-        if(npIP>0) model$initialProbs[paramIP]
-      )
-      initialvalues<-log(initialvalues)            
+        if(npIP>0) model$initialProbs[paramIP])),
+        if(npBeta>0) model$beta[,-1]
+      )         
       
       emissionArray<-array(1,c(model$numberOfStates,max(model$numberOfSymbols)+1,model$numberOfChannels))
       for(i in 1:model$numberOfChannels)
@@ -218,18 +247,19 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       
       
       likfn<-function(pars,model,estimate=TRUE){
-        pars<-exp(pars)
+      
         if(any(!is.finite(pars)) && estimate)
           return(.Machine$double.xmax)
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
-          model$transitionMatrix[paramTM]<-pars[1:npTM]
+          model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
           model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)       
         }
         if(sum(npEM)>0){            
           for(i in 1:model$numberOfChannels){
             emissionArray[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]    
-            emissionArray[,1:model$numberOfSymbols[i],i][paramEM[[i]]]<-pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])]
+            emissionArray[,1:model$numberOfSymbols[i],i][paramEM[[i]]]<-
+              exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
             rowSumsB<-rowSums(emissionArray[,1:model$numberOfSymbols[i],i])
             emissionArray[,1:model$numberOfSymbols[i],i]<-
               emissionArray[,1:model$numberOfSymbols[i],i]/rowSumsB
@@ -238,13 +268,20 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
         
         if(npIP>0){
           model$initialProbs[maxIP]<-maxIPvalue
-          model$initialProbs[paramIP]<-pars[(npTM+sum(npEM)+1):length(pars)]          
+          model$initialProbs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])     
           model$initialProbs[]<-model$initialProbs/sum(model$initialProbs)
+        } else{
+          if(npBeta>0){
+            model$beta[,1]<-0
+            model$beta[,-1]<-pars[npTM+sum(npEM)+1:npBeta]
+          }
+          
         }
         
         if(estimate){
-          - logLikMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray)
-          
+          if(npBeta==0){
+            - logLikMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray)     
+          } else - logLikMCHMMx(model$transitionMatrix, emissionArray, obsArray, model$beta, model$X)      
         } else {
           if(sum(npEM)>0){
             for(i in 1:model$numberOfChannels){
@@ -254,24 +291,26 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
           model
         }        
       }  
+      
       rowSumsA<-rep(1,model$numberOfStates)
       rowSumsB<-matrix(1,model$numberOfStates,model$numberOfChannels)
       sumInit<-1
       
       gradfn<-function(pars,model){
-        pars<-exp(pars)
+        
         if(any(!is.finite(pars)))
           return(.Machine$double.xmax)
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
-          model$transitionMatrix[paramTM]<-pars[1:npTM]
+          model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
           rowSumsA<-rowSums(model$transitionMatrix)
           model$transitionMatrix<-model$transitionMatrix/rowSumsA         
         }
         if(sum(npEM)>0){            
           for(i in 1:model$numberOfChannels){
             emissionArray[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]    
-            emissionArray[,1:model$numberOfSymbols[i],i][paramEM[[i]]]<-pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])]            
+            emissionArray[,1:model$numberOfSymbols[i],i][paramEM[[i]]]<-
+              exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])      
             rowSumsB[,i]<-rowSums(emissionArray[,1:model$numberOfSymbols[i],i])
             emissionArray[,1:model$numberOfSymbols[i],i]<-
               emissionArray[,1:model$numberOfSymbols[i],i]/rowSumsB[,i]
@@ -280,13 +319,22 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
         
         if(npIP>0){
           model$initialProbs[maxIP]<-maxIPvalue
-          model$initialProbs[paramIP]<-pars[(npTM+sum(npEM)+1):length(pars)]
+          model$initialProbs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])
           sumInit<-sum(model$initialProbs)
           model$initialProbs[]<-model$initialProbs/sumInit
-        }        
+        }  else{
+          if(npBeta>0){
+            model$beta[,1]<-0
+            model$beta[,-1]<-pars[npTM+sum(npEM)+1:npBeta]
+          }
+          
+        }
         
+        if(npBeta==0){
         - gradientMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
-                     rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,pars)
+                     rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars))
+        } else  - gradientMCx(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
+                             rowSumsA,rowSumsB,transNZ,emissNZ,exp(pars[1:(npTM+sum(npEM))]),model$beta,model$X)
         
         
       }
@@ -296,15 +344,19 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
     if(is.null(optimx.control$fnscale) && use.em){
       optimx.control$fnscale <- -resEM$logLik 
     }
-    if(is.null(optimx.control$kkt)){
-      optimx.control$kkt<-FALSE
-    }
-    if(is.null(optimx.control$starttests)){
-      optimx.control$starttests<-FALSE
-    }
+        if(is.null(optimx.control$kkt)){
+          optimx.control$kkt<-FALSE
+        }
+        if(is.null(optimx.control$starttests)){
+          optimx.control$starttests<-FALSE
+        }
+  
     resoptimx<-optimx(par=initialvalues,fn=likfn,gr=gradfn,method=method,itnmax=itnmax,control=optimx.control,model=model,...)
     model<-likfn(as.numeric(resoptimx[1:length(initialvalues)]),model,FALSE)
-  } else resoptimx<-NULL
+    
+    hess<-try(hessian(likfn,as.numeric(resoptimx[1:length(initialvalues)]),model=model))
+    
+  } else resoptimx<-sds<-NULL
   
-  list(model=model,logLik=ifelse(use.optimx,-resoptimx$value,resEM$logLik),em.result=resEM[4:6],optimx.result=resoptimx)
+  list(model=model,logLik=ifelse(use.optimx,-resoptimx$value,resEM$logLik),em.result=resEM[4:6],optimx.result=resoptimx,hess=hess)
 }

@@ -9,9 +9,10 @@
 #' log-probability (logP). In case of multiple observations, most probable path is computed independently for each sequence.
 mostProbablePath<-function(model){
   
+  if(model$numberOfCovariates==0){
   model$initialProbs <- log(model$initialProbs)
   model$initialProbs[!is.finite(model$initialProbs)]<- -0.1*.Machine$double.xmax
-  
+  }
   model$transitionMatrix <- log(model$transitionMatrix)
   model$transitionMatrix[!is.finite(model$transitionMatrix)]<- -0.1*.Machine$double.xmax
   if(model$numberOfChannels==1){
@@ -21,9 +22,11 @@ mostProbablePath<-function(model){
     obsArray<-data.matrix(model$observations)-1
     obsArray[obsArray>model$numberOfSymbols]<-model$numberOfSymbols
     storage.mode(obsArray)<-"integer"
-    
+    if(model$numberOfCovariates==0){
     out<-viterbi(model$transitionMatrix, cbind(model$emissionMatrix,0), 
                  model$initialProbs, obsArray)
+    } else out<-viterbix(model$transitionMatrix, cbind(model$emissionMatrix,0), 
+                        obsArray,model$beta, model$X)
     if(model$numberOfSequences==1){
       mpp<-t(rownames(model$transitionMatrix)[out$q+1])
     }else{
@@ -50,8 +53,11 @@ mostProbablePath<-function(model){
     for(i in 1:model$numberOfChannels)
       emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
     
+    if(model$numberOfCovariates==0){
     out<-viterbiMC(model$transitionMatrix, emissionArray, 
                    model$initialProbs, obsArray)
+    } else out<-viterbiMCx(model$transitionMatrix, emissionArray, 
+                     obsArray, model$beta, model$X)
     
     if(model$numberOfSequences==1){
       mpp<-t(rownames(model$transitionMatrix)[out$q+1])
