@@ -9,7 +9,8 @@ fitHMM(model, use.em = TRUE, use.optimx = TRUE, em.control = list(),
 \arguments{
 \item{model}{Hidden Markov model of class HMModel or MCHMModel.}
 
-\item{use.em}{Logical, use EM algorithm at the start of parameter estimation. Default is TRUE.}
+\item{use.em}{Logical, use EM algorithm at the start of parameter estimation.
+Default is TRUE. Currently not supported for models with covariates.}
 
 \item{use.optimx}{Logical, use direct numerical optimization via \code{\link{optimx}} after EM algorithm. Default is TRUE.}
 

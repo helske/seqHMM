@@ -3,7 +3,7 @@
 \alias{buildHMM}
 \title{Build a Hidden Markov Model}
 \usage{
-buildHMM(observations, transitionMatrix, emissionMatrix, initialProbs, X,
+buildHMM(observations, transitionMatrix, emissionMatrix, initialProbs, X, beta,
   stateNames = NULL)
 }
 \arguments{
@@ -17,6 +17,9 @@ buildHMM(observations, transitionMatrix, emissionMatrix, initialProbs, X,
 
 \item{X}{NOT YET IMPLEMENTED. Time-constant covariates for initial state probabilities.
 Must be a matrix with dimensions p x k where p is the number of sequences and k is the number of covariates.}
+
+\item{beta}{An k x m matrix of regression coefficients for time-constant covariates for initial state
+probabilities, where m is the number of states and k is the number of covariates.}
 
 \item{stateNames}{Optional labels for the hidden states}
 }

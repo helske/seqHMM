@@ -5,8 +5,8 @@ Package seqHMM is designed for inference of hidden Markov models
     where both the hidden state space and the symbol space of observations is
     discrete, and observations consists of multiple sequences possibly with
     multiply channels such as life calendar data with multiple life domains.
-    Maximum likelihood estimation via direct numerical maximization with 
-    analytical gradients and EM algorithm is supported. All main algorithms 
+    Maximum likelihood estimation via EM algorithm and direct numerical
+    maximization with analytical gradients is supported. All main algorithms
     are written in C++.
 
 Package is still under heavy development (see details below), and should be available at CRAN in early 2015.
@@ -21,10 +21,9 @@ install_github("helske/seqHMM")
 
 What is still missing:
 
-<ul>
- <li>Pretty plotting functions via TraMiner are under active development</li>
+<ul> 
  <li>Function for computing posterior probabilities is currently missing (not ported from Fortran version yet, just laziness)</li>
- <li>Support for covariates for initial states (relates to _working_ paper by Helske&Helske et al. dealing with HMM clustering)</li>
+ <li>EM algorithm support for covariates for initial states (relates to _working_ paper by Helske&Helske et al. dealing with HMM clustering). Direct numerical maximization is at testing phase.</li>
 </ul> 
 
 
