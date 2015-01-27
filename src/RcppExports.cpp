@@ -170,55 +170,6 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
-// gradientMCx
-NumericVector gradientMCx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, NumericVector rowSumsA, NumericVector rowSumsB_, IntegerVector transNZ, IntegerVector emissNZ, NumericVector expPsi, NumericMatrix coef_, NumericMatrix X_);
-RcppExport SEXP seqHMM_gradientMCx(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP rowSumsASEXP, SEXP rowSumsB_SEXP, SEXP transNZSEXP, SEXP emissNZSEXP, SEXP expPsiSEXP, SEXP coef_SEXP, SEXP X_SEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP );
-        Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type rowSumsA(rowSumsASEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type rowSumsB_(rowSumsB_SEXP );
-        Rcpp::traits::input_parameter< IntegerVector >::type transNZ(transNZSEXP );
-        Rcpp::traits::input_parameter< IntegerVector >::type emissNZ(emissNZSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type expPsi(expPsiSEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type coef_(coef_SEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP );
-        NumericVector __result = gradientMCx(transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB_, transNZ, emissNZ, expPsi, coef_, X_);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
-// gradientx
-NumericVector gradientx(NumericVector transitionMatrix, NumericVector emissionArray, IntegerVector obsArray, NumericVector rowSumsA, NumericVector rowSumsB, IntegerVector transNZ, IntegerVector emissNZ, NumericVector expPsi, NumericMatrix coef_, NumericMatrix X_);
-RcppExport SEXP seqHMM_gradientx(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP obsArraySEXP, SEXP rowSumsASEXP, SEXP rowSumsBSEXP, SEXP transNZSEXP, SEXP emissNZSEXP, SEXP expPsiSEXP, SEXP coef_SEXP, SEXP X_SEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP );
-        Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type rowSumsA(rowSumsASEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type rowSumsB(rowSumsBSEXP );
-        Rcpp::traits::input_parameter< IntegerVector >::type transNZ(transNZSEXP );
-        Rcpp::traits::input_parameter< IntegerVector >::type emissNZ(emissNZSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type expPsi(expPsiSEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type coef_(coef_SEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP );
-        NumericVector __result = gradientx(transitionMatrix, emissionArray, obsArray, rowSumsA, rowSumsB, transNZ, emissNZ, expPsi, coef_, X_);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
 // logLikHMM
 double logLikHMM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray);
 RcppExport SEXP seqHMM_logLikHMM(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP) {
@@ -237,25 +188,6 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
-// logLikHMMx
-double logLikHMMx(NumericMatrix transitionMatrix, NumericMatrix emissionArray, IntegerMatrix obsArray, NumericMatrix coef_, NumericMatrix X_);
-RcppExport SEXP seqHMM_logLikHMMx(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP obsArraySEXP, SEXP coef_SEXP, SEXP X_SEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericMatrix >::type transitionMatrix(transitionMatrixSEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type emissionArray(emissionArraySEXP );
-        Rcpp::traits::input_parameter< IntegerMatrix >::type obsArray(obsArraySEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type coef_(coef_SEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP );
-        double __result = logLikHMMx(transitionMatrix, emissionArray, obsArray, coef_, X_);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
 // logLikMCHMM
 double logLikMCHMM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray);
 RcppExport SEXP seqHMM_logLikMCHMM(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP) {
@@ -268,25 +200,6 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP );
         Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP );
         double __result = logLikMCHMM(transitionMatrix, emissionArray, initialProbs, obsArray);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
-// logLikMCHMMx
-double logLikMCHMMx(NumericMatrix transitionMatrix, NumericVector emissionArray, IntegerVector obsArray, NumericMatrix coef_, NumericMatrix X_);
-RcppExport SEXP seqHMM_logLikMCHMMx(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP obsArraySEXP, SEXP coef_SEXP, SEXP X_SEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericMatrix >::type transitionMatrix(transitionMatrixSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP );
-        Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type coef_(coef_SEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP );
-        double __result = logLikMCHMMx(transitionMatrix, emissionArray, obsArray, coef_, X_);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
@@ -323,44 +236,6 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP );
         Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP );
         List __result = viterbiMC(transitionMatrix, emissionArray, initialProbs, obsArray);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
-// viterbiMCx
-List viterbiMCx(NumericVector transitionMatrix, NumericVector emissionArray, IntegerVector obsArray, NumericMatrix coef_, NumericMatrix X_);
-RcppExport SEXP seqHMM_viterbiMCx(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP obsArraySEXP, SEXP coef_SEXP, SEXP X_SEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP );
-        Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type coef_(coef_SEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP );
-        List __result = viterbiMCx(transitionMatrix, emissionArray, obsArray, coef_, X_);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
-// viterbix
-List viterbix(NumericVector transitionMatrix, NumericVector emissionArray, IntegerVector obsArray, NumericMatrix coef_, NumericMatrix X_);
-RcppExport SEXP seqHMM_viterbix(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP obsArraySEXP, SEXP coef_SEXP, SEXP X_SEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP );
-        Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type coef_(coef_SEXP );
-        Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP );
-        List __result = viterbix(transitionMatrix, emissionArray, obsArray, coef_, X_);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

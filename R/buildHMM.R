@@ -10,10 +10,6 @@
 #' @param transitionMatrix Matrix of transition probabilities.
 #' @param emissionMatrix Matrix of emission probabilities or a list of such objects (one for each channel).
 #' @param initialProbs Vector of initial state probabilities.
-#' @param X NOT YET IMPLEMENTED. Time-constant covariates for initial state probabilities. 
-#' Must be a matrix with dimensions p x k where p is the number of sequences and k is the number of covariates.
-#' @param beta An k x m matrix of regression coefficients for time-constant covariates for initial state 
-#' probabilities, where m is the number of states and k is the number of covariates.
 #' @param stateNames Optional labels for the hidden states
 #' @return Object of class \code{HMModel}
 #' 
@@ -79,7 +75,7 @@
 #' 
 #' @seealso \code{\link{fitHMM}} for fitting Hidden Markov models.
 
-buildHMM<-function(observations,transitionMatrix,emissionMatrix,initialProbs,X,beta,stateNames=NULL){
+buildHMM<-function(observations,transitionMatrix,emissionMatrix,initialProbs,stateNames=NULL){
   
   
   if(dim(transitionMatrix)[1]!=dim(transitionMatrix)[2])
@@ -141,28 +137,17 @@ buildHMM<-function(observations,transitionMatrix,emissionMatrix,initialProbs,X,b
     
   }
   
-  if(!missing(X)){
-    if(nrow(X)!=numberOfSequences)
-      stop("Wrong dimensions of X.")
-    numberOfCovariates<-ncol(X)
-    if(missing(beta))
-      beta<-matrix(1,numberOfCovariates,numberOfStates)
-    if(ncol(beta)!=numberOfStates | nrow(beta)!=numberOfCovariates)
-      stop("Wrong dimensions of beta.")
-    initialProbs<-NULL
-  } else {
-    numberOfCovariates <-0
-    beta<-X<-NULL
+  
     if(!isTRUE(all.equal(sum(initialProbs),1,check.attributes=FALSE)))
       stop("Initial state probabilities do not sum to one.")
-  }
+ 
   
   model<-list(observations=observations,transitionMatrix=transitionMatrix,
-              emissionMatrix=emissionMatrix,initialProbs=initialProbs,beta=beta,X=X,stateNames=stateNames,
+              emissionMatrix=emissionMatrix,initialProbs=initialProbs,stateNames=stateNames,
               symbolNames=symbolNames,channelNames=channelNames,lengthOfSequences=lengthOfSequences,
               numberOfSequences=numberOfSequences,
               numberOfSymbols=numberOfSymbols,numberOfStates=numberOfStates,
-              numberOfChannels=numberOfChannels,numberOfCovariates=numberOfCovariates)
+              numberOfChannels=numberOfChannels)
   class(model)<-"HMModel"
   model
 }
