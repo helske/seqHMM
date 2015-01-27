@@ -38,6 +38,7 @@
 #' require(TraMineR)
 #' 
 #' data(biofam)
+#' biofam <- biofam[1:500,]
 #' 
 #' ## Building one channel per type of event left, children or married
 #' bf <- as.matrix(biofam[, 10:25])
@@ -45,35 +46,19 @@
 #' married <- bf == 2 | bf== 3 | bf==6
 #' left <- bf==1 | bf==3 | bf==5 | bf==6
 #' 
+#' children[children==TRUE] <- "Children"
+#' children[children==FALSE] <- "Childless"
+#' 
+#' married[married==TRUE] <- "Married"
+#' married[married==FALSE] <- "Single"
+#' 
+#' left[left==TRUE] <- "Left home"
+#' left[left==FALSE] <- "With parents"
+#' 
 #' ## Building sequence objects
 #' child.seq <- seqdef(children)
 #' marr.seq <- seqdef(married)
 #' left.seq <- seqdef(left)
-#' 
-#' ## Choosing colors
-#' require(RColorBrewer)
-#' attr(child.seq, "cpal") <- brewer.pal(3, "Set2")[c(1,2)]
-#' attr(marr.seq, "cpal") <- brewer.pal(6, "Dark2")[c(4,6)]
-#' attr(left.seq, "cpal") <- brewer.pal(6, "Paired")[c(1,6)]
-#' 
-#' 
-#' # Defining the plot for state distribution plots of observations
-#' ssp1 <- defineSPS(list(child.seq, marr.seq, left.seq), type="d", plots="obs")
-#' # Plotting previously defined plot ssp1
-#' SPS(ssp1)
-#' 
-#' # Defining the plot for sequence index plots of observations
-#' ssp2 <- defineSPS(list(child.seq, marr.seq, left.seq), type="I", plots="obs", 
-#' # Sorting subjects according to the beginning of the 2nd channel (marr.seq)
-#' sortv="from.start", sort.channel=2, 
-#' # Controlling the size, positions, and names for channel labels
-#' ylab.pos=c(1,2,1), cex.lab=1, ylab=c("Children", "Married", "Left home"), 
-#' # Plotting without legend
-#' withlegend=FALSE)
-#' # Plotting previously defined plot ssp2
-#' SPS(ssp2)
-#' 
-#' # Computing hidden Markov model
 #' 
 #' # Initial values for emission matrices
 #' B_child <- matrix(NA, nrow=3, ncol=2)
@@ -111,22 +96,10 @@
 #' 
 #' # Fitting hidden Markov model
 #' HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8),
-#' itnmax=10000, method="BFGS",
-#' hessian=FALSE,
-#' optimx.control=list(starttests=FALSE,
-#' kkt=FALSE))
+#' itnmax=10000, method="BFGS")
 #' 
-#' # Plotting observations and hidden states (most probable) paths
-#' ssp3 <- defineSPS(HMM$model, type="I", plots="both", 
-#' # Sorting according to multidimensional scaling of hidden states paths
-#' sortv="mds.mpp", 
-#' ylab=c("Children", "Married", "Left home"), 
-#' # Controlling title
-#' title="Biofam", cex.title=1.5,
-#' # Labels for x axis and tick marks
-#' xtlab=15:30, xlab="Age")
-#' SPS(ssp3)
-#' 
+#' @seealso \code{\link{buildHMM}} for building Hidden Markov models before fitting.
+
 fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFGS",itnmax=10000,optimx.control=list(),...){
   
   
@@ -172,9 +145,8 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")
       
       
-      model$emissionMatrix<-lapply(seq(dim(resEM$emissionArray)[3]), 
-                                   function(i) resEM$emissionArray[ , 1:model$numberOfSymbols[i], i])
-      names(model$emissionMatrix)<-model$channelNames
+      for(i in 1:model$numberOfChannels)
+      model$emissionMatrix[[i]][]<-resEM$emissionArray[ , 1:model$numberOfSymbols[i], i]                                     
     }
     
     model$initialProbs[]<-resEM$initialProbs

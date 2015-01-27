@@ -18,6 +18,6 @@ Imports:
     stats,
     TraMineR (>= 1.8-8),
     Rcpp (>= 0.11.3),
-    RColorBrewer,
+    grid,
     gridBase
 License: GPL (>= 2)

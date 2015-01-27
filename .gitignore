@@ -10,7 +10,7 @@
 # Extra source folders and compiled code
 src-i386
 src-x64
-.o
-.dll
-.so
-.Rproj.user
+*.o
+*.dll
+*.so
+*.Rproj.user
