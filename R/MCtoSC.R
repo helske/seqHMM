@@ -2,7 +2,10 @@
 #' 
 #' @export
 #' @param model Object of class HMModel.
-#' 
+#' @param combine.missing Controls whether combined states are coded missing
+#'   (NA) if some of the channels include missing information. Defaults to
+#'   TRUE.
+#'   
 #' @examples 
 #' require(TraMineR)
 #' 
@@ -69,13 +72,13 @@
 #' 
 #' HMM_SC <- MCtoSC(HMM$model)
 #' 
-#' @seealso \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and
+#' @seealso \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and 
 #'   fitting Hidden Markov models.
 
-MCtoSC<-function(model){
+MCtoSC<-function(model, combine.missing=TRUE){
   if(model$numberOfChannels==1)
     return(model)
-    
+  
   B<-matrix(0,model$numberOfStates,prod(model$numberOfSymbols))
   
   colnames(B)<-apply(
@@ -83,7 +86,7 @@ MCtoSC<-function(model){
     1,paste0,collapse="/")
   rownames(B)<-rownames(model$emissionMatrix[[1]])
   for(i in 1:model$numberOfStates){
-   B[i,]<-apply(expand.grid(lapply(model$emissionMatrix,function(x) x[i,])),1,prod)   
+    B[i,]<-apply(expand.grid(lapply(model$emissionMatrix,function(x) x[i,])),1,prod)   
   }
   
   
@@ -94,17 +97,22 @@ MCtoSC<-function(model){
   modelx$symbolNames<-colnames(B)
   modelx$channelNames<-NULL
   
-  mapply(paste,model$obs[[1]],model$obs[[2]],
-         model$obs[[3]],MoreArgs=list(sep="/"))
-  
   modelx$observations<-model$observations[[1]]
   for(i in 2:model$numberOfChannels)
     modelx$observations<-as.data.frame(mapply(paste, modelx$observations,
-                                model$observations[[i]],
-                                USE.NAMES=FALSE,SIMPLIFY=FALSE,
-                                MoreArgs=list(sep="/")))
+                                              model$observations[[i]],
+                                              USE.NAMES=FALSE,SIMPLIFY=FALSE,
+                                              MoreArgs=list(sep="/")))
   names(modelx$observations)<-names(model$observations[[1]])   
-  modelx$observations[Reduce("|",lapply(model$observations,is.na))]<-NA
+  if(combine.missing==TRUE){
+    modelx$observations[Reduce("|",
+                               lapply(
+                                 model$observations, 
+                                 function(x) 
+                                   x==attr(model$observations[[1]], "nr") |
+                                   x==attr(model$observations[[1]], "void") |
+                                   is.na(x)))]<-NA
+  }
   modelx$observations<-seqdef(modelx$observations)
   attr(modelx$observations, "xtstep") <- attr(model$observations[[1]], "xtstep")
   attr(modelx$observations, "missing.color") <- attr(model$observations[[1]], "missing.color")
