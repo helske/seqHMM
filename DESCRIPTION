@@ -2,7 +2,7 @@ Package: seqHMM
 Title: Hidden Markov Models for Life Sequences and Other Multivariate,
     Multichannel Categorical Time Series
 Version: 0.7.0
-Date: 2015-01-12
+Date: 2015-01-27
 Author: Jouni Helske, Satu Helske
 Maintainer: Jouni Helske <jouni.helske@jyu.fi>
 Description: Package seqHMM is designed for inference of hidden Markov models
