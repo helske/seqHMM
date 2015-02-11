@@ -10,40 +10,37 @@ fitHMM(model, use.em = TRUE, use.optimx = TRUE, em.control = list(),
 \item{model}{Hidden Markov model of class HMModel or MCHMModel.}
 
 \item{use.em}{Logical, use EM algorithm at the start of parameter estimation.
-Default is TRUE.}
+Default is TRUE. Currently not supported for models with covariates.}
 
-\item{use.optimx}{Logical, use direct numerical optimization via
-\code{\link{optimx}} after EM algorithm. Default is TRUE.}
+\item{use.optimx}{Logical, use direct numerical optimization via \code{\link{optimx}} after EM algorithm. Default is TRUE.}
 
-\item{em.control}{Optional list of control parameters for for EM algorithm.
-Possible arguments are \itemize{ \item{maxit}{Maximum number of iterations,
-default is 100.} \item{trace}{Level of printing. Possible values are 0
-(prints nothing), 1 (prints information at start and end of algorithm), and
-2 (prints at every iteration).} \item{reltol}{Relative tolerance for
-convergence defined as \eqn{(tmp - sumlogLik)/(abs(sumlogLik)+0.1)}.
-Default is 1e-8.} }}
+\item{em.control}{Optional list of control parameters for for EM algorithm. Possible arguments are
+\itemize{
+ \item{maxit}{Maximum number of iterations, default is 100.}
+ \item{trace}{Level of printing. Possible values are 0 (prints nothing),
+  1 (prints information at start and end of algorithm), and 2 (prints at every iteration).}
+  \item{reltol}{Relative tolerance for convergence defined as \eqn{(tmp - sumlogLik)/(abs(sumlogLik)+0.1)}. Default is 1e-8.}
+}}
 
-\item{method}{Optimization method used by \code{optimx}. Default is
-\code{"BFGS"}. Note that \code{fitHMM} uses Softmax parameterization so
-unconstrained optimization methods are used.}
+\item{method}{Optimization method used by \code{optimx}. Default is \code{"BFGS"}. Note that \code{fitHMM} uses
+Softmax parameterization so unconstrained optimization methods are used.}
 
-\item{itnmax}{Maximum number of iterations use by \code{optimx}. Default is
-10000.}
+\item{itnmax}{Maximum number of iterations use by \code{optimx}. Default is 10000.}
 
-\item{optimx.control}{Optional list of additional arguments for
-\code{\link{optimx}} argument \code{control}. Note that default values for
-\code{starttests} and \code{kkt} are set to \code{FALSE}, which differs
-from the default behaviour of \code{optimx}. If EM algorithm is used,
-\code{fnscale} is also set to current optimum (unless modified by user).}
+\item{optimx.control}{Optional list of additional arguments for \code{\link{optimx}} argument \code{control}.
+Note that default values for \code{starttests} and \code{kkt} are set to \code{FALSE}, which differs from the default
+behaviour of \code{optimx}. If EM algorithm is used, \code{fnscale} is also set to current optimum (unless modified by user).}
 
 \item{...}{Additional arguments to optimx.}
 }
 \value{
 List with components
- \item{model}{Estimated model. }
- \item{logLik}{Log-likelihood of the estimated model. }
-  \item{em.results}{Results from EM algorithm. }
-  \item{optimx.results}{Results from direct numerical optimization via \code{\link{optimx}}. }
+\itemize{
+ \item{model}{Estimated model.}
+ \item{logLik}{Log-likelihood of the estimated model.}
+  \item{em.results}{Results from EM algorithm.}
+  \item{optimx.results}{Results from direct numerical optimization via \code{\link{optimx}}.}
+}
 }
 \description{
 Function \code{fitHMM} estimates the initial state, transition and emission probabilities of
@@ -51,8 +48,7 @@ hidden Markov model using numerical maximization of log-likelihood. Initial valu
 are taken from the corresponding components of model with preservation of original zero probabilities.
 }
 \details{
-By default, estimation start with EM algorithm and then switches to direct
-numerical maximization.
+By default, estimation start with EM algorithm and then switches to direct numerical maximization.
 }
 \examples{
 require(TraMineR)

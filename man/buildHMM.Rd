@@ -16,6 +16,12 @@ buildHMM(observations, transitionMatrix, emissionMatrix, initialProbs,
 \item{initialProbs}{Vector of initial state probabilities.}
 
 \item{stateNames}{Optional labels for the hidden states}
+
+\item{X}{NOT YET IMPLEMENTED. Time-constant covariates for initial state probabilities.
+Must be a matrix with dimensions p x k where p is the number of sequences and k is the number of covariates.}
+
+\item{beta}{An k x m matrix of regression coefficients for time-constant covariates for initial state
+probabilities, where m is the number of states and k is the number of covariates.}
 }
 \value{
 Object of class \code{HMModel}

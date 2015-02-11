@@ -3,10 +3,14 @@
 \alias{MCtoSC}
 \title{Transform Multichannel Hidden Markov Model to Single Channel Representation}
 \usage{
-MCtoSC(model)
+MCtoSC(model, combine.missing = TRUE)
 }
 \arguments{
 \item{model}{Object of class HMModel.}
+
+\item{combine.missing}{Controls whether combined states are coded missing
+  (NA) if some of the channels include missing information. Defaults to
+  TRUE.}
 }
 \description{
 Transform Multichannel Hidden Markov Model to Single Channel Representation

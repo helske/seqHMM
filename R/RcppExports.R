@@ -41,6 +41,10 @@ logLikMCHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray)
     .Call('seqHMM_logLikMCHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
 
+logLikMCHMMx <- function(transitionMatrix, emissionArray, obsArray, coef_, X_) {
+    .Call('seqHMM_logLikMCHMMx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, obsArray, coef_, X_)
+}
+
 viterbi <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
     .Call('seqHMM_viterbi', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
