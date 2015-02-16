@@ -1,10 +1,12 @@
 #' Estimate parameters of Hidden Markov Model
-#'
-#' Function \code{fitHMM} estimates the initial state, transition and emission probabilities of 
-#' hidden Markov model using numerical maximization of log-likelihood. Initial values for estimation 
-#' are taken from the corresponding components of model with preservation of original zero probabilities.
 #' 
-#' By default, estimation start with EM algorithm and then switches to direct
+#' Function \code{fitHMM} estimates the initial state, transition and emission 
+#' probabilities of hidden Markov model using numerical maximization of 
+#' log-likelihood. Initial values for estimation are taken from the 
+#' corresponding components of model with preservation of original zero 
+#' probabilities.
+#' 
+#' By default, estimation start with EM algorithm and then switches to direct 
 #' numerical maximization.
 #' 
 #' @export
@@ -12,33 +14,33 @@
 #' @param model Hidden Markov model of class HMModel or MCHMModel.
 #' @param use.em Logical, use EM algorithm at the start of parameter estimation.
 #'   Default is TRUE.
-#' @param use.optimx Logical, use direct numerical optimization via
+#' @param use.optimx Logical, use direct numerical optimization via 
 #'   \code{\link{optimx}} after EM algorithm. Default is TRUE.
-#' @param em.control Optional list of control parameters for for EM algorithm.
+#' @param em.control Optional list of control parameters for for EM algorithm. 
 #'   Possible arguments are \itemize{ \item{maxit}{Maximum number of iterations,
-#'   default is 100.} \item{trace}{Level of printing. Possible values are 0
+#'   default is 100.} \item{trace}{Level of printing. Possible values are 0 
 #'   (prints nothing), 1 (prints information at start and end of algorithm), and
-#'   2 (prints at every iteration).} \item{reltol}{Relative tolerance for
-#'   convergence defined as \eqn{(tmp - sumlogLik)/(abs(sumlogLik)+0.1)}.
+#'   2 (prints at every iteration).} \item{reltol}{Relative tolerance for 
+#'   convergence defined as \eqn{(tmp - sumlogLik)/(abs(sumlogLik)+0.1)}. 
 #'   Default is 1e-8.} }
-#' @param method Optimization method used by \code{optimx}. Default is
-#'   \code{"BFGS"}. Note that \code{fitHMM} uses Softmax parameterization so
+#' @param method Optimization method used by \code{optimx}. Default is 
+#'   \code{"BFGS"}. Note that \code{fitHMM} uses Softmax parameterization so 
 #'   unconstrained optimization methods are used.
-#' @param itnmax Maximum number of iterations use by \code{optimx}. Default is
+#' @param itnmax Maximum number of iterations use by \code{optimx}. Default is 
 #'   10000.
-#' @param optimx.control Optional list of additional arguments for
-#'   \code{\link{optimx}} argument \code{control}. Note that default values for
-#'   \code{starttests} and \code{kkt} are set to \code{FALSE}, which differs
-#'   from the default behaviour of \code{optimx}. If EM algorithm is used,
+#' @param optimx.control Optional list of additional arguments for 
+#'   \code{\link{optimx}} argument \code{control}. Note that default values for 
+#'   \code{starttests} and \code{kkt} are set to \code{FALSE}, which differs 
+#'   from the default behaviour of \code{optimx}. If EM algorithm is used, 
 #'   \code{fnscale} is also set to current optimum (unless modified by user).
 #' @param ... Additional arguments to optimx.
-#' @return List with components
-#'  \item{model}{Estimated model. }
-#'  \item{logLik}{Log-likelihood of the estimated model. }
-#'   \item{em.results}{Results from EM algorithm. }
-#'   \item{optimx.results}{Results from direct numerical optimization via \code{\link{optimx}}. }
-#' 
-#'
+#' @return List with components \item{model}{Estimated model. } 
+#'   \item{logLik}{Log-likelihood of the estimated model. } 
+#'   \item{em.results}{Results from EM algorithm. } 
+#'   \item{optimx.results}{Results from direct numerical optimization via 
+#'   \code{\link{optimx}}. }
+#'   
+#'   
 #' @examples 
 #' require(TraMineR)
 #' 
@@ -103,7 +105,10 @@
 #' HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8),
 #' itnmax=10000, method="BFGS")
 #' 
-#' @seealso \code{\link{buildHMM}} for building Hidden Markov models before fitting.
+#' @seealso \code{\link{buildHMM}} for building Hidden Markov models before 
+#'   fitting, \code{\link{trimHMM}} for finding better models by changing small
+#'   parameter values to zero, and \code{\link{BIC.HMModel}} for computing the
+#'   value of the Bayesian information criterion of the model.
 
 fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFGS",itnmax=10000,optimx.control=list(),...){
   
