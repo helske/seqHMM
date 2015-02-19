@@ -5,10 +5,10 @@
 #' @param combine.missing Controls whether combined states of observations are 
 #'   coded missing (NA) if some of the channels include missing information. 
 #'   Defaults to \code{TRUE}.
-#' @param all Controls whether all possible combinations of observed states are 
-#'   included in the single channel representation or only combinations that are
-#'   found in the data. Defaults to \code{FALSE}, i.e. only actual observations
-#'   are included.
+#' @param all.combinations Controls whether all possible combinations of
+#'   observed states are included in the single channel representation or only
+#'   combinations that are found in the data. Defaults to \code{FALSE}, i.e.
+#'   only actual observations are included.
 #'   
 #' @examples 
 #' require(TraMineR)
@@ -79,7 +79,7 @@
 #' @seealso \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and 
 #'   fitting Hidden Markov models.
 
-MCtoSC<-function(model, combine.missing=TRUE, all=FALSE){
+MCtoSC<-function(model, combine.missing=TRUE, all.combinations=FALSE){
   if(model$numberOfChannels==1)
     return(model)
   
@@ -118,10 +118,10 @@ MCtoSC<-function(model, combine.missing=TRUE, all=FALSE){
                                    is.na(x)))]<-NA
   }
 
-  if(all==TRUE){
-    modelx$observations<-seqdef(modelx$observations, alphabet=modelx$symbolNames)
+  if(all.combinations==TRUE){
+    modelx$observations<-suppressWarnings(suppressMessages(seqdef(modelx$observations, alphabet=modelx$symbolNames)))
   }else{
-    modelx$observations<-seqdef(modelx$observations)
+    modelx$observations<-suppressWarnings(suppressMessages((seqdef(modelx$observations))))
     modelx$emissionMatrix <- modelx$emissionMatrix[,colnames(modelx$emissionMatrix) %in% alphabet(modelx$observations)==TRUE]
     modelx$symbolNames <- colnames(modelx$emissionMatrix)
     modelx$numberOfSymbols <- ncol(modelx$emissionMatrix)
@@ -134,6 +134,7 @@ MCtoSC<-function(model, combine.missing=TRUE, all=FALSE){
   attr(modelx$observations, "void") <- attr(model$observations[[1]], "void")
   attr(modelx$observations, "missing") <- attr(model$observations[[1]], "missing")
   attr(modelx$observations, "start") <- attr(model$observations[[1]], "start")
+  attr(modelx$observations, "cpal") <- colorpalette[[modelx$numberOfSymbols]]
   modelx
 }
 
