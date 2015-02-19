@@ -2,7 +2,12 @@
 % Please edit documentation in R/fitHMM.R
 \name{fitHMM}
 \alias{fitHMM}
-\title{Estimate parameters of Hidden Markov Model}
+\title{Estimate Parameters of Hidden Markov Model
+Function \code{fitHMM} estimates the initial state, transition and emission
+probabilities of hidden Markov model using numerical maximization of
+log-likelihood. Initial values for estimation are taken from the
+corresponding components of model with preservation of original zero
+probabilities.}
 \usage{
 fitHMM(model, use.em = TRUE, use.optimx = TRUE, em.control = list(),
   method = "BFGS", itnmax = 10000, optimx.control = list(), ...)
@@ -47,13 +52,6 @@ List with components \item{model}{Estimated model. }
   \code{\link{optimx}}. }
 }
 \description{
-Function \code{fitHMM} estimates the initial state, transition and emission
-probabilities of hidden Markov model using numerical maximization of
-log-likelihood. Initial values for estimation are taken from the
-corresponding components of model with preservation of original zero
-probabilities.
-}
-\details{
 By default, estimation start with EM algorithm and then switches to direct
 numerical maximization.
 }

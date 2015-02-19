@@ -90,9 +90,13 @@ buildHMM<-function(observations,transitionMatrix,emissionMatrix,initialProbs,sta
   dimnames(transitionMatrix)<-list(from=stateNames,to=stateNames)
   
   if(is.list(emissionMatrix) && length(emissionMatrix)==1){
-    emissionMatrix <- emissionMatrix[[1]]
-    observations <- observations[[1]]
+    emissionMatrix <- emissionMatrix[[1]]   
   }
+  if(is.list(observations) && length(observations)==1){
+    observations <- observations[[1]]    
+  }
+  
+  
   
   if(is.list(emissionMatrix)){
     if(length(observations)!=length(emissionMatrix)){
@@ -106,11 +110,11 @@ buildHMM<-function(observations,transitionMatrix,emissionMatrix,initialProbs,sta
     symbolNames<-lapply(observations,alphabet)
     numberOfSymbols<-sapply(symbolNames,length)
     
-    if(!isTRUE(all.equal(rep(numberOfStates,numberOfChannels),sapply(emissionMatrix,nrow),check.attributes=FALSE)))
+    if(any(sapply(emissionMatrix,nrow)!=numberOfStates))
       stop("Number of rows in emissionMatrix is not equal to the number of states.")
-    if(!isTRUE(all.equal(numberOfSymbols,sapply(emissionMatrix,ncol),check.attributes=FALSE)))
+    if(any(numberOfSymbols!=sapply(emissionMatrix,ncol)))
       stop("Number of columns in emissionMatrix is not equal to the number of symbols.")
-    if(!isTRUE(all.equal(c(sapply(emissionMatrix,rowSums)),rep(1,numberOfChannels*numberOfStates),check.attributes=FALSE)))
+    if(!isTRUE(all.equal(sapply(emissionMatrix,rowSums),rep(1,numberOfChannels*numberOfStates),check.attributes=FALSE)))
       stop("Emission probabilities in emissionMatrix do not sum to one.")
     
     channelNames<-names(observations)  
@@ -135,12 +139,7 @@ buildHMM<-function(observations,transitionMatrix,emissionMatrix,initialProbs,sta
       stop("Emission probabilities in emissionMatrix do not sum to one.")
     dimnames(emissionMatrix)<-list(stateNames=stateNames,symbolNames=symbolNames)
     
-  }
-  
-  
-    if(!isTRUE(all.equal(sum(initialProbs),1,check.attributes=FALSE)))
-      stop("Initial state probabilities do not sum to one.")
- 
+  }  
   
   model<-list(observations=observations,transitionMatrix=transitionMatrix,
               emissionMatrix=emissionMatrix,initialProbs=initialProbs,stateNames=stateNames,

@@ -1,5 +1,5 @@
-#' Estimate parameters of Hidden Markov Model
-#' 
+#' Estimate Parameters of Hidden Markov Model
+
 #' Function \code{fitHMM} estimates the initial state, transition and emission 
 #' probabilities of hidden Markov model using numerical maximization of 
 #' log-likelihood. Initial values for estimation are taken from the 
@@ -8,8 +8,8 @@
 #' 
 #' By default, estimation start with EM algorithm and then switches to direct 
 #' numerical maximization.
-#' 
-#' @export
+
+#' @export 
 #' @import optimx
 #' @param model Hidden Markov model of class HMModel or MCHMModel.
 #' @param use.em Logical, use EM algorithm at the start of parameter estimation.
@@ -39,8 +39,10 @@
 #'   \item{em.results}{Results from EM algorithm. } 
 #'   \item{optimx.results}{Results from direct numerical optimization via 
 #'   \code{\link{optimx}}. }
-#'   
-#'   
+#' @seealso \code{\link{buildHMM}} for building Hidden Markov models before 
+#'   fitting, \code{\link{trimHMM}} for finding better models by changing small
+#'   parameter values to zero, and \code{\link{BIC.HMModel}} for computing the
+#'   value of the Bayesian information criterion of the model.  
 #' @examples 
 #' require(TraMineR)
 #' 
@@ -105,10 +107,7 @@
 #' HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8),
 #' itnmax=10000, method="BFGS")
 #' 
-#' @seealso \code{\link{buildHMM}} for building Hidden Markov models before 
-#'   fitting, \code{\link{trimHMM}} for finding better models by changing small
-#'   parameter values to zero, and \code{\link{BIC.HMModel}} for computing the
-#'   value of the Bayesian information criterion of the model.
+
 
 fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFGS",itnmax=10000,optimx.control=list(),...){
   
@@ -125,7 +124,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
     }           
   }
   #storage.mode(obsArray)<-"integer"
-  if(use.em){   
+  if(use.em){
     em.con <- list(trace = 0, maxit=100,reltol=1e-8)
     nmsC <- names(em.con)  
     em.con[(namc <- names(em.control))] <- em.control
@@ -154,7 +153,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       
       
       for(i in 1:model$numberOfChannels)
-        model$emissionMatrix[[i]][]<-resEM$emissionArray[ , 1:model$numberOfSymbols[i], i]                                     
+      model$emissionMatrix[[i]][]<-resEM$emissionArray[ , 1:model$numberOfSymbols[i], i]                                     
     }
     
     model$initialProbs[]<-resEM$initialProbs
@@ -163,18 +162,15 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
   } else resEM <-NULL
   
   if(use.optimx){
+      maxIP<-which.max(model$initialProbs)
+      maxIPvalue<-model$initialProbs[maxIP]
+      paramIP<-setdiff(which(model$initialProbs>0),maxIP)
+      
+      npIP<-length(paramIP)
+      initNZ<-model$initialProbs>0
+      initNZ[maxIP]<-2
     
-    
-    maxIP<-which.max(model$initialProbs)
-    maxIPvalue<-model$initialProbs[maxIP]
-    paramIP<-setdiff(which(model$initialProbs>0),maxIP)
-    
-    npIP<-length(paramIP)
-    initNZ<-model$initialProbs>0
-    initNZ[maxIP]<-2
-    
-    
-    
+   
     x<-which(model$transitionMatrix>0,arr.ind=TRUE)  
     transNZ<-x[order(x[,1]),]
     maxTM<-cbind(1:model$numberOfStates,max.col(model$transitionMatrix,ties.method="first"))
@@ -198,11 +194,11 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       emissNZ<-model$emissionMatrix>0
       emissNZ[maxEM]<-2
       
-      initialvalues<-log(c(
+      initialvalues<-c(log(c(
         if(npTM>0) model$transitionMatrix[paramTM],
         if(npEM>0) model$emissionMatrix[paramEM],
         if(npIP>0) model$initialProbs[paramIP]))
-      
+      )
       
       
       
@@ -223,18 +219,18 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
           model$initialProbs[maxIP]<-maxIPvalue
           model$initialProbs[paramIP]<-exp(pars[npTM+npEM+1:npIP])
           model$initialProbs[]<-model$initialProbs/sum(model$initialProbs)
-        }
+        } 
         
-        if(estimate){          
-          - logLikHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray)                  
-        } else model
+        if(estimate){
+            - logLikHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray)      
+         } else model
       }
       
       rowSumsA<-rowSumsB<-rep(1,model$numberOfStates)
       sumInit<-1
       
       gradfn<-function(pars,model){
-        
+           
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
           model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
@@ -253,10 +249,11 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
           model$initialProbs[paramIP]<-exp(pars[(npTM+npEM+1):length(pars)])
           sumInit<-sum(model$initialProbs)
           model$initialProbs[]<-model$initialProbs/sumInit
-        }
+        } 
         
-        - gradient(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray, 
-                   rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars)) 
+          - gradient(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray, 
+                     rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars)) 
+       
         
       }
     } else {      
@@ -284,11 +281,12 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
         
       }       
       
-      initialvalues<-log(c(
+      initialvalues<-c(log(c(
         if(npTM>0) model$transitionMatrix[paramTM],
         if(sum(npEM)>0) unlist(sapply(1:model$numberOfChannels,
                                       function(x) model$emissionMatrix[[x]][paramEM[[x]]])),
-        if(npIP>0) model$initialProbs[paramIP]))         
+        if(npIP>0) model$initialProbs[paramIP]))
+      )         
       
       emissionArray<-array(1,c(model$numberOfStates,max(model$numberOfSymbols)+1,model$numberOfChannels))
       for(i in 1:model$numberOfChannels)
@@ -297,7 +295,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       
       
       likfn<-function(pars,model,estimate=TRUE){
-        
+      
         if(any(!is.finite(pars)) && estimate)
           return(.Machine$double.xmax)
         if(npTM>0){
@@ -320,10 +318,10 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
           model$initialProbs[maxIP]<-maxIPvalue
           model$initialProbs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])     
           model$initialProbs[]<-model$initialProbs/sum(model$initialProbs)
-        }
+        } 
         
-        if(estimate){          
-          - logLikMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray)     
+        if(estimate){
+            - logLikMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray)     
         } else {
           if(sum(npEM)>0){
             for(i in 1:model$numberOfChannels){
@@ -364,12 +362,10 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
           model$initialProbs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])
           sumInit<-sum(model$initialProbs)
           model$initialProbs[]<-model$initialProbs/sumInit
-        }
-        
+        } 
         
         - gradientMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
                      rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars))
-        
         
       }
     }
@@ -378,17 +374,15 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
     if(is.null(optimx.control$fnscale) && use.em){
       optimx.control$fnscale <- -resEM$logLik 
     }
-    if(is.null(optimx.control$kkt)){
-      optimx.control$kkt<-FALSE
-    }
-    if(is.null(optimx.control$starttests)){
-      optimx.control$starttests<-FALSE
-    }
-    
+        if(is.null(optimx.control$kkt)){
+          optimx.control$kkt<-FALSE
+        }
+        if(is.null(optimx.control$starttests)){
+          optimx.control$starttests<-FALSE
+        }
+  
     resoptimx<-optimx(par=initialvalues,fn=likfn,gr=gradfn,method=method,itnmax=itnmax,control=optimx.control,model=model,...)
     model<-likfn(as.numeric(resoptimx[1:length(initialvalues)]),model,FALSE)
-    
-    
     
   } else resoptimx<-NULL
   
