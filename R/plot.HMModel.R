@@ -97,7 +97,8 @@
 #'   \code{\link{plot.igraph}} for the general plotting function that is used by
 #'   \code{\link{plot.HMModel}}.
 #'   
-#' @example require(TraMineR)
+#' @examples 
+#' require(TraMineR)
 #'   
 #'   data(biofam) biofam <- biofam[1:500,]
 #'   
@@ -258,24 +259,6 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
     warning(paste("The length of the vector provided for the argument \"vertex.label\" is more than the number of number of hidden states. Only the first", length(x$stateNames), "labels were used."))
     vertex.label <- vertex.label[1:length(x$stateNames)]
   }
-  #   # Align left: add spaces after shorter labels if label positions are on the right side of vertex
-  #   if(vertex.label.pos%%2*pi<pi/2 && vertex.label.pos%%2*pi>-pi/2){
-  #     if(length(unique(nchar(vertex.label)))>1){
-  #       vlmax <- max(nchar(vertex.label))
-  #       for(i in 1:length(vertex.label)){
-  #         vertex.label[i] <- paste0(vertex.label[i], 
-  #                                   paste0(rep(" ", (vlmax-nchar(vertex.label[i]))), collapse=""))
-  #       }
-  #     }
-  #   # Align right: add spaces before shorter labels if label positions are on the left side of vertex
-  #   }else if(vertex.label.pos%%2*pi>pi/2 && vertex.label.pos%%2*pi<3*pi/2){
-  #     if(length(unique(nchar(vertex.label)))>1){
-  #       vlmax <- max(nchar(vertex.label))
-  #       for(i in 1:length(vertex.label)){
-  #         vertex.label[i] <- paste0(paste0(rep(" ", (vlmax-nchar(vertex.label[i]))), collapse=""), vertex.label[i])
-  #       }
-  #     }
-  #   }
   
   # Vertex label distances
   if(is.character(vertex.label.dist)){
@@ -538,97 +521,3 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
   par(mfrow=c(1,1))
   
 }
-
-# plot(x)
-# 
-# plot(x, layout="horizontal", pie=TRUE, vertex.size=50, 
-#      vertex.label="initial.probs", vertex.label.dist="auto", 
-#      vertex.label.pos="bottom", vertex.label.family="sans", loops=FALSE, 
-#      edge.curved=TRUE, edge.label="auto", edge.width="auto", cex.edge.width=1, 
-#      edge.label.family="sans", 
-#      label.signif=2, label.scientific=TRUE, label.max.length=7,
-#      trim=0.0001, combine.slices=0.05, 
-#      combined.slice.color="white", combined.slice.label="others", 
-#      withlegend="top", ltext=NULL, legend.prop=0.5, cex.legend=1, 
-#      ncol.legend=4, cpal="auto")
-# 
-# 
-# x$trans
-
-# 
-# plot(x, pie=TRUE, label.round=3, trim=1e-6, 
-#      combine.slices=0.05, 
-#      legend.prop=0.2, vertex.label="initial.probs", withlegend=FALSE)
-
-# plot(x, pie=TRUE, label.round=4, trim=1e-6, combine.slices=0.05, legend.prop=0.2,
-#      asp=1, margin=c(0,-0.5,-1,-0.5))
-
-# windows(width=7, height=3.5)
-
-# plot(x, pie=TRUE, layout="hor", label.round=3, trim=1e-3, 
-#      combine.slices=0.05, vertex.size=50,
-#      legend.prop=0.3, withlegend="bottom", vertex.label.dist=2.5,
-#      vertex.label="initial.probs", vertex.label.pos="bottom", 
-#      edge.curved=0.6)
-
-
-
-
-# plot(x, pie=TRUE, 
-#      layout=matrix(c(1,2,3,4,3,4,5,
-#                      0,0,1,1,-1,-1,0), ncol=2), 
-#      label.round=3, trim=1e-4, 
-#      combine.slices=0.05, vertex.size=30,
-#      legend.prop=0.3, withlegend="bottom", vertex.label.dist=2.5,
-#      vertex.label="initial.probs", vertex.label.pos="bottom", 
-#      edge.curved=0, xlim=c(0,5), axes=TRUE, rescale=FALSE)
-
-# 
-# plot(x, pie=TRUE, layout="vertical", label.round=3, trim=1e-3, 
-#      combine.slices=0.05, vertex.size=50,
-#      legend.prop=0.5, withlegend="right", vertex.label.dist=2.5,
-#      vertex.label="initial.probs", vertex.label.pos="right")
-# 
-# set.seed(125)
-# plot(x, pie=TRUE, layout="random", label.round=3, trim=1e-4, 
-#      combine.slices=0.05, vertex.size=40,
-#      legend.prop=0.5, withlegend="right", vertex.label.dist=0.2,
-#      vertex.label="initial.probs", vertex.label.pos="bottom", edge.curved=FALSE)
-# 
-# set.seed(125)
-# plot(x, pie=TRUE, layout=layout.fruchterman.reingold, label.round=3, trim=1e-4, 
-#      combine.slices=0.05, vertex.size=40,
-#      legend.prop=0.5, withlegend="right", vertex.label.dist=0.2,
-#      vertex.label="initial.probs", vertex.label.pos="bottom", edge.curved=FALSE)
-
-
-# plot(g1, layout=glayout, 
-#      vertex.shape="pie", vertex.pie=pie.values,
-#      vertex.pie.color=list(pie.colors),
-#      vertex.size=vertex.size, 
-#      vertex.label=vertex.label, vertex.label.dist=vertex.label.dist, 
-#      vertex.label.degree=vertex.label.pos,
-#      vertex.label.family=vertex.label.family,
-#      edge.curved=edge.curved, edge.width=edge.width, 
-#      edge.label=round(transitions, digits=label.round), 
-#      edge.label.family=edge.label.family, asp=0, 
-#      rescale=FALSE, xlim=c(0,6), ylim=c(0,0.5))
-
-# debug(plot.HMModel)
-# 
-# edges <- x$transitionMatrix
-# edges[edges>0] <- 1
-# diag(edges) <- 0
-# g1 <- graph.adjacency(edges, mode="directed")
-# pie.values <- lapply(1:7, function(i) x$emissionMatrix[i,])
-# pie.colors <- attr(x$observations, "cpal")
-# plot(g1, layout=layout.grid(g1, width=7), 
-#      vertex.shape="pie", vertex.pie=pie.values,
-#      vertex.pie.color=list(pie.colors),
-#      edge.curved=TRUE, vertex.size=60,
-#      vertex.label.dist=6, vertex.label.degree=pi/2, edge.label=1:7,
-#      rescale=FALSE, xlim=c(0.5,6), ylim=c(0,0.5))
-
-
-# undebug(plot.HMModel)
-# edge.curved <- c(0.2, 0.8, 0.2, -0.8, 0.7, -0.75, 0.2, -0.8, 0.8, 0.8, -0.8, 0.2, 0.2)
