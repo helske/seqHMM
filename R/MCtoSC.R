@@ -80,6 +80,7 @@
 #'   fitting Hidden Markov models.
 
 MCtoSC<-function(model, combine.missing=TRUE, all.combinations=FALSE){
+  
   if(model$numberOfChannels==1)
     return(model)
   

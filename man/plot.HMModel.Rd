@@ -17,7 +17,7 @@
 }
 \arguments{
 \item{x}{A hidden Markov model object of class HMModel created with
-\code{\link{buildHMM}} and \code{\link{buildHMMfitHMM}}. Multichannel
+\code{\link{buildHMM}} and \code{\link{fitHMM}}. Multichannel
 HMModel objects are automatically transformed to single channel objects.
 See function \code{\link{MCtoSC}} for more information on the
 transformation.}
@@ -27,8 +27,8 @@ numerical matrix, a layout function, or either of \code{"horizontal"} (the
 default) and \code{"vertical"}. Options \code{"horizontal"} and
 \code{"vertical"} position vertices at the same horizontal or vertical
 line. A two-column matrix can be used to give the x and y coordinates of
-the vertices, or alternatively an igraph layout function can be called (see
-\code{\link{igraph::layout}}).}
+the vertices, or alternatively an igraph \code{\link[igraph]{layout}}
+function can be called.}
 
 \item{pie}{Are vertices plotted as pie charts of emission probabilities?
 Defaulting to TRUE.}
@@ -50,6 +50,10 @@ vertex.}
 the center of the vertices. A scalar or numerical vector giving the
 position(s) as radians or one of \code{"bottom"} (pi/2 as radians),
 \code{"top"} (-pi/2), \code{"left"} (pi), or \code{"right"} (0).}
+
+\item{vertex.label.family,edge.label.family}{The font family to be used for
+vertex/edge labels. See argument \code{family} in \code{\link{par}} for
+more information.}
 
 \item{loops}{Defines whether transitions to the same state are plotted.}
 
@@ -132,81 +136,127 @@ emission probabilities as vertices/nodes.
 \examples{
 require(TraMineR)
 
-  data(biofam) biofam <- biofam[1:500,]
+data(biofam)
 
-  ## Building one channel per type of event left, children or married bf <-
-  as.matrix(biofam[, 10:25]) children <-  bf==4 | bf==5 | bf==6 married <- bf
-  == 2 | bf== 3 | bf==6 left <- bf==1 | bf==3 | bf==5 | bf==6
+biofam <- biofam[1:500,]
 
-  children[children==TRUE] <- "Children" children[children==FALSE] <-
-  "Childless"
+## Building one channel per type of event left, children or married
+bf <- as.matrix(biofam[, 10:25])
+children <-  bf==4 | bf==5 | bf==6
+married <- bf == 2 | bf== 3 | bf==6
+left <- bf==1 | bf==3 | bf==5 | bf==6
 
-  married[married==TRUE] <- "Married" married[married==FALSE] <- "Single"
+children[children==TRUE] <- "Children"
+children[children==FALSE] <- "Childless"
 
-  left[left==TRUE] <- "Left home" left[left==FALSE] <- "With parents"
+married[married==TRUE] <- "Married"
+married[married==FALSE] <- "Single"
 
-  ## Building sequence objects child.seq <- seqdef(children) marr.seq <-
-  seqdef(married) left.seq <- seqdef(left)
+left[left==TRUE] <- "Left home"
+left[left==FALSE] <- "With parents"
 
-  # Initial values for emission matrices B_child <- matrix(NA, nrow=4,
-  ncol=2) B_child[1,] <- seqstatf(child.seq[,1:4])[,2]+0.1 B_child[2,] <-
-  seqstatf(child.seq[,5:8])[,2]+0.1 B_child[3,] <-
-  seqstatf(child.seq[,9:11])[,2]+0.1 B_child[4,] <-
-  seqstatf(child.seq[,12:15])[,2]+0.1 B_child <- B_child/rowSums(B_child)
+## Building sequence objects
+child.seq <- seqdef(children)
+marr.seq <- seqdef(married)
+left.seq <- seqdef(left)
 
-  B_marr <- matrix(NA, nrow=4, ncol=2) B_marr[1,] <-
-  seqstatf(marr.seq[,1:4])[,2]+0.1 B_marr[2,] <-
-  seqstatf(marr.seq[,5:8])[,2]+0.1 B_marr[3,] <-
-  seqstatf(marr.seq[,9:11])[,2]+0.1 B_marr[4,] <-
-  seqstatf(marr.seq[,12:15])[,2]+0.1 B_marr <- B_marr/rowSums(B_marr)
+# Initial values for emission matrices
+B_child <- matrix(NA, nrow=4, ncol=2)
+B_child[1,] <- seqstatf(child.seq[,1:4])[,2]+0.1
+B_child[2,] <- seqstatf(child.seq[,5:8])[,2]+0.1
+B_child[3,] <- seqstatf(child.seq[,9:11])[,2]+0.1
+B_child[4,] <- seqstatf(child.seq[,12:15])[,2]+0.1
+B_child <- B_child/rowSums(B_child)
 
-  B_left <- matrix(NA, nrow=4, ncol=2) B_left[1,] <-
-  seqstatf(left.seq[,1:4])[,2]+0.1 B_left[2,] <-
-  seqstatf(left.seq[,5:8])[,2]+0.1 B_left[3,] <-
-  seqstatf(left.seq[,9:11])[,2]+0.1 B_left[4,] <-
-  seqstatf(left.seq[,12:15])[,2]+0.1 B_left <- B_left/rowSums(B_left)
+B_marr <- matrix(NA, nrow=4, ncol=2)
+B_marr[1,] <- seqstatf(marr.seq[,1:4])[,2]+0.1
+B_marr[2,] <- seqstatf(marr.seq[,5:8])[,2]+0.1
+B_marr[3,] <- seqstatf(marr.seq[,9:11])[,2]+0.1
+B_marr[4,] <- seqstatf(marr.seq[,12:15])[,2]+0.1
+B_marr <- B_marr/rowSums(B_marr)
 
-  # Initial values for transition matrix A <- matrix(c(0.9, 0.06, 0.03, 0.01,
-  0,    0.9, 0.07, 0.03, 0,      0,  0.9,  0.1, 0,      0,    0,    1),
-  nrow=4, ncol=4, byrow=TRUE)
+B_left <- matrix(NA, nrow=4, ncol=2)
+B_left[1,] <- seqstatf(left.seq[,1:4])[,2]+0.1
+B_left[2,] <- seqstatf(left.seq[,5:8])[,2]+0.1
+B_left[3,] <- seqstatf(left.seq[,9:11])[,2]+0.1
+B_left[4,] <- seqstatf(left.seq[,12:15])[,2]+0.1
+B_left <- B_left/rowSums(B_left)
 
-  # Initial values for initial state probabilities initialProbs <- c(0.9,
-  0.07, 0.02, 0.01)
+# Initial values for transition matrix
+A <- matrix(c(0.9,   0.06, 0.03, 0.01,
+                0,    0.9, 0.07, 0.03,
+                0,      0,  0.9,  0.1,
+                0,      0,    0,    1),
+            nrow=4, ncol=4, byrow=TRUE)
 
-  # Building hidden Markov model with initial parameter values bHMM <-
-  buildHMM(observations=list(child.seq, marr.seq, left.seq),
-  transitionMatrix=A, emissionMatrix=list(B_child, B_marr, B_left),
-  initialProbs=initialProbs)
+# Initial values for initial state probabilities
+initialProbs <- c(0.9, 0.07, 0.02, 0.01)
 
-  # Fitting hidden Markov model HMM <- fitHMM(bHMM,
-  em.control=list(maxit=100,reltol=1e-8), itnmax=10000, method="BFGS")
+# Building hidden Markov model with initial parameter values
+bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq),
+                 transitionMatrix=A,
+                 emissionMatrix=list(B_child, B_marr, B_left),
+                 initialProbs=initialProbs)
 
-  # Plotting HMModel object plot(HMM$model)
+# Fitting hidden Markov model
+HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8),
+              itnmax=10000, method="BFGS")
 
-  # Plotting HMM with plot(HMM$model, # larger vertices vertex.size=50, #
-  thicker edges with varying curvature cex.edge.width=3,
-  edge.curved=c(0,-0.7,0.6,0,-0.7,0), # changing legend properties
-  withlegend="top", legend.prop=0.3, cex.legend=1.1, # more space in vertical
-  direction xlim=c(-0.2,3.2))
+# Plotting HMModel object
+plot(HMM$model)
 
-  # Plotting HMM with own color palette plot(HMM$model, cpal=c(1:6)) # Same
-  without combining states with small probabilities plot(HMM$model,
-  cpal=c(1:6), combine.slices=0)
+# Plotting HMM with
+plot(HMM$model,
+     # larger vertices
+     vertex.size=50,
+     # thicker edges with varying curvature
+     cex.edge.width=3, edge.curved=c(0,-0.7,0.6,0,-0.7,0))
 
-  # Plotting HMM without pie graph and with a different layout # Setting seed
-  for random layout set.seed(321) plot(HMM$model, # Without pie graph
-  pie=FALSE, # Fruchterman-Reingold layout
-  layout=layout.fruchterman.reingold, # Straight edges edge.curved=FALSE, #
-  Remove edges with probability less than 0.02 trim=0.02, # Hidden state
-  names as vertex labels vertex.label="names", # Changing properties of
-  vertex labels vertex.label.dist=0.7, vertex.label.pos=c(-pi/2, pi, pi/2,
-  0))
+# Plotting HMM with given coordinates
+plot(HMM$model,
+     # layout given in 2x4 matrix
+     layout=matrix(c(1,3,3,5,
+                     0,-1,1,0), ncol=2),
+     # larger vertices
+     vertex.size=50,
+     # straight edges
+     edge.curved=FALSE,
+     # varying positions for vertex labels (initial probabilities)
+     vertex.label.pos=c(pi, pi/2, -pi/2, 0),
+     # different legend properties
+     withlegend="top", legend.prop=0.2, cex.legend=1.1,
+     # different axes
+     xlim=c(1,5), ylim=c(-1.5,1.5), rescale=FALSE)
+
+# Plotting HMM with own color palette
+plot(HMM$model, cpal=c(1:6))
+# Same without combining states with small probabilities
+plot(HMM$model, cpal=c(1:6), combine.slices=0)
+
+# Plotting HMM without pie graph and with a different layout
+require(igraph)
+# Setting seed for random layout
+set.seed(321)
+plot(HMM$model,
+     # Without pie graph
+     pie=FALSE,
+     # Fruchterman-Reingold layout
+     layout=layout.fruchterman.reingold,
+     # Straight edges and probabilities of moving to the same state
+     edge.curved=FALSE, loops=TRUE,
+     # labels with three significant digits and fixed edge width
+     label.signif=3, edge.width=1,
+     # Remove edges with probability less than 0.02
+     trim=0.02,
+     # Hidden state names as vertex labels
+     vertex.label="names",
+     # Labels insidde vertices
+     vertex.label.dist=0)
 }
 \seealso{
 \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and
   fitting Hidden Markov models, \code{\link{MCtoSC}} for transforming
   multistate HMModel objects to single channel objects, and
-  \code{\link{plot.igraph}} for the general plotting function that is used by
-  \code{\link{plot.HMModel}}.
+  \code{\link{plot.igraph}} for the general plotting function of directed graphs.
 }
 

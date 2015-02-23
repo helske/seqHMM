@@ -8,9 +8,6 @@
 \source{
 iWantHue web page \url{http://tools.medialab.sciences-po.fr/iwanthue/}
 }
-\usage{
-data(colorpalette)
-}
 \description{
 A list containing ready defined color palettes with distinct colors using
 iWantHue.

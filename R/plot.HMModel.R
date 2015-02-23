@@ -3,12 +3,11 @@
 #' Function \code{plot.HMModel} plots a directed graph with pie charts of 
 #' emission probabilities as vertices/nodes.
 #' 
-#' 
-#' 
+#' @import igraph
 #' @export
 #' 
 #' @param x A hidden Markov model object of class HMModel created with 
-#'   \code{\link{buildHMM}} and \code{\link{buildHMMfitHMM}}. Multichannel 
+#'   \code{\link{buildHMM}} and \code{\link{fitHMM}}. Multichannel 
 #'   HMModel objects are automatically transformed to single channel objects. 
 #'   See function \code{\link{MCtoSC}} for more information on the 
 #'   transformation.
@@ -17,8 +16,8 @@
 #'   default) and \code{"vertical"}. Options \code{"horizontal"} and 
 #'   \code{"vertical"} position vertices at the same horizontal or vertical 
 #'   line. A two-column matrix can be used to give the x and y coordinates of 
-#'   the vertices, or alternatively an igraph layout function can be called (see
-#'   \code{\link{igraph::layout}}).
+#'   the vertices, or alternatively an igraph \code{\link[igraph]{layout}} 
+#'   function can be called.
 #' @param pie Are vertices plotted as pie charts of emission probabilities? 
 #'   Defaulting to TRUE.
 #' @param vertex.size The size of the vertex, given as a scalar or numerical 
@@ -35,6 +34,9 @@
 #'   the center of the vertices. A scalar or numerical vector giving the 
 #'   position(s) as radians or one of \code{"bottom"} (pi/2 as radians), 
 #'   \code{"top"} (-pi/2), \code{"left"} (pi), or \code{"right"} (0).
+#' @param vertex.label.family,edge.label.family The font family to be used for
+#'   vertex/edge labels. See argument \code{family} in \code{\link{par}} for
+#'   more information.
 #' @param loops Defines whether transitions to the same state are plotted.
 #' @param edge.curved Defines whether to plot curved edges (arcs, arrows) 
 #'   between the vertices. A logical or numerical vector or scalar. A numerical 
@@ -84,8 +86,8 @@
 #'   \code{"auto"} sets the number of columns automatically.
 #' @param cpal Optional color palette for the (combinations of) observed states.
 #'   The default value \code{"auto"} uses automatic color palette. Otherwise a 
-#'   vector of length \code{x$numberOfSymbols} is given, i.e. requires a color
-#'   specified for all (combinations of) observed states even if they are not
+#'   vector of length \code{x$numberOfSymbols} is given, i.e. requires a color 
+#'   specified for all (combinations of) observed states even if they are not 
 #'   plotted (if the probability is less than combine.slices).
 #' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as 
 #'   \code{vertex.color}, \code{vertex.label.cex}, \code{edge.arrow.size}, 
@@ -94,81 +96,127 @@
 #' @seealso \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and 
 #'   fitting Hidden Markov models, \code{\link{MCtoSC}} for transforming 
 #'   multistate HMModel objects to single channel objects, and 
-#'   \code{\link{plot.igraph}} for the general plotting function that is used by
-#'   \code{\link{plot.HMModel}}.
+#'   \code{\link{plot.igraph}} for the general plotting function of directed graphs.
 #'   
 #' @examples 
 #' require(TraMineR)
 #'   
-#'   data(biofam) biofam <- biofam[1:500,]
+#' data(biofam) 
+#' 
+#' biofam <- biofam[1:500,]
 #'   
-#'   ## Building one channel per type of event left, children or married bf <- 
-#'   as.matrix(biofam[, 10:25]) children <-  bf==4 | bf==5 | bf==6 married <- bf
-#'   == 2 | bf== 3 | bf==6 left <- bf==1 | bf==3 | bf==5 | bf==6
+#' ## Building one channel per type of event left, children or married 
+#' bf <- as.matrix(biofam[, 10:25]) 
+#' children <-  bf==4 | bf==5 | bf==6 
+#' married <- bf == 2 | bf== 3 | bf==6 
+#' left <- bf==1 | bf==3 | bf==5 | bf==6
 #'   
-#'   children[children==TRUE] <- "Children" children[children==FALSE] <- 
-#'   "Childless"
+#' children[children==TRUE] <- "Children" 
+#' children[children==FALSE] <- "Childless"
 #'   
-#'   married[married==TRUE] <- "Married" married[married==FALSE] <- "Single"
+#' married[married==TRUE] <- "Married" 
+#' married[married==FALSE] <- "Single"
 #'   
-#'   left[left==TRUE] <- "Left home" left[left==FALSE] <- "With parents"
+#' left[left==TRUE] <- "Left home" 
+#' left[left==FALSE] <- "With parents"
 #'   
-#'   ## Building sequence objects child.seq <- seqdef(children) marr.seq <- 
-#'   seqdef(married) left.seq <- seqdef(left)
+#' ## Building sequence objects 
+#' child.seq <- seqdef(children) 
+#' marr.seq <- seqdef(married) 
+#' left.seq <- seqdef(left)
 #'   
-#'   # Initial values for emission matrices B_child <- matrix(NA, nrow=4, 
-#'   ncol=2) B_child[1,] <- seqstatf(child.seq[,1:4])[,2]+0.1 B_child[2,] <- 
-#'   seqstatf(child.seq[,5:8])[,2]+0.1 B_child[3,] <- 
-#'   seqstatf(child.seq[,9:11])[,2]+0.1 B_child[4,] <- 
-#'   seqstatf(child.seq[,12:15])[,2]+0.1 B_child <- B_child/rowSums(B_child)
+#' # Initial values for emission matrices 
+#' B_child <- matrix(NA, nrow=4, ncol=2) 
+#' B_child[1,] <- seqstatf(child.seq[,1:4])[,2]+0.1 
+#' B_child[2,] <- seqstatf(child.seq[,5:8])[,2]+0.1 
+#' B_child[3,] <- seqstatf(child.seq[,9:11])[,2]+0.1 
+#' B_child[4,] <- seqstatf(child.seq[,12:15])[,2]+0.1 
+#' B_child <- B_child/rowSums(B_child)
 #'   
-#'   B_marr <- matrix(NA, nrow=4, ncol=2) B_marr[1,] <- 
-#'   seqstatf(marr.seq[,1:4])[,2]+0.1 B_marr[2,] <- 
-#'   seqstatf(marr.seq[,5:8])[,2]+0.1 B_marr[3,] <- 
-#'   seqstatf(marr.seq[,9:11])[,2]+0.1 B_marr[4,] <- 
-#'   seqstatf(marr.seq[,12:15])[,2]+0.1 B_marr <- B_marr/rowSums(B_marr)
+#' B_marr <- matrix(NA, nrow=4, ncol=2) 
+#' B_marr[1,] <- seqstatf(marr.seq[,1:4])[,2]+0.1 
+#' B_marr[2,] <- seqstatf(marr.seq[,5:8])[,2]+0.1 
+#' B_marr[3,] <- seqstatf(marr.seq[,9:11])[,2]+0.1 
+#' B_marr[4,] <- seqstatf(marr.seq[,12:15])[,2]+0.1 
+#' B_marr <- B_marr/rowSums(B_marr)
 #'   
-#'   B_left <- matrix(NA, nrow=4, ncol=2) B_left[1,] <- 
-#'   seqstatf(left.seq[,1:4])[,2]+0.1 B_left[2,] <- 
-#'   seqstatf(left.seq[,5:8])[,2]+0.1 B_left[3,] <- 
-#'   seqstatf(left.seq[,9:11])[,2]+0.1 B_left[4,] <- 
-#'   seqstatf(left.seq[,12:15])[,2]+0.1 B_left <- B_left/rowSums(B_left)
+#' B_left <- matrix(NA, nrow=4, ncol=2) 
+#' B_left[1,] <- seqstatf(left.seq[,1:4])[,2]+0.1 
+#' B_left[2,] <- seqstatf(left.seq[,5:8])[,2]+0.1 
+#' B_left[3,] <- seqstatf(left.seq[,9:11])[,2]+0.1 
+#' B_left[4,] <- seqstatf(left.seq[,12:15])[,2]+0.1 
+#' B_left <- B_left/rowSums(B_left)
 #'   
-#'   # Initial values for transition matrix A <- matrix(c(0.9, 0.06, 0.03, 0.01,
-#'   0,    0.9, 0.07, 0.03, 0,      0,  0.9,  0.1, 0,      0,    0,    1), 
-#'   nrow=4, ncol=4, byrow=TRUE)
+#' # Initial values for transition matrix 
+#' A <- matrix(c(0.9,   0.06, 0.03, 0.01,
+#'                 0,    0.9, 0.07, 0.03, 
+#'                 0,      0,  0.9,  0.1, 
+#'                 0,      0,    0,    1), 
+#'             nrow=4, ncol=4, byrow=TRUE)
 #'   
-#'   # Initial values for initial state probabilities initialProbs <- c(0.9, 
-#'   0.07, 0.02, 0.01)
+#' # Initial values for initial state probabilities 
+#' initialProbs <- c(0.9, 0.07, 0.02, 0.01)
 #'   
-#'   # Building hidden Markov model with initial parameter values bHMM <- 
-#'   buildHMM(observations=list(child.seq, marr.seq, left.seq), 
-#'   transitionMatrix=A, emissionMatrix=list(B_child, B_marr, B_left), 
-#'   initialProbs=initialProbs)
+#' # Building hidden Markov model with initial parameter values 
+#' bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq), 
+#'                  transitionMatrix=A, 
+#'                  emissionMatrix=list(B_child, B_marr, B_left),
+#'                  initialProbs=initialProbs)
 #'   
-#'   # Fitting hidden Markov model HMM <- fitHMM(bHMM, 
-#'   em.control=list(maxit=100,reltol=1e-8), itnmax=10000, method="BFGS")
+#' # Fitting hidden Markov model 
+#' HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8), 
+#'               itnmax=10000, method="BFGS")
 #'   
-#'   # Plotting HMModel object plot(HMM$model)
+#' # Plotting HMModel object 
+#' plot(HMM$model)
 #'   
-#'   # Plotting HMM with plot(HMM$model, # larger vertices vertex.size=50, # 
-#'   thicker edges with varying curvature cex.edge.width=3, 
-#'   edge.curved=c(0,-0.7,0.6,0,-0.7,0), # changing legend properties 
-#'   withlegend="top", legend.prop=0.3, cex.legend=1.1, # more space in vertical
-#'   direction xlim=c(-0.2,3.2))
+#' # Plotting HMM with 
+#' plot(HMM$model, 
+#'      # larger vertices 
+#'      vertex.size=50, 
+#'      # thicker edges with varying curvature 
+#'      cex.edge.width=3, edge.curved=c(0,-0.7,0.6,0,-0.7,0))
+#' 
+#' # Plotting HMM with given coordinates
+#' plot(HMM$model, 
+#'      # layout given in 2x4 matrix
+#'      layout=matrix(c(1,3,3,5,
+#'                      0,-1,1,0), ncol=2),
+#'      # larger vertices 
+#'      vertex.size=50, 
+#'      # straight edges
+#'      edge.curved=FALSE, 
+#'      # varying positions for vertex labels (initial probabilities)
+#'      vertex.label.pos=c(pi, pi/2, -pi/2, 0),
+#'      # different legend properties 
+#'      withlegend="top", legend.prop=0.2, cex.legend=1.1,
+#'      # different axes
+#'      xlim=c(1,5), ylim=c(-1.5,1.5), rescale=FALSE)
+#' 
+#' # Plotting HMM with own color palette 
+#' plot(HMM$model, cpal=c(1:6)) 
+#' # Same without combining states with small probabilities 
+#' plot(HMM$model, cpal=c(1:6), combine.slices=0)
 #'   
-#'   # Plotting HMM with own color palette plot(HMM$model, cpal=c(1:6)) # Same 
-#'   without combining states with small probabilities plot(HMM$model, 
-#'   cpal=c(1:6), combine.slices=0)
-#'   
-#'   # Plotting HMM without pie graph and with a different layout # Setting seed
-#'   for random layout set.seed(321) plot(HMM$model, # Without pie graph 
-#'   pie=FALSE, # Fruchterman-Reingold layout 
-#'   layout=layout.fruchterman.reingold, # Straight edges edge.curved=FALSE, # 
-#'   Remove edges with probability less than 0.02 trim=0.02, # Hidden state 
-#'   names as vertex labels vertex.label="names", # Changing properties of 
-#'   vertex labels vertex.label.dist=0.7, vertex.label.pos=c(-pi/2, pi, pi/2, 
-#'   0))
+#' # Plotting HMM without pie graph and with a different layout 
+#' require(igraph)
+#' # Setting seed for random layout 
+#' set.seed(321) 
+#' plot(HMM$model, 
+#'      # Without pie graph 
+#'      pie=FALSE, 
+#'      # Fruchterman-Reingold layout 
+#'      layout=layout.fruchterman.reingold, 
+#'      # Straight edges and probabilities of moving to the same state
+#'      edge.curved=FALSE, loops=TRUE, 
+#'      # labels with three significant digits and fixed edge width
+#'      label.signif=3, edge.width=1,
+#'      # Remove edges with probability less than 0.02 
+#'      trim=0.02, 
+#'      # Hidden state names as vertex labels 
+#'      vertex.label="names", 
+#'      # Labels insidde vertices
+#'      vertex.label.dist=0)
 
 
 plot.HMModel <- function(x, layout="horizontal", pie=TRUE, 
@@ -184,10 +232,6 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
                          combined.slice.label="others",
                          withlegend="bottom", ltext=NULL, legend.prop=0.5, 
                          cex.legend=1, ncol.legend="auto", cpal="auto", ...){
-  
-  if(!inherits(x,"HMModel")){
-    stop(paste("Provide an object of class HMModel to argument x."))
-  }
   
   dots <- list(...)
   
@@ -374,20 +418,28 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
   
   if(!is.matrix(layout) && !is.function(layout)){
     if(layout=="horizontal"){
-      if(hasArg(xlim)){
-        xlim <- dots$xlim
-      }else{
-        xlim <- c(-0.1,ncol(transM)-1+0.1)
-      }
-      if(hasArg(ylim)){
-        ylim <- dots$ylim
-      }else{
-        ylim <- c(-0.5,0.5)
-      }
       if(hasArg(rescale)){
         rescale <- dots$rescale
       }else{
         rescale=FALSE
+      }
+      if(hasArg(xlim)){
+        xlim <- dots$xlim
+      }else{
+        if(rescale==TRUE){
+          xlim <- c(-1,1)
+        }else{
+          xlim <- c(-0.1,ncol(transM)-1+0.1)
+        }
+      }
+      if(hasArg(ylim)){
+        ylim <- dots$ylim
+      }else{
+        if(rescale==TRUE){
+          ylim <- c(-1,1)
+        }else{
+          ylim <- c(-0.5,0.5)
+        }
       }
       dots[["xlim"]] <- NULL
       dots[["ylim"]] <- NULL
@@ -396,17 +448,20 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
       if(hasArg(xlim)){
         xlim <- dots$xlim
       }else{
-        xlim <- c(-0.5,0.5)
+        if(rescale==TRUE){
+          xlim <- c(-1,1)
+        }else{
+          xlim <- c(-0.5,0.5)
+        }
       }
       if(hasArg(ylim)){
         ylim <- dots$ylim
       }else{
-        ylim <- c(-0.1,ncol(transM)-1+0.1)
-      }
-      if(hasArg(rescale)){
-        rescale <- dots$rescale
-      }else{
-        rescale=FALSE
+        if(rescale==TRUE){
+          ylim <- c(-1,1)
+        }else{
+          ylim <- c(-0.1,ncol(transM)-1+0.1)
+        }
       }
       dots[["xlim"]] <- NULL
       dots[["ylim"]] <- NULL
@@ -417,6 +472,8 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
   # Saving and changing marginals
   oldPar <- par(no.readonly = TRUE)
   par(mar=c(0.5,0.5,0.5,0.5))
+  on.exit(par(oldPar))
+  on.exit(par(mfrow=c(1,1)))
   
   # Plotting graph
   if(pie==TRUE){
@@ -461,7 +518,7 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
     }
     
     if(!is.matrix(layout) && !is.function(layout) && (layout=="horizontal" || layout=="vertical")){
-      do.call(plot, c(list(g1, layout=glayout, 
+      do.call(plot.igraph2, c(list(g1, layout=glayout, 
                            vertex.shape="pie", vertex.pie=pie.values,
                            vertex.pie.color=list(pie.colors),
                            vertex.size=vertex.size, 
@@ -473,7 +530,7 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
                            edge.label.family=edge.label.family, 
                            xlim=xlim, ylim=ylim, rescale=rescale), dots))
     }else{
-      do.call(plot, c(list(g1, layout=glayout, 
+      do.call(plot.igraph2, c(list(g1, layout=glayout, 
                            vertex.shape="pie", vertex.pie=pie.values,
                            vertex.pie.color=list(pie.colors),
                            vertex.size=vertex.size, 
@@ -486,7 +543,7 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
     }
   }else{
     if(!is.matrix(layout) && !is.function(layout) && (layout=="horizontal" || layout=="vertical")){
-      do.call(plot, c(list(g1, layout=glayout, 
+      do.call(plot.igraph2, c(list(g1, layout=glayout, 
                            vertex.size=vertex.size, 
                            vertex.label=vertex.label, vertex.label.dist=vertex.label.dist, 
                            vertex.label.degree=vertex.label.pos,
@@ -496,7 +553,7 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
                            edge.label.family=edge.label.family, 
                            xlim=xlim, ylim=ylim, rescale=rescale), dots))
     }else{
-      do.call(plot, c(list(g1, layout=glayout, 
+      do.call(plot.igraph2, c(list(g1, layout=glayout, 
                            vertex.size=vertex.size, 
                            vertex.label=vertex.label, vertex.label.dist=vertex.label.dist, 
                            vertex.label.degree=vertex.label.pos,
@@ -516,8 +573,7 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
     
   }
   
-  par(oldPar)
   
-  par(mfrow=c(1,1))
+  
   
 }

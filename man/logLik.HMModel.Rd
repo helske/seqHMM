@@ -17,4 +17,8 @@ Log-likelihood of hidden Markov model.
 \description{
 Function \code{logLik.HMModel} computes the log-likelihood value of a hidden Markov model.
 }
+\seealso{
+\code{\link{buildHMM}} and \code{\link{fitHMM}} for building and
+  fitting Hidden Markov models.
+}
 

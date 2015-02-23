@@ -12,7 +12,6 @@
 #' @docType data
 #' @keywords datasets
 #' @name colorpalette
-#' @usage data(colorpalette)
 #' @examples
 #' data(colorpalette)
 #' # Color palette with 9 colors 

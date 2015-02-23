@@ -14,7 +14,7 @@
 #'   fitting Hidden Markov models, and \code{\link{trimHMM}} for finding better
 #'   models by changing small parameter values to zero.
 #' 
-#' #' @examples 
+#' @examples 
 #' require(TraMineR)
 #' 
 #' data(biofam)
@@ -61,9 +61,9 @@
 #' 
 #' # Initial values for transition matrix
 #' A <- matrix(c(0.9, 0.07, 0.03,
-#' 0,    0.9,  0.1,
-#' 0,      0,    1), 
-#' nrow=3, ncol=3, byrow=TRUE)
+#'                 0,  0.9,  0.1,
+#'                 0,    0,    1), 
+#'             nrow=3, ncol=3, byrow=TRUE)
 #' 
 #' # Initial values for initial state probabilities
 #' initialProbs <- c(0.9,0.09,0.01)

@@ -114,7 +114,7 @@ buildHMM<-function(observations,transitionMatrix,emissionMatrix,initialProbs,sta
       stop("Number of rows in emissionMatrix is not equal to the number of states.")
     if(any(numberOfSymbols!=sapply(emissionMatrix,ncol)))
       stop("Number of columns in emissionMatrix is not equal to the number of symbols.")
-    if(!isTRUE(all.equal(sapply(emissionMatrix,rowSums),rep(1,numberOfChannels*numberOfStates),check.attributes=FALSE)))
+    if(!isTRUE(all.equal(c(sapply(emissionMatrix,rowSums)),rep(1,numberOfChannels*numberOfStates),check.attributes=FALSE)))
       stop("Emission probabilities in emissionMatrix do not sum to one.")
     
     channelNames<-names(observations)  

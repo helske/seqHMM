@@ -7,6 +7,8 @@
 #' @param object Hidden Markov model of class \code{HMModel}.
 #' @param ... Ignored.
 #' @return Log-likelihood of hidden Markov model.
+#' @seealso \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and 
+#'   fitting Hidden Markov models.
 logLik.HMModel<-function(object,...){
   
   if(object$numberOfChannels==1){
@@ -14,11 +16,8 @@ logLik.HMModel<-function(object,...){
     obsArray[obsArray>object$numberOfSymbols]<-object$numberOfSymbols
     storage.mode(obsArray)<-"integer"
     
-    if(object$numberOfCovariates==0){
       logLikHMM(object$transitionMatrix, cbind(object$emissionMatrix,1), 
                 object$initialProbs, obsArray)
-    } else   logLikHMMx(object$transitionMatrix, cbind(object$emissionMatrix,1), 
-                        obsArray, object$beta, object$X)
   } else {
     obsArray<-array(0,c(object$numberOfSequences,object$lengthOfSequences,object$numberOfChannels))
     for(i in 1:object$numberOfChannels){
@@ -31,12 +30,8 @@ logLik.HMModel<-function(object,...){
     for(i in 1:object$numberOfChannels)
       emissionArray[,1:object$numberOfSymbols[i],i]<-object$emissionMatrix[[i]]
     
-    if(object$numberOfCovariates==0){
       logLikMCHMM(object$transitionMatrix, emissionArray, 
                   object$initialProbs, obsArray)
-    }else{
-      logLikMCHMMx(object$transitionMatrix, emissionArray, 
-                   obsArray, object$beta, object$X)
-    }
+    
   }
 }
