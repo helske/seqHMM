@@ -8,11 +8,13 @@ buildHMM(observations, transitionMatrix, emissionMatrix, initialProbs,
   stateNames = NULL)
 }
 \arguments{
-\item{observations}{TraMineR stslist containing the sequences, or a list of such objects (one for each channel).}
+\item{observations}{TraMineR stslist (see \code{\link{seqdef}}) containing
+the sequences, or a list of such objects (one for each channel).}
 
 \item{transitionMatrix}{Matrix of transition probabilities.}
 
-\item{emissionMatrix}{Matrix of emission probabilities or a list of such objects (one for each channel).}
+\item{emissionMatrix}{Matrix of emission probabilities or a list of such
+objects (one for each channel).}
 
 \item{initialProbs}{Vector of initial state probabilities.}
 

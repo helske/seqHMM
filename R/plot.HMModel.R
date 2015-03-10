@@ -408,9 +408,9 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
     }else if(withlegend=="top"){
       graphics::layout(matrix(2:1, nrow=2), heights=c(legend.prop, 1-legend.prop))
     }else if(withlegend=="right"){
-      graphics::layout(matrix(1:2, ncol=2), heights=c(1-legend.prop, legend.prop))
+      graphics::layout(matrix(1:2, ncol=2), widths=c(1-legend.prop, legend.prop))
     }else{
-      graphics::layout(matrix(2:1, ncol=2), heights=c(legend.prop, 1-legend.prop))
+      graphics::layout(matrix(2:1, ncol=2), widths=c(legend.prop, 1-legend.prop))
     }
     par(cex=1)
   }
@@ -519,48 +519,48 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
     
     if(!is.matrix(layout) && !is.function(layout) && (layout=="horizontal" || layout=="vertical")){
       do.call(plot.igraph2, c(list(g1, layout=glayout, 
-                           vertex.shape="pie", vertex.pie=pie.values,
-                           vertex.pie.color=list(pie.colors),
-                           vertex.size=vertex.size, 
-                           vertex.label=vertex.label, vertex.label.dist=vertex.label.dist, 
-                           vertex.label.degree=vertex.label.pos,
-                           vertex.label.family=vertex.label.family,
-                           edge.curved=edge.curved, edge.width=edge.width, 
-                           edge.label=edge.label, 
-                           edge.label.family=edge.label.family, 
-                           xlim=xlim, ylim=ylim, rescale=rescale), dots))
+                                  vertex.shape="pie", vertex.pie=pie.values,
+                                  vertex.pie.color=list(pie.colors),
+                                  vertex.size=vertex.size, 
+                                  vertex.label=vertex.label, vertex.label.dist=vertex.label.dist, 
+                                  vertex.label.degree=vertex.label.pos,
+                                  vertex.label.family=vertex.label.family,
+                                  edge.curved=edge.curved, edge.width=edge.width, 
+                                  edge.label=edge.label, 
+                                  edge.label.family=edge.label.family, 
+                                  xlim=xlim, ylim=ylim, rescale=rescale), dots))
     }else{
       do.call(plot.igraph2, c(list(g1, layout=glayout, 
-                           vertex.shape="pie", vertex.pie=pie.values,
-                           vertex.pie.color=list(pie.colors),
-                           vertex.size=vertex.size, 
-                           vertex.label=vertex.label, vertex.label.dist=vertex.label.dist, 
-                           vertex.label.degree=vertex.label.pos,
-                           vertex.label.family=vertex.label.family,
-                           edge.curved=edge.curved, edge.width=edge.width, 
-                           edge.label=edge.label, 
-                           edge.label.family=edge.label.family), dots))
+                                  vertex.shape="pie", vertex.pie=pie.values,
+                                  vertex.pie.color=list(pie.colors),
+                                  vertex.size=vertex.size, 
+                                  vertex.label=vertex.label, vertex.label.dist=vertex.label.dist, 
+                                  vertex.label.degree=vertex.label.pos,
+                                  vertex.label.family=vertex.label.family,
+                                  edge.curved=edge.curved, edge.width=edge.width, 
+                                  edge.label=edge.label, 
+                                  edge.label.family=edge.label.family), dots))
     }
   }else{
     if(!is.matrix(layout) && !is.function(layout) && (layout=="horizontal" || layout=="vertical")){
       do.call(plot.igraph2, c(list(g1, layout=glayout, 
-                           vertex.size=vertex.size, 
-                           vertex.label=vertex.label, vertex.label.dist=vertex.label.dist, 
-                           vertex.label.degree=vertex.label.pos,
-                           vertex.label.family=vertex.label.family,
-                           edge.curved=edge.curved, edge.width=edge.width, 
-                           edge.label=edge.label, 
-                           edge.label.family=edge.label.family, 
-                           xlim=xlim, ylim=ylim, rescale=rescale), dots))
+                                  vertex.size=vertex.size, 
+                                  vertex.label=vertex.label, vertex.label.dist=vertex.label.dist, 
+                                  vertex.label.degree=vertex.label.pos,
+                                  vertex.label.family=vertex.label.family,
+                                  edge.curved=edge.curved, edge.width=edge.width, 
+                                  edge.label=edge.label, 
+                                  edge.label.family=edge.label.family, 
+                                  xlim=xlim, ylim=ylim, rescale=rescale), dots))
     }else{
       do.call(plot.igraph2, c(list(g1, layout=glayout, 
-                           vertex.size=vertex.size, 
-                           vertex.label=vertex.label, vertex.label.dist=vertex.label.dist, 
-                           vertex.label.degree=vertex.label.pos,
-                           vertex.label.family=vertex.label.family,
-                           edge.curved=edge.curved, edge.width=edge.width, 
-                           edge.label=edge.label, 
-                           edge.label.family=edge.label.family), dots))
+                                  vertex.size=vertex.size, 
+                                  vertex.label=vertex.label, vertex.label.dist=vertex.label.dist, 
+                                  vertex.label.degree=vertex.label.pos,
+                                  vertex.label.family=vertex.label.family,
+                                  edge.curved=edge.curved, edge.width=edge.width, 
+                                  edge.label=edge.label, 
+                                  edge.label.family=edge.label.family), dots))
     }
   }  
   

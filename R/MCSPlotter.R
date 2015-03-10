@@ -1,20 +1,20 @@
 MCSPlotter <- function(obs, nchannels, channelNames, nplots, 
-                   legend.c.prop, legend.r.prop,
-                   ylab.space, xaxis.space, xt.space,
-                   mpp.seq=NULL, mds.mppscore=NULL, orderv=NULL,
-                   plotxaxis,
-                   mpp=NULL, plots="both", type="I", 
-                   sortv=NULL, sort.channel=1, 
-                   with.missing=FALSE,
-                   title=NA, title.n=TRUE, cex.title=1, title.pos=1,
-                   withlegend="auto", ncol.legend="auto", 
-                   with.missing.legend="auto",                         
-                   legend.prop=0.3, cex.legend=1,
-                   mpp.color="auto", mpp.labels="auto",
-                   xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
-                   ylab="auto", hiddenStates.title="Hidden states", 
-                   ylab.pos="auto", 
-                   cex.lab=1, cex.axis=1, new=FALSE, ...
+                       legend.c.prop, legend.r.prop,
+                       ylab.space, xaxis.space, xt.space,
+                       mpp.seq=NULL, orderv=NULL,
+                       plotxaxis,
+                       mpp=NULL, plots="both", type="I", 
+                       sortv=NULL, sort.channel=1, 
+                       with.missing=FALSE,
+                       title=NA, title.n=TRUE, cex.title=1, title.pos=1,
+                       withlegend="auto", ncol.legend="auto", 
+                       with.missing.legend="auto",                         
+                       legend.prop=0.3, cex.legend=1,
+                       mpp.color="auto", mpp.labels="auto",
+                       xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
+                       ylab="auto", hiddenStates.title="Hidden states", 
+                       ylab.pos="auto", 
+                       cex.lab=1, cex.axis=1, new=FALSE, ...
 ){
   
   # Grid for plotting regions
@@ -22,7 +22,7 @@ MCSPlotter <- function(obs, nchannels, channelNames, nplots,
     layout=grid.layout(nrow=4, ncol=3,
                        widths=unit(c(ylab.space, 1, legend.c.prop), 
                                    c("lines", "null", "npc")),
-                       heights=unit(c((title.pos*cex.title+0.5), 1, 
+                       heights=unit(c((title.pos*cex.title+1.5), 1, 
                                       (xlab.pos*cex.lab+xaxis.space+xt.space+0.5), 
                                       legend.r.prop), 
                                     c("lines", "null", "lines", "npc"))))
@@ -57,85 +57,111 @@ MCSPlotter <- function(obs, nchannels, channelNames, nplots,
   if(plots=="both" || plots=="obs"){ 
     if(type=="I"){ 
       if(is.null(sortv)){
-        for(i in 1:(nchannels-1)){
-          pushViewport(viewport(layout.pos.col=1, layout.pos.row=i))
+        if(nchannels>1){
+          for(i in 1:(nchannels-1)){
+            pushViewport(viewport(layout.pos.col=1, layout.pos.row=i))
+            par(plt=gridPLT(), new=TRUE)
+            seqplot(obs[[i]], type="I", withlegend=FALSE,
+                    use.layout=FALSE, yaxis=FALSE, axes=FALSE, ylab=NA, 
+                    xtlab=xtlab, ...)
+            popViewport()
+          }
+          pushViewport(viewport(layout.pos.col=1, layout.pos.row=nchannels))
           par(plt=gridPLT(), new=TRUE)
-          seqplot(obs[[i]], type="I", withlegend=FALSE,
-                  use.layout=FALSE, yaxis=FALSE, axes=FALSE, ylab=NA, 
-                  xtlab=xtlab, ...)
+          seqplot(obs[[nchannels]], type="I", withlegend=FALSE,
+                  use.layout=FALSE, yaxis=FALSE, xaxis=plotxaxis, ylab=NA, 
+                  xtlab=xtlab, cex.plot=cex.axis, ...)
+          popViewport()
+        }else{
+          pushViewport(viewport(layout.pos.col=1, layout.pos.row=nchannels))
+          par(plt=gridPLT(), new=TRUE)
+          seqplot(obs, type="I", withlegend=FALSE,
+                  use.layout=FALSE, yaxis=FALSE, xaxis=plotxaxis, ylab=NA, 
+                  xtlab=xtlab, cex.plot=cex.axis, ...)
           popViewport()
         }
-        pushViewport(viewport(layout.pos.col=1, layout.pos.row=nchannels))
-        par(plt=gridPLT(), new=TRUE)
-        seqplot(obs[[nchannels]], type="I", withlegend=FALSE,
-                use.layout=FALSE, yaxis=FALSE, xaxis=plotxaxis, ylab=NA, 
-                xtlab=xtlab, cex.plot=cex.axis, ...)
-        popViewport()
+        
       }else if(length(sortv)==1 && (sortv=="from.start" || sortv=="from.end")){
-        for(i in 1:(nchannels-1)){
-          pushViewport(viewport(layout.pos.col=1, layout.pos.row=i))
+        if(nchannels>1){
+          for(i in 1:(nchannels-1)){
+            pushViewport(viewport(layout.pos.col=1, layout.pos.row=i))
+            par(plt=gridPLT(), new=TRUE)
+            seqplot(obs[[i]][orderv,], type="I", withlegend=FALSE,
+                    use.layout=FALSE, yaxis=FALSE, axes=FALSE, ylab=NA, 
+                    xtlab=xtlab, ...)
+            popViewport()
+          }
+          pushViewport(viewport(layout.pos.col=1, layout.pos.row=nchannels))
           par(plt=gridPLT(), new=TRUE)
-          seqplot(obs[[i]][orderv,], type="I", withlegend=FALSE,
-                  use.layout=FALSE, yaxis=FALSE, axes=FALSE, ylab=NA, 
-                  xtlab=xtlab, ...)
+          seqplot(obs[[nchannels]][orderv,], type="I", withlegend=FALSE,
+                  use.layout=FALSE, yaxis=FALSE, xaxis=plotxaxis, ylab=NA, 
+                  xtlab=xtlab, cex.plot=cex.axis, ...)
+          popViewport()
+        }else{
+          pushViewport(viewport(layout.pos.col=1, layout.pos.row=nchannels))
+          par(plt=gridPLT(), new=TRUE)
+          seqplot(obs[orderv,], type="I", withlegend=FALSE,
+                  use.layout=FALSE, yaxis=FALSE, xaxis=plotxaxis, ylab=NA, 
+                  xtlab=xtlab, cex.plot=cex.axis, ...)
           popViewport()
         }
-        pushViewport(viewport(layout.pos.col=1, layout.pos.row=nchannels))
-        par(plt=gridPLT(), new=TRUE)
-        seqplot(obs[[nchannels]][orderv,], type="I", withlegend=FALSE,
-                use.layout=FALSE, yaxis=FALSE, xaxis=plotxaxis, ylab=NA, 
-                xtlab=xtlab, cex.plot=cex.axis, ...)
-        popViewport()
-      }else if(length(sortv)==1 && sortv=="mds.mpp" && plots=="both"){
-        for(i in 1:(nchannels-1)){
-          pushViewport(viewport(layout.pos.col=1, layout.pos.row=i))
-          par(plt=gridPLT(), new=TRUE)
-          seqplot(obs[[i]], type="I", sortv=mds.mppscore, withlegend=FALSE,
-                  use.layout=FALSE, yaxis=FALSE, axes=FALSE, ylab=NA, 
-                  xtlab=xtlab, ...)
-          popViewport()
-        }
-        pushViewport(viewport(layout.pos.col=1, layout.pos.row=nchannels))
-        par(plt=gridPLT(), new=TRUE)
-        seqplot(obs[[nchannels]], type="I", sortv=mds.mppscore, withlegend=FALSE,
-                use.layout=FALSE, yaxis=FALSE, xaxis=plotxaxis, ylab=NA, 
-                xtlab=xtlab, cex.plot=cex.axis, ...)
-        popViewport()
+
+        
       }else if(length(sortv)>1){
-        pushViewport(viewport(layout.pos.col=1, layout.pos.row=i))
-        par(plt=gridPLT(), new=TRUE)
-        for(i in 1:(nchannels-1)){
-          seqplot(obs[[i]], type="I", sortv=sortv, withlegend=FALSE,
-                  use.layout=FALSE, yaxis=FALSE, axes=FALSE, ylab=NA, 
-                  xtlab=xtlab, ...)
+        if(nchannels>1){
+          for(i in 1:(nchannels-1)){
+            pushViewport(viewport(layout.pos.col=1, layout.pos.row=i))
+            par(plt=gridPLT(), new=TRUE)
+            seqplot(obs[[i]], type="I", sortv=sortv, withlegend=FALSE,
+                    use.layout=FALSE, yaxis=FALSE, axes=FALSE, ylab=NA, 
+                    xtlab=xtlab, ...)
+            popViewport()
+          }
+          pushViewport(viewport(layout.pos.col=1, layout.pos.row=nchannels))
+          par(plt=gridPLT(), new=TRUE)
+          seqplot(obs[[nchannels]], type="I", sortv=sortv, withlegend=FALSE,
+                  use.layout=FALSE, yaxis=FALSE, xaxis=plotxaxis, ylab=NA, 
+                  xtlab=xtlab, cex.plot=cex.axis, ...)
+          popViewport()
+        }else{
+          pushViewport(viewport(layout.pos.col=1, layout.pos.row=nchannels))
+          par(plt=gridPLT(), new=TRUE)
+          seqplot(obs, type="I", sortv=sortv, withlegend=FALSE,
+                  use.layout=FALSE, yaxis=FALSE, xaxis=plotxaxis, ylab=NA, 
+                  xtlab=xtlab, cex.plot=cex.axis, ...)
           popViewport()
         }
-        pushViewport(viewport(layout.pos.col=1, layout.pos.row=nchannels))
-        par(plt=gridPLT(), new=TRUE)
-        seqplot(obs[[nchannels]], type="I", sortv=sortv, withlegend=FALSE,
-                use.layout=FALSE, yaxis=FALSE, xaxis=plotxaxis, ylab=NA, 
-                xtlab=xtlab, cex.plot=cex.axis, ...)
-        popViewport()
+        
       }
       if(plots=="obs"){
         # Close viewport "vpplot"
         popViewport(2)
       }
     }else{  # if type=="d"
-      for(i in 1:(nchannels-1)){
-        pushViewport(viewport(layout.pos.col=1, layout.pos.row=i))
+      if(nchannels>1){
+        for(i in 1:(nchannels-1)){
+          pushViewport(viewport(layout.pos.col=1, layout.pos.row=i))
+          par(plt=gridPLT(), new=TRUE)
+          seqplot(obs[[i]], type="d", withlegend=FALSE,
+                  use.layout=FALSE, yaxis=FALSE, axes=FALSE, ylab=NA, 
+                  with.missing=with.missing, xtlab=xtlab, ...)
+          popViewport()
+        }
+        pushViewport(viewport(layout.pos.col=1, layout.pos.row=nchannels))
         par(plt=gridPLT(), new=TRUE)
-        seqplot(obs[[i]], type="d", withlegend=FALSE,
-                use.layout=FALSE, yaxis=FALSE, axes=FALSE, ylab=NA, 
-                with.missing=with.missing, xtlab=xtlab, ...)
+        seqplot(obs[[nchannels]], type="d", withlegend=FALSE, xaxis=plotxaxis,
+                use.layout=FALSE, yaxis=FALSE, xaxis=plotxaxis, ylab=NA, 
+                with.missing=with.missing, xtlab=xtlab, cex.plot=cex.axis, ...)
+        popViewport()
+      }else{
+        pushViewport(viewport(layout.pos.col=1, layout.pos.row=nchannels))
+        par(plt=gridPLT(), new=TRUE)
+        seqplot(obs, type="d", withlegend=FALSE, xaxis=plotxaxis,
+                use.layout=FALSE, yaxis=FALSE, xaxis=plotxaxis, ylab=NA, 
+                with.missing=with.missing, xtlab=xtlab, cex.plot=cex.axis, ...)
         popViewport()
       }
-      pushViewport(viewport(layout.pos.col=1, layout.pos.row=nchannels))
-      par(plt=gridPLT(), new=TRUE)
-      seqplot(obs[[nchannels]], type="d", withlegend=FALSE, xaxis=plotxaxis,
-              use.layout=FALSE, yaxis=FALSE, xaxis=plotxaxis, ylab=NA, 
-              with.missing=with.missing, xtlab=xtlab, cex.plot=cex.axis, ...)
-      popViewport()
+      
       if(plots=="obs"){ 
         # Close viewport "vpplot"
         popViewport(2)
@@ -160,13 +186,13 @@ MCSPlotter <- function(obs, nchannels, channelNames, nplots,
                 use.layout=FALSE, yaxis=FALSE, axes=xaxis, ylab=NA,
                 xtlab=xtlab, cex.plot=cex.axis, ...)
         popViewport()
-      }else if(length(sortv)==1 && sortv=="mds.mpp"){
-        pushViewport(viewport(layout.pos.col=1, layout.pos.row=nplots))
-        par(plt=gridPLT(), new=TRUE)
-        seqplot(mpp.seq, type=type, sortv=mds.mppscore, withlegend=FALSE,
-                use.layout=FALSE, yaxis=FALSE, axes=xaxis, ylab=NA,
-                xtlab=xtlab, cex.plot=cex.axis, ...)
-        popViewport()
+        #       }else if(length(sortv)==1 && sortv=="mds.mpp"){
+        #         pushViewport(viewport(layout.pos.col=1, layout.pos.row=nplots))
+        #         par(plt=gridPLT(), new=TRUE)
+        #         seqplot(mpp.seq, type=type, sortv=mds.mppscore, withlegend=FALSE,
+        #                 use.layout=FALSE, yaxis=FALSE, axes=xaxis, ylab=NA,
+        #                 xtlab=xtlab, cex.plot=cex.axis, ...)
+        #         popViewport()
       }else if(length(sortv)>1){
         pushViewport(viewport(layout.pos.col=1, layout.pos.row=nplots))
         par(plt=gridPLT(), new=TRUE)
@@ -247,12 +273,22 @@ MCSPlotter <- function(obs, nchannels, channelNames, nplots,
                               layout.pos.col=lposcol[i]))
         pushViewport(viewport(width=unit(0.9, "npc")))
         par(plt=gridPLT(), new=TRUE)
-        if(withlegend=="bottom.many"){
-          seqlegend(obs[[i]], fontsize=cex.legend, position="top", 
-                    ncol=ncol.legend[i], with.missing=with.missing.legend)
+        if(nchannels>1){
+          if(withlegend=="bottom.many"){
+            seqlegend(obs[[i]], fontsize=cex.legend, position="top", 
+                      ncol=ncol.legend[i], with.missing=with.missing.legend)
+          }else{
+            seqlegend(obs[[i]], fontsize=cex.legend, position="left", 
+                      ncol=ncol.legend[i], with.missing=with.missing.legend)
+          }
         }else{
-          seqlegend(obs[[i]], fontsize=cex.legend, position="left", 
-                    ncol=ncol.legend[i], with.missing=with.missing.legend)
+          if(withlegend=="bottom.many"){
+            seqlegend(obs, fontsize=cex.legend, position="top", 
+                      ncol=ncol.legend[i], with.missing=with.missing.legend)
+          }else{
+            seqlegend(obs, fontsize=cex.legend, position="left", 
+                      ncol=ncol.legend[i], with.missing=with.missing.legend)
+          }
         }
         popViewport(2)
       }
@@ -279,9 +315,14 @@ MCSPlotter <- function(obs, nchannels, channelNames, nplots,
     ltext <- NULL
     cpal <- NULL
     if(plots=="both" || plots=="obs"){
-      for(i in 1:nchannels){
-        ltext <- c(ltext, attr(obs[[i]], "labels"))
-        cpal <- c(cpal, attr(obs[[i]], "cpal")) 
+      if(nchannels>1){
+        for(i in 1:nchannels){
+          ltext <- c(ltext, attr(obs[[i]], "labels"))
+          cpal <- c(cpal, attr(obs[[i]], "cpal")) 
+        }
+      }else{
+        ltext <- c(ltext, attr(obs, "labels"))
+        cpal <- c(cpal, attr(obs, "cpal")) 
       }
     }
     if(plots=="both" || plots=="mpp"){
@@ -289,10 +330,16 @@ MCSPlotter <- function(obs, nchannels, channelNames, nplots,
       cpal <- c(cpal, attr(mpp.seq, "cpal")) 
     }
     anymissing <- FALSE
-    for(i in 1:nchannels){
-      if(any(obs[[i]]=="*")){
+    if(nchannels>1){
+      for(i in 1:nchannels){
+        if(any(obs[[i]]=="*")){
+          anymissing <- TRUE
+          break()
+        }
+      }
+    }else{
+      if(any(obs=="*")){
         anymissing <- TRUE
-        break()
       }
     }
     upViewport()
@@ -300,28 +347,56 @@ MCSPlotter <- function(obs, nchannels, channelNames, nplots,
     par(plt=gridPLT(), new=TRUE)
     pushViewport(viewport(width=unit(0.9, "npc")))
     if(plots=="both" || plots=="obs"){
-      if(withlegend=="right"){
-        seqlegend(obs[[1]], fontsize=cex.legend, position="left", 
-                  ncol=ncol.legend, cpal=cpal, ltext=ltext,
-                  with.missing=anymissing, 
-                  missing.color=attr(obs[[1]],"missing.color"))
-      }else{ # withlegend=="bottom"
-        seqlegend(obs[[1]], fontsize=cex.legend, position="top", 
-                  ncol=ncol.legend, cpal=cpal, ltext=ltext,
-                  with.missing=anymissing, 
-                  missing.color=attr(obs[[1]],"missing.color"))
+      if(nchannels>1){
+        if(withlegend=="right"){
+          seqlegend(obs[[1]], fontsize=cex.legend, position="left", 
+                    ncol=ncol.legend, cpal=cpal, ltext=ltext,
+                    with.missing=anymissing, 
+                    missing.color=attr(obs[[1]],"missing.color"))
+        }else{ # withlegend=="bottom"
+          seqlegend(obs[[1]], fontsize=cex.legend, position="top", 
+                    ncol=ncol.legend, cpal=cpal, ltext=ltext,
+                    with.missing=anymissing, 
+                    missing.color=attr(obs[[1]],"missing.color"))
+        }
+      }else{
+        if(withlegend=="right"){
+          seqlegend(obs, fontsize=cex.legend, position="left", 
+                    ncol=ncol.legend, cpal=cpal, ltext=ltext,
+                    with.missing=anymissing, 
+                    missing.color=attr(obs,"missing.color"))
+        }else{ # withlegend=="bottom"
+          seqlegend(obs, fontsize=cex.legend, position="top", 
+                    ncol=ncol.legend, cpal=cpal, ltext=ltext,
+                    with.missing=anymissing, 
+                    missing.color=attr(obs,"missing.color"))
+        }
       }
     }else{
-      if(withlegend=="right"){
-        seqlegend(mpp, fontsize=cex.legend, position="left", 
-                  ncol=ncol.legend, cpal=cpal, ltext=ltext,
-                  with.missing=with.missing.legend, 
-                  missing.color=attr(obs[[1]],"missing.color"))
-      }else{ # withlegend=="bottom"
-        seqlegend(mpp, fontsize=cex.legend, position="top", 
-                  ncol=ncol.legend, cpal=cpal, ltext=ltext,
-                  with.missing=with.missing.legend, 
-                  missing.color=attr(obs[[1]],"missing.color"))
+      if(nchannels>1){
+        if(withlegend=="right"){
+          seqlegend(mpp, fontsize=cex.legend, position="left", 
+                    ncol=ncol.legend, cpal=cpal, ltext=ltext,
+                    with.missing=with.missing.legend, 
+                    missing.color=attr(obs[[1]],"missing.color"))
+        }else{ # withlegend=="bottom"
+          seqlegend(mpp, fontsize=cex.legend, position="top", 
+                    ncol=ncol.legend, cpal=cpal, ltext=ltext,
+                    with.missing=with.missing.legend, 
+                    missing.color=attr(obs[[1]],"missing.color"))
+        }
+      }else{
+        if(withlegend=="right"){
+          seqlegend(mpp, fontsize=cex.legend, position="left", 
+                    ncol=ncol.legend, cpal=cpal, ltext=ltext,
+                    with.missing=with.missing.legend, 
+                    missing.color=attr(obs,"missing.color"))
+        }else{ # withlegend=="bottom"
+          seqlegend(mpp, fontsize=cex.legend, position="top", 
+                    ncol=ncol.legend, cpal=cpal, ltext=ltext,
+                    with.missing=with.missing.legend, 
+                    missing.color=attr(obs,"missing.color"))
+        }
       }
     }
     popViewport()
@@ -333,9 +408,13 @@ MCSPlotter <- function(obs, nchannels, channelNames, nplots,
       upViewport()
       downViewport("vptitle")
       if(title.n==TRUE){
-        grid.text(paste0(title,", n=",dim(obs[[1]])[1]), y = unit(title.pos, "lines"), 
-                  gp = gpar(cex = cex.title))
-        
+        if(nchannels>1){
+          grid.text(paste0(title,", n=",dim(obs[[1]])[1]), y = unit(title.pos, "lines"), 
+                    gp = gpar(cex = cex.title))
+        }else{
+          grid.text(paste0(title,", n=",dim(obs)[1]), y = unit(title.pos, "lines"), 
+                    gp = gpar(cex = cex.title))  
+        }
         popViewport()
       }else{
         grid.text(title, y = unit(title.pos, "lines"), 
@@ -346,8 +425,13 @@ MCSPlotter <- function(obs, nchannels, channelNames, nplots,
   }else if(title.n==TRUE){
     upViewport()
     downViewport("vptitle")
-    grid.text(paste0("n=",dim(obs[[1]])[1]), y = unit(title.pos, "lines"), 
-              gp = gpar(cex = cex.title))
+    if(nchannels>1){
+      grid.text(paste0("n=",dim(obs[[1]])[1]), y = unit(title.pos, "lines"), 
+                gp = gpar(cex = cex.title))
+    }else{
+      grid.text(paste0("n=",dim(obs)[1]), y = unit(title.pos, "lines"), 
+                gp = gpar(cex = cex.title))
+    }
     popViewport()
   }
   popViewport()

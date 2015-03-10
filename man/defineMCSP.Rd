@@ -6,13 +6,13 @@
 Paths from Hidden Markov Models}
 \usage{
 defineMCSP(x, mpp = NULL, plots = "both", type = "I", sortv = NULL,
-  sort.channel = 1, with.missing = FALSE, title = NA, title.n = TRUE,
-  cex.title = 1, title.pos = 1, withlegend = "auto",
-  ncol.legend = "auto", with.missing.legend = "auto", legend.prop = 0.3,
-  cex.legend = 1, mpp.color = "auto", mpp.labels = "auto", xaxis = TRUE,
-  xlab = NA, xtlab = NULL, xlab.pos = 1, ylab = "auto",
-  hiddenStates.title = "Hidden states", ylab.pos = "auto", cex.lab = 1,
-  cex.axis = 1, ...)
+  sort.channel = 1, dist.method = "OM", with.missing = FALSE,
+  title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
+  withlegend = "auto", ncol.legend = "auto", with.missing.legend = "auto",
+  legend.prop = 0.3, cex.legend = 1, mpp.color = "auto",
+  mpp.labels = "auto", xaxis = TRUE, xlab = NA, xtlab = NULL,
+  xlab.pos = 1, ylab = "auto", hiddenStates.title = "Hidden states",
+  ylab.pos = "auto", cex.lab = 1, cex.axis = 1, ...)
 }
 \arguments{
 \item{x}{Either hidden Markov model object of class \code{HMModel} or a
@@ -31,18 +31,28 @@ defineMCSP(x, mpp = NULL, plots = "both", type = "I", sortv = NULL,
   \code{\link{seqplot}} for details.}
 
 \item{sortv}{A sorting variable or a sort method (one of \code{"from.start"},
-  \code{"from.end"}, or \code{"mds.mpp"}) for \code{type=="I"}. The value
-  \code{"mds.mpp"} is only available for \code{which="both"} and
-  \code{which="mpp"}. It automatically arranges the sequences according to
-  the scores of multidimensional scaling (using \code{\link{cmdscale}}) for
-  the hidden states path data from \code{\link{mostProbablePath}}. See
-  \code{\link{plot.stslist}} for more details on \code{"from.start"} and
-  \code{"from.end"}.}
+  \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.mpp"}) for
+  \code{type=="I"}. The value \code{"mds.mpp"} is only available for
+  \code{which="both"} and \code{which="mpp"}. Options \code{"mds.obs"} and
+  \code{"mds.mpp"} automatically arrange the sequences according to the
+  scores of multidimensional scaling (using \code{\link{cmdscale}}) for the
+  observed or hidden states path data from \code{\link{mostProbablePath}}.
+  MDS scores are computed from distances/dissimilarities using a metric
+  defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for
+  more details on \code{"from.start"} and \code{"from.end"}.}
 
 \item{sort.channel}{The number of the channel according to which the
   \code{"from.start"} or \code{"from.end"} sorting is done. Sorting according
   to hidden states is called with value 0. The default value is 1 (the first
   channel).}
+
+\item{dist.method}{The metric to be used for computing the distances of the
+  sequences if multidimensional scaling is used for sorting. One of "OM"
+  (optimal Matching, the default), "LCP" (longest common prefix), "RLCP"
+  (reversed LCP, i.e. longest common suffix), "LCS" (longest common
+  subsequence), "HAM" (Hamming distance), "DHD" (dynamic Hamming distance).
+  Transition rates are used for defining substitution costs if needed. See
+  \code{\link{seqdef}} for more information on the metrics.}
 
 \item{with.missing}{Controls whether missing states are included in state
   distribution plots (\code{type="d"}). The default is \code{FALSE}.}

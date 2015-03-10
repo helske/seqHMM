@@ -93,14 +93,14 @@ MCtoSC<-function(model, combine.missing=TRUE, all.combinations=FALSE){
   for(i in 1:model$numberOfStates){
     B[i,]<-apply(expand.grid(lapply(model$emissionMatrix,function(x) x[i,])),1,prod)   
   }
-  
+  B <- B[, order(colnames(B))]
   
   modelx<-model
-  modelx$emissionMatrix<-B
-  modelx$numberOfSymbols<-ncol(B)
-  modelx$numberOfChannels<-as.integer(1)
-  modelx$symbolNames<-colnames(B)
-  modelx$channelNames<-NULL
+  modelx$emissionMatrix <- B
+  modelx$numberOfSymbols <- ncol(B)
+  modelx$numberOfChannels <- as.integer(1)
+  modelx$symbolNames <- snames <- colnames(B)
+  modelx$channelNames <- "Observations"
   
   modelx$observations<-model$observations[[1]]
   for(i in 2:model$numberOfChannels)
@@ -118,7 +118,9 @@ MCtoSC<-function(model, combine.missing=TRUE, all.combinations=FALSE){
                                    x==attr(model$observations[[1]], "void") |
                                    is.na(x)))]<-NA
   }
-
+  
+  cpal <- colorpalette[[modelx$numberOfSymbols]]
+  
   if(all.combinations==TRUE){
     modelx$observations<-suppressWarnings(suppressMessages(seqdef(modelx$observations, alphabet=modelx$symbolNames)))
   }else{
@@ -127,7 +129,7 @@ MCtoSC<-function(model, combine.missing=TRUE, all.combinations=FALSE){
     modelx$symbolNames <- colnames(modelx$emissionMatrix)
     modelx$numberOfSymbols <- ncol(modelx$emissionMatrix)
   }
-
+  
   
   attr(modelx$observations, "xtstep") <- attr(model$observations[[1]], "xtstep")
   attr(modelx$observations, "missing.color") <- attr(model$observations[[1]], "missing.color")
@@ -135,7 +137,7 @@ MCtoSC<-function(model, combine.missing=TRUE, all.combinations=FALSE){
   attr(modelx$observations, "void") <- attr(model$observations[[1]], "void")
   attr(modelx$observations, "missing") <- attr(model$observations[[1]], "missing")
   attr(modelx$observations, "start") <- attr(model$observations[[1]], "start")
-  attr(modelx$observations, "cpal") <- colorpalette[[modelx$numberOfSymbols]]
+  attr(modelx$observations, "cpal") <- cpal[modelx$symbolNames %in% snames]
   modelx
 }
 

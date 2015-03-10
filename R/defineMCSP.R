@@ -25,18 +25,28 @@
 #'   \code{\link{seqplot}} for details.
 #'   
 #' @param sortv A sorting variable or a sort method (one of \code{"from.start"},
-#'   \code{"from.end"}, or \code{"mds.mpp"}) for \code{type=="I"}. The value 
-#'   \code{"mds.mpp"} is only available for \code{which="both"} and 
-#'   \code{which="mpp"}. It automatically arranges the sequences according to 
-#'   the scores of multidimensional scaling (using \code{\link{cmdscale}}) for 
-#'   the hidden states path data from \code{\link{mostProbablePath}}. See 
-#'   \code{\link{plot.stslist}} for more details on \code{"from.start"} and 
-#'   \code{"from.end"}.
+#'   \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.mpp"}) for 
+#'   \code{type=="I"}. The value \code{"mds.mpp"} is only available for 
+#'   \code{which="both"} and \code{which="mpp"}. Options \code{"mds.obs"} and 
+#'   \code{"mds.mpp"} automatically arrange the sequences according to the 
+#'   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the 
+#'   observed or hidden states path data from \code{\link{mostProbablePath}}. 
+#'   MDS scores are computed from distances/dissimilarities using a metric 
+#'   defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for 
+#'   more details on \code{"from.start"} and \code{"from.end"}.
 #'   
 #' @param sort.channel The number of the channel according to which the 
 #'   \code{"from.start"} or \code{"from.end"} sorting is done. Sorting according
 #'   to hidden states is called with value 0. The default value is 1 (the first 
 #'   channel).
+#'   
+#' @param dist.method The metric to be used for computing the distances of the 
+#'   sequences if multidimensional scaling is used for sorting. One of "OM" 
+#'   (optimal Matching, the default), "LCP" (longest common prefix), "RLCP" 
+#'   (reversed LCP, i.e. longest common suffix), "LCS" (longest common 
+#'   subsequence), "HAM" (Hamming distance), "DHD" (dynamic Hamming distance). 
+#'   Transition rates are used for defining substitution costs if needed. See
+#'   \code{\link{seqdef}} for more information on the metrics.
 #'   
 #' @param with.missing Controls whether missing states are included in state 
 #'   distribution plots (\code{type="d"}). The default is \code{FALSE}.
@@ -246,25 +256,25 @@
 #' @return Object of class \code{defineMCSP}.
 #'   
 #' @seealso \code{\link{plot.MCSP}} for plotting objects created with 
-#'   \code{defineMCSP}, \code{\link{gridplot}} for plotting multiple MCSP
-#'   objects, \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and
-#'   fitting Hidden Markov models, and \code{\link{mostProbablePath}} for
+#'   \code{defineMCSP}, \code{\link{gridplot}} for plotting multiple MCSP 
+#'   objects, \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and 
+#'   fitting Hidden Markov models, and \code{\link{mostProbablePath}} for 
 #'   computing the most probable paths (Viterbi paths) of hidden states.
 
 
 defineMCSP <- function(x, mpp=NULL,
-                         plots="both", type="I", 
-                         sortv=NULL, sort.channel=1, 
-                         with.missing=FALSE,
-                         title=NA, title.n=TRUE, cex.title=1, title.pos=1,
-                         withlegend="auto", ncol.legend="auto", 
-                         with.missing.legend="auto",                         
-                         legend.prop=0.3, cex.legend=1,
-                         mpp.color="auto", mpp.labels="auto",
-                         xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
-                         ylab="auto", hiddenStates.title="Hidden states", 
-                         ylab.pos="auto", 
-                         cex.lab=1, cex.axis=1, ...){
+                       plots="both", type="I", 
+                       sortv=NULL, sort.channel=1, dist.method="OM",
+                       with.missing=FALSE,
+                       title=NA, title.n=TRUE, cex.title=1, title.pos=1,
+                       withlegend="auto", ncol.legend="auto", 
+                       with.missing.legend="auto",                         
+                       legend.prop=0.3, cex.legend=1,
+                       mpp.color="auto", mpp.labels="auto",
+                       xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
+                       ylab="auto", hiddenStates.title="Hidden states", 
+                       ylab.pos="auto", 
+                       cex.lab=1, cex.axis=1, ...){
   
   arguments <- list()
   
@@ -288,7 +298,7 @@ defineMCSP <- function(x, mpp=NULL,
     withlegend <- match.arg(withlegend, c("auto", "right.many", "right",
                                           "bottom", "bottom.many"))
   }
-  if(type=="I" && !is.numeric(sortv) && !is.null(sortv) && (sortv %in% c("from.start", "from.end", "mds.mpp"))==FALSE){
+  if(type=="I" && !is.numeric(sortv) && !is.null(sortv) && (sortv %in% c("from.start", "from.end", "mds.obs", "mds.mpp"))==FALSE){
     warning("Argument sortv only accepts values \"from.start\", \"from.end\", \"mds.mpp\" or a numerical vector (one value for each sequence).")
     sortv <- NULL
   }
@@ -306,7 +316,9 @@ defineMCSP <- function(x, mpp=NULL,
   if(legend.prop<0 || legend.prop>1){
     warning("Argument legend.prop only accepts values between 0 and 1. Proportion was set to 0.3.")
     legend.prop <- 0.3
-  }  
+  }
+  
+  dist.method <- match.arg(dist.method, c("OM", "LCP", "RLCP", "LCS", "HAM", "DHD"))
   
   if(inherits(x,"HMModel")){
     obs <- x$observations
@@ -329,7 +341,8 @@ defineMCSP <- function(x, mpp=NULL,
         channelNames <- ylab
       }
     }
-  }else if(!is.list(x) && inherits(x, "stslist")){
+    # Single channel stslist
+  }else if(inherits(x, "stslist")){
     obs <- x
     channelNames <- 1
     if(length(ylab)>1 || (!is.na(ylab) && ylab!=FALSE)){
@@ -341,7 +354,8 @@ defineMCSP <- function(x, mpp=NULL,
         channelNames <- ylab
       }
     }
-  }else if(is.list(x)){
+    # List of stslists
+  }else{
     for(i in 1:length(x)){
       if(!inherits(x[[i]], "stslist")){
         stop("At least one of the list members is not an stslist object. Use seqdef to create one or provide an object of class HMModel.")
@@ -370,13 +384,17 @@ defineMCSP <- function(x, mpp=NULL,
   }  
   
   # Number of channels
-  nchannels <- length(obs)
+  nchannels <- length(channelNames)
   
   # Check the number of sequences
   ncheck <- NULL
   if(plots=="both" || plots=="obs"){
-    for(i in 1:nchannels){
-      ncheck[i] <- dim(obs[[i]])[1]
+    if(nchannels>1){
+      for(i in 1:nchannels){
+        ncheck[i] <- dim(obs[[i]])[1]
+      }
+    }else{
+      ncheck[1] <- dim(obs)[1]
     }
   }
   if((plots=="both" || plots=="mpp") && !is.null(mpp)){
@@ -434,7 +452,7 @@ defineMCSP <- function(x, mpp=NULL,
                      1, ")"))
     }
   }
-
+  
   # Space for viewports
   if((is.na(title) && title.n==FALSE) || (!is.na(title) && title==FALSE)){
     title.pos <- 0
@@ -462,7 +480,7 @@ defineMCSP <- function(x, mpp=NULL,
   
   arguments <- list(obs=obs, nchannels=nchannels, channelNames=channelNames, nplots=nplots, 
                     legend.c.prop=legend.c.prop, legend.r.prop=legend.r.prop,
-                      ylab.space=ylab.space, xaxis.space=xaxis.space, xt.space=xt.space)
+                    ylab.space=ylab.space, xaxis.space=xaxis.space, xt.space=xt.space)
   
   # Columns for legends
   if(plots=="both"){
@@ -544,9 +562,19 @@ defineMCSP <- function(x, mpp=NULL,
         mpp.labels <- paste("State", alphabet(mpp))
       }
     }
-    mpp.seq <- suppressMessages(seqdef(mpp, 
-                                       missing.color=attr(obs[[1]],"missing.color"),
-                                       labels=mpp.labels))
+    if(nchannels>1){
+      mpp.seq <- suppressMessages(seqdef(mpp, 
+                                         missing.color=attr(obs[[1]],"missing.color"),
+                                         labels=mpp.labels,
+                                         start=attr(obs[[1]],"start"),
+                                         xtstep=attr(obs[[1]],"xtstep")))
+    }else{
+      mpp.seq <- suppressMessages(seqdef(mpp, 
+                                         missing.color=attr(obs,"missing.color"),
+                                         labels=mpp.labels,
+                                         start=attr(obs,"start"),
+                                         xtstep=attr(obs,"xtstep")))
+    }
     # Color palette for mpp
     if(length(mpp.color)==1 && mpp.color=="auto" && length(mpp)>1){
       attr(mpp.seq, "cpal") <- attr(mpp, "cpal")
@@ -566,62 +594,122 @@ defineMCSP <- function(x, mpp=NULL,
     # Sorting sequences according to multidimensional scaling score of mpp
     if(!is.null(sortv)){
       if(length(sortv)==1 && sortv=="mds.mpp"){
-        dist.mpp <- suppressMessages(seqdist(mpp.seq, method="HAM", with.missing=TRUE))
-        mds.mppscore <- cmdscale(dist.mpp, k=1)
-        arguments <- c(arguments, list(mds.mppscore=mds.mppscore))
+        dist.mpp <- suppressMessages(seqdist(mpp.seq, method=dist.method, 
+                                             sm="TRATE", with.missing=TRUE))
+        sortv <- cmdscale(dist.mpp, k=1)
+        #         arguments <- c(arguments, list(sortv=sortv))
       }
     } 
-  }
+    }
   
-  # Ordering sequences for sortv argument values "from.start" or "from.end"
+  # Ordering sequences for sortv
   if(type=="I" && !is.null(sortv)){
-    if(length(sortv)==1 && (sortv=="from.start" || sortv=="from.end")){
-      end <- if (sortv == "from.end") {
-        if(sort.channel>0 && sort.channel<=length(obs)){
-          max(seqlength(obs[[sort.channel]]))
-        }else if(sort.channel==0){
-          if(plots=="both" || plots=="mpp"){
-            max(seqlength(mpp.seq))
+    if(nchannels>1){
+      # Multidimensional scaling on observations
+      if(length(sortv)==1 && sortv=="mds.obs"){
+        dist.obs <- suppressMessages(seqdistmc(obs, method=dist.method, 
+                                               sm="TRATE", with.missing=TRUE))
+        sortv <- cmdscale(dist.obs, k=1)
+        #         arguments <- c(arguments, list(sortv=sortv))
+      }
+      # Sorting from start or end
+      if(length(sortv)==1 && (sortv=="from.start" || sortv=="from.end")){
+        end <- if (sortv == "from.end") {
+          if(sort.channel>0 && sort.channel<=length(obs)){
+            max(seqlength(obs[[sort.channel]]))
+          }else if(sort.channel==0){
+            if(plots=="both" || plots=="mpp"){
+              max(seqlength(mpp.seq))
+            }else{
+              warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"mpp\". Sequences were not sorted.")
+              sortv <- NULL
+            }
           }else{
-            warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"mpp\". Sequences were not sorted.")
+            warning(paste0("For data with ", length(obs), " channels, the value for sort.channel must be a non-negative integer smaller or equal to ", length(obs), ". Sequences were not sorted."))
             sortv <- NULL
           }
-        }else{
-          warning(paste0("For data with ", length(obs), " channels, the value for sort.channel must be a non-negative integer smaller or equal to ", length(obs), ". Sequences were not sorted."))
-          sortv <- NULL
+        }else {
+          1
         }
-      }else {
-        1
-      }
-      beg <- if (sortv == "from.end") {
-        1
-      }else{
-        if(sort.channel>0 && sort.channel<=length(obs)){
-          max(seqlength(obs[[sort.channel]]))
-        }else if(sort.channel==0){
-          if(plots=="both" || plots=="mpp"){
-            max(seqlength(mpp.seq))
+        beg <- if (sortv == "from.end") {
+          1
+        }else{
+          if(sort.channel>0 && sort.channel<=length(obs)){
+            max(seqlength(obs[[sort.channel]]))
+          }else if(sort.channel==0){
+            if(plots=="both" || plots=="mpp"){
+              max(seqlength(mpp.seq))
+            }else{
+              warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"mpp\". Sequences were not sorted.")
+              sortv <- NULL
+            }
           }else{
-            warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"mpp\". Sequences were not sorted.")
+            warning(paste0("For data with ", length(obs), " channels, the value for sort.channel must be a non-negative integer smaller or equal to ", length(obs), ". Sequences were not sorted."))
             sortv <- NULL
           }
-        }else{
-          warning(paste0("For data with ", length(obs), " channels, the value for sort.channel must be a non-negative integer smaller or equal to ", length(obs), ". Sequences were not sorted."))
-          sortv <- NULL
+        }
+        if(sort.channel>0 && sort.channel<=length(obs)){
+          orderv <- do.call(order, as.data.frame(obs[[sort.channel]])[, end:beg])
+          arguments <- c(arguments, list(orderv=orderv))
+        }else if(sort.channel==0 && plots!="obs"){
+          orderv <- do.call(order, as.data.frame(mpp.seq)[, end:beg])
+          arguments <- c(arguments, list(orderv=orderv))
         }
       }
-      if(sort.channel>0 && sort.channel<=length(obs)){
-        orderv <- do.call(order, as.data.frame(obs[[sort.channel]])[, end:beg])
-        arguments <- c(arguments, list(orderv=orderv))
-      }else if(sort.channel==0 && plots!="obs"){
-        orderv <- do.call(order, as.data.frame(mpp.seq)[, end:beg])
-        arguments <- c(arguments, list(orderv=orderv))
+    }else{
+      if(length(sortv)==1 && sortv=="mds.obs"){
+        dist.obs <- suppressMessages(seqdist(obs, method=dist.method, 
+                                             sm="TRATE", with.missing=TRUE))
+        sortv <- cmdscale(dist.obs, k=1)
+        #         arguments <- c(arguments, list(sortv=sortv))
+      }else if(length(sortv)==1 && (sortv=="from.start" || sortv=="from.end")){
+        end <- if (sortv == "from.end") {
+          if(sort.channel==1){
+            max(seqlength(obs))
+          }else if(sort.channel==0){
+            if(plots=="both" || plots=="mpp"){
+              max(seqlength(mpp.seq))
+            }else{
+              warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"mpp\". Sequences were not sorted.")
+              sortv <- NULL
+            }
+          }else{
+            warning(paste0("For data with 1 channel, the value for sort.channel must be 0 (for most probable paths) or 1 (for observations). Sequences were not sorted."))
+            sortv <- NULL
+          }
+        }else {
+          1
+        }
+        beg <- if (sortv == "from.end") {
+          1
+        }else{
+          if(sort.channel==1){
+            max(seqlength(obs))
+          }else if(sort.channel==0){
+            if(plots=="both" || plots=="mpp"){
+              max(seqlength(mpp.seq))
+            }else{
+              warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"mpp\". Sequences were not sorted.")
+              sortv <- NULL
+            }
+          }else{
+            warning(paste0("For data with 1 channel, the value for sort.channel must be 0 (for most probable paths) or 1 (for observations). Sequences were not sorted."))
+            sortv <- NULL
+          }
+        }
+        if(sort.channel==1){
+          orderv <- do.call(order, as.data.frame(obs[[sort.channel]])[, end:beg])
+          arguments <- c(arguments, list(orderv=orderv))
+        }else if(sort.channel==0 && plots!="obs"){
+          orderv <- do.call(order, as.data.frame(mpp.seq)[, end:beg])
+          arguments <- c(arguments, list(orderv=orderv))
+        }
       }
     }
   }
   
   
-    # Plotting observations
+  # Plotting observations
   if(plots=="obs" && xaxis==TRUE){
     plotxaxis <- TRUE
   }else{
@@ -638,18 +726,18 @@ defineMCSP <- function(x, mpp=NULL,
   }
   
   if(length(list(...))==0){
-  arguments <- c(arguments, list(mpp=mpp, plots=plots, type=type, 
-       sortv=sortv, sort.channel=sort.channel, 
-       with.missing=with.missing,
-       title=title, title.n=title.n, cex.title=cex.title, title.pos=title.pos,
-       withlegend=withlegend, ncol.legend=ncol.legend, 
-       with.missing.legend=with.missing.legend,                         
-       legend.prop=legend.prop, cex.legend=cex.legend,
-       mpp.color=mpp.color, mpp.labels=mpp.labels,
-       xaxis=xaxis, xlab=xlab, xtlab=xtlab, xlab.pos=xlab.pos,
-       ylab=ylab, hiddenStates.title=hiddenStates.title, 
-       ylab.pos=ylab.pos, 
-       cex.lab=cex.lab, cex.axis=cex.axis))
+    arguments <- c(arguments, list(mpp=mpp, plots=plots, type=type, 
+                                   sortv=sortv, sort.channel=sort.channel, 
+                                   with.missing=with.missing,
+                                   title=title, title.n=title.n, cex.title=cex.title, title.pos=title.pos,
+                                   withlegend=withlegend, ncol.legend=ncol.legend, 
+                                   with.missing.legend=with.missing.legend,                         
+                                   legend.prop=legend.prop, cex.legend=cex.legend,
+                                   mpp.color=mpp.color, mpp.labels=mpp.labels,
+                                   xaxis=xaxis, xlab=xlab, xtlab=xtlab, xlab.pos=xlab.pos,
+                                   ylab=ylab, hiddenStates.title=hiddenStates.title, 
+                                   ylab.pos=ylab.pos, 
+                                   cex.lab=cex.lab, cex.axis=cex.axis))
   }else{
     arguments <- c(arguments, list(mpp=mpp, plots=plots, type=type, 
                                    sortv=sortv, sort.channel=sort.channel, 

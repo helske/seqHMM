@@ -48,10 +48,8 @@ attr(marr.seq, "cpal") <- c("#E7298A", "#E6AB02")
 attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 
-# Defining the plot for state distribution plots of observations
-mcsp1 <- defineMCSP(list(child.seq, marr.seq, left.seq), type="d", plots="obs")
-# Plotting mcsp1
-plot(mcsp1)
+# Plotting state distribution plots of observations
+plot(defineMCSP(list(child.seq, marr.seq, left.seq), type="d", plots="obs"))
 }
 \seealso{
 \code{\link{defineMCSP}} for defining the plot before using

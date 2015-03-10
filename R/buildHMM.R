@@ -6,9 +6,11 @@
 #' @importFrom Rcpp evalCpp
 #' @export
 #' @useDynLib seqHMM
-#' @param observations TraMineR stslist containing the sequences, or a list of such objects (one for each channel).
+#' @param observations TraMineR stslist (see \code{\link{seqdef}}) containing 
+#' the sequences, or a list of such objects (one for each channel).
 #' @param transitionMatrix Matrix of transition probabilities.
-#' @param emissionMatrix Matrix of emission probabilities or a list of such objects (one for each channel).
+#' @param emissionMatrix Matrix of emission probabilities or a list of such 
+#' objects (one for each channel).
 #' @param initialProbs Vector of initial state probabilities.
 #' @param stateNames Optional labels for the hidden states
 #' @return Object of class \code{HMModel}

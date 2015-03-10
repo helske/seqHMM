@@ -1,20 +1,20 @@
 #' Build a Mixture Hidden Markov Model
 #' 
-#' Function buildMixtureHMM constructs a mixture of hidden Markov models.
+#' Function buildMixHMM constructs a mixture of hidden Markov models.
 #' 
 #' @import TraMineR
 #' @importFrom Rcpp evalCpp
 #' @export
 #' @useDynLib seqHMM
-#' @param observations TraMineR stslist containing the sequences, or a list of 
-#'   such objects (one for each channel).
-#' @param transitionMatrix List which contains matrix of transition 
-#'   probabilities of each model.
-#' @param emissionMatrix List which contains matrix of emission probabilities or
+#' @param observations TraMineR stslist (see \code{\link{seqdef}}) containing
+#'   the sequences, or a list of such objects (one for each channel).
+#' @param transitionMatrix List of matrices of transition 
+#'   probabilities for each model.
+#' @param emissionMatrix List which contains matrices of emission probabilities or
 #'   a list of such objects (one for each channel) for each model. Note that the
-#'   matrices must have dimensions m x s where m is the number of hidden states
-#'   and s is the number of unique symbols in the data.
-#' @param initialProbs List which contains a vector of initial state 
+#'   matrices must have dimensions m x s where m is the number of hidden states 
+#'   and s is the number of unique symbols (observed states) in the data.
+#' @param initialProbs List which contains vectors of initial state 
 #'   probabilities for each model.
 #' @param X Time-constant covariates for mixtures. Must be a matrix with 
 #'   dimensions p x k where p is the number of sequences and k is the number of 
@@ -22,11 +22,13 @@
 #' @param beta An k x l matrix of regression coefficients for time-constant 
 #'   covariates for mixture probabilities, where l is the number of models and k
 #'   is the number of covariates. A logit-link is used mixture probabilities.
-#' @param stateNames List of pptional labels for the hidden states
+#'   First column is set to zero.
+#' @param stateNames List of optional labels for the hidden states
 #' @return Object of class \code{mixtureHMModel}
-#' 
+#' @seealso \code{\link{fitMixHMM}} for fitting mixture Hidden Markov models.
+#'   
 
-buildMixtureHMM <- 
+buildMixHMM <- 
   function(observations,transitionMatrix,emissionMatrix,initialProbs, X, beta, stateNames=NULL){
     
     numberOfModels<-length(transitionMatrix)
@@ -36,26 +38,27 @@ buildMixtureHMM <-
     model <- vector("list", length = numberOfModels)
     
     # States
-    numberOfStates <- nrow(transitionMatrix[[1]]) 
+    numberOfStates <- unlist(lapply(transitionMatrix,nrow))
     
     if(any(numberOfStates!=unlist(lapply(transitionMatrix,dim))))
-      stop("transition matrices must be square matrices with same dimensions.")
+      stop("Transition matrices must be square matrices with same dimensions.")
     
-    if(is.null(stateNames))
-      stateNames<-replicate(n=numberOfModels,as.character(1:numberOfStates),simplify=FALSE)
+    if(is.null(stateNames)){
+      stateNames <- vector("list", numberOfModels)
+      for(m in 1:numberOfModels){
+        stateNames[[m]] <- as.character(1:numberOfStates[m])
+      }
+    }
     
-    if(all(1==unlist(sapply(transitionMatrix,rowSums))))
-      if(!isTRUE(all.equal(rowSums(transitionMatrix),rep(1,dim(transitionMatrix)[1]),check.attributes=FALSE)))
-        stop("Transition probabilities in transitionMatrix do not sum to one.")
+    if(!all(1==unlist(sapply(transitionMatrix,rowSums))))
+      stop("Transition probabilities in transitionMatrix do not sum to one.")
     
+    if(!all(1==unlist(sapply(initialProbs,sum))))
+      stop("Initial state probabilities do not sum to one.")
+
     for(i in 1:numberOfModels){
-      if(!isTRUE(all.equal(sum(initialProbs[[i]]),1,check.attributes=FALSE)))
-        stop("Initial state probabilities do not sum to one.")
-      
-      if(!isTRUE(all.equal(rowSums(transitionMatrix[[i]]),
-                           rep(1,numberOfStates),check.attributes=FALSE)))
-        stop("Transition probabilities in transitionMatrix do not sum to one.")
-      dimnames(transitionMatrix[[i]])<-list(from=stateNames[[i]],to=stateNames[[i]])
+
+      dimnames(transitionMatrix[[i]]) <- list(from=stateNames[[i]],to=stateNames[[i]])
       # Single channel but emissionMatrix is list of lists  
       if(is.list(emissionMatrix[[i]]) && length(emissionMatrix[[i]])==1)   
         emissionMatrix[[i]] <- emissionMatrix[[i]][[1]]
@@ -82,23 +85,24 @@ buildMixtureHMM <-
       numberOfSequences<-nrow(observations[[1]])
       lengthOfSequences<-ncol(observations[[1]])
       
+
       symbolNames<-lapply(observations,alphabet)
       numberOfSymbols<-sapply(symbolNames,length)
       for(i in 1:numberOfModels){
-        if(any(sapply(emissionMatrix[[i]],nrow)!=numberOfStates))
+        if(any(lapply(emissionMatrix[[i]],nrow)!=numberOfStates[i]))
           stop("Number of rows in emissionMatrix is not equal to the number of states.")
         
         if(any(numberOfSymbols!=sapply(emissionMatrix[[i]],ncol)))
           stop("Number of columns in emissionMatrix is not equal to the number of symbols.")
         if(!isTRUE(all.equal(c(sapply(emissionMatrix[[i]],rowSums)),
-                             rep(1,numberOfChannels*numberOfStates),check.attributes=FALSE)))
+                             rep(1,numberOfChannels*numberOfStates[i]),check.attributes=FALSE)))
           stop("Emission probabilities in emissionMatrix do not sum to one.")
-        
+
         channelNames<-names(observations)  
         if(is.null(channelNames))
           channelNames<-as.character(1:numberOfChannels)
         for(j in 1:numberOfChannels)
-          dimnames(emissionMatrix[[i]][[j]])<-list(stateNames=stateNames,symbolNames=symbolNames[[j]])
+          dimnames(emissionMatrix[[i]][[j]])<-list(stateNames=stateNames[[i]],symbolNames=symbolNames[[j]])
         names(emissionMatrix[[i]])<-channelNames
       }
     } else {
@@ -110,13 +114,13 @@ buildMixtureHMM <-
       numberOfSymbols<-length(symbolNames)
       
       for(i in 1:numberOfModels){
-        if(numberOfStates!=dim(emissionMatrix[[i]])[1])
+        if(numberOfStates[i]!=dim(emissionMatrix[[i]])[1])
           stop("Number of rows in emissionMatrix is not equal to the number of states.")
         if(numberOfSymbols!=dim(emissionMatrix[[i]])[2])
           stop("Number of columns in emissionMatrix is not equal to the number of symbols.")
-        if(!isTRUE(all.equal(rep(1,numberOfStates),rowSums(emissionMatrix[[i]]),check.attributes=FALSE)))
+        if(!isTRUE(all.equal(rep(1,numberOfStates[i]),rowSums(emissionMatrix[[i]]),check.attributes=FALSE)))
           stop("Emission probabilities in emissionMatrix do not sum to one.")
-        dimnames(emissionMatrix[[i]])<-list(stateNames=stateNames,symbolNames=symbolNames)
+        dimnames(emissionMatrix[[i]])<-list(stateNames=stateNames[[i]],symbolNames=symbolNames)
       }
       
     }
@@ -126,23 +130,26 @@ buildMixtureHMM <-
         stop("Wrong dimensions of X.")
       numberOfCovariates<-ncol(X)
       if(missing(beta)){
-        beta<-matrix(1,numberOfCovariates,numberOfModels)
+        beta<-matrix(0,numberOfCovariates,numberOfModels)
       } else {
         if(ncol(beta)!=numberOfModels | nrow(beta)!=numberOfCovariates)
           stop("Wrong dimensions of beta.")
+        beta[,1]<-0
       }       
     } else { #Just intercept
       numberOfCovariates <-1
       X <- matrix(1,nrow=numberOfSequences)
-      beta <- matrix(1,1,numberOfModels)        
+      beta <- matrix(0,1,numberOfModels)        
     }
     
-    model<-list(observations=observations,transitionMatrix=transitionMatrix,
-                emissionMatrix=emissionMatrix,initialProbs=initialProbs,beta=beta,X=X,stateNames=stateNames,
-                symbolNames=symbolNames,channelNames=channelNames,lengthOfSequences=lengthOfSequences,
-                numberOfSequences=numberOfSequences,numberOfModels=numberOfModels,
-                numberOfSymbols=numberOfSymbols,numberOfStates=numberOfStates,
-                numberOfChannels=numberOfChannels,numberOfCovariates=numberOfCovariates)
+    model<-list(observations=observations, transitionMatrix=transitionMatrix,
+                emissionMatrix=emissionMatrix, initialProbs=initialProbs,
+                beta=beta, X=X,stateNames=stateNames, symbolNames=symbolNames,
+                channelNames=channelNames, lengthOfSequences=lengthOfSequences,
+                numberOfSequences=numberOfSequences, numberOfModels=numberOfModels,
+                numberOfSymbols=numberOfSymbols, numberOfStates=numberOfStates,
+                numberOfChannels=numberOfChannels,
+                numberOfCovariates=numberOfCovariates)
     class(model)<-"mixHMModel"
     model
   }

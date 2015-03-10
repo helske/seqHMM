@@ -534,7 +534,6 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
           cpals[[j]] <- unique(c(cpals[[j]], attr(x[[i]]$obs[[j]], "cpal")))
           if(any(x[[i]]$obs[[j]]=="*")){
             anymissing <- TRUE
-            break()
           }
         }
         

@@ -1,9 +1,8 @@
 #' Estimate Parameters of Hidden Markov Model
 
 #' Function \code{fitHMM} estimates the initial state, transition and emission 
-#' probabilities of hidden Markov model using numerical maximization of 
-#' log-likelihood. Initial values for estimation are taken from the 
-#' corresponding components of model with preservation of original zero 
+#' probabilities of hidden Markov model. Initial values for estimation are taken from the 
+#' corresponding components of the model with preservation of original zero 
 #' probabilities.
 #' 
 #' By default, estimation start with EM algorithm and then switches to direct 

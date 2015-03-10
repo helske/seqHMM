@@ -206,6 +206,26 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
+// logLikMixHMM
+double logLikMixHMM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_);
+RcppExport SEXP seqHMM_logLikMixHMM(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP coefsSEXP, SEXP X_SEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP );
+        Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP );
+        Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP );
+        Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP );
+        Rcpp::traits::input_parameter< NumericMatrix >::type coefs(coefsSEXP );
+        Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP );
+        double __result = logLikMixHMM(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
 // viterbi
 List viterbi(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray);
 RcppExport SEXP seqHMM_viterbi(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP) {
