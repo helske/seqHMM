@@ -9,7 +9,7 @@ Package seqHMM is designed for inference of hidden Markov models
     maximization with analytical gradients is supported. All main algorithms
     are written in C++.
 
-Package is still under heavy development (see details below), and should be available at CRAN in early 2015.
+Package is still under heavy development (see details below), and should be available at CRAN in 2015.
 
 If you want to try it out, you can install it via devtools package:
 
