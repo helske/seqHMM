@@ -40,8 +40,8 @@ buildMixHMM <-
     # States
     numberOfStates <- unlist(lapply(transitionMatrix,nrow))
     
-    if(any(numberOfStates!=unlist(lapply(transitionMatrix,dim))))
-      stop("Transition matrices must be square matrices with same dimensions.")
+    if(any(rep(numberOfStates,each=2)!=unlist(lapply(transitionMatrix,dim))))
+      stop("Transition matrices must be square matrices.")
     
     if(is.null(stateNames)){
       stateNames <- vector("list", numberOfModels)

@@ -6,7 +6,7 @@
 #' original zero probabilities.
 
 #' @export
-#' @import optimx
+#' @import optimx, Matrix
 #' @param model Hidden Markov model of class HMModel or MCHMModel.
 #' @param method Optimization method used by \code{optimx}. Default is 
 #'   \code{"BFGS"}. Note that \code{fitHMM} uses Softmax parameterization so 
@@ -93,235 +93,191 @@
 
 fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
   
-  stop("Under construction")
+  original_model <- model
+  model <- combineModels(model)
   
-#   if(model$numberOfChannels==1){
-#     # Using integers (Substract 1: indexing in C++ starts from 0)
-#     obsArray <- data.matrix(model$observations)-1 
-#     # Missing values
-#     obsArray[obsArray>model$numberOfSymbols] <- model$numberOfSymbols
-#     
-#   } else{
-#     obsArray<-array(0, c(model$numberOfSequences, model$lengthOfSequences, 
-#                          model$numberOfChannels))
-#     for(i in 1:model$numberOfChannels){
-#       obsArray[,,i]<-data.matrix(model$observations[[i]])-1
-#       obsArray[,,i][obsArray[,,i]>model$numberOfSymbols[i]] <- model$numberOfSymbols[i]
-#     }           
-#   }
-#   #storage.mode(obsArray)<-"integer"
-#   
-#   
-#   
-#   # Largest initial probability
-#   maxIP <- maxIPvalue <- npIP <- numeric(model$numberOfModels)
-#   paramIP <- vector("list",model$numberOfModels)
-#   for(m in 1:model$numberOfModels){
-#     # Index of largest initial probability
-#     maxIP[m] <- which.max(model$initialProbs[[m]])
-#     # Value of largest initial probability
-#     maxIPvalue[m] <- model$initialProbs[[m]][maxIP[m]]
-#     # Rest of non-zero probs
-#     paramIP[[m]] <- setdiff(which(model$initialProbs[[m]]>0),maxIP[m]) 
-#     npIP[m] <- length(paramIP[[m]])
-#   }
-#   
-#   # Largest transition probabilities (for each row)
-#   transNZ <- maxTM <- maxTMvalue <- paramTM <- vector("list",model$numberOfModels)
-#   npTM <- numeric(model$numberOfModels)
-#   for(m in 1:model$numberOfModels){
-#     x <- which(model$transitionMatrix[[m]]>0,arr.ind=TRUE)  
-#     transNZ[[m]] <- x[order(x[,1]),]
-#     maxTM[[m]] <- cbind(1:model$numberOfStates[[m]],
-#                    max.col(model$transitionMatrix[[m]],ties.method="first"))
-#     maxTMvalue[[m]] <- apply(model$transitionMatrix[[m]],1,max)
-#     paramTM[[m]] <- rbind(transNZ[[m]],maxTM[[m]])
-#     paramTM[[m]] <- paramTM[[m]][!(duplicated(paramTM[[m]])|duplicated(paramTM[[m]],fromLast=TRUE)),,drop=FALSE]
-#     npTM[m] <- nrow(paramTM[[m]])
-#   }
-#   
-#   # Single channel model
-#   if(model$numberOfChannels==1){
-#     emissNZ <- maxEM <- maxEMvalue <- paramEM <- vector("list",model$numberOfModels)
-#     npEM <- numeric(model$numberOfModels)
-#     # Largest emission probabilities (for each row)
-#     for(m in 1:model$numberOfModels){
-#       x <- which(model[[m]]$emissionMatrix>0,arr.ind=TRUE) 
-#       emissNZ[[m]] <- x[order(x[,1]),]
-#       maxEM[[m]] <- cbind(1:model[[m]]$numberOfStates,max.col(model[[m]]$emissionMatrix,ties.method="first"))
-#       maxEMvalue[[m]] <- apply(model[[m]]$emissionMatrix,1,max)
-#       paramEM[[m]] <- rbind(emissNZ[[m]],maxEM[[m]])
-#       paramEM[[m]] <- paramEM[[m]][!(duplicated(paramEM[[m]])|duplicated(paramEM[[m]],fromLast=TRUE)),]
-#       npEM[m] <- nrow(paramEM[[m]])
-#     }
-#     
-#     # Initial parameter values (if anything to estimate)
-#     initialvalues <- vector("list",model$numberOfModels)
-#     for(m in 1:model$numberOfModels){
-#       initialvalues[[m]] <- c(log(c(
-#         if(npTM[[m]]>0) model$transitionMatrix[[m]][paramTM[[m]]],
-#         if(npEM[[m]]>0) model$emissionMatrix[[m]][paramEM[[m]]],
-#         if(npIP[[m]]>0) model$initialProbs[[m]][paramIP[[m]]]))
-#       )
-#     }
-#     
-#     
-#     # Function for minimizing log likelihood
-#     likfn<-function(pars,model,estimate=TRUE){
-#       
-#       for(m in 1:model$numberOfModels){
-#         if(npTM[[m]]>0){
-#           model$transitionMatrix[[m]][maxTM[[m]]] <- maxTMvalue[[m]] # Not needed?
-#           # Exponentiate (need to be positive)
-#           model$transitionMatrix[[m]][paramTM[[m]]] <- exp(pars[1:npTM[[m]]])
-#           # Sum to 1
-#           model$transitionMatrix[[m]] <- model$transitionMatrix[[m]]/
-#             rowSums(model$transitionMatrix[[m]])  
-#         }
-#         if(npEM[[m]]>0){
-#           model$emissionMatrix[[m]][maxEM[[m]]] <- maxEMvalue[[m]] # Not needed? 
-#           model$emissionMatrix[[m]][paramEM[[m]]] <- exp(pars[(npTM[[m]]+1):
-#                                                               (npTM[[m]]+npEM[[m]])])
-#           model$emissionMatrix[[m]] <- model$emissionMatrix[[m]]/
-#             rowSums(model$emissionMatrix[[m]]) 
-#         }
-#         
-#         if(npIP[[m]]>0){
-#           model$initialProbs[[m]][maxIP[[m]]] <- maxIPvalue[[m]] # Not needed?
-#           model$initialProbs[[m]][paramIP[[m]]] <- exp(pars[npTM[[m]]+npEM[[m]]+
-#                                                             1:npIP[[m]]])
-#           model$initialProbs[[m]][] <- model$initialProbs[[m]]/
-#             sum(model$initialProbs[[m]])
-#         } 
-#         
-# #         if()
-#           
-#           
-#           if(estimate){
-#             # C++ function
-#             - logLikMixHMM(model$transitionMatrix, 
-#                            cbind(model$emissionMatrix,1), # prob=1 for missing observations
-#                            model$initialProbs, obsArray, lweights)     
-#             # Return model parameters
-#           } else model
-#       }
-#     }
-#     
-#     
-#     # Same for multichannel model  
-#   } else {      
-#     
-#     emissNZ <- maxEM <- maxEMvalue <- paramEM <- npEM <- vector("list",model$numberOfModels)
-# 
-#     for(m in 1:model$numberOfModels){
-#       emissNZ[[m]] <- lapply(model$emissionMatrix[[m]],function(i){
-#         x<-which(i>0,arr.ind=TRUE) 
-#         x[order(x[,1]),]
-#       })
-#       
-#       maxEM[[m]] <- lapply(model$emissionMatrix[[m]],function(i) cbind(1:model$numberOfStates[[m]],max.col(i,ties.method="first")))
-#       
-#       maxEMvalue[[m]] <- lapply(1:model$numberOfChannels, function(i) 
-#         apply(model$emissionMatrix[[m]][[i]],1,max))
-#       
-#       paramEM[[m]] <- lapply(1:model$numberOfChannels,function(i) {
-#         x<-rbind(emissNZ[[m]][[i]],maxEM[[m]][[i]])
-#         x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
-#       })
-#       npEM[[m]] <- sapply(paramEM[[m]],nrow)    
-#     }
-#     
-# 
-#     initialvalues <- vector("list",model$numberOfModels)
-#     for(m in 1:model$numberOfModels){
-#       initialvalues[[m]] <- c(log(c(
-#         if(npTM[[m]]>0) model$transitionMatrix[[m]][paramTM[[m]]],
-#         if(sum(npEM[[m]])>0) unlist(sapply(1:model$numberOfChannels,
-#                                       function(x) model$emissionMatrix[[m]][[x]][paramEM[[m]][[x]]])),
-#         if(npIP[[m]]>0) model$initialProbs[[m]][paramIP[[m]]]))
-#       )
-#     }
-#     npModels <- sapply(initialvalues, length)
-#     initialvalues <- unlist(initialvalues)
-#     
-#     emissionArray <- vector("list",model$numberOfModels)
-#     for(m in 1:model$numberOfModels){
-#       emissionArray[[m]] <- array(1,c(model$numberOfStates[[m]],
-#                                       max(model$numberOfSymbols)+1,
-#                                       model$numberOfChannels))
-#       for(i in 1:model$numberOfChannels)
-#         emissionArray[[m]][,1:model$numberOfSymbols[i],i] <- model$emissionMatrix[[m]][[i]]          
-#     }
-#     
-#     # Tähän asti ok(?)
-#     
-#     likfn<-function(pars,model,estimate=TRUE){
-#       
-#       if(any(!is.finite(pars)) && estimate)
-#         return(.Machine$double.xmax)
-#       
-#       
-#       for(m in 1:model$numberOfModels){
-#         csnpM <- cumsum(npModels[1:(m-1)])
-#         if(npTM[[m]]>0){
-#           model$transitionMatrix[[m]][maxTM[[m]]] <- maxTMvalue[[m]]     
-#           model$transitionMatrix[[m]][paramTM[[m]]] <- 
-#             exp(pars[csnpM+1:npTM[[m]]])
-#           model$transitionMatrix[[m]] <- model$transitionMatrix[[m]]/
-#             rowSums(model$transitionMatrix[[m]])       
-#         }
-#         if(sum(npEM[[m]])>0){            
-#           for(i in 1:model$numberOfChannels){
-#             emissionArray[[m]][,1:model$numberOfSymbols[i],i][maxEM[[m]][[i]]] <- 
-#               maxEMvalue[[m]][[i]]    
-#             emissionArray[[m]][,1:model$numberOfSymbols[i],i][paramEM[[m]][[i]]] <-
-#               exp(pars[(csnpM+npTM[[m]]+1+c(0,cumsum(npEM[[m]]))[i]):
-#                          (csnpM+npTM[[m]]+cumsum(npEM[[m]])[i])])
-#             rowSumsB <- rowSums(emissionArray[[m]][,1:model$numberOfSymbols[i],i])
-#             emissionArray[[m]][,1:model$numberOfSymbols[i],i] <-
-#               emissionArray[[m]][,1:model$numberOfSymbols[i],i]/rowSumsB
-#           }
-#         }
-#         
-#         if(npIP[[m]]>0){
-#           model$initialProbs[[m]][maxIP[[m]]] <- maxIPvalue[[m]]
-#           model$initialProbs[[m]][paramIP[[m]]] <- 
-#             exp(pars[(csnpM+npTM[[m]]+sum(npEM[[m]])+1):
-#                        (csnpM+npTM[[m]]+sum(npEM[[m]])+npIP[[m]])])     
-#           model$initialProbs[[m]][] <- model$initialProbs[[m]]/
-#             sum(model$initialProbs[[m]])
-#         } 
-#       }
-#       if(estimate){
-#         - logLikMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, 
-#                       obsArray)     
-#       } else {
-#         for(m in 1:model$numberOfModels){
-#           if(sum(npEM[[m]])>0){
-#             for(i in 1:model$numberOfChannels){
-#               model$emissionMatrix[[m]][[i]][] <- 
-#                 emissionArray[[m]][,1:model$numberOfSymbols[i],i]
-#             }
-#           }
-#         }
-#         model
-#       }        
-#     }  
-#     
-#   }
-#   
-#   if(is.null(optimx.control$kkt)){
-#     optimx.control$kkt <- FALSE
-#   }
-#   if(is.null(optimx.control$starttests)){
-#     optimx.control$starttests <- FALSE
-#   }
-#   
-#   resoptimx <- optimx(par=initialvalues, fn=likfn, method=method, 
-#                       itnmax=itnmax, control=optimx.control, model=model,...)
-#   model <- likfn(as.numeric(resoptimx[1:length(initialvalues)]), model, FALSE)
-#   
-#   
-#   
-#   list(model=model,logLik=-resoptimx$value,optimx.result=resoptimx)
+  if(model$numberOfChannels==1){
+    # Using integers (Substract 1: indexing in C++ starts from 0)
+    obsArray <- data.matrix(model$observations)-1 
+    # Missing values
+    obsArray[obsArray>model$numberOfSymbols] <- model$numberOfSymbols
+    
+  } else{
+    obsArray<-array(0, c(model$numberOfSequences, model$lengthOfSequences, 
+                         model$numberOfChannels))
+    for(i in 1:model$numberOfChannels){
+      obsArray[,,i]<-data.matrix(model$observations[[i]])-1
+      obsArray[,,i][obsArray[,,i]>model$numberOfSymbols[i]] <- model$numberOfSymbols[i]
+    }           
+  }
+  
+  # Index of largest initial probability
+  maxIP<-which.max(model$initialProbs)
+  # Value of largest initial probability
+  maxIPvalue<-model$initialProbs[maxIP]
+  # Rest of non-zero probs
+  paramIP<-setdiff(which(model$initialProbs>0),maxIP)
+  npIP<-length(paramIP)
+  initNZ<-model$initialProbs>0
+  initNZ[maxIP]<-2
+  
+  # Largest transition probabilities (for each row)
+  x<-which(model$transitionMatrix>0,arr.ind=TRUE)  
+  transNZ<-x[order(x[,1]),]
+  maxTM<-cbind(1:model$numberOfStates,max.col(model$transitionMatrix,ties.method="first"))
+  maxTMvalue<-apply(model$transitionMatrix,1,max)
+  paramTM <- rbind(transNZ,maxTM)
+  paramTM <- paramTM[!(duplicated(paramTM)|duplicated(paramTM,fromLast=TRUE)),,drop=FALSE]
+  npTM<-nrow(paramTM)
+  transNZ<-model$transitionMatrix>0
+  transNZ[maxTM]<-2    
+  
+  npBeta<-length(model$beta[,-1])
+  model$beta[,1] <- 0
+  # Single channel model
+  if(model$numberOfChannels==1){
+    # Largest emission probabilities (for each row)
+    x<-which(model$emissionMatrix>0,arr.ind=TRUE) 
+    emissNZ<-x[order(x[,1]),]
+    maxEM<-cbind(1:model$numberOfStates,max.col(model$emissionMatrix,ties.method="first"))
+    maxEMvalue<-apply(model$emissionMatrix,1,max)
+    paramEM <- rbind(emissNZ,maxEM)
+    paramEM <- paramEM[!(duplicated(paramEM)|duplicated(paramEM,fromLast=TRUE)),]
+    npEM<-nrow(paramEM)
+    emissNZ<-model$emissionMatrix>0
+    emissNZ[maxEM]<-2
+    
+    
+    
+    # Initial parameter values (if anything to estimate)
+    initialvalues<-c(log(c(
+      if(npTM>0) model$transitionMatrix[paramTM],
+      if(npEM>0) model$emissionMatrix[paramEM],
+      if(npIP>0) model$initialProbs[paramIP])),
+      model$beta[,-1]
+    )
+    
+    # Function for minimizing log likelihood
+    likfn<-function(pars,model,estimate=TRUE){
+      
+      if(npTM>0){
+        model$transitionMatrix[maxTM]<-maxTMvalue      # Not needed?
+        # Exponentiate (need to be positive)
+        model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
+        # Sum to 1
+        model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)  
+      }
+      if(npEM>0){
+        model$emissionMatrix[maxEM]<-maxEMvalue     
+        model$emissionMatrix[paramEM]<-exp(pars[(npTM+1):(npTM+npEM)])
+        model$emissionMatrix<-model$emissionMatrix/rowSums(model$emissionMatrix) 
+      }
+      
+      if(npIP>0){
+        model$initialProbs[maxIP]<-maxIPvalue
+        model$initialProbs[paramIP]<-exp(pars[npTM+npEM+1:npIP])
+        model$initialProbs[]<-model$initialProbs/sum(model$initialProbs)
+      } 
+      model$beta[,-1] <- pars[npTM+npEM+1:npBeta]
+      if(estimate){
+        - logLikMixHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray,
+                       model$beta, model$X, original_model$numberOfStates)      
+      } else model
+    }
+    # Same for multichannel model  
+  } else {      
+    emissNZ<-lapply(model$emissionMatrix,function(i){
+      x<-which(i>0,arr.ind=TRUE) 
+      x[order(x[,1]),]
+    })
+    
+    maxEM<-lapply(model$emissionMatrix,function(i) cbind(1:model$numberOfStates,max.col(i,ties.method="first")))
+    
+    maxEMvalue<-lapply(1:model$numberOfChannels, function(i) 
+      apply(model$emissionMatrix[[i]],1,max))
+    
+    paramEM<-lapply(1:model$numberOfChannels,function(i) {
+      x<-rbind(emissNZ[[i]],maxEM[[i]])
+      x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
+    })
+    npEM<-sapply(paramEM,nrow)
+    
+    emissNZ<-array(0,c(model$numberOfStates,max(model$numberOfSymbols),model$numberOfChannels))
+    for(i in 1:model$numberOfChannels){
+      emissNZ[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]] > 0
+      emissNZ[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-2
+      
+    }       
+    
+    initialvalues<-c(log(c(
+      if(npTM>0) model$transitionMatrix[paramTM],
+      if(sum(npEM)>0) unlist(sapply(1:model$numberOfChannels,
+                                    function(x) model$emissionMatrix[[x]][paramEM[[x]]])),
+      if(npIP>0) model$initialProbs[paramIP])),
+      model$beta[,-1]
+    )         
+    
+    emissionArray<-array(1,c(model$numberOfStates,max(model$numberOfSymbols)+1,model$numberOfChannels))
+    for(i in 1:model$numberOfChannels)
+      emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]          
+    
+    
+    
+    likfn<-function(pars,model,estimate=TRUE){
+      
+      if(any(!is.finite(pars)) && estimate)
+        return(.Machine$double.xmax)
+      if(npTM>0){
+        model$transitionMatrix[maxTM]<-maxTMvalue     
+        model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
+        model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)       
+      }
+      if(sum(npEM)>0){            
+        for(i in 1:model$numberOfChannels){
+          emissionArray[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]    
+          emissionArray[,1:model$numberOfSymbols[i],i][paramEM[[i]]]<-
+            exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
+          rowSumsB<-rowSums(emissionArray[,1:model$numberOfSymbols[i],i])
+          emissionArray[,1:model$numberOfSymbols[i],i]<-
+            emissionArray[,1:model$numberOfSymbols[i],i]/rowSumsB
+        }
+      }
+      
+      if(npIP>0){
+        model$initialProbs[maxIP]<-maxIPvalue
+        model$initialProbs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])     
+        model$initialProbs[]<-model$initialProbs/sum(model$initialProbs)
+      } 
+      model$beta[,-1] <- pars[npTM+npEM+1:npBeta]
+      if(estimate){   
+        - logLikMixMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
+                      model$beta, model$X, original_model$numberOfStates)   
+      } else {
+        if(sum(npEM)>0){
+          for(i in 1:model$numberOfChannels){
+            model$emissionMatrix[[i]][]<-emissionArray[,1:model$numberOfSymbols[i],i]
+          }
+        }
+        model
+      }        
+    } 
+  }
+  
+  if(is.null(optimx.control$kkt)){
+    optimx.control$kkt <- FALSE
+  }
+  if(is.null(optimx.control$starttests)){
+    optimx.control$starttests <- FALSE
+  }
+  
+  resoptimx <- optimx(par=initialvalues, fn=likfn, method=method, 
+                      itnmax=itnmax, control=optimx.control, model=model,...)
+  model <- likfn(as.numeric(resoptimx[1:length(initialvalues)]), model, FALSE)
+  
+  ### puuttuu:
+  #### tulosten kopiominen takaisin original_modeliin! (eli ei-blokkimalliin)
+  ### testaus
+  
+  
+  list(model=model,logLik=-resoptimx$value,optimx.result=resoptimx)
 }

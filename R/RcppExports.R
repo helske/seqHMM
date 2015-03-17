@@ -41,8 +41,12 @@ logLikMCHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray)
     .Call('seqHMM_logLikMCHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
 
-logLikMixHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_) {
-    .Call('seqHMM_logLikMixHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_)
+logLikMixHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates) {
+    .Call('seqHMM_logLikMixHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates)
+}
+
+logLikMixMCHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates) {
+    .Call('seqHMM_logLikMixMCHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates)
 }
 
 viterbi <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {

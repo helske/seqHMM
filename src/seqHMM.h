@@ -5,6 +5,7 @@
 
 double logSumExp(const double& x,const double& y);
 
+arma::vec reparma(arma::vec x, Rcpp::IntegerVector y);
                       
 void internalForwardMC(const arma::mat& transition, const arma::cube& emission, 
                      const arma::vec& init, const arma::Cube<int>& obs, arma::cube& alpha);
