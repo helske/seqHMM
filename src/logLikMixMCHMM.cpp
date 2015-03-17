@@ -39,7 +39,6 @@ NumericMatrix X_, IntegerVector numberOfStates) {
   arma::mat lweights = exp(X*coef).t(); 
   lweights.each_row() /= sum(lweights,0);
   lweights = log(lweights); 
-  
   transition = log(transition); 
   emission = log(emission); 
   init = log(init); 

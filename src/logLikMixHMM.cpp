@@ -39,6 +39,7 @@ NumericMatrix X_, IntegerVector numberOfStates) {
   lweights.each_row() /= sum(lweights,0);
   lweights = log(lweights); 
   
+  Rcpp::Rcout<<lweights;
   transition = log(transition); 
   emission = log(emission); 
   init = log(init); 

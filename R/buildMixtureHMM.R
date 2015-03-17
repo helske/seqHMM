@@ -73,7 +73,7 @@ buildMixHMM <-
     
     numberOfChannels <- ifelse(is.list(emissionMatrix[[1]]),length(emissionMatrix[[1]]),1)
     
-    if(any(sapply(emissionMatrix,length)!=numberOfChannels))
+    if(numberOfChannels>1 && any(sapply(emissionMatrix,length)!=numberOfChannels))
       stop("Number of channels defined by emission matrices differ from each other.")
     
     if(numberOfChannels>1){

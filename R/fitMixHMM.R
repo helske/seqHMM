@@ -111,16 +111,27 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
     }           
   }
   
-  # Index of largest initial probability
-  maxIP<-which.max(model$initialProbs)
-  # Value of largest initial probability
-  maxIPvalue<-model$initialProbs[maxIP]
-  # Rest of non-zero probs
-  paramIP<-setdiff(which(model$initialProbs>0),maxIP)
-  npIP<-length(paramIP)
-  initNZ<-model$initialProbs>0
-  initNZ[maxIP]<-2
-  
+  #   # Index of largest initial probability
+  #   maxIP<-which.max(model$initialProbs)
+  #   # Value of largest initial probability
+  #   maxIPvalue<-model$initialProbs[maxIP]
+  #   # Rest of non-zero probs
+  #   paramIP<-setdiff(which(model$initialProbs>0),maxIP)
+  #   npIP<-length(paramIP)
+  #   initNZ<-model$initialProbs>0
+  #   initNZ[maxIP]<-2
+  maxIP <- maxIPvalue <- npIP <- numeric(original_model$numberOfModels)
+  paramIP <- vector("list",original_model$numberOfModels)
+  for(m in 1:original_model$numberOfModels){
+    # Index of largest initial probability
+    maxIP[m] <- which.max(original_model$initialProbs[[m]])
+    # Value of largest initial probability
+    maxIPvalue[m] <- original_model$initialProbs[[m]][maxIP[m]]
+    # Rest of non-zero probs
+    paramIP[[m]] <- setdiff(which(original_model$initialProbs[[m]]>0),maxIP[m])
+    npIP[m] <- length(paramIP[[m]])
+  }
+  npIPAll <- sum(unlist(npIP))
   # Largest transition probabilities (for each row)
   x<-which(model$transitionMatrix>0,arr.ind=TRUE)  
   transNZ<-x[order(x[,1]),]
@@ -153,7 +164,9 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
     initialvalues<-c(log(c(
       if(npTM>0) model$transitionMatrix[paramTM],
       if(npEM>0) model$emissionMatrix[paramEM],
-      if(npIP>0) model$initialProbs[paramIP])),
+      if(npIPAll>0) unlist(sapply(1:original_model$numberOfModels,function(m)
+        if(npIP[m]>0) original_model$initialProbs[[m]][paramIP[[m]]]))
+      )),
       model$beta[,-1]
     )
     
@@ -173,12 +186,19 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
         model$emissionMatrix<-model$emissionMatrix/rowSums(model$emissionMatrix) 
       }
       
-      if(npIP>0){
-        model$initialProbs[maxIP]<-maxIPvalue
-        model$initialProbs[paramIP]<-exp(pars[npTM+npEM+1:npIP])
-        model$initialProbs[]<-model$initialProbs/sum(model$initialProbs)
-      } 
-      model$beta[,-1] <- pars[npTM+npEM+1:npBeta]
+      for(m in 1:original_model$numberOfModels){
+        if(npIP[m]>0){
+          original_model$initialProbs[[m]][maxIP[[m]]] <- maxIPvalue[[m]] # Not needed?
+          original_model$initialProbs[[m]][paramIP[[m]]] <- exp(pars[npTM+npEM+c(0,cumsum(npIP))[m]+
+                                                                       1:npIP[m]])
+          original_model$initialProbs[[m]][] <- original_model$initialProbs[[m]]/
+            sum(original_model$initialProbs[[m]])
+        }
+      }
+      model$initialProbs <- unlist(original_model$initialProbs)
+      model$beta[,-1] <- pars[npTM+npEM+npIPAll+1:npBeta]
+             print(pars)
+             save(model,pars,file="../model.rda")
       if(estimate){
         - logLikMixHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray,
                        model$beta, model$X, original_model$numberOfStates)      
@@ -251,7 +271,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
       model$beta[,-1] <- pars[npTM+npEM+1:npBeta]
       if(estimate){   
         - logLikMixMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
-                      model$beta, model$X, original_model$numberOfStates)   
+                         model$beta, model$X, original_model$numberOfStates)   
       } else {
         if(sum(npEM)>0){
           for(i in 1:model$numberOfChannels){

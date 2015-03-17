@@ -8,24 +8,29 @@ combineModels <- function(model){
   }
   dimnames(transitionMatrix) <- replicate(2, stateNames, simplify=FALSE)
   
-  emissionMatrix <- lapply(1:model$numberOfChannels, function(i){
-    x <- do.call("rbind",sapply(model$emissionMatrix,"[",i))
-    rownames(x) <- stateNames
-    x
-  })
-  names(emissionMatrix) <- model$channelNames
+  if(model$numberOfChannels>1){
+    emissionMatrix <- lapply(1:model$numberOfChannels, function(i){
+      x <- do.call("rbind",sapply(model$emissionMatrix,"[",i))
+      rownames(x) <- stateNames
+      x
+    })
+    names(emissionMatrix) <- model$channelNames
+  } else {
+    emissionMatrix <- do.call("rbind",model$emissionMatrix)
+    rownames(emissionMatrix) <- stateNames
+  }
   
   model <- list(observations = model$observations,
                 transitionMatrix = transitionMatrix,
                 emissionMatrix=emissionMatrix,
-                initialProbs <- unlist(model$initialProbs),
-                beta=beta, X=X,
+                initialProbs = unlist(model$initialProbs),
+                beta=model$beta, X=model$X,
                 stateNames=stateNames,
-                symbolNames=symbolNames,channelNames=model$channelNames,lengthOfSequences=model$lengthOfSequences,
+                symbolNames=model$symbolNames,channelNames=model$channelNames,lengthOfSequences=model$lengthOfSequences,
                 numberOfSequences=model$numberOfSequences,
                 numberOfSymbols=model$numberOfSymbols,numberOfStates=numberOfStates,
                 numberOfChannels=model$numberOfChannels,
-                numberOfCovariates=numberOfCovariates)
-  class(model)<-"mixHMModel"
+                numberOfCovariates=model$numberOfCovariates)
+  class(model)<-"combined_mixHMModel"
   model
 }
