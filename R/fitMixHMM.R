@@ -6,7 +6,7 @@
 #' original zero probabilities.
 
 #' @export
-#' @import optimx, Matrix
+#' @importFrom Matrix .bdiag
 #' @param model Hidden Markov model of class HMModel or MCHMModel.
 #' @param method Optimization method used by \code{optimx}. Default is 
 #'   \code{"BFGS"}. Note that \code{fitHMM} uses Softmax parameterization so 
@@ -197,8 +197,6 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
       }
       model$initialProbs <- unlist(original_model$initialProbs)
       model$beta[,-1] <- pars[npTM+npEM+npIPAll+1:npBeta]
-             print(pars)
-             save(model,pars,file="../model.rda")
       if(estimate){
         - logLikMixHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray,
                        model$beta, model$X, original_model$numberOfStates)      
@@ -289,11 +287,9 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
   if(is.null(optimx.control$starttests)){
     optimx.control$starttests <- FALSE
   }
-  
   resoptimx <- optimx(par=initialvalues, fn=likfn, method=method, 
                       itnmax=itnmax, control=optimx.control, model=model,...)
   model <- likfn(as.numeric(resoptimx[1:length(initialvalues)]), model, FALSE)
-  
   ### puuttuu:
   #### tulosten kopiominen takaisin original_modeliin! (eli ei-blokkimalliin)
   ### testaus

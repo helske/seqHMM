@@ -27,7 +27,6 @@
 #' @return Object of class \code{mixtureHMModel}
 #' @seealso \code{\link{fitMixHMM}} for fitting mixture Hidden Markov models.
 #'   
-
 buildMixHMM <- 
   function(observations,transitionMatrix,emissionMatrix,initialProbs, X, beta, stateNames=NULL){
     

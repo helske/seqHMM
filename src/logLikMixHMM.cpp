@@ -31,15 +31,18 @@ NumericMatrix X_, IntegerVector numberOfStates) {
   double ll=0.0;
   
   int q = coefs.nrow();
-  arma::mat coef(coefs.begin(),q,eDims[0]);
+  arma::mat coef(coefs.begin(),q,numberOfStates.size());
   coef.col(0) = 0.0;
   arma::mat X(X_.begin(),oDims[0],q);
   
-  arma::mat lweights = exp(X*coef).t(); 
+  arma::mat lweights = exp(X*coef).t();
+  if(!lweights.is_finite()){
+    return -std::numeric_limits<double>::max();
+  }
   lweights.each_row() /= sum(lweights,0);
   lweights = log(lweights); 
   
-  Rcpp::Rcout<<lweights;
+  
   transition = log(transition); 
   emission = log(emission); 
   init = log(init); 

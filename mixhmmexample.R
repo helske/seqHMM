@@ -21,7 +21,6 @@ B2 <- matrix(c(0.5,0.9,0.5,0.1),2,2)
 library(TraMineR)
 obs <- seqdef(obs)
 hmm<-buildMixHMM(obs=obs,init=list(1,c(0.5,0.5)),
-                 trans=list(A1,A2),emission=list(B1,B2),X=matrix(onlyfair,ncol=1), beta=matrix(0,1,2))
+                 trans=list(A1,A2),emission=list(B1,B2),X=matrix(onlyfair,ncol=1), beta=matrix(0:1,1,2))
 
-debug(fitMixHMM)
-fitMixHMM(hmm)
+fit<-fitMixHMM(hmm)
