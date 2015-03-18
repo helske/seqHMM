@@ -80,7 +80,9 @@
 #'   
 #' @param with.missing.legend If set to \code{"auto"} (the default), a legend 
 #'   for the missing state is added automatically if one or more of the 
-#'   sequences in data contains missing states. With the value \code{TRUE} a 
+#'   sequences in the data/channel contains missing states and \code{type="I"}. 
+#'   If \code{type="d"} missing states are omitted from the legends unless 
+#'   \code{with.missing=TRUE}. With the value \code{TRUE} a 
 #'   legend for the missing state is added in any case; equivalently 
 #'   \code{FALSE} omits the legend for the missing state.
 #'   
@@ -722,6 +724,14 @@ defineMCSP <- function(x, mpp=NULL,
         warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"mpp\". Sequences were not sorted.")
         sortv <- NULL
       }
+    }
+  }
+  
+  # Legends
+  if(type=="d"){
+    if(with.missing==FALSE && with.missing.legend!=FALSE && with.missing.legend!=TRUE &&
+                                 with.missing.legend=="auto"){
+      with.missing.legend <- FALSE
     }
   }
   

@@ -26,14 +26,14 @@ gridplot(x, rows = NA, cols = NA, byrow = FALSE, withlegend = "auto",
 \item{legend.pos}{Defines the positions of the legend boxes relative to the
   whole plot. Either one of \code{"bottom"} (equivalent to \code{"auto"}) or
   \code{"right"}, or a numerical vector of grid cells (by order) to print the
-  legends to.}
+  legends to (the cells must be in one row/column).}
 
 \item{legend.pos2}{Defines the positions of the legend boxes relative to the
   cell(s). One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"}, \code{"left"},
   \code{"topleft"}, \code{"top"}, \code{"topright"}, \code{"right"} and \code{"center"}.}
 
 \item{title.legend}{The titles for the legend boxes. The default \code{"auto"} takes
-  the titles fromthe channel names provided by the first object in \code{x}.
+  the titles from the channel labels provided by the first object in \code{x}.
   \code{NA} prints no title.}
 
 \item{ncol.legend}{(A vector of) the number of columns for the legend(s). The

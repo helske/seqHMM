@@ -86,7 +86,9 @@ defineMCSP(x, mpp = NULL, plots = "both", type = "I", sortv = NULL,
 
 \item{with.missing.legend}{If set to \code{"auto"} (the default), a legend
   for the missing state is added automatically if one or more of the
-  sequences in data contains missing states. With the value \code{TRUE} a
+  sequences in the data/channel contains missing states and \code{type="I"}.
+  If \code{type="d"} missing states are omitted from the legends unless
+  \code{with.missing=TRUE}. With the value \code{TRUE} a
   legend for the missing state is added in any case; equivalently
   \code{FALSE} omits the legend for the missing state.}
 
