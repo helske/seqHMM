@@ -34,3 +34,8 @@ combineModels <- function(model){
   class(model)<-"combined_mixHMModel"
   model
 }
+
+spreadModel <- function(model){
+  ###TÄNNE TAVARAA
+  
+}

@@ -231,7 +231,9 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
       if(npTM>0) model$transitionMatrix[paramTM],
       if(sum(npEM)>0) unlist(sapply(1:model$numberOfChannels,
                                     function(x) model$emissionMatrix[[x]][paramEM[[x]]])),
-      if(npIP>0) model$initialProbs[paramIP])),
+      if(npIPAll>0) unlist(sapply(1:original_model$numberOfModels,function(m)
+        if(npIP[m]>0) original_model$initialProbs[[m]][paramIP[[m]]]))
+      )),
       model$beta[,-1]
     )         
     
@@ -260,13 +262,18 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
             emissionArray[,1:model$numberOfSymbols[i],i]/rowSumsB
         }
       }
-      
-      if(npIP>0){
-        model$initialProbs[maxIP]<-maxIPvalue
-        model$initialProbs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])     
-        model$initialProbs[]<-model$initialProbs/sum(model$initialProbs)
-      } 
-      model$beta[,-1] <- pars[npTM+npEM+1:npBeta]
+      for(m in 1:original_model$numberOfModels){
+        if(npIP[m]>0){
+          original_model$initialProbs[[m]][maxIP[[m]]] <- maxIPvalue[[m]] # Not needed?
+          original_model$initialProbs[[m]][paramIP[[m]]] <- exp(pars[npTM+sum(npEM)+c(0,cumsum(npIP))[m]+
+                                                                       1:npIP[m]])
+          original_model$initialProbs[[m]][] <- original_model$initialProbs[[m]]/
+            sum(original_model$initialProbs[[m]])
+        }
+      }
+      model$initialProbs <- unlist(original_model$initialProbs)
+      model$beta[,-1] <- pars[npTM+sum(npEM)+npIPAll+1:npBeta]
+
       if(estimate){   
         - logLikMixMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
                          model$beta, model$X, original_model$numberOfStates)   
@@ -290,10 +297,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
   resoptimx <- optimx(par=initialvalues, fn=likfn, method=method, 
                       itnmax=itnmax, control=optimx.control, model=model,...)
   model <- likfn(as.numeric(resoptimx[1:length(initialvalues)]), model, FALSE)
-  ### puuttuu:
-  #### tulosten kopiominen takaisin original_modeliin! (eli ei-blokkimalliin)
-  ### testaus
   
   
-  list(model=model,logLik=-resoptimx$value,optimx.result=resoptimx)
+  list(model=spreadModel(model),logLik=-resoptimx$value,optimx.result=resoptimx)
 }
