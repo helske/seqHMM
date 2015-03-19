@@ -19,6 +19,10 @@ library(devtools)
 install_github("helske/seqHMM")
 ```
 
+Preview of seqHMM
+---------------------------------------------------------------------------------
+
+
 ```
 library(seqHMM)
 library(TraMineR)
