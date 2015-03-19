@@ -99,7 +99,8 @@ mcsp_m3 <- defineMCSP(list(child.seq[biofam$sex=="man",],
                       ylab=c("Children", "Married", "Left home"), withlegend=FALSE,
                       ylab.pos=c(1.5,2.5,1.5))
 
-## Plotting state distributions and index plots of observations for women and men in two columns 
+## Plotting state distributions and index plots of observations for women and men 
+## in two columns 
 gridplot(list(mcsp_f2, mcsp_f3, mcsp_m2, mcsp_m3), cols=2, byrow=TRUE, 
            row.prop=c(0.42,0.42,0.16))
 ```
