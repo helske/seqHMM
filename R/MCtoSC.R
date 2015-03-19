@@ -137,7 +137,7 @@ MCtoSC<-function(model, combine.missing=TRUE, all.combinations=FALSE){
   attr(modelx$observations, "void") <- attr(model$observations[[1]], "void")
   attr(modelx$observations, "missing") <- attr(model$observations[[1]], "missing")
   attr(modelx$observations, "start") <- attr(model$observations[[1]], "start")
-  attr(modelx$observations, "cpal") <- cpal[modelx$symbolNames %in% snames]
+  attr(modelx$observations, "cpal") <- cpal[snames %in% modelx$symbolNames]
   modelx
 }
 
