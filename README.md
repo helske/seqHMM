@@ -22,6 +22,10 @@ install_github("helske/seqHMM")
 Preview of seqHMM
 ---------------------------------------------------------------------------------
 
+This example uses the biofam data from TraMineR package. It is a sample of 2000
+individuals born between 1909 and 1972 constructed from the Swiss Household Panel (SHP) survey in 2002. The data set contains sequences of family life states from age 15 to 30 (in columns 10 to 25).
+
+For seqHMM, data is given as an stslist object using function seqdef in TraMineR. To show a more complex example, the original data is split into three separate channels.
 
 ```
 library(seqHMM)
@@ -60,7 +64,10 @@ left.seq <- seqdef(left, start=15)
 attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
 attr(marr.seq, "cpal") <- c("#E7298A", "#E6AB02")
 attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+```
+Multichannel data can be easily plotted using functions defineMCSP and plot (MCSP for MultiChannel Sequence Plot).
 
+```
 ## Defining the plot for state distribution plots of observations
 mcsp1 <- defineMCSP(list(child.seq, marr.seq, left.seq), type="d", 
                     plots="obs", title="State distribution plots")
@@ -68,7 +75,10 @@ mcsp1 <- defineMCSP(list(child.seq, marr.seq, left.seq), type="d",
 ## Plotting mcsp1
 plot(mcsp1)
 ```
-![My image](https://github.com/helske/seqHMM/blob/master/Examples/mcsp1.png)
+![mcsp1](https://github.com/helske/seqHMM/blob/master/Examples/mcsp1.png)
+
+It is also possible to plot multiple MCSPs in a grid. Here an example of state distributions and sequence index plots for women and men is given.
+
 ```
 ## Preparing plots for state distributios and index plots of observations for women
 #  Sorting by scores from multidimensional scaling
@@ -108,9 +118,11 @@ mcsp_m3 <- defineMCSP(list(child.seq[biofam$sex=="man",],
 gridplot(list(mcsp_f2, mcsp_f3, mcsp_m2, mcsp_m3), cols=2, byrow=TRUE, 
            row.prop=c(0.42,0.42,0.16))
 ```
-![My image](https://github.com/helske/seqHMM/blob/master/Examples/gridplot.png)
-```
+![gridplot](https://github.com/helske/seqHMM/blob/master/Examples/gridplot.png)
 
+When fitting Hidden Markov models (HMMs), initial values for model parameters are first given for function buildHMM. HMM can then be fitted using EM algorithm, direct numerical estimation or a combination of both.
+
+```
 # Initial values for emission matrices 
 B_child <- matrix(NA, nrow=4, ncol=2) 
 B_child[1,] <- seqstatf(child.seq[,1:4])[,2]+0.1 
@@ -152,11 +164,15 @@ bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq),
 ## Fitting hidden Markov model 
 HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8), 
               itnmax=10000, method="BFGS")
+```
+HMModel objects can be easily plotted using a simple plot function. It shows hidden states as pie charts, with emission probabilities as sectors and transition probabilities as arrows.
 
+```
 ## Plot HMM
 plot(HMM$model)
 ```
-![My image](https://github.com/helske/seqHMM/blob/master/Examples/HMMdefault.png)
+![HMMdefault](https://github.com/helske/seqHMM/blob/master/Examples/HMMdefault.png)
+
 ```
 ## Prettier version
 plot(HMM$model, 
@@ -167,13 +183,15 @@ plot(HMM$model,
      # Legend with two columns and less space
      combined.slice.label="States with probability < 0.05")
 ```
-![My image](https://github.com/helske/seqHMM/blob/master/Examples/HMModel.png)
-```
+![HMM](https://github.com/helske/seqHMM/blob/master/Examples/HMModel.png)
 
+The HMModel object can also be used for plotting the observed states and the most probable paths of hidden states.
+
+```
 # Plotting observations and hidden states
 plot(defineMCSP(HMM$model))
 ```
-![My image](https://github.com/helske/seqHMM/blob/master/Examples/MCSPboth_default.png)
+![MCSPboth_default](https://github.com/helske/seqHMM/blob/master/Examples/MCSPboth_default.png)
 ```
 # Prettier version
 plot(defineMCSP(HMM$model, type="I", 
@@ -188,7 +206,95 @@ plot(defineMCSP(HMM$model, type="I",
 most probable paths of hidden states",
                     xtlab=15:30))
 ```
-![My image](https://github.com/helske/seqHMM/blob/master/Examples/MCSPboth.png)
+![MCSPboth](https://github.com/helske/seqHMM/blob/master/Examples/MCSPboth.png)
+
+HMMs can be compared with log-likelihood or Bayesian information criterion (BIC).
+
+```
+## Likelihood
+logLik(HMM$model)
+
+# -4103.938
+
+## BIC
+BIC(HMM$model)
+
+# 8591.137
+```
+The original model can be easily trimmed, i.e. small probabilities are set to zero. With this model, setting probabilities less than 0.01 lead to model with improved likelihood.
+
+```
+## Trimming HMM
+trimmedHMM <- trimHMM(HMM$model, maxit=100, zerotol=1e-02)
+# "1 iterations used."
+# "Trimming improved log-likelihood, ll_trim-ll_orig = 1.63542699738173e-06"
+
+## Emission probabilities of the original HMM
+HMM$model$emiss
+
+# $`1`
+# symbolNames
+# stateNames  Childless      Children
+# 1 1.00000000 1.454112e-177
+# 2 1.00000000  3.134555e-21
+# 3 1.00000000  1.597482e-14
+# 4 0.01953035  9.804697e-01
+# 
+# $`2`
+# symbolNames
+# stateNames      Married     Single
+# 1 1.220309e-16 1.00000000
+# 2 1.602734e-02 0.98397266
+# 3 9.833996e-01 0.01660043
+# 4 9.464670e-01 0.05353301
+# 
+# $`3`
+# symbolNames
+# stateNames    Left home With parents
+# 1 1.037512e-18 1.000000e+00
+# 2 1.000000e+00 3.735228e-13
+# 3 7.127756e-01 2.872244e-01
+# 4 1.000000e+00 3.631100e-43
+
+## Emission probabilities of the trimmed HMM
+trimmedHMM$emiss
+
+# $`1`
+# symbolNames
+# stateNames  Childless  Children
+# 1 1.00000000 0.0000000
+# 2 1.00000000 0.0000000
+# 3 1.00000000 0.0000000
+# 4 0.01953053 0.9804695
+# 
+# $`2`
+# symbolNames
+# stateNames    Married     Single
+# 1 0.00000000 1.00000000
+# 2 0.01603142 0.98396858
+# 3 0.98340199 0.01659801
+# 4 0.94646698 0.05353302
+# 
+# $`3`
+# symbolNames
+# stateNames Left home With parents
+# 1 0.0000000    1.0000000
+# 2 1.0000000    0.0000000
+# 3 0.7127736    0.2872264
+# 4 1.0000000    0.0000000
+```
+Multichannel models can be easily converted to single channel models.
+
+```
+## Converting multichannel model to single channel model
+scHMM <- MCtoSC(HMM$model)
+
+plot(defineMCSP(scHMM, sortv="from.end", sort.channel=0, legend.prop=0.45))
+```
+![scMCSP](https://github.com/helske/seqHMM/blob/master/Examples/scMCSP.png)
+
+
+
 
 What is still missing:
 

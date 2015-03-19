@@ -135,10 +135,10 @@ plot(HMM$model,
      combined.slice.label="States with probability < 0.05")
 
 
-# Plotting observations and hidden states
+## Plotting observations and hidden states
 plot(defineMCSP(HMM$model))
 
-# Prettier version
+## Prettier version
 plot(defineMCSP(HMM$model, type="I", 
                     plots="both", 
                     # Sorting subjects according to multidimensional
@@ -151,3 +151,74 @@ plot(defineMCSP(HMM$model, type="I",
 most probable paths of hidden states",
                     xtlab=15:30))
 
+## Likelihood
+logLik(HMM$model)
+
+# -4103.938
+
+## BIC
+BIC(HMM$model)
+
+# 8591.137
+
+## Trimming HMM
+trimmedHMM <- trimHMM(HMM$model, maxit=100, zerotol=1e-02)
+
+## Emission probabilities of the original HMM
+HMM$model$emiss
+
+# $`1`
+# symbolNames
+# stateNames  Childless      Children
+# 1 1.00000000 1.454112e-177
+# 2 1.00000000  3.134555e-21
+# 3 1.00000000  1.597482e-14
+# 4 0.01953035  9.804697e-01
+# 
+# $`2`
+# symbolNames
+# stateNames      Married     Single
+# 1 1.220309e-16 1.00000000
+# 2 1.602734e-02 0.98397266
+# 3 9.833996e-01 0.01660043
+# 4 9.464670e-01 0.05353301
+# 
+# $`3`
+# symbolNames
+# stateNames    Left home With parents
+# 1 1.037512e-18 1.000000e+00
+# 2 1.000000e+00 3.735228e-13
+# 3 7.127756e-01 2.872244e-01
+# 4 1.000000e+00 3.631100e-43
+
+## Emission probabilities of the trimmed HMM
+trimmedHMM$emiss
+
+# $`1`
+# symbolNames
+# stateNames  Childless  Children
+# 1 1.00000000 0.0000000
+# 2 1.00000000 0.0000000
+# 3 1.00000000 0.0000000
+# 4 0.01953053 0.9804695
+# 
+# $`2`
+# symbolNames
+# stateNames    Married     Single
+# 1 0.00000000 1.00000000
+# 2 0.01603142 0.98396858
+# 3 0.98340199 0.01659801
+# 4 0.94646698 0.05353302
+# 
+# $`3`
+# symbolNames
+# stateNames Left home With parents
+# 1 0.0000000    1.0000000
+# 2 1.0000000    0.0000000
+# 3 0.7127736    0.2872264
+# 4 1.0000000    0.0000000
+
+## Converting multichannel model to single channel model
+scHMM <- MCtoSC(HMM$model)
+
+plot(defineMCSP(scHMM, sortv="from.end", sort.channel=0, legend.prop=0.45))
