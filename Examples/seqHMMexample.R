@@ -152,12 +152,14 @@ plot(defineMCSP(HMM$model, type="I",
                 ylab=c("Children", "Married", "Left home"), 
                 # Title for the plot
                 title="Observed sequences and the 
-most probable paths of hidden states",
+                most probable paths of hidden states",
                 # Labels for hidden states (most common states)
                 mpp.labels=c("1: Childless single, with parents", 
                              "2: Childless single, left home",
                              "3: Married without children",
                              "4: Married parent, left home"),
+                # Colours for hidden states
+                mpp.col=c("olivedrab", "bisque", "plum", "indianred"),
                 # Labels for x axis
                 xtlab=15:30,
                 # Proportion for legends

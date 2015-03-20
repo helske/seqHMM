@@ -216,6 +216,8 @@ most probable paths of hidden states",
                              "2: Childless single, left home",
                              "3: Married without children",
                              "4: Married parent, left home"),
+                # Colours for hidden states
+                mpp.col=c("olivedrab", "bisque", "plum", "indianred"),
                 # Labels for x axis
                 xtlab=15:30,
                 # Proportion for legends
