@@ -4,12 +4,14 @@ seqHMM: Hidden Markov Models for Life Sequences and Other Multivariate, Multicha
 Package seqHMM is designed for inference of hidden Markov models
     where both the hidden state space and the symbol space of observations is
     discrete, and observations consists of multiple sequences possibly with
-    multiply channels such as life calendar data with multiple life domains.
+    multiple channels such as life calendar data with different life domains.
     Maximum likelihood estimation via EM algorithm and direct numerical
     maximization with analytical gradients is supported. All main algorithms
     are written in C++.
 
 Package is still under heavy development (see details below), and should be available at CRAN in 2015.
+
+If you have any questions or wishes, please contact Satu Helske or Jouni Helske, firstname.lastname (at) jyu.fi.
 
 If you want to try it out, you can install it via devtools package:
 
@@ -165,7 +167,7 @@ bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq),
 HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8), 
               itnmax=10000, method="BFGS")
 ```
-HMModel objects can be easily plotted using a simple plot function. It shows hidden states as pie charts, with emission probabilities as sectors and transition probabilities as arrows.
+HMModel objects can be easily plotted using a simple plot function. It shows hidden states as pie charts, with emission probabilities as sectors and transition probabilities as arrows. Initial probabilities are shown below the pie charts.
 
 ```
 ## Plot HMM
@@ -175,36 +177,49 @@ plot(HMM$model)
 
 ```
 ## Prettier version
+## Prettier version
 plot(HMM$model, 
      # larger vertices 
      vertex.size=50, 
      # thicker edges with varying curvature 
      cex.edge.width=3, edge.curved=c(0,-0.7,0.6,0,-0.7,0),
-     # Legend with two columns and less space
-     combined.slice.label="States with probability < 0.05")
+     # Show only states with emission prob. > 0.1
+     combine.slices=0.1, 
+     # Label for combined states
+     combined.slice.label="States with probability < 0.1",
+     # Less space for legend
+     legend.prop=0.3)
 ```
 ![HMM](https://github.com/helske/seqHMM/blob/master/Examples/HMModel.png)
 
 The HMModel object can also be used for plotting the observed states and the most probable paths of hidden states.
 
 ```
-# Plotting observations and hidden states
+## Plotting observations and hidden states
 plot(defineMCSP(HMM$model))
 ```
 ![MCSPboth_default](https://github.com/helske/seqHMM/blob/master/Examples/MCSPboth_default.png)
 ```
-# Prettier version
-plot(defineMCSP(HMM$model, type="I", 
-                    plots="both", 
-                    # Sorting subjects according to multidimensional
-                    # scaling scores of the most probable hidden state paths
-                    sortv="mds.mpp", 
-                    # Naming the channels
-                    ylab=c("Children", "Married", "Left home"), 
-                    # Title for the plot, number of sequences removed
-                    title="Observed sequences and the 
+## Prettier version
+plot(defineMCSP(HMM$model, type="I",
+                plots="both",
+                # Sorting subjects according to multidimensional
+                # scaling scores of the most probable hidden state paths
+                sortv="mds.mpp", 
+                # Naming the channels
+                ylab=c("Children", "Married", "Left home"), 
+                # Title for the plot
+                title="Observed sequences and the 
 most probable paths of hidden states",
-                    xtlab=15:30))
+                # Labels for hidden states (most common states)
+                mpp.labels=c("1: Childless single, with parents", 
+                             "2: Childless single, left home",
+                             "3: Married without children",
+                             "4: Married parent, left home"),
+                # Labels for x axis
+                xtlab=15:30,
+                # Proportion for legends
+                legend.prop=0.45))
 ```
 ![MCSPboth](https://github.com/helske/seqHMM/blob/master/Examples/MCSPboth.png)
 
@@ -221,7 +236,7 @@ BIC(HMM$model)
 
 # 8591.137
 ```
-The original model can be easily trimmed, i.e. small probabilities are set to zero. With this model, setting probabilities less than 0.01 lead to model with improved likelihood.
+The original model can be easily trimmed, i.e. small probabilities set to zero. Here the trimmed model lead to model with slightly improved likelihood, so probabilities less than 0.01 were set to zero.
 
 ```
 ## Trimming HMM
@@ -296,11 +311,14 @@ plot(defineMCSP(scHMM, sortv="from.end", sort.channel=0, legend.prop=0.45))
 
 
 
-What is still missing:
+Coming later
+---------------------------------------------------------------------------------------
 
 <ul> 
- <li>Function for computing posterior probabilities is currently missing (not ported from Fortran version yet, just laziness)</li>
- <li>EM algorithm support for covariates for initial states (relates to _working_ paper by Helske&Helske et al. dealing with HMM clustering). Direct numerical maximization is at testing phase.</li>
+ <li>Function for computing posterior probabilities</li>
+ <li>Markov models</li>
+ <li>Covariates (in the making)</li>
+ <li>Simulating sequences from HMMs</li>
 </ul> 
 
 
