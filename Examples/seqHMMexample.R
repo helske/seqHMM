@@ -131,25 +131,39 @@ plot(HMM$model,
      vertex.size=50, 
      # thicker edges with varying curvature 
      cex.edge.width=3, edge.curved=c(0,-0.7,0.6,0,-0.7,0),
-     # Legend with two columns and less space
-     combined.slice.label="States with probability < 0.05")
+     # Show only states with emission prob. > 0.1
+     combine.slices=0.1, 
+     # Label for combined states
+     combined.slice.label="States with probability < 0.1",
+     # Less space for legend
+     legend.prop=0.3)
 
 
 ## Plotting observations and hidden states
 plot(defineMCSP(HMM$model))
 
 ## Prettier version
-plot(defineMCSP(HMM$model, type="I", 
-                    plots="both", 
-                    # Sorting subjects according to multidimensional
-                    # scaling scores of the most probable hidden state paths
-                    sortv="mds.mpp", 
-                    # Naming the channels
-                    ylab=c("Children", "Married", "Left home"), 
-                    # Title for the plot, number of sequences removed
-                    title="Observed sequences and the 
-most probable paths of hidden states",
-                    xtlab=15:30))
+plot(defineMCSP(HMM$model, type="I",
+                plots="both",
+                # Sorting subjects according to multidimensional
+                # scaling scores of the most probable hidden state paths
+                sortv="mds.mpp", 
+                # Naming the channels
+                ylab=c("Children", "Married", "Left home"), 
+                # Title for the plot
+                title="Observed sequences and the 
+                most probable paths of hidden states",
+                # Labels for hidden states (most common states)
+                mpp.labels=c("1: Childless single, with parents", 
+                             "2: Childless single, left home",
+                             "3: Married without children",
+                             "4: Married parent, left home"),
+                # Colours for hidden states
+                mpp.col=c("olivedrab", "bisque", "plum", "indianred"),
+                # Labels for x axis
+                xtlab=15:30,
+                # Proportion for legends
+                legend.prop=0.45))
 
 ## Likelihood
 logLik(HMM$model)
