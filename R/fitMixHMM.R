@@ -1,10 +1,10 @@
 #' Estimate Parameters of Mixture Hidden Markov Model
-
+#' 
 #' Function \code{fitMixHMM} estimates a mixture of hidden Markov models
 #' using numerical maximization of log-likelihood. Initial values for estimation
 #' are taken from the corresponding components of the model with preservation of
 #' original zero probabilities.
-
+#' 
 #' @export
 #' @importFrom Matrix .bdiag
 #' @param model Hidden Markov model of class HMModel or MCHMModel.
@@ -297,7 +297,6 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
   resoptimx <- optimx(par=initialvalues, fn=likfn, method=method, 
                       itnmax=itnmax, control=optimx.control, model=model,...)
   model <- likfn(as.numeric(resoptimx[1:length(initialvalues)]), model, FALSE)
-  
   
   list(model=spreadModel(model),logLik=-resoptimx$value,optimx.result=resoptimx)
 }
