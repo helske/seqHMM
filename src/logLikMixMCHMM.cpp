@@ -48,8 +48,6 @@ NumericMatrix X_, IntegerVector numberOfStates) {
   double neginf = -arma::math::inf();   
   
   arma::vec initk(eDims[0]);
-  Rcpp::Rcout<<init<<std::endl;
-   Rcpp::Rcout<<lweights.col(0)<<std::endl;
    
   for(int k = 0; k < oDims[0]; k++){    
     initk = init + reparma(lweights.col(k),numberOfStates);
