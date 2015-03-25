@@ -2,11 +2,7 @@
 % Please edit documentation in R/fitMixHMM.R
 \name{fitMixHMM}
 \alias{fitMixHMM}
-\title{Estimate Parameters of Mixture Hidden Markov Model
-Function \code{fitMixHMM} estimates a mixture of hidden Markov models
-using numerical maximization of log-likelihood. Initial values for estimation
-are taken from the corresponding components of the model with preservation of
-original zero probabilities.}
+\title{Estimate Parameters of Mixture Hidden Markov Model}
 \usage{
 fitMixHMM(model, method = "BFGS", itnmax = 10000, optimx.control = list(),
   ...)
@@ -36,7 +32,6 @@ List with components \item{model}{Estimated model. }
   \code{\link{optimx}}. }
 }
 \description{
-Estimate Parameters of Mixture Hidden Markov Model
 Function \code{fitMixHMM} estimates a mixture of hidden Markov models
 using numerical maximization of log-likelihood. Initial values for estimation
 are taken from the corresponding components of the model with preservation of

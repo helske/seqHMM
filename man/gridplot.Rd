@@ -10,7 +10,7 @@ gridplot(x, rows = NA, cols = NA, byrow = FALSE, withlegend = "auto",
   col.prop = "auto", cex.legend = 1)
 }
 \arguments{
-\item{x}{A list of \code{defineMCSP} objects.}
+\item{x}{A list of \code{ssp} objects.}
 
 \item{rows,cols}{Optional arguments to arrange plots.}
 
@@ -58,7 +58,7 @@ gridplot(x, rows = NA, cols = NA, byrow = FALSE, withlegend = "auto",
   reduce the size of the font, values greater than 1 will increase the size.}
 }
 \description{
-Function \code{gridplot} plots multiple \code{MCSP} objects to a
+Function \code{gridplot} plots multiple \code{ssp} objects to a
 grid.
 }
 \examples{
@@ -93,47 +93,47 @@ attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 
 # Preparing plot for state distribution plots of observations for women
-mcsp_f <- defineMCSP(list(child.seq[biofam$sex=="woman",],
+ssp_f <- ssp(list(child.seq[biofam$sex=="woman",],
 marr.seq[biofam$sex=="woman",], left.seq[biofam$sex=="woman",]),
                    type="d", plots="obs", title="Women",
                    ylab=c("Children", "Married", "Left home"))
 
 # Preparing plot for state distribution plots of observations for men
-mcsp_m <- defineMCSP(list(child.seq[biofam$sex=="man",],
+ssp_m <- ssp(list(child.seq[biofam$sex=="man",],
 marr.seq[biofam$sex=="man",], left.seq[biofam$sex=="man",]),
                    type="d", plots="obs", title="Men",
                    ylab=c("Children", "Married", "Left home"))
 
 # Plotting state distribution plots of observations for women and men in two columns
-gridplot(list(mcsp_f, mcsp_m), cols=2, withlegend=FALSE)
+gridplot(list(ssp_f, ssp_m), cols=2, withlegend=FALSE)
 
 
 # Preparing plots for state distributios and index plots of observations for women
-mcsp_f2 <- defineMCSP(list(child.seq[biofam$sex=="woman",],
+ssp_f2 <- ssp(list(child.seq[biofam$sex=="woman",],
 marr.seq[biofam$sex=="woman",], left.seq[biofam$sex=="woman",]),
                     type="d", plots="obs", title="Women",
                     ylab=c("Children", "Married", "Left home"), withlegend=FALSE)
-mcsp_f3 <- defineMCSP(list(child.seq[biofam$sex=="woman",],
+ssp_f3 <- ssp(list(child.seq[biofam$sex=="woman",],
 marr.seq[biofam$sex=="woman",], left.seq[biofam$sex=="woman",]),
                     type="I", plots="obs", title="Women",
                     ylab=c("Children", "Married", "Left home"), withlegend=FALSE)
 
 # Preparing plots for state distributios and index plots of observations for men
-mcsp_m2 <- defineMCSP(list(child.seq[biofam$sex=="man",],
+ssp_m2 <- ssp(list(child.seq[biofam$sex=="man",],
 marr.seq[biofam$sex=="man",], left.seq[biofam$sex=="man",]),
                     type="d", plots="obs", title="Men",
                     ylab=c("Children", "Married", "Left home"), withlegend=FALSE)
-mcsp_m3 <- defineMCSP(list(child.seq[biofam$sex=="man",],
+ssp_m3 <- ssp(list(child.seq[biofam$sex=="man",],
 marr.seq[biofam$sex=="man",], left.seq[biofam$sex=="man",]),
                     type="I", plots="obs", title="Men",
                     ylab=c("Children", "Married", "Left home"), withlegend=FALSE)
 
 # Plotting state distributions and index plots of observations for women and men in two columns
-gridplot(list(mcsp_f2, mcsp_f3, mcsp_m2, mcsp_m3), cols=2, byrow=TRUE,
+gridplot(list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=2, byrow=TRUE,
                   withlegend="combined", legend.pos="bottom", row.prop=c(0.4,0.4,0.2))
 }
 \seealso{
-\code{\link{defineMCSP}} for defining the plot before using
-  \code{gridplot}, and \code{\link{plot.MCSP}} for plotting only one MCSP object.
+\code{\link{ssp}} for defining the plot before using
+  \code{gridplot}, and \code{\link{plot.ssp}} for plotting only one ssp object.
 }
 

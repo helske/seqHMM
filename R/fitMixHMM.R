@@ -298,5 +298,5 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
                       itnmax=itnmax, control=optimx.control, model=model,...)
   model <- likfn(as.numeric(resoptimx[1:length(initialvalues)]), model, FALSE)
   
-  list(model=spreadModel(model),logLik=-resoptimx$value,optimx.result=resoptimx)
+  list(model=(model),logLik=-resoptimx$value,optimx.result=resoptimx)
 }

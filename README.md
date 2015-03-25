@@ -67,31 +67,28 @@ attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
 attr(marr.seq, "cpal") <- c("#E7298A", "#E6AB02")
 attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 ```
-Multichannel data can be easily plotted using functions defineMCSP and plot (MCSP for MultiChannel Sequence Plot).
+Multichannel data can be easily plotted using function ssplot (for Stacked Sequence Plot).
 
 ```
-## Defining the plot for state distribution plots of observations
-mcsp1 <- defineMCSP(list(child.seq, marr.seq, left.seq), type="d", 
+## Plotting state distribution plots of observations
+ssplot(list(child.seq, marr.seq, left.seq), type="d", 
                     plots="obs", title="State distribution plots")
+```                  
+![ssp1](https://github.com/helske/seqHMM/blob/master/Examples/ssp1.png)
 
-## Plotting mcsp1
-plot(mcsp1)
-```
-![mcsp1](https://github.com/helske/seqHMM/blob/master/Examples/mcsp1.png)
-
-It is also possible to plot multiple MCSPs in a grid. Here an example of state distributions and sequence index plots for women and men is given.
+It is also possible to plot multiple ssp objects in a grid. Here an example of state distributions and sequence index plots for women and men is given.
 
 ```
 ## Preparing plots for state distributios and index plots of observations for women
 #  Sorting by scores from multidimensional scaling
-mcsp_f2 <- defineMCSP(list(child.seq[biofam$sex=="woman",],
+ssp_f2 <- ssp(list(child.seq[biofam$sex=="woman",],
                            marr.seq[biofam$sex=="woman",], 
                            left.seq[biofam$sex=="woman",]),
                       type="d", plots="obs", border=NA,
                       title="State distributions for women", title.n=FALSE,
                       ylab=c("Children", "Married", "Left home"), 
                       withlegend=FALSE, ylab.pos=c(1,2,1))
-mcsp_f3 <- defineMCSP(list(child.seq[biofam$sex=="woman",],
+ssp_f3 <- ssp(list(child.seq[biofam$sex=="woman",],
                            marr.seq[biofam$sex=="woman",], 
                            left.seq[biofam$sex=="woman",]),
                       type="I", sortv="mds.obs", plots="obs", 
@@ -100,14 +97,14 @@ mcsp_f3 <- defineMCSP(list(child.seq[biofam$sex=="woman",],
                       ylab.pos=c(1.5,2.5,1.5))
 
 ## Preparing plots for state distributios and index plots of observations for men
-mcsp_m2 <- defineMCSP(list(child.seq[biofam$sex=="man",], 
+ssp_m2 <- ssp(list(child.seq[biofam$sex=="man",], 
                            marr.seq[biofam$sex=="man",], 
                            left.seq[biofam$sex=="man",]), 
                       type="d", plots="obs", border=NA,
                       title="State distributions for men", title.n=FALSE,
                       ylab=c("Children", "Married", "Left home"), 
                       withlegend=FALSE, ylab.pos=c(1,2,1))
-mcsp_m3 <- defineMCSP(list(child.seq[biofam$sex=="man",],
+ssp_m3 <- ssp(list(child.seq[biofam$sex=="man",],
                            marr.seq[biofam$sex=="man",], 
                            left.seq[biofam$sex=="man",]),
                       type="I", sortv="mds.obs", plots="obs", 
@@ -117,7 +114,7 @@ mcsp_m3 <- defineMCSP(list(child.seq[biofam$sex=="man",],
 
 ## Plotting state distributions and index plots of observations for women and men 
 ## in two columns 
-gridplot(list(mcsp_f2, mcsp_f3, mcsp_m2, mcsp_m3), cols=2, byrow=TRUE, 
+gridplot(list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=2, byrow=TRUE, 
            row.prop=c(0.42,0.42,0.16))
 ```
 ![gridplot](https://github.com/helske/seqHMM/blob/master/Examples/gridplot.png)
@@ -196,12 +193,12 @@ The HMModel object can also be used for plotting the observed states and the mos
 
 ```
 ## Plotting observations and hidden states
-plot(defineMCSP(HMM$model))
+plot(ssp(HMM$model))
 ```
-![MCSPboth_default](https://github.com/helske/seqHMM/blob/master/Examples/MCSPboth_default.png)
+![sspboth_default](https://github.com/helske/seqHMM/blob/master/Examples/sspboth_default.png)
 ```
 ## Prettier version
-plot(defineMCSP(HMM$model, type="I",
+plot(ssp(HMM$model, type="I",
                 plots="both",
                 # Sorting subjects according to multidimensional
                 # scaling scores of the most probable hidden state paths
@@ -223,7 +220,7 @@ most probable paths of hidden states",
                 # Proportion for legends
                 legend.prop=0.45))
 ```
-![MCSPboth](https://github.com/helske/seqHMM/blob/master/Examples/MCSPboth.png)
+![sspboth](https://github.com/helske/seqHMM/blob/master/Examples/sspboth.png)
 
 HMMs can be compared with log-likelihood or Bayesian information criterion (BIC).
 
@@ -306,9 +303,9 @@ Multichannel models can be easily converted to single channel models.
 ## Converting multichannel model to single channel model
 scHMM <- MCtoSC(HMM$model)
 
-plot(defineMCSP(scHMM, sortv="from.end", sort.channel=0, legend.prop=0.45))
+plot(ssp(scHMM, sortv="from.end", sort.channel=0, legend.prop=0.45))
 ```
-![scMCSP](https://github.com/helske/seqHMM/blob/master/Examples/scMCSP.png)
+![scssp](https://github.com/helske/seqHMM/blob/master/Examples/scssp.png)
 
 
 

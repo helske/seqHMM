@@ -16,19 +16,19 @@
 #'   and s is the number of unique symbols (observed states) in the data.
 #' @param initialProbs List which contains vectors of initial state 
 #'   probabilities for each model.
-#' @param X Time-constant covariates for mixtures. Must be a matrix with 
-#'   dimensions p x k where p is the number of sequences and k is the number of 
-#'   covariates.
-#' @param beta An k x l matrix of regression coefficients for time-constant 
+#' @param formula Covariates as an object of class \code{\link{formula}}, left side omitted.
+#' @param data An optional data frame, list or environment containing the variables in the model. If not found in data, the variables are taken from \code{environment(formula)}.
+#' @param beta An optional k x l matrix of regression coefficients for time-constant 
 #'   covariates for mixture probabilities, where l is the number of models and k
-#'   is the number of covariates. A logit-link is used mixture probabilities.
-#'   First column is set to zero.
+#'   is the number of covariates. A logit-link is used for mixture probabilities.
+#'   The first column is set to zero.
 #' @param stateNames List of optional labels for the hidden states
 #' @return Object of class \code{mixtureHMModel}
 #' @seealso \code{\link{fitMixHMM}} for fitting mixture Hidden Markov models.
 #'   
 buildMixHMM <- 
-  function(observations,transitionMatrix,emissionMatrix,initialProbs, X, beta, stateNames=NULL){
+  function(observations,transitionMatrix,emissionMatrix,initialProbs, 
+           formula, data, beta, stateNames=NULL){
     
     numberOfModels<-length(transitionMatrix)
     if(length(emissionMatrix)!=numberOfModels || length(initialProbs)!=numberOfModels)
@@ -124,10 +124,16 @@ buildMixHMM <-
       
     }
     
-    if(!missing(X)){
+    
+    if(!missing(formula)){
+      if(inherits(formula, "formula")){
+      X <- model.matrix(formula, data)[,-1,drop=FALSE]
       if(nrow(X)!=numberOfSequences)
-        stop("Wrong dimensions of X.")
+        stop("Number of subjects in data for covariates does not match the number of subjects in the sequence data.")
       numberOfCovariates<-ncol(X)
+      }else{
+        stop("Object given for argument formula is not of class formula.")
+      }
       if(missing(beta)){
         beta<-matrix(0,numberOfCovariates,numberOfModels)
       } else {
