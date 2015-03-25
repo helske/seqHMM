@@ -5,7 +5,7 @@
 \title{Define Arguments for Plotting Multichannel Sequences and/or Most Probable
 Paths from Hidden Markov Models}
 \usage{
-ssp(x, mpp = NULL, plots = "both", type = "I", sortv = NULL,
+ssp(x, mpp = NULL, plots = "obs", type = "I", sortv = NULL,
   sort.channel = 1, dist.method = "OM", with.missing = FALSE,
   title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
   withlegend = "auto", ncol.legend = "auto", with.missing.legend = "auto",
