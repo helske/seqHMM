@@ -173,7 +173,7 @@ plot(HMM$model)
 ![HMMdefault](https://github.com/helske/seqHMM/blob/master/Examples/HMMdefault.png)
 
 ```
-## Prettier version
+
 ## Prettier version
 plot(HMM$model, 
      # larger vertices 
@@ -193,12 +193,12 @@ The HMModel object can also be used for plotting the observed states and the mos
 
 ```
 ## Plotting observations and hidden states
-plot(ssp(HMM$model))
+ssplot(HMM$model)
 ```
 ![sspboth_default](https://github.com/helske/seqHMM/blob/master/Examples/sspboth_default.png)
 ```
 ## Prettier version
-plot(ssp(HMM$model, type="I",
+ssplot(HMM$model, type="I",
                 plots="both",
                 # Sorting subjects according to multidimensional
                 # scaling scores of the most probable hidden state paths
@@ -218,7 +218,7 @@ most probable paths of hidden states",
                 # Labels for x axis
                 xtlab=15:30,
                 # Proportion for legends
-                legend.prop=0.45))
+                legend.prop=0.45)
 ```
 ![sspboth](https://github.com/helske/seqHMM/blob/master/Examples/sspboth.png)
 
