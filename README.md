@@ -303,7 +303,7 @@ Multichannel models can be easily converted to single channel models.
 ## Converting multichannel model to single channel model
 scHMM <- MCtoSC(HMM$model)
 
-plot(ssp(scHMM, sortv="from.end", sort.channel=0, legend.prop=0.45))
+ssplot(scHMM, sortv="from.end", sort.channel=0, legend.prop=0.45)
 ```
 ![scssp](https://github.com/helske/seqHMM/blob/master/Examples/scssp.png)
 
