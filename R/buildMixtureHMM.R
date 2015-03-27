@@ -8,13 +8,13 @@
 #' @useDynLib seqHMM
 #' @param observations TraMineR stslist (see \code{\link{seqdef}}) containing
 #'   the sequences, or a list of such objects (one for each channel).
-#' @param transitionMatrix List of matrices of transition 
+#' @param transitionMatrix A list of matrices of transition 
 #'   probabilities for each model.
-#' @param emissionMatrix List which contains matrices of emission probabilities or
+#' @param emissionMatrix A list which contains matrices of emission probabilities or
 #'   a list of such objects (one for each channel) for each model. Note that the
 #'   matrices must have dimensions m x s where m is the number of hidden states 
 #'   and s is the number of unique symbols (observed states) in the data.
-#' @param initialProbs List which contains vectors of initial state 
+#' @param initialProbs A list which contains vectors of initial state 
 #'   probabilities for each model.
 #' @param formula Covariates as an object of class \code{\link{formula}}, left side omitted.
 #' @param data An optional data frame, list or environment containing the variables in the model. If not found in data, the variables are taken from \code{environment(formula)}.
@@ -22,18 +22,27 @@
 #'   covariates for mixture probabilities, where l is the number of models and k
 #'   is the number of covariates. A logit-link is used for mixture probabilities.
 #'   The first column is set to zero.
-#' @param stateNames List of optional labels for the hidden states
+#' @param modelNames A vector of optional names for the models.
+#' @param stateNames A list of optional labels for the hidden states.
+#' @param channelNames A vector of optional names for the channels.
 #' @return Object of class \code{mixtureHMModel}
 #' @seealso \code{\link{fitMixHMM}} for fitting mixture Hidden Markov models.
 #'   
 buildMixHMM <- 
   function(observations,transitionMatrix,emissionMatrix,initialProbs, 
-           formula, data, beta, stateNames=NULL){
+           formula, data, beta, modelNames=NULL, stateNames=NULL, channelNames=NULL){
     
     numberOfModels<-length(transitionMatrix)
     if(length(emissionMatrix)!=numberOfModels || length(initialProbs)!=numberOfModels)
       stop("Unequal lengths of transitionMatrix, emissionMatrix and initialProbs.")
     
+    if(is.null(modelNames)){
+      modelNames <- paste("Model", 1:numberOfModels)
+    }else if(length(modelNames)!=numberOfModels){
+      warning("The length of argument modelNames does not match the number of models. Names were not used.")
+      modelNames <- paste("Model", 1:numberOfModels)
+    }
+      
     model <- vector("list", length = numberOfModels)
     
     # States
@@ -96,10 +105,12 @@ buildMixHMM <-
         if(!isTRUE(all.equal(c(sapply(emissionMatrix[[i]],rowSums)),
                              rep(1,numberOfChannels*numberOfStates[i]),check.attributes=FALSE)))
           stop("Emission probabilities in emissionMatrix do not sum to one.")
-
-        channelNames<-names(observations)  
-        if(is.null(channelNames))
+        if(is.null(channelNames)){
           channelNames<-as.character(1:numberOfChannels)
+        }else if(length(channelNames)!=numberOfChannels){
+          warning("The length of argument channelNames does not match the number of channels. Names were not used.")
+          channelNames<-as.character(1:numberOfChannels)
+        }
         for(j in 1:numberOfChannels)
           dimnames(emissionMatrix[[i]][[j]])<-list(stateNames=stateNames[[i]],symbolNames=symbolNames[[j]])
         names(emissionMatrix[[i]])<-channelNames
@@ -127,7 +138,7 @@ buildMixHMM <-
     
     if(!missing(formula)){
       if(inherits(formula, "formula")){
-      X <- model.matrix(formula, data)[,-1,drop=FALSE]
+      X <- model.matrix(formula, data)#[,-1,drop=FALSE]
       if(nrow(X)!=numberOfSequences)
         stop("Number of subjects in data for covariates does not match the number of subjects in the sequence data.")
       numberOfCovariates<-ncol(X)
@@ -149,8 +160,9 @@ buildMixHMM <-
     
     model<-list(observations=observations, transitionMatrix=transitionMatrix,
                 emissionMatrix=emissionMatrix, initialProbs=initialProbs,
-                beta=beta, X=X,stateNames=stateNames, symbolNames=symbolNames,
-                channelNames=channelNames, lengthOfSequences=lengthOfSequences,
+                beta=beta, X=X, modelNames=modelNames, stateNames=stateNames, 
+                symbolNames=symbolNames, channelNames=channelNames, 
+                lengthOfSequences=lengthOfSequences,
                 numberOfSequences=numberOfSequences, numberOfModels=numberOfModels,
                 numberOfSymbols=numberOfSymbols, numberOfStates=numberOfStates,
                 numberOfChannels=numberOfChannels,
