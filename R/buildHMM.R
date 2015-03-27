@@ -8,11 +8,12 @@
 #' @useDynLib seqHMM
 #' @param observations TraMineR stslist (see \code{\link{seqdef}}) containing 
 #' the sequences, or a list of such objects (one for each channel).
-#' @param transitionMatrix Matrix of transition probabilities.
-#' @param emissionMatrix Matrix of emission probabilities or a list of such 
+#' @param transitionMatrix A matrix of transition probabilities.
+#' @param emissionMatrix A matrix of emission probabilities or a list of such 
 #' objects (one for each channel).
-#' @param initialProbs Vector of initial state probabilities.
-#' @param stateNames Optional labels for the hidden states
+#' @param initialProbs A vector of initial state probabilities.
+#' @param stateNames A list of optional labels for the hidden states.
+#' @param channelNames A vector of optional names for the channels.
 #' @return Object of class \code{HMModel}
 #' 
 #' @examples 
@@ -77,7 +78,8 @@
 #' 
 #' @seealso \code{\link{fitHMM}} for fitting Hidden Markov models.
 
-buildHMM<-function(observations,transitionMatrix,emissionMatrix,initialProbs,stateNames=NULL){
+buildHMM<-function(observations,transitionMatrix,emissionMatrix,initialProbs,
+                   stateNames=NULL, channelNames=NULL){
   
   
   if(dim(transitionMatrix)[1]!=dim(transitionMatrix)[2])
@@ -119,9 +121,12 @@ buildHMM<-function(observations,transitionMatrix,emissionMatrix,initialProbs,sta
     if(!isTRUE(all.equal(c(sapply(emissionMatrix,rowSums)),rep(1,numberOfChannels*numberOfStates),check.attributes=FALSE)))
       stop("Emission probabilities in emissionMatrix do not sum to one.")
     
-    channelNames<-names(observations)  
-    if(is.null(channelNames))
+    if(is.null(channelNames)){
       channelNames<-as.character(1:numberOfChannels)
+    }else if(length(channelNames)!=numberOfChannels){
+      warning("The length of argument channelNames does not match the number of channels. Names were not used.")
+      channelNames<-as.character(1:numberOfChannels)
+    }
     for(i in 1:numberOfChannels)
       dimnames(emissionMatrix[[i]])<-list(stateNames=stateNames,symbolNames=symbolNames[[i]])
     names(emissionMatrix)<-channelNames

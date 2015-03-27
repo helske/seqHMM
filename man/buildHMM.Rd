@@ -5,20 +5,22 @@
 \title{Build a Hidden Markov Model}
 \usage{
 buildHMM(observations, transitionMatrix, emissionMatrix, initialProbs,
-  stateNames = NULL)
+  stateNames = NULL, channelNames = NULL)
 }
 \arguments{
 \item{observations}{TraMineR stslist (see \code{\link{seqdef}}) containing
 the sequences, or a list of such objects (one for each channel).}
 
-\item{transitionMatrix}{Matrix of transition probabilities.}
+\item{transitionMatrix}{A matrix of transition probabilities.}
 
-\item{emissionMatrix}{Matrix of emission probabilities or a list of such
+\item{emissionMatrix}{A matrix of emission probabilities or a list of such
 objects (one for each channel).}
 
-\item{initialProbs}{Vector of initial state probabilities.}
+\item{initialProbs}{A vector of initial state probabilities.}
 
-\item{stateNames}{Optional labels for the hidden states}
+\item{stateNames}{A list of optional labels for the hidden states.}
+
+\item{channelNames}{A vector of optional names for the channels.}
 }
 \value{
 Object of class \code{HMModel}
