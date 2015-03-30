@@ -96,8 +96,14 @@ mostProbablePath<-function(model){
     obsArray<-data.matrix(model$observations)-1
     obsArray[obsArray>model$numberOfSymbols]<-model$numberOfSymbols
     storage.mode(obsArray)<-"integer"
+    if(inherits(model,"mixHMModel")){
+      out<-viterbiMix(model$transitionMatrix, cbind(model$emissionMatrix,0), 
+                   model$initialProbs, obsArray, model$beta, 
+                   model$X, model$numberOfStates)
+    } else{
     out<-viterbi(model$transitionMatrix, cbind(model$emissionMatrix,0), 
                  model$initialProbs, obsArray)
+    }
     if(model$numberOfSequences==1){
       mpp<-t(rownames(model$transitionMatrix)[out$q+1])
     }else{
@@ -124,9 +130,15 @@ mostProbablePath<-function(model){
     for(i in 1:model$numberOfChannels)
       emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
     
+    if(inherits(model,"mixHMModel")){
+      out<-viterbiMixMC(model$transitionMatrix, emissionArray, 
+                      model$initialProbs, obsArray, model$beta, 
+                      model$X, model$numberOfStates)
+    } else{
+      out<-viterbiMC(model$transitionMatrix, emissionArray, 
+                     model$initialProbs, obsArray)
+    }
 
-    out<-viterbiMC(model$transitionMatrix, emissionArray, 
-                   model$initialProbs, obsArray)
     
     if(model$numberOfSequences==1){
       mpp<-t(rownames(model$transitionMatrix)[out$q+1])

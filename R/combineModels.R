@@ -1,5 +1,6 @@
 combineModels <- function(model){
   
+  numberOfStatesInModels <- model$numberOfStates
   numberOfStates <- sum(model$numberOfStates)
   transitionMatrix <- as.matrix(.bdiag(model$transitionMatrix))
   stateNames <- unlist(model$stateNames)
@@ -25,17 +26,18 @@ combineModels <- function(model){
                 emissionMatrix=emissionMatrix,
                 initialProbs = unlist(model$initialProbs),
                 beta=model$beta, X=model$X,
+                modelNames=model$modelNames,
                 stateNames=stateNames,
-                symbolNames=model$symbolNames,channelNames=model$channelNames,lengthOfSequences=model$lengthOfSequences,
+                symbolNames=model$symbolNames,
+                channelNames=model$channelNames,
+                lengthOfSequences=model$lengthOfSequences,
                 numberOfSequences=model$numberOfSequences,
-                numberOfSymbols=model$numberOfSymbols,numberOfStates=numberOfStates,
+                numberOfSymbols=model$numberOfSymbols,
+                numberOfStates=numberOfStates,
                 numberOfChannels=model$numberOfChannels,
-                numberOfCovariates=model$numberOfCovariates)
+                numberOfCovariates=model$numberOfCovariates,
+                numberOfModels=model$numberOfModels,
+                numberOfStatesInModels=numberOfStatesInModels)
   class(model)<-"combined_mixHMModel"
   model
-}
-
-spreadModel <- function(model){
-  ###TÄNNE TAVARAA
-  
 }

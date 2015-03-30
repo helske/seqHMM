@@ -312,3 +312,45 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
+// viterbiMix
+List viterbiMix(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates);
+RcppExport SEXP seqHMM_viterbiMix(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP coefsSEXP, SEXP X_SEXP, SEXP numberOfStatesSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP );
+        Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP );
+        Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP );
+        Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP );
+        Rcpp::traits::input_parameter< NumericMatrix >::type coefs(coefsSEXP );
+        Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP );
+        Rcpp::traits::input_parameter< IntegerVector >::type numberOfStates(numberOfStatesSEXP );
+        List __result = viterbiMix(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
+// viterbiMixMC
+List viterbiMixMC(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates);
+RcppExport SEXP seqHMM_viterbiMixMC(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP coefsSEXP, SEXP X_SEXP, SEXP numberOfStatesSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP );
+        Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP );
+        Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP );
+        Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP );
+        Rcpp::traits::input_parameter< NumericMatrix >::type coefs(coefsSEXP );
+        Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP );
+        Rcpp::traits::input_parameter< IntegerVector >::type numberOfStates(numberOfStatesSEXP );
+        List __result = viterbiMixMC(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}

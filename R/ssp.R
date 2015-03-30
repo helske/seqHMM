@@ -1,8 +1,8 @@
 #' Define Arguments for Plotting Multichannel Sequences and/or Most Probable 
 #' Paths from Hidden Markov Models
 #' 
-#' Function \code{defineMCSP} defines the arguments for plotting with 
-#' \code{\link{plot}} or \code{\link{gridplot}}.
+#' Function \code{ssp} defines the arguments for plotting with 
+#' \code{\link{ssplot}} or \code{\link{gridplot}}.
 #' 
 #' 
 #' 
@@ -173,20 +173,20 @@
 #' 
 #' 
 #' # Defining the plot for state distribution plots of observations
-#' mcsp1 <- defineMCSP(list(child.seq, marr.seq, left.seq), type="d", plots="obs")
-#' # Plotting mcsp1
-#' plot(mcsp1)
+#' ssp1 <- ssp(list(child.seq, marr.seq, left.seq), type="d", plots="obs")
+#' # Plotting ssp1
+#' plot(ssp1)
 #' 
 #' # Defining the plot for sequence index plots of observations
-#' mcsp2 <- defineMCSP(list(child.seq, marr.seq, left.seq), type="I", plots="obs", 
+#' ssp2 <- ssp(list(child.seq, marr.seq, left.seq), type="I", plots="obs", 
 #' # Sorting subjects according to the beginning of the 2nd channel (marr.seq)
 #' sortv="from.start", sort.channel=2, 
 #' # Controlling the size, positions, and names for channel labels
 #' ylab.pos=c(1,2,1), cex.lab=1, ylab=c("Children", "Married", "Left home"), 
 #' # Plotting without legend
 #' withlegend=FALSE)
-#' # Plotting previously defined plot mcsp2
-#' plot(mcsp2)
+#' # Plotting previously defined plot ssp2
+#' plot(ssp2)
 #' 
 #' # Computing hidden Markov model
 #' 
@@ -229,7 +229,7 @@
 #' itnmax=10000, method="BFGS")
 #' 
 #' # Plotting observations and hidden states (most probable) paths
-#' mcsp3 <- defineMCSP(HMM$model, type="I", plots="both", 
+#' ssp3 <- ssp(HMM$model, type="I", plots="both", 
 #' # Sorting according to multidimensional scaling of hidden states paths
 #' sortv="mds.mpp", 
 #' ylab=c("Children", "Married", "Left home"), 
@@ -237,14 +237,14 @@
 #' title="Biofam", cex.title=1.5,
 #' # Labels for x axis and tick marks
 #' xtlab=15:30, xlab="Age")
-#' plot(mcsp3)
+#' plot(ssp3)
 #' 
 #' # Computing the most probable paths
 #' mpp <- mostProbablePath(HMM$model)$mpp
 #' mpp.seq <- seqdef(mpp, labels=c("Hidden state 1", "Hidden state 2", "Hidden state 3"))
 #' 
 #' # Plotting observations and hidden state paths
-#' mcsp4 <- defineMCSP(HMM$model, type="I", plots="mpp", 
+#' ssp4 <- ssp(HMM$model, type="I", plots="mpp", 
 #'              # Sequence object of most probable paths
 #'              mpp=mpp.seq,
 #'              # Sorting according to the end of hidden state paths
@@ -253,19 +253,19 @@
 #' withlegend="bottom", legend.prop=0.15,
 #' # Plotting without title and y label
 #' title=FALSE, ylab=FALSE)
-#' plot(mcsp4)
+#' plot(ssp4)
 #' 
-#' @return Object of class \code{defineMCSP}.
+#' @return Object of class \code{ssp}.
 #'   
-#' @seealso \code{\link{plot.MCSP}} for plotting objects created with 
-#'   \code{defineMCSP}, \code{\link{gridplot}} for plotting multiple MCSP 
+#' @seealso \code{\link{plot.ssp}} for plotting objects created with 
+#'   \code{ssp}, \code{\link{gridplot}} for plotting multiple ssp 
 #'   objects, \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and 
 #'   fitting Hidden Markov models, and \code{\link{mostProbablePath}} for 
 #'   computing the most probable paths (Viterbi paths) of hidden states.
 
 
-defineMCSP <- function(x, mpp=NULL,
-                       plots="both", type="I", 
+ssp <- function(x, mpp=NULL,
+                       plots="obs", type="I", 
                        sortv=NULL, sort.channel=1, dist.method="OM",
                        with.missing=FALSE,
                        title=NA, title.n=TRUE, cex.title=1, title.pos=1,
@@ -763,7 +763,7 @@ defineMCSP <- function(x, mpp=NULL,
                                    cex.lab=cex.lab, cex.axis=cex.axis),list(...))    
   }
   
-  class(arguments) <- "MCSP"
+  class(arguments) <- "ssp"
   arguments
   
 }

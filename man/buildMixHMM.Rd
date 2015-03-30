@@ -4,34 +4,39 @@
 \alias{buildMixHMM}
 \title{Build a Mixture Hidden Markov Model}
 \usage{
-buildMixHMM(observations, transitionMatrix, emissionMatrix, initialProbs, X,
-  beta, stateNames = NULL)
+buildMixHMM(observations, transitionMatrix, emissionMatrix, initialProbs,
+  formula, data, beta, modelNames = NULL, stateNames = NULL,
+  channelNames = NULL)
 }
 \arguments{
 \item{observations}{TraMineR stslist (see \code{\link{seqdef}}) containing
 the sequences, or a list of such objects (one for each channel).}
 
-\item{transitionMatrix}{List of matrices of transition
+\item{transitionMatrix}{A list of matrices of transition
 probabilities for each model.}
 
-\item{emissionMatrix}{List which contains matrices of emission probabilities or
+\item{emissionMatrix}{A list which contains matrices of emission probabilities or
 a list of such objects (one for each channel) for each model. Note that the
 matrices must have dimensions m x s where m is the number of hidden states
 and s is the number of unique symbols (observed states) in the data.}
 
-\item{initialProbs}{List which contains vectors of initial state
+\item{initialProbs}{A list which contains vectors of initial state
 probabilities for each model.}
 
-\item{X}{Time-constant covariates for mixtures. Must be a matrix with
-dimensions p x k where p is the number of sequences and k is the number of
-covariates.}
+\item{formula}{Covariates as an object of class \code{\link{formula}}, left side omitted.}
 
-\item{beta}{An k x l matrix of regression coefficients for time-constant
+\item{data}{An optional data frame, list or environment containing the variables in the model. If not found in data, the variables are taken from \code{environment(formula)}.}
+
+\item{beta}{An optional k x l matrix of regression coefficients for time-constant
 covariates for mixture probabilities, where l is the number of models and k
-is the number of covariates. A logit-link is used mixture probabilities.
-First column is set to zero.}
+is the number of covariates. A logit-link is used for mixture probabilities.
+The first column is set to zero.}
 
-\item{stateNames}{List of optional labels for the hidden states}
+\item{modelNames}{A vector of optional names for the models.}
+
+\item{stateNames}{A list of optional labels for the hidden states.}
+
+\item{channelNames}{A vector of optional names for the channels.}
 }
 \value{
 Object of class \code{mixtureHMModel}

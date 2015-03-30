@@ -1,10 +1,10 @@
 #' Estimate Parameters of Mixture Hidden Markov Model
-
+#' 
 #' Function \code{fitMixHMM} estimates a mixture of hidden Markov models
 #' using numerical maximization of log-likelihood. Initial values for estimation
 #' are taken from the corresponding components of the model with preservation of
 #' original zero probabilities.
-
+#' 
 #' @export
 #' @importFrom Matrix .bdiag
 #' @param model Hidden Markov model of class HMModel or MCHMModel.
@@ -51,44 +51,95 @@
 #' marr.seq <- seqdef(married)
 #' left.seq <- seqdef(left)
 #' 
-#' # Initial values for emission matrices
-#' B_child <- matrix(NA, nrow=3, ncol=2)
-#' B_child[1,] <- seqstatf(child.seq[,1:5])[,2]+0.1
-#' B_child[2,] <- seqstatf(child.seq[,6:10])[,2]+0.1
-#' B_child[3,] <- seqstatf(child.seq[,11:15])[,2]+0.1
-#' B_child <- B_child/rowSums(B_child)
+#' ## Initial values for emission matrices 
+#' alphabet(child.seq) # Check for order of observed states
+#' B1_child <- matrix(NA, nrow=4, ncol=2) 
+#' B1_child[1,] <- c(10,1) # High prob. for childless, low for children
+#' B1_child[2,] <- c(10,1)
+#' B1_child[3,] <- c(10,1)
+#' B1_child[4,] <- c(1,10) # Low prob. for childless, high for children
+#' B1_child <- B1_child/rowSums(B1_child)
+#' B1_child
 #' 
-#' B_marr <- matrix(NA, nrow=3, ncol=2)
-#' B_marr[1,] <- seqstatf(marr.seq[,1:5])[,2]+0.1
-#' B_marr[2,] <- seqstatf(marr.seq[,6:10])[,2]+0.1
-#' B_marr[3,] <- seqstatf(marr.seq[,11:15])[,2]+0.1
-#' B_marr <- B_marr/rowSums(B_marr)
+#' alphabet(marr.seq)
+#' B1_marr <- matrix(NA, nrow=4, ncol=2) 
+#' B1_marr[1,] <- c(1,10)
+#' B1_marr[2,] <- c(1,10)
+#' B1_marr[3,] <- c(10,1)
+#' B1_marr[4,] <- c(7,1)
+#' B1_marr <- B1_marr/rowSums(B1_marr)
+#' B1_marr
 #' 
-#' B_left <- matrix(NA, nrow=3, ncol=2)
-#' B_left[1,] <- seqstatf(left.seq[,1:5])[,2]+0.1
-#' B_left[2,] <- seqstatf(left.seq[,6:10])[,2]+0.1
-#' B_left[3,] <- seqstatf(left.seq[,11:15])[,2]+0.1
-#' B_left <- B_left/rowSums(B_left)
+#' alphabet(left.seq)
+#' B1_left <- matrix(NA, nrow=4, ncol=2) 
+#' B1_left[1,] <- c(1,10)
+#' B1_left[2,] <- c(10,1)
+#' B1_left[3,] <- c(10,1)
+#' B1_left[4,] <- c(10,1)
+#' B1_left <- B1_left/rowSums(B1_left)
+#' B1_left
 #' 
-#' # Initial values for transition matrix
-#' A <- matrix(c(0.9, 0.07, 0.03,
-#' 0,    0.9,  0.1,
-#' 0,      0,    1), 
-#' nrow=3, ncol=3, byrow=TRUE)
+#' B2_child <- matrix(NA, nrow=4, ncol=2) 
+#' B2_child[1,] <- c(10,1) 
+#' B2_child[2,] <- c(10,1)
+#' B2_child[3,] <- c(10,1) 
+#' B2_child[4,] <- c(1,10)
+#' B2_child <- B2_child/rowSums(B2_child)
+#' B2_child
 #' 
-#' # Initial values for initial state probabilities
-#' initialProbs <- c(0.9,0.09,0.01)
+#' B2_marr <- matrix(NA, nrow=4, ncol=2) 
+#' B2_marr[1,] <- c(1,10)
+#' B2_marr[2,] <- c(5,1)
+#' B2_marr[3,] <- c(10,1)
+#' B2_marr[4,] <- c(7,1)
+#' B2_marr <- B2_marr/rowSums(B2_marr)
+#' B2_marr
 #' 
-#' # Building hidden Markov model with initial parameter values
-#' bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq), 
-#' transitionMatrix=A,
-#' emissionMatrix=list(B_child, B_marr, B_left), 
-#' initialProbs=initialProbs)
+#' B2_left <- matrix(NA, nrow=4, ncol=2) 
+#' B2_left[1,] <- c(1,10)
+#' B2_left[2,] <- c(1,10)
+#' B2_left[3,] <- c(1,5)
+#' B2_left[4,] <- c(1,5)
+#' B2_left <- B2_left/rowSums(B2_left)
+#' B2_left
 #' 
-#' # Fitting hidden Markov model
-#' HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8),
-#' itnmax=10000, method="BFGS")
+#' # Initial values for transition matrices
+#' A1 <- matrix(c(0.8,   0.16, 0.03, 0.01,
+#'              0,    0.9, 0.07, 0.03, 
+#'              0,      0,  0.9,  0.1, 
+#'                0,      0,    0,    1), 
+#'              nrow=4, ncol=4, byrow=TRUE)
 #' 
+#' A2 <- matrix(c(0.94, 0.04, 0.01, 0.01,
+#'                0,    0.94, 0.05, 0.01, 
+#'                0,       0,  0.9,  0.1, 
+#'                0,       0,    0,    1), 
+#'              nrow=4, ncol=4, byrow=TRUE)
+#' 
+#' # Initial values for initial state probabilities 
+#' initialProbs1 <- c(0.9, 0.07, 0.02, 0.01)
+#' initialProbs2 <- c(0.95, 0.03, 0.01, 0.01)
+#' 
+#' # Birth cohort
+#' cohort <- cut(biofam$birthyr, c(1912, 1935, 1945, 1957))
+#' biofam$cohort <- factor(cohort, labels=c("1913-1935", "1936-1945", "1946-1957"))
+#' 
+#' # Setting initial values for parameters
+#' bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq), 
+#'                      transitionMatrix=list(A1,A2), 
+#'                      emissionMatrix=list(list(B1_child, B1_marr, B1_left),
+#'                                          list(B2_child, B2_marr, B2_left)),
+#'                      initialProbs=list(initialProbs1, initialProbs2), 
+#'                      formula=~sex*cohort, data=biofam)
+#' 
+#' # Fitting mixture of hidden Markov models
+#' HMM <- fitMixHMM(bmHMM)
+#' 
+#' # Coefficients of covariates
+#' HMM$model$beta
+#' 
+#' # Probabilities of belonging to each model for the first six subjects
+#' head(HMM$model$modelProb)
 
 
 fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
@@ -298,6 +349,11 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
                       itnmax=itnmax, control=optimx.control, model=model,...)
   model <- likfn(as.numeric(resoptimx[1:length(initialvalues)]), model, FALSE)
   
+  rownames(model$beta) <- colnames(model$X)
+  colnames(model$beta) <- paste("Model", 1:dim(model$beta)[2])
   
-  list(model=spreadModel(model),logLik=-resoptimx$value,optimx.result=resoptimx)
+  pr <- exp(model$X%*%model$beta)
+  model$modelProbabilities <- pr/rowSums(pr)
+  
+  list(model=spreadModels(model),logLik=-resoptimx$value,optimx.result=resoptimx)
 }

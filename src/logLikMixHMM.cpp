@@ -31,8 +31,8 @@ NumericMatrix X_, IntegerVector numberOfStates) {
   double ll=0.0;
   
   int q = coefs.nrow();
-  arma::mat coef(coefs.begin(),q,numberOfStates.size());
-  coef.col(0) = 0.0;
+  arma::mat coef(coefs.begin(),q,coefs.ncol());
+  coef.col(0).zeros();
   arma::mat X(X_.begin(),oDims[0],q);
   
   arma::mat lweights = exp(X*coef).t();
