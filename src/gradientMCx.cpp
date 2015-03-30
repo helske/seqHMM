@@ -5,7 +5,7 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 
 NumericVector gradientMCx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-IntegerVector obsArray,NumericVector rowSumsA,NumericVector rowSumsB_, double sumInit,
+IntegerVector obsArray,NumericVector rowSumsA,NumericVector rowSumsB_, NumericVector sumInit,
 IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, NumericVector expPsi,
 NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates) { 
   
@@ -163,33 +163,32 @@ NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates) {
       if(INZ(ind(j))!=2){
         arma::rowvec dpsi(ind.n_elem,arma::fill::zeros);
         dpsi(j) = 1.0;    
-        dpsi = (dpsi-init(ind).t())*expPsi(countgrad)/sumInit;  
+        dpsi = (dpsi-init(ind).t())*expPsi(countgrad)/sumInit(0); //0 is wrong  
         grad(countgrad) = arma::as_scalar(dpsi*gradRow);
         countgrad ++;
       }
     }
   }
-  // beta
-  for(int k = 0; k < oDims[0]; k++){ 
-    for(unsigned int j = 1; j < eDims[0]; j++){
-      double tmp = 0.0;
-      double tmp2 = 0.0;
-      for(int i = 0; i< eDims[0]; i++){
-        if(i!=j){
-          tmp += arma::as_scalar(exp(dot(coef.col(i),X.row(k))));
-          for(int r=0; r < oDims[2]; r++){
-          tmp2 += arma::as_scalar(exp(emissionLog(i,obs(k,0,r),r)+beta(i,0,k)-ll(k)));
-          }
-        }
-      }
-      for(int r=0; r < oDims[2]; r++){
-       tmp *= exp(emissionLog(j,obs(k,0,r),r)+beta(j,0,k)-ll(k));
-      }
-      grad.subvec(expPsi.size()+q*(j-1),expPsi.size()+q*j-1) += X.row(k).t()*
-      arma::as_scalar(exp(dot(coef.col(j),X.row(k)))/pow(sumInit,2)*
-      (tmp - tmp2));
-    }
-  }
+//  // beta
+//  for(int k = 0; k < oDims[0]; k++){ 
+//    for(unsigned int j = 1; j < eDims[0]; j++){
+//      double tmp = 0.0;
+//      double tmp2 = 0.0;
+//      for(int i = 0; i< eDims[0]; i++){
+//        if(i!=j){
+//          tmp += arma::as_scalar(exp(dot(coef.col(i),X.row(k))));
+//          for(int r=0; r < oDims[2]; r++){
+//          tmp2 += arma::as_scalar(exp(emissionLog(i,obs(k,0,r),r)+beta(i,0,k)-ll(k)));
+//          }
+//        }
+//      }
+//      for(int r=0; r < oDims[2]; r++){
+//       tmp *= exp(emissionLog(j,obs(k,0,r),r)+beta(j,0,k)-ll(k));
+//      }
+//      grad.subvec(expPsi.size()+q*(j-1),expPsi.size()+q*j-1) += X.row(k).t()*
+//      arma::as_scalar(exp(dot(coef.col(j),X.row(k)))/pow(sumInit,2)*(tmp - tmp2));
+//    }
+//  }
   
   return wrap(grad);
 }

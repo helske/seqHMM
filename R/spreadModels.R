@@ -31,6 +31,6 @@ spreadModels <- function(model){
   model$transitionMatrix <- transM
   model$emissionMatrix <- emissM
   model$initialProbs <- init
-  
+  class(model) <-"mixHMModel"
   model
 }

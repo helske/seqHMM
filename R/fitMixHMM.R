@@ -171,8 +171,8 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
   #   npIP<-length(paramIP)
   #   initNZ<-model$initialProbs>0
   #   initNZ[maxIP]<-2
-  maxIP <- maxIPvalue <- npIP <- numeric(original_model$numberOfModels)
-  paramIP <- vector("list",original_model$numberOfModels)
+  maxIP <- maxIPvalue <- npIP <- numeric(original_model$numberOfModels)  
+  paramIP <-  initNZ <-vector("list",original_model$numberOfModels)
   for(m in 1:original_model$numberOfModels){
     # Index of largest initial probability
     maxIP[m] <- which.max(original_model$initialProbs[[m]])
@@ -181,6 +181,8 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
     # Rest of non-zero probs
     paramIP[[m]] <- setdiff(which(original_model$initialProbs[[m]]>0),maxIP[m])
     npIP[m] <- length(paramIP[[m]])
+    initNZ[[m]]<-original_model$initialProbs[[m]]>0
+    initNZ[[m]][maxIP[m]]<-2
   }
   npIPAll <- sum(unlist(npIP))
   # Largest transition probabilities (for each row)
@@ -250,7 +252,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
       model$beta[,-1] <- pars[npTM+npEM+npIPAll+1:npBeta]
       if(estimate){
         - logLikMixHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray,
-                       model$beta, model$X, original_model$numberOfStates)      
+                       model$beta, model$X, model$numberOfStatesInModels)      
       } else model
     }
     # Same for multichannel model  
@@ -327,7 +329,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
 
       if(estimate){   
         - logLikMixMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
-                         model$beta, model$X, original_model$numberOfStates)   
+                         model$beta, model$X, model$numberOfStatesInModels)   
       } else {
         if(sum(npEM)>0){
           for(i in 1:model$numberOfChannels){

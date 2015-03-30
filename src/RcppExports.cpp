@@ -171,7 +171,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // gradientMCx
-NumericVector gradientMCx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, NumericVector rowSumsA, NumericVector rowSumsB_, double sumInit, IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, NumericVector expPsi, NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates);
+NumericVector gradientMCx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, NumericVector rowSumsA, NumericVector rowSumsB_, NumericVector sumInit, IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, NumericVector expPsi, NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates);
 RcppExport SEXP seqHMM_gradientMCx(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP rowSumsASEXP, SEXP rowSumsB_SEXP, SEXP sumInitSEXP, SEXP transNZSEXP, SEXP emissNZSEXP, SEXP initNZSEXP, SEXP expPsiSEXP, SEXP coefsSEXP, SEXP X_SEXP, SEXP numberOfStatesSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
@@ -183,7 +183,7 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP );
         Rcpp::traits::input_parameter< NumericVector >::type rowSumsA(rowSumsASEXP );
         Rcpp::traits::input_parameter< NumericVector >::type rowSumsB_(rowSumsB_SEXP );
-        Rcpp::traits::input_parameter< double >::type sumInit(sumInitSEXP );
+        Rcpp::traits::input_parameter< NumericVector >::type sumInit(sumInitSEXP );
         Rcpp::traits::input_parameter< IntegerVector >::type transNZ(transNZSEXP );
         Rcpp::traits::input_parameter< IntegerVector >::type emissNZ(emissNZSEXP );
         Rcpp::traits::input_parameter< IntegerVector >::type initNZ(initNZSEXP );
