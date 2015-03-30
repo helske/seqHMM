@@ -5,7 +5,7 @@
 \title{Plot hidden Markov models}
 \usage{
 \method{plot}{HMModel}(x, layout = "horizontal", pie = TRUE,
-  vertex.size = 20, vertex.label = "initial.probs",
+  vertex.size = 40, vertex.label = "initial.probs",
   vertex.label.dist = "auto", vertex.label.pos = "bottom",
   vertex.label.family = "sans", loops = FALSE, edge.curved = TRUE,
   edge.label = "auto", edge.width = "auto", cex.edge.width = 1,
@@ -34,7 +34,7 @@ function can be called.}
 Defaulting to TRUE.}
 
 \item{vertex.size}{The size of the vertex, given as a scalar or numerical
-vector. The default value is 20.}
+vector. The default value is 40.}
 
 \item{vertex.label}{Labels for the vertices. Possible options include
 \code{"initial.probs"}, \code{"names"}, \code{NA}, and a character or

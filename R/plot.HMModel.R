@@ -21,7 +21,7 @@
 #' @param pie Are vertices plotted as pie charts of emission probabilities? 
 #'   Defaulting to TRUE.
 #' @param vertex.size The size of the vertex, given as a scalar or numerical 
-#'   vector. The default value is 20.
+#'   vector. The default value is 40.
 #' @param vertex.label Labels for the vertices. Possible options include 
 #'   \code{"initial.probs"}, \code{"names"}, \code{NA}, and a character or 
 #'   numerical vector. The default \code{"initial.probs"} prints the initial 
@@ -220,7 +220,7 @@
 
 
 plot.HMModel <- function(x, layout="horizontal", pie=TRUE, 
-                         vertex.size=20, vertex.label="initial.probs", 
+                         vertex.size=40, vertex.label="initial.probs", 
                          vertex.label.dist="auto", vertex.label.pos="bottom",
                          vertex.label.family="sans",
                          loops=FALSE, edge.curved=TRUE, edge.label="auto", 
