@@ -84,52 +84,109 @@ MCtoSC<-function(model, combine.missing=TRUE, all.combinations=FALSE){
   if(model$numberOfChannels==1)
     return(model)
   
-  B<-matrix(0,model$numberOfStates,prod(model$numberOfSymbols))
-  
-  colnames(B)<-apply(
-    expand.grid(lapply(model$emissionMatrix,colnames)),                
-    1,paste0,collapse="/")
-  rownames(B)<-rownames(model$emissionMatrix[[1]])
-  for(i in 1:model$numberOfStates){
-    B[i,]<-apply(expand.grid(lapply(model$emissionMatrix,function(x) x[i,])),1,prod)   
-  }
-  B <- B[, order(colnames(B))]
-  
-  modelx<-model
-  modelx$emissionMatrix <- B
-  modelx$numberOfSymbols <- ncol(B)
-  modelx$numberOfChannels <- as.integer(1)
-  modelx$symbolNames <- snames <- colnames(B)
-  modelx$channelNames <- "Observations"
-  
-  modelx$observations<-model$observations[[1]]
-  for(i in 2:model$numberOfChannels)
-    modelx$observations<-as.data.frame(mapply(paste, modelx$observations,
-                                              model$observations[[i]],
-                                              USE.NAMES=FALSE,SIMPLIFY=FALSE,
-                                              MoreArgs=list(sep="/")))
-  names(modelx$observations)<-names(model$observations[[1]])   
-  if(combine.missing==TRUE){
-    modelx$observations[Reduce("|",
-                               lapply(
-                                 model$observations, 
-                                 function(x) 
-                                   x==attr(model$observations[[1]], "nr") |
-                                   x==attr(model$observations[[1]], "void") |
-                                   is.na(x)))]<-NA
-  }
-  
-  cpal <- colorpalette[[modelx$numberOfSymbols]]
-  
-  if(all.combinations==TRUE){
-    modelx$observations<-suppressWarnings(suppressMessages(seqdef(modelx$observations, alphabet=modelx$symbolNames)))
+  if(inherits(model, "HMModel")){
+    
+    B<-matrix(0,model$numberOfStates,prod(model$numberOfSymbols))
+    
+    colnames(B)<-apply(
+      expand.grid(lapply(model$emissionMatrix,colnames)),                
+      1,paste0,collapse="/")
+    rownames(B)<-rownames(model$emissionMatrix[[1]])
+    for(i in 1:model$numberOfStates){
+      B[i,]<-apply(expand.grid(lapply(model$emissionMatrix,function(x) x[i,])),1,prod)   
+    }
+    B <- B[, order(colnames(B))]
+    
+    modelx<-model
+    modelx$emissionMatrix <- B
+    modelx$numberOfSymbols <- ncol(B)
+    modelx$numberOfChannels <- as.integer(1)
+    modelx$symbolNames <- snames <- colnames(B)
+    modelx$channelNames <- "Observations"
+    
+    modelx$observations<-model$observations[[1]]
+    for(i in 2:model$numberOfChannels)
+      modelx$observations<-as.data.frame(mapply(paste, modelx$observations,
+                                                model$observations[[i]],
+                                                USE.NAMES=FALSE,SIMPLIFY=FALSE,
+                                                MoreArgs=list(sep="/")))
+    names(modelx$observations)<-names(model$observations[[1]])   
+    if(combine.missing==TRUE){
+      modelx$observations[Reduce("|",
+                                 lapply(
+                                   model$observations, 
+                                   function(x) 
+                                     x==attr(model$observations[[1]], "nr") |
+                                     x==attr(model$observations[[1]], "void") |
+                                     is.na(x)))]<-NA
+    }
+    
+    cpal <- colorpalette[[modelx$numberOfSymbols]]
+    
+    if(all.combinations==TRUE){
+      modelx$observations<-suppressWarnings(suppressMessages(seqdef(modelx$observations, alphabet=modelx$symbolNames)))
+    }else{
+      modelx$observations<-suppressWarnings(suppressMessages((seqdef(modelx$observations))))
+      modelx$emissionMatrix <- modelx$emissionMatrix[,colnames(modelx$emissionMatrix) %in% alphabet(modelx$observations)==TRUE]
+      modelx$symbolNames <- colnames(modelx$emissionMatrix)
+      modelx$numberOfSymbols <- ncol(modelx$emissionMatrix)
+    }
+    
+  # mixHMModel
   }else{
-    modelx$observations<-suppressWarnings(suppressMessages((seqdef(modelx$observations))))
-    modelx$emissionMatrix <- modelx$emissionMatrix[,colnames(modelx$emissionMatrix) %in% alphabet(modelx$observations)==TRUE]
-    modelx$symbolNames <- colnames(modelx$emissionMatrix)
-    modelx$numberOfSymbols <- ncol(modelx$emissionMatrix)
+    
+    modelx<-model
+    
+    B <- vector("list", model$numberOfModels)
+    for(m in 1:model$numberOfModels){
+      B[[m]] <- matrix(0,model$numberOfStatesInModels[m],prod(model$numberOfSymbols))
+      
+      colnames(B[[m]])<-apply(
+        expand.grid(lapply(model$emissionMatrix[[m]],colnames)),                
+        1,paste0,collapse="/")
+      rownames(B[[m]])<-rownames(model$emissionMatrix[[m]][[1]])
+      for(i in 1:model$numberOfStatesInModels[[m]]){
+        B[[m]][i,]<-apply(expand.grid(lapply(model$emissionMatrix[[m]],function(x) x[i,])),1,prod)   
+      }
+      B[[m]] <- B[[m]][, order(colnames(B[[m]]))]
+
+      modelx$emissionMatrix[[m]] <- B[[m]]
+    }
+    
+    modelx$numberOfSymbols <- ncol(B[[1]])
+    modelx$numberOfChannels <- as.integer(1)
+    modelx$symbolNames <- snames <- colnames(B[[1]])
+    
+    modelx$channelNames <- "Observations"
+    
+    modelx$observations <- model$observations[[1]]
+    for(i in 2:model$numberOfChannels)
+      modelx$observations <- as.data.frame(mapply(paste, modelx$observations,
+                                                model$observations[[i]],
+                                                USE.NAMES=FALSE,SIMPLIFY=FALSE,
+                                                MoreArgs=list(sep="/")))
+    names(modelx$observations) <- names(model$observations[[1]])   
+    if(combine.missing==TRUE){
+      modelx$observations[Reduce("|",
+                                 lapply(
+                                   model$observations, 
+                                   function(x) 
+                                     x==attr(model$observations[[1]], "nr") |
+                                     x==attr(model$observations[[1]], "void") |
+                                     is.na(x)))]<-NA
+    }
+    
+    cpal <- colorpalette[[modelx$numberOfSymbols]]
+    
+    if(all.combinations==TRUE){
+      modelx$observations <- suppressWarnings(suppressMessages(seqdef(modelx$observations, alphabet=modelx$symbolNames)))
+    }else{
+      modelx$observations<-suppressWarnings(suppressMessages((seqdef(modelx$observations))))
+      modelx$emissionMatrix <- modelx$emissionMatrix[[1]][,colnames(modelx$emissionMatrix[[1]]) %in% alphabet(modelx$observations)==TRUE]
+      modelx$symbolNames <- colnames(modelx$emissionMatrix)
+      modelx$numberOfSymbols <- ncol(modelx$emissionMatrix)
+    }
   }
-  
   
   attr(modelx$observations, "xtstep") <- attr(model$observations[[1]], "xtstep")
   attr(modelx$observations, "missing.color") <- attr(model$observations[[1]], "missing.color")
@@ -141,17 +198,3 @@ MCtoSC<-function(model, combine.missing=TRUE, all.combinations=FALSE){
   modelx
 }
 
-
-# Jos logLik(modelx)!=logLik(model), pit?isi johtua puuttuvista
-# (toinen sallii osittain puuttuvan tiedon):
-# modelz<-model
-# modelz$observations[[1]][is.na(fit$model$obs[[1]]) | 
-#                           is.na(fit$model$obs[[2]]) | 
-#                           is.na(fit$model$obs[[3]])]<-NA
-# modelz$observations[[2]][is.na(fit$model$obs[[1]]) | 
-#                           is.na(fit$model$obs[[2]]) | 
-#                           is.na(fit$model$obs[[3]])]<-NA
-# modelz$observations[[3]][is.na(fit$model$obs[[1]]) | 
-#                           is.na(fit$model$obs[[2]]) | 
-#                           is.na(fit$model$obs[[3]])]<-NA
-# logLik(modelx)-logLik(modelz)
