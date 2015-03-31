@@ -11,6 +11,10 @@ void internalForwardMC(const arma::mat& transition, const arma::cube& emission,
                      const arma::vec& init, const arma::Cube<int>& obs, arma::cube& alpha);
 void internalForward(const arma::mat& transition, const arma::mat& emission, 
                      const arma::vec& init, const arma::Mat<int>& obs, arma::cube& alpha);
+void internalForwardMCx(const arma::mat& transition, const arma::cube& emission,
+                        const arma::mat& init, const arma::Cube<int>& obs, arma::cube& alpha);
+void internalForwardx(const arma::mat& transition, const arma::mat& emission,
+                      const arma::mat& init, const arma::imat& obs, arma::cube& alpha);
 
 void internalBackwardMC(const arma::mat& transition, const arma::cube& emission, 
                       const arma::Cube<int>& obs, arma::cube& beta);
