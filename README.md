@@ -55,7 +55,7 @@ child.seq <- seqdef(children, start=15)
 marr.seq <- seqdef(married, start=15) 
 left.seq <- seqdef(left, start=15)
 
-## Choosing colours for states
+## Choosing colours for the states
 attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
 attr(marr.seq, "cpal") <- c("#E7298A", "#E6AB02")
 attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
@@ -64,8 +64,8 @@ Multichannel sequence data are easily plotted using the `ssplot` function (ssplo
 
 ```
 ## Plotting state distribution plots of observations
-ssplot(list(child.seq, marr.seq, left.seq), type="d", 
-                    plots="obs", title="State distribution plots")
+ssplot(list(child.seq, marr.seq, left.seq), type="d", plots="obs", 
+       title="State distribution plots")
 ```                  
 ![ssp1](https://github.com/helske/seqHMM/blob/master/Examples/ssp1.png)
 
@@ -112,10 +112,10 @@ gridplot(list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=2, byrow=TRUE,
 ```
 ![gridplot](https://github.com/helske/seqHMM/blob/master/Examples/gridplot.png)
 
-When fitting Hidden Markov models (HMMs), initial values for model parameters are first given to the `buildHMM` function. After that, the model is fitted with the `fitHMM` function using EM algorithm, direct numerical estimation or a combination of both.
+When fitting Hidden Markov models (HMMs), initial values for model parameters are first given to the `buildHMM` function. After that, the model is fitted with the `fitHMM` function using EM algorithm, direct numerical estimation, or a combination of both.
 
 ```
-# Initial values for emission matrices 
+# Initial values for the emission matrices 
 B_child <- matrix(NA, nrow=4, ncol=2) 
 B_child[1,] <- seqstatf(child.seq[,1:4])[,2]+0.1 
 B_child[2,] <- seqstatf(child.seq[,5:8])[,2]+0.1 
@@ -137,23 +137,23 @@ B_left[3,] <- seqstatf(left.seq[,9:12])[,2]+0.1
 B_left[4,] <- seqstatf(left.seq[,13:16])[,2]+0.1 
 B_left <- B_left/rowSums(B_left)
 
-# Initial values for transition matrix 
+# Initial values for the transition matrix 
 A <- matrix(c(0.9,   0.06, 0.03, 0.01,
               0,    0.9, 0.07, 0.03, 
               0,      0,  0.9,  0.1, 
               0,      0,    0,    1), 
             nrow=4, ncol=4, byrow=TRUE)
 
-# Initial values for initial state probabilities 
+# Initial values for the initial state probabilities 
 initialProbs <- c(0.9, 0.07, 0.02, 0.01)
 
-## Building hidden Markov model with initial parameter values 
+## Building the hidden Markov model with initial parameter values 
 bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq), 
                  transitionMatrix=A, 
                  emissionMatrix=list(B_child, B_marr, B_left),
                  initialProbs=initialProbs)
 
-## Fitting hidden Markov model 
+## Fitting the HMM 
 HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8), 
               itnmax=10000, method="BFGS")
 ```
@@ -167,13 +167,11 @@ plot(HMM$model)
 
 ```
 
-## Prettier version
-plot(HMM$model, 
-     # larger vertices 
-     vertex.size=50, 
-     # thicker edges with varying curvature 
+## A prettier version
+plot(HMM$model, vertex.size=50, 
+     # Thicker edges with varying curvature 
      cex.edge.width=3, edge.curved=c(0,-0.7,0.6,0,-0.7,0),
-     # Show only states with emission prob. > 0.1
+     # Show only states with emission probability greater than 0.1
      combine.slices=0.1, 
      # Label for combined states
      combined.slice.label="States with probability < 0.1",
