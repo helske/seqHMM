@@ -226,7 +226,7 @@ BIC(HMM$model)
 
 # 8591.137
 ```
-The `trimHMM` function can be used to trim models by setting small probabilities to zero. Here the trimmed model led to model with slightly improved likelihood, so probabilities less than 0.01 were set to zero.
+The `trimHMM` function can be used to trim models by setting small probabilities to zero. Here the trimmed model led to model with slightly improved likelihood, so probabilities less than 0.01 could be set to zero.
 
 ```
 ## Trimming HMM
