@@ -7,7 +7,7 @@
 MCtoSC(model, combine.missing = TRUE, all.combinations = FALSE)
 }
 \arguments{
-\item{model}{Object of class HMModel.}
+\item{model}{Object of class HMModel or mixHMModel.}
 
 \item{combine.missing}{Controls whether combined states of observations are
 coded missing (NA) if some of the channels include missing information.
@@ -19,7 +19,8 @@ Defaults to \code{TRUE}.}
   only actual observations are included.}
 }
 \description{
-Transform Multichannel Hidden Markov Model to Single Channel Representation
+Transforms data and parameters of multichannel model to single channel model.
+Observed states (symbols) are combined and parameters multiplied accross channels.
 }
 \examples{
 require(TraMineR)

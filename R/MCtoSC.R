@@ -1,7 +1,10 @@
 #' Transform Multichannel Hidden Markov Model to Single Channel Representation
 #' 
+#' Transforms data and parameters of multichannel model to single channel model.
+#' Observed states (symbols) are combined and parameters multiplied accross channels.
+#' 
 #' @export
-#' @param model Object of class HMModel.
+#' @param model Object of class HMModel or mixHMModel.
 #' @param combine.missing Controls whether combined states of observations are 
 #'   coded missing (NA) if some of the channels include missing information. 
 #'   Defaults to \code{TRUE}.
