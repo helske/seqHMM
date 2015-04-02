@@ -1,19 +1,13 @@
 seqHMM: Hidden Markov Models for Life Sequences and Other Multivariate, Multichannel Categorical Time Series
 ====================================================================================================
 
-Package seqHMM is designed for inference of hidden Markov models
-    where both the hidden state space and the symbol space of observations is
-    discrete, and observations consists of multiple sequences possibly with
-    multiple channels such as life calendar data with different life domains.
-    Maximum likelihood estimation via EM algorithm and direct numerical
-    maximization with analytical gradients is supported. All main algorithms
-    are written in C++.
+Package seqHMM is designed for the inference of hidden Markov models where both the hidden state space and the symbol space of observations are discrete and the observations consist of multiple sequences possibly with multiple channels (such as life calendar data with multiple life domains). Maximum likelihood estimation via EM algorithm and direct numerical maximization with analytical gradients is supported. All main algorithms are written in C++.
 
-Package is still under heavy development (see details below), and should be available at CRAN in 2015.
+Package is still under development and should be available at CRAN in 2015.
 
 If you have any questions or wishes, please contact Satu Helske or Jouni Helske, firstname.lastname (at) jyu.fi.
 
-If you want to try it out, you can install it via devtools package:
+If you want to try the `seqHMM` package, you can install it via the `devtools` package:
 
 ```R
 install.packages("devtools")
@@ -21,13 +15,12 @@ library(devtools)
 install_github("helske/seqHMM")
 ```
 
-Preview of seqHMM
+Preview of the `seqHMM` package
 ---------------------------------------------------------------------------------
 
-This example uses the biofam data from TraMineR package. It is a sample of 2000
-individuals born between 1909 and 1972 constructed from the Swiss Household Panel (SHP) survey in 2002. The data set contains sequences of family life states from age 15 to 30 (in columns 10 to 25).
+This example uses the `biofam` data from the `TraMineR` package. The data consist of a sample of 2000 individuals born between 1909 and 1972 constructed from the Swiss Household Panel (SHP) survey in 2002. The sequences consist of family life states from age 15 to 30 (in columns 10 to 25).
 
-For seqHMM, data is given as an stslist object using function seqdef in TraMineR. To show a more complex example, the original data is split into three separate channels.
+For the functions of the `seqHMM` package, sequence data is given as a state sequence object using the `seqdef` function in the `TraMineR` package. To show a more complex example, the original data is split into three separate channels.
 
 ```
 library(seqHMM)
@@ -62,21 +55,21 @@ child.seq <- seqdef(children, start=15)
 marr.seq <- seqdef(married, start=15) 
 left.seq <- seqdef(left, start=15)
 
-## Choosing colours for states
+## Choosing colours for the states
 attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
 attr(marr.seq, "cpal") <- c("#E7298A", "#E6AB02")
 attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 ```
-Multichannel data can be easily plotted using function ssplot (for Stacked Sequence Plot).
+Multichannel sequence data are easily plotted using the `ssplot` function (ssplot for Stacked Sequence Plot).
 
 ```
 ## Plotting state distribution plots of observations
-ssplot(list(child.seq, marr.seq, left.seq), type="d", 
-                    plots="obs", title="State distribution plots")
+ssplot(list(child.seq, marr.seq, left.seq), type="d", plots="obs", 
+       title="State distribution plots")
 ```                  
 ![ssp1](https://github.com/helske/seqHMM/blob/master/Examples/ssp1.png)
 
-It is also possible to plot multiple ssp objects in a grid. Here an example of state distributions and sequence index plots for women and men is given.
+Multiple `ssp` objects can also be plotted together in a grid.
 
 ```
 ## Preparing plots for state distributios and index plots of observations for women
@@ -119,10 +112,10 @@ gridplot(list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=2, byrow=TRUE,
 ```
 ![gridplot](https://github.com/helske/seqHMM/blob/master/Examples/gridplot.png)
 
-When fitting Hidden Markov models (HMMs), initial values for model parameters are first given for function buildHMM. HMM can then be fitted using EM algorithm, direct numerical estimation or a combination of both.
+When fitting Hidden Markov models (HMMs), initial values for model parameters are first given to the `buildHMM` function. After that, the model is fitted with the `fitHMM` function using EM algorithm, direct numerical estimation, or a combination of both.
 
 ```
-# Initial values for emission matrices 
+# Initial values for the emission matrices 
 B_child <- matrix(NA, nrow=4, ncol=2) 
 B_child[1,] <- seqstatf(child.seq[,1:4])[,2]+0.1 
 B_child[2,] <- seqstatf(child.seq[,5:8])[,2]+0.1 
@@ -144,27 +137,27 @@ B_left[3,] <- seqstatf(left.seq[,9:12])[,2]+0.1
 B_left[4,] <- seqstatf(left.seq[,13:16])[,2]+0.1 
 B_left <- B_left/rowSums(B_left)
 
-# Initial values for transition matrix 
+# Initial values for the transition matrix 
 A <- matrix(c(0.9,   0.06, 0.03, 0.01,
               0,    0.9, 0.07, 0.03, 
               0,      0,  0.9,  0.1, 
               0,      0,    0,    1), 
             nrow=4, ncol=4, byrow=TRUE)
 
-# Initial values for initial state probabilities 
+# Initial values for the initial state probabilities 
 initialProbs <- c(0.9, 0.07, 0.02, 0.01)
 
-## Building hidden Markov model with initial parameter values 
+## Building the hidden Markov model with initial parameter values 
 bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq), 
                  transitionMatrix=A, 
                  emissionMatrix=list(B_child, B_marr, B_left),
                  initialProbs=initialProbs)
 
-## Fitting hidden Markov model 
+## Fitting the HMM 
 HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8), 
               itnmax=10000, method="BFGS")
 ```
-HMModel objects can be easily plotted using a simple plot function. It shows hidden states as pie charts, with emission probabilities as sectors and transition probabilities as arrows. Initial probabilities are shown below the pie charts.
+A simple `plot` method is used to show an `HMModel` object as a graph. It shows hidden states as pie charts, with emission probabilities as sectors and transition probabilities as arrows. Initial probabilities are shown below the pies.
 
 ```
 ## Plot HMM
@@ -174,13 +167,11 @@ plot(HMM$model)
 
 ```
 
-## Prettier version
-plot(HMM$model, 
-     # larger vertices 
-     vertex.size=50, 
-     # thicker edges with varying curvature 
+## A prettier version
+plot(HMM$model, vertex.size=50, 
+     # Thicker edges with varying curvature 
      cex.edge.width=3, edge.curved=c(0,-0.7,0.6,0,-0.7,0),
-     # Show only states with emission prob. > 0.1
+     # Show only states with emission probability greater than 0.1
      combine.slices=0.1, 
      # Label for combined states
      combined.slice.label="States with probability < 0.1",
@@ -189,7 +180,7 @@ plot(HMM$model,
 ```
 ![HMM](https://github.com/helske/seqHMM/blob/master/Examples/HMModel.png)
 
-The HMModel object can also be used for plotting the observed states and the most probable paths of hidden states.
+The `ssplot` function can also be used for plotting the observed states and the most probable paths of hidden states of the HMM.
 
 ```
 ## Plotting observations and hidden states
@@ -222,7 +213,7 @@ most probable paths of hidden states",
 ```
 ![sspboth](https://github.com/helske/seqHMM/blob/master/Examples/sspboth.png)
 
-HMMs can be compared with log-likelihood or Bayesian information criterion (BIC).
+The `logLik` and `BIC` functions are used for model comparison with the log-likelihood or the Bayesian information criterion (BIC).
 
 ```
 ## Likelihood
@@ -235,7 +226,7 @@ BIC(HMM$model)
 
 # 8591.137
 ```
-The original model can be easily trimmed, i.e. small probabilities set to zero. Here the trimmed model lead to model with slightly improved likelihood, so probabilities less than 0.01 were set to zero.
+The `trimHMM` function can be used to trim models by setting small probabilities to zero. Here the trimmed model led to model with slightly improved likelihood, so probabilities less than 0.01 could be set to zero.
 
 ```
 ## Trimming HMM
@@ -297,7 +288,7 @@ trimmedHMM$emiss
 # 3 0.7127736    0.2872264
 # 4 1.0000000    0.0000000
 ```
-Multichannel models can be easily converted to single channel models.
+The `MCtoSC` function converts a multichannel model into a single channel representation. E.g. the `plot` function for `HMModel` objects uses this type of conversion. The `seqHMM` package also includes a similar function `MCtoSCdata` for merging multiple state sequence objects.
 
 ```
 ## Converting multichannel model to single channel model
