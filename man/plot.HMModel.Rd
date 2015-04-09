@@ -9,11 +9,12 @@
   vertex.label.dist = "auto", vertex.label.pos = "bottom",
   vertex.label.family = "sans", loops = FALSE, edge.curved = TRUE,
   edge.label = "auto", edge.width = "auto", cex.edge.width = 1,
-  edge.label.family = "sans", label.signif = 2, label.scientific = FALSE,
-  label.max.length = 6, trim = 1e-15, combine.slices = 0.05,
-  combined.slice.color = "white", combined.slice.label = "others",
-  withlegend = "bottom", ltext = NULL, legend.prop = 0.5,
-  cex.legend = 1, ncol.legend = "auto", cpal = "auto", ...)
+  edge.arrow.size = 1.5, edge.label.family = "sans", label.signif = 2,
+  label.scientific = FALSE, label.max.length = 6, trim = 1e-15,
+  combine.slices = 0.05, combined.slice.color = "white",
+  combined.slice.label = "others", withlegend = "bottom", ltext = NULL,
+  legend.prop = 0.5, cex.legend = 1, ncol.legend = "auto",
+  cpal = "auto", ...)
 }
 \arguments{
 \item{x}{A hidden Markov model object of class HMModel created with
@@ -76,6 +77,8 @@ widths.}
 \item{cex.edge.width}{An expansion factor for the edge widths to thicken
 edges of models with small transition probabilities. Defaults to 1.}
 
+\item{edge.arrow.size}{The size of the arrows in edges (constant). Defaults to 1.5.}
+
 \item{label.signif}{Rounds labels of model parameters to the specified number
 of significant digits, 2 by default. Ignored for user-given labels.}
 
@@ -126,7 +129,7 @@ specified for all (combinations of) observed states even if they are not
 plotted (if the probability is less than combine.slices).}
 
 \item{...}{Other parameters passed on to \code{\link{plot.igraph}} such as
-  \code{vertex.color}, \code{vertex.label.cex}, \code{edge.arrow.size},
+  \code{vertex.color}, \code{vertex.label.cex}, \code{edge.lty},
   \code{margin}, or \code{main}.}
 }
 \description{

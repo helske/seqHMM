@@ -53,6 +53,7 @@
 #'   widths.
 #' @param cex.edge.width An expansion factor for the edge widths to thicken 
 #'   edges of models with small transition probabilities. Defaults to 1.
+#' @param edge.arrow.size The size of the arrows in edges (constant). Defaults to 1.5.
 #' @param label.signif Rounds labels of model parameters to the specified number
 #'   of significant digits, 2 by default. Ignored for user-given labels.
 #' @param label.scientific Defines if scientific notation is to be used to 
@@ -90,7 +91,7 @@
 #'   specified for all (combinations of) observed states even if they are not 
 #'   plotted (if the probability is less than combine.slices).
 #' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as 
-#'   \code{vertex.color}, \code{vertex.label.cex}, \code{edge.arrow.size}, 
+#'   \code{vertex.color}, \code{vertex.label.cex}, \code{edge.lty}, 
 #'   \code{margin}, or \code{main}.
 #'   
 #' @seealso \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and 
@@ -225,7 +226,7 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
                          vertex.label.family="sans",
                          loops=FALSE, edge.curved=TRUE, edge.label="auto", 
                          edge.width="auto", cex.edge.width=1, 
-                         edge.label.family="sans",
+                         edge.arrow.size=1.5, edge.label.family="sans",
                          label.signif=2, label.scientific=FALSE, label.max.length=6,
                          trim=1e-15, 
                          combine.slices=0.05, combined.slice.color="white", 
@@ -354,7 +355,7 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
   # Edge widths
   if(is.character(edge.width)){
     match.arg(edge.width, c("auto"))
-    edge.width <- transitions*15*cex.edge.width
+    edge.width <- transitions*(7/max(transitions))*cex.edge.width
   }else if(length(edge.width)>1 && edge.width<length(transitions)){
     warning("The length of the vector provided for the argument \"edge.width\" is less than the number of edges. The vector was repeated to archieve the correct length.")
     edge.width <- rep(edge.width, length.out=length(transitions))
@@ -362,7 +363,7 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
     warning(paste("The length of the vector provided for the argument \"edge.width\" is more than the number of edges. Only the first", length(transitions), "labels were used."))
     edge.width <- edge.width[1:length(transitions)]
   }
-  
+
   # Defining the graph
   g1 <- graph.adjacency(edges, mode="directed")
   
@@ -528,6 +529,7 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
                                   edge.curved=edge.curved, edge.width=edge.width, 
                                   edge.label=edge.label, 
                                   edge.label.family=edge.label.family, 
+                                  edge.arrow.size=edge.arrow.size,
                                   xlim=xlim, ylim=ylim, rescale=rescale), dots))
     }else{
       do.call(plot.igraph2, c(list(g1, layout=glayout, 
@@ -539,7 +541,8 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
                                   vertex.label.family=vertex.label.family,
                                   edge.curved=edge.curved, edge.width=edge.width, 
                                   edge.label=edge.label, 
-                                  edge.label.family=edge.label.family), dots))
+                                  edge.label.family=edge.label.family,
+                                  edge.arrow.size=edge.arrow.size), dots))
     }
   }else{
     if(!is.matrix(layout) && !is.function(layout) && (layout=="horizontal" || layout=="vertical")){

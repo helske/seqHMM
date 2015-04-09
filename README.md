@@ -1,7 +1,7 @@
 seqHMM: Hidden Markov Models for Life Sequences and Other Multivariate, Multichannel Categorical Time Series
 ====================================================================================================
 
-Package seqHMM is designed for the inference of hidden Markov models where both the hidden state space and the symbol space of observations are discrete and the observations consist of multiple sequences possibly with multiple channels (such as life calendar data with multiple life domains). Maximum likelihood estimation via EM algorithm and direct numerical maximization with analytical gradients is supported. All main algorithms are written in C++.
+The seqHMM package is designed for the inference of hidden Markov models where both the hidden state space and the symbol space of observations are discrete and the observations consist of multiple sequences possibly with multiple channels (such as life calendar data with multiple life domains). Maximum likelihood estimation via EM algorithm and direct numerical maximization with analytical gradients is supported. All main algorithms are written in C++.
 
 Package is still under development and should be available at CRAN in 2015.
 
