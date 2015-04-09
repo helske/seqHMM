@@ -184,6 +184,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
     initNZ[[m]]<-original_model$initialProbs[[m]]>0
     initNZ[[m]][maxIP[m]]<-2
   }
+  initNZ<-unlist(initNZ)
   npIPAll <- sum(unlist(npIP))
   # Largest transition probabilities (for each row)
   x<-which(model$transitionMatrix>0,arr.ind=TRUE)  
@@ -219,8 +220,8 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
       if(npEM>0) model$emissionMatrix[paramEM],
       if(npIPAll>0) unlist(sapply(1:original_model$numberOfModels,function(m)
         if(npIP[m]>0) original_model$initialProbs[[m]][paramIP[[m]]]))
-      )),
-      model$beta[,-1]
+    )),
+    model$beta[,-1]
     )
     
     # Function for minimizing log likelihood
@@ -255,6 +256,50 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
                        model$beta, model$X, model$numberOfStatesInModels)      
       } else model
     }
+    sumInit<-rep(1,original_model$numberOfModels)    
+    rowSumsA<-rowSumsB<-rep(1,model$numberOfStates)
+    
+    gradfn<-function(pars,model){      
+      
+      if(any(!is.finite(pars)))
+        return(.Machine$double.xmax)
+      
+      if(npTM>0){
+        model$transitionMatrix[maxTM]<-maxTMvalue      # Not needed?
+        # Exponentiate (need to be positive)
+        model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
+        # Sum to 1
+        rowSumsA<-rowSums(model$transitionMatrix) 
+        model$transitionMatrix<-model$transitionMatrix/rowSumsA
+      }
+      if(npEM>0){
+        model$emissionMatrix[maxEM]<-maxEMvalue     
+        model$emissionMatrix[paramEM]<-exp(pars[(npTM+1):(npTM+npEM)])
+        rowSumsB <- rowSums(model$emissionMatrix) 
+        model$emissionMatrix<-model$emissionMatrix/rowSumsB
+      }
+      
+      for(m in 1:original_model$numberOfModels){
+        if(npIP[m]>0){
+          original_model$initialProbs[[m]][maxIP[[m]]] <- maxIPvalue[[m]] # Not needed?
+          original_model$initialProbs[[m]][paramIP[[m]]] <- exp(pars[npTM+npEM+c(0,cumsum(npIP))[m]+
+                                                                       1:npIP[m]])
+          sumInit[m]<-sum(original_model$initialProbs[[m]])
+          original_model$initialProbs[[m]][] <- original_model$initialProbs[[m]]/
+            sumInit[m]
+        }
+      }
+      model$initialProbs <- unlist(original_model$initialProbs)
+      model$beta[,-1] <- pars[npTM+npEM+npIPAll+1:npBeta]
+      
+      - gradientx(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
+                  obsArray, rowSumsA, rowSumsB, 
+                  sumInit, transNZ, emissNZ, initNZ, exp(pars[1:(npTM+sum(npEM)+npIPAll)]), 
+                  model$beta, model$X, model$numberOfStatesInModels)
+      
+      
+      
+    }
     # Same for multichannel model  
   } else {      
     emissNZ<-lapply(model$emissionMatrix,function(i){
@@ -286,8 +331,8 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
                                     function(x) model$emissionMatrix[[x]][paramEM[[x]]])),
       if(npIPAll>0) unlist(sapply(1:original_model$numberOfModels,function(m)
         if(npIP[m]>0) original_model$initialProbs[[m]][paramIP[[m]]]))
-      )),
-      model$beta[,-1]
+    )),
+    model$beta[,-1]
     )         
     
     emissionArray<-array(1,c(model$numberOfStates,max(model$numberOfSymbols)+1,model$numberOfChannels))
@@ -326,7 +371,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
       }
       model$initialProbs <- unlist(original_model$initialProbs)
       model$beta[,-1] <- pars[npTM+sum(npEM)+npIPAll+1:npBeta]
-
+      
       if(estimate){   
         - logLikMixMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
                          model$beta, model$X, model$numberOfStatesInModels)   
@@ -339,15 +384,59 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
         model
       }        
     } 
+    
+    sumInit<-rep(1,original_model$numberOfModels)    
+    rowSumsA<-rep(1,model$numberOfStates)
+    rowSumsB<-matrix(1,model$numberOfStates,model$numberOfChannels)
+    
+    gradfn<-function(pars,model){      
+      
+      if(any(!is.finite(pars)))
+        return(.Machine$double.xmax)
+      if(npTM>0){
+        model$transitionMatrix[maxTM]<-maxTMvalue     
+        model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
+        rowSumsA <- rowSums(model$transitionMatrix) 
+        model$transitionMatrix<-model$transitionMatrix/rowSumsA      
+      }
+      if(sum(npEM)>0){            
+        for(i in 1:model$numberOfChannels){
+          emissionArray[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]    
+          emissionArray[,1:model$numberOfSymbols[i],i][paramEM[[i]]]<-
+            exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
+          rowSumsB[,i]<-rowSums(emissionArray[,1:model$numberOfSymbols[i],i])
+          emissionArray[,1:model$numberOfSymbols[i],i]<-
+            emissionArray[,1:model$numberOfSymbols[i],i]/rowSumsB[,i]
+        }
+      }
+      for(m in 1:original_model$numberOfModels){
+        if(npIP[m]>0){
+          original_model$initialProbs[[m]][maxIP[[m]]] <- maxIPvalue[[m]] # Not needed?
+          original_model$initialProbs[[m]][paramIP[[m]]] <- exp(pars[npTM+sum(npEM)+c(0,cumsum(npIP))[m]+
+                                                                       1:npIP[m]])
+          sumInit[m]<-sum(original_model$initialProbs[[m]])
+          original_model$initialProbs[[m]][] <- original_model$initialProbs[[m]]/
+            sumInit[m]
+        }
+      }
+      model$initialProbs <- unlist(original_model$initialProbs)
+      model$beta[,-1] <- pars[npTM+sum(npEM)+npIPAll+1:npBeta]
+      
+      - gradientMCx(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, rowSumsA, rowSumsB, 
+                    sumInit, transNZ, emissNZ, initNZ, exp(pars[1:(npTM+sum(npEM)+npIPAll)]), 
+                    model$beta, model$X, model$numberOfStatesInModels)
+      
+      
+      
+    }
   }
-  
   if(is.null(optimx.control$kkt)){
     optimx.control$kkt <- FALSE
   }
   if(is.null(optimx.control$starttests)){
     optimx.control$starttests <- FALSE
   }
-  resoptimx <- optimx(par=initialvalues, fn=likfn, method=method, 
+  resoptimx <- optimx(par=initialvalues, fn=likfn, gr=gradfn, method=method, 
                       itnmax=itnmax, control=optimx.control, model=model,...)
   model <- likfn(as.numeric(resoptimx[1:length(initialvalues)]), model, FALSE)
   

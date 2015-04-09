@@ -3,7 +3,7 @@ combineModels <- function(model){
   numberOfStatesInModels <- model$numberOfStates
   numberOfStates <- sum(model$numberOfStates)
   transitionMatrix <- as.matrix(.bdiag(model$transitionMatrix))
-  stateNames <- unlist(model$stateNames)
+  stateNames <- unlist(originalStateNames<-model$stateNames)
   if (length(unique(stateNames))!= length(stateNames)){
     stateNames <- paste(stateNames,rep(1:model$numberOfModels,model$numberOfStates),sep=".")
   }
@@ -37,7 +37,8 @@ combineModels <- function(model){
                 numberOfChannels=model$numberOfChannels,
                 numberOfCovariates=model$numberOfCovariates,
                 numberOfModels=model$numberOfModels,
-                numberOfStatesInModels=numberOfStatesInModels)
+                numberOfStatesInModels=numberOfStatesInModels,
+                originalStateNames = originalStateNames)
   class(model)<-"combined_mixHMModel"
   model
 }

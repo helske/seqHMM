@@ -12,7 +12,7 @@ using namespace Rcpp;
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
-List viterbiMix(NumericVector transitionMatrix, NumericVector emissionArray, 
+List viterbix(NumericVector transitionMatrix, NumericVector emissionArray, 
 NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, 
 NumericMatrix X_, IntegerVector numberOfStates) {  
   
@@ -22,16 +22,16 @@ NumericMatrix X_, IntegerVector numberOfStates) {
   arma::colvec init(initialProbs.begin(),eDims[0],false);
   arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0],false);
   arma::mat emission(emissionArray.begin(), eDims[0], eDims[1],false);
-  arma::Mat<int> obs(obsArray.begin(), oDims[0], oDims[1],false);
+  arma::imat obs(obsArray.begin(), oDims[0], oDims[1],false);
   arma::umat q(oDims[0], oDims[1]);
   arma::vec logp(oDims[0]);
   
   arma::mat delta(eDims[0],oDims[1]);
   arma::umat phi(eDims[0],oDims[1]);
   
-    int qn = coefs.nrow();
+  int qn = coefs.nrow();
   arma::mat coef(coefs.begin(),qn,numberOfStates.size());
-  coef.col(0) = 0.0;
+ coef.col(0).zeros();
   arma::mat X(X_.begin(),oDims[0],qn);
   
   arma::mat lweights = exp(X*coef).t();

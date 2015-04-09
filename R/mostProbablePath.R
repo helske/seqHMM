@@ -84,7 +84,12 @@
 #'   
 
 mostProbablePath<-function(model){
-
+  
+  if(inherits(model,"mixHMModel")){
+    model <- combineModels(model)
+    mix<-TRUE
+  } else mix <- FALSE
+  
   model$initialProbs <- log(model$initialProbs)
   model$initialProbs[!is.finite(model$initialProbs)]<- -0.1*.Machine$double.xmax
   model$transitionMatrix <- log(model$transitionMatrix)
@@ -96,13 +101,13 @@ mostProbablePath<-function(model){
     obsArray<-data.matrix(model$observations)-1
     obsArray[obsArray>model$numberOfSymbols]<-model$numberOfSymbols
     storage.mode(obsArray)<-"integer"
-    if(inherits(model,"mixHMModel")){
-      out<-viterbiMix(model$transitionMatrix, cbind(model$emissionMatrix,0), 
-                   model$initialProbs, obsArray, model$beta, 
-                   model$X, model$numberOfStates)
+    if(mix){
+      out<-viterbix(model$transitionMatrix, cbind(model$emissionMatrix,0), 
+                      model$initialProbs, obsArray, model$beta, 
+                      model$X, model$numberOfStatesInModels)
     } else{
-    out<-viterbi(model$transitionMatrix, cbind(model$emissionMatrix,0), 
-                 model$initialProbs, obsArray)
+      out<-viterbi(model$transitionMatrix, cbind(model$emissionMatrix,0), 
+                   model$initialProbs, obsArray)
     }
     if(model$numberOfSequences==1){
       mpp<-t(rownames(model$transitionMatrix)[out$q+1])
@@ -110,9 +115,9 @@ mostProbablePath<-function(model){
       mpp<-apply(out$q+1,2,function(x) rownames(model$transitionMatrix)[x])
     }
     mpp<-seqdef(mpp,alphabet=model$stateNames,
-          id=rownames(model$obs),
-          start=attr(model$obs,"start"),
-          xtstep=attr(model$obs,"xtstep"))
+                id=rownames(model$obs),
+                start=attr(model$obs,"start"),
+                xtstep=attr(model$obs,"xtstep"))
   } else {
     model$emissionMatrix<-lapply(model$emissionMatrix,function(x){
       x<-log(x)
@@ -130,20 +135,23 @@ mostProbablePath<-function(model){
     for(i in 1:model$numberOfChannels)
       emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
     
-    if(inherits(model,"mixHMModel")){
-      out<-viterbiMixMC(model$transitionMatrix, emissionArray, 
-                      model$initialProbs, obsArray, model$beta, 
-                      model$X, model$numberOfStates)
+    if(mix){
+      out<-viterbiMCx(model$transitionMatrix, emissionArray, 
+                        model$initialProbs, obsArray, model$beta, 
+                        model$X, model$numberOfStatesInModels)
     } else{
       out<-viterbiMC(model$transitionMatrix, emissionArray, 
                      model$initialProbs, obsArray)
     }
-
     
+#     if(mix){
+#       model$stateNames<-unlist(model$originalStateNames)
+#     }
+      
     if(model$numberOfSequences==1){
-      mpp<-t(rownames(model$transitionMatrix)[out$q+1])
+      mpp<-t(model$stateNames[out$q+1])
     }else{
-      mpp<-apply(out$q+1,2,function(x) rownames(model$transitionMatrix)[x])
+      mpp<-apply(out$q+1,2,function(x) model$stateNames[x])
     }
     mpp<-seqdef(mpp,alphabet=model$stateNames,
                 id=rownames(model$obs[[1]]),

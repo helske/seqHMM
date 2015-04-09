@@ -2,7 +2,7 @@
 
 spreadModels <- function(model){
   
-  stnames <-matrix(unlist(strsplit(model$stateNames, ".", fixed=TRUE)), ncol=2, byrow=TRUE)[,1]
+  stnames <-unlist(model$originalStateNames)
   rownames(model$transitionMatrix) <- colnames(model$transitionMatrix) <- stnames
   
   if(model$numberOfChannels==1){
@@ -25,7 +25,7 @@ spreadModels <- function(model){
                                             (k+1):(k+model$numberOfStatesInModels[m])]
         emissM[[m]] <- model$emissionMatrix[(k+1):(k+model$numberOfStatesInModels[m]),]
       names(emissM[[m]]) <- model$channelNames
-      init[[m]] <- model$initialProbs[(k+1):(k+model$numberOfStatesInModels[m])]
+      init[[m]] <- unname(model$initialProbs[(k+1):(k+model$numberOfStatesInModels[m])])
       k <- sum(model$numberOfStatesInModels[1:m])
     }
   }else{  
@@ -36,7 +36,7 @@ spreadModels <- function(model){
         emissM[[m]][[j]] <- model$emissionMatrix[[j]][(k+1):(k+model$numberOfStatesInModels[m]),]
       }
       names(emissM[[m]]) <- model$channelNames
-      init[[m]] <- model$initialProbs[(k+1):(k+model$numberOfStatesInModels[m])]
+      init[[m]] <- unname(model$initialProbs[(k+1):(k+model$numberOfStatesInModels[m])])
       k <- sum(model$numberOfStatesInModels[1:m])
     }
   }
@@ -46,7 +46,9 @@ spreadModels <- function(model){
   model$transitionMatrix <- transM
   model$emissionMatrix <- emissM
   model$initialProbs <- init
-  
+  model$stateNames <- model$originalStateNames
+  model$numberOfStates <- model$numberOfStatesInModels
+  model$originalStateNames<-model$numberOfStatesInModels<-NULL
   class(model) <- "mixHMModel"
   
   model

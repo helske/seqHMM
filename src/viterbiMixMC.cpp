@@ -12,17 +12,17 @@ using namespace Rcpp;
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
-List viterbiMixMC(NumericVector transitionMatrix, NumericVector emissionArray, 
+List viterbiMCx(NumericVector transitionMatrix, NumericVector emissionArray, 
 NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, 
 NumericMatrix X_, IntegerVector numberOfStates) {  
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
   
-  arma::vec init(initialProbs.begin(), eDims[0], true);
-  arma::mat transition(transitionMatrix.begin(), eDims[0], eDims[0], true);
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
-  arma::Cube<int> obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], true);
+  arma::vec init(initialProbs.begin(), eDims[0], false);
+  arma::mat transition(transitionMatrix.begin(), eDims[0], eDims[0], false);
+  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
+  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
   
   arma::umat q(oDims[0], oDims[1]);
   arma::vec logp(oDims[0]);
@@ -32,7 +32,7 @@ NumericMatrix X_, IntegerVector numberOfStates) {
   
   int qn = coefs.nrow();
   arma::mat coef(coefs.begin(),qn,numberOfStates.size());
-  coef.col(0) = 0.0;
+  coef.col(0).zeros();
   arma::mat X(X_.begin(),oDims[0],qn);
   
   arma::mat lweights = exp(X*coef).t();
