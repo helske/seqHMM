@@ -11,6 +11,7 @@
 #' @param return.loglik Return the log-likelihood of trimmed model together with
 #'   the model object. Default is FALSE.
 #' @param zerotol Values smaller than this are trimmed to zero.
+#' @param convergence.check Checks that the (local) maximum was reached when using \code{\link{optimx}} for model fitting. Defaults to \code{FALSE}. If model does not converge 
 #' @param ... Further parameters passed on to \code{fitHMM}.
 #'   
 #' @seealso \code{\link{buildHMM}} for building Hidden Markov models before 
@@ -84,7 +85,9 @@
 #' # leads to improved log-likelihood.
 #' HMMtrim <- trimHMM(HMM$model, zerotol=1e-03, maxit=10)
 #' 
-trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,...){
+trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8, 
+                  convergence.check=FALSE,...){
+  
   if(model$numberOfChannels==1){
     if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
            any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
@@ -129,6 +132,24 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,...){
         model$emissionMatrix[model$emissionMatrix<zerotol]<-0
         model$emissionMatrix<-model$emissionMatrix/rowSums(model$emissionMatrix)
         
+      }
+      if(convergence.check==TRUE){
+        fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
+        if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
+          print("Convergence check: (Local) maximum was found.")
+        }else{
+          print("Convergence check: Possible problem(s) with convergence.")
+          if(fit$optimx.result$convcode!=0){
+            print(paste(c("convcode:", fit$optimx.result$convcode)))
+          }
+          if(fit$optimx.result$kkt1!=TRUE){
+            print(paste(c("kkt1:", fit$optimx.result$kkt1)))
+          }
+          if(fit$optimx.result$kkt1!=TRUE){
+            print(paste(c("kkt2:", fit$optimx.result$kkt2)))
+          }
+          print("Type help(optimx) for more information.")
+        }
       }
     }
     
@@ -183,13 +204,31 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,...){
         }       
       }
     }
+    if(convergence.check==TRUE){
+      fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
+      if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
+        print("Convergence check: (Local) maximum was found.")
+      }else{
+        print("Convergence check: Possible problem(s) with convergence.")
+        if(fit$optimx.result$convcode!=0){
+          print(paste(c("convcode:", fit$optimx.result$convcode)))
+        }
+        if(fit$optimx.result$kkt1!=TRUE){
+          print(paste(c("kkt1:", fit$optimx.result$kkt1)))
+        }
+        if(fit$optimx.result$kkt1!=TRUE){
+          print(paste(c("kkt2:", fit$optimx.result$kkt2)))
+        }
+        print("Type help(optimx) for more information.")
+      }
+    }
   }
   if(maxit>0)
-    print(paste(ii,"iterations used."))
+    print(paste(ii,"iteration(s) used."))
   
   if(ll0<ll_original){
-    print(paste("Log-likelihood of trimmed model is smaller than the original log-likelihood, ll_trim-ll_orig =", ll0-ll_original))
-  } else print(paste("Trimming improved log-likelihood, ll_trim-ll_orig =", ll0-ll_original))
+    print(paste("Log-likelihood of the trimmed model is smaller than the original log-likelihood, ll_trim-ll_orig =", round(ll0-ll_original, 3)))
+  } else print(paste("Trimming improved log-likelihood, ll_trim-ll_orig =", round(ll0-ll_original, 3)))
   
   
   if(return.loglik){
