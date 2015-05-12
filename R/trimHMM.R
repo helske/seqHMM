@@ -140,13 +140,13 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
         }else{
           print("Convergence check: Possible problem(s) with convergence.")
           if(fit$optimx.result$convcode!=0){
-            print(paste(c("convcode:", fit$optimx.result$convcode)))
+            print(paste("convcode =", fit$optimx.result$convcode))
           }
           if(fit$optimx.result$kkt1!=TRUE){
-            print(paste(c("kkt1:", fit$optimx.result$kkt1)))
+            print(paste("kkt1 =", fit$optimx.result$kkt1))
           }
-          if(fit$optimx.result$kkt1!=TRUE){
-            print(paste(c("kkt2:", fit$optimx.result$kkt2)))
+          if(fit$optimx.result$kkt2!=TRUE){
+            print(paste("kkt2 =", fit$optimx.result$kkt2))
           }
           print("Type help(optimx) for more information.")
         }
@@ -211,13 +211,13 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
       }else{
         print("Convergence check: Possible problem(s) with convergence.")
         if(fit$optimx.result$convcode!=0){
-          print(paste(c("convcode:", fit$optimx.result$convcode)))
+          print(paste("convcode =", fit$optimx.result$convcode))
         }
         if(fit$optimx.result$kkt1!=TRUE){
-          print(paste(c("kkt1:", fit$optimx.result$kkt1)))
+          print(paste("kkt1 =", fit$optimx.result$kkt1))
         }
-        if(fit$optimx.result$kkt1!=TRUE){
-          print(paste(c("kkt2:", fit$optimx.result$kkt2)))
+        if(fit$optimx.result$kkt2!=TRUE){
+          print(paste("kkt2 =", fit$optimx.result$kkt2))
         }
         print("Type help(optimx) for more information.")
       }
@@ -227,8 +227,9 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
     print(paste(ii,"iteration(s) used."))
   
   if(ll0<ll_original){
-    print(paste("Log-likelihood of the trimmed model is smaller than the original log-likelihood, ll_trim-ll_orig =", round(ll0-ll_original, 3)))
-  } else print(paste("Trimming improved log-likelihood, ll_trim-ll_orig =", round(ll0-ll_original, 3)))
+    print(paste("Log-likelihood of the trimmed model is smaller than the original log-likelihood, ll_trim-ll_orig =", signif(ll0-ll_original, 3)))
+  } else print(paste("Trimming improved log-likelihood, ll_trim-ll_orig =", signif(ll0-ll_original, 3)))
+  
   
   
   if(return.loglik){
