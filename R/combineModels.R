@@ -5,7 +5,7 @@ combineModels <- function(model){
   transitionMatrix <- as.matrix(.bdiag(model$transitionMatrix))
   stateNames <- unlist(originalStateNames<-model$stateNames)
   if (length(unique(stateNames))!= length(stateNames)){
-    stateNames <- paste(stateNames,rep(1:model$numberOfModels,model$numberOfStates),sep=".")
+    stateNames <- paste(stateNames,rep(1:model$numberOfModels,model$numberOfStates),sep="_")
   }
   dimnames(transitionMatrix) <- replicate(2, stateNames, simplify=FALSE)
   
