@@ -7,7 +7,7 @@
 #' 
 #' @export
 #' @importFrom Matrix .bdiag
-#' @param model Hidden Markov model of class HMModel or MCHMModel.
+#' @param model Hidden Markov model of class \code{mixHMModel}.
 #' @param method Optimization method used by \code{optimx}. Default is 
 #'   \code{"BFGS"}. Note that \code{fitHMM} uses Softmax parameterization so 
 #'   unconstrained optimization methods are used.
@@ -441,7 +441,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
   model <- likfn(as.numeric(resoptimx[1:length(initialvalues)]), model, FALSE)
   
   rownames(model$beta) <- colnames(model$X)
-  colnames(model$beta) <- paste("Model", 1:dim(model$beta)[2])
+  colnames(model$beta) <- model$modelNames
   
   pr <- exp(model$X%*%model$beta)
   model$modelProbabilities <- pr/rowSums(pr)

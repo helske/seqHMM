@@ -92,6 +92,26 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
     if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
            any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
          || any(model$emissionMatrix<zerotol & model$emissionMatrix>0))){
+
+      if(convergence.check==TRUE){
+        fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
+        if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
+          print("Convergence check: (Local) optimum was found.")
+        }else{
+          print("Convergence check: Possible problem(s) with convergence.")
+          if(fit$optimx.result$convcode!=0){
+            print(paste("convcode =", fit$optimx.result$convcode))
+          }
+          if(fit$optimx.result$kkt1!=TRUE){
+            print(paste("kkt1 =", fit$optimx.result$kkt1))
+          }
+          if(fit$optimx.result$kkt2!=TRUE){
+            print(paste("kkt2 =", fit$optimx.result$kkt2))
+          }
+          print("Type help(optimx) for more information.")
+        }
+      }
+      
       print("Nothing to trim.")
       if(return.loglik){
         return(list(model=model,loglik=logLik(model)))
@@ -157,6 +177,24 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
     if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
            any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
          || any(sapply(model$emissionMatrix,function(x) any(x<zerotol & x>0))))){
+      if(convergence.check==TRUE){
+        fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
+        if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
+          print("Convergence check: (Local) optimum was found.")
+        }else{
+          print("Convergence check: Possible problem(s) with convergence.")
+          if(fit$optimx.result$convcode!=0){
+            print(paste("convcode =", fit$optimx.result$convcode))
+          }
+          if(fit$optimx.result$kkt1!=TRUE){
+            print(paste("kkt1 =", fit$optimx.result$kkt1))
+          }
+          if(fit$optimx.result$kkt2!=TRUE){
+            print(paste("kkt2 =", fit$optimx.result$kkt2))
+          }
+          print("Type help(optimx) for more information.")
+        }
+      }
       print("Nothing to trim.")
       if(return.loglik){
         return(list(model=model,loglik=logLik(model)))

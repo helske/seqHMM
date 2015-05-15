@@ -25,7 +25,7 @@
 #' @param modelNames A vector of optional names for the models.
 #' @param stateNames A list of optional labels for the hidden states.
 #' @param channelNames A vector of optional names for the channels.
-#' @return Object of class \code{mixtureHMModel}
+#' @return Object of class \code{mixHMModel}
 #' @seealso \code{\link{fitMixHMM}} for fitting mixture Hidden Markov models.
 #'   
 buildMixHMM <- 
@@ -158,6 +158,14 @@ buildMixHMM <-
       beta <- matrix(0,1,numberOfModels)        
     }
     
+    rownames(beta) <- colnames(X)
+    colnames(beta) <- modelNames
+    
+    names(transitionMatrix) <- names(emissionMatrix) <- names(initialProbs) <- modelNames
+    
+    pr <- exp(X%*%beta)
+    modelProbabilities <- pr/rowSums(pr)
+    
     model<-list(observations=observations, transitionMatrix=transitionMatrix,
                 emissionMatrix=emissionMatrix, initialProbs=initialProbs,
                 beta=beta, X=X, modelNames=modelNames, stateNames=stateNames, 
@@ -166,7 +174,8 @@ buildMixHMM <-
                 numberOfSequences=numberOfSequences, numberOfModels=numberOfModels,
                 numberOfSymbols=numberOfSymbols, numberOfStates=numberOfStates,
                 numberOfChannels=numberOfChannels,
-                numberOfCovariates=numberOfCovariates)
+                numberOfCovariates=numberOfCovariates, 
+                modelProbabilities=modelProbabilities)
     class(model)<-"mixHMModel"
     model
   }

@@ -12,7 +12,7 @@ fitHMM(model, use.em = TRUE, use.optimx = TRUE, em.control = list(),
   method = "BFGS", itnmax = 10000, optimx.control = list(), ...)
 }
 \arguments{
-\item{model}{Hidden Markov model of class HMModel or MCHMModel.}
+\item{model}{Hidden Markov model of class \code{HMModel}.}
 
 \item{use.em}{Logical, use EM algorithm at the start of parameter estimation.
 Default is TRUE.}

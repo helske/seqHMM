@@ -39,7 +39,7 @@ The first column is set to zero.}
 \item{channelNames}{A vector of optional names for the channels.}
 }
 \value{
-Object of class \code{mixtureHMModel}
+Object of class \code{mixHMModel}
 }
 \description{
 Function buildMixHMM constructs a mixture of hidden Markov models.

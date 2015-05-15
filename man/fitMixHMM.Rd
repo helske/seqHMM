@@ -8,7 +8,7 @@ fitMixHMM(model, method = "BFGS", itnmax = 10000, optimx.control = list(),
   ...)
 }
 \arguments{
-\item{model}{Hidden Markov model of class HMModel or MCHMModel.}
+\item{model}{Hidden Markov model of class \code{mixHMModel}.}
 
 \item{method}{Optimization method used by \code{optimx}. Default is
 \code{"BFGS"}. Note that \code{fitHMM} uses Softmax parameterization so

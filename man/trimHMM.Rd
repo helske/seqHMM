@@ -4,7 +4,8 @@
 \alias{trimHMM}
 \title{Trim Small Probabilities of Hidden Markov Model}
 \usage{
-trimHMM(model, maxit = 0, return.loglik = FALSE, zerotol = 1e-08, ...)
+trimHMM(model, maxit = 0, return.loglik = FALSE, zerotol = 1e-08,
+  convergence.check = FALSE, ...)
 }
 \arguments{
 \item{model}{Model for which trimming is performed.}
@@ -17,6 +18,8 @@ iterations is used.}
 the model object. Default is FALSE.}
 
 \item{zerotol}{Values smaller than this are trimmed to zero.}
+
+\item{convergence.check}{Checks that the (local) maximum was reached when using \code{\link{optimx}} for model fitting. Defaults to \code{FALSE}. If model does not converge}
 
 \item{...}{Further parameters passed on to \code{fitHMM}.}
 }
