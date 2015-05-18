@@ -1,0 +1,289 @@
+#' Plot hidden Markov model from mixHMModel objects
+#' 
+#' Function \code{plot.mixHMModel} plots a directed graph of one HMM with pie charts of 
+#' emission probabilities as vertices/nodes.
+#' 
+#' @import igraph
+#' @export
+#' 
+#' @param x A hidden Markov model object of class mixHMModel created with 
+#'   \code{\link{buildMixHMM}} and \code{\link{fitMixHMM}}. Multichannel 
+#'   HMModel objects are automatically transformed to single channel objects. 
+#'   See function \code{\link{MCtoSC}} for more information on the 
+#'   transformation.
+#' @param ask If true and \code{which.plots} is NULL, \code{plot.mixHMModel} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}.
+#' @param which.plots The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots.
+#' @param layout specifies the layout of the vertices (nodes). Accepts a 
+#'   numerical matrix, a layout function, or either of \code{"horizontal"} (the 
+#'   default) and \code{"vertical"}. Options \code{"horizontal"} and 
+#'   \code{"vertical"} position vertices at the same horizontal or vertical 
+#'   line. A two-column matrix can be used to give the x and y coordinates of 
+#'   the vertices, or alternatively an igraph \code{\link[igraph]{layout}} 
+#'   function can be called.
+#' @param pie Are vertices plotted as pie charts of emission probabilities? 
+#'   Defaulting to TRUE.
+#' @param vertex.size The size of the vertex, given as a scalar or numerical 
+#'   vector. The default value is 40.
+#' @param vertex.label Labels for the vertices. Possible options include 
+#'   \code{"initial.probs"}, \code{"names"}, \code{NA}, and a character or 
+#'   numerical vector. The default \code{"initial.probs"} prints the initial 
+#'   probabilities of the model and \code{"names"} prints the names of the 
+#'   hidden states as labels. \code{NA} prints no labels.
+#' @param vertex.label.dist The distance of the label of the vertex from its 
+#'   center. The default value \code{"auto"} places the label outside the 
+#'   vertex.
+#' @param vertex.label.pos The position of the label of the vertex, relative to 
+#'   the center of the vertices. A scalar or numerical vector giving the 
+#'   position(s) as radians or one of \code{"bottom"} (pi/2 as radians), 
+#'   \code{"top"} (-pi/2), \code{"left"} (pi), or \code{"right"} (0).
+#' @param vertex.label.family,edge.label.family The font family to be used for
+#'   vertex/edge labels. See argument \code{family} in \code{\link{par}} for
+#'   more information.
+#' @param loops Defines whether transitions to the same state are plotted.
+#' @param edge.curved Defines whether to plot curved edges (arcs, arrows) 
+#'   between the vertices. A logical or numerical vector or scalar. A numerical 
+#'   value specifies the curvature of the edge. The default value \code{TRUE} 
+#'   gives curvature of 0.5 to all edges. See \code{\link{igraph.plotting}} for 
+#'   more information.
+#' @param edge.label Labels for the edges. Possible options include 
+#'   \code{"auto"}, \code{"NA"}, and a character or numerical vector. The 
+#'   default \code{"auto"} prints the transition probabilities as edge labels. 
+#'   \code{NA} prints no labels.
+#' @param edge.width The width of the edges. The default \code{"auto"} plots the
+#'   widths according to the transition probabilities between the hidden states.
+#'   Other possibilities are a single value or a numerical vector giving the 
+#'   widths.
+#' @param cex.edge.width An expansion factor for the edge widths to thicken 
+#'   edges of models with small transition probabilities. Defaults to 1.
+#' @param edge.arrow.size The size of the arrows in edges (constant). Defaults to 1.5.
+#' @param label.signif Rounds labels of model parameters to the specified number
+#'   of significant digits, 2 by default. Ignored for user-given labels.
+#' @param label.scientific Defines if scientific notation is to be used to 
+#'   describe small numbers. Defaults to \code{FALSE}, e.g. 0.0001 instead of 
+#'   1e-04. Ignored for user-given labels.
+#' @param label.max.length Maximum number of digits in labels of model 
+#'   parameters. Ignored for user-given labels.
+#' @param trim A scalar between 0 and 1 giving the highest probability of 
+#'   transitions that are plotted as edges, defaults to 1e-15.
+#' @param combine.slices A scalar between 0 and 1 giving the highest probability
+#'   of emission probabilities that are combined into one state. The dafault 
+#'   value is 0.05.
+#' @param combined.slice.color The color of the slice including the smallest 
+#'   emission probabilitis that user wants to combine (only if argument 
+#'   \code{"combine.slices"} is greater than 0). The default color is white.
+#' @param combined.slice.label The label for the combined states (when argument 
+#'   \code{"combine.slices"} is greater than 0) to appear in the legend.
+#' @param withlegend defines if and where the legend of the state colors is 
+#'   plotted. Possible values include \code{"bottom"} (the default), 
+#'   \code{"top"}, \code{"left"}, and \code{"right"}. \code{FALSE} omits the 
+#'   legend.
+#' @param ltext Optional description of the (combined) observed states to appear
+#'   in the legend. A vector of character strings. See \code{\link{seqplot}} for
+#'   more information.
+#' @param legend.prop The proportion of the graphic area used for plotting the 
+#'   legend. A scalar between 0 and 1, defaults to 0.5.
+#' @param cex.legend Expansion factor for setting the size of the font for the 
+#'   labels in the legend. The default value is 1. Values lesser than 1 will 
+#'   reduce the size of the font, values greater than 1 will increase the size.
+#' @param ncol.legend The number of columns for the legend. The default value 
+#'   \code{"auto"} sets the number of columns automatically.
+#' @param cpal Optional color palette for the (combinations of) observed states.
+#'   The default value \code{"auto"} uses automatic color palette. Otherwise a 
+#'   vector of length \code{x$numberOfSymbols} is given, i.e. requires a color 
+#'   specified for all (combinations of) observed states even if they are not 
+#'   plotted (if the probability is less than combine.slices).
+#' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as 
+#'   \code{vertex.color}, \code{vertex.label.cex}, \code{edge.lty}, 
+#'   \code{margin}, or \code{main}.
+#'   
+#' @seealso \code{\link{buildMixHMM}} and \code{\link{fitMixHMM}} for building and 
+#'   fitting mixture hidden Markov models, and 
+#'   \code{\link{plot.igraph}} for the general plotting function of directed graphs.
+#'   
+#' @examples 
+#' require(TraMineR)
+#' 
+#' data(biofam)
+#' biofam <- biofam[1:500,]
+#' 
+#' ## Building one channel per type of event left, children or married
+#' bf <- as.matrix(biofam[, 10:25])
+#' children <-  bf==4 | bf==5 | bf==6
+#' married <- bf == 2 | bf== 3 | bf==6
+#' left <- bf==1 | bf==3 | bf==5 | bf==6
+#' 
+#' children[children==TRUE] <- "Children"
+#' children[children==FALSE] <- "Childless"
+#' 
+#' married[married==TRUE] <- "Married"
+#' married[married==FALSE] <- "Single"
+#' 
+#' left[left==TRUE] <- "Left home"
+#' left[left==FALSE] <- "With parents"
+#' 
+#' ## Building sequence objects
+#' child.seq <- seqdef(children)
+#' marr.seq <- seqdef(married)
+#' left.seq <- seqdef(left)
+#' 
+#' ## Initial values for emission matrices 
+#' alphabet(child.seq) # Check for order of observed states
+#' B1_child <- matrix(NA, nrow=4, ncol=2) 
+#' B1_child[1,] <- c(10,1) # High prob. for childless, low for children
+#' B1_child[2,] <- c(10,1)
+#' B1_child[3,] <- c(10,1)
+#' B1_child[4,] <- c(1,10) # Low prob. for childless, high for children
+#' B1_child <- B1_child/rowSums(B1_child)
+#' B1_child
+#' 
+#' alphabet(marr.seq)
+#' B1_marr <- matrix(NA, nrow=4, ncol=2) 
+#' B1_marr[1,] <- c(1,10)
+#' B1_marr[2,] <- c(1,10)
+#' B1_marr[3,] <- c(10,1)
+#' B1_marr[4,] <- c(7,1)
+#' B1_marr <- B1_marr/rowSums(B1_marr)
+#' B1_marr
+#' 
+#' alphabet(left.seq)
+#' B1_left <- matrix(NA, nrow=4, ncol=2) 
+#' B1_left[1,] <- c(1,10)
+#' B1_left[2,] <- c(10,1)
+#' B1_left[3,] <- c(10,1)
+#' B1_left[4,] <- c(10,1)
+#' B1_left <- B1_left/rowSums(B1_left)
+#' B1_left
+#' 
+#' B2_child <- matrix(NA, nrow=4, ncol=2) 
+#' B2_child[1,] <- c(10,1) 
+#' B2_child[2,] <- c(10,1)
+#' B2_child[3,] <- c(10,1) 
+#' B2_child[4,] <- c(1,10)
+#' B2_child <- B2_child/rowSums(B2_child)
+#' B2_child
+#' 
+#' B2_marr <- matrix(NA, nrow=4, ncol=2) 
+#' B2_marr[1,] <- c(1,10)
+#' B2_marr[2,] <- c(5,1)
+#' B2_marr[3,] <- c(10,1)
+#' B2_marr[4,] <- c(7,1)
+#' B2_marr <- B2_marr/rowSums(B2_marr)
+#' B2_marr
+#' 
+#' B2_left <- matrix(NA, nrow=4, ncol=2) 
+#' B2_left[1,] <- c(1,10)
+#' B2_left[2,] <- c(1,10)
+#' B2_left[3,] <- c(1,5)
+#' B2_left[4,] <- c(1,5)
+#' B2_left <- B2_left/rowSums(B2_left)
+#' B2_left
+#' 
+#' # Initial values for transition matrices
+#' A1 <- matrix(c(0.8,   0.16, 0.03, 0.01,
+#'              0,    0.9, 0.07, 0.03, 
+#'              0,      0,  0.9,  0.1, 
+#'                0,      0,    0,    1), 
+#'              nrow=4, ncol=4, byrow=TRUE)
+#' 
+#' A2 <- matrix(c(0.94, 0.04, 0.01, 0.01,
+#'                0,    0.94, 0.05, 0.01, 
+#'                0,       0,  0.9,  0.1, 
+#'                0,       0,    0,    1), 
+#'              nrow=4, ncol=4, byrow=TRUE)
+#' 
+#' # Initial values for initial state probabilities 
+#' initialProbs1 <- c(0.9, 0.07, 0.02, 0.01)
+#' initialProbs2 <- c(0.95, 0.03, 0.01, 0.01)
+#' 
+#' # Birth cohort
+#' cohort <- cut(biofam$birthyr, c(1912, 1935, 1945, 1957))
+#' biofam$cohort <- factor(cohort, labels=c("1913-1935", "1936-1945", "1946-1957"))
+#' 
+#' # Setting initial values for parameters
+#' bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq), 
+#'                      transitionMatrix=list(A1,A2), 
+#'                      emissionMatrix=list(list(B1_child, B1_marr, B1_left),
+#'                                          list(B2_child, B2_marr, B2_left)),
+#'                      initialProbs=list(initialProbs1, initialProbs2), 
+#'                      formula=~sex*cohort, data=biofam)
+#' 
+#' # Fitting mixture of hidden Markov models
+#' HMM <- fitMixHMM(bmHMM)
+#' 
+#' # Plotting each model (change with Enter)
+#' plot(HMM)
+#' 
+#' # Choosing the model (one at a time)
+#' plot(HMM, ask=TRUE)
+#' 
+#' # Plotting only the first model
+#' plot(HMM, which.plots=1)
+
+
+plot.mixHMModel <- function(x, ask = FALSE, which.plots = NULL, layout="horizontal", pie=TRUE, 
+                            vertex.size=40, vertex.label="initial.probs", 
+                            vertex.label.dist="auto", vertex.label.pos="bottom",
+                            vertex.label.family="sans",
+                            loops=FALSE, edge.curved=TRUE, edge.label="auto", 
+                            edge.width="auto", cex.edge.width=1, 
+                            edge.arrow.size=1.5, edge.label.family="sans",
+                            label.signif=2, label.scientific=FALSE, label.max.length=6,
+                            trim=1e-15, 
+                            combine.slices=0.05, combined.slice.color="white", 
+                            combined.slice.label="others",
+                            withlegend="bottom", ltext=NULL, legend.prop=0.5, 
+                            cex.legend=1, ncol.legend="auto", cpal="auto", ...){
+  
+  divmodels <- divideModels(x)
+  
+  if (is.null(which.plots) && !ask){
+    which.plots <- 1:x$numberOfModels
+  }
+  
+  if (ask && is.null(which.plots)) {
+    tmenu <- x$modelNames
+    repeat {
+      pick <- menu(tmenu, title = "\nMake a model selection (or 0 to exit):\n")
+      if(pick==0){
+        return(invisible())
+      }else{
+      plot.HMModel(divmodels[[pick]], layout, pie, 
+                   vertex.size, vertex.label, 
+                   vertex.label.dist, vertex.label.pos,
+                   vertex.label.family,
+                   loops, edge.curved, edge.label, 
+                   edge.width, cex.edge.width, 
+                   edge.arrow.size, edge.label.family,
+                   label.signif, label.scientific, label.max.length,
+                   trim, 
+                   combine.slices, combined.slice.color, 
+                   combined.slice.label,
+                   withlegend, ltext, legend.prop, 
+                   cex.legend, ncol.legend, cpal, ...)
+      }
+    }
+  }
+  else {
+    ask <- length(which.plots) > 1
+    if (ask) {
+      op <- par(ask = TRUE)
+      on.exit(par(op))
+    }
+    for (i in which.plots) {
+      plot.HMModel(divmodels[[i]], layout, pie, 
+                   vertex.size, vertex.label, 
+                   vertex.label.dist, vertex.label.pos,
+                   vertex.label.family,
+                   loops, edge.curved, edge.label, 
+                   edge.width, cex.edge.width, 
+                   edge.arrow.size, edge.label.family,
+                   label.signif, label.scientific, label.max.length,
+                   trim, 
+                   combine.slices, combined.slice.color, 
+                   combined.slice.label,
+                   withlegend, ltext, legend.prop, 
+                   cex.legend, ncol.legend, cpal, ...)
+    }
+  }
+  invisible()
+}
