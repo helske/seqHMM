@@ -8,6 +8,7 @@ NumericVector gradientMCx(NumericVector transitionMatrix, NumericVector emission
 IntegerVector obsArray,NumericVector rowSumsA,NumericVector rowSumsB_, NumericVector sumInit,
 IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, NumericVector expPsi,
 NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates) { 
+
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
@@ -149,27 +150,28 @@ NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates) {
     
   }
   // InitProbs  
+ 
         IntegerVector cumsumstate = cumsum(numberOfStates);
       for(unsigned int jj = 0; jj < numberOfStates.size(); jj++){
-        arma::uvec ind = arma::find(INZ.subvec(cumsumstate(jj)-numberOfStates(0),
-        cumsumstate(jj)-numberOfStates(0)+numberOfStates(jj)-1));  
+        arma::uvec ind = arma::find(INZ.subvec(cumsumstate(jj)-numberOfStates(jj),
+        cumsumstate(jj)-1));  
         if(ind.n_elem>1){     
           arma::vec gradRow(ind.n_elem,arma::fill::zeros);  
           for(unsigned int j = 0; j < ind.n_elem; j++){        
             for(int k = 0; k < oDims[0]; k++){ 
               tmp = 0.0;
               for(int r=0; r < oDims[2]; r++){
-                tmp += emissionLog(cumsumstate(jj)-numberOfStates(0)+j,obs(k,0,r),r);
+                tmp += emissionLog(cumsumstate(jj)-numberOfStates(jj)+j,obs(k,0,r),r);
               }
-              gradRow(j) += exp(tmp+beta(cumsumstate(jj)-numberOfStates(0)+j,0,k)-ll(k)+lweights(jj,k));
+              gradRow(j) += exp(tmp+beta(cumsumstate(jj)-numberOfStates(jj)+j,0,k)-ll(k)+lweights(jj,k));
             }
           }
           
           for(unsigned int j = 0; j < ind.n_elem; j++){
-            if(INZ(cumsumstate(jj)-numberOfStates(0)+ind(j))!=2){
+            if(INZ(cumsumstate(jj)-numberOfStates(jj)+ind(j))!=2){
               arma::rowvec dpsi(ind.n_elem,arma::fill::zeros);
               dpsi(j) = 1.0;    
-              dpsi = (dpsi-init(cumsumstate(jj)-numberOfStates(0)+ind).t())*expPsi(countgrad)/sumInit(jj);
+              dpsi = (dpsi-init(cumsumstate(jj)-numberOfStates(jj)+ind).t())*expPsi(countgrad)/sumInit(jj);
               grad(countgrad) = arma::as_scalar(dpsi*gradRow);          
               countgrad ++;
               
@@ -228,6 +230,7 @@ NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates) {
     //    }
     //  }
     // beta
+    
     double tmp2;
     for(unsigned int jj = 1; jj < numberOfStates.size(); jj++){
       for(int k = 0; k < oDims[0]; k++){

@@ -23,7 +23,8 @@
 #'   \item{logLik}{Log-likelihood of the estimated model. } 
 #'   \item{optimx.results}{Results from direct numerical optimization via 
 #'   \code{\link{optimx}}. }
-#' @seealso \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and
+#' @seealso \code{\link{buildMixHMM}} for building mixture HMM's, and 
+#' \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and
 #'   fitting hidden Markov models without covariates.
 #' @examples 
 #' require(TraMineR)

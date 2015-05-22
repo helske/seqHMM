@@ -138,7 +138,7 @@ buildMixHMM <-
     
     if(!missing(formula)){
       if(inherits(formula, "formula")){
-      X <- model.matrix(formula, data)#[,-1,drop=FALSE]
+      X <- model.matrix(formula, data) #[,-1,drop=FALSE]
       if(nrow(X)!=numberOfSequences)
         stop("Number of subjects in data for covariates does not match the number of subjects in the sequence data.")
       numberOfCovariates<-ncol(X)

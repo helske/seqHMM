@@ -1,3 +1,4 @@
+
 #' Plot hidden Markov models
 #' 
 #' Function \code{plot.HMModel} plots a directed graph with pie charts of 
@@ -233,6 +234,13 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
                          combined.slice.label="others",
                          withlegend="bottom", ltext=NULL, legend.prop=0.5, 
                          cex.legend=1, ncol.legend="auto", cpal="auto", ...){
+  
+  
+  # Saving and changing marginals
+  oldPar <- par(no.readonly = TRUE)
+  par(mar=c(0.5,0.5,0.5,0.5))
+  on.exit(par(oldPar))
+  on.exit(par(mfrow=c(1,1)))
   
   dots <- list(...)
   
@@ -470,11 +478,6 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
     }
   }
   
-  # Saving and changing marginals
-  oldPar <- par(no.readonly = TRUE)
-  par(mar=c(0.5,0.5,0.5,0.5))
-  on.exit(par(oldPar))
-  on.exit(par(mfrow=c(1,1)))
   
   # Plotting graph
   if(pie==TRUE){
@@ -577,6 +580,6 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
   }
   
   
-  
+  par(oldPar)
   
 }

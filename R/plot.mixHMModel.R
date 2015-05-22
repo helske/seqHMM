@@ -211,13 +211,13 @@
 #' HMM <- fitMixHMM(bmHMM)
 #' 
 #' # Plotting each model (change with Enter)
-#' plot(HMM)
+#' plot(HMM$model)
 #' 
 #' # Choosing the model (one at a time)
-#' plot(HMM, ask=TRUE)
+#' plot(HMM$model, ask=TRUE)
 #' 
 #' # Plotting only the first model
-#' plot(HMM, which.plots=1)
+#' plot(HMM$model, which.plots=1)
 
 
 plot.mixHMModel <- function(x, ask = FALSE, which.plots = NULL, layout="horizontal", pie=TRUE, 
@@ -234,7 +234,11 @@ plot.mixHMModel <- function(x, ask = FALSE, which.plots = NULL, layout="horizont
                             withlegend="bottom", ltext=NULL, legend.prop=0.5, 
                             cex.legend=1, ncol.legend="auto", cpal="auto", ...){
   
-  divmodels <- divideModels(x)
+  oldPar <- par(no.readonly=TRUE)
+  on.exit(par(oldPar))
+  on.exit(par(mfrow=c(1,1)))
+  
+  divmodels <- sepMixHMM(x)
   
   if (is.null(which.plots) && !ask){
     which.plots <- 1:x$numberOfModels
@@ -286,4 +290,5 @@ plot.mixHMModel <- function(x, ask = FALSE, which.plots = NULL, layout="horizont
     }
   }
   invisible()
+  par(oldPar)
 }
