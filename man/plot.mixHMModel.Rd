@@ -137,8 +137,8 @@ plotted (if the probability is less than combine.slices).}
   \code{margin}, or \code{main}.}
 }
 \description{
-Function \code{plot.mixHMModel} plots a directed graph of one HMM with pie charts of
-emission probabilities as vertices/nodes.
+Function \code{plot.mixHMModel} plots a directed graph of the parameters of each model
+with pie charts of emission probabilities as vertices/nodes.
 }
 \examples{
 require(TraMineR)

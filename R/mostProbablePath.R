@@ -1,5 +1,5 @@
 #' Most Probable Path of Hidden States of Hidden Markov Model given the
-#' sequence.
+#' Sequence.
 #' 
 #' Function \code{mostProbablePath} computes the most probable path of the
 #' hidden states of the hidden Markov model given the observed sequence.
@@ -7,10 +7,10 @@
 #' @export
 #' @param model Hidden Markov model of class \code{HMModel} or \code{MCHMModel}.
 #' 
-#' @return List which contains the most probable path of states (mpp) given the
-#'   observations and its log-probability (logP). In case of multiple
-#'   observations, most probable path is computed independently for each
-#'   sequence.
+#' @return List which contains the most probable paths of hidden states (mpp) given the
+#'   observations and its log-probability (logP). In a case of multiple
+#'   subjects, the most probable path is computed independently for each
+#'   subject.
 #'   
 #' @examples 
 #' require(TraMineR)
@@ -158,7 +158,13 @@ mostProbablePath<-function(model){
                 start=attr(model$obs[[1]],"start"),
                 xtstep=attr(model$obs[[1]],"xtstep"))
   }
-  
-  list(mpp=mpp,logP=out$logp)
+
+  if(mix==TRUE){
+    gr <- sub("^.*?_","",mpp[,1])
+    gr <- factor(gr, labels=model$modelNames)
+    list(mpp=mpp, model=gr, logP=out$logp)
+  }else{
+    list(mpp=mpp, logP=out$logp)
+  }
   
 }

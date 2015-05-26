@@ -3,7 +3,7 @@
 \name{mostProbablePath}
 \alias{mostProbablePath}
 \title{Most Probable Path of Hidden States of Hidden Markov Model given the
-sequence.}
+Sequence.}
 \usage{
 mostProbablePath(model)
 }
@@ -11,10 +11,10 @@ mostProbablePath(model)
 \item{model}{Hidden Markov model of class \code{HMModel} or \code{MCHMModel}.}
 }
 \value{
-List which contains the most probable path of states (mpp) given the
-  observations and its log-probability (logP). In case of multiple
-  observations, most probable path is computed independently for each
-  sequence.
+List which contains the most probable paths of hidden states (mpp) given the
+  observations and its log-probability (logP). In a case of multiple
+  subjects, the most probable path is computed independently for each
+  subject.
 }
 \description{
 Function \code{mostProbablePath} computes the most probable path of the

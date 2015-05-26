@@ -1,7 +1,7 @@
 #' Plot hidden Markov model from mixHMModel objects
 #' 
-#' Function \code{plot.mixHMModel} plots a directed graph of one HMM with pie charts of 
-#' emission probabilities as vertices/nodes.
+#' Function \code{plot.mixHMModel} plots a directed graph of the parameters of each model 
+#' with pie charts of emission probabilities as vertices/nodes.
 #' 
 #' @import igraph
 #' @export
@@ -110,114 +110,183 @@
 #' bf <- as.matrix(biofam[, 10:25])
 #' children <-  bf==4 | bf==5 | bf==6
 #' married <- bf == 2 | bf== 3 | bf==6
-#' left <- bf==1 | bf==3 | bf==5 | bf==6
+#' left <- bf==1 | bf==3 | bf==5 | bf==6 | bf==7
 #' 
 #' children[children==TRUE] <- "Children"
 #' children[children==FALSE] <- "Childless"
+#' # Divorced parents
+#' div <- bf[(rowSums(bf==7)>0 & rowSums(bf==5)>0) | 
+#'             (rowSums(bf==7)>0 & rowSums(bf==6)>0),]
+#' children[rownames(bf) %in% rownames(div) & bf==7] <- "Children"
 #' 
 #' married[married==TRUE] <- "Married"
 #' married[married==FALSE] <- "Single"
+#' married[bf==7] <- "Divorced"
 #' 
 #' left[left==TRUE] <- "Left home"
 #' left[left==FALSE] <- "With parents"
+#' # Divorced living with parents (before divorce)
+#' wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &  
+#'          rowSums(bf==5)==0 &  rowSums(bf==6)==0) | 
+#'          (rowSums(bf==7)>0 & rowSums(bf==4)>0 & rowSums(bf==3)==0 &  
+#'          rowSums(bf==5)==0 &  rowSums(bf==6)==0),]
+#' left[rownames(bf) %in% rownames(wp) & bf==7] <- "With parents"
 #' 
 #' ## Building sequence objects
 #' child.seq <- seqdef(children)
 #' marr.seq <- seqdef(married)
 #' left.seq <- seqdef(left)
 #' 
-#' ## Initial values for emission matrices 
+#' ## Choosing colors
+#' attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
+#' attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+#' attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+#' 
+
 #' alphabet(child.seq) # Check for order of observed states
-#' B1_child <- matrix(NA, nrow=4, ncol=2) 
+#' B1_child <- matrix(NA, nrow=5, ncol=2) 
 #' B1_child[1,] <- c(10,1) # High prob. for childless, low for children
 #' B1_child[2,] <- c(10,1)
-#' B1_child[3,] <- c(10,1)
-#' B1_child[4,] <- c(1,10) # Low prob. for childless, high for children
+#' B1_child[3,] <- c(10,1) 
+#' B1_child[4,] <- c(10,1)
+#' B1_child[5,] <- c(10,1)
 #' B1_child <- B1_child/rowSums(B1_child)
 #' B1_child
 #' 
-#' alphabet(marr.seq)
-#' B1_marr <- matrix(NA, nrow=4, ncol=2) 
-#' B1_marr[1,] <- c(1,10)
-#' B1_marr[2,] <- c(1,10)
-#' B1_marr[3,] <- c(10,1)
-#' B1_marr[4,] <- c(7,1)
+#' B1_marr <- matrix(NA, nrow=5, ncol=3) 
+#' B1_marr[1,] <- c(1,1,10)
+#' B1_marr[2,] <- c(1,1,20)
+#' B1_marr[3,] <- c(1,20,1)
+#' B1_marr[4,] <- c(1,20,1)
+#' B1_marr[5,] <- c(10,1,1)
 #' B1_marr <- B1_marr/rowSums(B1_marr)
 #' B1_marr
 #' 
-#' alphabet(left.seq)
-#' B1_left <- matrix(NA, nrow=4, ncol=2) 
+#' B1_left <- matrix(NA, nrow=5, ncol=2) 
 #' B1_left[1,] <- c(1,10)
-#' B1_left[2,] <- c(10,1)
-#' B1_left[3,] <- c(10,1)
-#' B1_left[4,] <- c(10,1)
+#' B1_left[2,] <- c(20,1)
+#' B1_left[3,] <- c(1,20)
+#' B1_left[4,] <- c(20,1)
+#' B1_left[5,] <- c(1,1)
 #' B1_left <- B1_left/rowSums(B1_left)
 #' B1_left
 #' 
-#' B2_child <- matrix(NA, nrow=4, ncol=2) 
-#' B2_child[1,] <- c(10,1) 
+#' B2_child <- matrix(NA, nrow=5, ncol=2) 
+#' B2_child[1,] <- c(10,1)
 #' B2_child[2,] <- c(10,1)
-#' B2_child[3,] <- c(10,1) 
+#' B2_child[3,] <- c(10,1)
 #' B2_child[4,] <- c(1,10)
+#' B2_child[5,] <- c(1,10)
 #' B2_child <- B2_child/rowSums(B2_child)
 #' B2_child
 #' 
-#' B2_marr <- matrix(NA, nrow=4, ncol=2) 
-#' B2_marr[1,] <- c(1,10)
-#' B2_marr[2,] <- c(5,1)
-#' B2_marr[3,] <- c(10,1)
-#' B2_marr[4,] <- c(7,1)
+#' alphabet(marr.seq)
+#' B2_marr <- matrix(NA, nrow=5, ncol=3) 
+#' B2_marr[1,] <- c(1,2,10)
+#' B2_marr[2,] <- c(1,2,10)
+#' B2_marr[3,] <- c(1,10,1)
+#' B2_marr[4,] <- c(1,10,1)
+#' B2_marr[5,] <- c(10,2,1)
 #' B2_marr <- B2_marr/rowSums(B2_marr)
 #' B2_marr
 #' 
-#' B2_left <- matrix(NA, nrow=4, ncol=2) 
+#' alphabet(left.seq)
+#' B2_left <- matrix(NA, nrow=5, ncol=2) 
 #' B2_left[1,] <- c(1,10)
-#' B2_left[2,] <- c(1,10)
-#' B2_left[3,] <- c(1,5)
-#' B2_left[4,] <- c(1,5)
+#' B2_left[2,] <- c(10,1)
+#' B2_left[3,] <- c(10,1)
+#' B2_left[4,] <- c(10,1)
+#' B2_left[5,] <- c(10,1)
 #' B2_left <- B2_left/rowSums(B2_left)
 #' B2_left
 #' 
+#' B3_child <- matrix(NA, nrow=4, ncol=2) 
+#' B3_child[1,] <- c(10,1) 
+#' B3_child[2,] <- c(1,10)
+#' B3_child[3,] <- c(1,10)
+#' B3_child[4,] <- c(1,10)
+#' B3_child <- B3_child/rowSums(B3_child)
+#' B3_child
+#' 
+#' alphabet(marr.seq)
+#' B3_marr <- matrix(NA, nrow=4, ncol=3) 
+#' B3_marr[1,] <- c(1,1,10)
+#' B3_marr[2,] <- c(1,1,10)
+#' B3_marr[3,] <- c(1,10,1)
+#' B3_marr[4,] <- c(10,1,1)
+#' B3_marr <- B3_marr/rowSums(B3_marr)
+#' B3_marr
+#' 
+#' B3_left <- matrix(NA, nrow=4, ncol=2) 
+#' B3_left[1,] <- c(1,10)
+#' B3_left[2,] <- c(1,1)
+#' B3_left[3,] <- c(1,1)
+#' B3_left[4,] <- c(1,1)
+#' B3_left <- B3_left/rowSums(B3_left)
+#' B3_left
+#' 
 #' # Initial values for transition matrices
 #' A1 <- matrix(c(0.8,   0.16, 0.03, 0.01,
-#'              0,    0.9, 0.07, 0.03, 
-#'              0,      0,  0.9,  0.1, 
-#'                0,      0,    0,    1), 
+#'                  0,    0.9, 0.07, 0.03, 
+#'                  0,      0,  0.9,  0.1, 
+#'                  0,      0,    0,    1), 
 #'              nrow=4, ncol=4, byrow=TRUE)
 #' 
-#' A2 <- matrix(c(0.94, 0.04, 0.01, 0.01,
-#'                0,    0.94, 0.05, 0.01, 
-#'                0,       0,  0.9,  0.1, 
-#'                0,       0,    0,    1), 
-#'              nrow=4, ncol=4, byrow=TRUE)
+#' A2 <- matrix(c(0.8, 0.10, 0.05, 0.03, 0.02,
+#'                0,    0.9, 0.05, 0.03, 0.02, 
+#'                0,      0,  0.9, 0.07, 0.03,
+#'                0,      0,    0,  0.9,  0.1,
+#'                0,      0,    0,    0,    1), 
+#'              nrow=5, ncol=5, byrow=TRUE)
 #' 
-#' # Initial values for initial state probabilities 
 #' initialProbs1 <- c(0.9, 0.07, 0.02, 0.01)
-#' initialProbs2 <- c(0.95, 0.03, 0.01, 0.01)
+#' initialProbs2 <- c(0.9, 0.05, 0.03, 0.01, 0.01)
+#' 
+#' bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq), 
+#'                       transitionMatrix=list(A2,A2,A1), 
+#'                       emissionMatrix=list(list(B1_child, B1_marr, B1_left),
+#'                                           list(B2_child, B2_marr, B2_left),
+#'                                           list(B3_child, B3_marr, B3_left)),
+#'                       initialProbs=list(initialProbs2, initialProbs2,
+#'                                         initialProbs1), 
+#'                       formula=~sex*cohort+sex*swiss, data=bio,
+#'                       modelNames=c("Model1", "Model2", "Model3"),
+#'                       channelNames=c("Parenthood", "Marriage", "Left home"))
+#' 
+#' mHMM <- fitMixHMM(bmHMM)
 #' 
 #' # Birth cohort
 #' cohort <- cut(biofam$birthyr, c(1912, 1935, 1945, 1957))
 #' biofam$cohort <- factor(cohort, labels=c("1913-1935", "1936-1945", "1946-1957"))
 #' 
+#' # Swiss?
+#' swiss1 <- bio$nat_1_02=="Switzerland"
+#' swiss1[swiss1==TRUE] <- "Swiss"
+#' swiss1[swiss1==FALSE] <- "Other"
+#' 
 #' # Setting initial values for parameters
 #' bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq), 
-#'                      transitionMatrix=list(A1,A2), 
-#'                      emissionMatrix=list(list(B1_child, B1_marr, B1_left),
-#'                                          list(B2_child, B2_marr, B2_left)),
-#'                      initialProbs=list(initialProbs1, initialProbs2), 
-#'                      formula=~sex*cohort, data=biofam)
+#'                       transitionMatrix=list(A2,A2,A1), 
+#'                       emissionMatrix=list(list(B1_child, B1_marr, B1_left),
+#'                                           list(B2_child, B2_marr, B2_left),
+#'                                           list(B3_child, B3_marr, B3_left)),
+#'                       initialProbs=list(initialProbs2, initialProbs2,
+#'                                         initialProbs1), 
+#'                       formula=~sex*cohort+sex*swiss, data=bio,
+#'                       modelNames=c("Model1", "Model2", "Model3"),
+#'                       channelNames=c("Parenthood", "Marriage", "Left home"))
 #' 
 #' # Fitting mixture of hidden Markov models
-#' HMM <- fitMixHMM(bmHMM)
+#' mHMM <- fitMixHMM(bmHMM)
 #' 
 #' # Plotting each model (change with Enter)
-#' plot(HMM$model)
+#' plot(mHMM$model)
 #' 
 #' # Choosing the model (one at a time)
-#' plot(HMM$model, ask=TRUE)
+#' plot(mHMM$model, ask=TRUE)
 #' 
 #' # Plotting only the first model
-#' plot(HMM$model, which.plots=1)
+#' plot(mHMM$model, which.plots=1)
 
 
 plot.mixHMModel <- function(x, ask = FALSE, which.plots = NULL, layout="horizontal", pie=TRUE, 
