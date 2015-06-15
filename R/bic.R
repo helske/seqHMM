@@ -91,11 +91,11 @@ BIC.HMModel<-function(object,trim=FALSE,...){
   
   
   if(object$numberOfChannels==1){
-    -2*loglik + log(sum(!is.na(object$observations)))*
+    -2*loglik + log(object$numberOfSequences*object$lengthOfSequences)*
       (sum(object$initialProbs>0)+sum(object$transitionMatrix>0)+
          sum(object$emissionMatrix>0))
   } else{  
-    -2*loglik + log(sum(!sapply(object$observations,is.na)))*
+    -2*loglik + log(object$numberOfSequences*object$lengthOfSequences)*
       (sum(object$initialProbs>0)+sum(object$transitionMatrix>0)+
          sum(sapply(object$emissionMatrix,function(x) sum(x>0))))
   }

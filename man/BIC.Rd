@@ -7,12 +7,12 @@
 \method{BIC}{HMModel}(object, trim = FALSE, ...)
 }
 \arguments{
-\item{object}{Object of class \code{HMModel} or \code{MCHMModel}.}
+\item{object}{Object of class \code{HMModel}.}
 
 \item{trim}{Should trimming be performed before computing BIC? See
-\code{trimHMM} for details. Default is FALSE.}
+\code{\link{trimHMM}} for details. Default is FALSE.}
 
-\item{...}{further parameters to \code{trimHMM}.}
+\item{...}{further parameters to \code{\link{trimHMM}}.}
 }
 \description{
 Compute BIC for Hidden Markov Model
@@ -78,8 +78,7 @@ emissionMatrix=list(B_child, B_marr, B_left),
 initialProbs=initialProbs)
 
 # Fitting hidden Markov model
-HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8),
-itnmax=10000, method="BFGS")
+HMM <- fitHMM(bHMM)
 
 # Computing the BIC of the model
 BIC(HMM$model)
