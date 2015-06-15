@@ -4,7 +4,7 @@
 #' without decreasing the likelihood significantly.
 #' 
 #' @export
-#' @param model Model for which trimming is performed.
+#' @param model Model of class \code{HMModel} for which trimming is performed.
 #' @param maxit Number of iterations. After zeroing small values, model is 
 #'   refitted, and this is repeated until there is nothing to trim or maxit 
 #'   iterations is used.
@@ -78,8 +78,7 @@
 #' initialProbs=initialProbs)
 #' 
 #' # Fitting hidden Markov model
-#' HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8),
-#' itnmax=10000, method="BFGS")
+#' HMM <- fitHMM(bHMM)
 #' 
 #' # Testing if changing parameter values smaller than 1e-03 to zero 
 #' # leads to improved log-likelihood.

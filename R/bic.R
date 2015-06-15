@@ -1,14 +1,12 @@
-
-
 #' Compute BIC for Hidden Markov Model
 #' 
 #' @import stats
 #' @export
 #' @rdname BIC
-#' @param object Object of class \code{HMModel} or \code{MCHMModel}.
+#' @param object Object of class \code{HMModel}.
 #' @param trim Should trimming be performed before computing BIC? See
-#'   \code{trimHMM} for details. Default is FALSE.
-#' @param ... further parameters to \code{trimHMM}.
+#'   \code{\link{trimHMM}} for details. Default is FALSE.
+#' @param ... further parameters to \code{\link{trimHMM}}.
 #'   
 #' @seealso \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and
 #'   fitting Hidden Markov models, and \code{\link{trimHMM}} for finding better
@@ -75,8 +73,7 @@
 #' initialProbs=initialProbs)
 #' 
 #' # Fitting hidden Markov model
-#' HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8),
-#' itnmax=10000, method="BFGS")
+#' HMM <- fitHMM(bHMM)
 #' 
 #' # Computing the BIC of the model
 #' BIC(HMM$model)
