@@ -2,18 +2,20 @@
 % Please edit documentation in R/plot.mixHMModel.R
 \name{plot.mixHMModel}
 \alias{plot.mixHMModel}
-\title{Plot hidden Markov model from mixHMModel objects}
+\title{Interactive Plotting for Mixed Hidden Markov Model (mixHMModel)}
 \usage{
-\method{plot}{mixHMModel}(x, ask = FALSE, which.plots = NULL,
-  layout = "horizontal", pie = TRUE, vertex.size = 40,
-  vertex.label = "initial.probs", vertex.label.dist = "auto",
-  vertex.label.pos = "bottom", vertex.label.family = "sans",
-  loops = FALSE, edge.curved = TRUE, edge.label = "auto",
-  edge.width = "auto", cex.edge.width = 1, edge.arrow.size = 1.5,
-  edge.label.family = "sans", label.signif = 2, label.scientific = FALSE,
-  label.max.length = 6, trim = 1e-15, combine.slices = 0.05,
-  combined.slice.color = "white", combined.slice.label = "others",
-  withlegend = "bottom", ltext = NULL, legend.prop = 0.5,
+\method{plot}{mixHMModel}(x, interactive = TRUE, ask = FALSE,
+  which.plots = NULL, rows = NA, cols = NA, byrow = FALSE,
+  row.prop = "auto", col.prop = "auto", layout = "horizontal",
+  pie = TRUE, vertex.size = 40, vertex.label = "initial.probs",
+  vertex.label.dist = "auto", vertex.label.pos = "bottom",
+  vertex.label.family = "sans", loops = FALSE, edge.curved = TRUE,
+  edge.label = "auto", edge.width = "auto", cex.edge.width = 1,
+  edge.arrow.size = 1.5, edge.label.family = "sans", label.signif = 2,
+  label.scientific = FALSE, label.max.length = 6, trim = 1e-15,
+  combine.slices = 0.05, combined.slice.color = "white",
+  combined.slice.label = "others", withlegend = "bottom",
+  legend.pos = "center", ltext = NULL, legend.prop = 0.5,
   cex.legend = 1, ncol.legend = "auto", cpal = "auto", ...)
 }
 \arguments{
@@ -23,9 +25,24 @@ HMModel objects are automatically transformed to single channel objects.
 See function \code{\link{MCtoSC}} for more information on the
 transformation.}
 
-\item{ask}{If true and \code{which.plots} is NULL, \code{plot.mixHMModel} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}.}
+\item{interactive}{Whether to plot each model in succession or in a grid. Defaults to TRUE, i.e. submodels is plotted one after another.}
 
-\item{which.plots}{The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots.}
+\item{ask}{If true and \code{which.plots} is NULL, \code{plot.mixHMModel} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}. Ignored if \code{interactive=FALSE}.}
+
+\item{which.plots}{The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots. Ignored if \code{interactive=FALSE}.}
+
+\item{rows,cols}{Optional arguments to arrange plots in a grid. Ignored if \code{interactive=TRUE}.}
+
+\item{byrow}{Controls the order of plotting in a grid. Defaults to \code{FALSE}, i.e. plots
+are arranged columnwise. Ignored if \code{interactive=TRUE}.}
+
+\item{row.prop}{Sets the proportions of the row heights of the grid. The default
+value is \code{"auto"} for even row heights. Takes a vector of values from
+0 to 1, with values summing to 1. Ignored if \code{interactive=TRUE}.}
+
+\item{col.prop}{Sets the proportion of the column heights of the grid. The default
+  value is \code{"auto"} for even column widths. Takes a vector of values
+  from 0 to 1, with values summing to 1. Ignored if \code{interactive=TRUE}.}
 
 \item{layout}{specifies the layout of the vertices (nodes). Accepts a
 numerical matrix, a layout function, or either of \code{"horizontal"} (the
@@ -105,26 +122,30 @@ emission probabilitis that user wants to combine (only if argument
 \code{"combine.slices"} is greater than 0). The default color is white.}
 
 \item{combined.slice.label}{The label for the combined states (when argument
-\code{"combine.slices"} is greater than 0) to appear in the legend.}
+  \code{"combine.slices"} is greater than 0) to appear in the legend.}
 
 \item{withlegend}{defines if and where the legend of the state colors is
 plotted. Possible values include \code{"bottom"} (the default),
-\code{"top"}, \code{"left"}, and \code{"right"}. \code{FALSE} omits the
-legend.}
+\code{"top"}, \code{"left"}, and \code{"right"}.
+\code{FALSE} omits the legend.}
+
+\item{legend.pos}{Defines the positions of the legend boxes relative to the
+model graphs. One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"},
+\code{"left"}, \code{"topleft"}, \code{"top"}, \code{"topright"},
+\code{"right"} and \code{"center"} (the default).}
 
 \item{ltext}{Optional description of the (combined) observed states to appear
 in the legend. A vector of character strings. See \code{\link{seqplot}} for
 more information.}
 
-\item{legend.prop}{The proportion of the graphic area used for plotting the
-legend. A scalar between 0 and 1, defaults to 0.5.}
+\item{legend.prop}{The proportion of legends}
 
 \item{cex.legend}{Expansion factor for setting the size of the font for the
 labels in the legend. The default value is 1. Values lesser than 1 will
 reduce the size of the font, values greater than 1 will increase the size.}
 
-\item{ncol.legend}{The number of columns for the legend. The default value
-\code{"auto"} sets the number of columns automatically.}
+\item{ncol.legend}{(A vector of) the number of columns for the legend(s). The
+default \code{"auto"} creates one column for each legend.}
 
 \item{cpal}{Optional color palette for the (combinations of) observed states.
 The default value \code{"auto"} uses automatic color palette. Otherwise a
@@ -150,114 +171,182 @@ biofam <- biofam[1:500,]
 bf <- as.matrix(biofam[, 10:25])
 children <-  bf==4 | bf==5 | bf==6
 married <- bf == 2 | bf== 3 | bf==6
-left <- bf==1 | bf==3 | bf==5 | bf==6
+left <- bf==1 | bf==3 | bf==5 | bf==6 | bf==7
 
 children[children==TRUE] <- "Children"
 children[children==FALSE] <- "Childless"
+# Divorced parents
+div <- bf[(rowSums(bf==7)>0 & rowSums(bf==5)>0) |
+            (rowSums(bf==7)>0 & rowSums(bf==6)>0),]
+children[rownames(bf) \%in\% rownames(div) & bf==7] <- "Children"
 
 married[married==TRUE] <- "Married"
 married[married==FALSE] <- "Single"
+married[bf==7] <- "Divorced"
 
 left[left==TRUE] <- "Left home"
 left[left==FALSE] <- "With parents"
+# Divorced living with parents (before divorce)
+wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &
+         rowSums(bf==5)==0 &  rowSums(bf==6)==0) |
+         (rowSums(bf==7)>0 & rowSums(bf==4)>0 & rowSums(bf==3)==0 &
+         rowSums(bf==5)==0 &  rowSums(bf==6)==0),]
+left[rownames(bf) \%in\% rownames(wp) & bf==7] <- "With parents"
 
 ## Building sequence objects
 child.seq <- seqdef(children)
 marr.seq <- seqdef(married)
 left.seq <- seqdef(left)
 
-## Initial values for emission matrices
+## Choosing colors
+attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
+attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+
 alphabet(child.seq) # Check for order of observed states
-B1_child <- matrix(NA, nrow=4, ncol=2)
+B1_child <- matrix(NA, nrow=5, ncol=2)
 B1_child[1,] <- c(10,1) # High prob. for childless, low for children
 B1_child[2,] <- c(10,1)
 B1_child[3,] <- c(10,1)
-B1_child[4,] <- c(1,10) # Low prob. for childless, high for children
+B1_child[4,] <- c(10,1)
+B1_child[5,] <- c(10,1)
 B1_child <- B1_child/rowSums(B1_child)
 B1_child
 
-alphabet(marr.seq)
-B1_marr <- matrix(NA, nrow=4, ncol=2)
-B1_marr[1,] <- c(1,10)
-B1_marr[2,] <- c(1,10)
-B1_marr[3,] <- c(10,1)
-B1_marr[4,] <- c(7,1)
+B1_marr <- matrix(NA, nrow=5, ncol=3)
+B1_marr[1,] <- c(1,1,10)
+B1_marr[2,] <- c(1,1,20)
+B1_marr[3,] <- c(1,20,1)
+B1_marr[4,] <- c(1,20,1)
+B1_marr[5,] <- c(10,1,1)
 B1_marr <- B1_marr/rowSums(B1_marr)
 B1_marr
 
-alphabet(left.seq)
-B1_left <- matrix(NA, nrow=4, ncol=2)
+B1_left <- matrix(NA, nrow=5, ncol=2)
 B1_left[1,] <- c(1,10)
-B1_left[2,] <- c(10,1)
-B1_left[3,] <- c(10,1)
-B1_left[4,] <- c(10,1)
+B1_left[2,] <- c(20,1)
+B1_left[3,] <- c(1,20)
+B1_left[4,] <- c(20,1)
+B1_left[5,] <- c(1,1)
 B1_left <- B1_left/rowSums(B1_left)
 B1_left
 
-B2_child <- matrix(NA, nrow=4, ncol=2)
+B2_child <- matrix(NA, nrow=5, ncol=2)
 B2_child[1,] <- c(10,1)
 B2_child[2,] <- c(10,1)
 B2_child[3,] <- c(10,1)
 B2_child[4,] <- c(1,10)
+B2_child[5,] <- c(1,10)
 B2_child <- B2_child/rowSums(B2_child)
 B2_child
 
-B2_marr <- matrix(NA, nrow=4, ncol=2)
-B2_marr[1,] <- c(1,10)
-B2_marr[2,] <- c(5,1)
-B2_marr[3,] <- c(10,1)
-B2_marr[4,] <- c(7,1)
+alphabet(marr.seq)
+B2_marr <- matrix(NA, nrow=5, ncol=3)
+B2_marr[1,] <- c(1,2,10)
+B2_marr[2,] <- c(1,2,10)
+B2_marr[3,] <- c(1,10,1)
+B2_marr[4,] <- c(1,10,1)
+B2_marr[5,] <- c(10,2,1)
 B2_marr <- B2_marr/rowSums(B2_marr)
 B2_marr
 
-B2_left <- matrix(NA, nrow=4, ncol=2)
+alphabet(left.seq)
+B2_left <- matrix(NA, nrow=5, ncol=2)
 B2_left[1,] <- c(1,10)
-B2_left[2,] <- c(1,10)
-B2_left[3,] <- c(1,5)
-B2_left[4,] <- c(1,5)
+B2_left[2,] <- c(10,1)
+B2_left[3,] <- c(10,1)
+B2_left[4,] <- c(10,1)
+B2_left[5,] <- c(10,1)
 B2_left <- B2_left/rowSums(B2_left)
 B2_left
 
+B3_child <- matrix(NA, nrow=4, ncol=2)
+B3_child[1,] <- c(10,1)
+B3_child[2,] <- c(1,10)
+B3_child[3,] <- c(1,10)
+B3_child[4,] <- c(1,10)
+B3_child <- B3_child/rowSums(B3_child)
+B3_child
+
+alphabet(marr.seq)
+B3_marr <- matrix(NA, nrow=4, ncol=3)
+B3_marr[1,] <- c(1,1,10)
+B3_marr[2,] <- c(1,1,10)
+B3_marr[3,] <- c(1,10,1)
+B3_marr[4,] <- c(10,1,1)
+B3_marr <- B3_marr/rowSums(B3_marr)
+B3_marr
+
+B3_left <- matrix(NA, nrow=4, ncol=2)
+B3_left[1,] <- c(1,10)
+B3_left[2,] <- c(1,1)
+B3_left[3,] <- c(1,1)
+B3_left[4,] <- c(1,1)
+B3_left <- B3_left/rowSums(B3_left)
+B3_left
+
 # Initial values for transition matrices
 A1 <- matrix(c(0.8,   0.16, 0.03, 0.01,
-             0,    0.9, 0.07, 0.03,
-             0,      0,  0.9,  0.1,
-               0,      0,    0,    1),
+                 0,    0.9, 0.07, 0.03,
+                 0,      0,  0.9,  0.1,
+                 0,      0,    0,    1),
              nrow=4, ncol=4, byrow=TRUE)
 
-A2 <- matrix(c(0.94, 0.04, 0.01, 0.01,
-               0,    0.94, 0.05, 0.01,
-               0,       0,  0.9,  0.1,
-               0,       0,    0,    1),
-             nrow=4, ncol=4, byrow=TRUE)
+A2 <- matrix(c(0.8, 0.10, 0.05, 0.03, 0.02,
+               0,    0.9, 0.05, 0.03, 0.02,
+               0,      0,  0.9, 0.07, 0.03,
+               0,      0,    0,  0.9,  0.1,
+               0,      0,    0,    0,    1),
+             nrow=5, ncol=5, byrow=TRUE)
 
-# Initial values for initial state probabilities
 initialProbs1 <- c(0.9, 0.07, 0.02, 0.01)
-initialProbs2 <- c(0.95, 0.03, 0.01, 0.01)
+initialProbs2 <- c(0.9, 0.05, 0.03, 0.01, 0.01)
+
+bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq),
+                      transitionMatrix=list(A2,A2,A1),
+                      emissionMatrix=list(list(B1_child, B1_marr, B1_left),
+                                          list(B2_child, B2_marr, B2_left),
+                                          list(B3_child, B3_marr, B3_left)),
+                      initialProbs=list(initialProbs2, initialProbs2,
+                                        initialProbs1),
+                      formula=~sex*cohort+sex*swiss, data=bio,
+                      modelNames=c("Model1", "Model2", "Model3"),
+                      channelNames=c("Parenthood", "Marriage", "Left home"))
+
+mHMM <- fitMixHMM(bmHMM)
 
 # Birth cohort
 cohort <- cut(biofam$birthyr, c(1912, 1935, 1945, 1957))
 biofam$cohort <- factor(cohort, labels=c("1913-1935", "1936-1945", "1946-1957"))
 
+# Swiss?
+swiss1 <- bio$nat_1_02=="Switzerland"
+swiss1[swiss1==TRUE] <- "Swiss"
+swiss1[swiss1==FALSE] <- "Other"
+
 # Setting initial values for parameters
 bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq),
-                     transitionMatrix=list(A1,A2),
-                     emissionMatrix=list(list(B1_child, B1_marr, B1_left),
-                                         list(B2_child, B2_marr, B2_left)),
-                     initialProbs=list(initialProbs1, initialProbs2),
-                     formula=~sex*cohort, data=biofam)
+                      transitionMatrix=list(A2,A2,A1),
+                      emissionMatrix=list(list(B1_child, B1_marr, B1_left),
+                                          list(B2_child, B2_marr, B2_left),
+                                          list(B3_child, B3_marr, B3_left)),
+                      initialProbs=list(initialProbs2, initialProbs2,
+                                        initialProbs1),
+                      formula=~sex*cohort+sex*swiss, data=bio,
+                      modelNames=c("Model1", "Model2", "Model3"),
+                      channelNames=c("Parenthood", "Marriage", "Left home"))
 
 # Fitting mixture of hidden Markov models
-HMM <- fitMixHMM(bmHMM)
+mHMM <- fitMixHMM(bmHMM)
 
 # Plotting each model (change with Enter)
-plot(HMM$model)
+plot(mHMM$model)
 
 # Choosing the model (one at a time)
-plot(HMM$model, ask=TRUE)
+plot(mHMM$model, ask=TRUE)
 
 # Plotting only the first model
-plot(HMM$model, which.plots=1)
+plot(mHMM$model, which.plots=1)
 }
 \seealso{
 \code{\link{buildMixHMM}} and \code{\link{fitMixHMM}} for building and

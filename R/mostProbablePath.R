@@ -161,7 +161,7 @@ mostProbablePath<-function(model){
 
   if(mix==TRUE){
     gr <- sub("^.*?_","",mpp[,1])
-    gr <- factor(gr, labels=model$modelNames)
+    gr <- factor(gr, levels=1:model$numberOfModels, labels=model$modelNames)
     list(mpp=mpp, model=gr, logP=out$logp)
   }else{
     list(mpp=mpp, logP=out$logp)

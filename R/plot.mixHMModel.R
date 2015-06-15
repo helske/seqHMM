@@ -1,4 +1,4 @@
-#' Plot hidden Markov model from mixHMModel objects
+#' Interactive Plotting for Mixed Hidden Markov Model (mixHMModel)
 #' 
 #' Function \code{plot.mixHMModel} plots a directed graph of the parameters of each model 
 #' with pie charts of emission probabilities as vertices/nodes.
@@ -11,8 +11,21 @@
 #'   HMModel objects are automatically transformed to single channel objects. 
 #'   See function \code{\link{MCtoSC}} for more information on the 
 #'   transformation.
-#' @param ask If true and \code{which.plots} is NULL, \code{plot.mixHMModel} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}.
-#' @param which.plots The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots.
+#' @param interactive Whether to plot each model in succession or in a grid. Defaults to TRUE, i.e. submodels is plotted one after another.
+#' 
+#' @param ask If true and \code{which.plots} is NULL, \code{plot.mixHMModel} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}. Ignored if \code{interactive=FALSE}.
+#' @param which.plots The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots. Ignored if \code{interactive=FALSE}.
+#' 
+#' @param rows,cols Optional arguments to arrange plots in a grid. Ignored if \code{interactive=TRUE}.
+#' @param byrow Controls the order of plotting in a grid. Defaults to \code{FALSE}, i.e. plots
+#'   are arranged columnwise. Ignored if \code{interactive=TRUE}.
+#' @param row.prop Sets the proportions of the row heights of the grid. The default
+#'   value is \code{"auto"} for even row heights. Takes a vector of values from
+#'   0 to 1, with values summing to 1. Ignored if \code{interactive=TRUE}.
+#' @param col.prop Sets the proportion of the column heights of the grid. The default
+#'   value is \code{"auto"} for even column widths. Takes a vector of values
+#'   from 0 to 1, with values summing to 1. Ignored if \code{interactive=TRUE}.
+#'   
 #' @param layout specifies the layout of the vertices (nodes). Accepts a 
 #'   numerical matrix, a layout function, or either of \code{"horizontal"} (the 
 #'   default) and \code{"vertical"}. Options \code{"horizontal"} and 
@@ -72,21 +85,25 @@
 #'   emission probabilitis that user wants to combine (only if argument 
 #'   \code{"combine.slices"} is greater than 0). The default color is white.
 #' @param combined.slice.label The label for the combined states (when argument 
-#'   \code{"combine.slices"} is greater than 0) to appear in the legend.
+#'   \code{"combine.slices"} is greater than 0) to appear in the legend. 
+#'   
 #' @param withlegend defines if and where the legend of the state colors is 
 #'   plotted. Possible values include \code{"bottom"} (the default), 
-#'   \code{"top"}, \code{"left"}, and \code{"right"}. \code{FALSE} omits the 
-#'   legend.
+#'   \code{"top"}, \code{"left"}, and \code{"right"}. 
+#'   \code{FALSE} omits the legend.
+#' @param legend.pos Defines the positions of the legend boxes relative to the
+#'   model graphs. One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"}, 
+#'   \code{"left"}, \code{"topleft"}, \code{"top"}, \code{"topright"}, 
+#'   \code{"right"} and \code{"center"} (the default).
+#' @param legend.prop The proportion of legends
 #' @param ltext Optional description of the (combined) observed states to appear
 #'   in the legend. A vector of character strings. See \code{\link{seqplot}} for
 #'   more information.
-#' @param legend.prop The proportion of the graphic area used for plotting the 
-#'   legend. A scalar between 0 and 1, defaults to 0.5.
-#' @param cex.legend Expansion factor for setting the size of the font for the 
-#'   labels in the legend. The default value is 1. Values lesser than 1 will 
+#' @param ncol.legend (A vector of) the number of columns for the legend(s). The
+#'   default \code{"auto"} creates one column for each legend.
+#' @param cex.legend Expansion factor for setting the size of the font for the
+#'   labels in the legend. The default value is 1. Values lesser than 1 will
 #'   reduce the size of the font, values greater than 1 will increase the size.
-#' @param ncol.legend The number of columns for the legend. The default value 
-#'   \code{"auto"} sets the number of columns automatically.
 #' @param cpal Optional color palette for the (combinations of) observed states.
 #'   The default value \code{"auto"} uses automatic color palette. Otherwise a 
 #'   vector of length \code{x$numberOfSymbols} is given, i.e. requires a color 
@@ -289,7 +306,11 @@
 #' plot(mHMM$model, which.plots=1)
 
 
-plot.mixHMModel <- function(x, ask = FALSE, which.plots = NULL, layout="horizontal", pie=TRUE, 
+plot.mixHMModel <- function(x, interactive=TRUE,
+                            ask = FALSE, which.plots = NULL, 
+                            rows=NA, cols=NA, byrow=FALSE,
+                            row.prop="auto", col.prop="auto", 
+                            layout="horizontal", pie=TRUE, 
                             vertex.size=40, vertex.label="initial.probs", 
                             vertex.label.dist="auto", vertex.label.pos="bottom",
                             vertex.label.family="sans",
@@ -300,64 +321,43 @@ plot.mixHMModel <- function(x, ask = FALSE, which.plots = NULL, layout="horizont
                             trim=1e-15, 
                             combine.slices=0.05, combined.slice.color="white", 
                             combined.slice.label="others",
-                            withlegend="bottom", ltext=NULL, legend.prop=0.5, 
-                            cex.legend=1, ncol.legend="auto", cpal="auto", ...){
+                            withlegend="bottom", legend.pos="center", ltext=NULL, 
+                            legend.prop=0.5, cex.legend=1, ncol.legend="auto", 
+                            cpal="auto", ...){
   
-  oldPar <- par(no.readonly=TRUE)
-  on.exit(par(oldPar))
-  on.exit(par(mfrow=c(1,1)))
-  
-  divmodels <- sepMixHMM(x)
-  
-  if (is.null(which.plots) && !ask){
-    which.plots <- 1:x$numberOfModels
+  if(interactive){
+    do.call(mHMMplotint, c(list(x=x, ask = ask, which.plots = which.plots, layout=layout, pie=pie, 
+                                vertex.size=vertex.size, vertex.label=vertex.label, 
+                                vertex.label.dist=vertex.label.dist, vertex.label.pos=vertex.label.pos,
+                                vertex.label.family=vertex.label.family,
+                                loops=loops, edge.curved=edge.curved, edge.label=edge.label, 
+                                edge.width=edge.width, cex.edge.width=cex.edge.width, 
+                                edge.arrow.size=edge.arrow.size, edge.label.family=edge.label.family,
+                                label.signif=label.signif, label.scientific=label.scientific, 
+                                label.max.length=label.max.length,
+                                trim=trim, 
+                                combine.slices=combine.slices, combined.slice.color=combined.slice.color, 
+                                combined.slice.label=combined.slice.label,
+                                withlegend=withlegend, ltext=ltext, legend.prop=legend.prop, 
+                                cex.legend=cex.legend, ncol.legend=ncol.legend, cpal=cpal), list(...)))
+  }else{
+    do.call(mHMMplotgrid, c(list(x=x, rows=rows, cols=cols, byrow=byrow,
+                                 row.prop=row.prop, col.prop=col.prop, 
+                                 layout=layout, pie=pie, 
+                                 vertex.size=vertex.size, vertex.label=vertex.label, 
+                                 vertex.label.dist=vertex.label.dist, vertex.label.pos=vertex.label.pos,
+                                 vertex.label.family=vertex.label.family,
+                                 loops=loops, edge.curved=edge.curved, edge.label=edge.label, 
+                                 edge.width=edge.width, cex.edge.width=cex.edge.width, 
+                                 edge.arrow.size=edge.arrow.size, edge.label.family=edge.label.family,
+                                 label.signif=label.signif, label.scientific=label.scientific, 
+                                 label.max.length=label.max.length,
+                                 trim=trim, 
+                                 combine.slices=combine.slices, combined.slice.color=combined.slice.color, 
+                                 combined.slice.label=combined.slice.label,
+                                 withlegend=withlegend, legend.pos=legend.pos, ltext=ltext, 
+                                 legend.prop=legend.prop, 
+                                 cex.legend=cex.legend, ncol.legend=ncol.legend, cpal=cpal), list(...)))
   }
   
-  if (ask && is.null(which.plots)) {
-    tmenu <- x$modelNames
-    repeat {
-      pick <- menu(tmenu, title = "\nMake a model selection (or 0 to exit):\n")
-      if(pick==0){
-        return(invisible())
-      }else{
-      plot.HMModel(divmodels[[pick]], layout, pie, 
-                   vertex.size, vertex.label, 
-                   vertex.label.dist, vertex.label.pos,
-                   vertex.label.family,
-                   loops, edge.curved, edge.label, 
-                   edge.width, cex.edge.width, 
-                   edge.arrow.size, edge.label.family,
-                   label.signif, label.scientific, label.max.length,
-                   trim, 
-                   combine.slices, combined.slice.color, 
-                   combined.slice.label,
-                   withlegend, ltext, legend.prop, 
-                   cex.legend, ncol.legend, cpal, ...)
-      }
-    }
-  }
-  else {
-    ask <- length(which.plots) > 1
-    if (ask) {
-      op <- par(ask = TRUE)
-      on.exit(par(op))
-    }
-    for (i in which.plots) {
-      plot.HMModel(divmodels[[i]], layout, pie, 
-                   vertex.size, vertex.label, 
-                   vertex.label.dist, vertex.label.pos,
-                   vertex.label.family,
-                   loops, edge.curved, edge.label, 
-                   edge.width, cex.edge.width, 
-                   edge.arrow.size, edge.label.family,
-                   label.signif, label.scientific, label.max.length,
-                   trim, 
-                   combine.slices, combined.slice.color, 
-                   combined.slice.label,
-                   withlegend, ltext, legend.prop, 
-                   cex.legend, ncol.legend, cpal, ...)
-    }
-  }
-  invisible()
-  par(oldPar)
 }

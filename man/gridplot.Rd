@@ -29,8 +29,9 @@ gridplot(x, rows = NA, cols = NA, byrow = FALSE, withlegend = "auto",
   legends to (the cells must be in one row/column).}
 
 \item{legend.pos2}{Defines the positions of the legend boxes relative to the
-  cell(s). One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"}, \code{"left"},
-  \code{"topleft"}, \code{"top"}, \code{"topright"}, \code{"right"} and \code{"center"}.}
+  cell(s). One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"},
+  \code{"left"}, \code{"topleft"}, \code{"top"}, \code{"topright"},
+  \code{"right"} and \code{"center"} (the default).}
 
 \item{title.legend}{The titles for the legend boxes. The default \code{"auto"} takes
   the titles from the channel labels provided by the first object in \code{x}.

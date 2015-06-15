@@ -28,8 +28,9 @@
 #'   legends to (the cells must be in one row/column).
 #'   
 #' @param legend.pos2 Defines the positions of the legend boxes relative to the
-#'   cell(s). One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"}, \code{"left"}, 
-#'   \code{"topleft"}, \code{"top"}, \code{"topright"}, \code{"right"} and \code{"center"}.
+#'   cell(s). One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"}, 
+#'   \code{"left"}, \code{"topleft"}, \code{"top"}, \code{"topright"}, 
+#'   \code{"right"} and \code{"center"} (the default).
 #'   
 #' @param title.legend The titles for the legend boxes. The default \code{"auto"} takes
 #'   the titles from the channel labels provided by the first object in \code{x}.
@@ -182,7 +183,7 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
     nlegend <- x[[1]]$nplots
     for(i in 2:ngridplots){
       if(nlegend != x[[i]]$nplots){
-        warning("The number of requested plots is not the same in all for all requested plots. Legends could not be printed.")
+        warning("The number of requested plots is not the same in all requested plots. Legends could not be printed.")
         withlegend <- FALSE
         break()
       }
@@ -221,9 +222,6 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
   
   emptycells <- gridrows*gridcols-ngridplots
   
-  if(!is.numeric(row.prop) && length(row.prop)!=gridrows){
-  }
-  
   # Legend titles
   if(!is.na(withlegend) && withlegend!=FALSE){
     if(!is.na(title.legend) && title.legend!=FALSE && !is.null(title.legend)){
@@ -241,28 +239,6 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
   
   # Legend positions
   if(!is.na(withlegend) && withlegend!=FALSE){
-    # # Combined legend box
-    # if(withlegend!=TRUE && withlegend=="combined"){
-    # Non-adjacent cells for combined legend box
-#     if(withlegend!=TRUE && withlegend=="combined"){
-#       if(length(legend.pos)>1 && (max(legend.pos)-min(legend.pos)+1)>length(legend.pos)){
-#         
-#         warning("The legend positions (cells) must be in one row/column. Argument legend.pos was set to \"auto\".")
-#         legendp <- "bottom"
-#         if(byrow==FALSE){
-#           if(emptycells<=gridcols){
-#             legend.pos <- c(c(gridcols:1)*gridrows)[emptycells:1]
-#           }else{
-#             legend.pos <- c(c(gridcols:1)*gridrows)
-#           }
-#         }else{
-#           legend.pos <- c((gridrows*gridcols-x[[1]]$nplots+1):(gridrows*gridcols))
-#         }        
-#         if(length(ncol.legend)==1 && ncol.legend=="auto"){
-#           ncol.legend <- x[[1]]$nplots
-#         }
-#       }
-# #     }else 
     if(length(legend.pos)>1){
       if(byrow==TRUE){
         if(max(legend.pos)-min(legend.pos)+1>length(legend.pos)){
@@ -300,12 +276,8 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
         if(emptycells<=gridcols){
           legend.pos <- c(c(gridcols:1)*gridrows)[emptycells:1]
         }else{
-          #           v1 <- c(gridcols:1)*gridrows
-          #           v2 <- 0:(floor(emptycells/gridcols)-1)
-          #           legend.pos <- c(rep(v1, times=length(v2))-rep(v2, each=length(v1)))
           legend.pos <- c(gridcols:1)*gridrows
         }
-        # byrow=TRUE
       }else{
         if(emptycells==0){
           if(rcfixed=="both"){
@@ -370,9 +342,6 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
         if(emptycells<=gridrows){
           legend.pos <- c(c(gridrows:1)*gridcols)[emptycells:1]
         }else{
-          #           v1 <- c(gridrows:1)*gridcols
-          #           v2 <- 0:(floor(emptycells/gridcols)-1)
-          #           legend.pos <- c(rep(v1, times=length(v2))-rep(v2, each=length(v1)))
           legend.pos <- c(gridrows:1)*gridcols
         }
       }  
@@ -396,6 +365,8 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
       }else if(length(ncol.legend)>x[[1]]$nplots){
         warning(paste0("The length of ncol.legend does not match the number of requested plots. Only the first ", x[[1]]$nplots, " arguments of \"ncol.legend\" were used."))
         legend.rows <- ceiling(sapply(lapply(x[[1]]$obs, "alphabet"), "length")/ncol.legends[1:x[[1]]$nplots])
+      }else{
+        legend.rows <- ceiling(x$numberOfStates/ncol.legend)
       }
       
       if(!is.na(title.legend) && title.legend!=FALSE && !is.null(title.legend)){

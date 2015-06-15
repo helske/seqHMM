@@ -1,5 +1,5 @@
-#' Stacked Plots of Multichannel Sequences and/or Most Probable 
-#' Paths from Mixture Hidden Markov Models
+#' Interactive Stacked Plots of Multichannel Sequences and/or Most Probable 
+#' Paths for Mixture Hidden Markov Models
 #' 
 #' Function \code{mssplot} plots stacked sequence plots of observation sequences 
 #' and/or most probable hidden state paths for each model of the \code{mixHMModel} 
@@ -10,7 +10,10 @@
 #' @export
 #' 
 #' @param x Mixture hidden Markov model object of class \code{mixHMModel}.
-#'   
+#'
+#' @param ask If true and \code{which.plots} is NULL, \code{plot.mixHMModel} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}.
+#' 
+#' @param which.plots The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots.
 #'   
 #' @param mpp Output from \code{\link{mostProbablePath}} function.
 #'   
@@ -49,7 +52,7 @@
 #' @param with.missing Controls whether missing states are included in state 
 #'   distribution plots (\code{type="d"}). The default is \code{FALSE}.
 #'   
-#' @param title Title for the graphic. The default is \code{NA}: if 
+#' @param title A vector of titles for the graphics. The default is \code{NA}: if 
 #'   \code{title.n=TRUE}, only the number of subjects is plotted. \code{FALSE} 
 #'   prints no title, even when \code{title.n=TRUE}.
 #'   
@@ -315,18 +318,18 @@
 
 
 mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
-                      plots="obs", type="I", 
-                      sortv=NULL, sort.channel=1, dist.method="OM",
-                      with.missing=FALSE,
-                      title=NA, title.n=TRUE, cex.title=1, title.pos=1,
-                      withlegend="auto", ncol.legend="auto", 
-                      with.missing.legend="auto",                         
-                      legend.prop=0.3, cex.legend=1,
-                      mpp.color="auto", mpp.labels="auto",
-                      xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
-                      ylab="auto", hiddenStates.title="Hidden states", 
-                      ylab.pos="auto", 
-                      cex.lab=1, cex.axis=1, ...){
+                    plots="obs", type="I", 
+                    sortv=NULL, sort.channel=1, dist.method="OM",
+                    with.missing=FALSE,
+                    title=NA, title.n=TRUE, cex.title=1, title.pos=1,
+                    withlegend="auto", ncol.legend="auto", 
+                    with.missing.legend="auto",                         
+                    legend.prop=0.3, cex.legend=1,
+                    mpp.color="auto", mpp.labels="auto",
+                    xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
+                    ylab="auto", hiddenStates.title="Hidden states", 
+                    ylab.pos="auto", 
+                    cex.lab=1, cex.axis=1, ...){
   
   # Checking for class of x
   if(!inherits(x, "mixHMModel")){
@@ -335,6 +338,10 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   
   oldPar <- par(no.readonly=TRUE)
   on.exit(par(oldPar))
+  
+  oldWarn <- options("warn")
+  options(warn=1)
+  on.exit(options(oldWarn), add=TRUE)
   
   allobs <- x$obs
   
@@ -349,42 +356,88 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   if("mpp" %in% names(args)){
     args <- args[-which(names(args)=="mpp")]
   }
+  if(!("title" %in% names(args))){
+    titles <- x$modelNames
+  }else{
+    if(length(title)!=x$numberOfModels){
+      warning("The length of the vector provided for the title argument does not match the number of models. Automatic titles were used instead.")
+      titles <- x$modelNames
+    }else{
+      titles <- args$title
+    }
+    args <- args[-which(names(args)=="title")]
+  }
   
   if(is.null(mpp)){
     mpp <- suppressWarnings(suppressMessages(mostProbablePath(x)))
   }
   
-  
-  if (is.null(which.plots) && !ask){
-    which.plots <- 1:x$numberOfModels
+  mppm <- unique(mpp$model)
+  mm <- NULL
+  if(length(mppm)<x$numberOfModels){
+    mm <- which(!(x$modelNames%in%mppm))
+    warning(paste("When computing the most probable paths, no subjects were assigned to following models:", paste(x$modelNames[mm], collapse=", ")))
   }
   
+  if(!is.null(which.plots)){
+    if(any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$numberOfModels))){
+      stop(paste0("The which.plot argument only accepts numerical values between 1 and ", x$numberOfModels, "."))
+    }else if(any(which.plots %in% mm)){
+      warning("You requested model(s) with no subjects. Plotting only relevant models.")
+      which.plots <- setdiff(which.plots, mm)
+    }
+  }else if(!ask && is.null(which.plots)){
+    which.plots <- 1:x$numberOfModels
+    # removing models with no subjects (according to mpp)
+    which.plots <- setdiff(which.plots, mm)
+  }
+  
+  
+  
   if (ask && is.null(which.plots)) {
-    tmenu <- x$modelNames
+    tmenu <- 1:x$numberOfModels
+    tmenu <- setdiff(tmenu, mm)
+    tmenunames <- x$modelNames[tmenu]
+    plot.new()
     repeat {
-      pick <- menu(tmenu, title = "\nMake a model selection (or 0 to exit):\n")
+      pick <- menu(tmenunames, title = "\n Choose a submodel (or 0 to exit):\n")
       if(pick==0){
         return(invisible())
       }else{
-        args$x <- lapply(allobs, function(y) y[mpp$model==x$modelNames[[pick]],])
-        args$mpp <- mpp$mpp[mpp$model==x$modelNames[[pick]],]
+        args$x <- lapply(allobs, function(y) y[mpp$model==x$modelNames[[tmenu[pick]]],])
+        args$mpp <- mpp$mpp[mpp$model==x$modelNames[[tmenu[pick]]],]
+        args$title <- titles[tmenu[pick]]
         do.call(ssplotM,args=args)
       }
     }
-  }
-  else {
-    ask <- length(which.plots) > 1
-    if (ask) {
-      op <- par(ask = TRUE)
-      on.exit(par(op))
+  }else if (ask && !is.null(which.plots)) {
+    tmenu <- which.plots
+    tmenunames <- x$modelNames[which.plots]
+    plot.new()
+    repeat {
+      pick <- menu(tmenunames, title = "\n Choose a submodel (or 0 to exit):\n")
+      if(pick==0){
+        return(invisible())
+      }else{
+        args$x <- lapply(allobs, function(y) y[mpp$model==x$modelNames[[tmenu[pick]]],])
+        args$mpp <- mpp$mpp[mpp$model==x$modelNames[[tmenu[pick]]],]
+        args$title <- titles[tmenu[pick]]
+        do.call(ssplotM,args=args)
+      }
     }
+  }else{
+    ask <- length(which.plots) > 1
+    plot.new()
     for (i in which.plots) {
       args$x <- lapply(allobs, function(y) y[mpp$model==x$modelNames[[i]],])
       args$mpp <- mpp$mpp[mpp$model==x$modelNames[[i]],]
+      args$title <- titles[i]
       do.call(ssplotM,args=args)
+      if (ask) {
+        op <- par(ask = TRUE)
+      }
     }
+    # par(ask = FALSE)
   }
   invisible()
-  par(oldPar)
-  
 }

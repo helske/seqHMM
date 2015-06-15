@@ -1,4 +1,4 @@
-ssplotM <- function(x, mpp=NULL,
+ssplotM <- function(x, mpp=NULL, 
                    plots="obs", type="I", 
                    sortv=NULL, sort.channel=1, dist.method="OM",
                    with.missing=FALSE,
@@ -11,8 +11,8 @@ ssplotM <- function(x, mpp=NULL,
                    ylab="auto", hiddenStates.title="Hidden states", 
                    ylab.pos="auto", 
                    cex.lab=1, cex.axis=1, ...){
-  
-  sspargs <- do.call(ssp,args=as.list(match.call())[-1])
+  # plot.new()
   grid.newpage()
-  do.call(SSPlotter,args=sspargs)
+  # sspargs <- do.call(ssp,args=as.list(match.call())[-1])
+  do.call(SSPlotter,args=sspargs <- do.call(ssp,args=as.list(match.call())[-1]))
 }
