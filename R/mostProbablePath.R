@@ -5,7 +5,7 @@
 #' hidden states of the hidden Markov model given the observed sequence.
 #' 
 #' @export
-#' @param model Hidden Markov model of class \code{HMModel} or \code{MCHMModel}.
+#' @param model Hidden Markov model of class \code{HMModel} or \code{mixHMModel}.
 #' 
 #' @return List which contains the most probable paths of hidden states (mpp) given the
 #'   observations and its log-probability (logP). In a case of multiple
@@ -104,7 +104,7 @@ mostProbablePath<-function(model){
     if(mix){
       out<-viterbix(model$transitionMatrix, cbind(model$emissionMatrix,0), 
                       model$initialProbs, obsArray, model$beta, 
-                      model$X, model$numberOfStatesInModels)
+                      model$X, model$numberOfStatesInClusters)
     } else{
       out<-viterbi(model$transitionMatrix, cbind(model$emissionMatrix,0), 
                    model$initialProbs, obsArray)
@@ -138,15 +138,12 @@ mostProbablePath<-function(model){
     if(mix){
       out<-viterbiMCx(model$transitionMatrix, emissionArray, 
                         model$initialProbs, obsArray, model$beta, 
-                        model$X, model$numberOfStatesInModels)
+                        model$X, model$numberOfStatesInClusters)
     } else{
       out<-viterbiMC(model$transitionMatrix, emissionArray, 
                      model$initialProbs, obsArray)
     }
     
-#     if(mix){
-#       model$stateNames<-unlist(model$originalStateNames)
-#     }
       
     if(model$numberOfSequences==1){
       mpp<-t(model$stateNames[out$q+1])
@@ -161,7 +158,7 @@ mostProbablePath<-function(model){
 
   if(mix==TRUE){
     gr <- sub("^.*?_","",mpp[,1])
-    gr <- factor(gr, levels=1:model$numberOfModels, labels=model$modelNames)
+    gr <- factor(gr, levels=1:model$numberOfClusters, labels=model$clusterNames)
     list(mpp=mpp, model=gr, logP=out$logp)
   }else{
     list(mpp=mpp, logP=out$logp)

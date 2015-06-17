@@ -2,7 +2,7 @@
 #' 
 #' The \code{sepMixHMM} function reorganizes the parameters of a \code{mixHMModel} object 
 #' into a list where each element is an object of class \code{HMModel} consisting of the 
-#' parameters of the corresponding submodel.
+#' parameters of the corresponding cluster.
 #' 
 #' @export
 #' @param model Hidden Markov model of class \code{mixHMModel}.
@@ -128,9 +128,9 @@
 
 sepMixHMM <- function(model){
   
-  divmodels <- replicate(model$numberOfModels, list())
+  divmodels <- replicate(model$numberOfClusters, list())
   
-  for(i in 1:model$numberOfModels){
+  for(i in 1:model$numberOfClusters){
     divmodels[[i]] <- buildHMM(observations=model$observations,
                                transitionMatrix=model$transitionMatrix[[i]],
                                emissionMatrix=model$emissionMatrix[[i]],

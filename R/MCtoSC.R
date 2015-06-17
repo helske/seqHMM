@@ -140,15 +140,15 @@ MCtoSC<-function(model, combine.missing=TRUE, all.combinations=FALSE){
     
     modelx<-model
     
-    B <- vector("list", model$numberOfModels)
-    for(m in 1:model$numberOfModels){
-      B[[m]] <- matrix(0,model$numberOfStatesInModels[m],prod(model$numberOfSymbols))
+    B <- vector("list", model$numberOfClusters)
+    for(m in 1:model$numberOfClusters){
+      B[[m]] <- matrix(0,model$numberOfStatesInClusters[m],prod(model$numberOfSymbols))
       
       colnames(B[[m]])<-apply(
         expand.grid(lapply(model$emissionMatrix[[m]],colnames)),                
         1,paste0,collapse="/")
       rownames(B[[m]])<-rownames(model$emissionMatrix[[m]][[1]])
-      for(i in 1:model$numberOfStatesInModels[[m]]){
+      for(i in 1:model$numberOfStatesInClusters[[m]]){
         B[[m]][i,]<-apply(expand.grid(lapply(model$emissionMatrix[[m]],function(x) x[i,])),1,prod)   
       }
       B[[m]] <- B[[m]][, order(colnames(B[[m]]))]

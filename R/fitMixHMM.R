@@ -140,7 +140,7 @@
 #' HMM$model$beta
 #' 
 #' # Probabilities of belonging to each model for the first six subjects
-#' head(HMM$model$modelProb)
+#' head(HMM$model$clusterProb)
 
 
 fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
@@ -163,18 +163,9 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
     }           
   }
   
-  #   # Index of largest initial probability
-  #   maxIP<-which.max(model$initialProbs)
-  #   # Value of largest initial probability
-  #   maxIPvalue<-model$initialProbs[maxIP]
-  #   # Rest of non-zero probs
-  #   paramIP<-setdiff(which(model$initialProbs>0),maxIP)
-  #   npIP<-length(paramIP)
-  #   initNZ<-model$initialProbs>0
-  #   initNZ[maxIP]<-2
-  maxIP <- maxIPvalue <- npIP <- numeric(original_model$numberOfModels)  
-  paramIP <-  initNZ <-vector("list",original_model$numberOfModels)
-  for(m in 1:original_model$numberOfModels){
+  maxIP <- maxIPvalue <- npIP <- numeric(original_model$numberOfClusters)  
+  paramIP <-  initNZ <-vector("list",original_model$numberOfClusters)
+  for(m in 1:original_model$numberOfClusters){
     # Index of largest initial probability
     maxIP[m] <- which.max(original_model$initialProbs[[m]])
     # Value of largest initial probability
@@ -219,7 +210,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
     initialvalues<-c(log(c(
       if(npTM>0) model$transitionMatrix[paramTM],
       if(npEM>0) model$emissionMatrix[paramEM],
-      if(npIPAll>0) unlist(sapply(1:original_model$numberOfModels,function(m)
+      if(npIPAll>0) unlist(sapply(1:original_model$numberOfClusters,function(m)
         if(npIP[m]>0) original_model$initialProbs[[m]][paramIP[[m]]]))
     )),
     model$beta[,-1]
@@ -241,7 +232,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
         model$emissionMatrix<-model$emissionMatrix/rowSums(model$emissionMatrix) 
       }
       
-      for(m in 1:original_model$numberOfModels){
+      for(m in 1:original_model$numberOfClusters){
         if(npIP[m]>0){
           original_model$initialProbs[[m]][maxIP[[m]]] <- maxIPvalue[[m]] # Not needed?
           original_model$initialProbs[[m]][paramIP[[m]]] <- exp(pars[npTM+npEM+c(0,cumsum(npIP))[m]+
@@ -254,10 +245,10 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
       model$beta[,-1] <- pars[npTM+npEM+npIPAll+1:npBeta]
       if(estimate){
         - logLikMixHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray,
-                       model$beta, model$X, model$numberOfStatesInModels)      
+                       model$beta, model$X, model$numberOfStatesInClusters)      
       } else model
     }
-    sumInit<-rep(1,original_model$numberOfModels)    
+    sumInit<-rep(1,original_model$numberOfClusters)    
     rowSumsA<-rowSumsB<-rep(1,model$numberOfStates)
     
     gradfn<-function(pars,model){      
@@ -280,7 +271,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
         model$emissionMatrix<-model$emissionMatrix/rowSumsB
       }
       
-      for(m in 1:original_model$numberOfModels){
+      for(m in 1:original_model$numberOfClusters){
         if(npIP[m]>0){
           original_model$initialProbs[[m]][maxIP[[m]]] <- maxIPvalue[[m]] # Not needed?
           original_model$initialProbs[[m]][paramIP[[m]]] <- exp(pars[npTM+npEM+c(0,cumsum(npIP))[m]+
@@ -296,7 +287,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
       - gradientx(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
                   obsArray, rowSumsA, rowSumsB, 
                   sumInit, transNZ, emissNZ, initNZ, exp(pars[1:(npTM+sum(npEM)+npIPAll)]), 
-                  model$beta, model$X, model$numberOfStatesInModels)
+                  model$beta, model$X, model$numberOfStatesInClusters)
       
       
       
@@ -330,7 +321,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
       if(npTM>0) model$transitionMatrix[paramTM],
       if(sum(npEM)>0) unlist(sapply(1:model$numberOfChannels,
                                     function(x) model$emissionMatrix[[x]][paramEM[[x]]])),
-      if(npIPAll>0) unlist(sapply(1:original_model$numberOfModels,function(m)
+      if(npIPAll>0) unlist(sapply(1:original_model$numberOfClusters,function(m)
         if(npIP[m]>0) original_model$initialProbs[[m]][paramIP[[m]]]))
     )),
     model$beta[,-1]
@@ -361,7 +352,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
             emissionArray[,1:model$numberOfSymbols[i],i]/rowSumsB
         }
       }
-      for(m in 1:original_model$numberOfModels){
+      for(m in 1:original_model$numberOfClusters){
         if(npIP[m]>0){
           original_model$initialProbs[[m]][maxIP[[m]]] <- maxIPvalue[[m]] # Not needed?
           original_model$initialProbs[[m]][paramIP[[m]]] <- exp(pars[npTM+sum(npEM)+c(0,cumsum(npIP))[m]+
@@ -375,7 +366,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
       
       if(estimate){   
         - logLikMixMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
-                         model$beta, model$X, model$numberOfStatesInModels)   
+                         model$beta, model$X, model$numberOfStatesInClusters)   
       } else {
         if(sum(npEM)>0){
           for(i in 1:model$numberOfChannels){
@@ -386,7 +377,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
       }        
     } 
     
-    sumInit<-rep(1,original_model$numberOfModels)    
+    sumInit<-rep(1,original_model$numberOfClusters)    
     rowSumsA<-rep(1,model$numberOfStates)
     rowSumsB<-matrix(1,model$numberOfStates,model$numberOfChannels)
     
@@ -410,7 +401,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
             emissionArray[,1:model$numberOfSymbols[i],i]/rowSumsB[,i]
         }
       }
-      for(m in 1:original_model$numberOfModels){
+      for(m in 1:original_model$numberOfClusters){
         if(npIP[m]>0){
           original_model$initialProbs[[m]][maxIP[[m]]] <- maxIPvalue[[m]] # Not needed?
           original_model$initialProbs[[m]][paramIP[[m]]] <- exp(pars[npTM+sum(npEM)+c(0,cumsum(npIP))[m]+
@@ -425,7 +416,7 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
       
       - gradientMCx(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, rowSumsA, rowSumsB, 
                     sumInit, transNZ, emissNZ, initNZ, exp(pars[1:(npTM+sum(npEM)+npIPAll)]), 
-                    model$beta, model$X, model$numberOfStatesInModels)
+                    model$beta, model$X, model$numberOfStatesInClusters)
       
       
       
@@ -442,10 +433,10 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
   model <- likfn(as.numeric(resoptimx[1:length(initialvalues)]), model, FALSE)
   
   rownames(model$beta) <- colnames(model$X)
-  colnames(model$beta) <- model$modelNames
+  colnames(model$beta) <- model$clusterNames
   
   pr <- exp(model$X%*%model$beta)
-  model$modelProbabilities <- pr/rowSums(pr)
+  model$clusterProbabilities <- pr/rowSums(pr)
   
   list(model=spreadModels(model),logLik=-resoptimx$value,optimx.result=resoptimx)
 }

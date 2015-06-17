@@ -19,7 +19,7 @@ logLik.mixHMModel<-function(object,...){
     storage.mode(obsArray)<-"integer"
     
     logLikMixHMM(object$transitionMatrix, cbind(object$emissionMatrix,1), object$initialProbs, obsArray,
-                 object$beta, object$X, object$numberOfStatesInModels)
+                 object$beta, object$X, object$numberOfStatesInClusters)
   } else {
     obsArray<-array(0,c(object$numberOfSequences,object$lengthOfSequences,object$numberOfChannels))
     for(i in 1:object$numberOfChannels){
@@ -33,7 +33,7 @@ logLik.mixHMModel<-function(object,...){
       emissionArray[,1:object$numberOfSymbols[i],i]<-object$emissionMatrix[[i]]
     
     logLikMixMCHMM(object$transitionMatrix, emissionArray, object$initialProbs, obsArray,
-                   object$beta, object$X, object$numberOfStatesInModels) 
+                   object$beta, object$X, object$numberOfStatesInClusters) 
     
   }
 }

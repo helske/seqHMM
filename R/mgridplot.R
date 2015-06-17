@@ -9,7 +9,7 @@
 #'   
 #' @param x A \code{mixHMModel} object.
 #'   
-#' @param rows,cols Optional arguments to arrange model plots.
+#' @param rows,cols Optional arguments to arrange cluster plots.
 #'   
 #' @param byrow Controls the order of plotting. Defaults to \code{FALSE}, i.e. plots
 #'   are arranged columnwise.
@@ -20,14 +20,14 @@
 #'   \code{FALSE} omits the legend.
 #'   
 #' @param legend.pos Defines the positions of the legend boxes relative to the
-#'   model graphs. One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"}, 
+#'   cluster graphs. One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"}, 
 #'   \code{"left"}, \code{"topleft"}, \code{"top"}, \code{"topright"}, 
 #'   \code{"right"} and \code{"center"} (the default).
 #'   
 #' @param legend.prop The proportion of legends
 #'   
 #' @param title.legend The titles for the legend boxes. The default \code{"auto"} takes
-#'   the titles from the model names in x. \code{NA} prints no title.
+#'   the titles from the cluster names in x. \code{NA} prints no title.
 #'   
 #' @param ncol.legend (A vector of) the number of columns for the legend(s). The
 #'   default \code{"auto"} creates one column for each legend.
@@ -209,7 +209,7 @@
 #'                       initialProbs=list(initialProbs2, initialProbs2,
 #'                                         initialProbs1), 
 #'                       formula=~sex*cohort+sex*swiss, data=bio,
-#'                       modelNames=c("Model1", "Model2", "Model3"),
+#'                       clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
 #'                       channelNames=c("Parenthood", "Marriage", "Left home"))
 #' 
 #' mHMM <- fitMixHMM(bmHMM)
@@ -262,7 +262,7 @@ mgridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
   
   
   # Number of plots
-  ngridplots <- x$numberOfModels
+  ngridplots <- x$numberOfClusters
   
   
   if(is.na(rows) && is.na(cols)){
@@ -278,13 +278,13 @@ mgridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
   if(!is.na(withlegend) && withlegend!=FALSE){
     if(!is.na(title.legend) && title.legend!=FALSE && !is.null(title.legend)){
       if(length(title.legend)>1 || (length(title.legend)==1 && title.legend!="auto")){
-        if(length(title.legend)!=x$numberOfModels){
-          warning("The length of the vector provided for title.legend does not match the number of models (graphs). Argument title.legend was set to \"auto\".")
+        if(length(title.legend)!=x$numberOfClusters){
+          warning("The length of the vector provided for title.legend does not match the number of clusters (graphs). Argument title.legend was set to \"auto\".")
           title.legend=="auto"
         }
       }
       if(length(title.legend==1 && title.legend=="auto")){
-        title.legend <- x$modelNames
+        title.legend <- x$clusterNames
       }
     }
   }
@@ -292,15 +292,15 @@ mgridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
   # Number of columns in legends
   if(!is.na(withlegend) && withlegend==TRUE){ 
     if(length(ncol.legend)==1 && ncol.legend=="auto"){
-      ncol.legend <- rep(1, x$numberOfModels)
-    }else if(length(ncol.legend)==1 && x$numberOfModels>1){
-      ncol.legend <- rep(ncol.legend, x$numberOfModels)
-    }else if(length(ncol.legend)<x$numberOfModels){
-      warning(paste0("The length of ncol.legend does not match the number of submodels. The last were arranged in 1 column."))
-      ncol.legend <- c(ncol.legend, rep(1,(x$numberOfModels-length(ncol.legend))))
-    }else if(length(ncol.legend)>x$numberOfModels){
-      warning(paste0("The length of ncol.legend does not match the number of submodels. Only the first ", x$numberOfModels, " arguments of \"ncol.legend\" were used."))
-      ncol.legend <- ncol.legend[1:x$numberOfModels]
+      ncol.legend <- rep(1, x$numberOfClusters)
+    }else if(length(ncol.legend)==1 && x$numberOfClusters>1){
+      ncol.legend <- rep(ncol.legend, x$numberOfClusters)
+    }else if(length(ncol.legend)<x$numberOfClusters){
+      warning(paste0("The length of ncol.legend does not match the number of clusters The last were arranged in 1 column."))
+      ncol.legend <- c(ncol.legend, rep(1,(x$numberOfClusters-length(ncol.legend))))
+    }else if(length(ncol.legend)>x$numberOfClusters){
+      warning(paste0("The length of ncol.legend does not match the number of clusters. Only the first ", x$numberOfClusters, " arguments of \"ncol.legend\" were used."))
+      ncol.legend <- ncol.legend[1:x$numberOfClusters]
     }
   }
   

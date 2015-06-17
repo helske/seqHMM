@@ -304,7 +304,7 @@
 #'                       initialProbs=list(initialProbs2, initialProbs2,
 #'                                         initialProbs1), 
 #'                       formula=~sex*cohort+sex*swiss, data=bio,
-#'                       modelNames=c("Model1", "Model2", "Model3"),
+#'                       clusterNames=c("Model1", "Model2", "Model3"),
 #'                       channelNames=c("Parenthood", "Marriage", "Left home"))
 #' 
 #' mHMM <- fitMixHMM(bmHMM)
@@ -357,11 +357,11 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     args <- args[-which(names(args)=="mpp")]
   }
   if(!("title" %in% names(args))){
-    titles <- x$modelNames
+    titles <- x$clusterNames
   }else{
-    if(length(title)!=x$numberOfModels){
-      warning("The length of the vector provided for the title argument does not match the number of models. Automatic titles were used instead.")
-      titles <- x$modelNames
+    if(length(title)!=x$numberOfClusters){
+      warning("The length of the vector provided for the title argument does not match the number of clusters. Automatic titles were used instead.")
+      titles <- x$clusterNames
     }else{
       titles <- args$title
     }
@@ -374,13 +374,13 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   
   if(!("mpp.labels" %in% names(args))){
     mpp.labels <- NULL
-    for(i in 1:x$numberOfModels){
+    for(i in 1:x$numberOfClusters){
       mpp.labels <- c(mpp.labels, paste("State", 1:x$numberOfStates[i]))
     }
   }
   mpplabs <- list()
   k <- 0
-  for(i in 1:x$numberOfModels){
+  for(i in 1:x$numberOfClusters){
     mpplabs[[i]] <- mpp.labels[(k+1):(k+x$numberOfStates[i])]
     k <- k+x$numberOfStates[i]
   }
@@ -390,47 +390,47 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   }
   mppcols <- list()
   k <- 0
-  for(i in 1:x$numberOfModels){
+  for(i in 1:x$numberOfClusters){
     mppcols[[i]] <- mpp.color[(k+1):(k+x$numberOfStates[i])]
     k <- k+x$numberOfStates[i]
   }
   
   mppm <- unique(mpp$model)
   mm <- NULL
-  if(length(mppm)<x$numberOfModels){
-    mm <- which(!(x$modelNames%in%mppm))
-    warning(paste("When computing the most probable paths, no subjects were assigned to following models:", paste(x$modelNames[mm], collapse=", ")))
+  if(length(mppm)<x$numberOfClusters){
+    mm <- which(!(x$clusterNames%in%mppm))
+    warning(paste("When computing the most probable paths, no subjects were assigned to following clusters:", paste(x$clusterNames[mm], collapse=", ")))
   }
   
   if(!is.null(which.plots)){
-    if(any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$numberOfModels))){
-      stop(paste0("The which.plot argument only accepts numerical values between 1 and ", x$numberOfModels, "."))
+    if(any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$numberOfClusters))){
+      stop(paste0("The which.plot argument only accepts numerical values between 1 and ", x$numberOfClusters, "."))
     }else if(any(which.plots %in% mm)){
-      warning("You requested model(s) with no subjects. Plotting only relevant models.")
+      warning("You requested cluster(s) with no subjects. Plotting only relevant clusters.")
       which.plots <- setdiff(which.plots, mm)
     }
   }else if(!ask && is.null(which.plots)){
-    which.plots <- 1:x$numberOfModels
-    # removing models with no subjects (according to mpp)
+    which.plots <- 1:x$numberOfClusters
+    # removing clusters with no subjects (according to mpp)
     which.plots <- setdiff(which.plots, mm)
   }
   
   
   
   if (ask && is.null(which.plots)) {
-    tmenu <- 1:x$numberOfModels
+    tmenu <- 1:x$numberOfClusters
     tmenu <- setdiff(tmenu, mm)
-    tmenunames <- x$modelNames[tmenu]
+    tmenunames <- x$clusterNames[tmenu]
     plot.new()
     repeat {
-      pick <- menu(tmenunames, title = "\n Choose a submodel (or 0 to exit):\n")
+      pick <- menu(tmenunames, title = "\n Select cluster (or 0 to exit):\n")
       if(pick==0){
         return(invisible())
       }else{
-        args$x <- lapply(allobs, function(y) y[mpp$model==x$modelNames[[tmenu[pick]]],])
+        args$x <- lapply(allobs, function(y) y[mpp$model==x$clusterNames[[tmenu[pick]]],])
         args$mpp.labels <- mpplabs[[pick]]
         args$mpp <- suppressWarnings(suppressMessages(
-          seqdef(mpp$mpp[mpp$model==x$modelNames[[tmenu[pick]]],], 
+          seqdef(mpp$mpp[mpp$model==x$clusterNames[[tmenu[pick]]],], 
                  labels=args$mpp.labels)))
         args$mpp.color <- mppcols[[pick]]
         args$title <- titles[tmenu[pick]]
@@ -439,17 +439,17 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     }
   }else if (ask && !is.null(which.plots)) {
     tmenu <- which.plots
-    tmenunames <- x$modelNames[which.plots]
+    tmenunames <- x$clusterNames[which.plots]
     plot.new()
     repeat {
-      pick <- menu(tmenunames, title = "\n Choose a submodel (or 0 to exit):\n")
+      pick <- menu(tmenunames, title = "\n Select cluster (or 0 to exit):\n")
       if(pick==0){
         return(invisible())
       }else{
-        args$x <- lapply(allobs, function(y) y[mpp$model==x$modelNames[[tmenu[pick]]],])
+        args$x <- lapply(allobs, function(y) y[mpp$model==x$clusterNames[[tmenu[pick]]],])
         args$mpp.labels <- mpplabs[[pick]]
         args$mpp <- suppressWarnings(suppressMessages(
-          seqdef(mpp$mpp[mpp$model==x$modelNames[[tmenu[pick]]],], 
+          seqdef(mpp$mpp[mpp$model==x$clusterNames[[tmenu[pick]]],], 
                  labels=args$mpp.labels)))
         args$mpp.color <- mppcols[[pick]]
         args$title <- titles[tmenu[pick]]
@@ -460,10 +460,10 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     ask <- length(which.plots) > 1
     plot.new()
     for (i in which.plots) {
-      args$x <- lapply(allobs, function(y) y[mpp$model==x$modelNames[[i]],])
+      args$x <- lapply(allobs, function(y) y[mpp$model==x$clusterNames[[i]],])
       args$mpp.labels <- mpplabs[[i]]
       args$mpp <- suppressWarnings(suppressMessages(
-        seqdef(mpp$mpp[mpp$model==x$modelNames[[i]],], labels=args$mpp.labels)))
+        seqdef(mpp$mpp[mpp$model==x$clusterNames[[i]],], labels=args$mpp.labels)))
       args$mpp.color <- mppcols[[i]]
       args$title <- titles[i]
       do.call(ssplotM,args=args)

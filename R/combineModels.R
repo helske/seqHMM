@@ -1,11 +1,11 @@
 combineModels <- function(model){
   
-  numberOfStatesInModels <- model$numberOfStates
+  numberOfStatesInClusters <- model$numberOfStates
   numberOfStates <- sum(model$numberOfStates)
   transitionMatrix <- as.matrix(.bdiag(model$transitionMatrix))
   stateNames <- unlist(originalStateNames<-model$stateNames)
   if (length(unique(stateNames))!= length(stateNames)){
-    stateNames <- paste(stateNames,rep(1:model$numberOfModels,model$numberOfStates),sep="_")
+    stateNames <- paste(stateNames,rep(1:model$numberOfClusters,model$numberOfStates),sep="_")
   }
   dimnames(transitionMatrix) <- replicate(2, stateNames, simplify=FALSE)
   
@@ -26,7 +26,7 @@ combineModels <- function(model){
                 emissionMatrix=emissionMatrix,
                 initialProbs = unlist(model$initialProbs),
                 beta=model$beta, X=model$X,
-                modelNames=model$modelNames,
+                clusterNames=model$clusterNames,
                 stateNames=stateNames,
                 symbolNames=model$symbolNames,
                 channelNames=model$channelNames,
@@ -36,8 +36,8 @@ combineModels <- function(model){
                 numberOfStates=numberOfStates,
                 numberOfChannels=model$numberOfChannels,
                 numberOfCovariates=model$numberOfCovariates,
-                numberOfModels=model$numberOfModels,
-                numberOfStatesInModels=numberOfStatesInModels,
+                numberOfClusters=model$numberOfMClusters,
+                numberOfStatesInClusters=numberOfStatesInClusters,
                 originalStateNames = originalStateNames)
   class(model)<-"combined_mixHMModel"
   model

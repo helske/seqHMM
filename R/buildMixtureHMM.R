@@ -9,20 +9,24 @@
 #' @param observations TraMineR stslist (see \code{\link{seqdef}}) containing
 #'   the sequences, or a list of such objects (one for each channel).
 #' @param transitionMatrix A list of matrices of transition 
-#'   probabilities for each model.
+#'   probabilities for submodels of each cluster.
 #' @param emissionMatrix A list which contains matrices of emission probabilities or
-#'   a list of such objects (one for each channel) for each model. Note that the
-#'   matrices must have dimensions m x s where m is the number of hidden states 
-#'   and s is the number of unique symbols (observed states) in the data.
+#'   a list of such objects (one for each channel) for submodels of each cluster. 
+#'   Note that the matrices must have dimensions m x s where m is the number of 
+#'   hidden states and s is the number of unique symbols (observed states) in the 
+#'   data.
 #' @param initialProbs A list which contains vectors of initial state 
-#'   probabilities for each model.
-#' @param formula Covariates as an object of class \code{\link{formula}}, left side omitted.
-#' @param data An optional data frame, list or environment containing the variables in the model. If not found in data, the variables are taken from \code{environment(formula)}.
+#'   probabilities for submodels of each cluster.
+#' @param formula Covariates as an object of class \code{\link{formula}}, 
+#' left side omitted.
+#' @param data An optional data frame, list or environment containing the variables 
+#' in the model. If not found in data, the variables are taken from 
+#' \code{environment(formula)}.
 #' @param beta An optional k x l matrix of regression coefficients for time-constant 
 #'   covariates for mixture probabilities, where l is the number of models and k
 #'   is the number of covariates. A logit-link is used for mixture probabilities.
 #'   The first column is set to zero.
-#' @param modelNames A vector of optional names for the models.
+#' @param clusterNames A vector of optional names for the clusters.
 #' @param stateNames A list of optional labels for the hidden states.
 #' @param channelNames A vector of optional names for the channels.
 #' @return Object of class \code{mixHMModel}
@@ -131,20 +135,20 @@
 #'                     
 buildMixHMM <- 
   function(observations,transitionMatrix,emissionMatrix,initialProbs, 
-           formula, data, beta, modelNames=NULL, stateNames=NULL, channelNames=NULL){
+           formula, data, beta, clusterNames=NULL, stateNames=NULL, channelNames=NULL){
     
-    numberOfModels<-length(transitionMatrix)
+    numberOfClusters<-length(transitionMatrix)
     if(length(emissionMatrix)!=numberOfModels || length(initialProbs)!=numberOfModels)
       stop("Unequal lengths of transitionMatrix, emissionMatrix and initialProbs.")
     
-    if(is.null(modelNames)){
-      modelNames <- paste("Model", 1:numberOfModels)
-    }else if(length(modelNames)!=numberOfModels){
-      warning("The length of argument modelNames does not match the number of models. Names were not used.")
-      modelNames <- paste("Model", 1:numberOfModels)
+    if(is.null(clusterNames)){
+      clusterNames <- paste("Cluster", 1:numberOfClusters)
+    }else if(length(clusterNames)!=numberOfClusters){
+      warning("The length of argument clusterNames does not match the number of clusters. Names were not used.")
+      clusterNames <- paste("Cluster", 1:numberOfClusters)
     }
       
-    model <- vector("list", length = numberOfModels)
+    model <- vector("list", length = numberOfClusters)
     
     # States
     numberOfStates <- unlist(lapply(transitionMatrix,nrow))
@@ -153,8 +157,8 @@ buildMixHMM <-
       stop("Transition matrices must be square matrices.")
     
     if(is.null(stateNames)){
-      stateNames <- vector("list", numberOfModels)
-      for(m in 1:numberOfModels){
+      stateNames <- vector("list", numberOfClusters)
+      for(m in 1:numberOfClusters){
         stateNames[[m]] <- as.character(1:numberOfStates[m])
       }
     }
@@ -165,7 +169,7 @@ buildMixHMM <-
     if(!all(1==unlist(sapply(initialProbs,sum))))
       stop("Initial state probabilities do not sum to one.")
 
-    for(i in 1:numberOfModels){
+    for(i in 1:numberOfClusters){
 
       dimnames(transitionMatrix[[i]]) <- list(from=stateNames[[i]],to=stateNames[[i]])
       # Single channel but emissionMatrix is list of lists  
@@ -197,7 +201,7 @@ buildMixHMM <-
 
       symbolNames<-lapply(observations,alphabet)
       numberOfSymbols<-sapply(symbolNames,length)
-      for(i in 1:numberOfModels){
+      for(i in 1:numberOfClusters){
         if(any(lapply(emissionMatrix[[i]],nrow)!=numberOfStates[i]))
           stop(paste("Number of rows in emissionMatrix of cluster", i, "is not equal to the number of states."))
         
@@ -224,7 +228,7 @@ buildMixHMM <-
       symbolNames<-alphabet(observations)
       numberOfSymbols<-length(symbolNames)
       
-      for(i in 1:numberOfModels){
+      for(i in 1:numberOfClusters){
         if(numberOfStates[i]!=dim(emissionMatrix[[i]])[1])
           stop("Number of rows in emissionMatrix is not equal to the number of states.")
         if(numberOfSymbols!=dim(emissionMatrix[[i]])[2])
@@ -247,36 +251,36 @@ buildMixHMM <-
         stop("Object given for argument formula is not of class formula.")
       }
       if(missing(beta)){
-        beta<-matrix(0,numberOfCovariates,numberOfModels)
+        beta<-matrix(0,numberOfCovariates,numberOfClusters)
       } else {
-        if(ncol(beta)!=numberOfModels | nrow(beta)!=numberOfCovariates)
+        if(ncol(beta)!=numberOfClusters | nrow(beta)!=numberOfCovariates)
           stop("Wrong dimensions of beta.")
         beta[,1]<-0
       }       
     } else { #Just intercept
       numberOfCovariates <-1
       X <- matrix(1,nrow=numberOfSequences)
-      beta <- matrix(0,1,numberOfModels)        
+      beta <- matrix(0,1,numberOfClusters)        
     }
     
     rownames(beta) <- colnames(X)
-    colnames(beta) <- modelNames
+    colnames(beta) <- clusterNames
     
-    names(transitionMatrix) <- names(emissionMatrix) <- names(initialProbs) <- modelNames
+    names(transitionMatrix) <- names(emissionMatrix) <- names(initialProbs) <- clusterNames
     
     pr <- exp(X%*%beta)
-    modelProbabilities <- pr/rowSums(pr)
+    clusterProbabilities <- pr/rowSums(pr)
     
     model<-list(observations=observations, transitionMatrix=transitionMatrix,
                 emissionMatrix=emissionMatrix, initialProbs=initialProbs,
-                beta=beta, X=X, modelNames=modelNames, stateNames=stateNames, 
+                beta=beta, X=X, clusterNames=clusterNames, stateNames=stateNames, 
                 symbolNames=symbolNames, channelNames=channelNames, 
                 lengthOfSequences=lengthOfSequences,
-                numberOfSequences=numberOfSequences, numberOfModels=numberOfModels,
+                numberOfSequences=numberOfSequences, numberOfClusters=numberOfClusters,
                 numberOfSymbols=numberOfSymbols, numberOfStates=numberOfStates,
                 numberOfChannels=numberOfChannels,
                 numberOfCovariates=numberOfCovariates, 
-                modelProbabilities=modelProbabilities)
+                clusterProbabilities=clusterProbabilities)
     class(model)<-"mixHMModel"
     model
   }

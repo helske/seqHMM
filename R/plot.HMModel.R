@@ -52,8 +52,7 @@
 #'   widths according to the transition probabilities between the hidden states.
 #'   Other possibilities are a single value or a numerical vector giving the 
 #'   widths.
-#' @param cex.edge.width An expansion factor for the edge widths to thicken 
-#'   edges of models with small transition probabilities. Defaults to 1.
+#' @param cex.edge.width An expansion factor for the edge widths. Defaults to 1.
 #' @param edge.arrow.size The size of the arrows in edges (constant). Defaults to 1.5.
 #' @param label.signif Rounds labels of model parameters to the specified number
 #'   of significant digits, 2 by default. Ignored for user-given labels.

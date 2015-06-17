@@ -15,40 +15,40 @@ spreadModels <- function(model){
   
   names(model$emissionMatrix) <- model$channelNames
   
-  transM <- vector("list", model$numberOfModels)
-  emissM <- vector("list", model$numberOfModels)
-  init <- vector("list", model$numberOfModels)
+  transM <- vector("list", model$numberOfClusters)
+  emissM <- vector("list", model$numberOfClusters)
+  init <- vector("list", model$numberOfClusters)
   k <- 0
   if(model$numberOfChannels==1){
-    for(m in 1:model$numberOfModels){
-      transM[[m]] <- model$transitionMatrix[(k+1):(k+model$numberOfStatesInModels[m]),
-                                            (k+1):(k+model$numberOfStatesInModels[m])]
-        emissM[[m]] <- model$emissionMatrix[(k+1):(k+model$numberOfStatesInModels[m]),]
+    for(m in 1:model$numberOfClusters){
+      transM[[m]] <- model$transitionMatrix[(k+1):(k+model$numberOfStatesInClusters[m]),
+                                            (k+1):(k+model$numberOfStatesInClusters[m])]
+        emissM[[m]] <- model$emissionMatrix[(k+1):(k+model$numberOfStatesInClusters[m]),]
       names(emissM[[m]]) <- model$channelNames
-      init[[m]] <- unname(model$initialProbs[(k+1):(k+model$numberOfStatesInModels[m])])
-      k <- sum(model$numberOfStatesInModels[1:m])
+      init[[m]] <- unname(model$initialProbs[(k+1):(k+model$numberOfStatesInClusters[m])])
+      k <- sum(model$numberOfStatesInClusters[1:m])
     }
   }else{  
-    for(m in 1:model$numberOfModels){
-      transM[[m]] <- model$transitionMatrix[(k+1):(k+model$numberOfStatesInModels[m]),
-                                            (k+1):(k+model$numberOfStatesInModels[m])]
+    for(m in 1:model$numberOfClusters){
+      transM[[m]] <- model$transitionMatrix[(k+1):(k+model$numberOfStatesInClusters[m]),
+                                            (k+1):(k+model$numberOfStatesInClusters[m])]
       for(j in 1:model$numberOfChannels){
-        emissM[[m]][[j]] <- model$emissionMatrix[[j]][(k+1):(k+model$numberOfStatesInModels[m]),]
+        emissM[[m]][[j]] <- model$emissionMatrix[[j]][(k+1):(k+model$numberOfStatesInClusters[m]),]
       }
       names(emissM[[m]]) <- model$channelNames
-      init[[m]] <- unname(model$initialProbs[(k+1):(k+model$numberOfStatesInModels[m])])
-      k <- sum(model$numberOfStatesInModels[1:m])
+      init[[m]] <- unname(model$initialProbs[(k+1):(k+model$numberOfStatesInClusters[m])])
+      k <- sum(model$numberOfStatesInClusters[1:m])
     }
   }
   
-  names(transM) <- names(emissM) <- names(init) <- model$modelNames
+  names(transM) <- names(emissM) <- names(init) <- model$ClusterNames
   
   model$transitionMatrix <- transM
   model$emissionMatrix <- emissM
   model$initialProbs <- init
   model$stateNames <- model$originalStateNames
-  model$numberOfStates <- model$numberOfStatesInModels
-  model$originalStateNames<-model$numberOfStatesInModels<-NULL
+  model$numberOfStates <- model$numberOfStatesInClusters
+  model$originalStateNames<-model$numberOfStatesInClusters<-NULL
   class(model) <- "mixHMModel"
   
   model

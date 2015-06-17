@@ -11,10 +11,10 @@
 #'   HMModel objects are automatically transformed to single channel objects. 
 #'   See function \code{\link{MCtoSC}} for more information on the 
 #'   transformation.
-#' @param interactive Whether to plot each model in succession or in a grid. Defaults to TRUE, i.e. submodels is plotted one after another.
+#' @param interactive Whether to plot each cluster in succession or in a grid. Defaults to TRUE, i.e. clusters are plotted one after another.
 #' 
 #' @param ask If true and \code{which.plots} is NULL, \code{plot.mixHMModel} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}. Ignored if \code{interactive=FALSE}.
-#' @param which.plots The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots. Ignored if \code{interactive=FALSE}.
+#' @param which.plots The number(s) of the requested cluster(s) as an integer vector. The default \code{NULL} produces all plots. Ignored if \code{interactive=FALSE}.
 #' 
 #' @param rows,cols Optional arguments to arrange plots in a grid. Ignored if \code{interactive=TRUE}.
 #' @param byrow Controls the order of plotting in a grid. Defaults to \code{FALSE}, i.e. plots
@@ -40,7 +40,7 @@
 #' @param vertex.label Labels for the vertices. Possible options include 
 #'   \code{"initial.probs"}, \code{"names"}, \code{NA}, and a character or 
 #'   numerical vector. The default \code{"initial.probs"} prints the initial 
-#'   probabilities of the model and \code{"names"} prints the names of the 
+#'   probabilities of the cluster and \code{"names"} prints the names of the 
 #'   hidden states as labels. \code{NA} prints no labels.
 #' @param vertex.label.dist The distance of the label of the vertex from its 
 #'   center. The default value \code{"auto"} places the label outside the 
@@ -66,8 +66,7 @@
 #'   widths according to the transition probabilities between the hidden states.
 #'   Other possibilities are a single value or a numerical vector giving the 
 #'   widths.
-#' @param cex.edge.width An expansion factor for the edge widths to thicken 
-#'   edges of models with small transition probabilities. Defaults to 1.
+#' @param cex.edge.width An expansion factor for the edge widths. Defaults to 1.
 #' @param edge.arrow.size The size of the arrows in edges (constant). Defaults to 1.5.
 #' @param label.signif Rounds labels of model parameters to the specified number
 #'   of significant digits, 2 by default. Ignored for user-given labels.
@@ -267,7 +266,7 @@
 #'                       initialProbs=list(initialProbs2, initialProbs2,
 #'                                         initialProbs1), 
 #'                       formula=~sex*cohort+sex*swiss, data=bio,
-#'                       modelNames=c("Model1", "Model2", "Model3"),
+#'                       clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
 #'                       channelNames=c("Parenthood", "Marriage", "Left home"))
 #' 
 #' mHMM <- fitMixHMM(bmHMM)
@@ -290,19 +289,19 @@
 #'                       initialProbs=list(initialProbs2, initialProbs2,
 #'                                         initialProbs1), 
 #'                       formula=~sex*cohort+sex*swiss, data=bio,
-#'                       modelNames=c("Model1", "Model2", "Model3"),
+#'                       clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
 #'                       channelNames=c("Parenthood", "Marriage", "Left home"))
 #' 
 #' # Fitting mixture of hidden Markov models
 #' mHMM <- fitMixHMM(bmHMM)
 #' 
-#' # Plotting each model (change with Enter)
+#' # Plotting each cluster (change with Enter)
 #' plot(mHMM$model)
 #' 
-#' # Choosing the model (one at a time)
+#' # Choosing the cluster (one at a time)
 #' plot(mHMM$model, ask=TRUE)
 #' 
-#' # Plotting only the first model
+#' # Plotting only the first cluster
 #' plot(mHMM$model, which.plots=1)
 
 

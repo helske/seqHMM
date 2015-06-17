@@ -296,7 +296,7 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
       }
       ll_original<- logLik(model)
       
-      for(m in 1:model$numberOfModels){
+      for(m in 1:model$numberOfClusters){
         model$initialProbs[[m]][model$initialProbs[[m]]<zerotol]<-0
         model$initialProbs[[m]]<-model$initialProbs[[m]]/sum(model$initialProbs[[m]])
         model$transitionMatrix[[m]][model$transitionMatrix[[m]]<zerotol]<-0
@@ -323,7 +323,7 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
                || any(unlist(model$emissionMatrix)<zerotol & unlist(model$emissionMatrix)>0)))
             break
           
-          for(m in 1:model$numberOfModels){
+          for(m in 1:model$numberOfClusters){
             model$initialProbs[[m]][model$initialProbs[[m]]<zerotol]<-0
             model$initialProbs[[m]]<-model$initialProbs[[m]]/sum(model$initialProbs[[m]])
             model$transitionMatrix[[m]][model$transitionMatrix[[m]]<zerotol]<-0
@@ -381,7 +381,7 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
       }
       ll_original<- logLik(model)
       
-      for(m in 1:model$numberOfModels){
+      for(m in 1:model$numberOfClusters){
         model$initialProbs[[m]][model$initialProbs[[m]]<zerotol]<-0
         model$initialProbs[[m]]<-model$initialProbs[[m]]/sum(model$initialProbs[[m]])
         model$transitionMatrix[[m]][model$transitionMatrix[[m]]<zerotol]<-0
@@ -413,7 +413,7 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
                || any(unlist(model$emissionMatrix)<zerotol & unlist(model$emissionMatrix)>0)))
             break
           
-          for(m in 1:model$numberOfModels){
+          for(m in 1:model$numberOfClusters){
             model$initialProbs[[m]][model$initialProbs[[m]]<zerotol]<-0
             model$initialProbs[[m]]<-model$initialProbs[[m]]/sum(model$initialProbs[[m]])
             model$transitionMatrix[[m]][model$transitionMatrix[[m]]<zerotol]<-0

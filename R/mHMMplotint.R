@@ -19,21 +19,21 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout="horizontal",
   divmodels <- sepMixHMM(x)
   
   if (is.null(which.plots) && !ask){
-    which.plots <- 1:x$numberOfModels
+    which.plots <- 1:x$numberOfClusters
   }
   
   if(!is.null(which.plots)){
-    if(any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$numberOfModels))){
-      stop(paste0("The which.plot argument only accepts numerical values between 1 and ", x$numberOfModels, "."))
+    if(any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$numberOfClusters))){
+      stop(paste0("The which.plot argument only accepts numerical values between 1 and ", x$numberOfClusters, "."))
     }
   }else if(!ask && is.null(which.plots)){
-    which.plots <- 1:x$numberOfModels
+    which.plots <- 1:x$numberOfClusters
   }
   
   if (ask && is.null(which.plots)) {
-    tmenu <- x$modelNames
+    tmenu <- x$clusterNames
     repeat {
-      pick <- menu(tmenu, title = "\nMake a model selection (or 0 to exit):\n")
+      pick <- menu(tmenu, title = "\nSelect graph (or 0 to exit):\n")
       if(pick==0){
         return(invisible())
       }else{
@@ -55,7 +55,7 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout="horizontal",
   }else if (ask && !is.null(which.plots)) {
     tmenu <- which.plots
     repeat {
-      pick <- menu(tmenu, title = "\nMake a model selection (or 0 to exit):\n")
+      pick <- menu(tmenu, title = "\nSelect graph (or 0 to exit):\n")
       if(pick==0){
         return(invisible())
       }else{
