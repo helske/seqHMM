@@ -14,5 +14,5 @@ ssplotM <- function(x, mpp=NULL,
   # plot.new()
   grid.newpage()
   # sspargs <- do.call(ssp,args=as.list(match.call())[-1])
-  do.call(SSPlotter,args=sspargs <- do.call(ssp,args=as.list(match.call())[-1]))
+  do.call(SSPlotter,args=do.call(ssp,args=as.list(match.call())[-1]))
 }

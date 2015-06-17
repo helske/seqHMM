@@ -44,6 +44,107 @@ Object of class \code{mixHMModel}
 \description{
 Function buildMixHMM constructs a mixture of hidden Markov models.
 }
+\examples{
+require(TraMineR)
+
+data(biofam)
+biofam <- biofam[complete.cases(biofam[c(2:4)]),]
+biofam <- biofam[1:500,]
+
+## Building one channel per type of event left, children or married
+bf <- as.matrix(biofam[, 10:25])
+children <-  bf==4 | bf==5 | bf==6
+married <- bf == 2 | bf== 3 | bf==6
+left <- bf==1 | bf==3 | bf==5 | bf==6 | bf==7
+
+children[children==TRUE] <- "Children"
+children[children==FALSE] <- "Childless"
+# Divorced parents
+div <- bf[(rowSums(bf==7)>0 & rowSums(bf==5)>0) |
+            (rowSums(bf==7)>0 & rowSums(bf==6)>0),]
+children[rownames(bf) \%in\% rownames(div) & bf==7] <- "Children"
+
+married[married==TRUE] <- "Married"
+married[married==FALSE] <- "Single"
+married[bf==7] <- "Divorced"
+
+left[left==TRUE] <- "Left home"
+left[left==FALSE] <- "With parents"
+# Divorced living with parents (before divorce)
+wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &  rowSums(bf==5)==0 &  rowSums(bf==6)==0) |
+           (rowSums(bf==7)>0 & rowSums(bf==4)>0 & rowSums(bf==3)==0 &  rowSums(bf==5)==0 &  rowSums(bf==6)==0),]
+left[rownames(bf) \%in\% rownames(wp) & bf==7] <- "With parents"
+
+## Building sequence objects
+child.seq <- seqdef(children, start=15)
+marr.seq <- seqdef(married, start=15)
+left.seq <- seqdef(left, start=15)
+
+## Starting values for emission probabilities
+
+# Cluster 1
+alphabet(child.seq) # Checking for the order of observed states
+B1_child <- matrix(c(0.99, 0.01, # High probability for childless
+                     0.99, 0.01,
+                     0.99, 0.01,
+                     0.99, 0.01,
+                     0.99, 0.01), nrow=5, ncol=2, byrow=TRUE)
+
+alphabet(marr.seq)
+B1_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
+                    0.01, 0.01, 0.98,
+                    0.01, 0.98, 0.01, # High probability for married
+                    0.01, 0.98, 0.01,
+                    0.98, 0.01, 0.01), # High probability for divorced
+                    nrow=5, ncol=3, byrow=TRUE)
+
+alphabet(left.seq)
+B1_left <- matrix(c(0.01, 0.99, # High probability for living with parents
+                    0.99, 0.01, # High probability for having left home
+                    0.99, 0.01,
+                    0.99, 0.01
+                    0.99, 0.01), nrow=5, ncol=2, byrow=TRUE)
+
+# Cluster 2
+B2_child <- matrix(c(0.99, 0.01, # High probability for childless
+                      0.5,  0.5,
+                     0.99, 0.01,
+                     0.01, 0.99,
+                     0.01, 0.99), nrow=5, ncol=2, byrow=TRUE)
+
+B2_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
+                    0.01, 0.01, 0.98,
+                    0.01, 0.98, 0.01, # High probability for married
+                    0.01, 0.98, 0.01,
+                    0.98, 0.01, 0.01), # High probability for divorced
+                    nrow=5, ncol=3, byrow=TRUE)
+
+B2_left <- matrix(c(0.01, 0.99, # High probability for living with parents
+                    0.99, 0.01,
+                    0.99, 0.01,
+                    0.99, 0.01
+                    0.99, 0.01), nrow=5, ncol=2, byrow=TRUE)
+
+# Cluster 3
+B3_child <- matrix(c(0.99, 0.01, # High probability for childless
+                     0.99, 0.01,
+                     0.99, 0.01,
+                     0.01, 0.99,
+                     0.01, 0.99), nrow=5, ncol=2, byrow=TRUE)
+
+B3_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
+                    0.01, 0.01, 0.98,
+                    0.01, 0.98, 0.01,
+                    0.01, 0.98, 0.01, # High probability for married
+                    0.98, 0.01, 0.01), # High probability for divorced
+                    nrow=5, ncol=3, byrow=TRUE)
+
+B3_left <- matrix(c(0.01, 0.99, # High probability for living with parents
+                    0.01, 0.99,
+                    0.01, 0.99,
+                    0.99, 0.01
+                    0.99, 0.01), nrow=5, ncol=2, byrow=TRUE)
+}
 \seealso{
 \code{\link{fitMixHMM}} for fitting mixture Hidden Markov models.
 }

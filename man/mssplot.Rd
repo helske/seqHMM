@@ -102,14 +102,14 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "obs",
   labels in the legend. The default value is 1. Values lesser than 1 will
   reduce the size of the font, values greater than 1 will increase the size.}
 
-\item{mpp.color}{A vector of colors assigned to hidden states. The default
-  value \code{"auto"} uses the colors assigned to the stslist object created
-  with \code{seqdef} if \code{mpp} is given; otherwise gray scale colors are
-  automatically created according to the number of hidden states.}
+\item{mpp.color}{A vector of colors assigned to hidden states (as ordered by
+  the \code{\link{mostProbablePath}} function). The default value \code{"auto"} uses
+  the colors assigned to the stslist object created with \code{seqdef} if \code{mpp}
+  is given; otherwise colors from \code{\link{colorpalette}} are automatically used.}
 
 \item{mpp.labels}{Labels for the hidden states. The default value
-  \code{"auto"} uses the names provided in \code{x$stateNames} if \code{x} is
-  an HMModel object; otherwise the number of the channel.}
+  \code{"auto"} uses the labels of the \code{mpp} argument if given; otherwise the number
+  of the hidden state.}
 
 \item{xaxis}{Controls whether an x-axis is plotted below the plot at the
   bottom. The default value is \code{TRUE}.}

@@ -87,11 +87,163 @@
 trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8, 
                   convergence.check=FALSE,...){
   
-  if(model$numberOfChannels==1){
-    if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
-           any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
-         || any(model$emissionMatrix<zerotol & model$emissionMatrix>0))){
-
+  if(inherits(model, "HMModel")){
+    
+    if(model$numberOfChannels==1){
+      if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
+             any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
+           || any(model$emissionMatrix<zerotol & model$emissionMatrix>0))){
+        
+        if(convergence.check==TRUE){
+          fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
+          if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
+            print("Convergence check: (Local) optimum was found.")
+          }else{
+            print("Convergence check: Possible problem(s) with convergence.")
+            if(fit$optimx.result$convcode!=0){
+              print(paste("convcode =", fit$optimx.result$convcode))
+            }
+            if(fit$optimx.result$kkt1!=TRUE){
+              print(paste("kkt1 =", fit$optimx.result$kkt1))
+            }
+            if(fit$optimx.result$kkt2!=TRUE){
+              print(paste("kkt2 =", fit$optimx.result$kkt2))
+            }
+            print("Type help(optimx) for more information.")
+          }
+        }
+        
+        print("Nothing to trim.")
+        if(return.loglik){
+          return(list(model=model,loglik=logLik(model)))
+        } else return(model)
+      }
+      ll_original<- logLik(model)
+      
+      model$initialProbs[model$initialProbs<zerotol]<-0
+      model$initialProbs<-model$initialProbs/sum(model$initialProbs)
+      model$transitionMatrix[model$transitionMatrix<zerotol]<-0
+      model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)
+      model$emissionMatrix[model$emissionMatrix<zerotol]<-0
+      model$emissionMatrix<-model$emissionMatrix/rowSums(model$emissionMatrix)
+      
+      
+      if(!is.finite(ll0<-logLik(model)))
+        stop("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+      
+      if(maxit>0){
+        for(ii in 1:maxit){
+          fit<-fitHMM(model,...)
+          ll<- fit$logLik
+          
+          if(ll>ll0){
+            model<-fit$model
+            ll0<-ll
+          } else break
+          
+          if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
+                 any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
+               || any(model$emissionMatrix<zerotol & model$emissionMatrix>0)))
+            break
+          
+          model$initialProbs[model$initialProbs<zerotol]<-0
+          model$initialProbs<-model$initialProbs/sum(model$initialProbs)
+          model$transitionMatrix[model$transitionMatrix<zerotol]<-0
+          model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)
+          model$emissionMatrix[model$emissionMatrix<zerotol]<-0
+          model$emissionMatrix<-model$emissionMatrix/rowSums(model$emissionMatrix)
+          
+        }
+        if(convergence.check==TRUE){
+          fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
+          if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
+            print("Convergence check: (Local) maximum was found.")
+          }else{
+            print("Convergence check: Possible problem(s) with convergence.")
+            if(fit$optimx.result$convcode!=0){
+              print(paste("convcode =", fit$optimx.result$convcode))
+            }
+            if(fit$optimx.result$kkt1!=TRUE){
+              print(paste("kkt1 =", fit$optimx.result$kkt1))
+            }
+            if(fit$optimx.result$kkt2!=TRUE){
+              print(paste("kkt2 =", fit$optimx.result$kkt2))
+            }
+            print("Type help(optimx) for more information.")
+          }
+        }
+      }
+      
+    } else {
+      if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
+             any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
+           || any(sapply(model$emissionMatrix,function(x) any(x<zerotol & x>0))))){
+        if(convergence.check==TRUE){
+          fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
+          if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
+            print("Convergence check: (Local) optimum was found.")
+          }else{
+            print("Convergence check: Possible problem(s) with convergence.")
+            if(fit$optimx.result$convcode!=0){
+              print(paste("convcode =", fit$optimx.result$convcode))
+            }
+            if(fit$optimx.result$kkt1!=TRUE){
+              print(paste("kkt1 =", fit$optimx.result$kkt1))
+            }
+            if(fit$optimx.result$kkt2!=TRUE){
+              print(paste("kkt2 =", fit$optimx.result$kkt2))
+            }
+            print("Type help(optimx) for more information.")
+          }
+        }
+        print("Nothing to trim.")
+        if(return.loglik){
+          return(list(model=model,loglik=logLik(model)))
+        } else return(model)
+      }
+      ll_original<- logLik(model)
+      
+      model$initialProbs[model$initialProbs<zerotol]<-0
+      model$initialProbs<-model$initialProbs/sum(model$initialProbs)
+      model$transitionMatrix[model$transitionMatrix<zerotol]<-0
+      model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)
+      for(i in 1:model$numberOfChannels){
+        model$emissionMatrix[[i]][model$emissionMatrix[[i]]<zerotol]<-0
+        model$emissionMatrix[[i]]<-model$emissionMatrix[[i]]/
+          rowSums(model$emissionMatrix[[i]])
+        
+      }
+      
+      
+      if(!is.finite(ll0<-logLik(model)))
+        stop("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+      
+      if(maxit>0){
+        for(ii in 1:maxit){
+          fit<-fitHMM(model,...)
+          ll<- fit$logLik
+          
+          if(ll>ll0){
+            model<-fit$model
+            ll0<-ll
+          } else break
+          
+          if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
+                 any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
+               || any(sapply(model$emissionMatrix,function(x) any(x<zerotol & x>0)))))
+            break
+          
+          model$initialProbs[model$initialProbs<zerotol]<-0
+          model$initialProbs<-model$initialProbs/sum(model$initialProbs)
+          model$transitionMatrix[model$transitionMatrix<zerotol]<-0
+          model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)
+          for(i in 1:model$numberOfChannels){
+            model$emissionMatrix[[i]][model$emissionMatrix[[i]]<zerotol]<-0
+            model$emissionMatrix[[i]]<-model$emissionMatrix[[i]]/
+              rowSums(model$emissionMatrix[[i]])          
+          }       
+        }
+      }
       if(convergence.check==TRUE){
         fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
         if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
@@ -110,156 +262,196 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
           print("Type help(optimx) for more information.")
         }
       }
-      
-      print("Nothing to trim.")
-      if(return.loglik){
-        return(list(model=model,loglik=logLik(model)))
-      } else return(model)
     }
-    ll_original<- logLik(model)
     
-    model$initialProbs[model$initialProbs<zerotol]<-0
-    model$initialProbs<-model$initialProbs/sum(model$initialProbs)
-    model$transitionMatrix[model$transitionMatrix<zerotol]<-0
-    model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)
-    model$emissionMatrix[model$emissionMatrix<zerotol]<-0
-    model$emissionMatrix<-model$emissionMatrix/rowSums(model$emissionMatrix)
-    
-    
-    if(!is.finite(ll0<-logLik(model)))
-      stop("Initial trimming resulted a non-finite log-likelihood. Try changing zerotol parameter.")
-    
-    if(maxit>0){
-      for(ii in 1:maxit){
-        fit<-fitHMM(model,...)
-        ll<- fit$logLik
+  }else if(inherits(model, "mixHMModel")){
+    if(model$numberOfChannels==1){
+      if(!(any(unlist(model$initialProbs)<zerotol & unlist(model$initialProbs)>0) || 
+             any(unlist(model$transitionMatrix)<zerotol & unlist(model$transitionMatrix)>0)
+           || any(unlist(model$emissionMatrix)<zerotol & unlist(model$emissionMatrix)>0))){
         
-        if(ll>ll0){
-          model<-fit$model
-          ll0<-ll
-        } else break
+        if(convergence.check==TRUE){
+          fit<-fitMixHMM(model, optimx.control=list(kkt=TRUE),...)
+          if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
+            print("Convergence check: (Local) optimum was found.")
+          }else{
+            print("Convergence check: Possible problem(s) with convergence.")
+            if(fit$optimx.result$convcode!=0){
+              print(paste("convcode =", fit$optimx.result$convcode))
+            }
+            if(fit$optimx.result$kkt1!=TRUE){
+              print(paste("kkt1 =", fit$optimx.result$kkt1))
+            }
+            if(fit$optimx.result$kkt2!=TRUE){
+              print(paste("kkt2 =", fit$optimx.result$kkt2))
+            }
+            print("Type help(optimx) for more information.")
+          }
+        }
         
-        if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
-               any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
-             || any(model$emissionMatrix<zerotol & model$emissionMatrix>0)))
-          break
-        
-        model$initialProbs[model$initialProbs<zerotol]<-0
-        model$initialProbs<-model$initialProbs/sum(model$initialProbs)
-        model$transitionMatrix[model$transitionMatrix<zerotol]<-0
-        model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)
-        model$emissionMatrix[model$emissionMatrix<zerotol]<-0
-        model$emissionMatrix<-model$emissionMatrix/rowSums(model$emissionMatrix)
-        
+        print("Nothing to trim.")
+        if(return.loglik){
+          return(list(model=model,loglik=logLik(model)))
+        } else return(model)
       }
-      if(convergence.check==TRUE){
-        fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
-        if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
-          print("Convergence check: (Local) maximum was found.")
-        }else{
-          print("Convergence check: Possible problem(s) with convergence.")
-          if(fit$optimx.result$convcode!=0){
-            print(paste("convcode =", fit$optimx.result$convcode))
+      ll_original<- logLik(model)
+      
+      for(m in 1:model$numberOfModels){
+        model$initialProbs[[m]][model$initialProbs[[m]]<zerotol]<-0
+        model$initialProbs[[m]]<-model$initialProbs[[m]]/sum(model$initialProbs[[m]])
+        model$transitionMatrix[[m]][model$transitionMatrix[[m]]<zerotol]<-0
+        model$transitionMatrix[[m]]<-model$transitionMatrix[[m]]/rowSums(model$transitionMatrix[[m]])
+        model$emissionMatrix[[m]][model$emissionMatrix[[m]]<zerotol]<-0
+        model$emissionMatrix[[m]]<-model$emissionMatrix[[m]]/rowSums(model$emissionMatrix[[m]])
+      }
+      
+      if(!is.finite(ll0<-logLik(model)))
+        stop("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+      
+      if(maxit>0){
+        for(ii in 1:maxit){
+          fit<-fitMixHMM(model,...)
+          ll<- fit$logLik
+          
+          if(ll>ll0){
+            model<-fit$model
+            ll0<-ll
+          } else break
+          
+          if(!(any(unlist(model$initialProbs)<zerotol & unlist(model$initialProbs)>0) || 
+                 any(unlist(model$transitionMatrix)<zerotol & unlist(model$transitionMatrix)>0)
+               || any(unlist(model$emissionMatrix)<zerotol & unlist(model$emissionMatrix)>0)))
+            break
+          
+          for(m in 1:model$numberOfModels){
+            model$initialProbs[[m]][model$initialProbs[[m]]<zerotol]<-0
+            model$initialProbs[[m]]<-model$initialProbs[[m]]/sum(model$initialProbs[[m]])
+            model$transitionMatrix[[m]][model$transitionMatrix[[m]]<zerotol]<-0
+            model$transitionMatrix[[m]]<-model$transitionMatrix[[m]]/rowSums(model$transitionMatrix[[m]])
+            model$emissionMatrix[[m]][model$emissionMatrix[[m]]<zerotol]<-0
+            model$emissionMatrix[[m]]<-model$emissionMatrix[[m]]/rowSums(model$emissionMatrix[[m]])
+          }  
+        }
+        if(convergence.check==TRUE){
+          fit<-fitMixHMM(model, optimx.control=list(kkt=TRUE),...)
+          if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
+            print("Convergence check: (Local) maximum was found.")
+          }else{
+            print("Convergence check: Possible problem(s) with convergence.")
+            if(fit$optimx.result$convcode!=0){
+              print(paste("convcode =", fit$optimx.result$convcode))
+            }
+            if(fit$optimx.result$kkt1!=TRUE){
+              print(paste("kkt1 =", fit$optimx.result$kkt1))
+            }
+            if(fit$optimx.result$kkt2!=TRUE){
+              print(paste("kkt2 =", fit$optimx.result$kkt2))
+            }
+            print("Type help(optimx) for more information.")
           }
-          if(fit$optimx.result$kkt1!=TRUE){
-            print(paste("kkt1 =", fit$optimx.result$kkt1))
-          }
-          if(fit$optimx.result$kkt2!=TRUE){
-            print(paste("kkt2 =", fit$optimx.result$kkt2))
-          }
-          print("Type help(optimx) for more information.")
         }
       }
-    }
-    
-  } else {
-    if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
-           any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
-         || any(sapply(model$emissionMatrix,function(x) any(x<zerotol & x>0))))){
-      if(convergence.check==TRUE){
-        fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
-        if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
-          print("Convergence check: (Local) optimum was found.")
-        }else{
-          print("Convergence check: Possible problem(s) with convergence.")
-          if(fit$optimx.result$convcode!=0){
-            print(paste("convcode =", fit$optimx.result$convcode))
-          }
-          if(fit$optimx.result$kkt1!=TRUE){
-            print(paste("kkt1 =", fit$optimx.result$kkt1))
-          }
-          if(fit$optimx.result$kkt2!=TRUE){
-            print(paste("kkt2 =", fit$optimx.result$kkt2))
-          }
-          print("Type help(optimx) for more information.")
-        }
-      }
-      print("Nothing to trim.")
-      if(return.loglik){
-        return(list(model=model,loglik=logLik(model)))
-      } else return(model)
-    }
-    ll_original<- logLik(model)
-    
-    model$initialProbs[model$initialProbs<zerotol]<-0
-    model$initialProbs<-model$initialProbs/sum(model$initialProbs)
-    model$transitionMatrix[model$transitionMatrix<zerotol]<-0
-    model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)
-    for(i in 1:model$numberOfChannels){
-      model$emissionMatrix[[i]][model$emissionMatrix[[i]]<zerotol]<-0
-      model$emissionMatrix[[i]]<-model$emissionMatrix[[i]]/
-        rowSums(model$emissionMatrix[[i]])
       
-    }
-    
-    if(!is.finite(ll0<-logLik(model)))
-      stop("Initial trimming resulted a non-finite log-likelihood. Try changing zerotol parameter.")
-    
-    if(maxit>0){
-      for(ii in 1:maxit){
-        fit<-fitHMM(model,...)
-        ll<- fit$logLik
-        
-        if(ll>ll0){
-          model<-fit$model
-          ll0<-ll
-        } else break
-        
-        if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
-               any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
-             || any(sapply(model$emissionMatrix,function(x) any(x<zerotol & x>0)))))
-          break
-        
-        model$initialProbs[model$initialProbs<zerotol]<-0
-        model$initialProbs<-model$initialProbs/sum(model$initialProbs)
-        model$transitionMatrix[model$transitionMatrix<zerotol]<-0
-        model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)
+    } else {
+      if(!(any(unlist(model$initialProbs)<zerotol & unlist(model$initialProbs)>0) || 
+             any(unlist(model$transitionMatrix)<zerotol & unlist(model$transitionMatrix)>0)
+           || any(unlist(model$emissionMatrix)<zerotol & unlist(model$emissionMatrix)>0))){
+        if(convergence.check==TRUE){
+          fit<-fitMixHMM(model, optimx.control=list(kkt=TRUE),...)
+          if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
+            print("Convergence check: (Local) optimum was found.")
+          }else{
+            print("Convergence check: Possible problem(s) with convergence.")
+            if(fit$optimx.result$convcode!=0){
+              print(paste("convcode =", fit$optimx.result$convcode))
+            }
+            if(fit$optimx.result$kkt1!=TRUE){
+              print(paste("kkt1 =", fit$optimx.result$kkt1))
+            }
+            if(fit$optimx.result$kkt2!=TRUE){
+              print(paste("kkt2 =", fit$optimx.result$kkt2))
+            }
+            print("Type help(optimx) for more information.")
+          }
+        }
+        print("Nothing to trim.")
+        if(return.loglik){
+          return(list(model=model,loglik=logLik(model)))
+        } else return(model)
+      }
+      ll_original<- logLik(model)
+      
+      for(m in 1:model$numberOfModels){
+        model$initialProbs[[m]][model$initialProbs[[m]]<zerotol]<-0
+        model$initialProbs[[m]]<-model$initialProbs[[m]]/sum(model$initialProbs[[m]])
+        model$transitionMatrix[[m]][model$transitionMatrix[[m]]<zerotol]<-0
+        model$transitionMatrix[[m]]<-model$transitionMatrix[[m]]/rowSums(model$transitionMatrix[[m]])
         for(i in 1:model$numberOfChannels){
-          model$emissionMatrix[[i]][model$emissionMatrix[[i]]<zerotol]<-0
-          model$emissionMatrix[[i]]<-model$emissionMatrix[[i]]/
-            rowSums(model$emissionMatrix[[i]])          
-        }       
+          model$emissionMatrix[[m]][[i]][model$emissionMatrix[[m]][[i]]<zerotol]<-0
+          model$emissionMatrix[[m]][[i]]<-model$emissionMatrix[[m]][[i]]/
+            rowSums(model$emissionMatrix[[m]][[i]])
+          
+        }
+      }
+      
+      
+      if(!is.finite(ll0<-logLik(model)))
+        stop("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+      
+      if(maxit>0){
+        for(ii in 1:maxit){
+          fit<-fitMixHMM(model,...)
+          ll<- fit$logLik
+          
+          if(ll>ll0){
+            model<-fit$model
+            ll0<-ll
+          } else break
+          
+          if(!(any(unlist(model$initialProbs)<zerotol & unlist(model$initialProbs)>0) || 
+                 any(unlist(model$transitionMatrix)<zerotol & unlist(model$transitionMatrix)>0)
+               || any(unlist(model$emissionMatrix)<zerotol & unlist(model$emissionMatrix)>0)))
+            break
+          
+          for(m in 1:model$numberOfModels){
+            model$initialProbs[[m]][model$initialProbs[[m]]<zerotol]<-0
+            model$initialProbs[[m]]<-model$initialProbs[[m]]/sum(model$initialProbs[[m]])
+            model$transitionMatrix[[m]][model$transitionMatrix[[m]]<zerotol]<-0
+            model$transitionMatrix[[m]]<-model$transitionMatrix[[m]]/rowSums(model$transitionMatrix[[m]])
+            for(i in 1:model$numberOfChannels){
+              model$emissionMatrix[[m]][[i]][model$emissionMatrix[[m]][[i]]<zerotol]<-0
+              model$emissionMatrix[[m]][[i]]<-model$emissionMatrix[[m]][[i]]/
+                rowSums(model$emissionMatrix[[m]][[i]])
+              
+            }
+          }
+          
+        }
+      }
+      if(convergence.check==TRUE){
+        fit<-fitMixHMM(model, optimx.control=list(kkt=TRUE),...)
+        if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
+          print("Convergence check: (Local) optimum was found.")
+        }else{
+          print("Convergence check: Possible problem(s) with convergence.")
+          if(fit$optimx.result$convcode!=0){
+            print(paste("convcode =", fit$optimx.result$convcode))
+          }
+          if(fit$optimx.result$kkt1!=TRUE){
+            print(paste("kkt1 =", fit$optimx.result$kkt1))
+          }
+          if(fit$optimx.result$kkt2!=TRUE){
+            print(paste("kkt2 =", fit$optimx.result$kkt2))
+          }
+          print("Type help(optimx) for more information.")
+        }
       }
     }
-    if(convergence.check==TRUE){
-      fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
-      if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
-        print("Convergence check: (Local) optimum was found.")
-      }else{
-        print("Convergence check: Possible problem(s) with convergence.")
-        if(fit$optimx.result$convcode!=0){
-          print(paste("convcode =", fit$optimx.result$convcode))
-        }
-        if(fit$optimx.result$kkt1!=TRUE){
-          print(paste("kkt1 =", fit$optimx.result$kkt1))
-        }
-        if(fit$optimx.result$kkt2!=TRUE){
-          print(paste("kkt2 =", fit$optimx.result$kkt2))
-        }
-        print("Type help(optimx) for more information.")
-      }
-    }
+  }else{
+    stop("An object of class HMModel or mixHMModel required.")
   }
+  
+  
   if(maxit>0)
     print(paste(ii,"iteration(s) used."))
   

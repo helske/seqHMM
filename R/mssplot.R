@@ -17,9 +17,9 @@
 #'   
 #' @param mpp Output from \code{\link{mostProbablePath}} function.
 #'   
-#' @param plots What to plot (one of \code{"obs"} for observations, \code{"mpp"}
-#'   for most probable paths (Viterbi paths), or \code{"both"} for observations 
-#'   and most probable paths).
+#' @param plots What to plot. One of \code{"obs"} for observations, \code{"mpp"}
+#'   for most probable paths, or \code{"both"} for observations 
+#'   and most probable paths (the default).
 #'   
 #' @param type The type of the plot. Available types are \code{"I"} for index 
 #'   plots and \code{"d"} for state distribution plots. See 
@@ -95,14 +95,14 @@
 #'   labels in the legend. The default value is 1. Values lesser than 1 will 
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #'   
-#' @param mpp.color A vector of colors assigned to hidden states. The default 
-#'   value \code{"auto"} uses the colors assigned to the stslist object created 
-#'   with \code{seqdef} if \code{mpp} is given; otherwise gray scale colors are 
-#'   automatically created according to the number of hidden states.
+#' @param mpp.color A vector of colors assigned to hidden states (as ordered by 
+#'   the \code{\link{mostProbablePath}} function). The default value \code{"auto"} uses 
+#'   the colors assigned to the stslist object created with \code{seqdef} if \code{mpp} 
+#'   is given; otherwise colors from \code{\link{colorpalette}} are automatically used. 
 #'   
 #' @param mpp.labels Labels for the hidden states. The default value 
-#'   \code{"auto"} uses the names provided in \code{x$stateNames} if \code{x} is
-#'   an HMModel object; otherwise the number of the channel.
+#'   \code{"auto"} uses the labels of the \code{mpp} argument if given; otherwise the number
+#'   of the hidden state.
 #'   
 #' @param xaxis Controls whether an x-axis is plotted below the plot at the 
 #'   bottom. The default value is \code{TRUE}.
@@ -318,7 +318,7 @@
 
 
 mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
-                    plots="obs", type="I", 
+                    plots="both", type="I", 
                     sortv=NULL, sort.channel=1, dist.method="OM",
                     with.missing=FALSE,
                     title=NA, title.n=TRUE, cex.title=1, title.pos=1,
@@ -372,6 +372,29 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     mpp <- suppressWarnings(suppressMessages(mostProbablePath(x)))
   }
   
+  if(!("mpp.labels" %in% names(args))){
+    mpp.labels <- NULL
+    for(i in 1:x$numberOfModels){
+      mpp.labels <- c(mpp.labels, paste("State", 1:x$numberOfStates[i]))
+    }
+  }
+  mpplabs <- list()
+  k <- 0
+  for(i in 1:x$numberOfModels){
+    mpplabs[[i]] <- mpp.labels[(k+1):(k+x$numberOfStates[i])]
+    k <- k+x$numberOfStates[i]
+  }
+  
+  if(!("mpp.color" %in% names(args))){
+    mpp.color <- colorpalette[[length(alphabet(mpp$mpp))]]
+  }
+  mppcols <- list()
+  k <- 0
+  for(i in 1:x$numberOfModels){
+    mppcols[[i]] <- mpp.color[(k+1):(k+x$numberOfStates[i])]
+    k <- k+x$numberOfStates[i]
+  }
+  
   mppm <- unique(mpp$model)
   mm <- NULL
   if(length(mppm)<x$numberOfModels){
@@ -405,7 +428,11 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
         return(invisible())
       }else{
         args$x <- lapply(allobs, function(y) y[mpp$model==x$modelNames[[tmenu[pick]]],])
-        args$mpp <- mpp$mpp[mpp$model==x$modelNames[[tmenu[pick]]],]
+        args$mpp.labels <- mpplabs[[pick]]
+        args$mpp <- suppressWarnings(suppressMessages(
+          seqdef(mpp$mpp[mpp$model==x$modelNames[[tmenu[pick]]],], 
+                 labels=args$mpp.labels)))
+        args$mpp.color <- mppcols[[pick]]
         args$title <- titles[tmenu[pick]]
         do.call(ssplotM,args=args)
       }
@@ -420,7 +447,11 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
         return(invisible())
       }else{
         args$x <- lapply(allobs, function(y) y[mpp$model==x$modelNames[[tmenu[pick]]],])
-        args$mpp <- mpp$mpp[mpp$model==x$modelNames[[tmenu[pick]]],]
+        args$mpp.labels <- mpplabs[[pick]]
+        args$mpp <- suppressWarnings(suppressMessages(
+          seqdef(mpp$mpp[mpp$model==x$modelNames[[tmenu[pick]]],], 
+                 labels=args$mpp.labels)))
+        args$mpp.color <- mppcols[[pick]]
         args$title <- titles[tmenu[pick]]
         do.call(ssplotM,args=args)
       }
@@ -430,7 +461,10 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     plot.new()
     for (i in which.plots) {
       args$x <- lapply(allobs, function(y) y[mpp$model==x$modelNames[[i]],])
-      args$mpp <- mpp$mpp[mpp$model==x$modelNames[[i]],]
+      args$mpp.labels <- mpplabs[[i]]
+      args$mpp <- suppressWarnings(suppressMessages(
+        seqdef(mpp$mpp[mpp$model==x$modelNames[[i]],], labels=args$mpp.labels)))
+      args$mpp.color <- mppcols[[i]]
       args$title <- titles[i]
       do.call(ssplotM,args=args)
       if (ask) {

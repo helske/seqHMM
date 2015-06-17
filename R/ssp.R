@@ -16,9 +16,9 @@
 #' @param mpp Output from \code{\link{mostProbablePath}} function. Optional, if 
 #'   \code{x} is a HMModel object or if \code{type=="obs"}.
 #'   
-#' @param plots What to plot (one of \code{"obs"} for observations, \code{"mpp"}
-#'   for most probable paths (Viterbi paths), or \code{"both"} for observations 
-#'   and most probable paths).
+#' @param plots What to plot. One of \code{"obs"} for observations (the default), 
+#'   \code{"mpp"} for most probable paths, or \code{"both"} for observations 
+#'   and most probable paths.
 #'   
 #' @param type The type of the plot. Available types are \code{"I"} for index 
 #'   plots and \code{"d"} for state distribution plots. See 
@@ -96,12 +96,12 @@
 #'   
 #' @param mpp.color A vector of colors assigned to hidden states. The default 
 #'   value \code{"auto"} uses the colors assigned to the stslist object created 
-#'   with \code{seqdef} if \code{mpp} is given; otherwise gray scale colors are 
-#'   automatically created according to the number of hidden states.
+#'   with \code{seqdef} if \code{mpp} is given; otherwise otherwise colors from 
+#'   \code{\link{colorpalette}} are automatically used. 
 #'   
 #' @param mpp.labels Labels for the hidden states. The default value 
 #'   \code{"auto"} uses the names provided in \code{x$stateNames} if \code{x} is
-#'   an HMModel object; otherwise the number of the channel.
+#'   an HMModel object; otherwise the number of the hidden state.
 #'   
 #' @param xaxis Controls whether an x-axis is plotted below the plot at the 
 #'   bottom. The default value is \code{TRUE}.
@@ -565,23 +565,27 @@ ssp <- function(x, mpp=NULL,
       }
     }
     if(nchannels>1){
-      mpp.seq <- suppressMessages(seqdef(mpp, 
+      mpp.seq <- suppressWarnings(suppressMessages(seqdef(mpp, 
                                          missing.color=attr(obs[[1]],"missing.color"),
                                          labels=mpp.labels,
                                          start=attr(obs[[1]],"start"),
-                                         xtstep=attr(obs[[1]],"xtstep")))
+                                         xtstep=attr(obs[[1]],"xtstep"))))
     }else{
-      mpp.seq <- suppressMessages(seqdef(mpp, 
+      mpp.seq <- suppressWarnings(suppressMessages(seqdef(mpp, 
                                          missing.color=attr(obs,"missing.color"),
                                          labels=mpp.labels,
                                          start=attr(obs,"start"),
-                                         xtstep=attr(obs,"xtstep")))
+                                         xtstep=attr(obs,"xtstep"))))
     }
     # Color palette for mpp
     if(length(mpp.color)==1 && mpp.color=="auto" && length(mpp)>1){
-      attr(mpp.seq, "cpal") <- attr(mpp, "cpal")
+      if(is.null(attr(mpp, "cpal"))){
+        attr(mpp.seq, "cpal") <- colorpalette[[length(alphabet(mpp.seq))]]
+      }else{
+        attr(mpp.seq, "cpal") <- attr(mpp, "cpal")
+      }
     }else if(!is.null(mpp.labels) && length(mpp.labels)==1 && mpp.color=="auto" && length(mpp)==1 && is.null(mpp)){
-      attr(mpp.seq, "cpal") <- gray.colors(length(alphabet(mpp.seq)))
+      attr(mpp.seq, "cpal") <- colorpalette[[length(alphabet(mpp.seq))]]
     }else if(all(areColors(mpp.color))){
       if(length(mpp.color)!=length(alphabet(mpp.seq))){
         warning(paste0("Number of colors assigned to mpp.color does not match the number of hidden states. \n

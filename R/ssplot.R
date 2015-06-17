@@ -15,9 +15,9 @@
 #' @param mpp Output from \code{\link{mostProbablePath}} function. Optional, if 
 #'   \code{x} is a HMModel object or if \code{type=="obs"}.
 #'   
-#' @param plots What to plot (one of \code{"obs"} for observations, \code{"mpp"}
-#'   for most probable paths (Viterbi paths), or \code{"both"} for observations 
-#'   and most probable paths).
+#' @param plots What to plot. One of \code{"obs"} for observations (the default), 
+#'   \code{"mpp"} for most probable paths, or \code{"both"} for observations 
+#'   and most probable paths.
 #'   
 #' @param type The type of the plot. Available types are \code{"I"} for index 
 #'   plots and \code{"d"} for state distribution plots. See 
