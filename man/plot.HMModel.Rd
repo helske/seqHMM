@@ -74,8 +74,7 @@ widths according to the transition probabilities between the hidden states.
 Other possibilities are a single value or a numerical vector giving the
 widths.}
 
-\item{cex.edge.width}{An expansion factor for the edge widths to thicken
-edges of models with small transition probabilities. Defaults to 1.}
+\item{cex.edge.width}{An expansion factor for the edge widths. Defaults to 1.}
 
 \item{edge.arrow.size}{The size of the arrows in edges (constant). Defaults to 1.5.}
 

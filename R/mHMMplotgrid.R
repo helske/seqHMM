@@ -60,7 +60,7 @@ mHMMplotgrid <- function(x, rows=NA, cols=NA, byrow=FALSE,
       ncol.legend <- rep(1, x$numberOfClusters)
     }else if(length(ncol.legend)==1 && x$numberOfClusters>1){
       ncol.legend <- rep(ncol.legend, x$numberOfClusters)
-    }else if(length(ncol.legend)<x$numberOfClusters{
+    }else if(length(ncol.legend)<x$numberOfClusters){
       warning(paste0("The length of ncol.legend does not match the number of clusters. The last were arranged in 1 column."))
       ncol.legend <- c(ncol.legend, rep(1,(x$numberOfClusters-length(ncol.legend))))
     }else if(length(ncol.legend)>x$numberOfClusters){

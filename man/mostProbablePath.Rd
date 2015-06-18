@@ -8,7 +8,7 @@ Sequence.}
 mostProbablePath(model)
 }
 \arguments{
-\item{model}{Hidden Markov model of class \code{HMModel} or \code{MCHMModel}.}
+\item{model}{Hidden Markov model of class \code{HMModel} or \code{mixHMModel}.}
 }
 \value{
 List which contains the most probable paths of hidden states (mpp) given the

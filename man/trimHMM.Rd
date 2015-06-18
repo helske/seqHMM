@@ -8,7 +8,8 @@ trimHMM(model, maxit = 0, return.loglik = FALSE, zerotol = 1e-08,
   convergence.check = FALSE, ...)
 }
 \arguments{
-\item{model}{Model of class \code{HMModel} for which trimming is performed.}
+\item{model}{Model of class \code{HMModel} or \code{mixHMModel} for which
+trimming is performed.}
 
 \item{maxit}{Number of iterations. After zeroing small values, model is
 refitted, and this is repeated until there is nothing to trim or maxit

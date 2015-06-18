@@ -5,7 +5,7 @@
 \title{Build a Mixture Hidden Markov Model}
 \usage{
 buildMixHMM(observations, transitionMatrix, emissionMatrix, initialProbs,
-  formula, data, beta, modelNames = NULL, stateNames = NULL,
+  formula, data, beta, clusterNames = NULL, stateNames = NULL,
   channelNames = NULL)
 }
 \arguments{
@@ -13,26 +13,30 @@ buildMixHMM(observations, transitionMatrix, emissionMatrix, initialProbs,
 the sequences, or a list of such objects (one for each channel).}
 
 \item{transitionMatrix}{A list of matrices of transition
-probabilities for each model.}
+probabilities for submodels of each cluster.}
 
 \item{emissionMatrix}{A list which contains matrices of emission probabilities or
-a list of such objects (one for each channel) for each model. Note that the
-matrices must have dimensions m x s where m is the number of hidden states
-and s is the number of unique symbols (observed states) in the data.}
+a list of such objects (one for each channel) for submodels of each cluster.
+Note that the matrices must have dimensions m x s where m is the number of
+hidden states and s is the number of unique symbols (observed states) in the
+data.}
 
 \item{initialProbs}{A list which contains vectors of initial state
-probabilities for each model.}
+probabilities for submodels of each cluster.}
 
-\item{formula}{Covariates as an object of class \code{\link{formula}}, left side omitted.}
+\item{formula}{Covariates as an object of class \code{\link{formula}},
+left side omitted.}
 
-\item{data}{An optional data frame, list or environment containing the variables in the model. If not found in data, the variables are taken from \code{environment(formula)}.}
+\item{data}{An optional data frame, list or environment containing the variables
+in the model. If not found in data, the variables are taken from
+\code{environment(formula)}.}
 
 \item{beta}{An optional k x l matrix of regression coefficients for time-constant
 covariates for mixture probabilities, where l is the number of models and k
 is the number of covariates. A logit-link is used for mixture probabilities.
 The first column is set to zero.}
 
-\item{modelNames}{A vector of optional names for the models.}
+\item{clusterNames}{A vector of optional names for the clusters.}
 
 \item{stateNames}{A list of optional labels for the hidden states.}
 
@@ -87,63 +91,90 @@ alphabet(child.seq) # Checking for the order of observed states
 B1_child <- matrix(c(0.99, 0.01, # High probability for childless
                      0.99, 0.01,
                      0.99, 0.01,
-                     0.99, 0.01,
-                     0.99, 0.01), nrow=5, ncol=2, byrow=TRUE)
+                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
 
 alphabet(marr.seq)
 B1_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
                     0.01, 0.01, 0.98,
                     0.01, 0.98, 0.01, # High probability for married
-                    0.01, 0.98, 0.01,
                     0.98, 0.01, 0.01), # High probability for divorced
-                    nrow=5, ncol=3, byrow=TRUE)
+                    nrow=4, ncol=3, byrow=TRUE)
 
 alphabet(left.seq)
 B1_left <- matrix(c(0.01, 0.99, # High probability for living with parents
                     0.99, 0.01, # High probability for having left home
-                    0.99, 0.01,
                     0.99, 0.01
-                    0.99, 0.01), nrow=5, ncol=2, byrow=TRUE)
-
-# Cluster 2
-B2_child <- matrix(c(0.99, 0.01, # High probability for childless
-                      0.5,  0.5,
-                     0.99, 0.01,
-                     0.01, 0.99,
-                     0.01, 0.99), nrow=5, ncol=2, byrow=TRUE)
+                    0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
 
 B2_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
-                    0.01, 0.01, 0.98,
-                    0.01, 0.98, 0.01, # High probability for married
-                    0.01, 0.98, 0.01,
-                    0.98, 0.01, 0.01), # High probability for divorced
-                    nrow=5, ncol=3, byrow=TRUE)
+                     0.01, 0.01, 0.98,
+                     0.01, 0.98, 0.01, # High probability for married
+                     0.29, 0.7, 0.01),
+                   nrow=4, ncol=3, byrow=TRUE)
 
 B2_left <- matrix(c(0.01, 0.99, # High probability for living with parents
-                    0.99, 0.01,
-                    0.99, 0.01,
-                    0.99, 0.01
-                    0.99, 0.01), nrow=5, ncol=2, byrow=TRUE)
+                     0.99, 0.01,
+                     0.99, 0.01,
+                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
 
-# Cluster 3
+# Sinkkuvanhemmat ja kotona asuvat yhdessä
 B3_child <- matrix(c(0.99, 0.01, # High probability for childless
-                     0.99, 0.01,
-                     0.99, 0.01,
-                     0.01, 0.99,
-                     0.01, 0.99), nrow=5, ncol=2, byrow=TRUE)
+                      0.99, 0.01,
+                      0.01, 0.99,
+                      0.99, 0.01,
+                      0.01, 0.99,
+                      0.01, 0.99), nrow=6, ncol=2, byrow=TRUE)
 
 B3_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
-                    0.01, 0.01, 0.98,
-                    0.01, 0.98, 0.01,
-                    0.01, 0.98, 0.01, # High probability for married
-                    0.98, 0.01, 0.01), # High probability for divorced
-                    nrow=5, ncol=3, byrow=TRUE)
+                     0.01, 0.01, 0.98,
+                     0.01, 0.01, 0.98,
+                     0.01, 0.98, 0.01,
+                     0.01, 0.98, 0.01, # High probability for married
+                     0.98, 0.01, 0.01), # High probability for divorced
+                   nrow=6, ncol=3, byrow=TRUE)
 
 B3_left <- matrix(c(0.01, 0.99, # High probability for living with parents
-                    0.01, 0.99,
-                    0.01, 0.99,
-                    0.99, 0.01
-                    0.99, 0.01), nrow=5, ncol=2, byrow=TRUE)
+                     0.99, 0.01,
+                     0.50, 0.50,
+                     0.01, 0.99,
+                     0.99, 0.01,
+                     0.99, 0.01), nrow=6, ncol=2, byrow=TRUE)
+
+# Initial values for transition matrices
+A1 <- matrix(c(0.8,   0.16, 0.03, 0.01,
+               0,    0.9, 0.07, 0.03,
+               0,      0,  0.9,  0.1,
+               0,      0,    0,    1),
+             nrow=4, ncol=4, byrow=TRUE)
+
+A2 <- matrix(c(0.8, 0.10, 0.05,  0.03, 0.01, 0.01,
+               0,    0.7,  0.1,   0.1, 0.05, 0.05,
+               0,      0,  0.85, 0.01,  0.1, 0.04,
+               0,      0,    0,   0.9, 0.05, 0.05,
+               0,      0,    0,     0,  0.9,  0.1,
+               0,      0,    0,     0,    0,    1),
+             nrow=6, ncol=6, byrow=TRUE)
+
+# Initial values for initial state probabilities
+initialProbs1 <- c(0.9, 0.07, 0.02, 0.01)
+initialProbs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
+
+# Creating covariate swiss
+bio$swiss <- bio$nat_1_02=="Switzerland"
+bio$swiss[bio$swiss==TRUE] <- "Swiss"
+bio$swiss[bio$swiss==FALSE] <- "Other"
+
+# Build mixture HMM
+bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq),
+                       transitionMatrix=list(A1,A2,A1),
+                       emissionMatrix=list(list(B1_child, B1_marr, B1_left),
+                                           list(B2_child, B2_marr, B2_left),
+                                           list(B3_child, B3_marr, B3_left)),
+                       initialProbs=list(initialProbs1, initialProbs2,
+                                         initialProbs1),
+                       formula=~sex*birthyr+sex*swiss, data=bio,
+                       clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
+                       channelNames=c("Parenthood", "Marriage", "Left home"))
 }
 \seealso{
 \code{\link{fitMixHMM}} for fitting mixture Hidden Markov models.
