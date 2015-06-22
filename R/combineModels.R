@@ -36,7 +36,7 @@ combineModels <- function(model){
                 numberOfStates=numberOfStates,
                 numberOfChannels=model$numberOfChannels,
                 numberOfCovariates=model$numberOfCovariates,
-                numberOfClusters=model$numberOfMClusters,
+                numberOfClusters=model$numberOfClusters,
                 numberOfStatesInClusters=numberOfStatesInClusters,
                 originalStateNames = originalStateNames)
   class(model)<-"combined_mixHMModel"
