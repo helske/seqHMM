@@ -23,7 +23,7 @@
 #' in the model. If not found in data, the variables are taken from 
 #' \code{environment(formula)}.
 #' @param beta An optional k x l matrix of regression coefficients for time-constant 
-#'   covariates for mixture probabilities, where l is the number of models and k
+#'   covariates for mixture probabilities, where l is the number of clusters and k
 #'   is the number of covariates. A logit-link is used for mixture probabilities.
 #'   The first column is set to zero.
 #' @param clusterNames A vector of optional names for the clusters.
@@ -165,7 +165,7 @@ buildMixHMM <-
            formula, data, beta, clusterNames=NULL, stateNames=NULL, channelNames=NULL){
     
     numberOfClusters<-length(transitionMatrix)
-    if(length(emissionMatrix)!=numberOfModels || length(initialProbs)!=numberOfModels)
+    if(length(emissionMatrix)!=numberOfClusters || length(initialProbs)!=numberOfClusters)
       stop("Unequal lengths of transitionMatrix, emissionMatrix and initialProbs.")
     
     if(is.null(clusterNames)){

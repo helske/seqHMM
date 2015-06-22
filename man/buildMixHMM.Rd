@@ -32,7 +32,7 @@ in the model. If not found in data, the variables are taken from
 \code{environment(formula)}.}
 
 \item{beta}{An optional k x l matrix of regression coefficients for time-constant
-covariates for mixture probabilities, where l is the number of models and k
+covariates for mixture probabilities, where l is the number of clusters and k
 is the number of covariates. A logit-link is used for mixture probabilities.
 The first column is set to zero.}
 
