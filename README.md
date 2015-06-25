@@ -1,7 +1,7 @@
 seqHMM: Hidden Markov Models for Life Sequences and Other Multivariate, Multichannel Categorical Time Series
 ====================================================================================================
 
-The seqHMM package is designed for the inference of hidden Markov models where both the hidden state space and the symbol space of observations are discrete and the observations consist of multiple sequences possibly with multiple channels (such as life calendar data with multiple life domains). Maximum likelihood estimation via EM algorithm and direct numerical maximization with analytical gradients is supported. All main algorithms are written in C++.
+The seqHMM package is designed for the inference of hidden Markov models where both the hidden state space and the symbol space of observations are discrete and the observations consist of multiple sequences possibly with multiple channels (such as life history data with multiple life domains). Maximum likelihood estimation via EM algorithm and direct numerical maximization with analytical gradients is supported. All main algorithms are written in C++.
 
 Package is still under development and should be available at CRAN in 2015.
 
@@ -20,7 +20,17 @@ Preview of the `seqHMM` package
 
 This example uses the `biofam` data from the `TraMineR` package. The data consist of a sample of 2000 individuals born between 1909 and 1972 constructed from the Swiss Household Panel (SHP) survey in 2002. The sequences consist of family life states from age 15 to 30 (in columns 10 to 25).
 
-For the functions of the `seqHMM` package, sequence data is given as a state sequence object using the `seqdef` function in the `TraMineR` package. To show a more complex example, the original data is split into three separate channels.
+
+0 = "parents"
+1 = "left"
+2 = "married"
+3 = "left+marr"
+4 = "child"
+5 = "left+child"
+6 = "left+marr+child"
+7 = "divorced"
+
+For the functions of the `seqHMM` package, sequence data is given as a state sequence object (`stslist`) using the `seqdef` function in the `TraMineR` package. To show a more complex example, the original data is split into three separate channels. For the divorced state there is no information on children or residence, so these are assessed using the preceding states.
 
 ```
 library(seqHMM)
@@ -28,43 +38,58 @@ library(TraMineR)
 
 data(biofam)
 
-# Only the first 500 individuals
-biofam <- biofam[1:500,]
+
+# Complete cases in sex, birthyear, and first nationality
+bio <- biofam[complete.cases(biofam[c(2:4)]),]
 
 ## Sequence data for the first six individuals
-head(biofam[10:25])
+head(bio[10:25])
 
-## Building one channel per type of event (left, children or married)
-bf <- as.matrix(biofam[, 10:25]) 
-children <-  bf==4 | bf==5 | bf==6 
+## Building one channel per type of event (married, children, or left)
+bf <- as.matrix(bio[, 10:25]) 
 married <- bf == 2 | bf== 3 | bf==6 
+children <-  bf==4 | bf==5 | bf==6
 left <- bf==1 | bf==3 | bf==5 | bf==6 | bf==7
 
-## Labels
-children[children==TRUE] <- "Children" 
-children[children==FALSE] <- "Childless"
+## Giving labels, modifying sequences
 
+# Marriage
 married[married==TRUE] <- "Married" 
 married[married==FALSE] <- "Single"
+married[bf==7] <- "Divorced"
 
+# Parenthood
+children[children==TRUE] <- "Children" 
+children[children==FALSE] <- "Childless"
+# Divorced parents
+div <- bf[(rowSums(bf==7)>0 & rowSums(bf==5)>0) | 
+          (rowSums(bf==7)>0 & rowSums(bf==6)>0),]
+children[rownames(bf) %in% rownames(div) & bf==7] <- "Children"
+
+# Residence
 left[left==TRUE] <- "Left home" 
 left[left==FALSE] <- "With parents"
+# Divorced living with parents (before divorce)
+wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &  rowSums(bf==5)==0 &  rowSums(bf==6)==0) | 
+            (rowSums(bf==7)>0 & rowSums(bf==4)>0 & rowSums(bf==3)==0 &  rowSums(bf==5)==0 &  rowSums(bf==6)==0),]
+left[rownames(bf) %in% rownames(wp) & bf==7] <- "With parents"
 
 ## Building sequence objects (starting at age 15)
-child.seq <- seqdef(children, start=15) 
-marr.seq <- seqdef(married, start=15) 
-left.seq <- seqdef(left, start=15)
+marr.seq <- seqdef(married, start=15, alphabet=c("Single", "Married", 
+                                                 "Divorced")) 
+child.seq <- seqdef(children, start=15, alphabet=c("Childless", "Children")) 
+left.seq <- seqdef(left, start=15, alphabet=c("With parents", "Left home"))
 
-## Choosing colours for the states
+## Choosing colours for states
+attr(marr.seq, "cpal") <- c("#E7298A", "#E6AB02", "#AB82FF")
 attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
-attr(marr.seq, "cpal") <- c("#E7298A", "#E6AB02")
 attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 ```
 Multichannel sequence data are easily plotted using the `ssplot` function (ssplot for Stacked Sequence Plot).
 
 ```
 ## Plotting state distribution plots of observations
-ssplot(list(child.seq, marr.seq, left.seq), type="d", plots="obs", 
+ssplot(list(marr.seq, child.seq, left.seq), type="d", plots="obs", 
        title="State distribution plots")
 ```                  
 ![ssp1](https://github.com/helske/seqHMM/blob/master/Examples/ssp1.png)
@@ -74,36 +99,36 @@ Multiple `ssp` objects can also be plotted together in a grid.
 ```
 ## Preparing plots for state distributios and index plots of observations for women
 #  Sorting by scores from multidimensional scaling
-ssp_f2 <- ssp(list(child.seq[biofam$sex=="woman",],
-                           marr.seq[biofam$sex=="woman",], 
-                           left.seq[biofam$sex=="woman",]),
-                      type="d", plots="obs", border=NA,
-                      title="State distributions for women", title.n=FALSE,
-                      ylab=c("Children", "Married", "Left home"), 
-                      withlegend=FALSE, ylab.pos=c(1,2,1))
-ssp_f3 <- ssp(list(child.seq[biofam$sex=="woman",],
-                           marr.seq[biofam$sex=="woman",], 
-                           left.seq[biofam$sex=="woman",]),
-                      type="I", sortv="mds.obs", plots="obs", 
-                      title="Sequences for women",
-                      ylab=c("Children", "Married", "Left home"), withlegend=FALSE,
-                      ylab.pos=c(1.5,2.5,1.5))
+ssp_f2 <- ssp(list(marr.seq[biofam$sex=="woman",],
+                   child.seq[biofam$sex=="woman",],
+                   left.seq[biofam$sex=="woman",]),
+              type="d", plots="obs", border=NA,
+              title="State distributions for women", title.n=FALSE,
+              ylab=c("Married", "Children", "Left home"), 
+              withlegend=FALSE, ylab.pos=c(1,2,1))
+ssp_f3 <- ssp(list(marr.seq[biofam$sex=="woman",], 
+                   child.seq[biofam$sex=="woman",],
+                   left.seq[biofam$sex=="woman",]),
+              type="I", sortv="mds.obs", plots="obs", 
+              title="Sequences for women",
+              ylab=c("Married", "Children", "Left home"), 
+              withlegend=FALSE, ylab.pos=c(1.5,2.5,1.5))
 
 ## Preparing plots for state distributios and index plots of observations for men
-ssp_m2 <- ssp(list(child.seq[biofam$sex=="man",], 
-                           marr.seq[biofam$sex=="man",], 
-                           left.seq[biofam$sex=="man",]), 
-                      type="d", plots="obs", border=NA,
-                      title="State distributions for men", title.n=FALSE,
-                      ylab=c("Children", "Married", "Left home"), 
-                      withlegend=FALSE, ylab.pos=c(1,2,1))
-ssp_m3 <- ssp(list(child.seq[biofam$sex=="man",],
-                           marr.seq[biofam$sex=="man",], 
-                           left.seq[biofam$sex=="man",]),
-                      type="I", sortv="mds.obs", plots="obs", 
-                      title="Sequences for men",
-                      ylab=c("Children", "Married", "Left home"), withlegend=FALSE,
-                      ylab.pos=c(1.5,2.5,1.5))
+ssp_m2 <- ssp(list(marr.seq[biofam$sex=="man",], 
+                   child.seq[biofam$sex=="man",], 
+                   left.seq[biofam$sex=="man",]),
+              type="d", plots="obs", border=NA,
+              title="State distributions for men", title.n=FALSE,
+              ylab=c("Married", "Children", "Left home"), 
+              withlegend=FALSE, ylab.pos=c(1,2,1))
+ssp_m3 <- ssp(list(marr.seq[biofam$sex=="man",], 
+                   child.seq[biofam$sex=="man",],
+                   left.seq[biofam$sex=="man",]),
+              type="I", sortv="mds.obs", plots="obs", 
+              title="Sequences for men",
+              ylab=c("Married", "Children", "Left home"), 
+              withlegend=FALSE, ylab.pos=c(1.5,2.5,1.5))
 
 ## Plotting state distributions and index plots of observations for women and men 
 ## in two columns 
@@ -154,10 +179,12 @@ bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq),
                  initialProbs=initialProbs)
 
 ## Fitting the HMM 
+HMM <- fitHMM(bHMM)
+# or equivalently
 HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8), 
               itnmax=10000, method="BFGS")
 ```
-A simple `plot` method is used to show an `HMModel` object as a graph. It shows hidden states as pie charts, with emission probabilities as sectors and transition probabilities as arrows. Initial probabilities are shown below the pies.
+A simple `plot` method is used to show an `HMModel` object as a graph. It shows hidden states as pie charts (vertices), with emission probabilities as slices and transition probabilities as arrows (edges). Initial probabilities are shown below the pies.
 
 ```
 ## Plot HMM
@@ -184,7 +211,8 @@ The `ssplot` function can also be used for plotting the observed states and the 
 
 ```
 ## Plotting observations and hidden states
-ssplot(HMM$model)
+ssplot(HMM$model, plots="both", sortv="mds.mpp", 
+       xtlab=15:30, xlab="Age", title="Observed and hidden state sequences")
 ```
 ![sspboth_default](https://github.com/helske/seqHMM/blob/master/Examples/sspboth_default.png)
 ```
