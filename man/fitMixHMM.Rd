@@ -92,56 +92,62 @@ B1_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
 alphabet(left.seq)
 B1_left <- matrix(c(0.01, 0.99, # High probability for living with parents
                     0.99, 0.01, # High probability for having left home
-                    0.99, 0.01
+                    0.99, 0.01,
                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
 
+# Cluster 2
+B2_child <- matrix(c(0.99, 0.01, # High probability for childless
+                     0.99, 0.01,
+                     0.99, 0.01,
+                     0.01, 0.99), nrow=4, ncol=2, byrow=TRUE)
+
 B2_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
-                     0.01, 0.01, 0.98,
-                     0.01, 0.98, 0.01, # High probability for married
-                     0.29, 0.7, 0.01),
+                    0.01, 0.01, 0.98,
+                    0.01, 0.98, 0.01, # High probability for married
+                    0.29, 0.7, 0.01),
                    nrow=4, ncol=3, byrow=TRUE)
 
 B2_left <- matrix(c(0.01, 0.99, # High probability for living with parents
-                     0.99, 0.01,
-                     0.99, 0.01,
-                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
+                    0.99, 0.01,
+                    0.99, 0.01,
+                    0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
 
 # Sinkkuvanhemmat ja kotona asuvat yhdessä
 B3_child <- matrix(c(0.99, 0.01, # High probability for childless
-                      0.99, 0.01,
-                      0.01, 0.99,
-                      0.99, 0.01,
-                      0.01, 0.99,
-                      0.01, 0.99), nrow=6, ncol=2, byrow=TRUE)
+                     0.99, 0.01,
+                     0.01, 0.99,
+                     0.99, 0.01,
+                     0.01, 0.99,
+                     0.01, 0.99), nrow=6, ncol=2, byrow=TRUE)
 
 B3_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
-                     0.01, 0.01, 0.98,
-                     0.01, 0.01, 0.98,
-                     0.01, 0.98, 0.01,
-                     0.01, 0.98, 0.01, # High probability for married
-                     0.98, 0.01, 0.01), # High probability for divorced
+                    0.01, 0.01, 0.98,
+                    0.01, 0.01, 0.98,
+                    0.01, 0.98, 0.01,
+                    0.01, 0.98, 0.01, # High probability for married
+                    0.98, 0.01, 0.01), # High probability for divorced
                    nrow=6, ncol=3, byrow=TRUE)
 
 B3_left <- matrix(c(0.01, 0.99, # High probability for living with parents
-                     0.99, 0.01,
-                     0.50, 0.50,
-                     0.01, 0.99,
-                     0.99, 0.01,
-                     0.99, 0.01), nrow=6, ncol=2, byrow=TRUE)
+                    0.99, 0.01,
+                    0.50, 0.50,
+                    0.01, 0.99,
+                    0.99, 0.01,
+                    0.99, 0.01), nrow=6, ncol=2, byrow=TRUE)
 
 # Initial values for transition matrices
 A1 <- matrix(c(0.8,   0.16, 0.03, 0.01,
-               0,    0.9, 0.07, 0.03,
-               0,      0,  0.9,  0.1,
-               0,      0,    0,    1),
+                 0,    0.9, 0.07, 0.03,
+                 0,      0,  0.9,  0.1,
+                 0,      0,    0,    1),
              nrow=4, ncol=4, byrow=TRUE)
 
 A2 <- matrix(c(0.8, 0.10, 0.05,  0.03, 0.01, 0.01,
-               0,    0.7,  0.1,   0.1, 0.05, 0.05,
-               0,      0,  0.85, 0.01,  0.1, 0.04,
-               0,      0,    0,   0.9, 0.05, 0.05,
-               0,      0,    0,     0,  0.9,  0.1,
-               0,      0,    0,     0,    0,    1),
+                 0,  0.7,  0.1,   0.1, 0.05, 0.05,
+                 0,    0, 0.85,  0.01,  0.1, 0.04,
+                 0,    0,    0,   0.9, 0.05, 0.05,
+                 0,    0,    0,     0,  0.9,  0.1,
+                 0,    0,    0,     0,    0,    1),
              nrow=6, ncol=6, byrow=TRUE)
 
 # Initial values for initial state probabilities
@@ -155,12 +161,12 @@ bio$swiss[bio$swiss==FALSE] <- "Other"
 
 # Build mixture HMM
 bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq),
-                       transitionMatrix=list(A1,A2,A1),
+                       transitionMatrix=list(A1,A1,A2),
                        emissionMatrix=list(list(B1_child, B1_marr, B1_left),
                                            list(B2_child, B2_marr, B2_left),
                                            list(B3_child, B3_marr, B3_left)),
-                       initialProbs=list(initialProbs1, initialProbs2,
-                                         initialProbs1),
+                       initialProbs=list(initialProbs1, initialProbs1,
+                                         initialProbs2),
                        formula=~sex*birthyr+sex*swiss, data=bio,
                        clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
                        channelNames=c("Parenthood", "Marriage", "Left home"))

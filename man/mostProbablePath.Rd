@@ -8,13 +8,14 @@ Sequence.}
 mostProbablePath(model)
 }
 \arguments{
-\item{model}{Hidden Markov model of class \code{HMModel} or \code{mixHMModel}.}
+\item{model}{Hidden Markov model of class \code{HMModel} or
+ mixture HMM of class \code{mixHMModel}.}
 }
 \value{
-List which contains the most probable paths of hidden states (mpp) given the
-  observations and its log-probability (logP). In a case of multiple
-  subjects, the most probable path is computed independently for each
-  subject.
+List which contains the most probable paths of hidden states (mpp)
+  given the observations, its log-probability (logP), and for mixture HMMs
+  also the most probable clusters. In a case of multiple subjects, the most
+  probable path is computed independently for each subject.
 }
 \description{
 Function \code{mostProbablePath} computes the most probable path of the
@@ -88,7 +89,9 @@ mpp <- mostProbablePath(HMM$model)$mpp
 }
 \seealso{
 \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and
-  fitting Hidden Markov models, and \code{\link{seqIplot}} and
-  \code{\link{plot.MCSP}} for plotting most probable paths.
+  fitting Hidden Markov models, \code{\link{buildMixHMM}} and
+  \code{\link{fitMixHMM}} for building and fitting mixture hidden Markov models,
+  and \code{\link{seqIplot}} and \code{\link{ssplot}} or \code{\link{mssplot}}
+  for plotting the most probable paths.
 }
 

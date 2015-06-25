@@ -196,7 +196,7 @@
 #' alphabet(left.seq)
 #' B1_left <- matrix(c(0.01, 0.99, # High probability for living with parents
 #'                     0.99, 0.01, # High probability for having left home
-#'                     0.99, 0.01
+#'                     0.99, 0.01,
 #'                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
 #' 
 #' # Cluster 2
@@ -265,12 +265,12 @@
 #' 
 #' # Build mixture HMM
 #' bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq), 
-#'                        transitionMatrix=list(A1,A2,A1), 
+#'                        transitionMatrix=list(A1,A1,A2), 
 #'                        emissionMatrix=list(list(B1_child, B1_marr, B1_left),
 #'                                            list(B2_child, B2_marr, B2_left),
 #'                                            list(B3_child, B3_marr, B3_left)),
-#'                        initialProbs=list(initialProbs1, initialProbs2,
-#'                                          initialProbs1), 
+#'                        initialProbs=list(initialProbs1, initialProbs1,
+#'                                          initialProbs2), 
 #'                        formula=~sex*birthyr+sex*swiss, data=bio,
 #'                        clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
 #'                        channelNames=c("Parenthood", "Marriage", "Left home"))
@@ -363,7 +363,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     k <- k+x$numberOfStates[i]
   }
   
-  mppm <- unique(mpp$model)
+  mppm <- unique(mpp$cluster)
   mm <- NULL
   if(length(mppm)<x$numberOfClusters){
     mm <- which(!(x$clusterNames%in%mppm))
@@ -395,10 +395,10 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
       if(pick==0){
         return(invisible())
       }else{
-        args$x <- lapply(allobs, function(y) y[mpp$model==x$clusterNames[[tmenu[pick]]],])
+        args$x <- lapply(allobs, function(y) y[mpp$cluster==x$clusterNames[[tmenu[pick]]],])
         args$mpp.labels <- mpplabs[[pick]]
         args$mpp <- suppressWarnings(suppressMessages(
-          seqdef(mpp$mpp[mpp$model==x$clusterNames[[tmenu[pick]]],], 
+          seqdef(mpp$mpp[mpp$cluster==x$clusterNames[[tmenu[pick]]],], 
                  labels=args$mpp.labels)))
         args$mpp.color <- mppcols[[pick]]
         args$title <- titles[tmenu[pick]]
@@ -414,10 +414,10 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
       if(pick==0){
         return(invisible())
       }else{
-        args$x <- lapply(allobs, function(y) y[mpp$model==x$clusterNames[[tmenu[pick]]],])
+        args$x <- lapply(allobs, function(y) y[mpp$cluster==x$clusterNames[[tmenu[pick]]],])
         args$mpp.labels <- mpplabs[[pick]]
         args$mpp <- suppressWarnings(suppressMessages(
-          seqdef(mpp$mpp[mpp$model==x$clusterNames[[tmenu[pick]]],], 
+          seqdef(mpp$mpp[mpp$cluster==x$clusterNames[[tmenu[pick]]],], 
                  labels=args$mpp.labels)))
         args$mpp.color <- mppcols[[pick]]
         args$title <- titles[tmenu[pick]]
@@ -428,10 +428,10 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     ask <- length(which.plots) > 1
     plot.new()
     for (i in which.plots) {
-      args$x <- lapply(allobs, function(y) y[mpp$model==x$clusterNames[[i]],])
+      args$x <- lapply(allobs, function(y) y[mpp$cluster==x$clusterNames[[i]],])
       args$mpp.labels <- mpplabs[[i]]
       args$mpp <- suppressWarnings(suppressMessages(
-        seqdef(mpp$mpp[mpp$model==x$clusterNames[[i]],], labels=args$mpp.labels)))
+        seqdef(mpp$mpp[mpp$cluster==x$clusterNames[[i]],], labels=args$mpp.labels)))
       args$mpp.color <- mppcols[[i]]
       args$title <- titles[i]
       do.call(ssplotM,args=args)

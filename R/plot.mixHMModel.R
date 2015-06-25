@@ -171,7 +171,7 @@
 #' alphabet(left.seq)
 #' B1_left <- matrix(c(0.01, 0.99, # High probability for living with parents
 #'                     0.99, 0.01, # High probability for having left home
-#'                     0.99, 0.01
+#'                     0.99, 0.01,
 #'                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
 #' 
 #' # Cluster 2
@@ -240,12 +240,12 @@
 #' 
 #' # Build mixture HMM
 #' bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq), 
-#'                        transitionMatrix=list(A1,A2,A1), 
+#'                        transitionMatrix=list(A1,A1,A2), 
 #'                        emissionMatrix=list(list(B1_child, B1_marr, B1_left),
 #'                                            list(B2_child, B2_marr, B2_left),
 #'                                            list(B3_child, B3_marr, B3_left)),
-#'                        initialProbs=list(initialProbs1, initialProbs2,
-#'                                          initialProbs1), 
+#'                        initialProbs=list(initialProbs1, initialProbs1,
+#'                                          initialProbs2), 
 #'                        formula=~sex*birthyr+sex*swiss, data=bio,
 #'                        clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
 #'                        channelNames=c("Parenthood", "Marriage", "Left home"))
