@@ -449,6 +449,8 @@ trMHMM$beta
 
 Also MHMMs are plotted with the `plot` function. The user can choose between an interactive mode (`interactive=TRUE`), where the model for each cluster is plotted separately, and a combined plot with all models at once.
 ```
+# Plot mixture hidden Markov model
+# Interactive plot, one cluster at a time
 plot(trMHMM, interactive=TRUE)
 ```
 ![mixHMM1](https://github.com/helske/seqHMM/blob/master/Examples/mixHMM1.png)
@@ -469,7 +471,7 @@ table(mpp$cluster)
 #       258      1238       279 
 
 # Plotting observed sequences and most probable hidden states
-# (Interactive plot, not shown here)
+# Interactive plot, one cluster at a time
 mssplot(trMHMM, plots="both", sortv="mds.mpp", xtlab=15:30, xlab="Age")
 
 ```
