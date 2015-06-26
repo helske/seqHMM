@@ -91,7 +91,7 @@ Multichannel sequence data are easily plotted using the `ssplot` function (ssplo
 ssplot(list(marr.seq, child.seq, left.seq), type="d", plots="obs", 
        title="State distribution plots")
 ```                  
-![ssp1](https://github.com/helske/seqHMM/blob/master/Examples/ssp1.pdf)
+![ssp1](https://github.com/helske/seqHMM/blob/master/Examples/ssp1.png)
 
 Multiple `ssp` objects can also be plotted together in a grid.
 
@@ -103,14 +103,14 @@ ssp_f2 <- ssp(list(marr.seq[bio$sex=="woman",],
                    left.seq[bio$sex=="woman",]),
               type="d", plots="obs", border=NA,
               title="State distributions for women", title.n=FALSE,
-              ylab=c("Married", "Children", "Left home"), 
+              ylab=c("Married", "Parenthood", "Left home"), 
               withlegend=FALSE, ylab.pos=c(1,2,1))
 ssp_f3 <- ssp(list(marr.seq[bio$sex=="woman",], 
                    child.seq[bio$sex=="woman",],
                    left.seq[bio$sex=="woman",]),
               type="I", sortv="mds.obs", plots="obs", 
               title="Sequences for women",
-              ylab=c("Married", "Children", "Left home"), 
+              ylab=c("Married", "Parenthood", "Left home"), 
               withlegend=FALSE, ylab.pos=c(1.5,2.5,1.5))
 
 ## Preparing plots for state distributios and index plots of observations for men
@@ -119,14 +119,14 @@ ssp_m2 <- ssp(list(marr.seq[bio$sex=="man",],
                    left.seq[bio$sex=="man",]),
               type="d", plots="obs", border=NA,
               title="State distributions for men", title.n=FALSE,
-              ylab=c("Married", "Children", "Left home"), 
+              ylab=c("Married", "Parenthood", "Left home"), 
               withlegend=FALSE, ylab.pos=c(1,2,1))
 ssp_m3 <- ssp(list(marr.seq[bio$sex=="man",], 
                    child.seq[bio$sex=="man",],
                    left.seq[bio$sex=="man",]),
               type="I", sortv="mds.obs", plots="obs", 
               title="Sequences for men",
-              ylab=c("Married", "Children", "Left home"), 
+              ylab=c("Married", "Parenthood", "Left home"), 
               withlegend=FALSE, ylab.pos=c(1.5,2.5,1.5))
 
 ## Plotting state distributions and index plots of observations for women and men 
@@ -197,7 +197,7 @@ plot(HMM$model)
 ## A prettier version
 plot(HMM$model,
      # larger vertices
-     vertex.size=50,
+     vertex.size=45,
      # varying curvature of edges
      edge.curved=c(0,-0.7,0.6,0,-0.7,0),
      # legend with two columns and less space
@@ -207,7 +207,7 @@ plot(HMM$model,
 ```
 ![HMM](https://github.com/helske/seqHMM/blob/master/Examples/HMModel.png)
 
-The `ssplot` function can also be used for plotting the observed states and the most probable paths of hidden states of the HMM.
+The `ssplot` function can also be used for plotting the observed states and/or the most probable paths of hidden states of the HMM.
 
 ```
 ## Plotting observations and hidden states
@@ -332,12 +332,14 @@ Mixture HMM (MHMM) is, by definition, a mixture of HMMs that are fitted together
 
 # Cluster 1
 alphabet(child.seq) # Checking for the order of observed states
+# [1] "Childless" "Children" 
 B1_child <- matrix(c(0.99, 0.01, # High probability for childless
                      0.99, 0.01,
                      0.99, 0.01,
                      0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
 
 alphabet(marr.seq)
+# [1] "Divorced" "Married"  "Single"
 B1_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
                     0.01, 0.01, 0.98,
                     0.01, 0.98, 0.01, # High probability for married
@@ -345,6 +347,7 @@ B1_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
                     nrow=4, ncol=3, byrow=TRUE)
 
 alphabet(left.seq)
+# [1] "Left home"    "With parents"
 B1_left <- matrix(c(0.01, 0.99, # High probability for living with parents
                     0.99, 0.01, # High probability for having left home
                     0.99, 0.01,
@@ -367,7 +370,7 @@ B2_left <- matrix(c(0.01, 0.99, # High probability for living with parents
                     0.99, 0.01,
                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
 
-# Sinkkuvanhemmat ja kotona asuvat yhdessÃ¤
+# Cluster 3
 B3_child <- matrix(c(0.99, 0.01, # High probability for childless
                      0.99, 0.01,
                      0.01, 0.99,
@@ -409,7 +412,7 @@ A2 <- matrix(c(0.8, 0.10, 0.05,  0.03, 0.01, 0.01,
 initialProbs1 <- c(0.9, 0.07, 0.02, 0.01)
 initialProbs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 
-# Creating covariate swiss
+# Creating a new covariate swiss
 bio$swiss <- bio$nat_1_02=="Switzerland"
 bio$swiss[bio$swiss==TRUE] <- "Swiss"
 bio$swiss[bio$swiss==FALSE] <- "Other"
@@ -435,12 +438,21 @@ trMHMM <- trimHMM(MHMM$model, zerotol=1e-05)
 
 # Parameter coefficients for covariates (cluster 1 is the reference)
 trMHMM$beta
+#                     Cluster 1    Cluster 2   Cluster 3
+# (Intercept)                 0 -23.24093078 67.35469838
+# sexwoman                    0  19.26454369 28.62328100
+# birthyr                     0   0.01258906 -0.03449584
+# swissSwiss                  0   0.11453555 -0.55947625
+# sexwoman:birthyr            0  -0.01007922 -0.01491035
+# sexwoman:swissSwiss         0   0.23690967  0.55617401
 ```
 
 Also MHMMs are plotted with the `plot` function. The user can choose between an interactive mode (`interactive=TRUE`), where the model for each cluster is plotted separately, and a combined plot with all models at once.
 ```
-plot(trMHMM, interactive=TRUE)
+plot(trMHMM, interactive=FALSE, rows=3, legend.prop=0.4)
 ```
+![mixHMM](https://github.com/helske/seqHMM/blob/master/Examples/mixHMMplot.png)
+
 
 The most probable cluster for each individual is determined by the most probable path of hidden states. It is computed with the `mostProbablePath` function.
 
@@ -451,6 +463,9 @@ mpp <- mostProbablePath(trMHMM)
 attr(mpp$mpp, "cpal") <- colorpalette[[14]]
 # Number of individuals in each cluster
 table(mpp$cluster)
+# Cluster 1 Cluster 2 Cluster 3 
+#       258      1238       279 
+
 # Plotting observed sequences and most probable hidden states
 # (Interactive plot, not shown here)
 mssplot(trMHMM, plots="both", sortv="mds.mpp")
