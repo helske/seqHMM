@@ -451,7 +451,9 @@ Also MHMMs are plotted with the `plot` function. The user can choose between an 
 ```
 plot(trMHMM, interactive=FALSE, rows=3, legend.prop=0.4)
 ```
-![mixHMM](https://github.com/helske/seqHMM/blob/master/Examples/mixHMMplot.png)
+![mixHMM1](https://github.com/helske/seqHMM/blob/master/Examples/mixHMM1.png)
+![mixHMM2](https://github.com/helske/seqHMM/blob/master/Examples/mixHMM2.png)
+![mixHMM3](https://github.com/helske/seqHMM/blob/master/Examples/mixHMM3.png)
 
 
 The most probable cluster for each individual is determined by the most probable path of hidden states. It is computed with the `mostProbablePath` function.
