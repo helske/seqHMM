@@ -21,14 +21,14 @@ Preview of the `seqHMM` package
 This example uses the `biofam` data from the `TraMineR` package. The data consist of a sample of 2000 individuals born between 1909 and 1972 constructed from the Swiss Household Panel (SHP) survey in 2002. The sequences consist of family life states from age 15 to 30 (in columns 10 to 25).
 
 
-0 = "living with parents"
-1 = "left home"
-2 = "married"
-3 = "left home+married"
-4 = "child"
-5 = "left home+child"
-6 = "left home+married+child"
-7 = "divorced"
+- 0 = "living with parents"
+- 1 = "left home"
+- 2 = "married"
+- 3 = "left home+married"
+- 4 = "child"
+- 5 = "left home+child"
+- 6 = "left home+married+child"
+- 7 = "divorced"
 
 For the functions of the `seqHMM` package, sequence data is given as a state sequence object (`stslist`) using the `seqdef` function in the `TraMineR` package. To show a more complex example, the original data is split into three separate channels. For the divorced state there is no information on children or residence, so these are assessed using the preceding states.
 
