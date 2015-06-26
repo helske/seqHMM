@@ -335,6 +335,9 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     }
     args <- args[-which(names(args)=="title")]
   }
+  if(length(ylab)==1 && ylab=="auto"){
+    args$ylab <- x$channelNames
+  }
   
   if(is.null(mpp)){
     mpp <- suppressWarnings(suppressMessages(mostProbablePath(x)))

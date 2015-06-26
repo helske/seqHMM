@@ -472,7 +472,7 @@ table(mpp$cluster)
 
 # Plotting observed sequences and most probable hidden states
 # Interactive plot, one cluster at a time
-mssplot(trMHMM, plots="both", sortv="mds.mpp", xtlab=15:30, xlab="Age")
+mssplot(trMHMM, plots="both", sortv="from.end", sort.channel=1, xtlab=15:30, xlab="Age")
 
 ```
 ![mssplot1](https://github.com/helske/seqHMM/blob/master/Examples/mssplot1.png)
