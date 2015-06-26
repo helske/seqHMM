@@ -449,7 +449,7 @@ trMHMM$beta
 
 Also MHMMs are plotted with the `plot` function. The user can choose between an interactive mode (`interactive=TRUE`), where the model for each cluster is plotted separately, and a combined plot with all models at once.
 ```
-plot(trMHMM, interactive=FALSE, rows=3, legend.prop=0.4)
+plot(trMHMM, interactive=TRUE)
 ```
 ![mixHMM1](https://github.com/helske/seqHMM/blob/master/Examples/mixHMM1.png)
 ![mixHMM2](https://github.com/helske/seqHMM/blob/master/Examples/mixHMM2.png)
