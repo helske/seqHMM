@@ -1,8 +1,8 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-gridplot.png
-HMMdefault.png
-HMModel.png
-mcsp1.png
-MCSPboth.png
-MCSPboth_default.png
+^.*\.git$
+^.*\.project
+^\.travis\.yml$
+^README.md$
+mixhmmexample.R
+^\Examples$
