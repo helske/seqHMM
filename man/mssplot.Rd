@@ -283,7 +283,7 @@ bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq),
                                            list(B3_child, B3_marr, B3_left)),
                        initialProbs=list(initialProbs1, initialProbs1,
                                          initialProbs2),
-                       formula=~sex*birthyr+sex*swiss, data=bio,
+                       formula=~sex*birthyr+sex*swiss, data=biofam,
                        clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
                        channelNames=c("Parenthood", "Marriage", "Left home"))
 
