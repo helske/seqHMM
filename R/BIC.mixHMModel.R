@@ -67,7 +67,7 @@
 #' alphabet(left.seq)
 #' B1_left <- matrix(c(0.01, 0.99, # High probability for living with parents
 #'                     0.99, 0.01, # High probability for having left home
-#'                     0.99, 0.01
+#'                     0.99, 0.01,
 #'                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
 #' 
 #' B2_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
