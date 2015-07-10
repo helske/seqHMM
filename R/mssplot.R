@@ -216,7 +216,7 @@
 #'                     0.99, 0.01,
 #'                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE) 
 #' 
-#' # Sinkkuvanhemmat ja kotona asuvat yhdessä
+#' # Cluster 3
 #' B3_child <- matrix(c(0.99, 0.01, # High probability for childless
 #'                      0.99, 0.01,
 #'                      0.01, 0.99,
@@ -259,9 +259,9 @@
 #' initialProbs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 #' 
 #' # Creating covariate swiss
-#' bio$swiss <- bio$nat_1_02=="Switzerland"
-#' bio$swiss[bio$swiss==TRUE] <- "Swiss"
-#' bio$swiss[bio$swiss==FALSE] <- "Other"
+#' biofam$swiss <- biofam$nat_1_02=="Switzerland"
+#' biofam$swiss[biofam$swiss==TRUE] <- "Swiss"
+#' biofam$swiss[biofam$swiss==FALSE] <- "Other"
 #' 
 #' # Build mixture HMM
 #' bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq), 
@@ -357,7 +357,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   }
   
   if(!("mpp.color" %in% names(args))){
-    mpp.color <- colorpalette[[length(alphabet(mpp$mpp))]]
+    mpp.color <- seqHMM::colorpalette[[length(alphabet(mpp$mpp))]]
   }
   mppcols <- list()
   k <- 0

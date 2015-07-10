@@ -1,15 +1,16 @@
 #' Compute BIC for Hidden Markov Model
 #' 
-#' @import stats
 #' @export
+#' @importFrom stats BIC
 #' @rdname BIC
-#' @param object Object of class \code{HMModel}.
+#' @param object Object of class \code{HMModel} or \code{mixHMModel}.
 #' @param trim Should trimming be performed before computing BIC? See
 #'   \code{\link{trimHMM}} for details. Default is FALSE.
 #' @param ... further parameters to \code{\link{trimHMM}}.
 #'   
 #' @seealso \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and
-#'   fitting Hidden Markov models, and \code{\link{trimHMM}} for finding better
+#'   fitting Hidden Markov models, \code{\link{buildMixHMM}} and \code{\link{fitMixHMM}} for building and
+#'   fitting mixture hidden Markov models, and \code{\link{trimHMM}} for finding better
 #'   models by changing small parameter values to zero.
 #' 
 #' @examples 

@@ -4,6 +4,7 @@
 #'
 #'
 #' @export
+#' @importFrom stats logLik
 #' @param object Hidden Markov model of class \code{HMModel}.
 #' @param ... Ignored.
 #' @return Log-likelihood of hidden Markov model.

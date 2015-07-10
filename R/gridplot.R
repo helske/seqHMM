@@ -364,7 +364,7 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
         legend.rows <- ceiling(sapply(lapply(x[[1]]$obs, "alphabet"), "length")/ncol.legend)
       }else if(length(ncol.legend)>x[[1]]$nplots){
         warning(paste0("The length of ncol.legend does not match the number of requested plots. Only the first ", x[[1]]$nplots, " arguments of \"ncol.legend\" were used."))
-        legend.rows <- ceiling(sapply(lapply(x[[1]]$obs, "alphabet"), "length")/ncol.legends[1:x[[1]]$nplots])
+        legend.rows <- ceiling(sapply(lapply(x[[1]]$obs, "alphabet"), "length")/ncol.legend[1:x[[1]]$nplots])
       }else{
         legend.rows <- ceiling(x$numberOfStates/ncol.legend)
       }
