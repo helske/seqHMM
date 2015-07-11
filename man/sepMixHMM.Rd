@@ -153,10 +153,9 @@ bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq),
                        clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
                        channelNames=c("Parenthood", "Marriage", "Left home"))
 
-mHMM <- fitMixHMM(bmHMM)
 
 # Separate models for clusters
-sepHMM <- sepMixHMM(mHMM$model)
+sepHMM <- sepMixHMM(bmHMM)
 }
 \seealso{
 \code{\link{buildMixHMM}} and \code{\link{fitMixHMM}} for building

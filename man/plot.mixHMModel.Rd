@@ -296,16 +296,16 @@ bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq),
                        clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
                        channelNames=c("Parenthood", "Marriage", "Left home"))
 
-mHMM <- fitMixHMM(bmHMM)
 
+\dontrun{
 # Plotting each cluster (change with Enter)
-# not run: plot(mHMM$model)
+plot(bmHMM)
 
 # Choosing the cluster (one at a time)
-# not run: plot(mHMM$model, ask=TRUE)
-
+plot(bmHMM, ask=TRUE)
+}
 # Plotting only the first cluster
-plot(mHMM$model, which.plots=1)
+plot(bmHMM, which.plots=1)
 }
 \seealso{
 \code{\link{buildMixHMM}} and \code{\link{fitMixHMM}} for building and

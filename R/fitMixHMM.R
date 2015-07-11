@@ -29,6 +29,7 @@
 #'   for plotting \code{mixHMModel} objects and \code{\link{mssplot}} for plotting
 #'   stacked sequence plots of \code{mixHMModel} objects.
 #' @examples 
+#' \dontrun{
 #' require(TraMineR)
 #' 
 #' data(biofam)
@@ -162,7 +163,8 @@
 #'                                          initialProbs2), 
 #'                        formula=~sex*birthyr+sex*swiss, data=biofam,
 #'                        clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
-#'                        channelNames=c("Parenthood", "Marriage", "Left home"))
+#'                        channelNames=c("Parenthood", "Marriage", "Left home"),
+#'                        )
 #' 
 #' mHMM <- fitMixHMM(bmHMM)
 #' 
@@ -171,6 +173,7 @@
 #' 
 #' # Probabilities of belonging to each model for the first six subjects
 #' head(mHMM$model$clusterProb)
+#' }
 
 
 fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){

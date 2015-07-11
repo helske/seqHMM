@@ -277,13 +277,13 @@
 #'                        clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
 #'                        channelNames=c("Parenthood", "Marriage", "Left home"))
 #' 
-#' MHMM <- fitMixHMM(bMHMM)
 #' 
+#' \dontrun{
 #' # Interactive plot
-#' # not run: mssplot(MHMM$model)
-#' 
+#'  mssplot(bMHMM)
+#' }
 #' # Plotting the first cluster only
-#' mssplot(MHMM$model, which.plots=1)
+#' mssplot(bMHMM, which.plots=1)
 #'   
 #' @seealso \code{\link{buildMixHMM}} and \code{\link{fitMixHMM}} for building and 
 #'   fitting Hidden Markov models, \code{\link{mostProbablePath}} for 

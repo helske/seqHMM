@@ -123,7 +123,7 @@ itnmax=10000, method="BFGS")
   fitting, \code{\link{trimHMM}} for finding better models by changing small
   parameter values to zero, \code{\link{BIC.HMModel}} for computing the
   value of the Bayesian information criterion of the model, and
-  \code{\link{plot.HMModel}} and \code{\link{plot.MCSP}} for plotting
+  \code{\link{plot.HMModel}} and \code{\link{ssplot}} for plotting
   HMModel objects.
 }
 

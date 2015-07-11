@@ -38,6 +38,7 @@ are taken from the corresponding components of the model with preservation of
 original zero probabilities.
 }
 \examples{
+\dontrun{
 require(TraMineR)
 
 data(biofam)
@@ -171,7 +172,8 @@ bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq),
                                          initialProbs2),
                        formula=~sex*birthyr+sex*swiss, data=biofam,
                        clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
-                       channelNames=c("Parenthood", "Marriage", "Left home"))
+                       channelNames=c("Parenthood", "Marriage", "Left home"),
+                       )
 
 mHMM <- fitMixHMM(bmHMM)
 
@@ -180,6 +182,7 @@ mHMM$model$beta
 
 # Probabilities of belonging to each model for the first six subjects
 head(mHMM$model$clusterProb)
+}
 }
 \seealso{
 \code{\link{buildMixHMM}} for building mixture HMM's;
