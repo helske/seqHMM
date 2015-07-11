@@ -168,8 +168,10 @@
 #' left[left==TRUE] <- "Left home"
 #' left[left==FALSE] <- "With parents"
 #' # Divorced living with parents (before divorce)
-#' wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &  rowSums(bf==5)==0 &  rowSums(bf==6)==0) | 
-#'            (rowSums(bf==7)>0 & rowSums(bf==4)>0 & rowSums(bf==3)==0 &  rowSums(bf==5)==0 &  rowSums(bf==6)==0),]
+#' wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &  
+#'           rowSums(bf==5)==0 & rowSums(bf==6)==0) | 
+#'          (rowSums(bf==7)>0 & rowSums(bf==4)>0 & rowSums(bf==3)==0 &  
+#'           rowSums(bf==5)==0 &  rowSums(bf==6)==0),]
 #' left[rownames(bf) %in% rownames(wp) & bf==7] <- "With parents"
 #' 
 #' ## Building sequence objects
@@ -264,7 +266,7 @@
 #' biofam$swiss[biofam$swiss==FALSE] <- "Other"
 #' 
 #' # Build mixture HMM
-#' bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq), 
+#' bMHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq), 
 #'                        transitionMatrix=list(A1,A1,A2), 
 #'                        emissionMatrix=list(list(B1_child, B1_marr, B1_left),
 #'                                            list(B2_child, B2_marr, B2_left),
@@ -275,9 +277,13 @@
 #'                        clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
 #'                        channelNames=c("Parenthood", "Marriage", "Left home"))
 #' 
-#' mHMM <- fitMixHMM(bmHMM)
+#' MHMM <- fitMixHMM(bMHMM)
 #' 
-#' mssplot(mHMM$model)
+#' # Interactive plot
+#' # not run: mssplot(MHMM$model)
+#' 
+#' # Plotting the first cluster only
+#' mssplot(MHMM$model, which.plots=1)
 #'   
 #' @seealso \code{\link{buildMixHMM}} and \code{\link{fitMixHMM}} for building and 
 #'   fitting Hidden Markov models, \code{\link{mostProbablePath}} for 

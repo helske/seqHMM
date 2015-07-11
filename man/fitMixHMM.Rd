@@ -64,8 +64,10 @@ married[bf==7] <- "Divorced"
 left[left==TRUE] <- "Left home"
 left[left==FALSE] <- "With parents"
 # Divorced living with parents (before divorce)
-wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &  rowSums(bf==5)==0 &  rowSums(bf==6)==0) |
-           (rowSums(bf==7)>0 & rowSums(bf==4)>0 & rowSums(bf==3)==0 &  rowSums(bf==5)==0 &  rowSums(bf==6)==0),]
+wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &
+          rowSums(bf==5)==0 & rowSums(bf==6)==0) |
+           (rowSums(bf==7)>0 & rowSums(bf==4)>0 & rowSums(bf==3)==0 &
+          rowSums(bf==5)==0 & rowSums(bf==6)==0),]
 left[rownames(bf) \%in\% rownames(wp) & bf==7] <- "With parents"
 
 ## Building sequence objects
