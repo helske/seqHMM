@@ -309,7 +309,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
             emissionArray[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]    
             emissionArray[,1:model$numberOfSymbols[i],i][paramEM[[i]]]<-
               exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
-            rowSumsB<-rowSums(emissionArray[,1:model$numberOfSymbols[i],i])
+            rowSumsB<-rowSums(emissionArray[,1:model$numberOfSymbols[i],i, drop = FALSE])
             emissionArray[,1:model$numberOfSymbols[i],i]<-
               emissionArray[,1:model$numberOfSymbols[i],i]/rowSumsB
           }
@@ -352,7 +352,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
             emissionArray[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]    
             emissionArray[,1:model$numberOfSymbols[i],i][paramEM[[i]]]<-
               exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])      
-            rowSumsB[,i]<-rowSums(emissionArray[,1:model$numberOfSymbols[i],i])
+            rowSumsB[,i]<-rowSums(emissionArray[,1:model$numberOfSymbols[i],i, drop = FALSE])
             emissionArray[,1:model$numberOfSymbols[i],i]<-
               emissionArray[,1:model$numberOfSymbols[i],i]/rowSumsB[,i]
           }
