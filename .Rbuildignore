@@ -5,4 +5,4 @@
 ^\.travis\.yml$
 ^README.md$
 mixhmmexample.R
-^\Examples$
+^Examples$

@@ -124,7 +124,7 @@ MCtoSC<-function(model, combine.missing=TRUE, all.combinations=FALSE){
                                      is.na(x)))]<-NA
     }
     
-    cpal <- colorpalette[[modelx$numberOfSymbols]]
+    cpal <- seqHMM::colorpalette[[modelx$numberOfSymbols]]
     
     if(all.combinations==TRUE){
       modelx$observations<-suppressWarnings(suppressMessages(seqdef(modelx$observations, alphabet=modelx$symbolNames)))
@@ -179,7 +179,7 @@ MCtoSC<-function(model, combine.missing=TRUE, all.combinations=FALSE){
                                      is.na(x)))]<-NA
     }
     
-    cpal <- colorpalette[[modelx$numberOfSymbols]]
+    cpal <- seqHMM::colorpalette[[modelx$numberOfSymbols]]
     
     if(all.combinations==TRUE){
       modelx$observations <- suppressWarnings(suppressMessages(seqdef(modelx$observations, alphabet=modelx$symbolNames)))

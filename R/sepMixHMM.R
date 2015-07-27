@@ -40,8 +40,10 @@
 #' left[left==TRUE] <- "Left home"
 #' left[left==FALSE] <- "With parents"
 #' # Divorced living with parents (before divorce)
-#' wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &  rowSums(bf==5)==0 &  rowSums(bf==6)==0) | 
-#'            (rowSums(bf==7)>0 & rowSums(bf==4)>0 & rowSums(bf==3)==0 &  rowSums(bf==5)==0 &  rowSums(bf==6)==0),]
+#' wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &  
+#'           rowSums(bf==5)==0 & rowSums(bf==6)==0) | 
+#'          (rowSums(bf==7)>0 & rowSums(bf==4)>0 & rowSums(bf==3)==0 &  
+#'          rowSums(bf==5)==0 & rowSums(bf==6)==0),]
 #' left[rownames(bf) %in% rownames(wp) & bf==7] <- "With parents"
 #' 
 #' ## Building sequence objects
@@ -88,7 +90,7 @@
 #'                     0.99, 0.01,
 #'                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE) 
 #' 
-#' # Sinkkuvanhemmat ja kotona asuvat yhdessä
+#' # Cluster 3
 #' B3_child <- matrix(c(0.99, 0.01, # High probability for childless
 #'                      0.99, 0.01,
 #'                      0.01, 0.99,
@@ -131,9 +133,9 @@
 #' initialProbs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 #' 
 #' # Creating covariate swiss
-#' bio$swiss <- bio$nat_1_02=="Switzerland"
-#' bio$swiss[bio$swiss==TRUE] <- "Swiss"
-#' bio$swiss[bio$swiss==FALSE] <- "Other"
+#' biofam$swiss <- biofam$nat_1_02=="Switzerland"
+#' biofam$swiss[biofam$swiss==TRUE] <- "Swiss"
+#' biofam$swiss[biofam$swiss==FALSE] <- "Other"
 #' 
 #' # Build mixture HMM
 #' bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq), 
@@ -143,14 +145,13 @@
 #'                                            list(B3_child, B3_marr, B3_left)),
 #'                        initialProbs=list(initialProbs1, initialProbs1,
 #'                                          initialProbs2), 
-#'                        formula=~sex*birthyr+sex*swiss, data=bio,
+#'                        formula=~sex*birthyr+sex*swiss, data=biofam,
 #'                        clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
 #'                        channelNames=c("Parenthood", "Marriage", "Left home"))
 #' 
-#' mHMM <- fitMixHMM(bmHMM)
 #' 
 #' # Separate models for clusters
-#' sepHMM <- sepMixHMM(mHMM$model)
+#' sepHMM <- sepMixHMM(bmHMM)
 
 sepMixHMM <- function(model){
   
