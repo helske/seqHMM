@@ -27,6 +27,7 @@ forwardProbs<-function(model){
     out<-forwardMC(model$transitionMatrix, emissionArray, 
                    model$initialProbs, obsArray)
   }
+  dimnames(out)<-list("state" = model$stateNames,"time" = 1:model$lengthOfSequences)
   out
 }
 
@@ -58,6 +59,7 @@ backwardProbs<-function(model){
     
     out<-backwardMC(model$transitionMatrix, emissionArray, obsArray)
   }
+  dimnames(out)<-list("state" = model$stateNames,"time" = 1:model$lengthOfSequences)
   out
   
 }

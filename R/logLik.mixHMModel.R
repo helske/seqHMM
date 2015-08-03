@@ -5,11 +5,13 @@
 #'
 #' @export
 #' @param object Hidden Markov model of class \code{mixHMModel}.
+#' #' @param partials Return a vector containing the individual contributions of each sequence to the total log-likelihood. 
+#' Default is FALSE, which returns the sum of all log-likelihood components.
 #' @param ... Ignored.
 #' @return Log-likelihood of hidden Markov model.
 #' @seealso \code{\link{buildMixHMM}} and \code{\link{fitMixHMM}} for building and 
 #'   fitting mixture Hidden Markov models.
-logLik.mixHMModel<-function(object,...){
+logLik.mixHMModel<-function(object, partials = FALSE, ...){
   
   object <- combineModels(object)
   
@@ -18,7 +20,7 @@ logLik.mixHMModel<-function(object,...){
     obsArray[obsArray>object$numberOfSymbols]<-object$numberOfSymbols
     storage.mode(obsArray)<-"integer"
     
-    logLikMixHMM(object$transitionMatrix, cbind(object$emissionMatrix,1), object$initialProbs, obsArray,
+    ll <- logLikMixHMM(object$transitionMatrix, cbind(object$emissionMatrix,1), object$initialProbs, obsArray,
                  object$beta, object$X, object$numberOfStatesInClusters)
   } else {
     obsArray<-array(0,c(object$numberOfSequences,object$lengthOfSequences,object$numberOfChannels))
@@ -32,8 +34,11 @@ logLik.mixHMModel<-function(object,...){
     for(i in 1:object$numberOfChannels)
       emissionArray[,1:object$numberOfSymbols[i],i]<-object$emissionMatrix[[i]]
     
-    logLikMixMCHMM(object$transitionMatrix, emissionArray, object$initialProbs, obsArray,
+    ll <- logLikMixMCHMM(object$transitionMatrix, emissionArray, object$initialProbs, obsArray,
                    object$beta, object$X, object$numberOfStatesInClusters) 
     
   }
+  if(partials){
+    ll
+  } else sum(ll) 
 }

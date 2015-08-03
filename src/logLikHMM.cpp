@@ -12,7 +12,7 @@ using namespace Rcpp;
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
-double logLikHMM(NumericVector transitionMatrix, NumericVector emissionArray, 
+NumericVector logLikHMM(NumericVector transitionMatrix, NumericVector emissionArray, 
 NumericVector initialProbs, IntegerVector obsArray) {  
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p
@@ -27,8 +27,7 @@ NumericVector initialProbs, IntegerVector obsArray) {
   arma::vec alpha(eDims[0]); //m,n,k
   arma::vec alphatmp(eDims[0]); //m,n,k
   
-  double ll=0.0;
-  
+  NumericVector ll(oDims[0]);  
   
   transition = log(transition); 
   emission = log(emission); 
@@ -61,9 +60,9 @@ NumericVector initialProbs, IntegerVector obsArray) {
         tmp = logSumExp(alpha(i),tmp); 
       }
     }
-    ll += tmp;
+    ll(k) = tmp;
   }
-  
   return ll;
+  
 }
 

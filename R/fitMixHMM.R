@@ -252,6 +252,8 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
     # Function for minimizing log likelihood
     likfn<-function(pars,model,estimate=TRUE){
       
+      if(any(!is.finite(exp(pars))) && estimate)
+        return(.Machine$double.xmax^0.75)
       if(npTM>0){
         model$transitionMatrix[maxTM]<-maxTMvalue      # Not needed?
         # Exponentiate (need to be positive)
@@ -275,10 +277,11 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
         }
       }
       model$initialProbs <- unlist(original_model$initialProbs)
-      model$beta[,-1] <- pars[npTM+npEM+npIPAll+1:npBeta]
+      model$beta[,-1] <- pars[npTM+npEM+npIPAll+1:npBeta]     
       if(estimate){
-        - logLikMixHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray,
-                       model$beta, model$X, model$numberOfStatesInClusters)      
+       # save(model,pars,file="../m.rda")
+        - sum(logLikMixHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray,
+                       model$beta, model$X, model$numberOfStatesInClusters))   
       } else model
     }
     sumInit<-rep(1,original_model$numberOfClusters)    
@@ -286,8 +289,8 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
     
     gradfn<-function(pars,model){      
       
-      if(any(!is.finite(pars)))
-        return(.Machine$double.xmax)
+      if(any(!is.finite(exp(pars))))
+        return(.Machine$double.xmax^0.75)
       
       if(npTM>0){
         model$transitionMatrix[maxTM]<-maxTMvalue      # Not needed?
@@ -368,8 +371,8 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
     
     likfn<-function(pars,model,estimate=TRUE){
       
-      if(any(!is.finite(pars)) && estimate)
-        return(.Machine$double.xmax)
+      if(any(!is.finite(exp(pars))) && estimate)
+        return(.Machine$double.xmax^0.75)
       if(npTM>0){
         model$transitionMatrix[maxTM]<-maxTMvalue     
         model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
@@ -398,8 +401,8 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
       model$beta[,-1] <- pars[npTM+sum(npEM)+npIPAll+1:npBeta]
       
       if(estimate){   
-        - logLikMixMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
-                         model$beta, model$X, model$numberOfStatesInClusters)   
+        - sum(logLikMixMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
+                         model$beta, model$X, model$numberOfStatesInClusters)) 
       } else {
         if(sum(npEM)>0){
           for(i in 1:model$numberOfChannels){
@@ -416,8 +419,8 @@ fitMixHMM<-function(model,method="BFGS",itnmax=10000,optimx.control=list(),...){
     
     gradfn<-function(pars,model){      
       
-      if(any(!is.finite(pars)))
-        return(.Machine$double.xmax)
+      if(any(!is.finite(exp(pars))))
+        return(.Machine$double.xmax^0.75)
       if(npTM>0){
         model$transitionMatrix[maxTM]<-maxTMvalue     
         model$transitionMatrix[paramTM]<-exp(pars[1:npTM])

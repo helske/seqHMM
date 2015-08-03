@@ -6,18 +6,20 @@
 #' @export
 #' @importFrom stats logLik
 #' @param object Hidden Markov model of class \code{HMModel}.
+#' @param partials Return a vector containing the individual contributions of each sequence to the total log-likelihood. 
+#' Default is FALSE, which returns the sum of all log-likelihood components.
 #' @param ... Ignored.
 #' @return Log-likelihood of hidden Markov model.
 #' @seealso \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and 
 #'   fitting Hidden Markov models.
-logLik.HMModel<-function(object,...){
+logLik.HMModel<-function(object, partials = FALSE, ...){
   
   if(object$numberOfChannels==1){
     obsArray<-data.matrix(object$observations)-1
     obsArray[obsArray>object$numberOfSymbols]<-object$numberOfSymbols
     storage.mode(obsArray)<-"integer"
     
-      logLikHMM(object$transitionMatrix, cbind(object$emissionMatrix,1), 
+    ll <- logLikHMM(object$transitionMatrix, cbind(object$emissionMatrix,1), 
                 object$initialProbs, obsArray)
   } else {
     obsArray<-array(0,c(object$numberOfSequences,object$lengthOfSequences,object$numberOfChannels))
@@ -31,8 +33,11 @@ logLik.HMModel<-function(object,...){
     for(i in 1:object$numberOfChannels)
       emissionArray[,1:object$numberOfSymbols[i],i]<-object$emissionMatrix[[i]]
     
-      logLikMCHMM(object$transitionMatrix, emissionArray, 
+    ll <- logLikMCHMM(object$transitionMatrix, emissionArray, 
                   object$initialProbs, obsArray)
     
   }
+  if(partials){
+   ll
+  } else sum(ll) 
 }

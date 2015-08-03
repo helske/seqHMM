@@ -205,6 +205,9 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       
       likfn<-function(pars,model,estimate=TRUE){
         
+        if(any(!is.finite(exp(pars))) && estimate)
+          return(.Machine$double.xmax^0.75)
+        
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
           model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
@@ -223,7 +226,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
         } 
         
         if(estimate){
-          - logLikHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray)      
+          - sum(logLikHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray))
         } else model
       }
       
@@ -231,6 +234,9 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       sumInit<-1
       
       gradfn<-function(pars,model){
+        
+        if(any(!is.finite(exp(pars))))
+          return(.Machine$double.xmax^0.75)
         
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
@@ -297,8 +303,8 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       
       likfn<-function(pars,model,estimate=TRUE){
         
-        if(any(!is.finite(pars)) && estimate)
-          return(.Machine$double.xmax)
+        if(any(!is.finite(exp(pars))) && estimate)
+          return(.Machine$double.xmax^0.75)
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
           model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
@@ -322,7 +328,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
         } 
         
         if(estimate){
-          - logLikMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray)     
+          - sum(logLikMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray))   
         } else {
           if(sum(npEM)>0){
             for(i in 1:model$numberOfChannels){
@@ -339,8 +345,8 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       
       gradfn<-function(pars,model){
         
-        if(any(!is.finite(pars)))
-          return(.Machine$double.xmax)
+        if(any(!is.finite(exp(pars))))
+          return(.Machine$double.xmax^075)
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
           model$transitionMatrix[paramTM]<-exp(pars[1:npTM])

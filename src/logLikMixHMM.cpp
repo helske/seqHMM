@@ -12,7 +12,7 @@ using namespace Rcpp;
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
-double logLikMixHMM(NumericVector transitionMatrix, NumericVector emissionArray, 
+NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissionArray, 
 NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, 
 NumericMatrix X_, IntegerVector numberOfStates) {  
   
@@ -28,7 +28,7 @@ NumericMatrix X_, IntegerVector numberOfStates) {
   arma::vec alpha(eDims[0]); //m,n,k
   arma::vec alphatmp(eDims[0]); //m,n,k
   
-  double ll=0.0;
+  NumericVector ll(oDims[0]);  
   
   int q = coefs.nrow();
   arma::mat coef(coefs.begin(),q,coefs.ncol());
@@ -40,9 +40,7 @@ NumericMatrix X_, IntegerVector numberOfStates) {
     return -std::numeric_limits<double>::max();
   }
   lweights.each_row() /= sum(lweights,0);
-  lweights = log(lweights); 
-  
-  
+  lweights = log(lweights);   
   transition = log(transition); 
   emission = log(emission); 
   init = log(init); 
@@ -77,9 +75,10 @@ NumericMatrix X_, IntegerVector numberOfStates) {
         tmp = logSumExp(alpha(i),tmp); 
       }
     }
-    ll += tmp+lweights(k);
-  }
+    ll(k)= tmp;
+  }    
   
   return ll;
+  
 }
 
