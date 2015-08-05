@@ -4,10 +4,14 @@
 \alias{logLik.mixHMModel}
 \title{Log-likelihood of the Mixture Hidden Markov Model}
 \usage{
-\method{logLik}{mixHMModel}(object, ...)
+\method{logLik}{mixHMModel}(object, partials = FALSE, ...)
 }
 \arguments{
-\item{object}{Hidden Markov model of class \code{mixHMModel}.}
+\item{object}{Hidden Markov model of class \code{mixHMModel}.
+#'}
+
+\item{partials}{Return a vector containing the individual contributions of each sequence to the total log-likelihood.
+Default is FALSE, which returns the sum of all log-likelihood components.}
 
 \item{...}{Ignored.}
 }

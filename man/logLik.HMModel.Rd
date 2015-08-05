@@ -4,10 +4,13 @@
 \alias{logLik.HMModel}
 \title{Log-likelihood of the Hidden Markov Model}
 \usage{
-\method{logLik}{HMModel}(object, ...)
+\method{logLik}{HMModel}(object, partials = FALSE, ...)
 }
 \arguments{
 \item{object}{Hidden Markov model of class \code{HMModel}.}
+
+\item{partials}{Return a vector containing the individual contributions of each sequence to the total log-likelihood.
+Default is FALSE, which returns the sum of all log-likelihood components.}
 
 \item{...}{Ignored.}
 }
