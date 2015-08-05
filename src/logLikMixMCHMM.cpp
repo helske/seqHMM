@@ -16,11 +16,22 @@ NumericVector logLikMixMCHMM(NumericVector transitionMatrix, NumericVector emiss
 NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, 
 NumericMatrix X_, IntegerVector numberOfStates) {  
   
-      
+  
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
   
-  
+  NumericVector ll(oDims[0]);  
+  int q = coefs.nrow();
+  arma::mat coef(coefs.begin(),q,coefs.ncol());
+  coef.col(0).zeros();
+  arma::mat X(X_.begin(),oDims[0],q);
+  arma::mat lweights = exp(X*coef).t();
+  if(!lweights.is_finite()){
+    Rcout<<"infinite"<<std::endl;
+   // ll = std::numeric_limits<double>::max();
+    return wrap(std::numeric_limits<double>::max());
+  }
+  lweights.each_row() /= sum(lweights,0);
   arma::colvec init(initialProbs.begin(),eDims[0]);
   arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0]);
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2]);
@@ -29,16 +40,8 @@ NumericMatrix X_, IntegerVector numberOfStates) {
   arma::vec alpha(eDims[0]); //m,n,k
   arma::vec alphatmp(eDims[0]); //m,n,k  
   double tmp;
-  NumericVector ll(oDims[0]);  
-  int q = coefs.nrow();
-  arma::mat coef(coefs.begin(),q,coefs.ncol());
-  coef.col(0).zeros();
-  arma::mat X(X_.begin(),oDims[0],q);
-  arma::mat lweights = exp(X*coef).t();
-  if(!lweights.is_finite()){
-    return -std::numeric_limits<double>::max();
-  }
-  lweights.each_row() /= sum(lweights,0);
+  
+  
   lweights = log(lweights); 
   transition = log(transition); 
   emission = log(emission); 
@@ -48,7 +51,7 @@ NumericMatrix X_, IntegerVector numberOfStates) {
   double neginf = -arma::math::inf();   
   
   arma::vec initk(eDims[0]);
-   
+  
   for(int k = 0; k < oDims[0]; k++){    
     initk = init + reparma(lweights.col(k),numberOfStates);
     for(int i=0; i < eDims[0]; i++){      

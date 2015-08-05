@@ -206,7 +206,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       likfn<-function(pars,model,estimate=TRUE){
         
         if(any(!is.finite(exp(pars))) && estimate)
-          return(.Machine$double.xmax^0.75)
+          return(.Machine$double.xmax)
         
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
@@ -236,7 +236,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       gradfn<-function(pars,model){
         
         if(any(!is.finite(exp(pars))))
-          return(.Machine$double.xmax^0.75)
+          return(.Machine$double.xmax)
         
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
@@ -304,7 +304,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       likfn<-function(pars,model,estimate=TRUE){
         
         if(any(!is.finite(exp(pars))) && estimate)
-          return(.Machine$double.xmax^0.75)
+          return(.Machine$double.xmax)
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
           model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
