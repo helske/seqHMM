@@ -233,9 +233,10 @@ bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq),
 HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8),
               itnmax=10000, method="BFGS")
 
-# Plotting observations and hidden states (most probable) paths
+# Plotting observations and  the most probable paths of hidden states
 ssplot(HMM$model, type="I", plots="both",
-       # Sorting according to multidimensional scaling of hidden states paths
+       # Sorting according to multidimensional scaling for
+       # hidden states paths
        sortv="mds.mpp",
        ylab=c("Children", "Married", "Left home"),
        # Controlling title
@@ -243,11 +244,12 @@ ssplot(HMM$model, type="I", plots="both",
        # Labels for x axis and tick marks
        xtlab=15:30, xlab="Age")
 
-# Computing the most probable paths
+# Computing the most probable hidden state paths
 mpp <- mostProbablePath(HMM$model)$mpp
-mpp.seq <- seqdef(mpp, labels=c("Hidden state 1", "Hidden state 2", "Hidden state 3"))
+mpp.seq <- seqdef(mpp, labels=c("Hidden state 1", "Hidden state 2",
+                                "Hidden state 3"))
 
-# Plotting observations and hidden state paths
+# Plotting the most probable hidden state paths
 ssplot(HMM$model, type="I", plots="mpp",
        # Sequence object of most probable paths
        mpp=mpp.seq,
