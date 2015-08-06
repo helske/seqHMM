@@ -20,14 +20,18 @@ NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates) {
   arma::imat BNZ(emissNZ.begin(), eDims[0], eDims[1]-1,false);
   arma::ivec INZ(initNZ.begin(), eDims[0],false);
   
+  
   int q = coefs.nrow();
   arma::mat coef(coefs.begin(),q,numberOfStates.size());
   coef.col(0).zeros();
   arma::mat X(X_.begin(),oDims[0],q);
   
+  arma::vec grad(expPsi.size()+q*(numberOfStates.size()-1),arma::fill::zeros);
+  
   arma::mat lweights = exp(X*coef).t();
   if(!lweights.is_finite()){
-    return wrap(-std::numeric_limits<double>::max());
+    grad.fill(-std::numeric_limits<double>::max())
+    return wrap(grad);
   }
   arma::rowvec sumweights = sum(lweights,0);
   
@@ -69,7 +73,7 @@ NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates) {
   }
   
   
-  arma::vec grad(expPsi.size()+q*(numberOfStates.size()-1),arma::fill::zeros);
+  
   int countgrad=0;
   // transitionMatrix
   for(int i = 0; i < eDims[0]; i++){   
