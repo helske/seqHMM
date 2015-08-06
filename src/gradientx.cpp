@@ -30,7 +30,7 @@ NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates) {
   
   arma::mat lweights = exp(X*coef).t();
   if(!lweights.is_finite()){
-    grad.fill(-std::numeric_limits<double>::max())
+    grad.fill(-std::numeric_limits<double>::max());
     return wrap(grad);
   }
   arma::rowvec sumweights = sum(lweights,0);
