@@ -247,7 +247,9 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
       }
       if(convergence.check==TRUE){
         fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
-        if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
+        if(!is.na(fit$optimx.result$convcode) && fit$optimx.result$convcode==0 && 
+           !is.na(fit$optimx.result$kkt1) && fit$optimx.result$kkt1==TRUE && 
+           !is.na(fit$optimx.result$kkt2) && fit$optimx.result$kkt2==TRUE){
           print("Convergence check: (Local) optimum was found.")
         }else{
           print("Convergence check: Possible problem(s) with convergence.")
