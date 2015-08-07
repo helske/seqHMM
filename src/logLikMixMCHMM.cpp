@@ -27,7 +27,8 @@ NumericMatrix X_, IntegerVector numberOfStates) {
   arma::mat X(X_.begin(),oDims[0],q);
   arma::mat lweights = exp(X*coef).t();
   if(!lweights.is_finite()){
-    return -std::numeric_limits<double>::max();
+    return wrap(-std::numeric_limits<double>::max());
+    
   }
   lweights.each_row() /= sum(lweights,0);
   arma::colvec init(initialProbs.begin(),eDims[0]);

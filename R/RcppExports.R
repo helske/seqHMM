@@ -25,6 +25,14 @@ forwardMC <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
     .Call('seqHMM_forwardMC', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
 
+forwardMCx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates) {
+    .Call('seqHMM_forwardMCx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates)
+}
+
+forwardx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates) {
+    .Call('seqHMM_forwardx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates)
+}
+
 gradient <- function(transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB, sumInit, transNZ, emissNZ, initNZ, expPsi) {
     .Call('seqHMM_gradient', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB, sumInit, transNZ, emissNZ, initNZ, expPsi)
 }

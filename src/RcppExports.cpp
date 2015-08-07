@@ -96,6 +96,40 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// forwardMCx
+NumericVector forwardMCx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates);
+RcppExport SEXP seqHMM_forwardMCx(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP coefsSEXP, SEXP X_SEXP, SEXP numberOfStatesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type coefs(coefsSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type numberOfStates(numberOfStatesSEXP);
+    __result = Rcpp::wrap(forwardMCx(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates));
+    return __result;
+END_RCPP
+}
+// forwardx
+NumericVector forwardx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates);
+RcppExport SEXP seqHMM_forwardx(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP coefsSEXP, SEXP X_SEXP, SEXP numberOfStatesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type coefs(coefsSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type numberOfStates(numberOfStatesSEXP);
+    __result = Rcpp::wrap(forwardx(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates));
+    return __result;
+END_RCPP
+}
 // gradient
 NumericVector gradient(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, NumericVector rowSumsA, NumericVector rowSumsB, double sumInit, IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, NumericVector expPsi);
 RcppExport SEXP seqHMM_gradient(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP rowSumsASEXP, SEXP rowSumsBSEXP, SEXP sumInitSEXP, SEXP transNZSEXP, SEXP emissNZSEXP, SEXP initNZSEXP, SEXP expPsiSEXP) {
