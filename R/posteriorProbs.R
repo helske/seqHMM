@@ -8,7 +8,6 @@
 #' @return Posterior probabilities in logarithm scale. In case of multiple observations,
 #' these are computed independently for each sequence.
 posteriorProbs<-function(model){
-
   if(model$numberOfChannels==1){
     obsArray<-data.matrix(model$observations)-1
     obsArray[obsArray>model$numberOfSymbols]<-model$numberOfSymbols

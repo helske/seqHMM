@@ -37,7 +37,7 @@ NumericMatrix X_, IntegerVector numberOfStates) {
   
   arma::mat lweights = exp(X*coef).t();
   if(!lweights.is_finite()){
-    return -std::numeric_limits<double>::max();
+    return wrap(-std::numeric_limits<double>::max());
   }
   lweights.each_row() /= sum(lweights,0);
   lweights = log(lweights);   
