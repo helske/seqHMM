@@ -253,13 +253,13 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
           print("Convergence check: (Local) optimum was found.")
         }else{
           print("Convergence check: Possible problem(s) with convergence.")
-          if(fit$optimx.result$convcode!=0){
+          if(is.na(fit$optimx.result$convcode) || fit$optimx.result$convcode!=0){
             print(paste("convcode =", fit$optimx.result$convcode))
           }
-          if(fit$optimx.result$kkt1!=TRUE){
+          if(is.na(fit$optimx.result$kkt1) || fit$optimx.result$kkt1!=TRUE){
             print(paste("kkt1 =", fit$optimx.result$kkt1))
           }
-          if(fit$optimx.result$kkt2!=TRUE){
+          if(is.na(fit$optimx.result$kkt2) || fit$optimx.result$kkt2!=TRUE){
             print(paste("kkt2 =", fit$optimx.result$kkt2))
           }
           print("Type help(optimx) for more information.")
