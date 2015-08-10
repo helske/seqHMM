@@ -344,3 +344,17 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// viterbiProbMC
+double viterbiProbMC(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray);
+RcppExport SEXP seqHMM_viterbiProbMC(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP);
+    __result = Rcpp::wrap(viterbiProbMC(transitionMatrix, emissionArray, initialProbs, obsArray));
+    return __result;
+END_RCPP
+}

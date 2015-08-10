@@ -64,18 +64,18 @@
 #' 
 #' ## Building one channel per type of event left, children or married
 #' bf <- as.matrix(biofam[, 10:25])
-#' children <-  bf==4 | bf==5 | bf==6
-#' married <- bf == 2 | bf== 3 | bf==6
-#' left <- bf==1 | bf==3 | bf==5 | bf==6
+#' children <-  bf == 4 | bf == 5 | bf == 6
+#' married <- bf == 2 | bf == 3 | bf == 6
+#' left <- bf == 1 | bf == 3 | bf == 5 | bf == 6
 #' 
-#' children[children==TRUE] <- "Children"
-#' children[children==FALSE] <- "Childless"
+#' children[children == TRUE] <- "Children"
+#' children[children == FALSE] <- "Childless"
 #' 
-#' married[married==TRUE] <- "Married"
-#' married[married==FALSE] <- "Single"
+#' married[married == TRUE] <- "Married"
+#' married[married == FALSE] <- "Single"
 #' 
-#' left[left==TRUE] <- "Left home"
-#' left[left==FALSE] <- "With parents"
+#' left[left == TRUE] <- "Left home"
+#' left[left == FALSE] <- "With parents"
 #' 
 #' ## Building sequence objects
 #' child.seq <- seqdef(children)
@@ -89,44 +89,62 @@
 #' 
 #' 
 #' # Preparing plot for state distribution plots of observations for women
-#' ssp_f <- ssp(list(child.seq[biofam$sex=="woman",], 
-#' marr.seq[biofam$sex=="woman",], left.seq[biofam$sex=="woman",]),
-#'                    type="d", plots="obs", title="Women", 
-#'                    ylab=c("Children", "Married", "Left home"))
+#' ssp_f <- ssp(
+#'   list(child.seq[biofam$sex == "woman",], marr.seq[biofam$sex == "woman",], 
+#'        left.seq[biofam$sex == "woman",]),
+#'   type = "d", plots = "obs", title = "Women", 
+#'   ylab = c("Children", "Married", "Left home")
+#'   )
 #' 
 #' # Preparing plot for state distribution plots of observations for men
-#' ssp_m <- ssp(list(child.seq[biofam$sex=="man",], 
-#' marr.seq[biofam$sex=="man",], left.seq[biofam$sex=="man",]), 
-#'                    type="d", plots="obs", title="Men", 
-#'                    ylab=c("Children", "Married", "Left home"))
+#' ssp_m <- ssp(
+#'   list(child.seq[biofam$sex == "man",], marr.seq[biofam$sex == "man",], 
+#'        left.seq[biofam$sex == "man",]), 
+#'   type = "d", plots = "obs", title = "Men", 
+#'   ylab = c("Children", "Married", "Left home")
+#'   )
 #' 
 #' # Plotting state distribution plots of observations for women and men in two columns 
-#' gridplot(list(ssp_f, ssp_m), cols=2, withlegend=FALSE)
-#' 
+#' gridplot(list(ssp_f, ssp_m), cols = 2, withlegend = FALSE)
 #' 
 #' # Preparing plots for state distributios and index plots of observations for women
-#' ssp_f2 <- ssp(list(child.seq[biofam$sex=="woman",], 
-#' marr.seq[biofam$sex=="woman",], left.seq[biofam$sex=="woman",]), 
-#'                     type="d", plots="obs", title="Women", 
-#'                     ylab=c("Children", "Married", "Left home"), withlegend=FALSE)
-#' ssp_f3 <- ssp(list(child.seq[biofam$sex=="woman",], 
-#' marr.seq[biofam$sex=="woman",], left.seq[biofam$sex=="woman",]), 
-#'                     type="I", plots="obs", title="Women", 
-#'                     ylab=c("Children", "Married", "Left home"), withlegend=FALSE)
+#' ssp_f2 <- ssp(
+#'   list(child.seq[biofam$sex == "woman",],marr.seq[biofam$sex == "woman",], 
+#'        left.seq[biofam$sex == "woman",]), 
+#'   type = "d", plots = "obs", title = "Women", withlegend = FALSE,
+#'   ylab = c("Children", "Married", "Left home"), ylab.pos = c(1, 2, 1))
+#' ssp_f3 <- ssp(
+#'   list(child.seq[biofam$sex=="woman",], marr.seq[biofam$sex=="woman",], 
+#'        left.seq[biofam$sex=="woman",]), 
+#'   type="I", plots="obs", title="Women", withlegend=FALSE,
+#'   ylab=c("Children", "Married", "Left home"), ylab.pos = c(1.5, 2.5, 1.5)
+#'   )
 #' 
 #' # Preparing plots for state distributios and index plots of observations for men
-#' ssp_m2 <- ssp(list(child.seq[biofam$sex=="man",], 
-#' marr.seq[biofam$sex=="man",], left.seq[biofam$sex=="man",]), 
-#'                     type="d", plots="obs", title="Men", 
-#'                     ylab=c("Children", "Married", "Left home"), withlegend=FALSE)
-#' ssp_m3 <- ssp(list(child.seq[biofam$sex=="man",], 
-#' marr.seq[biofam$sex=="man",], left.seq[biofam$sex=="man",]),
-#'                     type="I", plots="obs", title="Men", 
-#'                     ylab=c("Children", "Married", "Left home"), withlegend=FALSE)
-#' 
+#' ssp_m2 <- ssp(
+#'   list(child.seq[biofam$sex == "man",],marr.seq[biofam$sex == "man",], 
+#'        left.seq[biofam$sex == "man",]), 
+#'   type = "d", plots = "obs", title = "Men", withlegend = FALSE,
+#'   ylab = c("Children", "Married", "Left home"), ylab.pos = c(1, 2, 1))
+#' ssp_m3 <- ssp(
+#'   list(child.seq[biofam$sex=="man",], marr.seq[biofam$sex=="man",], 
+#'        left.seq[biofam$sex=="man",]), 
+#'   type="I", plots="obs", title="Men", withlegend=FALSE,
+#'   ylab=c("Children", "Married", "Left home"), ylab.pos = c(1.5, 2.5, 1.5)
+#'   )
+#'   
 #' # Plotting state distributions and index plots of observations for women and men in two columns 
-#' gridplot(list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=2, byrow=TRUE, 
-#'                   withlegend="combined", legend.pos="bottom", row.prop=c(0.4,0.4,0.2))
+#' gridplot(
+#'   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=3, byrow=TRUE, 
+#'   withlegend="combined", legend.pos="right", col.prop=c(0.35,0.35,0.3)
+#'   )
+#'   
+#' # The same with different positioning
+#' gridplot(
+#'   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols = 2, rows = 3, byrow=TRUE, 
+#'   # defining the legend positions by the cell numbers
+#'   legend.pos = 3:4
+#'   )
 #'                   
 #'                   
 #' @seealso \code{\link{ssp}} for defining the plot before using
