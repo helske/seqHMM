@@ -425,6 +425,8 @@ ssp <- function(x, mpp=NULL,
       }else{
         stop(paste("Argument ylab.pos only accepts the value \"auto\" or a numeric vector."))
       }
+    }else if(length(ylab.pos) == 1){
+      ylab.pos <- rep(ylab.pos, (nchannels+1))
     }else if(length(ylab.pos)!=(nchannels+1)){
       warning(paste0("The vector provided for ylab.pos does not match the number of requested plots (",
                      (nchannels+1), ")"))
@@ -437,6 +439,8 @@ ssp <- function(x, mpp=NULL,
       }else{
         stop(paste("Argument ylab.pos only accepts the value \"auto\" or a numeric vector."))
       }
+    }else if(length(ylab.pos) == 1){
+      ylab.pos <- rep(ylab.pos, nchannels)
     }else if(length(ylab.pos)!=nchannels){
       warning(paste0("The vector provided for ylab.pos does not match the number of requested plots (",
                      nchannels, ")"))
@@ -453,6 +457,10 @@ ssp <- function(x, mpp=NULL,
       warning(paste0("The vector provided for ylab.pos does not match the number of requested plots (",
                      1, ")"))
     }
+  }
+  
+  if(type == "I"){
+    ylab.pos <- ylab.pos + 0.5
   }
   
   # Space for viewports
