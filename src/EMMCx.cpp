@@ -30,9 +30,7 @@ List EMMCx(NumericVector transitionMatrix, NumericVector emissionArray, NumericV
   arma::mat X(X_.begin(),oDims[0],q);
   arma::mat lweights = exp(X*coef).t();
   if(!lweights.is_finite()){
-    return List::create(Named("initialProbs") = wrap(init), Named("transitionMatrix") = wrap(transition),
-      Named("emissionArray") = wrap(emission),Named("logLik") = -std::numeric_limits<double>::max(),
-      Named("iterations")=0,Named("change")=0);
+    return List::create(Named("error") = "error");
   }
   lweights.each_row() /= sum(lweights,0);
   lweights = log(lweights); 
@@ -86,113 +84,113 @@ List EMMCx(NumericVector transitionMatrix, NumericVector emissionArray, NumericV
   
   IntegerVector cumsumstate = cumsum(numberOfStates);
  
- optCoef(alpha.tube(0,0,alpha.n_rows-1,0),beta.tube(0,0,alpha.n_rows-1,0),ll,coef,X,lweights, cumsumstate,numberOfStates);
-//   while((change>tol) & (iter<itermax)){   
-//     iter++;
-//     gamma.zeros();
-//     ksii.zeros();
-//     delta.zeros();        
-//     
-//      
-//     optCoef(alpha.tube(0,0,alpha.n_rows,0),beta.tube(0,0,alpha.n_rows,0),ll,coef,X,lweights, cumsumstate,numberOfStates);
-// 
-//     for(int k = 0; k < oDims[0]; k++){
-//       
-//      
-//       delta += exp(alpha.slice(k).col(0) + beta.slice(k).col(0) - ll(k));
-//       
-//       for(int i = 0; i < eDims[0]; i++){
-//         for(int j = 0; j < eDims[0]; j++){
-//           sumtmp = neginf;
-//           for(int t=0; t < (oDims[1]-1); t++){
-//             tmp = alpha(i,t,k) + transition(i,j) + beta(j,t+1,k);
-//             if(tmp>neginf){
-//               for(int r=0; r < oDims[2]; r++){
-//                 tmp += emission(j,obs(k,t+1,r),r);
-//               }
-//             }
-//             if(tmp>neginf){
-//               sumtmp = logSumExp(sumtmp,tmp);
-//             }
-//           }
-//           
-//           ksii(i,j) += exp(sumtmp-ll(k));
-//           
-//         }
-//       }
-//       
-//       
-//       for(int r=0; r<eDims[2]; r++){
-//         for(int i = 0; i<eDims[0]; i++){
-//           for(int l = 0; l<nSymbols[r]; l++){
-//             sumtmp = neginf;
-//             for(int t=0; t<oDims[1];t++){
-//               if(l == (obs(k,t,r))){
-//                 tmp = alpha(i,t,k) + beta(i,t,k);
-//                 if(tmp>neginf){
-//                   sumtmp = logSumExp(sumtmp,tmp);
-//                 }
-//               }              
-//             }
-//             gamma(i,l,r) += exp(sumtmp-ll(k));
-//           }
-//         }
-//       }      
-//     }
-//     
-//     ksii.each_col() /= sum(ksii,1);
-//     transition = log(ksii);
-//     for(int r=0; r<eDims[2]; r++){
-//       
-//       gamma.slice(r).cols(0,nSymbols(r)-1).each_col() /= sum(gamma.slice(r).cols(0,nSymbols(r)-1),1);
-//       emission.slice(r).cols(0,nSymbols(r)-1) = log(gamma.slice(r).cols(0,nSymbols(r)-1));
-//     }
-//     
-//     for(int i=0; i < numberOfStates.size(); i++){
-//       delta.subvec(cumsumstate(i)-numberOfStates(i),cumsumstate(i)-1) /= 
-//         arma::as_scalar(arma::accu(delta.subvec(cumsumstate(i)-numberOfStates(i),cumsumstate(i)-1)));
-//     }   
-//     //delta /= arma::as_scalar(arma::accu(delta));
-//     
-//     init = log(delta);
-//     
-//     for(int k = 0; k < oDims[0]; k++){    
-//       initk.col(k) = init + reparma(lweights.col(k),numberOfStates);
-//     }
-//     
-//     internalForwardMCx(transition, emission, initk, obs, alpha);
-//     internalBackwardMC(transition, emission, obs, beta);
-//     
-//     for(int k=0;k<oDims[0];k++){
-//       tmp =neginf;
-//       for(int i = 0; i < eDims[0]; i++){
-//         if(alpha(i,oDims[1]-1,k)>neginf){
-//           tmp = logSumExp(alpha(i,oDims[1]-1,k),tmp); 
-//         }
-//       }
-//       ll(k) = tmp;
-//     }
-//     
-//     
-//     tmp = sum(ll);
-//     change = (tmp - sumlogLik)/(abs(sumlogLik)+0.1);
-//     sumlogLik = tmp;
-//     if(trace>1){
-//       Rcout<<"iter: "<< iter;
-//       Rcout<<" logLik: "<< sumlogLik;
-//       Rcout<<" relative change: "<<change<<std::endl;
-//     }
-//     
-//   }
-//   if(trace>0){
-//     if(iter==itermax){
-//       Rcpp::Rcout<<"EM algorithm stopped after reaching the maximum number of "<<iter<<" iterations."<<std::endl;     
-//     } else{
-//       Rcpp::Rcout<<"EM algorithm stopped after reaching the relative change of "<<change;
-//       Rcpp::Rcout<<" after "<<iter<<" iterations."<<std::endl;
-//     }
-//     Rcpp::Rcout<<"Final log-likelihood: "<< sumlogLik<<std::endl;
-//   }
-  return List::create(Named("initialProbs") = wrap(exp(init)), Named("transitionMatrix") = wrap(exp(transition)),
+ 
+  while((change>tol) & (iter<itermax)){   
+    iter++;
+    gamma.zeros();
+    ksii.zeros();
+    delta.zeros();        
+
+    for(int k = 0; k < oDims[0]; k++){
+      
+     
+      delta += exp(alpha.slice(k).col(0) + beta.slice(k).col(0) - ll(k));
+      
+      for(int i = 0; i < eDims[0]; i++){
+        for(int j = 0; j < eDims[0]; j++){
+          sumtmp = neginf;
+          for(int t=0; t < (oDims[1]-1); t++){
+            tmp = alpha(i,t,k) + transition(i,j) + beta(j,t+1,k);
+            if(tmp>neginf){
+              for(int r=0; r < oDims[2]; r++){
+                tmp += emission(j,obs(k,t+1,r),r);
+              }
+            }
+            if(tmp>neginf){
+              sumtmp = logSumExp(sumtmp,tmp);
+            }
+          }
+          
+          ksii(i,j) += exp(sumtmp-ll(k));
+          
+        }
+      }
+      
+      
+      for(int r=0; r<eDims[2]; r++){
+        for(int i = 0; i<eDims[0]; i++){
+          for(int l = 0; l<nSymbols[r]; l++){
+            sumtmp = neginf;
+            for(int t=0; t<oDims[1];t++){
+              if(l == (obs(k,t,r))){
+                tmp = alpha(i,t,k) + beta(i,t,k);
+                if(tmp>neginf){
+                  sumtmp = logSumExp(sumtmp,tmp);
+                }
+              }              
+            }
+            gamma(i,l,r) += exp(sumtmp-ll(k));
+          }
+        }
+      }      
+    }
+    
+    ksii.each_col() /= sum(ksii,1);
+    transition = log(ksii);
+    for(int r=0; r<eDims[2]; r++){
+      
+      gamma.slice(r).cols(0,nSymbols(r)-1).each_col() /= sum(gamma.slice(r).cols(0,nSymbols(r)-1),1);
+      emission.slice(r).cols(0,nSymbols(r)-1) = log(gamma.slice(r).cols(0,nSymbols(r)-1));
+    }
+    
+    for(int i=0; i < numberOfStates.size(); i++){
+      delta.subvec(cumsumstate(i)-numberOfStates(i),cumsumstate(i)-1) /= 
+        arma::as_scalar(arma::accu(delta.subvec(cumsumstate(i)-numberOfStates(i),cumsumstate(i)-1)));
+    }   
+    init = log(delta);
+    
+    
+    optCoef(alpha.tube(0,0,alpha.n_rows-1,0),beta.tube(0,0,alpha.n_rows-1,0),ll,coef,X,lweights, cumsumstate,numberOfStates);
+    
+  
+    
+    for(int k = 0; k < oDims[0]; k++){    
+      initk.col(k) = init + reparma(lweights.col(k),numberOfStates);
+    }
+    
+    internalForwardMCx(transition, emission, initk, obs, alpha);
+    internalBackwardMC(transition, emission, obs, beta);
+    
+    for(int k=0;k<oDims[0];k++){
+      tmp =neginf;
+      for(int i = 0; i < eDims[0]; i++){
+        if(alpha(i,oDims[1]-1,k)>neginf){
+          tmp = logSumExp(alpha(i,oDims[1]-1,k),tmp); 
+        }
+      }
+      ll(k) = tmp;
+    }
+    
+    
+    tmp = sum(ll);
+    change = (tmp - sumlogLik)/(abs(sumlogLik)+0.1);
+    sumlogLik = tmp;
+    if(trace>1){
+      Rcout<<"iter: "<< iter;
+      Rcout<<" logLik: "<< sumlogLik;
+      Rcout<<" relative change: "<<change<<std::endl;
+    }
+    
+  }
+  if(trace>0){
+    if(iter==itermax){
+      Rcpp::Rcout<<"EM algorithm stopped after reaching the maximum number of "<<iter<<" iterations."<<std::endl;     
+    } else{
+      Rcpp::Rcout<<"EM algorithm stopped after reaching the relative change of "<<change;
+      Rcpp::Rcout<<" after "<<iter<<" iterations."<<std::endl;
+    }
+    Rcpp::Rcout<<"Final log-likelihood: "<< sumlogLik<<std::endl;
+  }
+  return List::create(Named("beta") = wrap(coef), Named("initialProbs") = wrap(exp(init)), Named("transitionMatrix") = wrap(exp(transition)),
     Named("emissionArray") = wrap(exp(emission)),Named("logLik") = sumlogLik,Named("iterations")=iter,Named("change")=change);
 }

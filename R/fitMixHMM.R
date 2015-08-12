@@ -220,16 +220,25 @@ fitMixHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="
       
       resEM<-EMMCx(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
         model$numberOfSymbols, model$beta, model$X, model$numberOfStatesInClusters,em.con$maxit, em.con$reltol,em.con$trace)
+      if(!is.null(resEM$error))
+        stop("Initial values for beta resulted non-finite cluster probabilities.")
       if(resEM$change< -1e-5)
-        warning("EM algorithm stopped due to the decreasing log-likelihood. ")
+        warning("EM algorithm stopped due to decreasing log-likelihood. ")
       
       
       for(i in 1:model$numberOfChannels)
         model$emissionMatrix[[i]][]<-resEM$emissionArray[ , 1:model$numberOfSymbols[i], i]                                     
     }
     
-    model$initialProbs[]<-resEM$initialProbs
+    if(use.optimx){
+    k <- 0
+    for(m in 1:model$numberOfClusters){
+      original_model$initialProbs[[m]] <- unname(resEM$initialProbs[(k+1):(k+model$numberOfStatesInClusters[m])])
+      k <- sum(model$numberOfStatesInClusters[1:m])
+    }
+    } else model$initialProbs[] <- resEM$initialProbs
     model$transitionMatrix[]<-resEM$transitionMatrix
+    model$beta[]<-resEM$beta
     
   } else resEM <-NULL
   
@@ -496,7 +505,7 @@ fitMixHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="
     }
     
     if(is.null(optimx.control$fnscale) && use.em){
-      optimx.control$fnscale <- -resEM$logLik 
+      optimx.control$fnscale <- -resEM$logLik
     }
     
     if(is.null(optimx.control$kkt)){
@@ -511,9 +520,9 @@ fitMixHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="
     
     rownames(model$beta) <- colnames(model$X)
     colnames(model$beta) <- model$clusterNames
-  }
+  } else resoptimx <- NULL
   pr <- exp(model$X%*%model$beta)
   model$clusterProbabilities <- pr/rowSums(pr)
   
-  list(model=spreadModels(model),logLik=-resoptimx$value,optimx.result=resoptimx)
+  list(model=spreadModels(model),logLik=ifelse(use.optimx,-resoptimx$value,resEM$logLik),em.result=resEM[4:6],optimx.result=resoptimx)
 }

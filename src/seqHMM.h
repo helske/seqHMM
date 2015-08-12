@@ -22,13 +22,13 @@ void internalBackwardMC(const arma::mat& transition, const arma::cube& emission,
 void internalBackward(const arma::mat& transition, const arma::mat& emission, 
   const arma::Mat<int>& obs, arma::cube& beta);
 
-void optCoef(arma::mat alpha, arma::mat beta, arma::vec ll, arma::mat coef,
-  arma::mat X, arma::mat lweights,Rcpp::IntegerVector cumsumstate,
+void optCoef(arma::mat alpha, arma::mat beta, arma::vec& ll, arma::mat& coef,
+  arma::mat& X, arma::mat& lweights,Rcpp::IntegerVector cumsumstate,
   Rcpp::IntegerVector numberOfStates);
 
-arma::mat gCoef(arma::mat usums, arma::mat lweights, arma::mat X);
+arma::vec gCoef(arma::mat& usums, arma::mat& lweights, arma::mat& X);
 
-arma::mat hCoef(arma::mat usums, arma::mat lweights, arma::mat X);
+arma::mat hCoef(arma::mat& usums, arma::mat& lweights, arma::mat& X);
 
 
 
