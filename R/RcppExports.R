@@ -17,6 +17,10 @@ EMMC <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbo
     .Call('seqHMM_EMMC', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol, trace)
 }
 
+EMMCx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, coefs, X_, numberOfStates, itermax = 100L, tol = 1e-8, trace = 0L) {
+    .Call('seqHMM_EMMCx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, coefs, X_, numberOfStates, itermax, tol, trace)
+}
+
 forward <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
     .Call('seqHMM_forward', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
