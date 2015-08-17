@@ -156,6 +156,9 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       for(i in 1:model$numberOfChannels)
         model$emissionMatrix[[i]][]<-resEM$emissionArray[ , 1:model$numberOfSymbols[i], i]                                     
     }
+    
+    model$initialProbs[]<-resEM$initialProbs
+    model$transitionMatrix[]<-resEM$transitionMatrix
 
   } else resEM <-NULL
   
@@ -375,8 +378,8 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
     }
     
     
-    if(is.null(optimx.control$fnscale) && use.em){
-      optimx.control$fnscale <- -resEM$logLik 
+    if(is.null(optimx.control$fnscale)){
+      optimx.control$fnscale <- - ifelse(use.em, resEM$logLik, logLik(model))
     }
     if(is.null(optimx.control$kkt)){
       optimx.control$kkt<-FALSE
