@@ -136,7 +136,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       
       resEM<-EM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
                 obsArray, model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
-      if(resEM$change<0)
+      if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")      
       
       model$emissionMatrix[]<-resEM$emissionMatrix[,1:model$numberOfSymbols]
@@ -149,17 +149,14 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       
       resEM<-EMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
                   model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
-      if(resEM$change<0)
+      if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")
       
       
       for(i in 1:model$numberOfChannels)
         model$emissionMatrix[[i]][]<-resEM$emissionArray[ , 1:model$numberOfSymbols[i], i]                                     
     }
-    
-    model$initialProbs[]<-resEM$initialProbs
-    model$transitionMatrix[]<-resEM$transitionMatrix
-    
+
   } else resEM <-NULL
   
   if(use.optimx){

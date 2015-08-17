@@ -171,7 +171,7 @@ NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates) {
         }
       }
       for(unsigned int j = 0; j < eDims[0]; j++){                       
-        if(j>=(cumsumstate(jj)-numberOfStates(jj)) & (j<cumsumstate(jj))){
+        if((j>=(cumsumstate(jj)-numberOfStates(jj))) & (j<cumsumstate(jj))){
           grad.subvec(expPsi.size()+q*(jj-1),expPsi.size()+q*jj-1) += 
           exp(emissionLog(j,obs(k,0))+beta(j,0,k)-ll(k)+initk(j,k))*X.row(k).t()*tmp2/sumweights(k);
         } else {

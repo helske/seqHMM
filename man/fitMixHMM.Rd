@@ -4,8 +4,8 @@
 \alias{fitMixHMM}
 \title{Estimate Parameters of Mixture Hidden Markov Model}
 \usage{
-fitMixHMM(model, method = "BFGS", itnmax = 10000, optimx.control = list(),
-  ...)
+fitMixHMM(model, use.em = TRUE, use.optimx = TRUE, em.control = list(),
+  method = "BFGS", itnmax = 10000, optimx.control = list(), ...)
 }
 \arguments{
 \item{model}{Hidden Markov model of class \code{mixHMModel}.}
