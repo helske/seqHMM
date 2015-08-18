@@ -587,7 +587,7 @@ ssp <- function(x, mpp=NULL,
       }
     }else if(!is.null(mpp.labels) && length(mpp.labels)==1 && mpp.color=="auto" && length(mpp)==1 && is.null(mpp)){
       attr(mpp.seq, "cpal") <- seqHMM::colorpalette[[length(alphabet(mpp.seq))]]
-    }else if(all(areColors(mpp.color))){
+    }else if(all(isColor(mpp.color))){
       if(length(mpp.color)!=length(alphabet(mpp.seq))){
         warning(paste0("Number of colors assigned to mpp.color does not match the number of hidden states. \n
                        There are ", length(alphabet(mpp.seq)), 

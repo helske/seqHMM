@@ -256,13 +256,6 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
   
   dots <- list(...)
   
-  areColors <- function(y) {
-    sapply(y, function(Y) {
-      tryCatch(is.matrix(col2rgb(Y)), 
-               error = function(e) FALSE)
-    })
-  }
-  
   labelprint <- function(z, labs){
     if(labs==TRUE && (z > 0.001 || z==0)){
       labs <- FALSE
@@ -407,7 +400,7 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
   }else if(length(cpal)!=ncol(x$emiss)){
     warning("The length of the vector provided for argument cpal does not match the number of observed states. Automatic color palette was used.")
     pie.colors <- attr(x$observations, "cpal")
-  }else if(!all(areColors(cpal))){
+  }else if(!all(isColor(cpal))){
     stop(paste("Please provide a vector of colors for argument cpal or use value \"auto\" to use automatic color palette."))
   }else{
     pie.colors <- cpal
