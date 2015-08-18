@@ -117,7 +117,7 @@
 #'   list(child.seq[biofam$sex=="woman",], marr.seq[biofam$sex=="woman",], 
 #'        left.seq[biofam$sex=="woman",]), 
 #'   type="I", plots="obs", title="Women", withlegend=FALSE,
-#'   ylab=c("Children", "Married", "Left home"), ylab.pos = c(1.5, 2.5, 1.5)
+#'   ylab=c("Children", "Married", "Left home"), ylab.pos = c(1, 2, 1)
 #'   )
 #' 
 #' # Preparing plots for state distributios and index plots of observations for men
@@ -130,7 +130,7 @@
 #'   list(child.seq[biofam$sex=="man",], marr.seq[biofam$sex=="man",], 
 #'        left.seq[biofam$sex=="man",]), 
 #'   type="I", plots="obs", title="Men", withlegend=FALSE,
-#'   ylab=c("Children", "Married", "Left home"), ylab.pos = c(1.5, 2.5, 1.5)
+#'   ylab=c("Children", "Married", "Left home"), ylab.pos = c(1, 2, 1)
 #'   )
 #'   
 #' # Plotting state distributions and index plots of observations for women and men in two columns 
