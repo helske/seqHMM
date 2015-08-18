@@ -14,7 +14,7 @@ SSPlotter <- function(obs, nchannels, channelNames, nplots,
                        xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
                        ylab="auto", hiddenStates.title="Hidden states", 
                        ylab.pos="auto", 
-                       cex.lab=1, cex.axis=1, new=FALSE, ...
+                       cex.lab=1, cex.axis=1, new=FALSE, call = match.call(), ...
 ){
   
   # Grid for plotting regions
