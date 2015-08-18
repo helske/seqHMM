@@ -12,6 +12,12 @@
 #'
 #' @examples
 #' plotColors(colorpalette[[10]])
+#' 
+#' plotColors(1:7)
+#' 
+#' plotColors(c("yellow", "orange", "red", "purple", "blue", "green"))
+#' 
+#' plotColors(rainbow(15))
 
 
 plotColors <- function(x) {
