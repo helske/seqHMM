@@ -280,13 +280,6 @@ ssp <- function(x, mpp=NULL,
   
   arguments <- list()
   
-  areColors <- function(x) {
-    sapply(x, function(X) {
-      tryCatch(is.matrix(col2rgb(X)), 
-               error = function(e) FALSE)
-    })
-  }
-  
   if(!inherits(x,"HMModel") && (plots=="both" || plots=="mpp") && is.null(mpp)){
     stop(paste("For plotting the most probable paths, you need to add the argument mpp or give an object of class HMModel to x."))
   }
