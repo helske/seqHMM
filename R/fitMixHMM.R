@@ -205,8 +205,9 @@ fitMixHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="
     
     if(model$numberOfChannels==1){
       
-      resEM<-EM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
-        obsArray, model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+      resEM <- EMx(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
+        obsArray, model$numberOfSymbols,  model$beta, model$X, model$numberOfStatesInClusters, 
+        em.con$maxit, em.con$reltol,em.con$trace)
       if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")      
       
@@ -218,8 +219,8 @@ fitMixHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="
       for(i in 1:model$numberOfChannels)
         emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
       
-      resEM<-EMMCx(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
-        model$numberOfSymbols, model$beta, model$X, model$numberOfStatesInClusters,em.con$maxit, em.con$reltol,em.con$trace)
+      resEM <- EMMCx(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
+        model$numberOfSymbols, model$beta, model$X, model$numberOfStatesInClusters, em.con$maxit, em.con$reltol,em.con$trace)
       if(!is.null(resEM$error))
         stop("Initial values for beta resulted non-finite cluster probabilities.")
       if(resEM$change< -1e-5)

@@ -126,7 +126,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
   }
   #storage.mode(obsArray)<-"integer"
   if(use.em){
-    em.con <- list(trace = 0, maxit=100,reltol=1e-8)
+    em.con <- list(trace = 0, maxit=100,reltol=1e-8, soft = TRUE)
     nmsC <- names(em.con)  
     em.con[(namc <- names(em.control))] <- em.control
     if (length(noNms <- namc[!namc %in% nmsC])) 
@@ -134,8 +134,13 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
     
     if(model$numberOfChannels==1){
       
+      if(em.con$soft){
       resEM<-EM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
                 obsArray, model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+      } else {
+      resEM<-hardEM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
+        obsArray, model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+      }
       if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")      
       
