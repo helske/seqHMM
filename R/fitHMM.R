@@ -110,9 +110,9 @@
 #' 
 
 
-fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFGS",itnmax=10000,optimx.control=list(),...){
+fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(), soft = TRUE, method="BFGS",itnmax=10000,optimx.control=list(),...){
   
-  
+  if(use.optimx) ologlik <- -logLik(model)
   if(model$numberOfChannels==1){
     obsArray<-data.matrix(model$observations)-1
     obsArray[obsArray>model$numberOfSymbols]<-model$numberOfSymbols
@@ -134,8 +134,13 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
     
     if(model$numberOfChannels==1){
       
-      resEM<-EM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
-                obsArray, model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+      if(soft){
+        resEM<-EM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
+          obsArray, model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+      } else {
+        resEM<-hardEM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
+          obsArray, model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+      }
       if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")      
       
@@ -148,7 +153,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
         emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
       
       resEM<-EMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
-                  model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+        model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
       if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")
       
@@ -159,7 +164,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
     
     model$initialProbs[]<-resEM$initialProbs
     model$transitionMatrix[]<-resEM$transitionMatrix
-
+    
   } else resEM <-NULL
   
   if(use.optimx){
@@ -226,7 +231,10 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
         } 
         
         if(estimate){
-          - sum(logLikHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray))
+          if(soft){
+            - sum(logLikHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray))
+          } else -sum(mostProbablePath2(model)$log)
+            #viterbiProb(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray)
         } else model
       }
       
@@ -259,7 +267,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
         } 
         
         - gradient(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray, 
-                   rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars)) 
+          rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars)) 
         
         
       }
@@ -291,7 +299,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
       initialvalues<-c(log(c(
         if(npTM>0) model$transitionMatrix[paramTM],
         if(sum(npEM)>0) unlist(sapply(1:model$numberOfChannels,
-                                      function(x) model$emissionMatrix[[x]][paramEM[[x]]])),
+          function(x) model$emissionMatrix[[x]][paramEM[[x]]])),
         if(npIP>0) model$initialProbs[paramIP]))
       )         
       
@@ -372,14 +380,14 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
         } 
         
         - gradientMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
-                     rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars))
+          rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars))
         
       }
     }
     
     
     if(is.null(optimx.control$fnscale)){
-      optimx.control$fnscale <- - ifelse(use.em, resEM$logLik, logLik(model))
+      optimx.control$fnscale <- ologlik#  optimx.control$fnscale <- - ifelse(use.em, resEM$logLik, logLik(model))
     }
     if(is.null(optimx.control$kkt)){
       optimx.control$kkt<-FALSE
@@ -387,7 +395,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(),method="BFG
     if(is.null(optimx.control$starttests)){
       optimx.control$starttests<-FALSE
     }
-    
+    if(!soft) gradfn <- NULL
     resoptimx<-optimx(par=initialvalues,fn=likfn,gr=gradfn,method=method,itnmax=itnmax,control=optimx.control,model=model,...)
     model<-likfn(as.numeric(resoptimx[1:length(initialvalues)]),model,FALSE)
     

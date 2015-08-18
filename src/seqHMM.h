@@ -30,6 +30,7 @@ arma::vec gCoef(arma::mat& usums, arma::mat& lweights, arma::mat& X);
 
 arma::mat hCoef(arma::mat& usums, arma::mat& lweights, arma::mat& X);
 
-
+void viterbiForEM(arma::mat& transition, arma::mat& emission, arma::vec& init, arma::imat& obs, 
+  arma::vec& logp, arma::umat& q);
 
 #endif

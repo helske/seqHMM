@@ -53,6 +53,10 @@ gradientx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, r
     .Call('seqHMM_gradientx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, rowSumsA, rowSumsB, sumInit, transNZ, emissNZ, initNZ, expPsi, coefs, X_, numberOfStates)
 }
 
+hardEM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax = 100L, tol = 1e-8, trace = 0L) {
+    .Call('seqHMM_hardEM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol, trace)
+}
+
 logLikHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
     .Call('seqHMM_logLikHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
@@ -73,6 +77,10 @@ viterbi <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
     .Call('seqHMM_viterbi', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
 
+viterbiForEM <- function(transition, emission, init, obs, logp, q) {
+    invisible(.Call('seqHMM_viterbiForEM', PACKAGE = 'seqHMM', transition, emission, init, obs, logp, q))
+}
+
 viterbiMC <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
     .Call('seqHMM_viterbiMC', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
@@ -83,6 +91,10 @@ viterbix <- function(transitionMatrix, emissionArray, initialProbs, obsArray, co
 
 viterbiMCx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates) {
     .Call('seqHMM_viterbiMCx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates)
+}
+
+viterbiProb <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
+    .Call('seqHMM_viterbiProb', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
 
 viterbiProbMC <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {

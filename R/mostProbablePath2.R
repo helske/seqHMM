@@ -112,15 +112,6 @@ mostProbablePath2<-function(model){
       out<-viterbi(model$transitionMatrix, cbind(model$emissionMatrix,0), 
                    model$initialProbs, obsArray)
     }
-    if(model$numberOfSequences==1){
-      mpp<-t(rownames(model$transitionMatrix)[out$q+1])
-    }else{
-      mpp<-apply(out$q+1,2,function(x) rownames(model$transitionMatrix)[x])
-    }
-    mpp<-seqdef(mpp,alphabet=model$stateNames,
-                id=rownames(model$obs),
-                start=attr(model$obs,"start"),
-                xtstep=attr(model$obs,"xtstep"))
   } else {
     model$emissionMatrix<-lapply(model$emissionMatrix,function(x){
       x<-log(x)
