@@ -53,6 +53,9 @@ List hardEM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
     ksii.zeros();
     delta.zeros();
     
+    //delta.elem(arma::find_finite(init)).ones();
+    //ksii.elem(arma::find_finite(transition)).ones();
+    //gamma.elem(arma::find_finite(emission)).ones();
     
     for(int k = 0; k < oDims[0]; k++){
       
@@ -64,37 +67,35 @@ List hardEM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
       }
       gamma(q(k,oDims[1]-1),obs(k,oDims[1]-1))++;
     }
-      gamma.col(eDims[1] - 1).zeros();
-      
-      delta /= arma::as_scalar(arma::accu(delta));
-      ksii.each_col() /= sum(ksii,1);       
-      gamma.each_col() /= sum(gamma,1);    
-      
-      init = log(delta);
-      transition = log(ksii);
-      emission.cols(0,nSymbols-1) = log(gamma.cols(0,nSymbols-1));
-      
-      viterbiForEM(transition, emission, init, obs, logp, q);
-      tmp = sum(logp);
-      change = (tmp - sumlogp)/(abs(sumlogp)+0.1);
-      sumlogp = tmp;
-      if(trace>1){
-        Rcout<<"iter: "<< iter;
-        Rcout<<" logLik: "<< sumlogp;
-        Rcout<<" relative change: "<<change<<std::endl;
-      }
-      
+    delta /= arma::as_scalar(arma::accu(delta));
+    ksii.each_col() /= sum(ksii,1); 
+    gamma.col(eDims[1] - 1).zeros();
+    gamma.each_col() /= sum(gamma,1);    
+    
+    init = log(delta);
+    transition = log(ksii);
+    emission.cols(0,nSymbols-1) = log(gamma.cols(0,nSymbols-1));
+    
+    viterbiForEM(transition, emission, init, obs, logp, q);
+    tmp = sum(logp);
+    change = (tmp - sumlogp)/(abs(sumlogp)+0.1);
+    sumlogp = tmp;
+    if(trace>1){
+      Rcout<<"iter: "<< iter;
+      Rcout<<" logLik: "<< sumlogp;
+      Rcout<<" relative change: "<<change<<std::endl;
     }
-    if(trace>0){
-      if(iter==itermax){
-        Rcpp::Rcout<<"EM algorithm stopped after reaching the maximum number of "<<iter<<" iterations."<<std::endl;     
-      } else{
-        Rcpp::Rcout<<"EM algorithm stopped after reaching the relative change of "<<change;
-        Rcpp::Rcout<<" after "<<iter<<" iterations."<<std::endl;
-      }
-      Rcpp::Rcout<<"Final log-likelihood: "<< sumlogp<<std::endl;
-    }
-    return List::create(Named("initialProbs") = wrap(exp(init)), Named("transitionMatrix") = wrap(exp(transition)),
-      Named("emissionMatrix") = wrap(exp(emission)),Named("logLik") = sumlogp,Named("iterations")=iter,Named("change")=change);
+    
   }
-  
+  if(trace>0){
+    if(iter==itermax){
+      Rcpp::Rcout<<"EM algorithm stopped after reaching the maximum number of "<<iter<<" iterations."<<std::endl;     
+    } else{
+      Rcpp::Rcout<<"EM algorithm stopped after reaching the relative change of "<<change;
+      Rcpp::Rcout<<" after "<<iter<<" iterations."<<std::endl;
+    }
+    Rcpp::Rcout<<"Final log-likelihood: "<< sumlogp<<std::endl;
+  }
+  return List::create(Named("initialProbs") = wrap(exp(init)), Named("transitionMatrix") = wrap(exp(transition)),
+    Named("emissionMatrix") = wrap(exp(emission)),Named("logLik") = sumlogp,Named("iterations")=iter,Named("change")=change);
+}
