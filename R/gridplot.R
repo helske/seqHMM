@@ -29,8 +29,8 @@
 #'   
 #' @param legend.pos2 Defines the positions of the legend boxes relative to the
 #'   cell(s). One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"}, 
-#'   \code{"left"}, \code{"topleft"}, \code{"top"}, \code{"topright"}, 
-#'   \code{"right"} and \code{"center"} (the default).
+#'   \code{"left"}, \code{"topleft"}, \code{"top"} (the default), \code{"topright"}, 
+#'   \code{"right"} and \code{"center"}.
 #'   
 #' @param title.legend The titles for the legend boxes. The default \code{"auto"} takes
 #'   the titles from the channel labels provided by the first object in \code{x}.
@@ -153,7 +153,7 @@
 
 gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
                      withlegend="auto", legend.pos="auto", 
-                     legend.pos2="center", title.legend="auto",
+                     legend.pos2="top", title.legend="auto",
                      ncol.legend="auto", 
                      with.missing.legend="auto",                       
                      row.prop="auto", col.prop="auto", cex.legend=1){
