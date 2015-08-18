@@ -35,158 +35,163 @@ This example uses the `biofam` data from the `TraMineR` package. The data consis
 For the functions of the `seqHMM` package, sequence data is given as a state sequence object (`stslist`) using the `seqdef` function in the `TraMineR` package. To show a more complex example, the original data is split into three separate channels. For the divorced state there is no information on children or residence, so these are assessed using the preceding states.
 
 ```
-library(seqHMM)
 library(TraMineR)
 
 data(biofam)
 
-
 # Complete cases in sex, birthyear, and first nationality
 bio <- biofam[complete.cases(biofam[c(2:4)]),]
 
-## Sequence data for the first six individuals
+# Sequence data for the first six individuals
 head(bio[10:25])
 
 ## Building one channel per type of event (married, children, or left)
-bf <- as.matrix(bio[, 10:25]) 
-married <- bf == 2 | bf== 3 | bf==6 
-children <-  bf==4 | bf==5 | bf==6
-left <- bf==1 | bf==3 | bf==5 | bf==6 | bf==7
+bf <- as.matrix(bio[, 10:25])
+married <- bf == 2 | bf == 3 | bf == 6
+children <-  bf == 4 | bf == 5 | bf == 6
+left <- bf == 1 | bf == 3 | bf == 5 | bf == 6 | bf == 7
 
-## Giving labels, modifying sequences
+## Giving labels and modifying sequences
 
 # Marriage
-married[married==TRUE] <- "Married" 
-married[married==FALSE] <- "Single"
-married[bf==7] <- "Divorced"
+married[married == TRUE] <- "Married"
+married[married == FALSE] <- "Single"
+married[bf == 7] <- "Divorced"
 
 # Parenthood
-children[children==TRUE] <- "Children" 
-children[children==FALSE] <- "Childless"
+children[children == TRUE] <- "Children"
+children[children == FALSE] <- "Childless"
 # Divorced parents
-div <- bf[(rowSums(bf==7)>0 & rowSums(bf==5)>0) | 
-          (rowSums(bf==7)>0 & rowSums(bf==6)>0),]
-children[rownames(bf) %in% rownames(div) & bf==7] <- "Children"
+div <- bf[
+  (rowSums(bf == 7)>0 & rowSums(bf == 5)>0) | 
+  (rowSums(bf == 7)>0 & rowSums(bf == 6)>0),
+  ]
+children[rownames(bf) %in% rownames(div) & bf == 7] <- "Children"
 
 # Residence
-left[left==TRUE] <- "Left home" 
+left[left==TRUE] <- "Left home"
 left[left==FALSE] <- "With parents"
 # Divorced living with parents (before divorce)
-wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &  
-           rowSums(bf==5)==0 &  rowSums(bf==6)==0) | 
-          (rowSums(bf==7)>0 & rowSums(bf==4)>0 & rowSums(bf==3)==0 &  
-           rowSums(bf==5)==0 &  rowSums(bf==6)==0),]
-left[rownames(bf) %in% rownames(wp) & bf==7] <- "With parents"
+wp <- bf[
+  (rowSums(bf == 7) > 0 & rowSums(bf == 2) > 0 & rowSums(bf == 3) == 0 &
+   rowSums(bf == 5) == 0 &  rowSums(bf == 6) == 0) |
+  (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 & rowSums(bf == 3) == 0 &
+   rowSums(bf == 5) == 0 &  rowSums(bf==6) == 0),
+  ]
+left[rownames(bf) %in% rownames(wp) & bf == 7] <- "With parents"
 
 ## Building sequence objects (starting at age 15)
-marr.seq <- seqdef(married, start=15) 
-child.seq <- seqdef(children, start=15) 
-left.seq <- seqdef(left, start=15)
+marr.seq <- seqdef(married, start = 15)
+child.seq <- seqdef(children, start = 15)
+left.seq <- seqdef(left, start = 15)
 
 ## Choosing colours for states
-attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
 attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
 attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 ```
 Multichannel sequence data are easily plotted using the `ssplot` function (ssplot for Stacked Sequence Plot).
 
 ```
 ## Plotting state distribution plots of observations
-ssplot(list(marr.seq, child.seq, left.seq), type="d", plots="obs", 
-       title="State distribution plots")
+ssplot(
+  list(marr.seq, child.seq, left.seq), type = "d", plots = "obs", 
+  title = "State distribution plots"
+  )
 ```                  
 ![ssp1](https://github.com/helske/seqHMM/blob/master/Examples/ssp1.png)
 
 Multiple `ssp` objects can also be plotted together in a grid.
 
 ```
-## Preparing plots for state distributios and index plots of observations for women
-#  Sorting by scores from multidimensional scaling
-ssp_f2 <- ssp(list(marr.seq[bio$sex=="woman",],
-                   child.seq[bio$sex=="woman",],
-                   left.seq[bio$sex=="woman",]),
-              type="d", plots="obs", border=NA,
-              title="State distributions for women", title.n=FALSE,
-              ylab=c("Married", "Parenthood", "Left home"), 
-              withlegend=FALSE, ylab.pos=c(1,2,1))
-ssp_f3 <- ssp(list(marr.seq[bio$sex=="woman",], 
-                   child.seq[bio$sex=="woman",],
-                   left.seq[bio$sex=="woman",]),
-              type="I", sortv="mds.obs", plots="obs", 
-              title="Sequences for women",
-              ylab=c("Married", "Parenthood", "Left home"), 
-              withlegend=FALSE, ylab.pos=c(1.5,2.5,1.5))
+# Preparing plots for women's state distributions
+# Sorting by scores from multidimensional scaling
+ssp_f2 <- ssp(
+  list(marr.seq[bio$sex == "woman",], child.seq[bio$sex == "woman",],
+       left.seq[bio$sex == "woman",]),
+  type = "d", plots = "obs", border = NA, withlegend = FALSE,
+  title = "State distributions for women", title.n = FALSE,
+  ylab = c("Married", "Parenthood", "Left home"), ylab.pos = c(1,2,1),
+  xlab = "Age", xtlab = 15:30
+  )
 
-## Preparing plots for state distributios and index plots of observations for men
-ssp_m2 <- ssp(list(marr.seq[bio$sex=="man",], 
-                   child.seq[bio$sex=="man",], 
-                   left.seq[bio$sex=="man",]),
-              type="d", plots="obs", border=NA,
-              title="State distributions for men", title.n=FALSE,
-              ylab=c("Married", "Parenthood", "Left home"), 
-              withlegend=FALSE, ylab.pos=c(1,2,1))
-ssp_m3 <- ssp(list(marr.seq[bio$sex=="man",], 
-                   child.seq[bio$sex=="man",],
-                   left.seq[bio$sex=="man",]),
-              type="I", sortv="mds.obs", plots="obs", 
-              title="Sequences for men",
-              ylab=c("Married", "Parenthood", "Left home"), 
-              withlegend=FALSE, ylab.pos=c(1.5,2.5,1.5))
+# Same plot, but sequences instead of state distributions
+ssp_f3 <- update(
+  ssp_f2, type = "I", sortv = "mds.obs", title = "Sequences for women"
+  )
+
+# State distributions with men's data
+ssp_m2 <- update(
+  ssp_f2, x = list(marr.seq[bio$sex == "man",], child.seq[bio$sex == "man",], 
+                   left.seq[bio$sex == "man",]),
+  type = "d", plots = "obs", border = NA,
+  title = "State distributions for men", title.n = FALSE,
+  ylab = c("Married", "Parenthood", "Left home"), 
+  withlegend = FALSE, ylab.pos = c(1,2,1)
+  )
+
+# Men's sequences
+ssp_m3 <- update(
+  ssp_m2, type = "I", sortv = "mds.obs", title = "Sequences for men"
+  )
 
 ## Plotting state distributions and index plots of observations for women and men 
 ## in two columns 
 gridplot(list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=2, byrow=TRUE, 
-           row.prop=c(0.42,0.42,0.16))
+         row.prop=c(0.42,0.42,0.16))
+
 ```
 ![gridplot](https://github.com/helske/seqHMM/blob/master/Examples/gridplot.png)
 
 When fitting Hidden Markov models (HMMs), initial values for model parameters are first given to the `buildHMM` function. After that, the model is fitted with the `fitHMM` function using EM algorithm, direct numerical estimation, or a combination of both.
 
 ```
-# Initial values for the emission matrices 
-B_marr <- matrix(NA, nrow=4, ncol=3) 
-B_marr[1,] <- seqstatf(marr.seq[,1:4])[,2]+0.1 
-B_marr[2,] <- seqstatf(marr.seq[,5:8])[,2]+0.1 
-B_marr[3,] <- seqstatf(marr.seq[,9:12])[,2]+0.1 
-B_marr[4,] <- seqstatf(marr.seq[,13:16])[,2]+0.1 
-B_marr <- B_marr/rowSums(B_marr)
+# Initial values for emission matrices
+B_marr <- matrix(NA, nrow=4, ncol=3)
+B_marr[1,] <- seqstatf(marr.seq[, 1:4])[, 2] + 0.1
+B_marr[2,] <- seqstatf(marr.seq[, 5:8])[, 2] + 0.1
+B_marr[3,] <- seqstatf(marr.seq[, 9:12])[, 2] + 0.1
+B_marr[4,] <- seqstatf(marr.seq[, 13:16])[, 2] + 0.1
+B_marr <- B_marr / rowSums(B_marr)
 
-B_child <- matrix(NA, nrow=4, ncol=2) 
-B_child[1,] <- seqstatf(child.seq[,1:4])[,2]+0.1 
-B_child[2,] <- seqstatf(child.seq[,5:8])[,2]+0.1 
-B_child[3,] <- seqstatf(child.seq[,9:12])[,2]+0.1 
-B_child[4,] <- seqstatf(child.seq[,13:16])[,2]+0.1 
-B_child <- B_child/rowSums(B_child)
+B_child <- matrix(NA, nrow=4, ncol=2)
+B_child[1,] <- seqstatf(child.seq[, 1:4])[, 2] + 0.1
+B_child[2,] <- seqstatf(child.seq[, 5:8])[, 2] + 0.1
+B_child[3,] <- seqstatf(child.seq[, 9:12])[, 2] + 0.1
+B_child[4,] <- seqstatf(child.seq[, 13:16])[, 2] + 0.1
+B_child <- B_child / rowSums(B_child)
 
-B_left <- matrix(NA, nrow=4, ncol=2) 
-B_left[1,] <- seqstatf(left.seq[,1:4])[,2]+0.1 
-B_left[2,] <- seqstatf(left.seq[,5:8])[,2]+0.1 
-B_left[3,] <- seqstatf(left.seq[,9:12])[,2]+0.1 
-B_left[4,] <- seqstatf(left.seq[,13:16])[,2]+0.1 
-B_left <- B_left/rowSums(B_left)
+B_left <- matrix(NA, nrow=4, ncol=2)
+B_left[1,] <- seqstatf(left.seq[, 1:4])[, 2] + 0.1
+B_left[2,] <- seqstatf(left.seq[, 5:8])[, 2] + 0.1
+B_left[3,] <- seqstatf(left.seq[, 9:12])[, 2] + 0.1
+B_left[4,] <- seqstatf(left.seq[, 13:16])[, 2] + 0.1
+B_left <- B_left / rowSums(B_left)
 
-# Initial values for the transition matrix 
-A <- matrix(c(0.9,   0.06, 0.03, 0.01,
-                0,    0.9, 0.07, 0.03, 
-                0,      0,  0.9,  0.1, 
-                0,      0,    0,    1), 
-            nrow=4, ncol=4, byrow=TRUE)
+# Initial values for transition matrix
+A <- matrix(c(0.9, 0.06, 0.03, 0.01,
+              0,    0.9, 0.07, 0.03,
+              0,      0,  0.9,  0.1,
+              0,      0,    0,    1), nrow = 4, ncol = 4, byrow = TRUE)
 
-# Initial values for the initial state probabilities 
+# Initial values for initial state probabilities
 initialProbs <- c(0.9, 0.07, 0.02, 0.01)
 
 ## Building the hidden Markov model with initial parameter values 
-bHMM <- buildHMM(observations=list(marr.seq, child.seq, left.seq), 
-                 transitionMatrix=A, 
-                 emissionMatrix=list(B_marr, B_child, B_left),
-                 initialProbs=initialProbs,
-                 channelNames=c("Marriage", "Parenthood", "Residence"))
+bHMM <- buildHMM(
+  observations = list(marr.seq, child.seq, left.seq),
+  initialProbs = initialProbs, transitionMatrix = A, 
+  emissionMatrix = list(B_marr, B_child, B_left),
+  channelNames = c("Marriage", "Parenthood", "Left home")
+  )
 
 ## Fitting the HMM 
 HMM <- fitHMM(bHMM)
 # or equivalently
-HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8), 
-              itnmax=10000, method="BFGS")
+HMM <- fitHMM(
+  bHMM, em.control = list(maxit = 100,reltol = 1e-8), 
+  itnmax = 10000, method = "BFGS"
+  )
 ```
 A simple `plot` method is used to show an `HMModel` object as a graph. It shows hidden states as pie charts (vertices), with emission probabilities as slices and transition probabilities as arrows (edges). Initial probabilities are shown below the pies.
 
@@ -199,15 +204,16 @@ plot(HMM$model)
 ```
 
 ## A prettier version
-plot(HMM$model,
-     # larger vertices
-     vertex.size=45,
-     # varying curvature of edges
-     edge.curved=c(0,-0.7,0.6,0,-0.7,0),
-     # legend with two columns and less space
-     ncol.legend=2, legend.prop=0.4,
-     # new label for combined slice
-     combined.slice.label="States with probability < 0.05")
+plot(
+  HMM$model,
+  # larger vertices
+  vertex.size = 45,
+  # varying curvature of edges
+  edge.curved = c(0,-0.7,0.6,0,-0.7,0),
+  # legend with two columns and less space
+  ncol.legend = 2, legend.prop = 0.4,
+  # new label for combined slice
+  combined.slice.label = "States with probability < 0.05")
 ```
 ![HMM](https://github.com/helske/seqHMM/blob/master/Examples/HMModel.png)
 
@@ -215,32 +221,32 @@ The `ssplot` function can also be used for plotting the observed states and/or t
 
 ```
 ## Plotting observations and hidden states
-ssplot(HMM$model, plots="both")
+ssplot(HMM$model, plots = "both")
 ```
 ![sspboth_default](https://github.com/helske/seqHMM/blob/master/Examples/sspboth_default.png)
 ```
 ## Prettier version
-ssplot(HMM$model, type="I",
-                plots="both",
-                # Sorting subjects according to multidimensional
-                # scaling scores of the most probable hidden state paths
-                sortv="mds.mpp", 
-                # Naming the channels
-                ylab=c("Children", "Married", "Left home"), 
-                # Title for the plot
-                title="Observed sequences and the 
+ssplot(
+  HMM$model, type="I", plots="both",
+  # Sorting subjects according to multidimensional
+  # scaling scores of the most probable hidden state paths
+  sortv="mds.mpp", 
+  # Naming the channels
+  ylab=c("Children", "Married", "Left home"), 
+  # Title for the plot
+  title="Observed sequences and the 
 most probable paths of hidden states",
-                # Labels for hidden states (most common states)
-                mpp.labels=c("1: Childless single, with parents", 
-                             "2: Childless single, left home",
-                             "3: Married without children",
-                             "4: Married parent, left home"),
-                # Colours for hidden states
-                mpp.col=c("olivedrab", "bisque", "plum", "indianred"),
-                # Labels for x axis
-                xtlab=15:30, xlab="Age",
-                # Proportion for legends
-                legend.prop=0.45)
+  # Labels for hidden states (most common states)
+  mpp.labels=c("1: Childless single, with parents", 
+                "2: Childless single, left home",
+                "3: Married without children",
+                "4: Married parent, left home"),
+  # Colours for hidden states
+  mpp.col=c("olivedrab", "bisque", "plum", "indianred"),
+  # Labels for x axis
+  xtlab=15:30, xlab="Age",
+  # Proportion for legends
+  legend.prop=0.45)
 ```
 ![sspboth](https://github.com/helske/seqHMM/blob/master/Examples/sspboth.png)
 
@@ -260,21 +266,21 @@ BIC(HMM$model)
 The `trimHMM` function can be used to trim models by setting small probabilities to zero. Here the trimmed model led to model with slightly improved likelihood, so probabilities less than 0.01 could be set to zero.
 
 ```
-## Trimming HMM
-trimmedHMM <- trimHMM(HMM$model, maxit=100, zerotol=1e-04)
+# Trimming HMM
+trimmedHMM <- trimHMM(HMM$model, maxit = 100, zerotol = 1e-04)
 # "1 iteration(s) used."
 # "Trimming improved log-likelihood, ll_trim-ll_orig = 5.57e-05"
 
-## Emission probabilities of the original HMM
-# HMM$model$emiss
-# 
+# Emission probabilities of the original HMM
+HMM$model$emiss
+
 # $Marriage
 #           symbolNames
-# stateNames       Single     Married     Divorced
-#          1 1.000000e+00 2.67246e-20 0.000000e+00
-#          2 1.000000e+00 8.27522e-12 2.306849e-45
-#          3 1.046861e-12 9.50220e-01 4.978004e-02
-#          4 3.296703e-02 9.49011e-01 1.802198e-02
+# stateNames     Divorced     Married       Single
+#          1 0.000000e+00 2.67246e-20 1.000000e+00
+#          2 2.306849e-45 8.27522e-12 1.000000e+00
+#          3 4.978004e-02 9.50220e-01 1.046861e-12
+#          4 1.802198e-02 9.49011e-01 3.296703e-02
 # 
 # $Parenthood
 #           symbolNames
@@ -284,24 +290,24 @@ trimmedHMM <- trimHMM(HMM$model, maxit=100, zerotol=1e-04)
 #          3 1.000000e+00 7.495200e-14
 #          4 1.684766e-08 1.000000e+00
 # 
-# $Residence
+# $`Left home`
 #           symbolNames
-# stateNames With parents    Left home
-#          1 1.000000e+00 2.064574e-21
-#          2 1.730974e-15 1.000000e+00
-#          3 2.975226e-01 7.024774e-01
-#          4 8.557133e-53 1.000000e+00
+# stateNames    Left home With parents
+#          1 2.064574e-21 1.000000e+00
+#          2 1.000000e+00 1.730974e-15
+#          3 7.024774e-01 2.975226e-01
+#          4 1.000000e+00 8.557133e-53
 
-## Emission probabilities of the trimmed HMM
+# Emission probabilities of the trimmed HMM
+trimmedHMM$emiss
 # trimmedHMM$emiss
-# 
 # $Marriage
 #           symbolNames
-# stateNames     Single  Married   Divorced
-#          1 1.00000000 0.000000 0.00000000
-#          2 1.00000000 0.000000 0.00000000
-#          3 0.00000000 0.950220 0.04978004
-#          4 0.03296703 0.949011 0.01802198
+# stateNames   Divorced  Married     Single
+#          1 0.00000000 0.000000 1.00000000
+#          2 0.00000000 0.000000 1.00000000
+#          3 0.04978004 0.950220 0.00000000
+#          4 0.01802198 0.949011 0.03296703
 # 
 # $Parenthood
 #           symbolNames
@@ -311,13 +317,13 @@ trimmedHMM <- trimHMM(HMM$model, maxit=100, zerotol=1e-04)
 #          3 1.0000000 0.0000000000
 #          4 0.0000000 1.0000000000
 # 
-# $Residence
+# $`Left home`
 #           symbolNames
-# stateNames With parents Left home
-#          1    1.0000000 0.0000000
-#          2    0.0000000 1.0000000
-#          3    0.2975226 0.7024774
-#          4    0.0000000 1.0000000
+# stateNames Left home With parents
+#          1 0.0000000    1.0000000
+#          2 1.0000000    0.0000000
+#          3 0.7024774    0.2975226
+#          4 1.0000000    0.0000000
 ```
 The `MCtoSC` function converts a multichannel model into a single channel representation. E.g. the `plot` function for `HMModel` objects uses this type of conversion. The `seqHMM` package also includes a similar function `MCtoSCdata` for merging multiple state sequence objects.
 
@@ -325,8 +331,8 @@ The `MCtoSC` function converts a multichannel model into a single channel repres
 ## Converting multichannel model to single channel model
 scHMM <- MCtoSC(HMM$model)
 
-ssplot(scHMM, plots="both", sortv="from.end", sort.channel=0, 
-       xtlab=15:30, legend.prop=0.5)
+ssplot(scHMM, plots = "both", sortv = "from.end", sort.channel = 0, 
+       xtlab = 15:30, legend.prop = 0.5)
 ```
 ![scssp](https://github.com/helske/seqHMM/blob/master/Examples/scssp.png)
 
@@ -336,43 +342,39 @@ Mixture HMM (MHMM) is, by definition, a mixture of HMMs that are fitted together
 
 # Cluster 1
 alphabet(child.seq) # Checking for the order of observed states
-# [1] "Childless" "Children" 
 B1_child <- matrix(c(0.99, 0.01, # High probability for childless
                      0.99, 0.01,
                      0.99, 0.01,
-                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
+                     0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE)
 
 alphabet(marr.seq)
-# [1] "Divorced" "Married"  "Single"
 B1_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
                     0.01, 0.01, 0.98,
                     0.01, 0.98, 0.01, # High probability for married
                     0.98, 0.01, 0.01), # High probability for divorced
-                    nrow=4, ncol=3, byrow=TRUE)
+                    nrow = 4, ncol = 3, byrow = TRUE)
 
 alphabet(left.seq)
-# [1] "Left home"    "With parents"
 B1_left <- matrix(c(0.01, 0.99, # High probability for living with parents
                     0.99, 0.01, # High probability for having left home
                     0.99, 0.01,
-                    0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
+                    0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE)
 
 # Cluster 2
 B2_child <- matrix(c(0.99, 0.01, # High probability for childless
                      0.99, 0.01,
                      0.99, 0.01,
-                     0.01, 0.99), nrow=4, ncol=2, byrow=TRUE)
+                     0.01, 0.99), nrow = 4, ncol = 2, byrow = TRUE)
 
 B2_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
                     0.01, 0.01, 0.98,
                     0.01, 0.98, 0.01, # High probability for married
-                    0.29, 0.7, 0.01),
-                   nrow=4, ncol=3, byrow=TRUE)
+                    0.29, 0.7, 0.01), nrow = 4, ncol = 3, byrow = TRUE)
 
 B2_left <- matrix(c(0.01, 0.99, # High probability for living with parents
                     0.99, 0.01,
                     0.99, 0.01,
-                    0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
+                    0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE)
 
 # Cluster 3
 B3_child <- matrix(c(0.99, 0.01, # High probability for childless
@@ -380,7 +382,7 @@ B3_child <- matrix(c(0.99, 0.01, # High probability for childless
                      0.01, 0.99,
                      0.99, 0.01,
                      0.01, 0.99,
-                     0.01, 0.99), nrow=6, ncol=2, byrow=TRUE)
+                     0.01, 0.99), nrow = 6, ncol = 2, byrow = TRUE)
 
 B3_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
                     0.01, 0.01, 0.98,
@@ -388,21 +390,21 @@ B3_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
                     0.01, 0.98, 0.01, # High probability for married
                     0.01, 0.98, 0.01,
                     0.98, 0.01, 0.01), # High probability for divorced
-                   nrow=6, ncol=3, byrow=TRUE)
+                   nrow = 6, ncol = 3, byrow = TRUE)
 
 B3_left <- matrix(c(0.01, 0.99, # High probability for living with parents
                     0.99, 0.01,
                     0.50, 0.50,
                     0.01, 0.99,
                     0.99, 0.01,
-                    0.99, 0.01), nrow=6, ncol=2, byrow=TRUE)
+                    0.99, 0.01), nrow = 6, ncol = 2, byrow = TRUE)
 
 # Starting values for transition matrices
 A1 <- matrix(c(0.8,   0.16, 0.03, 0.01,
                  0,    0.9, 0.07, 0.03,
                  0,      0,  0.9,  0.1,
                  0,      0,    0,    1),
-             nrow=4, ncol=4, byrow=TRUE)
+             nrow = 4, ncol = 4, byrow = TRUE)
 
 A2 <- matrix(c(0.8, 0.10, 0.05,  0.03, 0.01, 0.01,
                  0,  0.7,  0.1,   0.1, 0.05, 0.05,
@@ -410,35 +412,34 @@ A2 <- matrix(c(0.8, 0.10, 0.05,  0.03, 0.01, 0.01,
                  0,    0,    0,   0.9, 0.05, 0.05,
                  0,    0,    0,     0,  0.9,  0.1,
                  0,    0,    0,     0,    0,    1),
-             nrow=6, ncol=6, byrow=TRUE)
+             nrow = 6, ncol = 6, byrow = TRUE)
 
 # Starting values for initial state probabilities
 initialProbs1 <- c(0.9, 0.07, 0.02, 0.01)
 initialProbs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 
-# Creating a new covariate swiss
-bio$swiss <- bio$nat_1_02=="Switzerland"
-bio$swiss[bio$swiss==TRUE] <- "Swiss"
-bio$swiss[bio$swiss==FALSE] <- "Other"
+# Creating covariate swiss
+bio$swiss <- bio$nat_1_02 == "Switzerland"
+bio$swiss[bio$swiss == TRUE] <- "Swiss"
+bio$swiss[bio$swiss == FALSE] <- "Other"
 
-# Build mixture HMM
-bMHMM <- buildMixHMM(observations=list(marr.seq, child.seq, left.seq),
-                       transitionMatrix=list(A1,A1,A2),
-                       emissionMatrix=list(list(B1_marr, B1_child, B1_left),
-                                           list(B2_marr, B2_child, B2_left),
-                                           list(B3_marr, B3_child, B3_left)),
-                       initialProbs=list(initialProbs1, initialProbs1,
-                                         initialProbs2),
-                       formula=~sex*birthyr+sex*swiss, data=bio,
-                       clusterNames=c("Cluster 1", "Cluster 2", 
-                                      "Cluster 3"),
-                       channelNames=c("Marriage", "Parenthood", 
-                                      "Left home"))
-# Fit MHMM
+# Build MHMM
+bMHMM <- buildMixHMM(
+  observations = list(marr.seq, child.seq, left.seq),
+  transitionMatrix = list(A1, A1, A2),
+  emissionMatrix = list(list(B1_marr, B1_child, B1_left), 
+                        list(B2_marr, B2_child, B2_left),
+                        list(B3_marr, B3_child, B3_left)),
+  initialProbs = list(initialProbs1, initialProbs1, initialProbs2),
+  formula = ~ sex * birthyr + sex * swiss, data = bio, 
+  clusterNames = c("Cluster 1", "Cluster 2", "Cluster 3"),
+  channelNames = c("Marriage", "Parenthood", "Left home")
+  )
+
 MHMM <- fitMixHMM(bMHMM)
 
 # Trim MHMM
-trMHMM <- trimHMM(MHMM$model, zerotol=1e-05)
+trMHMM <- trimHMM(MHMM$model, zerotol = 1e-05)
 
 # Parameter coefficients for covariates (cluster 1 is the reference)
 trMHMM$beta
@@ -455,7 +456,7 @@ Also MHMMs are plotted with the `plot` function. The user can choose between an 
 ```
 # Plot mixture hidden Markov model
 # Interactive plot, one cluster at a time
-plot(trMHMM, interactive=TRUE)
+plot(trMHMM, interactive = TRUE)
 ```
 ![mixHMM1](https://github.com/helske/seqHMM/blob/master/Examples/mixHMM1.png)
 ![mixHMM2](https://github.com/helske/seqHMM/blob/master/Examples/mixHMM2.png)
@@ -476,7 +477,10 @@ table(mpp$cluster)
 
 # Plotting observed sequences and most probable hidden states
 # Interactive plot, one cluster at a time
-mssplot(trMHMM, plots="both", sortv="from.end", sort.channel=1, xtlab=15:30, xlab="Age")
+mssplot(
+  trMHMM, plots = "both", sortv = "from.end", sort.channel = 1, 
+  xtlab = 15:30, xlab = "Age"
+  )
 
 ```
 ![mssplot1](https://github.com/helske/seqHMM/blob/master/Examples/mssplot1.png)
