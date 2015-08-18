@@ -107,7 +107,7 @@
 #' # Plotting state distribution plots of observations for women and men in two columns 
 #' gridplot(list(ssp_f, ssp_m), cols = 2, withlegend = FALSE)
 #' 
-#' # Preparing plots for women's state sequences
+#' # Preparing plots for women's state distributions
 #' ssp_f2 <- ssp(
 #'   list(marr.seq[bio$sex == "woman",], child.seq[bio$sex == "woman",],
 #'        left.seq[bio$sex == "woman",]),
