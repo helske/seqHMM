@@ -117,7 +117,9 @@
 #'   )
 #' 
 #' # The same plot with sequences instead of state distributions
-#' ssp_f3 <- update(ssp_f2, type = "I", title = "Sequences for women")
+#' ssp_f3 <- update(
+#'   ssp_f2, type = "I", sortv="mds.obs", title = "Sequences for women"
+#'   )
 #' 
 #' # State distributions with men's data
 #' ssp_m2 <- update(
@@ -127,7 +129,9 @@
 #'   )
 #' 
 #' # Men's sequences
-#' ssp_m3 <- update(ssp_m2, type = "I")
+#' ssp_m3 <- update(
+#'   ssp_m2, type = "I", sortv="mds.obs", title = "Sequences for women"
+#'   )
 #'   
 #' # Plotting state distributions and index plots of observations 
 #' # for women and men in two columns 
