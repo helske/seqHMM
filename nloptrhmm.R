@@ -1,3 +1,42 @@
+gradfn<-function(pars,model,estimate){
+  
+  if(any(!is.finite(exp(pars))))
+    return(.Machine$double.xmax^075)
+  if(npTM>0){
+    model$transitionMatrix[maxTM]<-maxTMvalue     
+    model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
+    rowSumsA<-rowSums(model$transitionMatrix)
+    model$transitionMatrix<-model$transitionMatrix/rowSumsA         
+  }
+  if(sum(npEM)>0){            
+    for(i in 1:model$numberOfChannels){
+      emissionArray[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]    
+      emissionArray[,1:model$numberOfSymbols[i],i][paramEM[[i]]]<-
+        exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])      
+      rowSumsB[,i]<-rowSums(emissionArray[,1:model$numberOfSymbols[i],i, drop = FALSE])
+      emissionArray[,1:model$numberOfSymbols[i],i]<-
+        emissionArray[,1:model$numberOfSymbols[i],i]/rowSumsB[,i]
+    }
+  }
+  
+  if(npIP>0){
+    model$initialProbs[maxIP]<-maxIPvalue
+    model$initialProbs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])
+    sumInit<-sum(model$initialProbs)
+    model$initialProbs[]<-model$initialProbs/sumInit
+  } 
+  
+  - gradientMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
+    rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars))
+  
+}
+
+library(nloptr)
+fit1 <- nloptr(initialvalues, likfn, gradfn,lb = rep(-500,14), ub=rep(50,14),
+  model=model,estimate=TRUE,opts=list(print_level=1, algorithm="NLOPT_GD_MLSL",maxeval=10000,
+    local_opts=list(algorithm="NLOPT_LD_LBFGS",xtol_rel = 1e-4)))
+fit1#5407.97110558737 
+
 
 HMM2 <- fitHMM(bHMM, use.em=FALSE)
 HMM2$logLik #-5508.148
@@ -10,7 +49,6 @@ HMM2$logLik #-5512.487
 HMM2 <- fitHMM(bHMM, use.em=FALSE,optimx.control = list(fnscale=1))
 HMM2$logLik #-5476.575 !!!!!!!
 
-library(nloptr)
 
 likfn<-function(pars,model,estimate=TRUE){
   
@@ -76,35 +114,3 @@ fit <- nloptr(initialvalues, likfn, lb = rep(-500,14), ub=rep(10,14),
     xtol_rel = 1e-8)) #5493.270657
 
 fit
-gradfn<-function(pars,model,estimate){
-  
-  if(any(!is.finite(exp(pars))))
-    return(.Machine$double.xmax^075)
-  if(npTM>0){
-    model$transitionMatrix[maxTM]<-maxTMvalue     
-    model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
-    rowSumsA<-rowSums(model$transitionMatrix)
-    model$transitionMatrix<-model$transitionMatrix/rowSumsA         
-  }
-  if(sum(npEM)>0){            
-    for(i in 1:model$numberOfChannels){
-      emissionArray[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]    
-      emissionArray[,1:model$numberOfSymbols[i],i][paramEM[[i]]]<-
-        exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])      
-      rowSumsB[,i]<-rowSums(emissionArray[,1:model$numberOfSymbols[i],i, drop = FALSE])
-      emissionArray[,1:model$numberOfSymbols[i],i]<-
-        emissionArray[,1:model$numberOfSymbols[i],i]/rowSumsB[,i]
-    }
-  }
-  
-  if(npIP>0){
-    model$initialProbs[maxIP]<-maxIPvalue
-    model$initialProbs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])
-    sumInit<-sum(model$initialProbs)
-    model$initialProbs[]<-model$initialProbs/sumInit
-  } 
-  
-  - gradientMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
-    rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars))
-  
-}
