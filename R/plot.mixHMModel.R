@@ -298,7 +298,8 @@ plot.mixHMModel <- function(x, interactive=TRUE,
                                 withlegend=withlegend, ltext=ltext, legend.prop=legend.prop, 
                                 cex.legend=cex.legend, ncol.legend=ncol.legend, cpal=cpal), list(...)))
   }else{
-    do.call(mHMMplotgrid, c(list(x=x, rows=rows, cols=cols, byrow=byrow,
+    do.call(mHMMplotgrid, c(list(x=x, which.plots =  which.plots, rows=rows, cols=cols, 
+                                 byrow=byrow,
                                  row.prop=row.prop, col.prop=col.prop, 
                                  layout=layout, pie=pie, 
                                  vertex.size=vertex.size, vertex.label=vertex.label, 
