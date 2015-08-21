@@ -254,7 +254,7 @@ fitMixHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FA
         model$emissionMatrix[[i]][]<-resEM$emissionArray[ , 1:model$numberOfSymbols[i], i]                                     
     }
     
-    if(use.optimx){
+    if(use.nloptr){
       k <- 0
       for(m in 1:model$numberOfClusters){
         original_model$initialProbs[[m]] <- unname(resEM$initialProbs[(k+1):(k+model$numberOfStatesInClusters[m])])
@@ -357,7 +357,7 @@ fitMixHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FA
       sumInit<-rep(1,original_model$numberOfClusters)    
       rowSumsA<-rowSumsB<-rep(1,model$numberOfStates)
       
-      gradfn<-function(pars,model){      
+      gradfn<-function(pars,model, estimate){      
         
         if(any(!is.finite(exp(pars))))
           return(.Machine$double.xmax)
@@ -486,7 +486,7 @@ fitMixHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FA
       rowSumsA<-rep(1,model$numberOfStates)
       rowSumsB<-matrix(1,model$numberOfStates,model$numberOfChannels)
       
-      gradfn<-function(pars,model){      
+      gradfn<-function(pars,model, estimate){      
         
         if(any(!is.finite(exp(pars))))
           return(.Machine$double.xmax)

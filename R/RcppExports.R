@@ -61,6 +61,10 @@ hardEM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSym
     .Call('seqHMM_hardEM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol, trace)
 }
 
+hardEMMC <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax = 100L, tol = 1e-8, trace = 0L) {
+    .Call('seqHMM_hardEMMC', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol, trace)
+}
+
 logLikHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
     .Call('seqHMM_logLikHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
