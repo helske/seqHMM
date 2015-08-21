@@ -1,4 +1,4 @@
-mHMMplotgrid <- function(x, rows=NA, cols=NA, byrow=FALSE,
+mHMMplotgrid <- function(x, which.plots = NULL, rows=NA, cols=NA, byrow=FALSE,
                          row.prop="auto", col.prop="auto", layout="horizontal", pie=TRUE, 
                          vertex.size=40, vertex.label="initial.probs", 
                          vertex.label.dist="auto", vertex.label.pos="bottom",
@@ -42,7 +42,10 @@ mHMMplotgrid <- function(x, rows=NA, cols=NA, byrow=FALSE,
   
   
   # Number of plots
-  ngridplots <- x$numberOfClusters
+  if(is.null(which.plots)){
+    which.plots <- 1:x$numberOfClusters
+  }
+  ngridplots <- length(which.plots)
   
   
   if(is.na(rows) && is.na(cols)){
@@ -57,15 +60,15 @@ mHMMplotgrid <- function(x, rows=NA, cols=NA, byrow=FALSE,
   # Number of columns in legends
   if(!is.na(withlegend) && withlegend==TRUE){ 
     if(length(ncol.legend)==1 && ncol.legend=="auto"){
-      ncol.legend <- rep(1, x$numberOfClusters)
+      ncol.legend <- rep(1, ngridplots)
     }else if(length(ncol.legend)==1 && x$numberOfClusters>1){
-      ncol.legend <- rep(ncol.legend, x$numberOfClusters)
-    }else if(length(ncol.legend)<x$numberOfClusters){
-      warning(paste0("The length of ncol.legend does not match the number of clusters. The last were arranged in 1 column."))
-      ncol.legend <- c(ncol.legend, rep(1,(x$numberOfClusters-length(ncol.legend))))
-    }else if(length(ncol.legend)>x$numberOfClusters){
-      warning(paste0("The length of ncol.legend does not match the number of clusters. Only the first ", x$numberOfClusters, " arguments of \"ncol.legend\" were used."))
-      ncol.legend <- ncol.legend[1:x$numberOfClusters]
+      ncol.legend <- rep(ncol.legend, ngridplots)
+    }else if(length(ncol.legend)<ngridplots){
+      warning(paste0("The length of ncol.legend does not match the number of requested plots. The last were arranged in 1 column."))
+      ncol.legend <- c(ncol.legend, rep(1,(ngridplots-length(ncol.legend))))
+    }else if(length(ncol.legend)>ngridplots){
+      warning(paste0("The length of ncol.legend does not match the number of requested plots. Only the first ", x$numberOfClusters, " arguments of \"ncol.legend\" were used."))
+      ncol.legend <- ncol.legend[1:ngridplots]
     }
   }
   
@@ -243,7 +246,7 @@ mHMMplotgrid <- function(x, rows=NA, cols=NA, byrow=FALSE,
   # Plotting arguments for graphs and legends
   HMMcalls <- list()
   length(HMMcalls) <- ngridplots
-  for(p in 1:ngridplots){
+  for(p in which.plots){
     if(length(ncol.legend)>1){
       ncolleg <- ncol.legend[p]
     }else{
@@ -255,15 +258,14 @@ mHMMplotgrid <- function(x, rows=NA, cols=NA, byrow=FALSE,
                                                withlegend=withlegend, ...))
   }
   
-  
   # Plotting graphs
-  for(p in 1:ngridplots){
+  for(p in which.plots){
     eval(HMMcalls[[p]]$plotcall)
   }
   
   # Plotting legends
   if(withlegend!=FALSE){
-    for(p in 1:ngridplots){
+    for(p in which.plots){
       eval(HMMcalls[[p]]$legendcall)
     }
   }
