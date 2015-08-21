@@ -51,7 +51,7 @@ married <- bf == 2 | bf == 3 | bf == 6
 children <-  bf == 4 | bf == 5 | bf == 6
 left <- bf == 1 | bf == 3 | bf == 5 | bf == 6 | bf == 7
 
-## Giving labels and modifying sequences
+# Giving labels and modifying sequences
 
 # Marriage
 married[married == TRUE] <- "Married"
@@ -80,12 +80,12 @@ wp <- bf[
   ]
 left[rownames(bf) %in% rownames(wp) & bf == 7] <- "With parents"
 
-## Building sequence objects (starting at age 15)
+# Building sequence objects (starting at age 15)
 marr.seq <- seqdef(married, start = 15)
 child.seq <- seqdef(children, start = 15)
 left.seq <- seqdef(left, start = 15)
 
-## Choosing colours for states
+# Choosing colours for states
 attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
 attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
 attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
@@ -93,7 +93,7 @@ attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 Multichannel sequence data are easily plotted using the `ssplot` function (ssplot for Stacked Sequence Plot).
 
 ```
-## Plotting state distribution plots of observations
+# Plotting state distribution plots of observations
 ssplot(
   list(marr.seq, child.seq, left.seq), type = "d", plots = "obs", 
   title = "State distribution plots"
@@ -135,8 +135,7 @@ ssp_m3 <- update(
   ssp_m2, type = "I", sortv = "mds.obs", title = "Sequences for men"
   )
 
-## Plotting state distributions and index plots of observations for women and men 
-## in two columns 
+# Plotting state distributions and index plots of observations for women and men 
 gridplot(list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=2, byrow=TRUE, 
          row.prop=c(0.42,0.42,0.16))
 
@@ -177,7 +176,7 @@ A <- matrix(c(0.9, 0.06, 0.03, 0.01,
 # Initial values for initial state probabilities
 initialProbs <- c(0.9, 0.07, 0.02, 0.01)
 
-## Building the hidden Markov model with initial parameter values 
+# Building the hidden Markov model with initial parameter values 
 bHMM <- buildHMM(
   observations = list(marr.seq, child.seq, left.seq),
   initialProbs = initialProbs, transitionMatrix = A, 
@@ -185,7 +184,7 @@ bHMM <- buildHMM(
   channelNames = c("Marriage", "Parenthood", "Left home")
   )
 
-## Fitting the HMM 
+# Fitting the HMM 
 HMM <- fitHMM(bHMM)
 # or equivalently
 HMM <- fitHMM(
@@ -196,14 +195,14 @@ HMM <- fitHMM(
 A simple `plot` method is used to show an `HMModel` object as a graph. It shows hidden states as pie charts (vertices), with emission probabilities as slices and transition probabilities as arrows (edges). Initial probabilities are shown below the pies.
 
 ```
-## Plot HMM
+# Plot HMM
 plot(HMM$model)
 ```
 ![HMMdefault](https://github.com/helske/seqHMM/blob/master/Examples/HMMdefault.png)
 
 ```
 
-## A prettier version
+# A prettier version
 plot(
   HMM$model,
   # larger vertices
@@ -220,12 +219,12 @@ plot(
 The `ssplot` function can also be used for plotting the observed states and/or the most probable paths of hidden states of the HMM.
 
 ```
-## Plotting observations and hidden states
+# Plotting observations and hidden states
 ssplot(HMM$model, plots = "both")
 ```
 ![sspboth_default](https://github.com/helske/seqHMM/blob/master/Examples/sspboth_default.png)
 ```
-## Prettier version
+# Prettier version
 ssplot(
   HMM$model, type="I", plots="both",
   # Sorting subjects according to multidimensional
@@ -253,14 +252,12 @@ most probable paths of hidden states",
 The `logLik` and `BIC` functions are used for model comparison with the log-likelihood or the Bayesian information criterion (BIC).
 
 ```
-## Likelihood
+# Likelihood
 logLik(HMM$model)
-
 # -14883.86
 
-## BIC
+# BIC
 BIC(HMM$model)
-
 # 30177.88
 ```
 The `trimHMM` function can be used to trim models by setting small probabilities to zero. Here the trimmed model led to model with slightly improved likelihood, so probabilities less than 0.01 could be set to zero.
@@ -273,7 +270,6 @@ trimmedHMM <- trimHMM(HMM$model, maxit = 100, zerotol = 1e-04)
 
 # Emission probabilities of the original HMM
 HMM$model$emiss
-
 # $Marriage
 #           symbolNames
 # stateNames     Divorced     Married       Single
@@ -328,7 +324,7 @@ trimmedHMM$emiss
 The `MCtoSC` function converts a multichannel model into a single channel representation. E.g. the `plot` function for `HMModel` objects uses this type of conversion. The `seqHMM` package also includes a similar function `MCtoSCdata` for merging multiple state sequence objects.
 
 ```
-## Converting multichannel model to single channel model
+# Converting multichannel model to single channel model
 scHMM <- MCtoSC(HMM$model)
 
 ssplot(scHMM, plots = "both", sortv = "from.end", sort.channel = 0, 
@@ -338,7 +334,7 @@ ssplot(scHMM, plots = "both", sortv = "from.end", sort.channel = 0,
 
 Mixture HMM (MHMM) is, by definition, a mixture of HMMs that are fitted together. These are fitted and plotted with similar functions to ones presented before. Starting values are given as a list consisting of the parameter values for each cluster. The `buildMixHMM` function checks that the model is properly constructed before fitting with the `fitMixHMM`function. Trimming is called with the `trimHMM`.
 ```
-## Starting values for emission probabilities
+# Starting values for emission probabilities
 
 # Cluster 1
 alphabet(child.seq) # Checking for the order of observed states
