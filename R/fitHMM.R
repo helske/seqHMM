@@ -112,7 +112,6 @@
 
 fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(), soft = TRUE, method="BFGS",itnmax=10000,optimx.control=list(),...){
   
-  if(use.optimx) ologlik <- -logLik(model)
   if(model$numberOfChannels==1){
     obsArray<-data.matrix(model$observations)-1
     obsArray[obsArray>model$numberOfSymbols]<-model$numberOfSymbols
@@ -386,8 +385,12 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(), soft = TRU
     }
     
     
+#     if(is.null(optimx.control$parscale)){
+#       parscale <- exp(initialvalues)
+#       optimx.control$parscale <- parscale
+#     }
     if(is.null(optimx.control$fnscale)){
-      optimx.control$fnscale <- ologlik#  optimx.control$fnscale <- - ifelse(use.em, resEM$logLik, logLik(model))
+      optimx.control$fnscale <- -ifelse(use.em, resEM$logLik, logLik(model))
     }
     if(is.null(optimx.control$kkt)){
       optimx.control$kkt<-FALSE
@@ -396,8 +399,10 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(), soft = TRU
       optimx.control$starttests<-FALSE
     }
     if(!soft) gradfn <- NULL
+    browser()
     resoptimx<-optimx(par=initialvalues,fn=likfn,gr=gradfn,method=method,itnmax=itnmax,control=optimx.control,model=model,...)
-    model<-likfn(as.numeric(resoptimx[1:length(initialvalues)]),model,FALSE)
+    
+    model<-likfn(as.numeric(resoptimx[1,1:length(initialvalues)]),model,FALSE)
     
   } else resoptimx<-NULL
   
