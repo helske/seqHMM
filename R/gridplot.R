@@ -29,8 +29,8 @@
 #'   
 #' @param legend.pos2 Defines the positions of the legend boxes relative to the
 #'   cell(s). One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"}, 
-#'   \code{"left"}, \code{"topleft"}, \code{"top"}, \code{"topright"}, 
-#'   \code{"right"} and \code{"center"} (the default).
+#'   \code{"left"}, \code{"topleft"}, \code{"top"} (the default), \code{"topright"}, 
+#'   \code{"right"} and \code{"center"}.
 #'   
 #' @param title.legend The titles for the legend boxes. The default \code{"auto"} takes
 #'   the titles from the channel labels provided by the first object in \code{x}.
@@ -107,33 +107,34 @@
 #' # Plotting state distribution plots of observations for women and men in two columns 
 #' gridplot(list(ssp_f, ssp_m), cols = 2, withlegend = FALSE)
 #' 
-#' # Preparing plots for state distributios and index plots of observations for women
+#' # Preparing plots for women's state distributions
 #' ssp_f2 <- ssp(
-#'   list(child.seq[biofam$sex == "woman",],marr.seq[biofam$sex == "woman",], 
-#'        left.seq[biofam$sex == "woman",]), 
-#'   type = "d", plots = "obs", title = "Women", withlegend = FALSE,
-#'   ylab = c("Children", "Married", "Left home"), ylab.pos = c(1, 2, 1))
-#' ssp_f3 <- ssp(
-#'   list(child.seq[biofam$sex=="woman",], marr.seq[biofam$sex=="woman",], 
-#'        left.seq[biofam$sex=="woman",]), 
-#'   type="I", plots="obs", title="Women", withlegend=FALSE,
-#'   ylab=c("Children", "Married", "Left home"), ylab.pos = c(1, 2, 1)
+#'   list(marr.seq[bio$sex == "woman",], child.seq[bio$sex == "woman",],
+#'        left.seq[bio$sex == "woman",]),
+#'   type = "d", border = NA, withlegend = FALSE, 
+#'   title = "State distributions for women", title.n = FALSE, xtlab = 15:30,
+#'   ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home")
 #'   )
 #' 
-#' # Preparing plots for state distributios and index plots of observations for men
-#' ssp_m2 <- ssp(
-#'   list(child.seq[biofam$sex == "man",],marr.seq[biofam$sex == "man",], 
-#'        left.seq[biofam$sex == "man",]), 
-#'   type = "d", plots = "obs", title = "Men", withlegend = FALSE,
-#'   ylab = c("Children", "Married", "Left home"), ylab.pos = c(1, 2, 1))
-#' ssp_m3 <- ssp(
-#'   list(child.seq[biofam$sex=="man",], marr.seq[biofam$sex=="man",], 
-#'        left.seq[biofam$sex=="man",]), 
-#'   type="I", plots="obs", title="Men", withlegend=FALSE,
-#'   ylab=c("Children", "Married", "Left home"), ylab.pos = c(1, 2, 1)
+#' # The same plot with sequences instead of state distributions
+#' ssp_f3 <- update(
+#'   ssp_f2, type = "I", sortv="mds.obs", title = "Sequences for women"
+#'   )
+#' 
+#' # State distributions with men's data
+#' ssp_m2 <- update(
+#'   ssp_f2, title = "State distributions for men", 
+#'   x = list(marr.seq[bio$sex == "man",], child.seq[bio$sex == "man",],
+#'            left.seq[bio$sex == "man",])
+#'   )
+#' 
+#' # Men's sequences
+#' ssp_m3 <- update(
+#'   ssp_m2, type = "I", sortv="mds.obs", title = "Sequences for women"
 #'   )
 #'   
-#' # Plotting state distributions and index plots of observations for women and men in two columns 
+#' # Plotting state distributions and index plots of observations 
+#' # for women and men in two columns 
 #' gridplot(
 #'   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=3, byrow=TRUE, 
 #'   withlegend="combined", legend.pos="right", col.prop=c(0.35,0.35,0.3)
@@ -152,7 +153,7 @@
 
 gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
                      withlegend="auto", legend.pos="auto", 
-                     legend.pos2="center", title.legend="auto",
+                     legend.pos2="top", title.legend="auto",
                      ncol.legend="auto", 
                      with.missing.legend="auto",                       
                      row.prop="auto", col.prop="auto", cex.legend=1){
