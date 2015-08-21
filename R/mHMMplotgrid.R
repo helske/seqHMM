@@ -258,6 +258,7 @@ mHMMplotgrid <- function(x, which.plots = NULL, rows=NA, cols=NA, byrow=FALSE,
                                                withlegend=withlegend, ...))
   }
   
+
   # Plotting graphs
   for(p in which.plots){
     eval(HMMcalls[[p]]$plotcall)
