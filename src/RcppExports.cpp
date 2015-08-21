@@ -356,21 +356,6 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// viterbiForEM
-void viterbiForEM(arma::mat& transition, arma::mat& emission, arma::vec& init, arma::imat& obs, arma::vec& logp, arma::umat& q);
-RcppExport SEXP seqHMM_viterbiForEM(SEXP transitionSEXP, SEXP emissionSEXP, SEXP initSEXP, SEXP obsSEXP, SEXP logpSEXP, SEXP qSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< arma::mat& >::type transition(transitionSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type emission(emissionSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type init(initSEXP);
-    Rcpp::traits::input_parameter< arma::imat& >::type obs(obsSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type logp(logpSEXP);
-    Rcpp::traits::input_parameter< arma::umat& >::type q(qSEXP);
-    viterbiForEM(transition, emission, init, obs, logp, q);
-    return R_NilValue;
-END_RCPP
-}
 // viterbiMC
 List viterbiMC(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray);
 RcppExport SEXP seqHMM_viterbiMC(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP) {
@@ -382,40 +367,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP);
     __result = Rcpp::wrap(viterbiMC(transitionMatrix, emissionArray, initialProbs, obsArray));
-    return __result;
-END_RCPP
-}
-// viterbix
-List viterbix(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates);
-RcppExport SEXP seqHMM_viterbix(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP coefsSEXP, SEXP X_SEXP, SEXP numberOfStatesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type coefs(coefsSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type numberOfStates(numberOfStatesSEXP);
-    __result = Rcpp::wrap(viterbix(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates));
-    return __result;
-END_RCPP
-}
-// viterbiMCx
-List viterbiMCx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates);
-RcppExport SEXP seqHMM_viterbiMCx(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP coefsSEXP, SEXP X_SEXP, SEXP numberOfStatesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type coefs(coefsSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type numberOfStates(numberOfStatesSEXP);
-    __result = Rcpp::wrap(viterbiMCx(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates));
     return __result;
 END_RCPP
 }
@@ -444,6 +395,23 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP);
     __result = Rcpp::wrap(viterbiProbMC(transitionMatrix, emissionArray, initialProbs, obsArray));
+    return __result;
+END_RCPP
+}
+// viterbix
+List viterbix(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates);
+RcppExport SEXP seqHMM_viterbix(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP coefsSEXP, SEXP X_SEXP, SEXP numberOfStatesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type coefs(coefsSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type numberOfStates(numberOfStatesSEXP);
+    __result = Rcpp::wrap(viterbix(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates));
     return __result;
 END_RCPP
 }

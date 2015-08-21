@@ -155,8 +155,13 @@ fitHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FALSE
       for(i in 1:model$numberOfChannels)
         emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
       
+      if(soft){
       resEM<-EMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
         model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+      } else {
+        resEM<-hardEMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
+          model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+      }
       if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")
       
@@ -236,8 +241,9 @@ fitHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FALSE
         if(estimate){
           if(soft){
             - sum(logLikHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray))
-          } else -sum(mostProbablePath2(model)$log)
-          #viterbiProb(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray)
+          } else {
+          viterbiProb(log(model$transitionMatrix), cbind(log(model$emissionMatrix),0), log(model$initialProbs), obsArray)
+          }
         } else model
       }
       
@@ -339,7 +345,11 @@ fitHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FALSE
         } 
         
         if(estimate){
+          if(soft){
           - sum(logLikMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray))   
+          } else {
+            -
+          }
         } else {
           if(sum(npEM)>0){
             for(i in 1:model$numberOfChannels){

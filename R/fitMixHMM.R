@@ -222,9 +222,15 @@ fitMixHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FA
     
     if(model$numberOfChannels==1){
       
+      if(soft){
       resEM <- EMx(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
         obsArray, model$numberOfSymbols,  model$beta, model$X, model$numberOfStatesInClusters, 
         em.con$maxit, em.con$reltol,em.con$trace)
+      } else {
+        resEM <- hardEMx(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
+          obsArray, model$numberOfSymbols,  model$beta, model$X, model$numberOfStatesInClusters, 
+          em.con$maxit, em.con$reltol,em.con$trace)
+      }
       if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")      
       

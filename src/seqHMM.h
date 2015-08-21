@@ -33,4 +33,13 @@ arma::mat hCoef(arma::mat& usums, arma::mat& lweights, arma::mat& X);
 void viterbiForEM(arma::mat& transition, arma::mat& emission, arma::vec& init, arma::imat& obs, 
   arma::vec& logp, arma::umat& q);
 
+void viterbiForEMMC(arma::mat& transition, arma::cube& emission, arma::vec& init, arma::icube& obs, 
+  arma::vec& logp, arma::umat& q);
+
+void viterbiForEMx(arma::mat& transition, arma::mat& emission, arma::mat& init, arma::imat& obs, 
+  arma::vec& logp, arma::umat& q);
+
+void viterbiForEMMCx(arma::mat& transition, arma::cube& emission, arma::mat& init, arma::icube& obs, 
+  arma::vec& logp, arma::umat& q);
+
 #endif
