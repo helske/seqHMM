@@ -25,7 +25,6 @@ NumericVector initialProbs, IntegerVector obsArray) {
   arma::mat emission(emissionArray.begin(), eDims[0], eDims[1],true);
   arma::Mat<int> obs(obsArray.begin(), oDims[0], oDims[1],false);
   
-  
   transition = log(transition); 
   emission = log(emission); 
   init = log(init); 

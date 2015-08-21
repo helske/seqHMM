@@ -12,10 +12,9 @@
 #' @import nloptr
 #' @param model Hidden Markov model of class \code{HMModel}.
 #' @param use.em Logical, use EM algorithm at the start of parameter estimation.
-#'   The default is \code{FALSE}. Note that EM algorithm is faster than direct 
-#'   numerical optimization, but is even more prone to get stuck in local optimum.
+#'   Default is FALSE. Note that EM algorithm is faster than direct numerical optimization, but is even more prone to get stuck in local optimum.
 #' @param use.nloptr Logical, use direct numerical optimization via 
-#'   \code{\link{nloptr}} (possibly after the EM algorithm). The default is \code{TRUE}.
+#'   \code{\link{nloptr}} (possibly after the EM algorithm). Default is TRUE.
 #' @param em.control Optional list of control parameters for for EM algorithm. 
 #'   Possible arguments are \describe{ 
 #'   \item{maxit}{Maximum number of iterations, default is 100.} 
@@ -24,13 +23,10 @@
 #'   2 (prints at every iteration).} 
 #'   \item{reltol}{Relative tolerance for convergence defined as \eqn{(sumLogLikNew - sumLogLikOld)/(abs(sumLogLikOld)+0.1)}. 
 #'   Default is 1e-8.} }
-#' @param lb,ub Lower and upper bounds for parameters in Softmax parameterization. 
-#' Default interval is [min(-10,initialvalues), max(10,initialvalues)] which is widened according the initial values of parameters, 
-#'   if necessary.
-#' @param shrink instead of adjusting the bounds of optimization, adjust the initial 
-#'   values so that they fit inside the intervals i.e. 
-#'   \code{initialvalues[initiavalues<lb] <- lb} and similarly for upper bounds. 
-#'   The default is \code{TRUE}.
+#' @param lb, ub Lower and upper bounds for parameters in Softmax parameterization. 
+#' Default interval is [min(-10,initialvalues), max(10,initialvalues)] which is widened according the initial values of parameters, if necessary.
+#' @param shrink instead of adjusting the bounds of optimization, adjust the initial values so that 
+#' they fit inside the intervals i.e. \code{initialvalues[initiavalues<lb] <- lb} and similarly for upper bounds. Default is TRUE.#'
 #' @param nloptr.control Optional list of additional arguments for 
 #'   \code{\link{nloptr}} argument \code{opts}. Default values are
 #'   \describe{
@@ -51,7 +47,7 @@
 #'   parameter values to zero, \code{\link{BIC.HMModel}} for computing the
 #'   value of the Bayesian information criterion of the model, and 
 #'   \code{\link{plot.HMModel}} and \code{\link{ssplot}} for plotting 
-#'   HMModel objects.  
+#'   HMModel objects.
 #' @details By default the fitHMM function uses only the \code{nloptr} function which 
 #'   uses the multilevel single linkage method for global optimization 
 #'   (\code{NLOPT_GD_MLSL} as \code{algorithm} in \code{nloptr.control}). It performs 
@@ -67,18 +63,18 @@
 #' 
 #' ## Building one channel per type of event left, children or married
 #' bf <- as.matrix(biofam[, 10:25])
-#' children <-  bf == 4 | bf == 5 | bf == 6
-#' married <- bf == 2 | bf == 3 | bf == 6
-#' left <- bf == 1 | bf == 3 | bf == 5 | bf == 6
+#' children <-  bf==4 | bf==5 | bf==6
+#' married <- bf == 2 | bf== 3 | bf==6
+#' left <- bf==1 | bf==3 | bf==5 | bf==6
 #' 
-#' children[children == TRUE] <- "Children"
-#' children[children == FALSE] <- "Childless"
+#' children[children==TRUE] <- "Children"
+#' children[children==FALSE] <- "Childless"
 #' 
-#' married[married == TRUE] <- "Married"
-#' married[married == FALSE] <- "Single"
+#' married[married==TRUE] <- "Married"
+#' married[married==FALSE] <- "Single"
 #' 
-#' left[left == TRUE] <- "Left home"
-#' left[left == FALSE] <- "With parents"
+#' left[left==TRUE] <- "Left home"
+#' left[left==FALSE] <- "With parents"
 #' 
 #' ## Building sequence objects
 #' child.seq <- seqdef(children)
@@ -86,45 +82,46 @@
 #' left.seq <- seqdef(left)
 #' 
 #' # Initial values for emission matrices
-#' B_child <- matrix(NA, nrow = 3, ncol = 2)
-#' B_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 0.1
-#' B_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 0.1
-#' B_child[3,] <- seqstatf(child.seq[, 11:15])[, 2] + 0.1
-#' B_child <- B_child / rowSums(B_child)
+#' B_child <- matrix(NA, nrow=3, ncol=2)
+#' B_child[1,] <- seqstatf(child.seq[,1:5])[,2]+0.1
+#' B_child[2,] <- seqstatf(child.seq[,6:10])[,2]+0.1
+#' B_child[3,] <- seqstatf(child.seq[,11:15])[,2]+0.1
+#' B_child <- B_child/rowSums(B_child)
 #' 
 #' B_marr <- matrix(NA, nrow=3, ncol=2)
-#' B_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 0.1
-#' B_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 0.1
-#' B_marr[3,] <- seqstatf(marr.seq[, 11:15])[, 2] + 0.1
-#' B_marr <- B_marr / rowSums(B_marr)
+#' B_marr[1,] <- seqstatf(marr.seq[,1:5])[,2]+0.1
+#' B_marr[2,] <- seqstatf(marr.seq[,6:10])[,2]+0.1
+#' B_marr[3,] <- seqstatf(marr.seq[,11:15])[,2]+0.1
+#' B_marr <- B_marr/rowSums(B_marr)
 #' 
-#' B_left <- matrix(NA, nrow = 3, ncol = 2)
-#' B_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 0.1
-#' B_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 0.1
-#' B_left[3,] <- seqstatf(left.seq[, 11:15])[, 2] + 0.1
-#' B_left <- B_left / rowSums(B_left)
+#' B_left <- matrix(NA, nrow=3, ncol=2)
+#' B_left[1,] <- seqstatf(left.seq[,1:5])[,2]+0.1
+#' B_left[2,] <- seqstatf(left.seq[,6:10])[,2]+0.1
+#' B_left[3,] <- seqstatf(left.seq[,11:15])[,2]+0.1
+#' B_left <- B_left/rowSums(B_left)
 #' 
 #' # Initial values for transition matrix
 #' A <- matrix(c(0.9, 0.07, 0.03,
-#'                 0,  0.9,  0.1,
-#'                 0,    0,    1), nrow = 3, ncol = 3, byrow = TRUE)
+#' 0,    0.9,  0.1,
+#' 0,      0,    1), 
+#' nrow=3, ncol=3, byrow=TRUE)
 #' 
 #' # Initial values for initial state probabilities
-#' initialProbs <- c(0.9, 0.09, 0.01)
+#' initialProbs <- c(0.9,0.09,0.01)
 #' 
 #' # Building hidden Markov model with initial parameter values
-#' bHMM <- buildHMM(
-#'   observations = list(child.seq, marr.seq, left.seq), 
-#'   transitionMatrix = A,
-#'   emissionMatrix = list(B_child, B_marr, B_left), 
-#'   initialProbs = initialProbs)
+#' bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq), 
+#' transitionMatrix=A,
+#' emissionMatrix=list(B_child, B_marr, B_left), 
+#' initialProbs=initialProbs)
 #' 
 #' # Fitting hidden Markov model
-#' HMM <- fitHMM(bHMM)
+#' HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8),
+#' itnmax=10000, method="BFGS")
 #' 
 
 
-fitHMM<-function(model, use.em = FALSE, use.nloptr = TRUE, lb, ub, shrink = FALSE, 
+fitHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FALSE, 
   em.control=list(), soft = TRUE, maxeval=10000,nloptr.control=list(), ...){
   
   if(model$numberOfChannels==1){
@@ -165,8 +162,13 @@ fitHMM<-function(model, use.em = FALSE, use.nloptr = TRUE, lb, ub, shrink = FALS
       for(i in 1:model$numberOfChannels)
         emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
       
+      if(soft){
       resEM<-EMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
         model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+      } else {
+        resEM<-hardEMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
+          model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+      }
       if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")
       
@@ -246,8 +248,9 @@ fitHMM<-function(model, use.em = FALSE, use.nloptr = TRUE, lb, ub, shrink = FALS
         if(estimate){
           if(soft){
             - sum(logLikHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray))
-          } else -sum(mostProbablePath2(model)$log)
-          #viterbiProb(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray)
+          } else {
+          viterbiProb(log(model$transitionMatrix), cbind(log(model$emissionMatrix),0), log(model$initialProbs), obsArray)
+          }
         } else model
       }
       
@@ -349,7 +352,11 @@ fitHMM<-function(model, use.em = FALSE, use.nloptr = TRUE, lb, ub, shrink = FALS
         } 
         
         if(estimate){
+          if(soft){
           - sum(logLikMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray))   
+          } else {
+            -sum(mostProbablePath2(model)$log)
+          }
         } else {
           if(sum(npEM)>0){
             for(i in 1:model$numberOfChannels){

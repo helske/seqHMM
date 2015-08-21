@@ -94,13 +94,13 @@ mostProbablePath<-function(model){
   } else mix <- FALSE
   
   model$initialProbs <- log(model$initialProbs)
-  model$initialProbs[!is.finite(model$initialProbs)]<- -0.1*.Machine$double.xmax
+ # model$initialProbs[!is.finite(model$initialProbs)]<- -0.1*.Machine$double.xmax
   model$transitionMatrix <- log(model$transitionMatrix)
-  model$transitionMatrix[!is.finite(model$transitionMatrix)]<- -0.1*.Machine$double.xmax
+ # model$transitionMatrix[!is.finite(model$transitionMatrix)]<- -0.1*.Machine$double.xmax
   if(model$numberOfChannels==1){
     
     model$emissionMatrix <- log(model$emissionMatrix)
-    model$emissionMatrix[!is.finite(model$emissionMatrix)]<- -0.1*.Machine$double.xmax
+ #   model$emissionMatrix[!is.finite(model$emissionMatrix)]<- -0.1*.Machine$double.xmax
     obsArray<-data.matrix(model$observations)-1
     obsArray[obsArray>model$numberOfSymbols]<-model$numberOfSymbols
     storage.mode(obsArray)<-"integer"
@@ -124,8 +124,8 @@ mostProbablePath<-function(model){
   } else {
     model$emissionMatrix<-lapply(model$emissionMatrix,function(x){
       x<-log(x)
-      x[!is.finite(x)]<- -0.1*.Machine$double.xmax
-      x
+   #   x[!is.finite(x)]<- -0.1*.Machine$double.xmax
+  #    x
     })
     obsArray<-array(0,c(model$numberOfSequences,model$lengthOfSequences,model$numberOfChannels))
     for(i in 1:model$numberOfChannels){

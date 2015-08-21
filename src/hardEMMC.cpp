@@ -11,17 +11,16 @@ using namespace Rcpp;
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
-List hardEM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-  IntegerVector obsArray, int nSymbols, int itermax=100, double tol=1e-8, int trace=0) {  
+List hardEMMC(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
+  IntegerVector obsArray, IntegerVector nSymbols, int itermax=100, double tol=1e-8, int trace=0) {  
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
   
-  arma::vec init(initialProbs.begin(),eDims[0],true);
-  arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0],true);
-  arma::mat emission(emissionArray.begin(), eDims[0], eDims[1],true);
-  arma::Mat<int> obs(obsArray.begin(), oDims[0], oDims[1],false);  
-  
+  arma::vec init(initialProbs.begin(), eDims[0], true);
+  arma::mat transition(transitionMatrix.begin(), eDims[0], eDims[0], true);
+  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
+  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
   
   transition = log(transition); 
   emission = log(emission);
@@ -30,7 +29,7 @@ List hardEM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
   arma::umat q(oDims[0], oDims[1]);
   arma::vec logp(oDims[0]);
   
-  viterbiForEM(transition, emission, init, obs, logp, q);
+  viterbiForEMMC(transition, emission, init, obs, logp, q);
   
   double sumlogp = sum(logp);
   
@@ -44,7 +43,7 @@ List hardEM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
   int iter = 0;
   double tmp;
   arma::mat ksii(eDims[0],eDims[0]);
-  arma::mat gamma(eDims[0],eDims[1]);
+  arma::cube gamma(eDims[0],eDims[1],eDims[2]);
   arma::vec delta(eDims[0]);
   
   while((change>tol) & (iter<itermax)){   
@@ -59,20 +58,27 @@ List hardEM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
       
       for(int t=0; t < (oDims[1]-1); t++){
         ksii(q(k,t),q(k,t+1))++;
-        gamma(q(k,t),obs(k,t))++;
+        for(int r = 0; r < eDims[2]; r++){
+          gamma(q(k,t),obs(k,t,r),r)++;  
+        }
+        
       }
-      gamma(q(k,oDims[1]-1),obs(k,oDims[1]-1))++;
+      for(int r = 0; r < eDims[2]; r++){
+        gamma(q(k,oDims[1]-1),obs(k,oDims[1]-1,r),r)++;  
+      }
     }
     delta /= arma::as_scalar(arma::accu(delta));
-    ksii.each_col() /= sum(ksii,1); 
-    gamma.col(eDims[1] - 1).zeros();
-    gamma.each_col() /= sum(gamma,1);    
+    ksii.each_col() /= sum(ksii,1);  
     
     init = log(delta);
     transition = log(ksii);
-    emission.cols(0,nSymbols-1) = log(gamma.cols(0,nSymbols-1));
+    for(int r=0; r < eDims[2]; r++){
+      gamma.slice(r).cols(0,nSymbols(r)-1).each_col() /= sum(gamma.slice(r).cols(0,nSymbols(r)-1),1);
+      emission.slice(r).cols(0,nSymbols(r)-1) = log(gamma.slice(r).cols(0,nSymbols(r)-1));
+    }
     
-    viterbiForEM(transition, emission, init, obs, logp, q);
+    
+    viterbiForEMMC(transition, emission, init, obs, logp, q);
     tmp = sum(logp);
     change = (tmp - sumlogp)/(abs(sumlogp)+0.1);
     sumlogp = tmp;
@@ -93,5 +99,5 @@ List hardEM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
     Rcpp::Rcout<<"Final log-likelihood: "<< sumlogp<<std::endl;
   }
   return List::create(Named("initialProbs") = wrap(exp(init)), Named("transitionMatrix") = wrap(exp(transition)),
-    Named("emissionMatrix") = wrap(exp(emission)),Named("logLik") = sumlogp,Named("iterations")=iter,Named("change")=change);
+    Named("emissionArray") = wrap(exp(emission)),Named("logLik") = sumlogp,Named("iterations")=iter,Named("change")=change);
 }
