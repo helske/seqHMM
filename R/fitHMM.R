@@ -9,35 +9,39 @@
 #' numerical maximization.
 
 #' @export 
-#' @import optimx
+#' @import nloptr
 #' @param model Hidden Markov model of class \code{HMModel}.
 #' @param use.em Logical, use EM algorithm at the start of parameter estimation.
-#'   Default is TRUE.
-#' @param use.optimx Logical, use direct numerical optimization via 
-#'   \code{\link{optimx}} after EM algorithm. Default is TRUE.
+#'   Default is FALSE. Note that EM algorithm is faster than direct numerical optimization, but is even more prone to get stuck in local optimum.
+#' @param use.nloptr Logical, use direct numerical optimization via 
+#'   \code{\link{nloptr}} (possibly after the EM algorithm). Default is TRUE.
 #' @param em.control Optional list of control parameters for for EM algorithm. 
-#'   Possible arguments are \itemize{ \item{maxit}{Maximum number of iterations,
-#'   default is 100.} \item{trace}{Level of printing. Possible values are 0 
+#'   Possible arguments are \describe{ 
+#'   \item{maxit}{Maximum number of iterations, default is 100.} 
+#'   \item{trace}{Level of printing. Possible values are 0 
 #'   (prints nothing), 1 (prints information at start and end of algorithm), and
-#'   2 (prints at every iteration).} \item{reltol}{Relative tolerance for 
-#'   convergence defined as \eqn{(tmp - sumlogLik)/(abs(sumlogLik)+0.1)}. 
+#'   2 (prints at every iteration).} 
+#'   \item{reltol}{Relative tolerance for convergence defined as \eqn{(sumLogLikNew - sumLogLikOld)/(abs(sumLogLikOld)+0.1)}. 
 #'   Default is 1e-8.} }
-#' @param method Optimization method used by \code{optimx}. Default is 
-#'   \code{"BFGS"}. Note that \code{fitHMM} uses Softmax parameterization so 
-#'   unconstrained optimization methods are used.
-#' @param itnmax Maximum number of iterations use by \code{optimx}. Default is 
-#'   10000.
-#' @param optimx.control Optional list of additional arguments for 
-#'   \code{\link{optimx}} argument \code{control}. Note that default values for 
-#'   \code{starttests} and \code{kkt} are set to \code{FALSE}, which differs 
-#'   from the default behaviour of \code{optimx}. If EM algorithm is used, 
-#'   \code{fnscale} is also set to current optimum (unless modified by user).
-#' @param ... Additional arguments to optimx.
+#' @param lb, ub Lower and upper bounds for parameters in Softmax parameterization. 
+#' Default interval is [min(-10,initialvalues), max(10,initialvalues)] which is widened according the initial values of parameters, if necessary.
+#' @param shrink instead of adjusting the bounds of optimization, adjust the initial values so that 
+#' they fit inside the intervals i.e. \code{initialvalues[initiavalues<lb] <- lb} and similarly for upper bounds. Default is TRUE.#'
+#' @param nloptr.control Optional list of additional arguments for 
+#'   \code{\link{nloptr}} argument \code{opts}. Default values are
+#'   \describe{
+#'    \item{algorithm}{\code{"NLOPT_GD_MLSL"}}
+#' \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4, ftol_rel = 1e-8)}}
+#' \item{ranseed}{\code{123}}
+#' \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
+#'\item{maxtime}{\code{600} (maximum run time in seconds)}
+#'}
+#' @param ... Additional arguments to nloptr
 #' @return List with components \item{model}{Estimated model. } 
 #'   \item{logLik}{Log-likelihood of the estimated model. } 
 #'   \item{em.results}{Results from EM algorithm. } 
-#'   \item{optimx.results}{Results from direct numerical optimization via 
-#'   \code{\link{optimx}}. }
+#'   \item{nloptr.results}{Results from direct numerical optimization via 
+#'   \code{\link{nloptr}}. }
 #' @seealso \code{\link{buildHMM}} for building Hidden Markov models before 
 #'   fitting, \code{\link{trimHMM}} for finding better models by changing small
 #'   parameter values to zero, \code{\link{BIC.HMModel}} for computing the
@@ -110,7 +114,8 @@
 #' 
 
 
-fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(), soft = TRUE, method="BFGS",itnmax=10000,optimx.control=list(),...){
+fitHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FALSE, 
+  em.control=list(), soft = TRUE, maxeval=10000,nloptr.control=list(), ...){
   
   if(model$numberOfChannels==1){
     obsArray<-data.matrix(model$observations)-1
@@ -123,7 +128,6 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(), soft = TRU
       obsArray[,,i][obsArray[,,i]>model$numberOfSymbols[i]]<-model$numberOfSymbols[i]
     }           
   }
-  #storage.mode(obsArray)<-"integer"
   if(use.em){
     em.con <- list(trace = 0, maxit=100,reltol=1e-8)
     nmsC <- names(em.con)  
@@ -166,7 +170,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(), soft = TRU
     
   } else resEM <-NULL
   
-  if(use.optimx){
+  if(use.nloptr){
     maxIP<-which.max(model$initialProbs)
     maxIPvalue<-model$initialProbs[maxIP]
     paramIP<-setdiff(which(model$initialProbs>0),maxIP)
@@ -233,14 +237,14 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(), soft = TRU
           if(soft){
             - sum(logLikHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray))
           } else -sum(mostProbablePath2(model)$log)
-            #viterbiProb(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray)
+          #viterbiProb(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray)
         } else model
       }
       
       rowSumsA<-rowSumsB<-rep(1,model$numberOfStates)
       sumInit<-1
       
-      gradfn<-function(pars,model){
+      gradfn<-function(pars,model,estimate){
         
         if(any(!is.finite(exp(pars))))
           return(.Machine$double.xmax)
@@ -350,7 +354,7 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(), soft = TRU
       rowSumsB<-matrix(1,model$numberOfStates,model$numberOfChannels)
       sumInit<-1
       
-      gradfn<-function(pars,model){
+      gradfn<-function(pars,model,estimate){
         
         if(any(!is.finite(exp(pars))))
           return(.Machine$double.xmax^075)
@@ -384,22 +388,39 @@ fitHMM<-function(model,use.em=TRUE,use.optimx=TRUE,em.control=list(), soft = TRU
       }
     }
     
+    if(is.null(nloptr.control$maxeval)){
+      nloptr.control$maxeval <- 10000
+    }
+    if(is.null(nloptr.control$maxtime)){
+      nloptr.control$maxeval <- 600
+    }
+    if(missing(lb)){
+      lb <- -10
+    }
+    if(missing(ub)){
+      ub <- 10
+    }
+    if(shrink){
+      initialvalues[initialvalues < lb] <- lb
+      initialvalues[initialvalues > ub] <- ub
+    } else {
+      lb <- min(lb, initialvalues)
+      ub <- max(ub, initialvalues)
+    }
+    lb <- rep(lb, length(initialvalues))
+    ub <- rep(ub, length(initialvalues))
+    if(is.null(nloptr.control$algorithm)){
+      nloptr.control$algorithm <- "NLOPT_GD_MLSL"
+      nloptr.control$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4, ftol_rel = 1e-8)
+      nloptr.control$ranseed <- 123
+    }
     
-    if(is.null(optimx.control$fnscale)){
-      optimx.control$fnscale <- -ifelse(use.em, resEM$logLik, logLik(model))
-    }
-    if(is.null(optimx.control$kkt)){
-      optimx.control$kkt<-FALSE
-    }
-    if(is.null(optimx.control$starttests)){
-      optimx.control$starttests<-FALSE
-    }
-    if(!soft) gradfn <- NULL
-    browser()
-    resoptimx<-optimx(par=initialvalues,fn=likfn,gr=gradfn,method=method,itnmax=itnmax,control=optimx.control,model=model,...)
-    model<-likfn(as.numeric(resoptimx[1:length(initialvalues)]),model,FALSE)
+    resnloptr<-nloptr(x0 = initialvalues, eval_f = likfn, eval_grad_f = gradfn, lb = lb, ub = ub,
+      opts=nloptr.control, model=model, estimate = TRUE, ...)
+    
+    model<-likfn(resnloptr$solution,model,FALSE)
     
   } else resoptimx<-NULL
   
-  list(model=model,logLik=ifelse(use.optimx,-resoptimx$value,resEM$logLik),em.result=resEM[4:6],optimx.result=resoptimx)
+  list(model=model,logLik=ifelse(use.nloptr,-resnloptr$objective,resEM$logLik),em.result=resEM[4:6],nloptr.result=resnloptr)
 }
