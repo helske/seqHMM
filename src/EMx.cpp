@@ -141,8 +141,6 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     
     optCoef(alpha.tube(0,0,alpha.n_rows-1,0),beta.tube(0,0,alpha.n_rows-1,0),ll,coef,X,lweights, cumsumstate,numberOfStates);
     
-  
-    
     for(int k = 0; k < oDims[0]; k++){    
       initk.col(k) = init + reparma(lweights.col(k),numberOfStates);
     }
