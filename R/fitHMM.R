@@ -54,7 +54,7 @@
 #'   HMModel objects.  
 #' @details By default the fitHMM function uses only the \code{nloptr} function which 
 #'   uses the multilevel single linkage method for global optimization 
-#'   (\code{NLOPT_GD_MLSL} as \code{{algorithm} in \code{nloptr.control}). It performs 
+#'   (\code{NLOPT_GD_MLSL} as \code{algorithm} in \code{nloptr.control}). It performs 
 #'   a sequence of local optimizations from random starting points, by default using 
 #'   the BFGS algorithm (\code{NLOPT_LD_LBFGS} as \code{local_opts} in 
 #'   \code{nloptr.control}). The user can set the maximum number of evaluations or 

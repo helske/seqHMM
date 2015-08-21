@@ -64,13 +64,13 @@ By default, estimation start with EM algorithm and then switches to direct
 numerical maximization.
 }
 \details{
-By default the function uses only the \texttt{nloptr} function which uses
-  the multilevel single linkage method for global optimization (\texttt{NLOPT_GD_MLSL}
-  as \texttt{algorithm} in \texttt{nloptr.control}). It performs a sequence of local
-  optimizations from random starting points, by default using the BFGS algorithm
-  (\texttt{NLOPT_LD_LBFGS} as \texttt{local_opts} in \texttt{nloptr.control}).
-  The user can set the maximum number of evaluations or limit the time used for the
-  optimization.
+By default the fitHMM function uses only the \code{nloptr} function which
+  uses the multilevel single linkage method for global optimization
+  (\code{NLOPT_GD_MLSL} as \code{algorithm} in \code{nloptr.control}). It performs
+  a sequence of local optimizations from random starting points, by default using
+  the BFGS algorithm (\code{NLOPT_LD_LBFGS} as \code{local_opts} in
+  \code{nloptr.control}). The user can set the maximum number of evaluations or
+  limit the time used for the optimization.
 }
 \examples{
 require(TraMineR)
