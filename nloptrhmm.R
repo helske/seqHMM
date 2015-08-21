@@ -32,8 +32,8 @@ gradfn<-function(pars,model,estimate){
 }
 
 library(nloptr)
-fit1 <- nloptr(initialvalues, likfn, gradfn,lb = rep(-500,14), ub=rep(50,14),
-  model=model,estimate=TRUE,opts=list(print_level=1, algorithm="NLOPT_GD_MLSL",maxeval=10000,
+fit1 <- nloptr(initialvalues, likfn, gradfn,lb = rep(-10,14), ub=rep(5,14),
+  model=model,estimate=TRUE,opts=list(ranseed = 1,print_level=1, algorithm="NLOPT_GD_MLSL",maxeval=10000,
     local_opts=list(algorithm="NLOPT_LD_LBFGS",xtol_rel = 1e-4)))
 fit1#5407.97110558737 
 
@@ -49,14 +49,19 @@ HMM2$logLik #-5512.487
 HMM2 <- fitHMM(bHMM, use.em=FALSE,optimx.control = list(fnscale=1))
 HMM2$logLik #-5476.575 !!!!!!!
 
+HMM2 <- fitHMM(bHMM, use.em=FALSE,soft = FALSE)
 
 likfn<-function(pars,model,estimate=TRUE){
-  
-    model$transitionMatrix[upper.tri(diag(3),TRUE)]<-pars[1:6]
+  if((sum(pars[1:2])>1) || any(pars<0) || any(pars>1)) return(Inf)
+    model$transitionMatrix[upper.tri(diag(3))]<-pars[1:3]
+    diag(model$transitionMatrix) <- 1 - (rowSums(model$transitionMatrix) - diag(model$transitionMatrix))
+    
     for(i in 1:model$numberOfChannels){
-      emissionArray[,1:model$numberOfSymbols[i],i]<-pars[6+(i-1)*6+1:6]
+      emissionArray[,2,i]<-pars[3+(i-1)*3+1:3]
+      emissionArray[,1,i]<-1-pars[3+(i-1)*3+1:3]
     }
-    model$initialProbs[]<-pars[6+3*6+1:3]
+    model$initialProbs[1:2]<-pars[3+3*3+1:2]
+    model$initialProbs[3] <- 1 - sum(model$initialProbs[1:2])
   
   
   if(estimate){
@@ -69,19 +74,17 @@ likfn<-function(pars,model,estimate=TRUE){
   }        
 }  
 
-eval_eq <- function(pars,model,estimate=TRUE){
-  d<-diag(3)
-  d[upper.tri(d,TRUE)]<-pars[1:6]
-  c(rowSums(d)-1, 
-    rowSums(matrix(pars[6+1:6],3,2))-1,
-    rowSums(matrix(pars[6+6+1:6],3,2))-1,
-    rowSums(matrix(pars[6+12+1:6],3,2))-1,
-    sum(pars[6+3*6+1:3])-1)
+eval_g_ineq <- function(pars,model,estimate=TRUE){
+  c(sum(pars[1:2])-1)
 }
-initialvalues <- c(model$transitionMatrix[upper.tri(diag(3),TRUE)],unlist(model$emissionMatrix),model$initialProbs)
+initialvalues <- c(model$transitionMatrix[upper.tri(diag(3),FALSE)],
+  model$emissionMatrix[[1]][,2],
+  model$emissionMatrix[[2]][,2],
+  model$emissionMatrix[[3]][,2],model$initialProbs[1:2])
 
-fit <- nloptr(initialvalues, likfn, lb = rep(0,27), ub=rep(1,27), eval_g_eq = eval_eq, 
-  model=model,estimate=TRUE,opts=list(print_level=3, algorithm="NLOPT_GN_ISRES",maxeval=10000000))
+fit <- nloptr(initialvalues, likfn, lb = rep(0,14), ub=rep(1,14),# eval_g_ineq = eval_g_ineq, 
+  model=model,estimate=TRUE,opts=list(print_level=1, algorithm="NLOPT_GN_MLSL",maxeval=10000,
+    local_opts=list(algorithm="NLOPT_LN_BOBYQA",xtol_rel = 1e-4)))
 
 fit
 
@@ -98,10 +101,11 @@ fit1 <- nloptr(initialvalues, likfn, gradfn,lb = rep(-500,14), ub=rep(5,14),
   model=model,estimate=TRUE,opts=list(print_level=1, algorithm="NLOPT_GD_MLSL",maxeval=10000,
     local_opts=list(algorithm="NLOPT_LD_LBFGS",xtol_rel = 1e-4)))
 fit1#5407.97110558737 
+best<-likfn(fit1$sol,model,F)
 
-fit <- nloptr(initialvalues, likfn, gradfn,lb = rep(-500,14), ub=rep(50,14),
-  model=model,estimate=TRUE,opts=list(print_level=1, algorithm="NLOPT_GD_MLSL",maxeval=10000,
-    local_opts=list(algorithm="NLOPT_LD_LBFGS",xtol_rel = 1e-4)))
+fit <- nloptr(initialvalues, eval_f=likfn, lb = rep(-500,14), ub=rep(5,14),
+  model=model,estimate=TRUE,opts=list(print_level=1, algorithm="NLOPT_GN_MLSL",maxeval=10000,
+    local_opts=list(algorithm="NLOPT_LN_NELDERMEAD",xtol_rel = 1e-4)))
 fit#5407.97110558737 
 
 fit <- nloptr(initialvalues, likfn, gradfn,

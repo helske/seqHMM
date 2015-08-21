@@ -9,7 +9,7 @@
 #' numerical maximization.
 
 #' @export 
-#' @import optimx
+#' @import nloptr
 #' @param model Hidden Markov model of class \code{HMModel}.
 #' @param use.em Logical, use EM algorithm at the start of parameter estimation.
 #'   Default is TRUE.
