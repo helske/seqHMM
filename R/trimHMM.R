@@ -1,6 +1,6 @@
 #' Trim Small Probabilities of Hidden Markov Model
 #' 
-#' Function trimHMM tries to set small insignificant probabilities to zero 
+#' Function \code{trimHMM} tries to set small insignificant probabilities to zero 
 #' without decreasing the likelihood significantly.
 #' 
 #' @export
@@ -12,7 +12,6 @@
 #' @param return.loglik Return the log-likelihood of trimmed model together with
 #'   the model object. Default is FALSE.
 #' @param zerotol Values smaller than this are trimmed to zero.
-#' @param convergence.check Checks that the (local) maximum was reached when using \code{\link{optimx}} for model fitting. Defaults to \code{FALSE}. If model does not converge 
 #' @param ... Further parameters passed on to \code{fitHMM}.
 #'   
 #' @seealso \code{\link{buildHMM}} for building Hidden Markov models before 
@@ -86,8 +85,7 @@
 #' # leads to improved log-likelihood.
 #' HMMtrim <- trimHMM(HMM$model, zerotol=1e-03, maxit=10)
 #' 
-trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8, 
-                  convergence.check=FALSE,...){
+trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,...){
   
   if(inherits(model, "HMModel")){
     
@@ -95,25 +93,6 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
       if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
              any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
            || any(model$emissionMatrix<zerotol & model$emissionMatrix>0))){
-        
-        if(convergence.check==TRUE){
-          fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
-          if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
-            print("Convergence check: (Local) optimum was found.")
-          }else{
-            print("Convergence check: Possible problem(s) with convergence.")
-            if(fit$optimx.result$convcode!=0){
-              print(paste("convcode =", fit$optimx.result$convcode))
-            }
-            if(fit$optimx.result$kkt1!=TRUE){
-              print(paste("kkt1 =", fit$optimx.result$kkt1))
-            }
-            if(fit$optimx.result$kkt2!=TRUE){
-              print(paste("kkt2 =", fit$optimx.result$kkt2))
-            }
-            print("Type help(optimx) for more information.")
-          }
-        }
         
         print("Nothing to trim.")
         if(return.loglik){
@@ -156,48 +135,12 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
           model$emissionMatrix<-model$emissionMatrix/rowSums(model$emissionMatrix)
           
         }
-        if(convergence.check==TRUE){
-          fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
-          if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
-            print("Convergence check: (Local) maximum was found.")
-          }else{
-            print("Convergence check: Possible problem(s) with convergence.")
-            if(fit$optimx.result$convcode!=0){
-              print(paste("convcode =", fit$optimx.result$convcode))
-            }
-            if(fit$optimx.result$kkt1!=TRUE){
-              print(paste("kkt1 =", fit$optimx.result$kkt1))
-            }
-            if(fit$optimx.result$kkt2!=TRUE){
-              print(paste("kkt2 =", fit$optimx.result$kkt2))
-            }
-            print("Type help(optimx) for more information.")
-          }
-        }
       }
       
     } else {
       if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
              any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
            || any(sapply(model$emissionMatrix,function(x) any(x<zerotol & x>0))))){
-        if(convergence.check==TRUE){
-          fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
-          if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
-            print("Convergence check: (Local) optimum was found.")
-          }else{
-            print("Convergence check: Possible problem(s) with convergence.")
-            if(fit$optimx.result$convcode!=0){
-              print(paste("convcode =", fit$optimx.result$convcode))
-            }
-            if(fit$optimx.result$kkt1!=TRUE){
-              print(paste("kkt1 =", fit$optimx.result$kkt1))
-            }
-            if(fit$optimx.result$kkt2!=TRUE){
-              print(paste("kkt2 =", fit$optimx.result$kkt2))
-            }
-            print("Type help(optimx) for more information.")
-          }
-        }
         print("Nothing to trim.")
         if(return.loglik){
           return(list(model=model,loglik=logLik(model)))
@@ -246,26 +189,6 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
           }       
         }
       }
-      if(convergence.check==TRUE){
-        fit<-fitHMM(model, optimx.control=list(kkt=TRUE),...)
-        if(!is.na(fit$optimx.result$convcode) && fit$optimx.result$convcode==0 && 
-           !is.na(fit$optimx.result$kkt1) && fit$optimx.result$kkt1==TRUE && 
-           !is.na(fit$optimx.result$kkt2) && fit$optimx.result$kkt2==TRUE){
-          print("Convergence check: (Local) optimum was found.")
-        }else{
-          print("Convergence check: Possible problem(s) with convergence.")
-          if(is.na(fit$optimx.result$convcode) || fit$optimx.result$convcode!=0){
-            print(paste("convcode =", fit$optimx.result$convcode))
-          }
-          if(is.na(fit$optimx.result$kkt1) || fit$optimx.result$kkt1!=TRUE){
-            print(paste("kkt1 =", fit$optimx.result$kkt1))
-          }
-          if(is.na(fit$optimx.result$kkt2) || fit$optimx.result$kkt2!=TRUE){
-            print(paste("kkt2 =", fit$optimx.result$kkt2))
-          }
-          print("Type help(optimx) for more information.")
-        }
-      }
     }
     
   }else if(inherits(model, "mixHMModel")){
@@ -273,25 +196,6 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,
       if(!(any(unlist(model$initialProbs)<zerotol & unlist(model$initialProbs)>0) || 
              any(unlist(model$transitionMatrix)<zerotol & unlist(model$transitionMatrix)>0)
            || any(unlist(model$emissionMatrix)<zerotol & unlist(model$emissionMatrix)>0))){
-        
-        if(convergence.check==TRUE){
-          fit<-fitMixHMM(model, optimx.control=list(kkt=TRUE),...)
-          if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
-            print("Convergence check: (Local) optimum was found.")
-          }else{
-            print("Convergence check: Possible problem(s) with convergence.")
-            if(fit$optimx.result$convcode!=0){
-              print(paste("convcode =", fit$optimx.result$convcode))
-            }
-            if(fit$optimx.result$kkt1!=TRUE){
-              print(paste("kkt1 =", fit$optimx.result$kkt1))
-            }
-            if(fit$optimx.result$kkt2!=TRUE){
-              print(paste("kkt2 =", fit$optimx.result$kkt2))
-            }
-            print("Type help(optimx) for more information.")
-          }
-        }
         
         print("Nothing to trim.")
         if(return.loglik){
