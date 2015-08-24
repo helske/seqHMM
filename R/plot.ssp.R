@@ -21,18 +21,18 @@
 #' 
 #' ## Building one channel per type of event left, children or married
 #' bf <- as.matrix(biofam[, 10:25])
-#' children <-  bf==4 | bf==5 | bf==6
-#' married <- bf == 2 | bf== 3 | bf==6
-#' left <- bf==1 | bf==3 | bf==5 | bf==6
+#' children <-  bf == 4 | bf == 5 | bf == 6
+#' married <- bf == 2 | bf == 3 | bf == 6
+#' left <- bf == 1 | bf == 3 | bf == 5 | bf == 6
 #' 
-#' children[children==TRUE] <- "Children"
-#' children[children==FALSE] <- "Childless"
+#' children[children == TRUE] <- "Children"
+#' children[children == FALSE] <- "Childless"
 #' 
-#' married[married==TRUE] <- "Married"
-#' married[married==FALSE] <- "Single"
+#' married[married == TRUE] <- "Married"
+#' married[married == FALSE] <- "Single"
 #' 
-#' left[left==TRUE] <- "Left home"
-#' left[left==FALSE] <- "With parents"
+#' left[left == TRUE] <- "Left home"
+#' left[left == FALSE] <- "With parents"
 #' 
 #' ## Building sequence objects
 #' child.seq <- seqdef(children)
@@ -46,7 +46,7 @@
 #' 
 #' 
 #' # Plotting state distribution plots of observations
-#' ssp1 <- ssp(list(child.seq, marr.seq, left.seq), type="d", plots="obs")
+#' ssp1 <- ssp(list(child.seq, marr.seq, left.seq), type = "d", plots = "obs")
 #' plot(ssp1)
 
 
