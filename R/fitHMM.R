@@ -11,11 +11,11 @@
 #' @export 
 #' @import nloptr
 #' @param model Hidden Markov model of class \code{HMModel}.
-#' @param use.em Logical, use EM algorithm at the start of parameter estimation.
+#' @param use_em Logical, use EM algorithm at the start of parameter estimation.
 #'   The default is \code{FALSE}. Note that EM algorithm is faster than direct numerical optimization, but is even more prone to get stuck in local optimum.
-#' @param use.nloptr Logical, use direct numerical optimization via 
+#' @param use_nloptr Logical, use direct numerical optimization via 
 #'   \code{\link{nloptr}} (possibly after the EM algorithm). The default is \code{TRUE}.
-#' @param em.control Optional list of control parameters for for EM algorithm. 
+#' @param em_control Optional list of control parameters for for EM algorithm. 
 #'   Possible arguments are \describe{ 
 #'   \item{maxit}{Maximum number of iterations, default is 100.} 
 #'   \item{trace}{Level of printing. Possible values are 0 
@@ -27,7 +27,7 @@
 #' Default interval is [min(-10,initialvalues), max(10,initialvalues)] which is widened according the initial values of parameters, if necessary.
 #' @param shrink instead of adjusting the bounds of optimization, adjust the initial values so that 
 #' they fit inside the intervals i.e. \code{initialvalues[initiavalues<lb] <- lb} and similarly for upper bounds. Default is TRUE.#'
-#' @param nloptr.control Optional list of additional arguments for 
+#' @param nloptr_control Optional list of additional arguments for 
 #'   \code{\link{nloptr}} argument \code{opts}. The default values are
 #'   \describe{
 #'    \item{algorithm}{\code{"NLOPT_GD_MLSL"}}
@@ -36,10 +36,10 @@
 #' \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
 #'\item{maxtime}{\code{600} (maximum run time in seconds)}
 #'}
-#' @param final.nloptr Logical, whether to use \code{\link{nloptr}} at the end of
+#' @param final_nloptr Logical, whether to use \code{\link{nloptr}} at the end of
 #'   estimation by using the estimates given by the first estimation as starting
 #'   values. The default is \code{TRUE}.
-#' @param final.nloptr.control Optional list of additional arguments for 
+#' @param final_nloptr_control Optional list of additional arguments for 
 #'   \code{\link{nloptr}} argument \code{opts}. The default values are
 #'   \describe{
 #'    \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
@@ -61,10 +61,10 @@
 #'   HMModel objects.
 #' @details By default the fitHMM function uses only the \code{nloptr} function which 
 #'   uses the multilevel single linkage method for global optimization 
-#'   (\code{NLOPT_GD_MLSL} as \code{algorithm} in \code{nloptr.control}). It performs 
+#'   (\code{NLOPT_GD_MLSL} as \code{algorithm} in \code{nloptr_control}). It performs 
 #'   a sequence of local optimizations from random starting points, by default using 
 #'   the BFGS algorithm (\code{NLOPT_LD_LBFGS} as \code{local_opts} in 
-#'   \code{nloptr.control}). The user can set the maximum number of evaluations or 
+#'   \code{nloptr_control}). The user can set the maximum number of evaluations or 
 #'   limit the time used for the optimization.
 #' @examples 
 #' require(TraMineR)
@@ -132,10 +132,10 @@
 #' 
 
 
-fitHMM<-function(model, use.em = FALSE, use.nloptr = TRUE, final.nloptr = TRUE, 
+fitHMM<-function(model, use_em = FALSE, use_nloptr = TRUE, final_nloptr = TRUE, 
                  lb, ub, shrink = FALSE, soft = TRUE, 
-                 maxeval=10000, em.control=list(), nloptr.control=list(), 
-                 final.nloptr.control=list(), ...){
+                 maxeval=10000, em_control=list(), nloptr_control=list(), 
+                 final_nloptr_control=list(), ...){
   
   if(model$numberOfChannels==1){
     obsArray<-data.matrix(model$observations)-1
@@ -148,12 +148,12 @@ fitHMM<-function(model, use.em = FALSE, use.nloptr = TRUE, final.nloptr = TRUE,
       obsArray[,,i][obsArray[,,i]>model$numberOfSymbols[i]]<-model$numberOfSymbols[i]
     }           
   }
-  if(use.em){
+  if(use_em){
     em.con <- list(trace = 0, maxit=100,reltol=1e-8)
     nmsC <- names(em.con)  
-    em.con[(namc <- names(em.control))] <- em.control
+    em.con[(namc <- names(em_control))] <- em_control
     if (length(noNms <- namc[!namc %in% nmsC])) 
-      warning("Unknown names in em.control: ", paste(noNms, collapse = ", "))
+      warning("Unknown names in em_control: ", paste(noNms, collapse = ", "))
     
     if(model$numberOfChannels==1){
       
@@ -195,7 +195,7 @@ fitHMM<-function(model, use.em = FALSE, use.nloptr = TRUE, final.nloptr = TRUE,
     
   } else resEM <-NULL
   
-  if(use.nloptr || final.nloptr){
+  if(use_nloptr || final_nloptr){
     maxIP<-which.max(model$initialProbs)
     maxIPvalue<-model$initialProbs[maxIP]
     paramIP<-setdiff(which(model$initialProbs>0),maxIP)
@@ -435,37 +435,46 @@ fitHMM<-function(model, use.em = FALSE, use.nloptr = TRUE, final.nloptr = TRUE,
     lb <- rep(lb, length(initialvalues))
     ub <- rep(ub, length(initialvalues))
     
+    if(is.null(final_nloptr_control$maxeval)){
+      final_nloptr_control$maxeval <- 10000
+    }
+    if(is.null(final_nloptr_control$maxtime)){
+      final_nloptr_control$maxeval <- 600
+    }
+    if(is.null(final_nloptr_control$algorithm)){
+      final_nloptr_control$algorithm <- "NLOPT_LD_LBFGS"
+      final_nloptr_control$xtol_rel <- 1e-8
+    }
     
-    if(use.nloptr){
-      if(is.null(nloptr.control$maxeval)){
-        nloptr.control$maxeval <- 10000
+    if(use_nloptr){
+      if(is.null(nloptr_control$maxeval)){
+        nloptr_control$maxeval <- 10000
       }
-      if(is.null(nloptr.control$maxtime)){
-        nloptr.control$maxeval <- 600
+      if(is.null(nloptr_control$maxtime)){
+        nloptr_control$maxeval <- 600
       }
-      if(is.null(nloptr.control$algorithm)){
-        nloptr.control$algorithm <- "NLOPT_GD_MLSL"
-        nloptr.control$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4, ftol_rel = 1e-8)
-        nloptr.control$ranseed <- 123
+      if(is.null(nloptr_control$algorithm)){
+        nloptr_control$algorithm <- "NLOPT_GD_MLSL"
+        nloptr_control$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4, ftol_rel = 1e-8)
+        nloptr_control$ranseed <- 123
       }
       
       resnloptr<-nloptr(x0 = initialvalues, eval_f = likfn, eval_grad_f = gradfn, lb = lb, ub = ub,
-                        opts=nloptr.control, model=model, estimate = TRUE, ...)
+                        opts=nloptr_control, model=model, estimate = TRUE, ...)
       
       model<-likfn(resnloptr$solution,model,FALSE)
       
-      
       resnloptr<-nloptr(x0 = resnloptr$solution, eval_f = likfn, eval_grad_f = gradfn, 
                         lb = lb, ub = ub,
-                        opts = final.nloptr.control, model = model, estimate = TRUE, ...)
+                        opts = final_nloptr_control, model = model, estimate = TRUE, ...)
       
     }else{
       resnloptr<-nloptr(x0 = initialvalues, eval_f = likfn, eval_grad_f = gradfn, 
                         lb = lb, ub = ub,
-                        opts = final.nloptr.control, model = model, estimate = TRUE, ...)
+                        opts = final_nloptr_control, model = model, estimate = TRUE, ...)
     }
     
   } else resnloptr <- NULL
   
-  list(model=model,logLik=ifelse(use.nloptr,-resnloptr$objective,resEM$logLik),em.result=resEM[4:6],nloptr.result=resnloptr)
+  list(model=model,logLik=ifelse(use_nloptr,-resnloptr$objective,resEM$logLik),em.result=resEM[4:6],nloptr.result=resnloptr)
 }

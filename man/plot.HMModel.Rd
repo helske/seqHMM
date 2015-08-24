@@ -201,8 +201,7 @@ bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq),
                  initialProbs=initialProbs)
 
 # Fitting hidden Markov model
-HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8),
-              itnmax=10000, method="BFGS")
+HMM <- fitHMM(bHMM)
 
 # Plotting HMModel object
 plot(HMM$model)
