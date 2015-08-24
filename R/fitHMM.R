@@ -133,9 +133,9 @@
 
 
 fitHMM<-function(model, use_em = FALSE, use_nloptr = TRUE, final_nloptr = TRUE, 
-                 lb, ub, shrink = FALSE, soft = TRUE, 
-                 maxeval=10000, em_control=list(), nloptr_control=list(), 
-                 final_nloptr_control=list(), ...){
+  lb, ub, shrink = FALSE, soft = TRUE, 
+  maxeval=10000, em_control=list(), nloptr_control=list(), 
+  final_nloptr_control=list(), ...){
   
   if(model$numberOfChannels==1){
     obsArray<-data.matrix(model$observations)-1
@@ -159,10 +159,10 @@ fitHMM<-function(model, use_em = FALSE, use_nloptr = TRUE, final_nloptr = TRUE,
       
       if(soft){
         resEM<-EM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
-                  obsArray, model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+          obsArray, model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
       } else {
         resEM<-hardEM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
-                      obsArray, model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+          obsArray, model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
       }
       if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")      
@@ -177,10 +177,10 @@ fitHMM<-function(model, use_em = FALSE, use_nloptr = TRUE, final_nloptr = TRUE,
       
       if(soft){
         resEM<-EMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
-                    model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+          model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
       } else {
         resEM<-hardEMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
-                        model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+          model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
       }
       if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")
@@ -296,7 +296,7 @@ fitHMM<-function(model, use_em = FALSE, use_nloptr = TRUE, final_nloptr = TRUE,
         } 
         
         - gradient(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray, 
-                   rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars)) 
+          rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars)) 
         
         
       }
@@ -328,7 +328,7 @@ fitHMM<-function(model, use_em = FALSE, use_nloptr = TRUE, final_nloptr = TRUE,
       initialvalues<-c(log(c(
         if(npTM>0) model$transitionMatrix[paramTM],
         if(sum(npEM)>0) unlist(sapply(1:model$numberOfChannels,
-                                      function(x) model$emissionMatrix[[x]][paramEM[[x]]])),
+          function(x) model$emissionMatrix[[x]][paramEM[[x]]])),
         if(npIP>0) model$initialProbs[paramIP]))
       )         
       
@@ -413,7 +413,7 @@ fitHMM<-function(model, use_em = FALSE, use_nloptr = TRUE, final_nloptr = TRUE,
         } 
         
         - gradientMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
-                     rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars))
+          rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars))
         
       }
     }
@@ -435,23 +435,24 @@ fitHMM<-function(model, use_em = FALSE, use_nloptr = TRUE, final_nloptr = TRUE,
     lb <- rep(lb, length(initialvalues))
     ub <- rep(ub, length(initialvalues))
     
-    if(is.null(final_nloptr_control$maxeval)){
-      final_nloptr_control$maxeval <- 10000
+    if(final_nloptr){
+      if(is.null(final_nloptr_control$maxeval)){
+        final_nloptr_control$maxeval <- 10000
+      }
+      if(is.null(final_nloptr_control$maxtime)){
+        final_nloptr_control$maxtime <- 600
+      }
+      if(is.null(final_nloptr_control$algorithm)){
+        final_nloptr_control$algorithm <- "NLOPT_LD_LBFGS"
+        final_nloptr_control$xtol_rel <- 1e-8
+      }
     }
-    if(is.null(final_nloptr_control$maxtime)){
-      final_nloptr_control$maxeval <- 600
-    }
-    if(is.null(final_nloptr_control$algorithm)){
-      final_nloptr_control$algorithm <- "NLOPT_LD_LBFGS"
-      final_nloptr_control$xtol_rel <- 1e-8
-    }
-    
     if(use_nloptr){
       if(is.null(nloptr_control$maxeval)){
         nloptr_control$maxeval <- 10000
       }
       if(is.null(nloptr_control$maxtime)){
-        nloptr_control$maxeval <- 600
+        nloptr_control$maxtime <- 600
       }
       if(is.null(nloptr_control$algorithm)){
         nloptr_control$algorithm <- "NLOPT_GD_MLSL"
@@ -460,18 +461,18 @@ fitHMM<-function(model, use_em = FALSE, use_nloptr = TRUE, final_nloptr = TRUE,
       }
       
       resnloptr<-nloptr(x0 = initialvalues, eval_f = likfn, eval_grad_f = gradfn, lb = lb, ub = ub,
-                        opts=nloptr_control, model=model, estimate = TRUE, ...)
+        opts=nloptr_control, model=model, estimate = TRUE, ...)
       
       model<-likfn(resnloptr$solution,model,FALSE)
       
       resnloptr<-nloptr(x0 = resnloptr$solution, eval_f = likfn, eval_grad_f = gradfn, 
-                        lb = lb, ub = ub,
-                        opts = final_nloptr_control, model = model, estimate = TRUE, ...)
+        lb = lb, ub = ub,
+        opts = final_nloptr_control, model = model, estimate = TRUE, ...)
       
     }else{
       resnloptr<-nloptr(x0 = initialvalues, eval_f = likfn, eval_grad_f = gradfn, 
-                        lb = lb, ub = ub,
-                        opts = final_nloptr_control, model = model, estimate = TRUE, ...)
+        lb = lb, ub = ub,
+        opts = final_nloptr_control, model = model, estimate = TRUE, ...)
     }
     
   } else resnloptr <- NULL
