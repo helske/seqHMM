@@ -11,43 +11,59 @@
 #' @export 
 #' @import nloptr
 #' @param model Hidden Markov model of class \code{HMModel}.
-#' @param use.em Logical, use EM algorithm at the start of parameter estimation.
-#'   Default is FALSE. Note that EM algorithm is faster than direct numerical optimization, but is even more prone to get stuck in local optimum.
-#' @param use.nloptr Logical, use direct numerical optimization via 
-#'   \code{\link{nloptr}} (possibly after the EM algorithm). Default is TRUE.
-#' @param em.control Optional list of control parameters for for EM algorithm. 
+#' @param em_step Logical, use EM algorithm at the start of parameter estimation.
+#'   The default is \code{TRUE}. Note that EM algorithm is faster than direct numerical optimization, 
+#'   but is even more prone to get stuck in a local optimum.
+#' @param global_step Logical, use global optimization via 
+#'   \code{\link{nloptr}} (possibly after the EM step). The default is \code{TRUE}.
+#'@param local_step Logical, use local optimization via 
+#'   \code{\link{nloptr}} (possibly after the EM and/or global steps). The default is \code{TRUE}.
+#' @param em_control Optional list of control parameters for for EM algorithm. 
 #'   Possible arguments are \describe{ 
-#'   \item{maxit}{Maximum number of iterations, default is 100.} 
+#'   \item{maxeval}{Maximum number of iterations, default is 100.} 
 #'   \item{trace}{Level of printing. Possible values are 0 
 #'   (prints nothing), 1 (prints information at start and end of algorithm), and
 #'   2 (prints at every iteration).} 
 #'   \item{reltol}{Relative tolerance for convergence defined as \eqn{(sumLogLikNew - sumLogLikOld)/(abs(sumLogLikOld)+0.1)}. 
 #'   Default is 1e-8.} }
-#' @param lb, ub Lower and upper bounds for parameters in Softmax parameterization. 
-#' Default interval is [min(-10,initialvalues), max(10,initialvalues)] which is widened according the initial values of parameters, if necessary.
-#' @param shrink instead of adjusting the bounds of optimization, adjust the initial values so that 
-#' they fit inside the intervals i.e. \code{initialvalues[initiavalues<lb] <- lb} and similarly for upper bounds. Default is TRUE.#'
-#' @param nloptr.control Optional list of additional arguments for 
-#'   \code{\link{nloptr}} argument \code{opts}. Default values are
+#' @param global_control Optional list of additional arguments for 
+#'   \code{\link{nloptr}} argument \code{opts}. The default values are
 #'   \describe{
-#'    \item{algorithm}{\code{"NLOPT_GD_MLSL"}}
-#' \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4, ftol_rel = 1e-8)}}
-#' \item{ranseed}{\code{123}}
-#' \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
-#'\item{maxtime}{\code{600} (maximum run time in seconds)}
+#'    \item{algorithm}{\code{"NLOPT_GD_MLSL_LDS"}}
+#'    \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)}}
+#'    \item{ranseed}{\code{123}}
+#'    \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
+#'    \item{maxtime}{\code{60} (maximum run time in seconds)}
 #'}
+#' @param lb,ub Lower and upper bounds for parameters in Softmax parameterization. 
+#' Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)]. Used only in global optimization step.
+#' @param local_control Optional list of additional arguments for 
+#'   \code{\link{nloptr}} argument \code{opts}. The default values are
+#'   \describe{
+#'    \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
+#'    \item{xtol_rel}{\code{1e-8}}
+#'    \item{maxeval}{\code{10000} (maximum number of iterations)}
+#'    \item{maxtime}{\code{60} (maximum run time in seconds)}
+#'   }
 #' @param ... Additional arguments to nloptr
 #' @return List with components \item{model}{Estimated model. } 
 #'   \item{logLik}{Log-likelihood of the estimated model. } 
-#'   \item{em.results}{Results from EM algorithm. } 
-#'   \item{nloptr.results}{Results from direct numerical optimization via 
-#'   \code{\link{nloptr}}. }
+#'   \item{em_results}{Results after the EM step. } 
+#'   \item{global_results}{Results after the global step. }
+#'   \item{local_results}{Results after the local step. }
 #' @seealso \code{\link{buildHMM}} for building Hidden Markov models before 
 #'   fitting, \code{\link{trimHMM}} for finding better models by changing small
 #'   parameter values to zero, \code{\link{BIC.HMModel}} for computing the
 #'   value of the Bayesian information criterion of the model, and 
 #'   \code{\link{plot.HMModel}} and \code{\link{ssplot}} for plotting 
-#'   HMModel objects.  
+#'   HMModel objects.
+#' @details By default the \code{fitHMM} function uses only the \code{nloptr} function which 
+#'   uses the multilevel single linkage method for global optimization 
+#'   (\code{NLOPT_GD_MLSL} as \code{algorithm} in \code{global_control}). It performs 
+#'   a sequence of local optimizations from random starting points, by default using 
+#'   the BFGS algorithm (\code{NLOPT_LD_LBFGS} as \code{local_opts} in 
+#'   \code{global_control}). The user can set the maximum number of evaluations or 
+#'   limit the time used for the optimization.
 #' @examples 
 #' require(TraMineR)
 #' 
@@ -56,18 +72,18 @@
 #' 
 #' ## Building one channel per type of event left, children or married
 #' bf <- as.matrix(biofam[, 10:25])
-#' children <-  bf==4 | bf==5 | bf==6
-#' married <- bf == 2 | bf== 3 | bf==6
-#' left <- bf==1 | bf==3 | bf==5 | bf==6
+#' children <-  bf == 4 | bf == 5 | bf == 6
+#' married <- bf == 2 | bf == 3 | bf == 6
+#' left <- bf == 1 | bf == 3 | bf == 5 | bf == 6
 #' 
-#' children[children==TRUE] <- "Children"
-#' children[children==FALSE] <- "Childless"
+#' children[children == TRUE] <- "Children"
+#' children[children == FALSE] <- "Childless"
 #' 
-#' married[married==TRUE] <- "Married"
-#' married[married==FALSE] <- "Single"
+#' married[married == TRUE] <- "Married"
+#' married[married == FALSE] <- "Single"
 #' 
-#' left[left==TRUE] <- "Left home"
-#' left[left==FALSE] <- "With parents"
+#' left[left == TRUE] <- "Left home"
+#' left[left == FALSE] <- "With parents"
 #' 
 #' ## Building sequence objects
 #' child.seq <- seqdef(children)
@@ -75,47 +91,77 @@
 #' left.seq <- seqdef(left)
 #' 
 #' # Initial values for emission matrices
-#' B_child <- matrix(NA, nrow=3, ncol=2)
-#' B_child[1,] <- seqstatf(child.seq[,1:5])[,2]+0.1
-#' B_child[2,] <- seqstatf(child.seq[,6:10])[,2]+0.1
-#' B_child[3,] <- seqstatf(child.seq[,11:15])[,2]+0.1
-#' B_child <- B_child/rowSums(B_child)
+#' B_child <- matrix(NA, nrow = 3, ncol = 2)
+#' B_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 0.1
+#' B_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 0.1
+#' B_child[3,] <- seqstatf(child.seq[, 11:15])[, 2] + 0.1
+#' B_child <- B_child / rowSums(B_child)
 #' 
-#' B_marr <- matrix(NA, nrow=3, ncol=2)
-#' B_marr[1,] <- seqstatf(marr.seq[,1:5])[,2]+0.1
-#' B_marr[2,] <- seqstatf(marr.seq[,6:10])[,2]+0.1
-#' B_marr[3,] <- seqstatf(marr.seq[,11:15])[,2]+0.1
-#' B_marr <- B_marr/rowSums(B_marr)
+#' B_marr <- matrix(NA, nrow = 3, ncol = 2)
+#' B_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 0.1
+#' B_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 0.1
+#' B_marr[3,] <- seqstatf(marr.seq[, 11:15])[, 2] + 0.1
+#' B_marr <- B_marr / rowSums(B_marr)
 #' 
-#' B_left <- matrix(NA, nrow=3, ncol=2)
-#' B_left[1,] <- seqstatf(left.seq[,1:5])[,2]+0.1
-#' B_left[2,] <- seqstatf(left.seq[,6:10])[,2]+0.1
-#' B_left[3,] <- seqstatf(left.seq[,11:15])[,2]+0.1
-#' B_left <- B_left/rowSums(B_left)
+#' B_left <- matrix(NA, nrow = 3, ncol = 2)
+#' B_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 0.1
+#' B_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 0.1
+#' B_left[3,] <- seqstatf(left.seq[, 11:15])[, 2] + 0.1
+#' B_left <- B_left / rowSums(B_left)
 #' 
 #' # Initial values for transition matrix
 #' A <- matrix(c(0.9, 0.07, 0.03,
-#' 0,    0.9,  0.1,
-#' 0,      0,    1), 
-#' nrow=3, ncol=3, byrow=TRUE)
+#'                 0,  0.9,  0.1,
+#'                 0,    0,    1), nrow=3, ncol=3, byrow=TRUE)
 #' 
 #' # Initial values for initial state probabilities
-#' initialProbs <- c(0.9,0.09,0.01)
+#' initialProbs <- c(0.9, 0.09, 0.01)
 #' 
 #' # Building hidden Markov model with initial parameter values
-#' bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq), 
-#' transitionMatrix=A,
-#' emissionMatrix=list(B_child, B_marr, B_left), 
-#' initialProbs=initialProbs)
+#' bHMM <- buildHMM(
+#'   observations = list(child.seq, marr.seq, left.seq), 
+#'   transitionMatrix = A,
+#'   emissionMatrix = list(B_child, B_marr, B_left), 
+#'   initialProbs = initialProbs
+#'   )
 #' 
-#' # Fitting hidden Markov model
-#' HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8),
-#' itnmax=10000, method="BFGS")
+#' # Fitting the model with different settings
+#' 
+#' # Only EM with default values
+#' HMM1 <- fitHMM(bHMM, em_step = TRUE, global_step = FALSE, local_step = FALSE)
+#' HMM1$logLik #-5507.003
+#' 
+#' \dontrun{ 
+#' # Only EM with default values
+#' HMM1 <- fitHMM(bHMM, em_step = TRUE, global_step = FALSE, local_step = FALSE)
+#' HMM1$logLik #-5507.003
+#' 
+#' # EM with LBFGS
+#' HMM2 <- fitHMM(bHMM, em_step = TRUE, global_step = FALSE, local_step = TRUE)
+#' HMM2$logLik # -5507.003
+#' 
+#' # Only LBFGS
+#' HMM3 <- fitHMM(bHMM, em_step = FALSE, global_step = FALSE, local_step = TRUE)
+#' HMM3$logLik #-5493.271
+#' 
+#' # Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
+#' HMM4 <- fitHMM(bHMM, em_step = FALSE, global_step = TRUE, local_step = TRUE)
+#' HMM4$logLik #-5417.636
+#' 
+#' # As previously, but now we use five iterations from EM algorithm for defining initial values and boundaries
+#' HMM5 <- fitHMM(bHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE, em_control=list(maxit = 5))
+#' HMM5$logLik #-5403.383
+#' 
+#' # As previously, but now using full EM at the beginning
+#' HMM6 <- fitHMM(bHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE)
+#' HMM6$logLik #-5403.383
+#' }
 #' 
 
 
-fitHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FALSE, 
-  em.control=list(), soft = TRUE, maxeval=10000,nloptr.control=list(), ...){
+fitHMM<-function(model, em_step = FALSE, global_step = TRUE, local_step = TRUE, 
+  em_control=list(), global_control=list(), 
+  local_control=list(), lb, ub, soft = TRUE, ...){
   
   if(model$numberOfChannels==1){
     obsArray<-data.matrix(model$observations)-1
@@ -128,12 +174,12 @@ fitHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FALSE
       obsArray[,,i][obsArray[,,i]>model$numberOfSymbols[i]]<-model$numberOfSymbols[i]
     }           
   }
-  if(use.em){
+  if(em_step){
     em.con <- list(trace = 0, maxit=100,reltol=1e-8)
     nmsC <- names(em.con)  
-    em.con[(namc <- names(em.control))] <- em.control
+    em.con[(namc <- names(em_control))] <- em_control
     if (length(noNms <- namc[!namc %in% nmsC])) 
-      warning("Unknown names in em.control: ", paste(noNms, collapse = ", "))
+      warning("Unknown names in em_control: ", paste(noNms, collapse = ", "))
     
     if(model$numberOfChannels==1){
       
@@ -156,8 +202,8 @@ fitHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FALSE
         emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
       
       if(soft){
-      resEM<-EMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
-        model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+        resEM<-EMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
+          model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
       } else {
         resEM<-hardEMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
           model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
@@ -172,10 +218,10 @@ fitHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FALSE
     
     model$initialProbs[]<-resEM$initialProbs
     model$transitionMatrix[]<-resEM$transitionMatrix
-    
+    ll <- resEM$logLik
   } else resEM <-NULL
   
-  if(use.nloptr){
+  if(global_step || local_step){
     maxIP<-which.max(model$initialProbs)
     maxIPvalue<-model$initialProbs[maxIP]
     paramIP<-setdiff(which(model$initialProbs>0),maxIP)
@@ -242,7 +288,7 @@ fitHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FALSE
           if(soft){
             - sum(logLikHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray))
           } else {
-          viterbiProb(log(model$transitionMatrix), cbind(log(model$emissionMatrix),0), log(model$initialProbs), obsArray)
+            viterbiProb(log(model$transitionMatrix), cbind(log(model$emissionMatrix),0), log(model$initialProbs), obsArray)
           }
         } else model
       }
@@ -346,7 +392,7 @@ fitHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FALSE
         
         if(estimate){
           if(soft){
-          - sum(logLikMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray))   
+            - sum(logLikMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray))   
           } else {
             -sum(mostProbablePath2(model)$log)
           }
@@ -398,39 +444,58 @@ fitHMM<-function(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FALSE
       }
     }
     
-    if(is.null(nloptr.control$maxeval)){
-      nloptr.control$maxeval <- 10000
-    }
-    if(is.null(nloptr.control$maxtime)){
-      nloptr.control$maxeval <- 600
-    }
+    
     if(missing(lb)){
-      lb <- -10
+      lb <- rep(-10, length(initialvalues))
     }
     if(missing(ub)){
-      ub <- 10
+      ub <-  rep(10, length(initialvalues))
     }
-    if(shrink){
-      initialvalues[initialvalues < lb] <- lb
-      initialvalues[initialvalues > ub] <- ub
-    } else {
-      lb <- min(lb, initialvalues)
-      ub <- max(ub, initialvalues)
-    }
-    lb <- rep(lb, length(initialvalues))
-    ub <- rep(ub, length(initialvalues))
-    if(is.null(nloptr.control$algorithm)){
-      nloptr.control$algorithm <- "NLOPT_GD_MLSL"
-      nloptr.control$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4, ftol_rel = 1e-8)
-      nloptr.control$ranseed <- 123
-    }
-    
-    resnloptr<-nloptr(x0 = initialvalues, eval_f = likfn, eval_grad_f = gradfn, lb = lb, ub = ub,
-      opts=nloptr.control, model=model, estimate = TRUE, ...)
-    
-    model<-likfn(resnloptr$solution,model,FALSE)
-    
-  } else resoptimx<-NULL
+    lb <- pmin(lb, 2*initialvalues)
+    ub <- pmax(ub, 2*initialvalues)
   
-  list(model=model,logLik=ifelse(use.nloptr,-resnloptr$objective,resEM$logLik),em.result=resEM[4:6],nloptr.result=resnloptr)
+    if(global_step){
+      if(is.null(global_control$maxeval)){
+        global_control$maxeval <- 10000
+      }
+      if(is.null(global_control$maxtime)){
+        global_control$maxtime <- 60
+      }
+      if(is.null(global_control$algorithm)){
+        global_control$algorithm <- "NLOPT_GD_MLSL_LDS"
+        global_control$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)
+        global_control$ranseed <- 123
+        global_control$population <- 4*length(initialvalues)
+      }
+      
+      globalres<-nloptr(x0 = initialvalues, eval_f = likfn, eval_grad_f = gradfn, lb = lb, ub = ub,
+        opts=global_control, model=model, estimate = TRUE, ...)
+      initialvalues <- globalres$solution
+      model<-likfn(globalres$solution,model, FALSE)
+      ll <- -globalres$objective
+    } globalres <- NULL
+    
+    if(local_step){
+      if(is.null(local_control$maxeval)){
+        local_control$maxeval <- 10000
+      }
+      if(is.null(local_control$maxtime)){
+        local_control$maxtime <- 60
+      }
+      if(is.null(local_control$algorithm)){
+        local_control$algorithm <- "NLOPT_LD_LBFGS"
+        local_control$xtol_rel <- 1e-8
+      }
+      localres<-nloptr(x0 = initialvalues, 
+        eval_f = likfn, eval_grad_f = gradfn,
+        opts = local_control, model = model, estimate = TRUE, ...)
+      model<-likfn(localres$solution,model, FALSE)
+      ll <- -localres$objective
+    } else localres <- NULL
+    
+    
+  } else globalres <- localres <- NULL
+  
+  list(model = model,logLik = ll, 
+    em_results=resEM[4:6], global_results = globalres, local_results = localres)
 }
