@@ -10,12 +10,12 @@ trimHMM(model, maxit = 0, return.loglik = FALSE, zerotol = 1e-08, ...)
 \item{model}{Model of class \code{HMModel} or \code{mixHMModel} for which
 trimming is performed.}
 
-\item{maxit}{Number of iterations. After zeroing small values, model is
+\item{maxit}{Number of iterations. After zeroing small values, the model is
 refitted, and this is repeated until there is nothing to trim or maxit
-iterations is used.}
+iterations are done.}
 
-\item{return.loglik}{Return the log-likelihood of trimmed model together with
-the model object. Default is FALSE.}
+\item{return.loglik}{Return the log-likelihood of the trimmed model together with
+the model object. The default is \code{FALSE}.}
 
 \item{zerotol}{Values smaller than this are trimmed to zero.}
 

@@ -6,11 +6,11 @@
 #' @export
 #' @param model Model of class \code{HMModel} or \code{mixHMModel} for which 
 #'   trimming is performed.
-#' @param maxit Number of iterations. After zeroing small values, model is 
+#' @param maxit Number of iterations. After zeroing small values, the model is 
 #'   refitted, and this is repeated until there is nothing to trim or maxit 
-#'   iterations is used.
-#' @param return.loglik Return the log-likelihood of trimmed model together with
-#'   the model object. Default is FALSE.
+#'   iterations are done.
+#' @param return.loglik Return the log-likelihood of the trimmed model together with
+#'   the model object. The default is \code{FALSE}.
 #' @param zerotol Values smaller than this are trimmed to zero.
 #' @param ... Further parameters passed on to \code{fitHMM}.
 #'   
@@ -240,48 +240,12 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,...){
             model$emissionMatrix[[m]]<-model$emissionMatrix[[m]]/rowSums(model$emissionMatrix[[m]])
           }  
         }
-        if(convergence.check==TRUE){
-          fit<-fitMixHMM(model, optimx.control=list(kkt=TRUE),...)
-          if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
-            print("Convergence check: (Local) maximum was found.")
-          }else{
-            print("Convergence check: Possible problem(s) with convergence.")
-            if(fit$optimx.result$convcode!=0){
-              print(paste("convcode =", fit$optimx.result$convcode))
-            }
-            if(fit$optimx.result$kkt1!=TRUE){
-              print(paste("kkt1 =", fit$optimx.result$kkt1))
-            }
-            if(fit$optimx.result$kkt2!=TRUE){
-              print(paste("kkt2 =", fit$optimx.result$kkt2))
-            }
-            print("Type help(optimx) for more information.")
-          }
-        }
       }
       
     } else {
       if(!(any(unlist(model$initialProbs)<zerotol & unlist(model$initialProbs)>0) || 
              any(unlist(model$transitionMatrix)<zerotol & unlist(model$transitionMatrix)>0)
            || any(unlist(model$emissionMatrix)<zerotol & unlist(model$emissionMatrix)>0))){
-        if(convergence.check==TRUE){
-          fit<-fitMixHMM(model, optimx.control=list(kkt=TRUE),...)
-          if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
-            print("Convergence check: (Local) optimum was found.")
-          }else{
-            print("Convergence check: Possible problem(s) with convergence.")
-            if(fit$optimx.result$convcode!=0){
-              print(paste("convcode =", fit$optimx.result$convcode))
-            }
-            if(fit$optimx.result$kkt1!=TRUE){
-              print(paste("kkt1 =", fit$optimx.result$kkt1))
-            }
-            if(fit$optimx.result$kkt2!=TRUE){
-              print(paste("kkt2 =", fit$optimx.result$kkt2))
-            }
-            print("Type help(optimx) for more information.")
-          }
-        }
         print("Nothing to trim.")
         if(return.loglik){
           return(list(model=model,loglik=logLik(model)))
@@ -334,24 +298,6 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,...){
             }
           }
           
-        }
-      }
-      if(convergence.check==TRUE){
-        fit<-fitMixHMM(model, optimx.control=list(kkt=TRUE),...)
-        if(fit$optimx.result$convcode==0 && fit$optimx.result$kkt1==TRUE && fit$optimx.result$kkt2==TRUE){
-          print("Convergence check: (Local) optimum was found.")
-        }else{
-          print("Convergence check: Possible problem(s) with convergence.")
-          if(fit$optimx.result$convcode!=0){
-            print(paste("convcode =", fit$optimx.result$convcode))
-          }
-          if(fit$optimx.result$kkt1!=TRUE){
-            print(paste("kkt1 =", fit$optimx.result$kkt1))
-          }
-          if(fit$optimx.result$kkt2!=TRUE){
-            print(paste("kkt2 =", fit$optimx.result$kkt2))
-          }
-          print("Type help(optimx) for more information.")
         }
       }
     }
