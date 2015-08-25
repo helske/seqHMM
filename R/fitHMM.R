@@ -24,9 +24,9 @@
 #'   \item{reltol}{Relative tolerance for convergence defined as \eqn{(sumLogLikNew - sumLogLikOld)/(abs(sumLogLikOld)+0.1)}. 
 #'   Default is 1e-8.} }
 #' @param lb,ub Lower and upper bounds for parameters in Softmax parameterization. 
-#' Default interval is [min(-10,initialvalues), max(10,initialvalues)] which is widened according the initial values of parameters, if necessary.
+#' Default interval is [min(-10,1.5*initialvalues), max(10,1.5*initialvalues)].
 #' @param shrink instead of adjusting the bounds of optimization, adjust the initial values so that 
-#' they fit inside the intervals i.e. \code{initialvalues[initiavalues<lb] <- lb} and similarly for upper bounds. Default is TRUE.#'
+#' they fit inside the intervals i.e. \code{initialvalues[initialvalues<lb] <- lb} and similarly for upper bounds. Default is FALSE.
 #' @param nloptr_control Optional list of additional arguments for 
 #'   \code{\link{nloptr}} argument \code{opts}. The default values are
 #'   \describe{
@@ -34,7 +34,7 @@
 #' \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4, ftol_rel = 1e-8)}}
 #' \item{ranseed}{\code{123}}
 #' \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
-#'\item{maxtime}{\code{600} (maximum run time in seconds)}
+#'\item{maxtime}{\code{60} (maximum run time in seconds)}
 #'}
 #' @param final_nloptr Logical, whether to use \code{\link{nloptr}} at the end of
 #'   estimation by using the estimates given by the first estimation as starting
@@ -45,7 +45,7 @@
 #'    \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
 #'    \item{xtol_rel}{\code{1e-8}}
 #'   \item{maxeval}{\code{10000} (maximum number of iterations)}
-#'   \item{maxtime}{\code{600} (maximum run time in seconds)}
+#'   \item{maxtime}{\code{60} (maximum run time in seconds)}
 #'   }
 #' @param ... Additional arguments to nloptr
 #' @return List with components \item{model}{Estimated model. } 
@@ -429,53 +429,50 @@ fitHMM<-function(model, use_em = FALSE, use_nloptr = TRUE, final_nloptr = TRUE,
       initialvalues[initialvalues < lb] <- lb
       initialvalues[initialvalues > ub] <- ub
     } else {
-      lb <- min(lb, initialvalues)
-      ub <- max(ub, initialvalues)
+      lb <- min(lb, 1.5*initialvalues)
+      ub <- max(ub, 1.5*initialvalues)
     }
     lb <- rep(lb, length(initialvalues))
     ub <- rep(ub, length(initialvalues))
     
-    if(final_nloptr){
-      if(is.null(final_nloptr_control$maxeval)){
-        final_nloptr_control$maxeval <- 10000
-      }
-      if(is.null(final_nloptr_control$maxtime)){
-        final_nloptr_control$maxtime <- 600
-      }
-      if(is.null(final_nloptr_control$algorithm)){
-        final_nloptr_control$algorithm <- "NLOPT_LD_LBFGS"
-        final_nloptr_control$xtol_rel <- 1e-8
-      }
-    }
+  
     if(use_nloptr){
       if(is.null(nloptr_control$maxeval)){
         nloptr_control$maxeval <- 10000
       }
       if(is.null(nloptr_control$maxtime)){
-        nloptr_control$maxtime <- 600
+        nloptr_control$maxtime <- 60
       }
       if(is.null(nloptr_control$algorithm)){
         nloptr_control$algorithm <- "NLOPT_GD_MLSL"
-        nloptr_control$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4, ftol_rel = 1e-8)
+        nloptr_control$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)
         nloptr_control$ranseed <- 123
       }
       
       resnloptr<-nloptr(x0 = initialvalues, eval_f = likfn, eval_grad_f = gradfn, lb = lb, ub = ub,
         opts=nloptr_control, model=model, estimate = TRUE, ...)
+      initialvalues <- resnloptr$solution
       
-      model<-likfn(resnloptr$solution,model,FALSE)
-      
-      resnloptr<-nloptr(x0 = resnloptr$solution, eval_f = likfn, eval_grad_f = gradfn, 
-        lb = lb, ub = ub,
-        opts = final_nloptr_control, model = model, estimate = TRUE, ...)
-      
-    }else{
-      resnloptr<-nloptr(x0 = initialvalues, eval_f = likfn, eval_grad_f = gradfn, 
-        lb = lb, ub = ub,
-        opts = final_nloptr_control, model = model, estimate = TRUE, ...)
     }
+    if(final_nloptr){
+      if(is.null(final_nloptr_control$maxeval)){
+        final_nloptr_control$maxeval <- 10000
+      }
+      if(is.null(final_nloptr_control$maxtime)){
+        final_nloptr_control$maxtime <- 60
+      }
+      if(is.null(final_nloptr_control$algorithm)){
+        final_nloptr_control$algorithm <- "NLOPT_LD_LBFGS"
+        final_nloptr_control$xtol_rel <- 1e-8
+      }
+      resnloptr<-nloptr(x0 = initialvalues, 
+        eval_f = likfn, eval_grad_f = gradfn,
+        opts = final_nloptr_control, model = model, estimate = TRUE, ...)
+    } else resnloptr_final <- NULL
+    model<-likfn(resnloptr$solution,model,FALSE)
     
   } else resnloptr <- NULL
   
-  list(model=model,logLik=ifelse(use_nloptr,-resnloptr$objective,resEM$logLik),em.result=resEM[4:6],nloptr.result=resnloptr)
+  list(model = model,logLik = ifelse(use_nloptr || final_nloptr,-resnloptr$objective,resEM$logLik), 
+    em_result=resEM[4:6],nloptr_result=resnloptr)
 }

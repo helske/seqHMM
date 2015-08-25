@@ -26,10 +26,10 @@ estimation by using the estimates given by the first estimation as starting
 values. The default is \code{TRUE}.}
 
 \item{lb,ub}{Lower and upper bounds for parameters in Softmax parameterization.
-Default interval is [min(-10,initialvalues), max(10,initialvalues)] which is widened according the initial values of parameters, if necessary.}
+Default interval is [min(-10,1.5*initialvalues), max(10,1.5*initialvalues)].}
 
 \item{shrink}{instead of adjusting the bounds of optimization, adjust the initial values so that
-they fit inside the intervals i.e. \code{initialvalues[initiavalues<lb] <- lb} and similarly for upper bounds. Default is TRUE.#'}
+they fit inside the intervals i.e. \code{initialvalues[initialvalues<lb] <- lb} and similarly for upper bounds. Default is FALSE.}
 
 \item{em_control}{Optional list of control parameters for for EM algorithm.
 Possible arguments are \describe{
@@ -47,7 +47,7 @@ Default is 1e-8.} }}
 \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4, ftol_rel = 1e-8)}}
 \item{ranseed}{\code{123}}
 \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
-\item{maxtime}{\code{600} (maximum run time in seconds)}
+\item{maxtime}{\code{60} (maximum run time in seconds)}
 }}
 
 \item{final_nloptr_control}{Optional list of additional arguments for
@@ -56,7 +56,7 @@ Default is 1e-8.} }}
  \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
  \item{xtol_rel}{\code{1e-8}}
 \item{maxeval}{\code{10000} (maximum number of iterations)}
-\item{maxtime}{\code{600} (maximum run time in seconds)}
+\item{maxtime}{\code{60} (maximum run time in seconds)}
 }}
 
 \item{...}{Additional arguments to nloptr}
