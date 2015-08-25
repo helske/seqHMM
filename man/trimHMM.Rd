@@ -4,28 +4,25 @@
 \alias{trimHMM}
 \title{Trim Small Probabilities of Hidden Markov Model}
 \usage{
-trimHMM(model, maxit = 0, return.loglik = FALSE, zerotol = 1e-08,
-  convergence.check = FALSE, ...)
+trimHMM(model, maxit = 0, return.loglik = FALSE, zerotol = 1e-08, ...)
 }
 \arguments{
 \item{model}{Model of class \code{HMModel} or \code{mixHMModel} for which
 trimming is performed.}
 
-\item{maxit}{Number of iterations. After zeroing small values, model is
+\item{maxit}{Number of iterations. After zeroing small values, the model is
 refitted, and this is repeated until there is nothing to trim or maxit
-iterations is used.}
+iterations are done.}
 
-\item{return.loglik}{Return the log-likelihood of trimmed model together with
-the model object. Default is FALSE.}
+\item{return.loglik}{Return the log-likelihood of the trimmed model together with
+the model object. The default is \code{FALSE}.}
 
 \item{zerotol}{Values smaller than this are trimmed to zero.}
-
-\item{convergence.check}{Checks that the (local) maximum was reached when using \code{\link{optimx}} for model fitting. Defaults to \code{FALSE}. If model does not converge}
 
 \item{...}{Further parameters passed on to \code{fitHMM}.}
 }
 \description{
-Function trimHMM tries to set small insignificant probabilities to zero
+Function \code{trimHMM} tries to set small insignificant probabilities to zero
 without decreasing the likelihood significantly.
 }
 \examples{
@@ -36,18 +33,18 @@ biofam <- biofam[1:500,]
 
 ## Building one channel per type of event left, children or married
 bf <- as.matrix(biofam[, 10:25])
-children <-  bf==4 | bf==5 | bf==6
-married <- bf == 2 | bf== 3 | bf==6
-left <- bf==1 | bf==3 | bf==5 | bf==6
+children <-  bf == 4 | bf == 5 | bf == 6
+married <- bf == 2 | bf == 3 | bf == 6
+left <- bf == 1 | bf == 3 | bf == 5 | bf == 6
 
-children[children==TRUE] <- "Children"
-children[children==FALSE] <- "Childless"
+children[children == TRUE] <- "Children"
+children[children == FALSE] <- "Childless"
 
-married[married==TRUE] <- "Married"
-married[married==FALSE] <- "Single"
+married[married == TRUE] <- "Married"
+married[married == FALSE] <- "Single"
 
-left[left==TRUE] <- "Left home"
-left[left==FALSE] <- "With parents"
+left[left == TRUE] <- "Left home"
+left[left == FALSE] <- "With parents"
 
 ## Building sequence objects
 child.seq <- seqdef(children)
@@ -55,38 +52,39 @@ marr.seq <- seqdef(married)
 left.seq <- seqdef(left)
 
 # Initial values for emission matrices
-B_child <- matrix(NA, nrow=3, ncol=2)
-B_child[1,] <- seqstatf(child.seq[,1:5])[,2]+0.1
-B_child[2,] <- seqstatf(child.seq[,6:10])[,2]+0.1
-B_child[3,] <- seqstatf(child.seq[,11:15])[,2]+0.1
-B_child <- B_child/rowSums(B_child)
+B_child <- matrix(NA, nrow = 3, ncol = 2)
+B_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 0.1
+B_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 0.1
+B_child[3,] <- seqstatf(child.seq[, 11:15])[, 2] + 0.1
+B_child <- B_child / rowSums(B_child)
 
-B_marr <- matrix(NA, nrow=3, ncol=2)
-B_marr[1,] <- seqstatf(marr.seq[,1:5])[,2]+0.1
-B_marr[2,] <- seqstatf(marr.seq[,6:10])[,2]+0.1
-B_marr[3,] <- seqstatf(marr.seq[,11:15])[,2]+0.1
-B_marr <- B_marr/rowSums(B_marr)
+B_marr <- matrix(NA, nrow = 3, ncol = 2)
+B_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 0.1
+B_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 0.1
+B_marr[3,] <- seqstatf(marr.seq[, 11:15])[, 2] + 0.1
+B_marr <- B_marr / rowSums(B_marr)
 
-B_left <- matrix(NA, nrow=3, ncol=2)
-B_left[1,] <- seqstatf(left.seq[,1:5])[,2]+0.1
-B_left[2,] <- seqstatf(left.seq[,6:10])[,2]+0.1
-B_left[3,] <- seqstatf(left.seq[,11:15])[,2]+0.1
-B_left <- B_left/rowSums(B_left)
+B_left <- matrix(NA, nrow = 3, ncol = 2)
+B_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 0.1
+B_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 0.1
+B_left[3,] <- seqstatf(left.seq[, 11:15])[, 2] + 0.1
+B_left <- B_left / rowSums(B_left)
 
 # Initial values for transition matrix
 A <- matrix(c(0.9, 0.07, 0.03,
-0,    0.9,  0.1,
-0,      0,    1),
-nrow=3, ncol=3, byrow=TRUE)
+                0,  0.9,  0.1,
+                0,    0,    1), nrow=3, ncol=3, byrow=TRUE)
 
 # Initial values for initial state probabilities
-initialProbs <- c(0.9,0.09,0.01)
+initialProbs <- c(0.9, 0.09, 0.01)
 
 # Building hidden Markov model with initial parameter values
-bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq),
-transitionMatrix=A,
-emissionMatrix=list(B_child, B_marr, B_left),
-initialProbs=initialProbs)
+bHMM <- buildHMM(
+  observations = list(child.seq, marr.seq, left.seq),
+  transitionMatrix = A,
+  emissionMatrix = list(B_child, B_marr, B_left),
+  initialProbs = initialProbs
+  )
 
 # Fitting hidden Markov model
 HMM <- fitHMM(bHMM)

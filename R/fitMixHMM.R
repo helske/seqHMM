@@ -223,7 +223,7 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
   }
   
   if(em_step){
-    em.con <- list(trace = 0, maxit=100,reltol=1e-8)
+    em.con <- list(trace = 0, maxeval=100,reltol=1e-8)
     nmsC <- names(em.con)  
     em.con[(namc <- names(em.control))] <- em.control
     if (length(noNms <- namc[!namc %in% nmsC])) 
@@ -234,11 +234,11 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
       if(soft){
         resEM <- EMx(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
           obsArray, model$numberOfSymbols,  model$beta, model$X, model$numberOfStatesInClusters, 
-          em.con$maxit, em.con$reltol,em.con$trace)
+          em.con$maxeval, em.con$reltol,em.con$trace)
       } else {
         resEM <- hardEMx(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
           obsArray, model$numberOfSymbols,  model$beta, model$X, model$numberOfStatesInClusters, 
-          em.con$maxit, em.con$reltol,em.con$trace)
+          em.con$maxeval, em.con$reltol,em.con$trace)
       }
       if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")      
@@ -252,7 +252,7 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
         emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
       
       resEM <- EMMCx(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
-        model$numberOfSymbols, model$beta, model$X, model$numberOfStatesInClusters, em.con$maxit, em.con$reltol,em.con$trace)
+        model$numberOfSymbols, model$beta, model$X, model$numberOfStatesInClusters, em.con$maxeval, em.con$reltol,em.con$trace)
       if(!is.null(resEM$error))
         stop("Initial values for beta resulted non-finite cluster probabilities.")
       if(resEM$change< -1e-5)
@@ -275,7 +275,7 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
     ll <- resEM$logLik
   } else resEM <-NULL
   
-  if(global_step){
+  if(global_step || local_step){
     maxIP <- maxIPvalue <- npIP <- numeric(original_model$numberOfClusters)  
     paramIP <-  initNZ <-vector("list",original_model$numberOfClusters)
     for(m in 1:original_model$numberOfClusters){
@@ -538,10 +538,10 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
     }
     
     if(missing(lb)){
-      lb <- rep(-10, length(initialvalues))
+      lb <- -10
     }
     if(missing(ub)){
-      ub <-  rep(10, length(initialvalues))
+      ub <- 10
     }
     lb <- pmin(lb, 2*initialvalues)
     ub <- pmax(ub, 2*initialvalues)
@@ -565,7 +565,7 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
       initialvalues <- globalres$solution
       model<-likfn(globalres$solution,model, FALSE)
       ll <- -globalres$objective
-    } globalres <- NULL
+    } else globalres <- NULL
     
     if(local_step){
       if(is.null(local_control$maxeval)){

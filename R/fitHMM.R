@@ -175,7 +175,7 @@ fitHMM<-function(model, em_step = FALSE, global_step = TRUE, local_step = TRUE,
     }           
   }
   if(em_step){
-    em.con <- list(trace = 0, maxit=100,reltol=1e-8)
+    em.con <- list(trace = 0, maxeval = 100, reltol = 1e-8)
     nmsC <- names(em.con)  
     em.con[(namc <- names(em_control))] <- em_control
     if (length(noNms <- namc[!namc %in% nmsC])) 
@@ -185,10 +185,10 @@ fitHMM<-function(model, em_step = FALSE, global_step = TRUE, local_step = TRUE,
       
       if(soft){
         resEM<-EM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
-          obsArray, model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+          obsArray, model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$trace)
       } else {
         resEM<-hardEM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
-          obsArray, model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+          obsArray, model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$trace)
       }
       if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")      
@@ -203,10 +203,10 @@ fitHMM<-function(model, em_step = FALSE, global_step = TRUE, local_step = TRUE,
       
       if(soft){
         resEM<-EMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
-          model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+          model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$trace)
       } else {
         resEM<-hardEMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
-          model$numberOfSymbols, em.con$maxit, em.con$reltol,em.con$trace)
+          model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$trace)
       }
       if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")
@@ -439,17 +439,17 @@ fitHMM<-function(model, em_step = FALSE, global_step = TRUE, local_step = TRUE,
         } 
         
         - gradientMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
-          rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars))
+          rowSumsA,rowSumsB,sumInit, transNZ, emissNZ, initNZ, exp(pars))
         
       }
     }
     
     
     if(missing(lb)){
-      lb <- rep(-10, length(initialvalues))
+      lb <- -10
     }
     if(missing(ub)){
-      ub <-  rep(10, length(initialvalues))
+      ub <- 10
     }
     lb <- pmin(lb, 2*initialvalues)
     ub <- pmax(ub, 2*initialvalues)
@@ -468,12 +468,12 @@ fitHMM<-function(model, em_step = FALSE, global_step = TRUE, local_step = TRUE,
         global_control$population <- 4*length(initialvalues)
       }
       
-      globalres<-nloptr(x0 = initialvalues, eval_f = likfn, eval_grad_f = gradfn, lb = lb, ub = ub,
-        opts=global_control, model=model, estimate = TRUE, ...)
+      globalres <- nloptr(x0 = initialvalues, eval_f = likfn, eval_grad_f = gradfn, lb = lb, ub = ub,
+        opts = global_control, model = model, estimate = TRUE, ...)
       initialvalues <- globalres$solution
-      model<-likfn(globalres$solution,model, FALSE)
+      model <- likfn(globalres$solution, model, FALSE)
       ll <- -globalres$objective
-    } globalres <- NULL
+    } else globalres <- NULL
     
     if(local_step){
       if(is.null(local_control$maxeval)){
@@ -489,13 +489,13 @@ fitHMM<-function(model, em_step = FALSE, global_step = TRUE, local_step = TRUE,
       localres<-nloptr(x0 = initialvalues, 
         eval_f = likfn, eval_grad_f = gradfn,
         opts = local_control, model = model, estimate = TRUE, ...)
-      model<-likfn(localres$solution,model, FALSE)
+      model <- likfn(localres$solution,model, FALSE)
       ll <- -localres$objective
     } else localres <- NULL
     
     
   } else globalres <- localres <- NULL
   
-  list(model = model,logLik = ll, 
-    em_results=resEM[4:6], global_results = globalres, local_results = localres)
+  list(model = model, logLik = ll, 
+    em_results = resEM[4:6], global_results = globalres, local_results = localres)
 }

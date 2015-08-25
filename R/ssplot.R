@@ -147,18 +147,18 @@
 #' 
 #' ## Building one channel per type of event left, children or married
 #' bf <- as.matrix(biofam[, 10:25])
-#' children <-  bf==4 | bf==5 | bf==6
-#' married <- bf == 2 | bf== 3 | bf==6
-#' left <- bf==1 | bf==3 | bf==5 | bf==6
+#' children <-  bf == 4 | bf == 5 | bf == 6
+#' married <- bf == 2 | bf == 3 | bf == 6
+#' left <- bf == 1 | bf == 3 | bf == 5 | bf == 6
 #' 
-#' children[children==TRUE] <- "Children"
-#' children[children==FALSE] <- "Childless"
+#' children[children == TRUE] <- "Children"
+#' children[children == FALSE] <- "Childless"
 #' 
-#' married[married==TRUE] <- "Married"
-#' married[married==FALSE] <- "Single"
+#' married[married == TRUE] <- "Married"
+#' married[married == FALSE] <- "Single"
 #' 
-#' left[left==TRUE] <- "Left home"
-#' left[left==FALSE] <- "With parents"
+#' left[left == TRUE] <- "Left home"
+#' left[left == FALSE] <- "With parents"
 #' 
 #' ## Building sequence objects
 #' child.seq <- seqdef(children)
@@ -172,83 +172,89 @@
 #' 
 #' 
 #' # Plotting state distribution plots of observations
-#' ssplot(list(child.seq, marr.seq, left.seq), type="d", plots="obs")
+#' ssplot(list(child.seq, marr.seq, left.seq), type = "d", plots = "obs")
 #' 
 #' # Plotting sequence index plots of observations
-#' ssplot(list(child.seq, marr.seq, left.seq), type="I", plots="obs", 
-#'        # Sorting subjects according to the beginning of the 2nd channel (marr.seq)
-#'        sortv="from.start", sort.channel=2, 
-#'        # Controlling the size, positions, and names for channel labels
-#'        ylab.pos=c(1,2,1), cex.lab=1, ylab=c("Children", "Married", "Left home"), 
-#'        # Plotting without legend
-#'        withlegend=FALSE)
+#' ssplot(
+#'   list(child.seq, marr.seq, left.seq), type = "I", plots = "obs",
+#'   # Sorting subjects according to the beginning of the 2nd channel (marr.seq)
+#'   sortv = "from.start", sort.channel = 2, 
+#'   # Controlling the size, positions, and names for channel labels
+#'   ylab.pos = c(1, 2, 1), cex.lab = 1, ylab = c("Children", "Married", "Left home"), 
+#'   # Plotting without legend
+#'   withlegend = FALSE
+#'   )
 #' 
 #' # Fitting hidden Markov model
 #' 
 #' # Initial values for emission matrices
-#' B_child <- matrix(NA, nrow=3, ncol=2)
-#' B_child[1,] <- seqstatf(child.seq[,1:5])[,2]+0.1
-#' B_child[2,] <- seqstatf(child.seq[,6:10])[,2]+0.1
-#' B_child[3,] <- seqstatf(child.seq[,11:15])[,2]+0.1
-#' B_child <- B_child/rowSums(B_child)
+#' B_child <- matrix(NA, nrow = 3, ncol = 2)
+#' B_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 0.1
+#' B_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 0.1
+#' B_child[3,] <- seqstatf(child.seq[, 11:15])[, 2] + 0.1
+#' B_child <- B_child / rowSums(B_child)
 #' 
-#' B_marr <- matrix(NA, nrow=3, ncol=2)
-#' B_marr[1,] <- seqstatf(marr.seq[,1:5])[,2]+0.1
-#' B_marr[2,] <- seqstatf(marr.seq[,6:10])[,2]+0.1
-#' B_marr[3,] <- seqstatf(marr.seq[,11:15])[,2]+0.1
-#' B_marr <- B_marr/rowSums(B_marr)
+#' B_marr <- matrix(NA, nrow = 3, ncol = 2)
+#' B_marr[1,] <- seqstatf(marr.seq[, 1:5])[,2] + 0.1
+#' B_marr[2,] <- seqstatf(marr.seq[, 6:10])[,2] + 0.1
+#' B_marr[3,] <- seqstatf(marr.seq[, 11:15])[,2] + 0.1
+#' B_marr <- B_marr / rowSums(B_marr)
 #' 
-#' B_left <- matrix(NA, nrow=3, ncol=2)
-#' B_left[1,] <- seqstatf(left.seq[,1:5])[,2]+0.1
-#' B_left[2,] <- seqstatf(left.seq[,6:10])[,2]+0.1
-#' B_left[3,] <- seqstatf(left.seq[,11:15])[,2]+0.1
-#' B_left <- B_left/rowSums(B_left)
+#' B_left <- matrix(NA, nrow = 3, ncol = 2)
+#' B_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 0.1
+#' B_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 0.1
+#' B_left[3,] <- seqstatf(left.seq[, 11:15])[, 2] + 0.1
+#' B_left <- B_left / rowSums(B_left)
 #' 
 #' # Initial values for transition matrix
 #' A <- matrix(c(0.9, 0.07, 0.03,
-#' 0,    0.9,  0.1,
-#' 0,      0,    1), 
-#' nrow=3, ncol=3, byrow=TRUE)
+#'                 0,  0.9,  0.1,
+#'                 0,    0,    1), nrow = 3, ncol = 3, byrow = TRUE)
 #' 
 #' # Initial values for initial state probabilities
-#' initialProbs <- c(0.9,0.09,0.01)
+#' initialProbs <- c(0.9, 0.09, 0.01)
 #' 
 #' # Building hidden Markov model with initial parameter values
-#' bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq), 
-#'                  transitionMatrix=A,
-#'                  emissionMatrix=list(B_child, B_marr, B_left), 
-#'                  initialProbs=initialProbs)
+#' bHMM <- buildHMM(
+#'   observations = list(child.seq, marr.seq, left.seq), 
+#'   transitionMatrix = A,
+#'   emissionMatrix = list(B_child, B_marr, B_left), 
+#'   initialProbs = initialProbs
+#'   )
 #' 
 #' # Fitting hidden Markov model
-#' HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8),
-#'               itnmax=10000, method="BFGS")
+#' HMM <- fitHMM(bHMM)
 #' 
 #' # Plotting observations and  the most probable paths of hidden states
-#' ssplot(HMM$model, type="I", plots="both", 
-#'        # Sorting according to multidimensional scaling for 
-#'        # hidden states paths
-#'        sortv="mds.mpp", 
-#'        ylab=c("Children", "Married", "Left home"), 
-#'        # Controlling title
-#'        title="Biofam", cex.title=1.5,
-#'        # Labels for x axis and tick marks
-#'        xtlab=15:30, xlab="Age")
+#' ssplot(
+#'   HMM$model, type = "I", plots = "both", 
+#'   # Sorting according to multidimensional scaling of hidden states paths
+#'   sortv = "mds.mpp", 
+#'   ylab = c("Children", "Married", "Left home"), 
+#'   # Controlling title
+#'   title = "Biofam", cex.title = 1.5,
+#'   # Labels for x axis and tick marks
+#'   xtlab = 15:30, xlab = "Age"
+#'   )
 #' 
 #' # Computing the most probable hidden state paths
 #' mpp <- mostProbablePath(HMM$model)$mpp
-#' mpp.seq <- seqdef(mpp, labels=c("Hidden state 1", "Hidden state 2", 
-#'                                 "Hidden state 3"))
+#' mpp.seq <- seqdef(
+#'   mpp, labels = c("Hidden state 1", "Hidden state 2", "Hidden state 3")
+#'   )
 #' 
-#' # Plotting the most probable hidden state paths
-#' ssplot(HMM$model, type="I", plots="mpp", 
-#'        # Sequence object of most probable paths
-#'        mpp=mpp.seq,
-#'        # Sorting according to the end of hidden state paths
-#'        sortv="from.end", sort.channel=0,
-#'        # Contolling legend position, type, and proportion
-#'        withlegend="bottom", legend.prop=0.15,
-#'        # Plotting without title and y label
-#'        title=FALSE, ylab=FALSE)
+#' # Plotting observations and hidden state paths
+#' ssplot(
+#'   HMM$model, type = "I", plots = "mpp", 
+#'   # Sequence object of most probable paths
+#'   mpp = mpp.seq,
+#'   # Sorting according to the end of hidden state paths
+#'   sortv = "from.end", sort.channel = 0,
+#'   # Contolling legend position, type, and proportion
+#'   withlegend = "bottom", legend.prop = 0.15,
+#'   # Plotting without title and y label
+#'   title = FALSE, ylab = FALSE
+#'   )
 #'   
 #' @seealso \code{\link{gridplot}} for plotting multiple ssp 
 #'   objects created with \code{\link{ssp}}, \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and 

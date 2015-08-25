@@ -184,13 +184,17 @@ bHMM <- buildHMM(
   channelNames = c("Marriage", "Parenthood", "Left home")
   )
 
-# Fitting the HMM 
+# Fitting the HMM (using only the default MLSL algorithm)
 HMM <- fitHMM(bHMM)
-# or equivalently
-HMM <- fitHMM(
-  bHMM, em.control = list(maxit = 100,reltol = 1e-8), 
-  itnmax = 10000, method = "BFGS"
-  )
+HMM$logLik
+# -14889.37
+
+# Fitting with EM followed by MLSL algorithm
+# Here leads to a better likelihood
+HMM <- fitHMM(bHMM, use_em = TRUE, use_nloptr = TRUE)
+HMM$logLik
+# -14883.86
+
 ```
 A simple `plot` method is used to show an `HMModel` object as a graph. It shows hidden states as pie charts (vertices), with emission probabilities as slices and transition probabilities as arrows (edges). Initial probabilities are shown below the pies.
 
