@@ -357,8 +357,8 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
       # Function for minimizing log likelihood
       likfn<-function(pars,model,estimate=TRUE){
         
-        if(any(!is.finite(exp(pars))) && estimate)
-          return(.Machine$double.xmax)
+        #if(any(!is.finite(exp(pars))) && estimate)
+        #  return(.Machine$double.xmax)
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue      # Not needed?
           # Exponentiate (need to be positive)
@@ -393,8 +393,8 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
       
       gradfn<-function(pars,model, estimate){      
         
-        if(any(!is.finite(exp(pars))))
-          return(.Machine$double.xmax)
+        #if(any(!is.finite(exp(pars))))
+        #  return(.Machine$double.xmax)
         
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue      # Not needed?
@@ -475,8 +475,8 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
       
       likfn<-function(pars,model,estimate=TRUE){
         
-        if(any(!is.finite(exp(pars))) && estimate)
-          return(.Machine$double.xmax)
+        #if(any(!is.finite(exp(pars))) && estimate)
+        #  return(.Machine$double.xmax)
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
           model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
@@ -522,8 +522,8 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
       
       gradfn<-function(pars,model, estimate){      
         
-        if(any(!is.finite(exp(pars))))
-          return(.Machine$double.xmax)
+        #if(any(!is.finite(exp(pars))))
+        #  return(.Machine$double.xmax)
         if(npTM>0){
           model$transitionMatrix[maxTM]<-maxTMvalue     
           model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
@@ -562,16 +562,19 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
       }
     }
     
+   
+
+    
     if(global_step){
+
       if(missing(lb)){
         lb <- -10
       }
-      if(missing(ub)){
-        ub <- 10
-      }
       lb <- pmin(lb, 2*initialvalues)
-      ub <- pmax(ub, 2*initialvalues)
-      
+      if(missing(ub)){
+        ub <- pmin(c(rep(500,length(initialvalues)-npBeta),rep(500/apply(abs(model$X),2,max),model$numberOfClusters-1)),
+          pmax(10, 2*initialvalues))
+      }
       if(is.null(global_control$maxeval)){
         global_control$maxeval <- 10000
       }
@@ -603,10 +606,13 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
         local_control$algorithm <- "NLOPT_LD_LBFGS"
         local_control$xtol_rel <- 1e-8
       }
+      ub <- pmin(c(rep(500,length(initialvalues)-npBeta),rep(500/apply(abs(model$X),2,max),model$numberOfClusters-1)),
+        pmax(500, 2*initialvalues))
+      
       localres <- nloptr(x0 = initialvalues, 
         eval_f = likfn, eval_grad_f = gradfn,
         opts = local_control, model = model, estimate = TRUE, 
-        ub = pmax(c(rep(300,length(initialvalues)-npBeta),rep(300/apply(model$X,2,max),model$numberOfClusters-1)),initialvalues), ...)
+        ub = ub, ...)
       model <- likfn(localres$solution,model, FALSE)
       ll <- -localres$objective
     } else localres <- NULL
