@@ -21,7 +21,7 @@
 #' @param em_control Optional list of control parameters for for EM algorithm. 
 #'   Possible arguments are \describe{ 
 #'   \item{maxeval}{Maximum number of iterations, default is 100.} 
-#'   \item{trace}{Level of printing. Possible values are 0 
+#'   \item{print_level}{Level of printing. Possible values are 0 
 #'   (prints nothing), 1 (prints information at start and end of algorithm), and
 #'   2 (prints at every iteration).} 
 #'   \item{reltol}{Relative tolerance for convergence defined as \eqn{(sumLogLikNew - sumLogLikOld)/(abs(sumLogLikOld)+0.1)}. 
@@ -34,9 +34,11 @@
 #'    \item{ranseed}{\code{123}}
 #'    \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
 #'    \item{maxtime}{\code{60} (maximum run time in seconds)}
+#'    \item{population}{\code{4*length(initialvalues)}} (number of starting points) 
 #'}
 #' @param lb,ub Lower and upper bounds for parameters in Softmax parameterization. 
-#' Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)]. Used only in global optimization step.
+#' Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)]. 
+#' Used only in the global optimization step.
 #' @param local_control Optional list of additional arguments for 
 #'   \code{\link{nloptr}} argument \code{opts}. The default values are
 #'   \describe{
@@ -154,9 +156,13 @@
 #' 
 #' }
 #' 
-fitHMM<-function(model, em_step = FALSE, global_step = TRUE, local_step = TRUE, 
+fitHMM<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
   em_control=list(), global_control=list(), 
   local_control=list(), lb, ub, soft = TRUE, ...){
+  
+  if(!em_step && !global_step && !local_step){
+    stop("No method chosen for estimation. Choose at least one from em_step, global_step, and local_step.")
+  }
   
   if(model$numberOfChannels==1){
     obsArray<-data.matrix(model$observations)-1
@@ -170,7 +176,7 @@ fitHMM<-function(model, em_step = FALSE, global_step = TRUE, local_step = TRUE,
     }           
   }
   if(em_step){
-    em.con <- list(trace = 0, maxeval = 100, reltol = 1e-8)
+    em.con <- list(print_level = 0, maxeval = 100, reltol = 1e-8)
     nmsC <- names(em.con)  
     em.con[(namc <- names(em_control))] <- em_control
     if (length(noNms <- namc[!namc %in% nmsC])) 
@@ -180,10 +186,10 @@ fitHMM<-function(model, em_step = FALSE, global_step = TRUE, local_step = TRUE,
       
       if(soft){
         resEM<-EM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
-          obsArray, model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$trace)
+          obsArray, model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$print_level)
       } else {
         resEM<-hardEM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
-          obsArray, model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$trace)
+          obsArray, model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$print_level)
       }
       if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")      
@@ -198,10 +204,10 @@ fitHMM<-function(model, em_step = FALSE, global_step = TRUE, local_step = TRUE,
       
       if(soft){
         resEM<-EMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
-          model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$trace)
+          model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$print_level)
       } else {
         resEM<-hardEMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
-          model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$trace)
+          model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$print_level)
       }
       if(resEM$change< -1e-5)
         warning("EM algorithm stopped due to the decreasing log-likelihood. ")

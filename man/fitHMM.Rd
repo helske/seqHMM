@@ -4,7 +4,7 @@
 \alias{fitHMM}
 \title{Estimate Parameters of Hidden Markov Model}
 \usage{
-fitHMM(model, em_step = FALSE, global_step = TRUE, local_step = TRUE,
+fitHMM(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
   em_control = list(), global_control = list(), local_control = list(),
   lb, ub, soft = TRUE, ...)
 }
@@ -24,7 +24,7 @@ but is even more prone to get stuck in a local optimum.}
 \item{em_control}{Optional list of control parameters for for EM algorithm.
 Possible arguments are \describe{
 \item{maxeval}{Maximum number of iterations, default is 100.}
-\item{trace}{Level of printing. Possible values are 0
+\item{print_level}{Level of printing. Possible values are 0
 (prints nothing), 1 (prints information at start and end of algorithm), and
 2 (prints at every iteration).}
 \item{reltol}{Relative tolerance for convergence defined as \eqn{(sumLogLikNew - sumLogLikOld)/(abs(sumLogLikOld)+0.1)}.
@@ -38,6 +38,7 @@ Default is 1e-8.} }}
    \item{ranseed}{\code{123}}
    \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
    \item{maxtime}{\code{60} (maximum run time in seconds)}
+   \item{population}{\code{4*length(initialvalues)}} (number of starting points)
 }}
 
 \item{local_control}{Optional list of additional arguments for
@@ -50,7 +51,8 @@ Default is 1e-8.} }}
 }}
 
 \item{lb,ub}{Lower and upper bounds for parameters in Softmax parameterization.
-Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)]. Used only in global optimization step.}
+Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)].
+Used only in the global optimization step.}
 
 \item{...}{Additional arguments to nloptr}
 }
