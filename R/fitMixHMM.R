@@ -191,13 +191,38 @@
 #'                        channelNames=c("Parenthood", "Marriage", "Left home"),
 #'                        )
 #' 
-#' mHMM <- fitMixHMM(bmHMM)
+#' # Fitting the model with different settings
 #' 
+#' # Only EM with default values
+#' HMM1 <- fitMixHMM(bmHMM, em_step = TRUE, global_step = FALSE, local_step = FALSE)
+#' HMM1$logLik # -3081.383
+#' 
+#' \dontrun{
+#' # EM with LBFGS
+#' HMM2 <- fitMixHMM(bmHMM, em_step = TRUE, global_step = FALSE, local_step = TRUE)
+#' HMM2$logLik # -3081.383
+#' 
+#' # Only LBFGS
+#' HMM3 <- fitMixHMM(bmHMM, em_step = FALSE, global_step = FALSE, local_step = TRUE,
+#'   local_control = list(maxeval = 5000, maxtime = 0))
+#' HMM3$logLik # -3084.604
+#' 
+#' # Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
+#' HMM4 <- fitMixHMM(bmHMM, em_step = FALSE, global_step = TRUE, local_step = TRUE, 
+#'   global_control = list(maxeval = 5000, maxtime = 0))
+#' HMM4$logLik # -3371.251
+#' 
+#' # As previously, but now we use ten iterations from EM algorithm for defining initial values and boundaries
+#' # Note smaller maxeval for global optimization
+#' HMM5 <- fitMixHMM(bmHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
+#'   em_control = list(maxeval = 10), global_control = list(maxeval = 1000, maxtime = 0))
+#' HMM5$logLik #-5403.383
+#' }
 #' # Coefficients of covariates
-#' mHMM$model$beta
+#' HMM1$model$beta
 #' 
 #' # Probabilities of belonging to each model for the first six subjects
-#' head(mHMM$model$clusterProb)
+#' head(HMM1$model$clusterProb)
 #' }
 
 
@@ -225,9 +250,9 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
   if(em_step){
     em.con <- list(trace = 0, maxeval=100,reltol=1e-8)
     nmsC <- names(em.con)  
-    em.con[(namc <- names(em.control))] <- em.control
+    em.con[(namc <- names(em_control))] <- em_control
     if (length(noNms <- namc[!namc %in% nmsC])) 
-      warning("Unknown names in em.control: ", paste(noNms, collapse = ", "))
+      warning("Unknown names in em_control: ", paste(noNms, collapse = ", "))
     
     if(model$numberOfChannels==1){
       
@@ -263,7 +288,7 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
         model$emissionMatrix[[i]][]<-resEM$emissionArray[ , 1:model$numberOfSymbols[i], i]                                     
     }
     
-    if(global_step){
+    if(global_step || local_step){
       k <- 0
       for(m in 1:model$numberOfClusters){
         original_model$initialProbs[[m]] <- unname(resEM$initialProbs[(k+1):(k+model$numberOfStatesInClusters[m])])
@@ -537,16 +562,16 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
       }
     }
     
-    if(missing(lb)){
-      lb <- -10
-    }
-    if(missing(ub)){
-      ub <- 10
-    }
-    lb <- pmin(lb, 2*initialvalues)
-    ub <- pmax(ub, 2*initialvalues)
-    
     if(global_step){
+      if(missing(lb)){
+        lb <- -10
+      }
+      if(missing(ub)){
+        ub <- 10
+      }
+      lb <- pmin(lb, 2*initialvalues)
+      ub <- pmax(ub, 2*initialvalues)
+      
       if(is.null(global_control$maxeval)){
         global_control$maxeval <- 10000
       }
@@ -578,10 +603,11 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
         local_control$algorithm <- "NLOPT_LD_LBFGS"
         local_control$xtol_rel <- 1e-8
       }
-      localres<-nloptr(x0 = initialvalues, 
+      localres <- nloptr(x0 = initialvalues, 
         eval_f = likfn, eval_grad_f = gradfn,
-        opts = local_control, model = model, estimate = TRUE, ...)
-      model<-likfn(localres$solution,model, FALSE)
+        opts = local_control, model = model, estimate = TRUE, 
+        ub = pmax(c(rep(300,length(initialvalues)-npBeta),rep(300/apply(model$X,2,max),model$numberOfClusters-1)),initialvalues), ...)
+      model <- likfn(localres$solution,model, FALSE)
       ll <- -localres$objective
     } else localres <- NULL
     

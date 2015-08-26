@@ -4,52 +4,62 @@
 \alias{fitMixHMM}
 \title{Estimate Parameters of Mixture Hidden Markov Model}
 \usage{
-fitMixHMM(model, use.em = TRUE, use.nloptr = TRUE, lb, ub, shrink = FALSE,
-  em.control = list(), soft = TRUE, maxeval = 10000,
-  nloptr.control = list(), ...)
+fitMixHMM(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
+  em_control = list(), global_control = list(), local_control = list(),
+  lb, ub, soft = TRUE, ...)
 }
 \arguments{
 \item{model}{Hidden Markov model of class \code{mixHMModel}.}
 
-\item{use.em}{Logical, use EM algorithm at the start of parameter estimation.
-Default is FALSE. Note that EM algorithm is faster than direct numerical optimization, but is even more prone to get stuck in local optimum.}
+\item{em_step}{Logical, use EM algorithm at the start of parameter estimation.
+The default is \code{TRUE}. Note that EM algorithm is faster than direct numerical optimization,
+but is even more prone to get stuck in a local optimum.}
 
-\item{use.nloptr}{Logical, use direct numerical optimization via
-\code{\link{nloptr}} (possibly after the EM algorithm). Default is TRUE.}
+\item{global_step}{Logical, use global optimization via
+\code{\link{nloptr}} (possibly after the EM step). The default is \code{TRUE}.}
 
-\item{lb,}{ub Lower and upper bounds for parameters in Softmax parameterization.
-Default interval is [min(-10,initialvalues), max(10,initialvalues)] which is widened according the initial values of parameters, if necessary.}
+\item{local_step}{Logical, use local optimization via
+\code{\link{nloptr}} (possibly after the EM and/or global steps). The default is \code{TRUE}.}
 
-\item{shrink}{instead of adjusting the bounds of optimization, adjust the initial values so that
-they fit inside the intervals i.e. \code{initialvalues[initiavalues<lb] <- lb} and similarly for upper bounds. Default is TRUE.#'}
-
-\item{em.control}{Optional list of control parameters for for EM algorithm.
+\item{em_control}{Optional list of control parameters for for EM algorithm.
 Possible arguments are \describe{
-\item{maxit}{Maximum number of iterations, default is 100.}
+\item{maxeval}{Maximum number of iterations, default is 100.}
 \item{trace}{Level of printing. Possible values are 0
 (prints nothing), 1 (prints information at start and end of algorithm), and
 2 (prints at every iteration).}
 \item{reltol}{Relative tolerance for convergence defined as \eqn{(sumLogLikNew - sumLogLikOld)/(abs(sumLogLikOld)+0.1)}.
 Default is 1e-8.} }}
 
-\item{nloptr.control}{Optional list of additional arguments for
-  \code{\link{nloptr}} argument \code{opts}. Default values are
+\item{global_control}{Optional list of additional arguments for
+  \code{\link{nloptr}} argument \code{opts}. The default values are
   \describe{
-   \item{algorithm}{\code{"NLOPT_GD_MLSL"}}
-\item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4, ftol_rel = 1e-8)}}
-\item{ranseed}{\code{123}}
-\item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
-\item{maxtime}{\code{600} (maximum run time in seconds)}
+   \item{algorithm}{\code{"NLOPT_GD_MLSL_LDS"}}
+   \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)}}
+   \item{ranseed}{\code{123}}
+   \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
+   \item{maxtime}{\code{60} (maximum run time in seconds)}
 }}
+
+\item{local_control}{Optional list of additional arguments for
+\code{\link{nloptr}} argument \code{opts}. The default values are
+\describe{
+ \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
+ \item{xtol_rel}{\code{1e-8}}
+ \item{maxeval}{\code{10000} (maximum number of iterations)}
+ \item{maxtime}{\code{60} (maximum run time in seconds)}
+}}
+
+\item{lb,ub}{Lower and upper bounds for parameters in Softmax parameterization.
+Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)]. Used only in global optimization step.}
 
 \item{...}{Additional arguments to nloptr}
 }
 \value{
 List with components \item{model}{Estimated model. }
   \item{logLik}{Log-likelihood of the estimated model. }
-  \item{em.results}{Results from EM algorithm. }
-  \item{nloptr.results}{Results from direct numerical optimization via
-  \code{\link{nloptr}}. }
+  \item{em_results}{Results after the EM step. }
+  \item{global_results}{Results after the global step. }
+  \item{local_results}{Results after the local step. }
 }
 \description{
 Function \code{fitMixHMM} estimates a mixture of hidden Markov models
@@ -195,13 +205,38 @@ bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq),
                        channelNames=c("Parenthood", "Marriage", "Left home"),
                        )
 
-mHMM <- fitMixHMM(bmHMM)
+# Fitting the model with different settings
 
+# Only EM with default values
+HMM1 <- fitMixHMM(bmHMM, em_step = TRUE, global_step = FALSE, local_step = FALSE)
+HMM1$logLik # -3081.383
+
+\dontrun{
+# EM with LBFGS
+HMM2 <- fitMixHMM(bmHMM, em_step = TRUE, global_step = FALSE, local_step = TRUE)
+HMM2$logLik # -3081.383
+
+# Only LBFGS
+HMM3 <- fitMixHMM(bmHMM, em_step = FALSE, global_step = FALSE, local_step = TRUE,
+  local_control = list(maxeval = 5000, maxtime = 0))
+HMM3$logLik # -3084.604
+
+# Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
+HMM4 <- fitMixHMM(bmHMM, em_step = FALSE, global_step = TRUE, local_step = TRUE,
+  global_control = list(maxeval = 5000, maxtime = 0))
+HMM4$logLik # -3371.251
+
+# As previously, but now we use ten iterations from EM algorithm for defining initial values and boundaries
+# Note smaller maxeval for global optimization
+HMM5 <- fitMixHMM(bmHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE,
+  em_control = list(maxeval = 10), global_control = list(maxeval = 1000, maxtime = 0))
+HMM5$logLik #-5403.383
+}
 # Coefficients of covariates
-mHMM$model$beta
+HMM1$model$beta
 
 # Probabilities of belonging to each model for the first six subjects
-head(mHMM$model$clusterProb)
+head(HMM1$model$clusterProb)
 }
 }
 \seealso{

@@ -1,5 +1,5 @@
 #' Estimate Parameters of Hidden Markov Model
-
+#'
 #' Function \code{fitHMM} estimates the initial state, transition and emission 
 #' probabilities of hidden Markov model. Initial values for estimation are taken from the 
 #' corresponding components of the model with preservation of original zero 
@@ -7,7 +7,7 @@
 #' 
 #' By default, estimation start with EM algorithm and then switches to direct 
 #' numerical maximization.
-
+#' 
 #' @export 
 #' @import nloptr
 #' @param model Hidden Markov model of class \code{HMModel}.
@@ -131,10 +131,7 @@
 #' HMM1 <- fitHMM(bHMM, em_step = TRUE, global_step = FALSE, local_step = FALSE)
 #' HMM1$logLik #-5507.003
 #' 
-#' \dontrun{ 
-#' # Only EM with default values
-#' HMM1 <- fitHMM(bHMM, em_step = TRUE, global_step = FALSE, local_step = FALSE)
-#' HMM1$logLik #-5507.003
+#' \dontrun{
 #' 
 #' # EM with LBFGS
 #' HMM2 <- fitHMM(bHMM, em_step = TRUE, global_step = FALSE, local_step = TRUE)
@@ -145,20 +142,18 @@
 #' HMM3$logLik #-5493.271
 #' 
 #' # Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
-#' HMM4 <- fitHMM(bHMM, em_step = FALSE, global_step = TRUE, local_step = TRUE)
-#' HMM4$logLik #-5417.636
+#' HMM4 <- fitHMM(bHMM, em_step = FALSE, global_step = TRUE, local_step = TRUE, 
+#'   global_control = list(maxeval = 3000, maxtime = 0))
+#' HMM4$logLik #-5403.383
 #' 
 #' # As previously, but now we use five iterations from EM algorithm for defining initial values and boundaries
-#' HMM5 <- fitHMM(bHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE, em_control=list(maxit = 5))
+#' # Note smaller maxeval for global optimization
+#' HMM5 <- fitHMM(bHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
+#'   em_control = list(maxeval = 5), global_control = list(maxeval = 750, maxtime = 0))
 #' HMM5$logLik #-5403.383
 #' 
-#' # As previously, but now using full EM at the beginning
-#' HMM6 <- fitHMM(bHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE)
-#' HMM6$logLik #-5403.383
 #' }
 #' 
-
-
 fitHMM<-function(model, em_step = FALSE, global_step = TRUE, local_step = TRUE, 
   em_control=list(), global_control=list(), 
   local_control=list(), lb, ub, soft = TRUE, ...){
@@ -444,17 +439,17 @@ fitHMM<-function(model, em_step = FALSE, global_step = TRUE, local_step = TRUE,
       }
     }
     
-    
-    if(missing(lb)){
-      lb <- -10
-    }
-    if(missing(ub)){
-      ub <- 10
-    }
-    lb <- pmin(lb, 2*initialvalues)
-    ub <- pmax(ub, 2*initialvalues)
-  
     if(global_step){
+      
+      if(missing(lb)){
+        lb <- -10
+      }
+      if(missing(ub)){
+        ub <- 10
+      }
+      lb <- pmin(lb, 2*initialvalues)
+      ub <- pmax(ub, 2*initialvalues)
+      
       if(is.null(global_control$maxeval)){
         global_control$maxeval <- 10000
       }
@@ -488,7 +483,7 @@ fitHMM<-function(model, em_step = FALSE, global_step = TRUE, local_step = TRUE,
       }
       localres<-nloptr(x0 = initialvalues, 
         eval_f = likfn, eval_grad_f = gradfn,
-        opts = local_control, model = model, estimate = TRUE, ...)
+        opts = local_control, model = model, estimate = TRUE, ub = rep(300,length(initialvalues)), ...)
       model <- likfn(localres$solution,model, FALSE)
       ll <- -localres$objective
     } else localres <- NULL
