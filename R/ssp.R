@@ -548,7 +548,7 @@ ssp <- function(x, mpp=NULL,
   }  
   
   # Most probable paths
-  if(plots=="both" || plots=="mpp"){
+  if(plots=="both" || plots=="mpp" || (plots=="obs" && !is.null(mpp))){
     if(!is.null(mpp)){
       if(!is.null(mpp.labels) && length(mpp.labels)==1 && mpp.labels=="auto"){
         mpp.labels <- attr(mpp, "labels")
@@ -732,7 +732,7 @@ ssp <- function(x, mpp=NULL,
   arguments <- c(arguments, list(plotxaxis=plotxaxis))
   if(plots=="both" || plots=="obs"){ 
     if(type=="I"){ 
-      if(length(sortv)==1 && sortv=="mds.mpp" && plots=="obs"){
+      if(length(sortv)==1 && sortv=="mds.mpp" && plots=="obs" && is.null(mpp)){
         warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"mpp\". Sequences were not sorted.")
         sortv <- NULL
       }
