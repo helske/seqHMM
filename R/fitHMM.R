@@ -164,17 +164,17 @@ fitHMM<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
     stop("No method chosen for estimation. Choose at least one from em_step, global_step, and local_step.")
   }
   
-  if(model$numberOfChannels==1){
-    obsArray<-data.matrix(model$observations)-1
-    obsArray[obsArray>model$numberOfSymbols]<-model$numberOfSymbols
-    
-  } else{
-    obsArray<-array(0,c(model$numberOfSequences,model$lengthOfSequences,model$numberOfChannels))
-    for(i in 1:model$numberOfChannels){
-      obsArray[,,i]<-data.matrix(model$observations[[i]])-1
-      obsArray[,,i][obsArray[,,i]>model$numberOfSymbols[i]]<-model$numberOfSymbols[i]
-    }           
+  if(model$numberOfChannels == 1){
+    model$observations <- list(model$observations)
+    model$emissionMatrix <- list(model$emissionMatrix)
   }
+  
+  obsArray<-array(0,c(model$numberOfSequences,model$lengthOfSequences,model$numberOfChannels))
+  for(i in 1:model$numberOfChannels){
+    obsArray[,,i]<-data.matrix(model$observations[[i]])-1
+    obsArray[,,i][obsArray[,,i]>model$numberOfSymbols[i]]<-model$numberOfSymbols[i]
+  }
+  
   if(em_step){
     em.con <- list(print_level = 0, maxeval = 100, reltol = 1e-8)
     nmsC <- names(em.con)  
@@ -182,40 +182,25 @@ fitHMM<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
     if (length(noNms <- namc[!namc %in% nmsC])) 
       warning("Unknown names in em_control: ", paste(noNms, collapse = ", "))
     
-    if(model$numberOfChannels==1){
-      
-      if(soft){
-        resEM<-EM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
-          obsArray, model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$print_level)
-      } else {
-        resEM<-hardEM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, 
-          obsArray, model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$print_level)
-      }
-      if(resEM$change< -1e-5)
-        warning("EM algorithm stopped due to the decreasing log-likelihood. ")      
-      
-      model$emissionMatrix[]<-resEM$emissionMatrix[,1:model$numberOfSymbols]
-      
-    } else {    
-      
-      emissionArray<-array(1,c(model$numberOfStates,max(model$numberOfSymbols)+1,model$numberOfChannels))
-      for(i in 1:model$numberOfChannels)
-        emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
-      
-      if(soft){
-        resEM<-EMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
-          model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$print_level)
-      } else {
-        resEM<-hardEMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
-          model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$print_level)
-      }
-      if(resEM$change< -1e-5)
-        warning("EM algorithm stopped due to the decreasing log-likelihood. ")
-      
-      
-      for(i in 1:model$numberOfChannels)
-        model$emissionMatrix[[i]][]<-resEM$emissionArray[ , 1:model$numberOfSymbols[i], i]                                     
+    
+    emissionArray<-array(1,c(model$numberOfStates,max(model$numberOfSymbols)+1,model$numberOfChannels))
+    for(i in 1:model$numberOfChannels)
+      emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
+    
+    if(soft){
+      resEM<-EM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
+        model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$print_level)
+    } else {
+      resEM<-hardEMMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
+        model$numberOfSymbols, em.con$maxeval, em.con$reltol,em.con$print_level)
     }
+    if(resEM$change< -1e-5)
+      warning("EM algorithm stopped due to the decreasing log-likelihood. ")
+    
+    
+    for(i in 1:model$numberOfChannels)
+      model$emissionMatrix[[i]][]<-resEM$emissionArray[ , 1:model$numberOfSymbols[i], i]                                     
+    
     
     model$initialProbs[]<-resEM$initialProbs
     model$transitionMatrix[]<-resEM$transitionMatrix
@@ -229,7 +214,7 @@ fitHMM<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
     
     npIP<-length(paramIP)
     initNZ<-model$initialProbs>0
-    initNZ[maxIP]<-2
+    initNZ[maxIP]<-0
     
     
     x<-which(model$transitionMatrix>0,arr.ind=TRUE)  
@@ -240,210 +225,79 @@ fitHMM<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
     paramTM <- paramTM[!(duplicated(paramTM)|duplicated(paramTM,fromLast=TRUE)),,drop=FALSE]
     npTM<-nrow(paramTM)
     transNZ<-model$transitionMatrix>0
-    transNZ[maxTM]<-2    
+    transNZ[maxTM]<-0  
     
+    emissNZ<-lapply(model$emissionMatrix,function(i){
+      x<-which(i>0,arr.ind=TRUE) 
+      x[order(x[,1]),]
+    })
     
-    if(model$numberOfChannels==1){
+    maxEM<-lapply(model$emissionMatrix,function(i) cbind(1:model$numberOfStates,max.col(i,ties.method="first")))
+    
+    maxEMvalue<-lapply(1:model$numberOfChannels, function(i) 
+      apply(model$emissionMatrix[[i]],1,max))
+    
+    paramEM<-lapply(1:model$numberOfChannels,function(i) {
+      x<-rbind(emissNZ[[i]],maxEM[[i]])
+      x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
+    })
+    npEM<-sapply(paramEM,nrow)
+    
+    emissNZ<-array(0,c(model$numberOfStates,max(model$numberOfSymbols),model$numberOfChannels))
+    for(i in 1:model$numberOfChannels){
+      emissNZ[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]] > 0
+      emissNZ[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-0
       
-      x<-which(model$emissionMatrix>0,arr.ind=TRUE) 
-      emissNZ<-x[order(x[,1]),]
-      maxEM<-cbind(1:model$numberOfStates,max.col(model$emissionMatrix,ties.method="first"))
-      maxEMvalue<-apply(model$emissionMatrix,1,max)
-      paramEM <- rbind(emissNZ,maxEM)
-      paramEM <- paramEM[!(duplicated(paramEM)|duplicated(paramEM,fromLast=TRUE)),]
-      npEM<-nrow(paramEM)
-      emissNZ<-model$emissionMatrix>0
-      emissNZ[maxEM]<-2
+    }       
+    
+    initialvalues<-c(log(c(
+      if(npTM>0) model$transitionMatrix[paramTM],
+      if(sum(npEM)>0) unlist(sapply(1:model$numberOfChannels,
+        function(x) model$emissionMatrix[[x]][paramEM[[x]]])),
+      if(npIP>0) model$initialProbs[paramIP]))
+    )         
+    
+    emissionArray<-array(1,c(model$numberOfStates,max(model$numberOfSymbols)+1,model$numberOfChannels))
+    for(i in 1:model$numberOfChannels)
+      emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]          
+    
+    objectivef<-function(pars, model, estimate = TRUE){
       
-      initialvalues<-c(log(c(
-        if(npTM>0) model$transitionMatrix[paramTM],
-        if(npEM>0) model$emissionMatrix[paramEM],
-        if(npIP>0) model$initialProbs[paramIP]))
-      )
-      
-      
-      
-      likfn<-function(pars,model,estimate=TRUE){
-        
-        if(any(!is.finite(exp(pars))) && estimate)
-          return(.Machine$double.xmax)
-        
-        if(npTM>0){
-          model$transitionMatrix[maxTM]<-maxTMvalue     
-          model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
-          model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)  
+      if(any(!is.finite(exp(pars))) && estimate)
+        return(.Machine$double.xmax^075)
+      if(npTM>0){
+        model$transitionMatrix[maxTM]<-maxTMvalue     
+        model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
+        model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)         
+      }
+      if(sum(npEM)>0){            
+        for(i in 1:model$numberOfChannels){
+          emissionArray[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]    
+          emissionArray[,1:model$numberOfSymbols[i],i][paramEM[[i]]]<-
+            exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])      
+          emissionArray[,1:model$numberOfSymbols[i],i]<-
+            emissionArray[,1:model$numberOfSymbols[i],i]/rowSums(emissionArray[,1:model$numberOfSymbols[i],i, drop = FALSE])
         }
-        if(npEM>0){
-          model$emissionMatrix[maxEM]<-maxEMvalue     
-          model$emissionMatrix[paramEM]<-exp(pars[(npTM+1):(npTM+npEM)])
-          model$emissionMatrix<-model$emissionMatrix/rowSums(model$emissionMatrix) 
-        }
-        
-        if(npIP>0){
-          model$initialProbs[maxIP]<-maxIPvalue
-          model$initialProbs[paramIP]<-exp(pars[npTM+npEM+1:npIP])
-          model$initialProbs[]<-model$initialProbs/sum(model$initialProbs)
-        } 
-        
-        if(estimate){
-          if(soft){
-            - sum(logLikHMM(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray))
-          } else {
-            viterbiProb(log(model$transitionMatrix), cbind(log(model$emissionMatrix),0), log(model$initialProbs), obsArray)
-          }
-        } else model
       }
       
-      rowSumsA<-rowSumsB<-rep(1,model$numberOfStates)
-      sumInit<-1
-      
-      gradfn<-function(pars,model,estimate){
-        
-        if(any(!is.finite(exp(pars))))
-          return(.Machine$double.xmax)
-        
-        if(npTM>0){
-          model$transitionMatrix[maxTM]<-maxTMvalue     
-          model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
-          rowSumsA<-rowSums(model$transitionMatrix)
-          model$transitionMatrix<-model$transitionMatrix/rowSumsA          
-        }
-        if(npEM>0){
-          model$emissionMatrix[maxEM]<-maxEMvalue     
-          model$emissionMatrix[paramEM]<-exp(pars[(npTM+1):(npTM+npEM)])
-          rowSumsB<-rowSums(model$emissionMatrix)
-          model$emissionMatrix<-model$emissionMatrix/rowSumsB          
-        }
-        
-        if(npIP>0){
-          model$initialProbs[maxIP]<-maxIPvalue
-          model$initialProbs[paramIP]<-exp(pars[(npTM+npEM+1):length(pars)])
-          sumInit<-sum(model$initialProbs)
-          model$initialProbs[]<-model$initialProbs/sumInit
-        } 
-        
-        - gradient(model$transitionMatrix, cbind(model$emissionMatrix,1), model$initialProbs, obsArray, 
-          rowSumsA,rowSumsB,sumInit,transNZ,emissNZ,initNZ,exp(pars)) 
-        
-        
-      }
-    } else {      
-      
-      emissNZ<-lapply(model$emissionMatrix,function(i){
-        x<-which(i>0,arr.ind=TRUE) 
-        x[order(x[,1]),]
-      })
-      
-      maxEM<-lapply(model$emissionMatrix,function(i) cbind(1:model$numberOfStates,max.col(i,ties.method="first")))
-      
-      maxEMvalue<-lapply(1:model$numberOfChannels, function(i) 
-        apply(model$emissionMatrix[[i]],1,max))
-      
-      paramEM<-lapply(1:model$numberOfChannels,function(i) {
-        x<-rbind(emissNZ[[i]],maxEM[[i]])
-        x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
-      })
-      npEM<-sapply(paramEM,nrow)
-      
-      emissNZ<-array(0,c(model$numberOfStates,max(model$numberOfSymbols),model$numberOfChannels))
-      for(i in 1:model$numberOfChannels){
-        emissNZ[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]] > 0
-        emissNZ[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-2
-        
-      }       
-      
-      initialvalues<-c(log(c(
-        if(npTM>0) model$transitionMatrix[paramTM],
-        if(sum(npEM)>0) unlist(sapply(1:model$numberOfChannels,
-          function(x) model$emissionMatrix[[x]][paramEM[[x]]])),
-        if(npIP>0) model$initialProbs[paramIP]))
-      )         
-      
-      emissionArray<-array(1,c(model$numberOfStates,max(model$numberOfSymbols)+1,model$numberOfChannels))
-      for(i in 1:model$numberOfChannels)
-        emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]          
-      
-      
-      
-      likfn<-function(pars,model,estimate=TRUE){
-        
-        if(any(!is.finite(exp(pars))) && estimate)
-          return(.Machine$double.xmax)
-        if(npTM>0){
-          model$transitionMatrix[maxTM]<-maxTMvalue     
-          model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
-          model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)       
-        }
-        if(sum(npEM)>0){            
+      if(npIP>0){
+        model$initialProbs[maxIP]<-maxIPvalue
+        model$initialProbs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])
+        model$initialProbs[]<-model$initialProbs/sum(model$initialProbs)
+      } 
+      if(estimate){
+        objective(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
+          transNZ, emissNZ, initNZ, model$numberOfSymbols)
+      } else {
+        if(sum(npEM)>0){
           for(i in 1:model$numberOfChannels){
-            emissionArray[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]    
-            emissionArray[,1:model$numberOfSymbols[i],i][paramEM[[i]]]<-
-              exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
-            rowSumsB<-rowSums(emissionArray[,1:model$numberOfSymbols[i],i, drop = FALSE])
-            emissionArray[,1:model$numberOfSymbols[i],i]<-
-              emissionArray[,1:model$numberOfSymbols[i],i]/rowSumsB
+            model$emissionMatrix[[i]][]<-emissionArray[,1:model$numberOfSymbols[i],i]
           }
         }
-        
-        if(npIP>0){
-          model$initialProbs[maxIP]<-maxIPvalue
-          model$initialProbs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])     
-          model$initialProbs[]<-model$initialProbs/sum(model$initialProbs)
-        } 
-        
-        if(estimate){
-          if(soft){
-            - sum(logLikMCHMM(model$transitionMatrix, emissionArray, model$initialProbs, obsArray))   
-          } else {
-            -sum(mostProbablePath2(model)$log)
-          }
-        } else {
-          if(sum(npEM)>0){
-            for(i in 1:model$numberOfChannels){
-              model$emissionMatrix[[i]][]<-emissionArray[,1:model$numberOfSymbols[i],i]
-            }
-          }
-          model
-        }        
-      }  
-      
-      rowSumsA<-rep(1,model$numberOfStates)
-      rowSumsB<-matrix(1,model$numberOfStates,model$numberOfChannels)
-      sumInit<-1
-      
-      gradfn<-function(pars,model,estimate){
-        
-        if(any(!is.finite(exp(pars))))
-          return(.Machine$double.xmax^075)
-        if(npTM>0){
-          model$transitionMatrix[maxTM]<-maxTMvalue     
-          model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
-          rowSumsA<-rowSums(model$transitionMatrix)
-          model$transitionMatrix<-model$transitionMatrix/rowSumsA         
-        }
-        if(sum(npEM)>0){            
-          for(i in 1:model$numberOfChannels){
-            emissionArray[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]    
-            emissionArray[,1:model$numberOfSymbols[i],i][paramEM[[i]]]<-
-              exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])      
-            rowSumsB[,i]<-rowSums(emissionArray[,1:model$numberOfSymbols[i],i, drop = FALSE])
-            emissionArray[,1:model$numberOfSymbols[i],i]<-
-              emissionArray[,1:model$numberOfSymbols[i],i]/rowSumsB[,i]
-          }
-        }
-        
-        if(npIP>0){
-          model$initialProbs[maxIP]<-maxIPvalue
-          model$initialProbs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])
-          sumInit<-sum(model$initialProbs)
-          model$initialProbs[]<-model$initialProbs/sumInit
-        } 
-        
-        - gradientMC(model$transitionMatrix, emissionArray, model$initialProbs, obsArray,
-          rowSumsA,rowSumsB,sumInit, transNZ, emissNZ, initNZ, exp(pars))
-        
+        model
       }
     }
+    
     
     if(global_step){
       
@@ -469,10 +323,10 @@ fitHMM<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
         global_control$population <- 4*length(initialvalues)
       }
       
-      globalres <- nloptr(x0 = initialvalues, eval_f = likfn, eval_grad_f = gradfn, lb = lb, ub = ub,
+      globalres <- nloptr(x0 = initialvalues, eval_f = objectivef, lb = lb, ub = ub,
         opts = global_control, model = model, estimate = TRUE, ...)
       initialvalues <- globalres$solution
-      model <- likfn(globalres$solution, model, FALSE)
+      model <- objectivef(globalres$solution, model, FALSE)
       ll <- -globalres$objective
     } else globalres <- NULL
     
@@ -488,15 +342,19 @@ fitHMM<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
         local_control$xtol_rel <- 1e-8
       }
       localres<-nloptr(x0 = initialvalues, 
-        eval_f = likfn, eval_grad_f = gradfn,
+        eval_f = objectivef,
         opts = local_control, model = model, estimate = TRUE, ub = rep(300,length(initialvalues)), ...)
-      model <- likfn(localres$solution,model, FALSE)
+      model <- objectivef(localres$solution,model, FALSE)
       ll <- -localres$objective
     } else localres <- NULL
     
     
   } else globalres <- localres <- NULL
   
+  if(model$numberOfChannels == 1){
+    model$observations <- model$observations[[1]]
+    model$emissionMatrix <- model$emissionMatrix[[1]]
+  }
   list(model = model, logLik = ll, 
     em_results = resEM[4:6], global_results = globalres, local_results = localres)
 }

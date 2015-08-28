@@ -15,29 +15,27 @@ logLik.mixHMModel<-function(object, partials = FALSE, ...){
   
   object <- combineModels(object)
   
-  if(object$numberOfChannels==1){
-    obsArray<-data.matrix(object$observations)-1
-    obsArray[obsArray>object$numberOfSymbols]<-object$numberOfSymbols
-    storage.mode(obsArray)<-"integer"
-    
-    ll <- logLikMixHMM(object$transitionMatrix, cbind(object$emissionMatrix,1), object$initialProbs, obsArray,
-                 object$beta, object$X, object$numberOfStatesInClusters)
-  } else {
-    obsArray<-array(0,c(object$numberOfSequences,object$lengthOfSequences,object$numberOfChannels))
-    for(i in 1:object$numberOfChannels){
-      obsArray[,,i]<-data.matrix(object$observations[[i]])-1
-      obsArray[,,i][obsArray[,,i]>object$numberOfSymbols[i]]<-object$numberOfSymbols[i]
-    }       
-    storage.mode(obsArray)<-"integer"
-    
-    emissionArray<-array(1,c(object$numberOfStates,max(object$numberOfSymbols)+1,object$numberOfChannels))
-    for(i in 1:object$numberOfChannels)
-      emissionArray[,1:object$numberOfSymbols[i],i]<-object$emissionMatrix[[i]]
-    
-    ll <- logLikMixMCHMM(object$transitionMatrix, emissionArray, object$initialProbs, obsArray,
-                   object$beta, object$X, object$numberOfStatesInClusters) 
-    
+  if(object$numberOfChannels == 1){
+    object$observations <- list(object$observations)
+    object$emissionMatrix <- list(object$emissionMatrix)
   }
+  
+  
+  obsArray<-array(0,c(object$numberOfSequences,object$lengthOfSequences,object$numberOfChannels))
+  for(i in 1:object$numberOfChannels){
+    obsArray[,,i]<-data.matrix(object$observations[[i]])-1
+    obsArray[,,i][obsArray[,,i]>object$numberOfSymbols[i]]<-object$numberOfSymbols[i]
+  }       
+  storage.mode(obsArray)<-"integer"
+  
+  emissionArray<-array(1,c(object$numberOfStates,max(object$numberOfSymbols)+1,object$numberOfChannels))
+  for(i in 1:object$numberOfChannels)
+    emissionArray[,1:object$numberOfSymbols[i],i]<-object$emissionMatrix[[i]]
+  
+  ll <- logLikMixHMM(object$transitionMatrix, emissionArray, object$initialProbs, obsArray,
+    object$beta, object$X, object$numberOfStatesInClusters) 
+  
+  
   if(partials){
     ll
   } else sum(ll) 

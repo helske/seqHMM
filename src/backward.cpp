@@ -20,8 +20,8 @@ NumericVector backward(NumericVector transitionMatrix, NumericVector emissionArr
   
   arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k
   arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0],true);
-  arma::mat emission(emissionArray.begin(), eDims[0], eDims[1],true);
-  arma::Mat<int> obs(obsArray.begin(), oDims[0], oDims[1],false);
+  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2],true);
+  arma::Cube<int> obs(obsArray.begin(), oDims[0], oDims[1], oDims[2],false);
   
   
   transition = log(transition); 
@@ -30,21 +30,21 @@ NumericVector backward(NumericVector transitionMatrix, NumericVector emissionArr
   double sumtmp;
   double tmp;
   double neginf = -arma::math::inf();
-  
-  for(int k = 0; k < oDims[0]; k++){    
+  for(int k = 0; k < oDims[0]; k++){
     beta.slice(k).col(oDims[1]-1).fill(0.0);
     for(int t = oDims[1]-2; t >= 0; t--){  
       for(int i = 0; i < eDims[0]; i++){
         sumtmp = neginf;
         for(int j = 0; j < eDims[0]; j++){
-          tmp = beta(j,t+1,k) + transition(i,j) + emission(j,obs(k,t+1));
-          
-         
+          tmp = beta.at(j,t+1,k) + transition.at(i,j);
+          for(int r = 0; r < oDims[2]; r++){
+            tmp += emission.at(j,obs.at(k,t+1,r),r);
+          }
           if(tmp > neginf){
             sumtmp = logSumExp(sumtmp,tmp);
           }
         }
-        beta(i,t,k) = sumtmp;        
+        beta.at(i,t,k) = sumtmp;        
       }
     }
   }
