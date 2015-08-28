@@ -8,7 +8,7 @@ ssplotM <- function(x, mpp=NULL,
                    legend.prop=0.3, cex.legend=1,
                    mpp.color="auto", mpp.labels="auto",
                    xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
-                   ylab="auto", hiddenStates.title="Hidden states", 
+                   ylab="auto", hidden.states.title="Hidden states", 
                    ylab.pos="auto", 
                    cex.lab=1, cex.axis=1, ...){
   # plot.new()

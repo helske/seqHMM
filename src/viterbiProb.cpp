@@ -20,12 +20,8 @@ NumericVector initialProbs, IntegerVector obsArray) {
   
   arma::vec init(initialProbs.begin(), eDims[0], true);
   arma::mat transition(transitionMatrix.begin(), eDims[0], eDims[0], true);
-  arma::mat emission(emissionArray.begin(), eDims[0], eDims[1], true);
-  arma::Mat<int> obs(obsArray.begin(), oDims[0], oDims[1], true);
-  
-  init = log(init);
-  transition = log(transition);
-  emission = log(emission);
+  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
+  arma::Cube<int> obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], true);
   
   double logp = 0.0;
   
@@ -36,13 +32,19 @@ NumericVector initialProbs, IntegerVector obsArray) {
   
   for(int k=0; k<oDims[0]; k++){
     
-    deltaold = init + emission.col(obs(k,0));
+    deltaold = init;
+    for(int r=0; r<eDims[2]; r++){
+      deltaold += emission.slice(r).col(obs(k,0,r));
+    }   
     
     
     for(int t=1; t<oDims[1]; t++){
       for(int j=0; j<eDims[0]; j++){
         (deltaold+transition.col(j)).max(phi);
-        deltanew(j) = deltaold(phi) + transition(phi,j) + emission(j,obs(k,t));
+        deltanew(j) = deltaold(phi)+transition(phi,j);
+        for(int r=0; r<eDims[2]; r++){
+          deltanew(j) += emission(j,obs(k,t,r),r);
+        }
       }
       deltaold = deltanew;
     }

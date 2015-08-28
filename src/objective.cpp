@@ -4,9 +4,8 @@ using namespace Rcpp;
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
-NumericVector gradientMC(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-  IntegerVector obsArray,NumericVector rowSumsA,NumericVector rowSumsB_, double sumInit,
-  IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, NumericVector expPsi) { 
+List objective(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
+  IntegerVector obsArray, IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols) { 
   
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
@@ -19,7 +18,7 @@ NumericVector gradientMC(NumericVector transitionMatrix, NumericVector emissionA
   arma::imat ANZ(transNZ.begin(),eDims[0],eDims[0],false);
   arma::icube BNZ(emissNZ.begin(), eDims[0], eDims[1]-1,eDims[2],false);
   arma::ivec INZ(initNZ.begin(), eDims[0],false);
-  arma::mat rowSumsB(rowSumsB_.begin(),eDims[0],eDims[2],false);
+ 
   
   arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k
   arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k 
@@ -28,16 +27,16 @@ NumericVector gradientMC(NumericVector transitionMatrix, NumericVector emissionA
   arma::mat transitionLog = log(transition); 
   arma::cube emissionLog = log(emission);
   
-  internalForwardMC(transitionLog, emissionLog, initLog, obs, alpha);
-  internalBackwardMC(transitionLog, emissionLog, obs, beta);     
+  internalForward(transitionLog, emissionLog, initLog, obs, alpha);
+  internalBackward(transitionLog, emissionLog, obs, beta);     
   
   arma::vec ll(oDims[0]);
   
-  double tmp=0.0;
+  double tmp = 0.0;
   double neginf = -arma::math::inf();
   
   for(int k=0;k<oDims[0];k++){
-    tmp =neginf;
+    tmp = neginf;
     for(int i = 0; i < eDims[0]; i++){
       if(alpha(i,oDims[1]-1,k)>neginf){
         tmp = logSumExp(alpha(i,oDims[1]-1,k),tmp); 
@@ -46,21 +45,21 @@ NumericVector gradientMC(NumericVector transitionMatrix, NumericVector emissionA
     ll(k) = tmp;
   }
   
-  int countgrad=0;
-  arma::vec grad(expPsi.size());
+  int countgrad = 0;
+  arma::vec grad(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ),arma::fill::zeros);
   
   // transitionMatrix
   arma::vec gradArow(eDims[0]);
   arma::mat gradA(eDims[0],eDims[0]);
   for(int i = 0; i < eDims[0]; i++){
     arma::uvec ind = arma::find(ANZ.row(i));
-    if(ind.n_elem>1){ 
+    
+    if(ind.n_elem>0){ 
       gradArow.zeros();
-      gradA.zeros();
-      gradA.diag() += arma::accu(transition.row(i));
+      gradA.eye();
       gradA.each_row() -= transition.row(i);
-      gradA.each_row() /= arma::sum(transition,0);
-      Rcout<<"i "<<i<<gradA<<std::endl;
+      gradA.each_col() %= transition.row(i).t();
+     
       for(int k = 0; k < oDims[0]; k++){
         for(int t = 0; t < (oDims[1]-1); t++){
           for(int j = 0; j < eDims[0]; j++){ 
@@ -73,72 +72,64 @@ NumericVector gradientMC(NumericVector transitionMatrix, NumericVector emissionA
           
         }
       }
-      Rcout<<"gradArow "<<gradArow<<std::endl;
       gradArow = gradA * gradArow;
       grad.subvec(countgrad,countgrad+ind.n_elem-1) = gradArow.rows(ind);
       countgrad += ind.n_elem;
     }
   }
- 
   // emissionMatrix
-  arma::vec gradBrow(eDims[1]);
-  arma::mat gradB(eDims[1],eDims[1]);
   for(int r=0; r < oDims[2]; r++){
+    arma::vec gradBrow(nSymbols[r]);
+    arma::mat gradB(nSymbols[r],nSymbols[r]);
     for(int i = 0; i < eDims[0]; i++){
       arma::uvec ind = arma::find(BNZ.slice(r).row(i));
-      if(ind.n_elem>1){
+      if(ind.n_elem>0){
         gradBrow.zeros();
-        gradB.zeros();
-        gradB.diag() += arma::accu(emission.slice(r).row(i));
-        gradB.each_row() -= emission.slice(r).row(i);
-        gradB.each_row() /= arma::sum(emission.slice(r).row(i),0);
-        
-        for(int k = 0; k < oDims[0]; k++){
-          for(int j = 0; j < eDims[0]; j++){
+        gradB.eye();
+        gradB.each_row() -= emission.slice(r).row(i).subvec(0,nSymbols[r]-1);
+        gradB.each_col() %= emission.slice(r).row(i).subvec(0,nSymbols[r]-1).t();
+        for(unsigned int j = 0; j < nSymbols[r]; j++){
+          for(int k = 0; k < oDims[0]; k++){
             if(obs(k,0,r) == j){
               tmp = 0.0;
-              for(int r2=0; r2 < oDims[2]; r2++){
-                if(r2!=r){
+              for(int r2 = 0; r2 < oDims[2]; r2++){
+                if(r2 != r){
                   tmp += emissionLog(i,obs(k,0,r2),r2);
                 }
               }
               gradBrow(j) += exp(initLog(i) + tmp + beta(i,0,k) - ll(k));
             }
-          }
-          for(int t = 0; t < (oDims[1]-1); t++){ 
-            for(int j = 0; j < eDims[0]; j++){
+            for(int t = 0; t < (oDims[1]-1); t++){ 
               if(obs(k,t+1,r) == j){
                 tmp = 0.0;
-                for(int r = 0; r < oDims[2]; r++){
-                  tmp += emissionLog(j,obs(k,t+1,r),r);
+                for(int r2 = 0; r2 < oDims[2]; r2++){
+                  if(r2 != r){
+                    tmp += emissionLog(i,obs(k,t+1,r2),r2);
+                  }
                 }
                 gradBrow(j) += arma::accu(exp(alpha.slice(k).col(t) + tmp + transitionLog.col(i) + beta(i,t+1,k) - ll(k)));
               }
             }
           }
-          gradBrow = gradB * gradBrow;
-          
-          grad.subvec(countgrad,countgrad+ind.n_elem-1) = gradBrow.rows(ind);
-          countgrad += ind.n_elem;
         }
+        gradBrow = gradB * gradBrow;
+        grad.subvec(countgrad,countgrad+ind.n_elem-1) = gradBrow.rows(ind);
+        countgrad += ind.n_elem;
+        
       }
     }
   }
   // InitProbs
   arma::uvec ind = arma::find(INZ); 
-  if(ind.n_elem>1){
+  if(ind.n_elem>0){
     arma::vec gradIrow(eDims[0]);
     arma::mat gradI(eDims[0],eDims[0]);
     
-    
     gradIrow.zeros();
     gradI.zeros();
-    gradI.diag() += arma::accu(init);
+    gradI.eye();
     gradI.each_row() -= init.t();
-    tmp = as_scalar(arma::sum(init,0));
-    for(int i = 0; i < eDims[0]; i++){
-      gradI.row(i) /= tmp;
-    }
+    gradI.each_col() %= init;
     for(int k = 0; k < oDims[0]; k++){
       for(int j = 0; j < eDims[0]; j++){ 
         tmp = 0.0;
@@ -152,5 +143,5 @@ NumericVector gradientMC(NumericVector transitionMatrix, NumericVector emissionA
     grad.subvec(countgrad,countgrad+ind.n_elem-1) = gradIrow.rows(ind);
     countgrad += ind.n_elem;
   }
-  return wrap(grad);
+  return List::create(Named("objective") = -sum(ll), Named("gradient") = wrap(-grad));
 }

@@ -121,7 +121,7 @@
 #'   \code{x$channelNames} if \code{x} is an HMModel object; otherwise the 
 #'   number of the channel. \code{FALSE} prints no labels.
 #'   
-#' @param hiddenStates.title Optional label for the hidden state plot (in the 
+#' @param hidden.states.title Optional label for the hidden state plot (in the 
 #'   y-axis). The default is \code{"Hidden states"}.
 #'   
 #' @param ylab.pos Controls the position of the y axis labels (labels for 
@@ -281,7 +281,7 @@ ssp <- function(x, mpp=NULL,
                        legend.prop=0.3, cex.legend=1,
                        mpp.color="auto", mpp.labels="auto",
                        xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
-                       ylab="auto", hiddenStates.title="Hidden states", 
+                       ylab="auto", hidden.states.title="Hidden states", 
                        ylab.pos="auto", 
                        cex.lab=1, cex.axis=1, ...){
   
@@ -326,21 +326,27 @@ ssp <- function(x, mpp=NULL,
     obs <- x$observations
     channelNames <- x$channelNames
     if(length(ylab)>1 || (!is.na(ylab) && ylab!=FALSE)){
-      if(length(ylab)==1 && ylab=="auto"){
-        ylab <- x$channelNames
-      }else if(length(ylab)==1 && 
-                 x$numberOfChannels>1 && ylab!="auto"){
-        warning("The length of ylab does not match the number of channels.")
-        ylab <- rep(ylab, x$numberOfChannels)
-        channelNames <- ylab
-      }else if(length(ylab) < x$numberOfChannels && !is.na(ylab)){
-        warning("The length of ylab does not match the number of channels.")
-        ylab <- rep(ylab, x$numberOfChannels)
-        channelNames <- ylab
-      }else if(length(ylab) > x$numberOfChannels){
-        warning("The length of ylab does not match the number of channels.")
-        ylab <- ylab[1:x$numberOfChannels]
-        channelNames <- ylab
+      if(plots!="mpp"){
+        if(length(ylab)==1 && ylab=="auto"){
+          ylab <- x$channelNames
+        }else if(length(ylab)==1 && 
+                   x$numberOfChannels>1 && ylab!="auto"){
+          warning("The length of ylab does not match the number of channels.")
+          ylab <- rep(ylab, x$numberOfChannels)
+          channelNames <- ylab
+        }else if(length(ylab) < x$numberOfChannels && !is.na(ylab)){
+          warning("The length of ylab does not match the number of channels.")
+          ylab <- rep(ylab, x$numberOfChannels)
+          channelNames <- ylab
+        }else if(length(ylab) > x$numberOfChannels){
+          warning("The length of ylab does not match the number of channels.")
+          ylab <- ylab[1:x$numberOfChannels]
+          channelNames <- ylab
+        }
+      }else{
+        if(!is.null(ylab) && hidden.states.title=="Hidden states"){
+          warning("Argument ylab only modifies channel titles (observations). Did you mean to change hidden.states.title?")
+        }
       }
     }
     # Single channel stslist
@@ -548,7 +554,7 @@ ssp <- function(x, mpp=NULL,
   }  
   
   # Most probable paths
-  if(plots=="both" || plots=="mpp"){
+  if(plots=="both" || plots=="mpp" || (plots=="obs" && !is.null(mpp))){
     if(!is.null(mpp)){
       if(!is.null(mpp.labels) && length(mpp.labels)==1 && mpp.labels=="auto"){
         mpp.labels <- attr(mpp, "labels")
@@ -732,7 +738,7 @@ ssp <- function(x, mpp=NULL,
   arguments <- c(arguments, list(plotxaxis=plotxaxis))
   if(plots=="both" || plots=="obs"){ 
     if(type=="I"){ 
-      if(length(sortv)==1 && sortv=="mds.mpp" && plots=="obs"){
+      if(length(sortv)==1 && sortv=="mds.mpp" && plots=="obs" && is.null(mpp)){
         warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"mpp\". Sequences were not sorted.")
         sortv <- NULL
       }
@@ -757,7 +763,7 @@ ssp <- function(x, mpp=NULL,
                                    legend.prop=legend.prop, cex.legend=cex.legend,
                                    mpp.color=mpp.color, mpp.labels=mpp.labels,
                                    xaxis=xaxis, xlab=xlab, xtlab=xtlab, xlab.pos=xlab.pos,
-                                   ylab=ylab, hiddenStates.title=hiddenStates.title, 
+                                   ylab=ylab, hidden.states.title=hidden.states.title, 
                                    ylab.pos=ylab.pos, 
                                    cex.lab=cex.lab, cex.axis=cex.axis, call=match.call()))
   }else{
@@ -770,7 +776,7 @@ ssp <- function(x, mpp=NULL,
                                    legend.prop=legend.prop, cex.legend=cex.legend,
                                    mpp.color=mpp.color, mpp.labels=mpp.labels,
                                    xaxis=xaxis, xlab=xlab, xtlab=xtlab, xlab.pos=xlab.pos,
-                                   ylab=ylab, hiddenStates.title=hiddenStates.title, 
+                                   ylab=ylab, hidden.states.title=hidden.states.title, 
                                    ylab.pos=ylab.pos, 
                                    cex.lab=cex.lab, cex.axis=cex.axis, call=match.call()),
                    list(...))    
