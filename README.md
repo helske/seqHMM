@@ -45,7 +45,7 @@ bio <- biofam[complete.cases(biofam[c(2:4)]),]
 # Sequence data for the first six individuals
 head(bio[10:25])
 
-## Building one channel per type of event (married, children, or left)
+# Building one channel per type of event (married, children, or left)
 bf <- as.matrix(bio[, 10:25])
 married <- bf == 2 | bf == 3 | bf == 6
 children <-  bf == 4 | bf == 5 | bf == 6
@@ -91,7 +91,7 @@ attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
 attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 ```
 
-## Plotting multichannel sequence data
+### Plotting multichannel sequence data
 Multichannel sequence data are easily plotted using the `ssplot` function (ssplot for Stacked Sequence Plot).
 
 ```
@@ -144,7 +144,7 @@ gridplot(list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=2, byrow=TRUE,
 ```
 ![gridplot](https://github.com/helske/seqHMM/blob/master/Examples/gridplot.png)
 
-## Fitting hidden Markov models
+### Fitting hidden Markov models
 
 When fitting Hidden Markov models (HMMs), initial values for model parameters are first given to the `buildHMM` function. After that, the model is fitted with the `fitHMM` function using EM algorithm, direct numerical estimation, or a combination of both.
 
@@ -201,7 +201,7 @@ HMM$logLik
 
 ```
 
-## Plotting hidden Markov models
+### Plotting hidden Markov models
 
 A simple `plot` method is used to show an `HMModel` object as a graph. It shows hidden states as pie charts (vertices), with emission probabilities as slices and transition probabilities as arrows (edges). Initial probabilities are shown below the pies.
 
@@ -260,7 +260,7 @@ most probable paths of hidden states",
 ```
 ![sspboth](https://github.com/helske/seqHMM/blob/master/Examples/sspboth.png)
 
-## Computing likelihood and BIC
+### Computing likelihood and BIC
 
 The `logLik` and `BIC` functions are used for model comparison with the log-likelihood or the Bayesian information criterion (BIC).
 
@@ -274,7 +274,7 @@ BIC(HMM$model)
 # 30177.88
 ```
 
-## Trimming HMMs
+### Trimming HMMs
 
 The `trimHMM` function can be used to trim models by setting small probabilities to zero. Here the trimmed model led to model with slightly improved likelihood, so probabilities less than 0.01 could be set to zero.
 
@@ -337,7 +337,7 @@ trimmedHMM$emiss
 #          4 1.0000000    0.0000000
 ```
 
-## Converting multichannel to single channel models and data
+### Converting multichannel to single channel models and data
 
 The `MCtoSC` function converts a multichannel model into a single channel representation. E.g. the `plot` function for `HMModel` objects uses this type of conversion. The `seqHMM` package also includes a similar function `MCtoSCdata` for merging multiple state sequence objects.
 
@@ -349,7 +349,7 @@ ssplot(scHMM, plots = "both", sortv = "from.end", sort.channel = 0,
 ```
 ![scssp](https://github.com/helske/seqHMM/blob/master/Examples/scssp.png)
 
-## Mixture hidden Markov models
+### Mixture hidden Markov models
 
 A mixture hidden Markov model (MHMM) is, by definition, a mixture of HMMs that are fitted together. These are fitted and plotted with similar functions to ones presented before. Starting values are given as a list consisting of the parameter values for each cluster. The `buildMixHMM` function checks that the model is properly constructed before fitting with the `fitMixHMM`function. Trimming is called with the `trimHMM`.
 ```
@@ -467,7 +467,7 @@ trMHMM <- trimHMM(MHMM$model, zerotol = 1e-04)
 # sexwoman:swissSwiss         0   0.23815091  0.54652612
 ```
 
-## Plotting MHMMs
+### Plotting MHMMs
 
 Also MHMMs are plotted with the `plot` function. The user can choose between an interactive mode (`interactive=TRUE`), where the model for each cluster is plotted separately, and a combined plot with all models at once.
 ```
