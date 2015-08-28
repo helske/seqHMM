@@ -122,7 +122,7 @@
 #'   \code{x$channelNames} if \code{x} is an HMModel object; otherwise the 
 #'   number of the channel. \code{FALSE} prints no labels.
 #'   
-#' @param hiddenStates.title Optional label for the hidden state plot (in the 
+#' @param hidden.states.title Optional label for the hidden state plot (in the 
 #'   y-axis). The default is \code{"Hidden states"}.
 #'   
 #' @param ylab.pos Controls the position of the y axis labels (labels for 
@@ -301,7 +301,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
                     legend.prop=0.3, cex.legend=1,
                     mpp.color="auto", mpp.labels="auto",
                     xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
-                    ylab="auto", hiddenStates.title="Hidden states", 
+                    ylab="auto", hidden.states.title="Hidden states", 
                     ylab.pos="auto", 
                     cex.lab=1, cex.axis=1, ...){
   

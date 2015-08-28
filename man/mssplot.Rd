@@ -12,7 +12,7 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
   with.missing.legend = "auto", legend.prop = 0.3, cex.legend = 1,
   mpp.color = "auto", mpp.labels = "auto", xaxis = TRUE, xlab = NA,
   xtlab = NULL, xlab.pos = 1, ylab = "auto",
-  hiddenStates.title = "Hidden states", ylab.pos = "auto", cex.lab = 1,
+  hidden.states.title = "Hidden states", ylab.pos = "auto", cex.lab = 1,
   cex.axis = 1, ...)
 }
 \arguments{
@@ -129,7 +129,7 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
   \code{x$channelNames} if \code{x} is an HMModel object; otherwise the
   number of the channel. \code{FALSE} prints no labels.}
 
-\item{hiddenStates.title}{Optional label for the hidden state plot (in the
+\item{hidden.states.title}{Optional label for the hidden state plot (in the
   y-axis). The default is \code{"Hidden states"}.}
 
 \item{ylab.pos}{Controls the position of the y axis labels (labels for

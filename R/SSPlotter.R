@@ -12,7 +12,7 @@ SSPlotter <- function(obs, nchannels, channelNames, nplots,
                        legend.prop=0.3, cex.legend=1,
                        mpp.color="auto", mpp.labels="auto",
                        xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
-                       ylab="auto", hiddenStates.title="Hidden states", 
+                       ylab="auto", hidden.states.title="Hidden states", 
                        ylab.pos="auto", 
                        cex.lab=1, cex.axis=1, new=FALSE, call = match.call(), ...
 ){
@@ -238,7 +238,7 @@ SSPlotter <- function(obs, nchannels, channelNames, nplots,
     if(plots=="both" || plots=="mpp"){
       pushViewport(viewport(layout.pos.row=nplots, 
                             layout.pos.col=1))
-      grid.text(hiddenStates.title, x = unit(ylab.space/cex.lab-
+      grid.text(hidden.states.title, x = unit(ylab.space/cex.lab-
                                                ylab.pos[nplots]+1, 
                                              "lines"), 
                 gp = gpar(cex = cex.lab), rot=90, vjust=0.5, hjust=0.5)
