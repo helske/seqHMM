@@ -120,7 +120,7 @@
 #'   \code{x$channelNames} if \code{x} is an HMModel object; otherwise the 
 #'   number of the channel. \code{FALSE} prints no labels.
 #'   
-#' @param hiddenStates.title Optional label for the hidden state plot (in the 
+#' @param hidden.states.title Optional label for the hidden state plot (in the 
 #'   y-axis). The default is \code{"Hidden states"}.
 #'   
 #' @param ylab.pos Controls the position of the y axis labels (labels for 
@@ -145,7 +145,43 @@
 #' data(biofam)
 #' biofam <- biofam[1:500,]
 #' 
-#' ## Building one channel per type of event left, children or married
+#' #' # Single-channel data
+#' 
+#' biofam.seq <- seqdef(
+#'   biofam[, 10:25], 
+#'   states = c("Parent", "Left", "Married", "Left+Marr",
+#'              "Left+Child", "Left+Marr+Child", "Divorced"),
+#'   start = 15
+#'   )
+#' 
+#' # Starting values for the emission matrix
+#' B <- matrix(NA, nrow = 4, ncol = 7)
+#' B[1,] <- seqstatf(biofam.seq[, 1:4])[, 2] + 0.1
+#' B[2,] <- seqstatf(biofam.seq[, 5:8])[, 2] + 0.1
+#' B[3,] <- seqstatf(biofam.seq[, 9:12])[, 2] + 0.1
+#' B[4,] <- seqstatf(biofam.seq[, 13:15])[, 2] + 0.1
+#' B <- B / rowSums(B)
+#' 
+#' # Starting values for the transition matrix
+#' A <- matrix(c(0.80, 0.10, 0.05, 0.05,
+#'               0.05, 0.80, 0.10, 0.05,
+#'               0.05, 0.05, 0.80, 0.10,
+#'               0.05, 0.05, 0.10, 0.80), nrow=4, ncol=4, byrow=TRUE)
+#' 
+#' # Starting values for initial state probabilities
+#' initialProbs <- c(0.9, 0.07, 0.02, 0.01)
+#' 
+#' # Building a hidden Markov model with starting values
+#' bHMM <- buildHMM(
+#'   observations = biofam.seq, transitionMatrix = A, 
+#'   emissionMatrix = B, initialProbs = initialProbs
+#' )
+#' 
+#' #########################################
+#' 
+#' # Multichannel data
+#' 
+#' # Building one channel per type of event left, children or married
 #' bf <- as.matrix(biofam[, 10:25])
 #' children <-  bf == 4 | bf == 5 | bf == 6
 #' married <- bf == 2 | bf == 3 | bf == 6
@@ -160,7 +196,7 @@
 #' left[left == TRUE] <- "Left home"
 #' left[left == FALSE] <- "With parents"
 #' 
-#' ## Building sequence objects
+#' # Building sequence objects
 #' child.seq <- seqdef(children)
 #' marr.seq <- seqdef(married)
 #' left.seq <- seqdef(left)
@@ -272,7 +308,7 @@ ssplot <- function(x, mpp=NULL,
                 legend.prop=0.3, cex.legend=1,
                 mpp.color="auto", mpp.labels="auto",
                 xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
-                ylab="auto", hiddenStates.title="Hidden states", 
+                ylab="auto", hidden.states.title="Hidden states", 
                 ylab.pos="auto", 
                 cex.lab=1, cex.axis=1, ...){
   

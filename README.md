@@ -45,7 +45,7 @@ bio <- biofam[complete.cases(biofam[c(2:4)]),]
 # Sequence data for the first six individuals
 head(bio[10:25])
 
-## Building one channel per type of event (married, children, or left)
+# Building one channel per type of event (married, children, or left)
 bf <- as.matrix(bio[, 10:25])
 married <- bf == 2 | bf == 3 | bf == 6
 children <-  bf == 4 | bf == 5 | bf == 6
@@ -90,6 +90,8 @@ attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
 attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
 attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 ```
+
+### Plotting multichannel sequence data
 Multichannel sequence data are easily plotted using the `ssplot` function (ssplot for Stacked Sequence Plot).
 
 ```
@@ -141,6 +143,8 @@ gridplot(list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=2, byrow=TRUE,
 
 ```
 ![gridplot](https://github.com/helske/seqHMM/blob/master/Examples/gridplot.png)
+
+### Fitting hidden Markov models
 
 When fitting Hidden Markov models (HMMs), initial values for model parameters are first given to the `buildHMM` function. After that, the model is fitted with the `fitHMM` function using EM algorithm, direct numerical estimation, or a combination of both.
 
@@ -196,6 +200,9 @@ HMM$logLik
 # -14883.86
 
 ```
+
+### Plotting hidden Markov models
+
 A simple `plot` method is used to show an `HMModel` object as a graph. It shows hidden states as pie charts (vertices), with emission probabilities as slices and transition probabilities as arrows (edges). Initial probabilities are shown below the pies.
 
 ```
@@ -220,7 +227,7 @@ plot(
 ```
 ![HMM](https://github.com/helske/seqHMM/blob/master/Examples/HMModel.png)
 
-The `ssplot` function can also be used for plotting the observed states and/or the most probable paths of hidden states of the HMM.
+The `ssplot` function can also be used for plotting the observed states and/or the most probable paths of hidden states of a HMM.
 
 ```
 # Plotting observations and hidden states
@@ -253,6 +260,8 @@ most probable paths of hidden states",
 ```
 ![sspboth](https://github.com/helske/seqHMM/blob/master/Examples/sspboth.png)
 
+### Computing likelihood and BIC
+
 The `logLik` and `BIC` functions are used for model comparison with the log-likelihood or the Bayesian information criterion (BIC).
 
 ```
@@ -264,10 +273,12 @@ logLik(HMM$model)
 BIC(HMM$model)
 # 30177.88
 ```
+
+### Trimming HMMs
+
 The `trimHMM` function can be used to trim models by setting small probabilities to zero. Here the trimmed model led to model with slightly improved likelihood, so probabilities less than 0.01 could be set to zero.
 
 ```
-# Trimming HMM
 trimmedHMM <- trimHMM(HMM$model, maxit = 100, zerotol = 1e-04)
 # "1 iteration(s) used."
 # "Trimming improved log-likelihood, ll_trim-ll_orig = 5.57e-05"
@@ -325,10 +336,12 @@ trimmedHMM$emiss
 #          3 0.7024774    0.2975226
 #          4 1.0000000    0.0000000
 ```
+
+### Converting multichannel to single channel models and data
+
 The `MCtoSC` function converts a multichannel model into a single channel representation. E.g. the `plot` function for `HMModel` objects uses this type of conversion. The `seqHMM` package also includes a similar function `MCtoSCdata` for merging multiple state sequence objects.
 
 ```
-# Converting multichannel model to single channel model
 scHMM <- MCtoSC(HMM$model)
 
 ssplot(scHMM, plots = "both", sortv = "from.end", sort.channel = 0, 
@@ -336,7 +349,9 @@ ssplot(scHMM, plots = "both", sortv = "from.end", sort.channel = 0,
 ```
 ![scssp](https://github.com/helske/seqHMM/blob/master/Examples/scssp.png)
 
-Mixture HMM (MHMM) is, by definition, a mixture of HMMs that are fitted together. These are fitted and plotted with similar functions to ones presented before. Starting values are given as a list consisting of the parameter values for each cluster. The `buildMixHMM` function checks that the model is properly constructed before fitting with the `fitMixHMM`function. Trimming is called with the `trimHMM`.
+### Mixture hidden Markov models
+
+A mixture hidden Markov model (MHMM) is, by definition, a mixture of HMMs that are fitted together. These are fitted and plotted with similar functions to ones presented before. Starting values are given as a list consisting of the parameter values for each cluster. The `buildMixHMM` function checks that the model is properly constructed before fitting with the `fitMixHMM`function. Trimming is called with the `trimHMM`.
 ```
 # Starting values for emission probabilities
 
@@ -439,18 +454,20 @@ bMHMM <- buildMixHMM(
 MHMM <- fitMixHMM(bMHMM)
 
 # Trim MHMM
-trMHMM <- trimHMM(MHMM$model, zerotol = 1e-05)
+trMHMM <- trimHMM(MHMM$model, zerotol = 1e-04)
 
 # Parameter coefficients for covariates (cluster 1 is the reference)
-trMHMM$beta
+# trMHMM$beta
 #                     Cluster 1    Cluster 2   Cluster 3
-# (Intercept)                 0 -23.24093078 67.35469838
-# sexwoman                    0  19.26454369 28.62328100
-# birthyr                     0   0.01258906 -0.03449584
-# swissSwiss                  0   0.11453555 -0.55947625
-# sexwoman:birthyr            0  -0.01007922 -0.01491035
-# sexwoman:swissSwiss         0   0.23690967  0.55617401
+# (Intercept)                 0 -23.39241097 64.04751144
+# sexwoman                    0  19.27426708 33.17879462
+# birthyr                     0   0.01266753 -0.03279321
+# swissSwiss                  0   0.11541402 -0.54893429
+# sexwoman:birthyr            0  -0.01008529 -0.01725546
+# sexwoman:swissSwiss         0   0.23815091  0.54652612
 ```
+
+### Plotting MHMMs
 
 Also MHMMs are plotted with the `plot` function. The user can choose between an interactive mode (`interactive=TRUE`), where the model for each cluster is plotted separately, and a combined plot with all models at once.
 ```
@@ -462,7 +479,6 @@ plot(trMHMM, interactive = TRUE)
 ![mixHMM2](https://github.com/helske/seqHMM/blob/master/Examples/mixHMM2.png)
 ![mixHMM3](https://github.com/helske/seqHMM/blob/master/Examples/mixHMM3.png)
 
-
 The most probable cluster for each individual is determined by the most probable path of hidden states. It is computed with the `mostProbablePath` function.
 
 ```
@@ -473,7 +489,7 @@ attr(mpp$mpp, "cpal") <- colorpalette[[14]]
 # Number of individuals in each cluster
 table(mpp$cluster)
 # Cluster 1 Cluster 2 Cluster 3 
-#       258      1238       279 
+#       258      1236       281 
 
 # Plotting observed sequences and most probable hidden states
 # Interactive plot, one cluster at a time

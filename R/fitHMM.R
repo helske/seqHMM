@@ -72,7 +72,7 @@
 #' data(biofam)
 #' biofam <- biofam[1:500,]
 #' 
-#' ## Building one channel per type of event left, children or married
+#' # Building one channel per type of event left, children or married
 #' bf <- as.matrix(biofam[, 10:25])
 #' children <-  bf == 4 | bf == 5 | bf == 6
 #' married <- bf == 2 | bf == 3 | bf == 6
@@ -87,7 +87,7 @@
 #' left[left == TRUE] <- "Left home"
 #' left[left == FALSE] <- "With parents"
 #' 
-#' ## Building sequence objects
+#' # Building sequence objects
 #' child.seq <- seqdef(children)
 #' marr.seq <- seqdef(married)
 #' left.seq <- seqdef(left)
