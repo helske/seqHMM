@@ -109,8 +109,8 @@
 #' 
 #' # Preparing plots for women's state distributions
 #' ssp_f2 <- ssp(
-#'   list(marr.seq[bio$sex == "woman",], child.seq[bio$sex == "woman",],
-#'        left.seq[bio$sex == "woman",]),
+#'   list(marr.seq[biofam$sex == "woman",], child.seq[biofam$sex == "woman",],
+#'        left.seq[biofam$sex == "woman",]),
 #'   type = "d", border = NA, withlegend = FALSE, 
 #'   title = "State distributions for women", title.n = FALSE, xtlab = 15:30,
 #'   ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home")
@@ -124,8 +124,8 @@
 #' # State distributions with men's data
 #' ssp_m2 <- update(
 #'   ssp_f2, title = "State distributions for men", 
-#'   x = list(marr.seq[bio$sex == "man",], child.seq[bio$sex == "man",],
-#'            left.seq[bio$sex == "man",])
+#'   x = list(marr.seq[biofam$sex == "man",], child.seq[biofam$sex == "man",],
+#'            left.seq[biofam$sex == "man",])
 #'   )
 #' 
 #' # Men's sequences
@@ -153,7 +153,7 @@
 
 gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
                      withlegend="auto", legend.pos="auto", 
-                     legend.pos2="top", title.legend="auto",
+                     legend.pos2="center", title.legend="auto",
                      ncol.legend="auto", 
                      with.missing.legend="auto",                       
                      row.prop="auto", col.prop="auto", cex.legend=1){
