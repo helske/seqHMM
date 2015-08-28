@@ -489,7 +489,7 @@ attr(mpp$mpp, "cpal") <- colorpalette[[14]]
 # Number of individuals in each cluster
 table(mpp$cluster)
 # Cluster 1 Cluster 2 Cluster 3 
-#       258      1238       279 
+#       258      1236       281 
 
 # Plotting observed sequences and most probable hidden states
 # Interactive plot, one cluster at a time

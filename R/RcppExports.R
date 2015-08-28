@@ -89,6 +89,10 @@ viterbiMC <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
     .Call('seqHMM_viterbiMC', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
 
+viterbiMCx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates) {
+    .Call('seqHMM_viterbiMCx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates)
+}
+
 viterbiProb <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
     .Call('seqHMM_viterbiProb', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
