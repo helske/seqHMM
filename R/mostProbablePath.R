@@ -144,9 +144,9 @@ mostProbablePath<-function(model){
     p <- 0
 
     for(i in 1:model$numberOfClusters){
-      clP[[i]] <- colSums(exp(fw[(p+1):HMM1$model$numberOfStates[i],] - 
-                                rep(ll, each = HMM1$model$numberOfStates[i])))
-      p <- p + HMM1$model$numberOfStates[i]
+      clP[[i]] <- colSums(exp(fw[(p+1):model$numberOfStates[i],] - 
+                                rep(ll, each = model$numberOfStates[i])))
+      p <- p + model$numberOfStates[i]
     }
     clProbs <- matrix(NA, nrow = model$numberOfClusters, ncol = model$numberOfClusters)
     rownames(clProbs) <- colnames(clProbs) <- model$clusterNames
