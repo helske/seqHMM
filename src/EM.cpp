@@ -1,3 +1,4 @@
+
 #include "seqHMM.h"
 using namespace Rcpp;
 
@@ -12,16 +13,15 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 
 List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-IntegerVector obsArray, int nSymbols, int itermax=100, double tol=1e-8, int trace=0) {  
+IntegerVector obsArray, IntegerVector nSymbols, int itermax=100, double tol=1e-8, int trace=0) {  
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
   
-  arma::vec init(initialProbs.begin(),eDims[0],true);
-  arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0],true);
-  arma::mat emission(emissionArray.begin(), eDims[0], eDims[1],true);
-  arma::Mat<int> obs(obsArray.begin(), oDims[0], oDims[1],false);  
-  
+  arma::vec init(initialProbs.begin(), eDims[0], true);
+  arma::mat transition(transitionMatrix.begin(), eDims[0], eDims[0], true);
+  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
+  arma::Cube<int> obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
   
   transition = log(transition); 
   emission = log(emission);
@@ -30,10 +30,8 @@ IntegerVector obsArray, int nSymbols, int itermax=100, double tol=1e-8, int trac
   arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k
   arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k
   
-  
   internalForward(transition, emission, init, obs, alpha);
   internalBackward(transition, emission, obs, beta);
-  
   
   arma::vec ll(oDims[0]);
   
@@ -41,7 +39,7 @@ IntegerVector obsArray, int nSymbols, int itermax=100, double tol=1e-8, int trac
   double sumtmp=0.0;
   double neginf = -arma::math::inf();
   
-  for(int k=0;k<oDims[0];k++){
+  for(int k=0;k<oDims[0];k++){    
     tmp =neginf;
     for(int i = 0; i < eDims[0]; i++){
       if(alpha(i,oDims[1]-1,k)>neginf){
@@ -52,9 +50,8 @@ IntegerVector obsArray, int nSymbols, int itermax=100, double tol=1e-8, int trac
   }
   
   double sumlogLik = sum(ll);
-  
   if(trace>0){
-Rcout<<"Log-likelihood of initial model: "<< sumlogLik<<std::endl;
+  Rcout<<"Log-likelihood of initial model: "<< sumlogLik<<std::endl;
   }
   //  
   //  //EM-algorithm begins
@@ -62,58 +59,72 @@ Rcout<<"Log-likelihood of initial model: "<< sumlogLik<<std::endl;
   double change = tol+1.0;
   int iter = 0;
   arma::mat ksii(eDims[0],eDims[0]);
-  arma::mat gamma(eDims[0],eDims[1]-1);
+  arma::cube gamma(eDims[0],eDims[1],eDims[2]);
   arma::vec delta(eDims[0]);
+  
+  
   
   while((change>tol) & (iter<itermax)){   
     iter++;
     gamma.zeros();
     ksii.zeros();
-    delta.zeros();
+    delta.zeros();        
     
     
     for(int k = 0; k < oDims[0]; k++){
       
-      delta += exp(alpha.slice(k).col(0)+beta.slice(k).col(0)-ll(k));     
-      
-      
+      delta += exp(alpha.slice(k).col(0)+beta.slice(k).col(0)-ll(k));
+ 
       for(int i = 0; i < eDims[0]; i++){
         for(int j = 0; j < eDims[0]; j++){
           sumtmp = neginf;
           for(int t=0; t < (oDims[1]-1); t++){
-            tmp = alpha(i,t,k) + transition(i,j) + beta(j,t+1,k) +emission(j,obs(k,t+1));
+            tmp = alpha(i,t,k) + transition(i,j) + beta(j,t+1,k);
+            if(tmp>neginf){
+              for(int r=0; r < oDims[2]; r++){
+                tmp += emission(j,obs(k,t+1,r),r);
+              }
+            }
             if(tmp>neginf){
               sumtmp = logSumExp(sumtmp,tmp);
             }
           }
+          
           ksii(i,j) += exp(sumtmp-ll(k));
           
         }
       }
       
-      for(int i = 0; i<eDims[0]; i++){
-        for(int l = 0; l<nSymbols; l++){
-          sumtmp = neginf;
-          for(int t=0; t<oDims[1];t++){
-            if(l == obs(k,t)){
-              tmp = alpha(i,t,k) + beta(i,t,k);
-              if(tmp>neginf){
-                sumtmp = logSumExp(sumtmp,tmp);
-              }
-            }              
-          }
-          gamma(i,l) += exp(sumtmp-ll(k));
-        }
-      }
       
+      for(int r=0; r<eDims[2]; r++){
+        for(int i = 0; i<eDims[0]; i++){
+          for(int l = 0; l<nSymbols[r]; l++){
+            sumtmp = neginf;
+            for(int t=0; t<oDims[1];t++){
+              if(l == (obs(k,t,r))){
+                tmp = alpha(i,t,k) + beta(i,t,k);
+                if(tmp>neginf){
+                  sumtmp = logSumExp(sumtmp,tmp);
+                }
+              }              
+            }
+            gamma(i,l,r) += exp(sumtmp-ll(k));
+          }
+        }
+      }      
     }
-    delta /= arma::as_scalar(arma::accu(delta));
-    ksii.each_col() /= sum(ksii,1);       
-    gamma.each_col() /= sum(gamma,1);    
     
-    init = log(delta);
+    ksii.each_col() /= sum(ksii,1);
     transition = log(ksii);
-    emission.cols(0,nSymbols-1) = log(gamma);
+    for(int r=0; r<eDims[2]; r++){
+      
+      gamma.slice(r).cols(0,nSymbols(r)-1).each_col() /= sum(gamma.slice(r).cols(0,nSymbols(r)-1),1);
+      emission.slice(r).cols(0,nSymbols(r)-1) = log(gamma.slice(r).cols(0,nSymbols(r)-1));
+    }
+        
+    delta /= arma::as_scalar(arma::accu(delta));
+  
+    init = log(delta);
     
     internalForward(transition, emission, init, obs, alpha);
     internalBackward(transition, emission, obs, beta);
@@ -133,9 +144,9 @@ Rcout<<"Log-likelihood of initial model: "<< sumlogLik<<std::endl;
     change = (tmp - sumlogLik)/(abs(sumlogLik)+0.1);
     sumlogLik = tmp;
     if(trace>1){
-      Rcout<<"iter: "<< iter;
-      Rcout<<" logLik: "<< sumlogLik;
-      Rcout<<" relative change: "<<change<<std::endl;
+    Rcout<<"iter: "<< iter;
+    Rcout<<" logLik: "<< sumlogLik;
+    Rcout<<" relative change: "<<change<<std::endl;
     }
     
   }
@@ -149,5 +160,5 @@ Rcout<<"Log-likelihood of initial model: "<< sumlogLik<<std::endl;
      Rcpp::Rcout<<"Final log-likelihood: "<< sumlogLik<<std::endl;
   }
   return List::create(Named("initialProbs") = wrap(exp(init)), Named("transitionMatrix") = wrap(exp(transition)),
-  Named("emissionMatrix") = wrap(exp(emission)),Named("logLik") = sumlogLik,Named("iterations")=iter,Named("change")=change);
+  Named("emissionArray") = wrap(exp(emission)),Named("logLik") = sumlogLik,Named("iterations")=iter,Named("change")=change);
 }

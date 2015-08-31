@@ -8,28 +8,29 @@
 #' @return Posterior probabilities in logarithm scale. In case of multiple observations,
 #' these are computed independently for each sequence.
 posteriorProbs<-function(model){
-  if(model$numberOfChannels==1){
-    obsArray<-data.matrix(model$observations)-1
-    obsArray[obsArray>model$numberOfSymbols]<-model$numberOfSymbols
-    storage.mode(obsArray)<-"integer"
-    fw <- forward(model$transitionMatrix, cbind(model$emissionMatrix,1), 
-      model$initialProbs, obsArray)    
-    bw <- backward(model$transitionMatrix, cbind(model$emissionMatrix,1), obsArray)
-    fw + bw
-  } else{
-    obsArray<-array(0,c(model$numberOfSequences,model$lengthOfSequences,model$numberOfChannels))
-    for(i in 1:model$numberOfChannels){
-      obsArray[,,i]<-data.matrix(model$observations[[i]])-1
-      obsArray[,,i][obsArray[,,i]>model$numberOfSymbols[i]]<-model$numberOfSymbols[i]
-    }    
-    storage.mode(obsArray)<-"integer"
-    emissionArray<-array(1,c(model$numberOfStates,max(model$numberOfSymbols)+1,model$numberOfChannels))
-    for(i in 1:model$numberOfChannels)
-      emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
-    
-    out<-forwardMC(model$transitionMatrix, emissionArray, 
-      model$initialProbs, obsArray)
+  
+  if(model$numberOfChannels == 1){
+    model$observations <- list(model$observations)
+    model$emissionMatrix <- list(model$emissionMatrix)
   }
-  dimnames(out)<-list("state" = model$stateNames,"time" = 1:model$lengthOfSequences)
+  
+  
+  obsArray<-array(0,c(model$numberOfSequences,model$lengthOfSequences,model$numberOfChannels))
+  for(i in 1:model$numberOfChannels){
+    obsArray[,,i]<-data.matrix(model$observations[[i]])-1
+    obsArray[,,i][obsArray[,,i]>model$numberOfSymbols[i]]<-model$numberOfSymbols[i]
+  }    
+  storage.mode(obsArray)<-"integer"
+  emissionArray<-array(1,c(model$numberOfStates,max(model$numberOfSymbols)+1,model$numberOfChannels))
+  for(i in 1:model$numberOfChannels)
+    emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
+  
+  fw <- forward(model$transitionMatrix, emissionArray, 
+    model$initialProbs, obsArray)
+  bw <- backward(model$transitionMatrix, emissionArray, obsArray)
+  ll <- logLikHMM(model$transitionMatrix, emissionArray, 
+    model$initialProbs, obsArray)
+  out <- fw + bw - ll
+  dimnames(out)<-list("state" = model$stateNames,"time" = 1:model$lengthOfSequences, "sequence" = 1:model$numberOfSequences)
   out
 }

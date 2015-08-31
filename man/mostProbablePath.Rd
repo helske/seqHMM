@@ -82,7 +82,7 @@ emissionMatrix=list(B_child, B_marr, B_left),
 initialProbs=initialProbs)
 
 # Fitting hidden Markov model
-HMM <- fitHMM(bHMM, em.control=list(maxit=100,reltol=1e-8), itnmax=10000, method="BFGS")
+HMM <- fitHMM(bHMM)
 
 # Computing the most probable paths
 mpp <- mostProbablePath(HMM$model)$mpp

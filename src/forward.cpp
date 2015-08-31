@@ -15,29 +15,32 @@ using namespace Rcpp;
 NumericVector forward(NumericVector transitionMatrix, NumericVector emissionArray, 
 NumericVector initialProbs, IntegerVector obsArray) {  
   
-  IntegerVector eDims = emissionArray.attr("dim"); //m,p
-  IntegerVector oDims = obsArray.attr("dim"); //k,n
+  IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
+  IntegerVector oDims = obsArray.attr("dim"); //k,n,r
   
-  arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k  
+  arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k
   
   arma::colvec init(initialProbs.begin(),eDims[0],true);
   arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0],true);
-  arma::mat emission(emissionArray.begin(), eDims[0], eDims[1],true);
-  arma::Mat<int> obs(obsArray.begin(), oDims[0], oDims[1],false);
+  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2],true);
+  arma::Cube<int> obs(obsArray.begin(), oDims[0], oDims[1], oDims[2],false);
+  
   
   transition = log(transition); 
   emission = log(emission); 
   init = log(init); 
-  
   double sumtmp;
   double tmp;
   double neginf = -arma::math::inf();
   
-  for(int k = 0; k < oDims[0]; k++){    
+  for(int k = 0; k < oDims[0]; k++){
     
     for(int i=0; i < eDims[0]; i++){      
-      alpha(i,0,k) = init(i)+emission(i,obs(k,0));
-    }  
+      alpha(i,0,k) = init(i);
+      for(int r = 0; r < oDims[2]; r++){
+        alpha(i,0,k) += emission(i,obs(k,0,r),r);
+      }
+    }   
     
     for(int t = 1; t < oDims[1]; t++){  
       for(int i = 0; i < eDims[0]; i++){
@@ -47,9 +50,13 @@ NumericVector initialProbs, IntegerVector obsArray) {
           if(tmp > neginf){
             sumtmp = logSumExp(sumtmp,tmp);
           }
-        }        
-        alpha(i,t,k) = sumtmp + emission(i,obs(k,t));
-      }
+        }
+        
+        for(int r = 0; r < oDims[2]; r++){
+          sumtmp += emission(i,obs(k,t,r),r);
+        }
+        alpha(i,t,k) = sumtmp;
+      }      
     }
     
   }

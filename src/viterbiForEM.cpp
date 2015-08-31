@@ -11,7 +11,7 @@ using namespace Rcpp;
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
-void viterbiForEM(arma::mat& transition, arma::mat& emission, arma::vec& init, arma::imat& obs, 
+void viterbiForEM(arma::mat& transition, arma::cube& emission, arma::vec& init, arma::icube& obs, 
   arma::vec& logp, arma::umat& q) {  
   
   
@@ -20,14 +20,21 @@ void viterbiForEM(arma::mat& transition, arma::mat& emission, arma::vec& init, a
   
   for(int k=0; k<obs.n_rows; k++){
     
-    delta.col(0) = init+emission.col(obs(k,0));
+    delta.col(0) = init;
+    for(int r = 0; r < emission.n_slices; r++){
+      delta.col(0) += emission.slice(r).col(obs(k,0,r));
+    }
+    
     
     phi.col(0).zeros();
     
     for(int t=1; t<obs.n_cols; t++){
       for(int j=0; j<emission.n_rows; j++){
         (delta.col(t-1)+transition.col(j)).max(phi(j,t));
-        delta(j,t) = delta(phi(j,t),t-1)+transition(phi(j,t),j)+emission(j,obs(k,t));
+        delta(j,t) = delta(phi(j,t),t-1) + transition(phi(j,t),j);
+        for(int r = 0; r < emission.n_slices; r++){
+        delta(j,t) += emission(j,obs(k,t,r),r);
+        }
       }        
     }
     delta.col(obs.n_cols-1).max(q(k,obs.n_cols-1));

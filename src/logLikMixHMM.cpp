@@ -16,44 +16,49 @@ NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissio
 NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, 
 NumericMatrix X_, IntegerVector numberOfStates) {  
   
-  IntegerVector eDims = emissionArray.attr("dim"); //m,p
-  IntegerVector oDims = obsArray.attr("dim"); //k,n  
   
-  arma::colvec init(initialProbs.begin(),eDims[0]);
-  arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0]);
-  arma::mat emission(emissionArray.begin(), eDims[0], eDims[1]);
-  arma::Mat<int> obs(obsArray.begin(), oDims[0], oDims[1]);
-  
-  double tmp;
-  arma::vec alpha(eDims[0]); //m,n,k
-  arma::vec alphatmp(eDims[0]); //m,n,k
+  IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
+  IntegerVector oDims = obsArray.attr("dim"); //k,n,r
   
   NumericVector ll(oDims[0]);  
-  
   int q = coefs.nrow();
   arma::mat coef(coefs.begin(),q,coefs.ncol());
   coef.col(0).zeros();
   arma::mat X(X_.begin(),oDims[0],q);
-  
   arma::mat lweights = exp(X*coef).t();
   if(!lweights.is_finite()){
     return wrap(-std::numeric_limits<double>::max());
+    
   }
   lweights.each_row() /= sum(lweights,0);
-  lweights = log(lweights);   
+  arma::colvec init(initialProbs.begin(),eDims[0]);
+  arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0]);
+  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2]);
+  arma::Cube<int> obs(obsArray.begin(), oDims[0], oDims[1], oDims[2]);
+  
+  arma::vec alpha(eDims[0]); //m,n,k
+  arma::vec alphatmp(eDims[0]); //m,n,k  
+  double tmp;
+  
+  
+  lweights = log(lweights); 
   transition = log(transition); 
   emission = log(emission); 
   init = log(init); 
   
-  double sumtmp;  
-  double neginf = -arma::math::inf();  
+  double sumtmp; 
+  double neginf = -arma::math::inf();   
   
   arma::vec initk(eDims[0]);
   
   for(int k = 0; k < oDims[0]; k++){    
     initk = init + reparma(lweights.col(k),numberOfStates);
-    
-    alpha = initk+emission.col(obs(k,0));
+    for(int i=0; i < eDims[0]; i++){      
+      alpha(i) = initk(i);
+      for(int r = 0; r < oDims[2]; r++){
+        alpha(i) += emission(i,obs(k,0,r),r);
+      }
+    }    
     
     for(int t = 1; t < oDims[1]; t++){  
       for(int i = 0; i < eDims[0]; i++){
@@ -63,11 +68,17 @@ NumericMatrix X_, IntegerVector numberOfStates) {
           if(tmp > neginf){
             sumtmp = logSumExp(sumtmp,tmp);
           }
-        }        
-        alphatmp(i) = sumtmp + emission(i,obs(k,t));
+        }
+        
+        for(int r = 0; r < oDims[2]; r++){
+          sumtmp += emission(i,obs(k,t,r),r);
+        }
+        alphatmp(i) = sumtmp;
       }
       alpha = alphatmp;
+      
     }
+    
     
     tmp = neginf;
     for(int i = 0; i < eDims[0]; i++){
@@ -75,10 +86,10 @@ NumericMatrix X_, IntegerVector numberOfStates) {
         tmp = logSumExp(alpha(i),tmp); 
       }
     }
-    ll(k)= tmp;
-  }    
+    ll(k) = tmp;    
+    
+  }  
   
   return ll;
-  
 }
 

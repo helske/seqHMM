@@ -93,72 +93,48 @@ mostProbablePath<-function(model){
     mix<-TRUE
   } else mix <- FALSE
   
-  model$initialProbs <- log(model$initialProbs)
- # model$initialProbs[!is.finite(model$initialProbs)]<- -0.1*.Machine$double.xmax
-  model$transitionMatrix <- log(model$transitionMatrix)
- # model$transitionMatrix[!is.finite(model$transitionMatrix)]<- -0.1*.Machine$double.xmax
-  if(model$numberOfChannels==1){
-    
-    model$emissionMatrix <- log(model$emissionMatrix)
- #   model$emissionMatrix[!is.finite(model$emissionMatrix)]<- -0.1*.Machine$double.xmax
-    obsArray<-data.matrix(model$observations)-1
-    obsArray[obsArray>model$numberOfSymbols]<-model$numberOfSymbols
-    storage.mode(obsArray)<-"integer"
-    if(mix){
-      out<-viterbix(model$transitionMatrix, cbind(model$emissionMatrix,0), 
-                      model$initialProbs, obsArray, model$beta, 
-                      model$X, model$numberOfStatesInClusters)
-    } else{
-      out<-viterbi(model$transitionMatrix, cbind(model$emissionMatrix,0), 
-                   model$initialProbs, obsArray)
-    }
-    if(model$numberOfSequences==1){
-      mpp<-t(rownames(model$transitionMatrix)[out$q+1])
-    }else{
-      mpp<-apply(out$q+1,2,function(x) rownames(model$transitionMatrix)[x])
-    }
-    mpp<-seqdef(mpp,alphabet=model$stateNames,
-                id=rownames(model$obs),
-                start=attr(model$obs,"start"),
-                xtstep=attr(model$obs,"xtstep"))
-  } else {
-    model$emissionMatrix<-lapply(model$emissionMatrix,function(x){
-      x<-log(x)
-   #   x[!is.finite(x)]<- -0.1*.Machine$double.xmax
-  #    x
-    })
-    obsArray<-array(0,c(model$numberOfSequences,model$lengthOfSequences,model$numberOfChannels))
-    for(i in 1:model$numberOfChannels){
-      obsArray[,,i]<-data.matrix(model$observations[[i]])-1
-      obsArray[,,i][obsArray[,,i]>model$numberOfSymbols[i]]<-model$numberOfSymbols[i]
-    }       
-    storage.mode(obsArray)<-"integer"
-    
-    emissionArray<-array(0,c(model$numberOfStates,max(model$numberOfSymbols)+1,model$numberOfChannels))
-    for(i in 1:model$numberOfChannels)
-      emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
-    
-    if(mix){
-      out<-viterbiMCx(model$transitionMatrix, emissionArray, 
-                        model$initialProbs, obsArray, model$beta, 
-                        model$X, model$numberOfStatesInClusters)
-    } else{
-      out<-viterbiMC(model$transitionMatrix, emissionArray, 
-                     model$initialProbs, obsArray)
-    }
-    
-      
-    if(model$numberOfSequences==1){
-      mpp<-t(model$stateNames[out$q+1])
-    }else{
-      mpp<-apply(out$q+1,2,function(x) model$stateNames[x])
-    }
-    mpp<-seqdef(mpp,alphabet=model$stateNames,
-                id=rownames(model$obs[[1]]),
-                start=attr(model$obs[[1]],"start"),
-                xtstep=attr(model$obs[[1]],"xtstep"))
+  
+  if(model$numberOfChannels == 1){
+    model$observations <- list(model$observations)
+    model$emissionMatrix <- list(model$emissionMatrix)
   }
-
+  
+  
+  model$initialProbs <- log(model$initialProbs)
+  model$transitionMatrix <- log(model$transitionMatrix)
+  
+  obsArray<-array(0,c(model$numberOfSequences,model$lengthOfSequences,model$numberOfChannels))
+  for(i in 1:model$numberOfChannels){
+    obsArray[,,i]<-data.matrix(model$observations[[i]])-1
+    obsArray[,,i][obsArray[,,i]>model$numberOfSymbols[i]]<-model$numberOfSymbols[i]
+  }       
+  storage.mode(obsArray)<-"integer"
+  
+  emissionArray<-array(0,c(model$numberOfStates,max(model$numberOfSymbols)+1,model$numberOfChannels))
+  for(i in 1:model$numberOfChannels)
+    emissionArray[,1:model$numberOfSymbols[i],i] <- log(model$emissionMatrix[[i]])
+  
+  if(mix){
+    out<-viterbix(model$transitionMatrix, emissionArray, 
+      model$initialProbs, obsArray, model$beta, 
+      model$X, model$numberOfStatesInClusters)
+  } else{
+    out<-viterbi(model$transitionMatrix, emissionArray, 
+      model$initialProbs, obsArray)
+  }
+  
+  
+  if(model$numberOfSequences==1){
+    mpp<-t(model$stateNames[out$q+1])
+  }else{
+    mpp<-apply(out$q+1,2,function(x) model$stateNames[x])
+  }
+  mpp<-seqdef(mpp,alphabet=model$stateNames,
+    id=rownames(model$obs[[1]]),
+    start=attr(model$obs[[1]],"start"),
+    xtstep=attr(model$obs[[1]],"xtstep"))
+  
+  
   if(mix==TRUE){
     gr <- sub("^.*?_","",mpp[,1])
     gr <- factor(gr, levels=1:model$numberOfClusters, labels=model$clusterNames)
