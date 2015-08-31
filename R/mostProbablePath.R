@@ -88,6 +88,7 @@
 
 mostProbablePath<-function(model){
   
+  ll <- logLik(model, partials = TRUE)
   if(inherits(model,"mixHMModel")){
     model <- combineModels(model)
     mix<-TRUE
@@ -134,11 +135,30 @@ mostProbablePath<-function(model){
     start=attr(model$obs[[1]],"start"),
     xtstep=attr(model$obs[[1]],"xtstep"))
   
+  browser()
   
   if(mix==TRUE){
     gr <- sub("^.*?_","",mpp[,1])
     gr <- factor(gr, levels=1:model$numberOfClusters, labels=model$clusterNames)
-    list(mpp=mpp, cluster=gr, logP=out$logp)
+    
+    fw <- forwardProbs(model)[,model$lengthOfSequences,]
+    clP <- vector("list", model$numberOfClusters)
+    p <- 0
+
+    for(i in 1:model$numberOfClusters){
+      clP[[i]] <- colSums(exp(fw[(p+1):HMM1$model$numberOfStates[i],] - 
+                                rep(ll, each = HMM1$model$numberOfStates[i])))
+      p <- p + HMM1$model$numberOfStates[i]
+    }
+    clProbs <- matrix(NA, nrow = model$numberOfClusters, ncol = model$numberOfClusters)
+    rownames(clProbs) <- colnames(clProbs) <- model$clusterNames
+    for(i in 1:model$numberOfClusters){
+      for(j in 1:model$numberOfClusters){
+        clProbs[i,j] <- mean(clP[[j]][, gr == model$clusterNames[i]])
+      }
+    }
+    
+    list(mpp=mpp, cluster=gr, classification_probabilities = clProbs, log_prob=out$logp)
   }else{
     list(mpp=mpp, logP=out$logp)
   }
