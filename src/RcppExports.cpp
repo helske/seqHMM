@@ -157,7 +157,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // objectivex
-NumericVector objectivex(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols, NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates);
+List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols, NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates);
 RcppExport SEXP seqHMM_objectivex(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP transNZSEXP, SEXP emissNZSEXP, SEXP initNZSEXP, SEXP nSymbolsSEXP, SEXP coefsSEXP, SEXP X_SEXP, SEXP numberOfStatesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;

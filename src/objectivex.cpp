@@ -4,7 +4,7 @@ using namespace Rcpp;
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
-NumericVector objectivex(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
+List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
   IntegerVector obsArray, IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols,
   NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates) { 
   
@@ -20,17 +20,17 @@ NumericVector objectivex(NumericVector transitionMatrix, NumericVector emissionA
   arma::icube BNZ(emissNZ.begin(), eDims[0], eDims[1]-1,eDims[2],false);
   arma::ivec INZ(initNZ.begin(), eDims[0],false);
   
-  arma::vec grad(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ),arma::fill::zeros);
+  
   
   int q = coefs.nrow();
+  arma::vec grad(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ) + (numberOfStates.size()-1)*q ,arma::fill::zeros);
   arma::mat coef(coefs.begin(),q,numberOfStates.size());
   coef.col(0).zeros();
   arma::mat X(X_.begin(),oDims[0],q);
-  
   arma::mat lweights = exp(X*coef).t();
   if(!lweights.is_finite()){
     grad.fill(-std::numeric_limits<double>::max());
-    return wrap(grad);
+    return List::create(Named("objective") = std::numeric_limits<double>::max(), Named("gradient") = wrap(grad));
   }
   arma::rowvec sumweights = sum(lweights,0);
   
@@ -67,34 +67,37 @@ NumericVector objectivex(NumericVector transitionMatrix, NumericVector emissionA
   }
   
   int countgrad = 0;
-
+  IntegerVector cumsumstate = cumsum(numberOfStates);
+  
   // transitionMatrix
-  arma::vec gradArow(eDims[0]);
-  arma::mat gradA(eDims[0],eDims[0]);
-  for(int i = 0; i < eDims[0]; i++){
-    arma::uvec ind = arma::find(ANZ.row(i));
-    
-    if(ind.n_elem>0){ 
-      gradArow.zeros();
-      gradA.eye();
-      gradA.each_row() -= transition.row(i);
-      gradA.each_col() %= transition.row(i).t();
+  for(unsigned int jj = 0; jj < numberOfStates.size(); jj++){
+    arma::vec gradArow(numberOfStates(jj));
+    arma::mat gradA(numberOfStates(jj),numberOfStates(jj));
+    for(int i = 0; i < numberOfStates(jj); i++){
+      arma::uvec ind = arma::find(ANZ.row(cumsumstate(jj)-numberOfStates(jj)+i).subvec(cumsumstate(jj)-numberOfStates(jj),cumsumstate(jj)-1));  
       
-      for(int k = 0; k < oDims[0]; k++){
-        for(int t = 0; t < (oDims[1]-1); t++){
-          for(int j = 0; j < eDims[0]; j++){ 
-            tmp = 0.0;
-            for(int r = 0; r < oDims[2]; r++){
-              tmp += emissionLog(j,obs(k,t+1,r),r);
+      if(ind.n_elem>0){ 
+        gradArow.zeros();
+        gradA.eye();
+        gradA.each_row() -= transition.row(cumsumstate(jj)-numberOfStates(jj)+i).subvec(cumsumstate(jj)-numberOfStates(jj),cumsumstate(jj)-1);
+        gradA.each_col() %= transition.row(cumsumstate(jj)-numberOfStates(jj)+i).subvec(cumsumstate(jj)-numberOfStates(jj),cumsumstate(jj)-1).t();
+        
+        for(int k = 0; k < oDims[0]; k++){
+          for(int t = 0; t < (oDims[1]-1); t++){
+            for(int j = 0; j < numberOfStates(jj); j++){ 
+              tmp = 0.0;
+              for(int r = 0; r < oDims[2]; r++){
+                tmp += emissionLog(cumsumstate(jj)-numberOfStates(jj)+j,obs(k,t+1,r),r);
+              }
+              gradArow(j) += exp(alpha(cumsumstate(jj)-numberOfStates(jj)+i,t,k) + tmp + beta(cumsumstate(jj)-numberOfStates(jj)+j,t+1,k) - ll(k)); 
             }
-            gradArow(j) += exp(alpha(i,t,k) + tmp + beta(j,t+1,k) - ll(k)); 
+            
           }
-          
         }
+        gradArow = gradA * gradArow;
+        grad.subvec(countgrad,countgrad+ind.n_elem-1) = gradArow.rows(ind);
+        countgrad += ind.n_elem;
       }
-      gradArow = gradA * gradArow;
-      grad.subvec(countgrad,countgrad+ind.n_elem-1) = gradArow.rows(ind);
-      countgrad += ind.n_elem;
     }
   }
   // emissionMatrix
@@ -139,50 +142,103 @@ NumericVector objectivex(NumericVector transitionMatrix, NumericVector emissionA
       }
     }
   }
-  // InitProbs
-  arma::uvec ind = arma::find(INZ); 
-  if(ind.n_elem>0){
-    arma::vec gradIrow(eDims[0]);
-    arma::mat gradI(eDims[0],eDims[0]);
-    
-    gradIrow.zeros();
-    gradI.zeros();
-    gradI.eye();
-    gradI.each_row() -= init.t();
-    gradI.each_col() %= init;
-    for(int k = 0; k < oDims[0]; k++){
-      for(int j = 0; j < eDims[0]; j++){ 
-        tmp = 0.0;
-        for(int r = 0; r < oDims[2]; r++){
-          tmp += emissionLog(j,obs(k,0,r),r);
+  
+  for(unsigned int i = 0; i < numberOfStates.size(); i++){
+    arma::uvec ind = arma::find(INZ.subvec(cumsumstate(i)-numberOfStates(i),cumsumstate(i)-1));  
+    if(ind.n_elem>0){     
+      arma::vec gradIrow(numberOfStates(i),arma::fill::zeros);  
+      for(unsigned int j = 0; j < numberOfStates(i); j++){        
+        for(int k = 0; k < oDims[0]; k++){ 
+          tmp = 0.0;
+          for(int r=0; r < oDims[2]; r++){
+            tmp += emissionLog(cumsumstate(i)-numberOfStates(i)+j,obs(k,0,r),r);
+          }
+          gradIrow(j) += exp(tmp + beta(cumsumstate(i)-numberOfStates(i)+j,0,k)-ll(k)+lweights(i,k));           
         }
-        gradIrow(j) += exp(tmp + beta(j,0,k) - ll(k) + lweights(j,k)); 
+      }
+      arma::mat gradI(numberOfStates(i),numberOfStates(i),arma::fill::zeros);
+      gradI.eye();
+      gradI.each_row() -= init.subvec(cumsumstate(i)-numberOfStates(i),cumsumstate(i)-1).t();
+      gradI.each_col() %= init.subvec(cumsumstate(i)-numberOfStates(i),cumsumstate(i)-1);
+      gradIrow = gradI * gradIrow;
+      grad.subvec(countgrad,countgrad+ind.n_elem-1) = gradIrow.rows(ind);
+      countgrad += ind.n_elem;
+    }
+  }
+
+  
+//     arma::vec gradBetarow(numberOfStates.size());
+//     arma::mat gradBeta(numberOfStates.size(),numberOfStates.size());
+//     
+//     for(int k = 0; k < oDims[0]; k++){
+//       gradBetarow.zeros();
+//       gradBeta.zeros();
+//       gradBeta.each_col() -= exp(lweights.col(k));
+//       gradBeta.each_row() %= exp(lweights.col(k).t());
+//       gradBeta.diag() += 1.0;
+//       
+//       for(unsigned int i = 0; i < numberOfStates.size(); i++){  
+//         arma::vec tmpvec(numberOfStates(i));
+//         tmpvec.zeros();
+//         for(int r=0; r < oDims[2]; r++){
+//           tmpvec += emissionLog.slice(r).col(obs(k,0,r)).subvec(cumsumstate(i)-numberOfStates(i),cumsumstate(i)-1);
+//         }
+//         gradBetarow(i) = arma::accu(exp(tmpvec+beta.slice(k).col(0).subvec(cumsumstate(i)-numberOfStates(i),cumsumstate(i)-1) - ll(k) 
+//           + initk(i,k)));
+//         //  arma::accu(exp(alpha.slice(k).col(oDims[1]-1).subvec(cumsumstate(i)-numberOfStates(i),cumsumstate(i)-1) - lweights(i,k)));   
+//         
+//       }
+//       
+//       
+//       
+//       //     for(unsigned int i = 0; i < numberOfStates.size(); i++){    
+//       //      // for(int k = 0; k < oDims[0]; k++){ 
+//       // //         tmpvec.zeros();
+//       // //         for(int r=0; r < oDims[2]; r++){
+//       // //           tmpvec += emissionLog.slice(r).col(obs(k,0,r));
+//       // //         }
+//       //         gradBetarow(i) = 
+//       //           arma::accu(exp(alpha.slice(k).col(oDims[1]-1).subvec(cumsumstate(i)-numberOfStates(i),cumsumstate(i)-1) - ll(k)));            //arma::accu(exp(tmpvec + beta.slice(k).col(0) - ll(k) + lweights(i,k)));           
+//       //      // }
+//       //     }
+//       //     for(unsigned int i = 0; i < numberOfStates.size(); i++){
+//       //       tmp = 0.0;
+//       //       for(int r=0; r < oDims[2]; r++){
+//       //         tmp += emissionLog(i,obs(k,0,r),r);
+//       //       } 
+//       //       //exp(tmp+beta(i,0,k)-ll(k)+initk(i,k))
+//       //       gradBetarow(i) = arma::accu(exp(alpha.slice(k).col(oDims[1]-1).subvec(cumsumstate(i)-numberOfStates(i),cumsumstate(i)-1)));
+//       //     }
+//       if(k==1){
+//         Rcout<<gradBeta<<std::endl;
+//         Rcout<<gradBetarow<<std::endl;
+//         Rcout<<X.row(k).t()<<std::endl;
+//       }
+//       
+//       gradBetarow.subvec(1,numberOfStates.size()-1) = gradBeta.rows(1,numberOfStates.size()-1) * gradBetarow;
+//       grad.subvec(countgrad,grad.n_elem-1) += kron(gradBetarow.subvec(1,numberOfStates.size()-1),X.row(k).t());
+//       if(k==1){
+//         Rcout<<gradBetarow<<std::endl;
+//         Rcout<<grad.subvec(countgrad,grad.n_elem-1)<<std::endl;
+//       }
+//     } 
+double tmp2;
+  for(unsigned int jj = 1; jj < numberOfStates.size(); jj++){
+    for(int k = 0; k < oDims[0]; k++){
+      for(unsigned int j = 0; j < eDims[0]; j++){                
+        tmp = 0.0;
+        for(int r=0; r < oDims[2]; r++){
+          tmp += emissionLog(j,obs(k,0,r),r);
+        }        
+        if(j>=(cumsumstate(jj)-numberOfStates(jj)) & j<cumsumstate(jj)){
+          grad.subvec(countgrad+q*(jj-1),countgrad+q*jj-1) += 
+            exp(tmp+beta(j,0,k)-ll(k)+initk(j,k))*X.row(k).t()*(1.0 - exp(lweights(jj,k))); 
+        } else {
+          grad.subvec(countgrad+q*(jj-1),countgrad+q*jj-1) -= 
+            exp(tmp+beta(j,0,k)-ll(k)+initk(j,k))*X.row(k).t()*exp(lweights(jj,k));
+        }
       }
     }
-    gradIrow = gradI * gradIrow;
-    grad.subvec(countgrad,countgrad+ind.n_elem-1) = gradIrow.rows(ind);
-    countgrad += ind.n_elem;
   }
-  
-  
-  // beta
-  arma::vec gradBetarow(numberOfStates.size());
-  arma::mat gradBeta(numberOfStates.size(),numberOfStates.size());
-  IntegerVector cumsumstate = cumsum(numberOfStates);
-  for(int k = 0; k < oDims[0]; k++){
-    gradBetarow.zeros();
-    gradBeta.zeros();
-    gradBeta.each_col() -= lweights.col(k);
-    gradBeta.each_row() %= lweights.col(k).t();
-    gradBeta.diag() += 1.0;
-    
-    for(unsigned int i = 0; i < numberOfStates.size(); i++){
-      gradBetarow(i) = arma::accu(exp(alpha.slice(k).col(oDims[1]-1).subvec(cumsumstate(i)-numberOfStates(i),cumsumstate(i)-1)));
-    }
-    
-    gradBetarow = gradBeta * gradBetarow;
-    grad.subvec(countgrad,grad.n_elem-1) += kron(gradBetarow, X.col(k));
-  } 
-  
-  return wrap(grad);
+  return List::create(Named("objective") = -sum(ll), Named("gradient") = wrap(-grad));
 }

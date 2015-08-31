@@ -1,7 +1,7 @@
 #ifndef SEQHMM_H
 #define SEQHMM_H
 
-#define ARMA_NO_DEBUG
+//#define ARMA_NO_DEBUG
 #include <RcppArmadillo.h>
 
 double logSumExp(const double& x,const double& y);

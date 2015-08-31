@@ -33,7 +33,7 @@
 #'    \item{maxtime}{\code{60} (maximum run time in seconds)}
 #'}
 #' @param lb,ub Lower and upper bounds for parameters in Softmax parameterization. 
-#' Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)]. Used only in global optimization step.
+#' Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)]. Lower bound is used only in global optimization.
 #' @param local_control Optional list of additional arguments for 
 #'   \code{\link{nloptr}} argument \code{opts}. The default values are
 #'   \describe{
@@ -205,18 +205,19 @@
 #' # Only LBFGS
 #' HMM3 <- fitMixHMM(bmHMM, em_step = FALSE, global_step = FALSE, local_step = TRUE,
 #'   local_control = list(maxeval = 5000, maxtime = 0))
-#' HMM3$logLik # -3084.604
+#' HMM3$logLik # -3087.499373
 #' 
 #' # Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
 #' HMM4 <- fitMixHMM(bmHMM, em_step = FALSE, global_step = TRUE, local_step = TRUE, 
 #'   global_control = list(maxeval = 5000, maxtime = 0))
-#' HMM4$logLik # -3371.251
+#' HMM4$logLik # -3150.796
 #' 
 #' # As previously, but now we use ten iterations from EM algorithm for defining initial values and boundaries
 #' # Note smaller maxeval for global optimization
 #' HMM5 <- fitMixHMM(bmHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
-#'   em_control = list(maxeval = 10), global_control = list(maxeval = 1000, maxtime = 0))
-#' HMM5$logLik #-5403.383
+#'   em_control = list(maxeval = 10), global_control = list(maxeval = 1000, maxtime = 0),
+#'   local_control = list(maxeval = 500, maxtime = 0))
+#' HMM5$logLik #-3081.383
 #' }
 #' # Coefficients of covariates
 #' HMM1$model$beta
@@ -295,7 +296,7 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
       paramIP[[m]] <- setdiff(which(original_model$initialProbs[[m]]>0),maxIP[m])
       npIP[m] <- length(paramIP[[m]])
       initNZ[[m]]<-original_model$initialProbs[[m]]>0
-      initNZ[[m]][maxIP[m]]<-2
+      initNZ[[m]][maxIP[m]]<-0
     }
     initNZ<-unlist(initNZ)
     npIPAll <- sum(unlist(npIP))
@@ -308,12 +309,11 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
     paramTM <- paramTM[!(duplicated(paramTM)|duplicated(paramTM,fromLast=TRUE)),,drop=FALSE]
     npTM<-nrow(paramTM)
     transNZ<-model$transitionMatrix>0
-    transNZ[maxTM]<-2    
+    transNZ[maxTM]<-0    
     
     npBeta<-length(model$beta[,-1])
     model$beta[,1] <- 0
     
-    # Same for multichannel model  
     
     emissNZ<-lapply(model$emissionMatrix,function(i){
       x<-which(i>0,arr.ind=TRUE) 
@@ -334,7 +334,7 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
     emissNZ<-array(0,c(model$numberOfStates,max(model$numberOfSymbols),model$numberOfChannels))
     for(i in 1:model$numberOfChannels){
       emissNZ[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]] > 0
-      emissNZ[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-2
+      emissNZ[,1:model$numberOfSymbols[i],i][maxEM[[i]]]<-0
       
     }       
     
@@ -355,8 +355,6 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
     
     objectivef<-function(pars,model, estimate = TRUE){      
       
-      #if(any(!is.finite(exp(pars))))
-      #  return(.Machine$double.xmax)
       if(npTM>0){
         model$transitionMatrix[maxTM]<-maxTMvalue     
         model$transitionMatrix[paramTM]<-exp(pars[1:npTM])
@@ -382,25 +380,34 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
       model$initialProbs <- unlist(original_model$initialProbs)
       model$beta[,-1] <- pars[npTM+sum(npEM)+npIPAll+1:npBeta]
      
-      objectivex(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
-        transNZ, emissNZ, initNZ, model$numberOfSymbols, 
-        model$beta, model$X, model$numberOfStatesInClusters)
+      if(estimate){
+        objectivex(model$transitionMatrix, emissionArray, model$initialProbs, obsArray, 
+          transNZ, emissNZ, initNZ, model$numberOfSymbols, 
+          model$beta, model$X, model$numberOfStatesInClusters)
+      } else {
+        if(sum(npEM)>0){
+          for(i in 1:model$numberOfChannels){
+            model$emissionMatrix[[i]][]<-emissionArray[,1:model$numberOfSymbols[i],i]
+          }
+        }
+        model
+      }
+
       
     }
     
-    
-    
-    
     if(global_step){
-      
+     
       if(missing(lb)){
-        lb <- -10
+        lb <- c(rep(-10,length(initialvalues)-npBeta),rep(-150/apply(abs(model$X),2,max),model$numberOfClusters-1))
       }
       lb <- pmin(lb, 2*initialvalues)
       if(missing(ub)){
-        ub <- pmin(c(rep(500,length(initialvalues)-npBeta),rep(500/apply(abs(model$X),2,max),model$numberOfClusters-1)),
-          pmax(10, 2*initialvalues))
+        ub <- c(rep(10,length(initialvalues)-npBeta),rep(150/apply(abs(model$X),2,max),model$numberOfClusters-1))
+        #pmin(c(rep(250,length(initialvalues)-npBeta),rep(250/apply(abs(model$X),2,max),model$numberOfClusters-1)),
+        #  pmax(250, 2*initialvalues))
       }
+      ub <- pmax(ub, 2*initialvalues)
       if(is.null(global_control$maxeval)){
         global_control$maxeval <- 10000
       }
@@ -414,11 +421,12 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
         global_control$population <- 4*length(initialvalues)
       }
       
-      globalres<-nloptr(x0 = initialvalues, eval_f = likfn, eval_grad_f = gradfn, lb = lb, ub = ub,
-        opts=global_control, model=model, estimate = TRUE, ...)
+      globalres <- nloptr(x0 = initialvalues, eval_f = objectivef, lb = lb, ub = ub,
+        opts = global_control, model = model, estimate = TRUE, ...)
       initialvalues <- globalres$solution
-      model<-likfn(globalres$solution,model, FALSE)
+      model <- objectivef(globalres$solution, model, FALSE)
       ll <- -globalres$objective
+      
     } else globalres <- NULL
     
     if(local_step){
@@ -432,14 +440,12 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
         local_control$algorithm <- "NLOPT_LD_LBFGS"
         local_control$xtol_rel <- 1e-8
       }
-      ub <- pmin(c(rep(500,length(initialvalues)-npBeta),rep(500/apply(abs(model$X),2,max),model$numberOfClusters-1)),
-        pmax(500, 2*initialvalues))
-      browser()
-      localres <- nloptr(x0 = initialvalues, 
-        eval_f = likfn, eval_grad_f = gradfn,
-        opts = local_control, model = model, estimate = TRUE, 
-        ub = ub, ...)
-      model <- likfn(localres$solution,model, FALSE)
+      ub <- c(rep(10,length(initialvalues)-npBeta),rep(150/apply(abs(model$X),2,max),model$numberOfClusters-1))
+      ub <- pmax(ub, 2*initialvalues)
+     localres<-nloptr(x0 = initialvalues, eval_f = objectivef,
+        opts = local_control, model = model, estimate = TRUE, ub = ub, ...)
+      
+      model <- objectivef(localres$solution,model, FALSE)
       ll <- -localres$objective
     } else localres <- NULL
     
