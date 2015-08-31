@@ -3,10 +3,8 @@
 #' Function \code{fitHMM} estimates the initial state, transition and emission 
 #' probabilities of hidden Markov model. Initial values for estimation are taken from the 
 #' corresponding components of the model with preservation of original zero 
-#' probabilities.
-#' 
-#' By default, estimation start with EM algorithm and then switches to direct 
-#' numerical maximization.
+#' probabilities. By default, the estimation start with EM algorithm and then switches 
+#' to direct numerical maximization.
 #' 
 #' @export 
 #' @import nloptr
@@ -59,13 +57,28 @@
 #'   value of the Bayesian information criterion of the model, and 
 #'   \code{\link{plot.HMModel}} and \code{\link{ssplot}} for plotting 
 #'   HMModel objects.
-#' @details By default the \code{fitHMM} function uses only the \code{nloptr} function which 
-#'   uses the multilevel single linkage method for global optimization 
-#'   (\code{NLOPT_GD_MLSL} as \code{algorithm} in \code{global_control}). It performs 
-#'   a sequence of local optimizations from random starting points, by default using 
-#'   the BFGS algorithm (\code{NLOPT_LD_LBFGS} as \code{local_opts} in 
-#'   \code{global_control}). The user can set the maximum number of evaluations or 
-#'   limit the time used for the optimization.
+#' @details The fitting function provides three estimation steps: 1) EM algorithm, 
+#'   2) global optimization, and 3) local optimization. The user can call for one method 
+#'   or any combination of these steps, but should note that they are preformed in the 
+#'   above-mentioned order. The results from a former step are used as starting values 
+#'   in a latter.
+#' 
+#'   By default the \code{fitHMM} function starts with the EM algorithm,
+#'   uses the multilevel single-linkage method (MLSL) with the LDS modification 
+#'   for global optimization (\code{NLOPT_GD_MLSL_LDS} as \code{algorithm} in 
+#'   \code{global_control}), and finishes with LBFGS as the local optimizer. 
+#'   The MLSL method draws random starting points and performs a local optimization 
+#'   from each. The LDS modification uses low-discrepancy sequences instead of 
+#'   pseudo-random numbers as starting points and should improve the convergence rate. 
+#'   By default, \texttt{fitHMM} uses the BFGS algorithm as the local optimizer in the 
+#'   MLSL (\code{NLOPT_LD_LBFGS} as \code{local_opts} in \code{global_control}). 
+#'   In order to reduce the computation time spent on non-global optima, the 
+#'   convergence tolerance of the local optimizer is set relatively large. At step 3, 
+#'   a local optimization (BFGS by default) is run with a lower tolerance to find the 
+#'   optimum with high precision.
+#'   
+#'   Any method available in the \code{nloptr} function can be used for the global and 
+#'   local steps.
 #' @examples 
 #' require(TraMineR)
 #' 
