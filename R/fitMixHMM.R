@@ -440,7 +440,7 @@ fitMixHMM <- function(model, em_step = TRUE, global_step = TRUE, local_step = TR
         local_control$algorithm <- "NLOPT_LD_LBFGS"
         local_control$xtol_rel <- 1e-8
       }
-      ub <- c(rep(10,length(initialvalues)-npBeta),rep(150/apply(abs(model$X),2,max),model$numberOfClusters-1))
+      ub <- c(rep(300,length(initialvalues)-npBeta),rep(300/apply(abs(model$X),2,max),model$numberOfClusters-1))
       ub <- pmax(ub, 2*initialvalues)
      localres<-nloptr(x0 = initialvalues, eval_f = objectivef,
         opts = local_control, model = model, estimate = TRUE, ub = ub, ...)
