@@ -145,7 +145,7 @@
 #' plot(HMM$model)
 #' 
 #' # Modifying edge curvature
-#' plot(HMM2$model, edge.curved = c(0, -0.6, 0.6, 0.3, -0.6, 0.3, 0))
+#' plot(HMM$model, edge.curved = c(0, -0.6, 0.6, 0.3, -0.6, 0.3, 0))
 #' 
 #' #########################################
 #' 
