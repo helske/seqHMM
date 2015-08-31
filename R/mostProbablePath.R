@@ -135,8 +135,6 @@ mostProbablePath<-function(model){
     start=attr(model$obs[[1]],"start"),
     xtstep=attr(model$obs[[1]],"xtstep"))
   
-  browser()
-  
   if(mix==TRUE){
     gr <- sub("^.*?_","",mpp[,1])
     gr <- factor(gr, levels=1:model$numberOfClusters, labels=model$clusterNames)
