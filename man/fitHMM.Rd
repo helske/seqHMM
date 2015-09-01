@@ -84,7 +84,7 @@ The fitting function provides three estimation steps: 1) EM algorithm,
   The MLSL method draws random starting points and performs a local optimization
   from each. The LDS modification uses low-discrepancy sequences instead of
   pseudo-random numbers as starting points and should improve the convergence rate.
-  By default, \texttt{fitHMM} uses the BFGS algorithm as the local optimizer in the
+  By default, \code{fitHMM} uses the BFGS algorithm as the local optimizer in the
   MLSL (\code{NLOPT_LD_LBFGS} as \code{local_opts} in \code{global_control}).
   In order to reduce the computation time spent on non-global optima, the
   convergence tolerance of the local optimizer is set relatively large. At step 3,
