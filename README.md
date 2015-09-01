@@ -470,6 +470,7 @@ Parameter coefficients are stored in `beta`. The first cluster is the reference.
 ```
 The most probable cluster for each individual is determined by the most probable path of hidden states. It is computed with the `mostProbablePath` function. The most probable clusters are stored in `mpp$cluster` and `mpp$classification_probabilities` gives the probability of each cluster (in columns) by the most probable cluster (rows). For individuals assigned to cluster 1, the average probability for cluster 1 is 0.84, 0.16 for cluster 2, and close to 0 for cluster 3. The highest probability for the assigned cluster is 0.94 for cluster 3.
 
+```
 # Computing most probable paths
 mpp <- mostProbablePath(trMHMM)
 # Assigning colours to hidden states
@@ -484,6 +485,7 @@ mpp$classification_probabilities
 # Cluster 1 0.83738794 0.16213321 0.0004788443
 # Cluster 2 0.07874202 0.87207334 0.0491846416
 # Cluster 3 0.01403737 0.05066261 0.9353000274
+```
 
 ### Plotting MHMMs
 
