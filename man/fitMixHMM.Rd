@@ -50,7 +50,7 @@ Default is 1e-8.} }}
 }}
 
 \item{lb,ub}{Lower and upper bounds for parameters in Softmax parameterization.
-Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)]. Used only in global optimization step.}
+Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)]. Lower bound is used only in global optimization.}
 
 \item{...}{Additional arguments to nloptr}
 }
@@ -219,18 +219,19 @@ HMM2$logLik # -3081.383
 # Only LBFGS
 HMM3 <- fitMixHMM(bmHMM, em_step = FALSE, global_step = FALSE, local_step = TRUE,
   local_control = list(maxeval = 5000, maxtime = 0))
-HMM3$logLik # -3084.604
+HMM3$logLik # -3087.499373
 
 # Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
 HMM4 <- fitMixHMM(bmHMM, em_step = FALSE, global_step = TRUE, local_step = TRUE,
   global_control = list(maxeval = 5000, maxtime = 0))
-HMM4$logLik # -3371.251
+HMM4$logLik # -3150.796
 
 # As previously, but now we use ten iterations from EM algorithm for defining initial values and boundaries
 # Note smaller maxeval for global optimization
 HMM5 <- fitMixHMM(bmHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE,
-  em_control = list(maxeval = 10), global_control = list(maxeval = 1000, maxtime = 0))
-HMM5$logLik #-5403.383
+  em_control = list(maxeval = 10), global_control = list(maxeval = 1000, maxtime = 0),
+  local_control = list(maxeval = 500, maxtime = 0))
+HMM5$logLik #-3081.383
 }
 # Coefficients of covariates
 HMM1$model$beta
