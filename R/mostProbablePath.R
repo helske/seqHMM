@@ -8,10 +8,12 @@
 #' @param model Hidden Markov model of class \code{HMModel} or
 #'  mixture HMM of class \code{mixHMModel}.
 #' 
-#' @return List which contains the most probable paths of hidden states (mpp) 
-#'   given the observations, its log-probability (logP), and for mixture HMMs
-#'   also the most probable clusters. In a case of multiple subjects, the most 
-#'   probable path is computed independently for each subject.
+#' @return List which contains the most probable paths of hidden states (\code{mpp}) 
+#'   given the observations and the log-probability (\code{log_prob}). 
+#'   For mixture hidden Markov models also the most probable clusters (\code{clusters}) 
+#'   and a matrix of cluster probabilities (in columns) by the most probable cluster 
+#'   (in rows) (\code{classification_probabilities}). In a case of multiple 
+#'   subjects, the most probable path is computed independently for each subject.
 #'   
 #' @examples 
 #' require(TraMineR)
@@ -158,7 +160,7 @@ mostProbablePath<-function(model){
     
     list(mpp=mpp, cluster=gr, classification_probabilities = clProbs, log_prob=out$logp)
   }else{
-    list(mpp=mpp, logP=out$logp)
+    list(mpp=mpp, log_prob=out$logp)
   }
   
 }

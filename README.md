@@ -455,8 +455,10 @@ MHMM <- fitMixHMM(bMHMM)
 
 # Trim MHMM
 trMHMM <- trimHMM(MHMM$model, zerotol = 1e-04)
+```
 
-# Parameter coefficients for covariates (cluster 1 is the reference)
+Parameter coefficients are stored in `beta`. The first cluster is the reference.
+```
 # trMHMM$beta
 #                     Cluster 1    Cluster 2   Cluster 3
 # (Intercept)                 0 -23.39241097 64.04751144
@@ -466,6 +468,22 @@ trMHMM <- trimHMM(MHMM$model, zerotol = 1e-04)
 # sexwoman:birthyr            0  -0.01008529 -0.01725546
 # sexwoman:swissSwiss         0   0.23815091  0.54652612
 ```
+The most probable cluster for each individual is determined by the most probable path of hidden states. It is computed with the `mostProbablePath` function. The most probable clusters are stored in `mpp$cluster` and `mpp$classification_probabilities` gives the probability of each cluster (in columns) by the most probable cluster (rows). For individuals assigned to cluster 1, the average probability for cluster 1 is 0.84, 0.16 for cluster 2, and close to 0 for cluster 3. The highest probability for the assigned cluster is 0.94 for cluster 3.
+
+# Computing most probable paths
+mpp <- mostProbablePath(trMHMM)
+# Assigning colours to hidden states
+attr(mpp$mpp, "cpal") <- colorpalette[[14]]
+# Number of individuals in each cluster
+table(mpp$cluster)
+# Cluster 1 Cluster 2 Cluster 3 
+#       258      1236       281
+# Cluster probabilities by the most probable cluster
+mpp$classification_probabilities
+#            Cluster 1  Cluster 2    Cluster 3
+# Cluster 1 0.83738794 0.16213321 0.0004788443
+# Cluster 2 0.07874202 0.87207334 0.0491846416
+# Cluster 3 0.01403737 0.05066261 0.9353000274
 
 ### Plotting MHMMs
 
@@ -479,18 +497,8 @@ plot(trMHMM, interactive = TRUE)
 ![mixHMM2](https://github.com/helske/seqHMM/blob/master/Examples/mixHMM2.png)
 ![mixHMM3](https://github.com/helske/seqHMM/blob/master/Examples/mixHMM3.png)
 
-The most probable cluster for each individual is determined by the most probable path of hidden states. It is computed with the `mostProbablePath` function.
 
 ```
-# Computing most probable paths
-mpp <- mostProbablePath(trMHMM)
-# Assigning colours to hidden states
-attr(mpp$mpp, "cpal") <- colorpalette[[14]]
-# Number of individuals in each cluster
-table(mpp$cluster)
-# Cluster 1 Cluster 2 Cluster 3 
-#       258      1236       281 
-
 # Plotting observed sequences and most probable hidden states
 # Interactive plot, one cluster at a time
 mssplot(
