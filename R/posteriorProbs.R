@@ -9,34 +9,13 @@
 #' these are computed independently for each sequence.
 posteriorProbs<-function(model){
   
-  if(inherits(model,"mixHMModel")){
-    fw <- forwardProbs(model)[,model$lengthOfSequences,]
-    model <- combineModels(model)
-    mix<-TRUE
-  } else mix <- FALSE
+  fw <- forwardProbs(model)
+  bw <- backwardProbs(model)
+  ll <- logLik(model, partials = TRUE)
   
-  if(model$numberOfChannels == 1){
-    model$observations <- list(model$observations)
-    model$emissionMatrix <- list(model$emissionMatrix)
-  }
+  out <- fw + bw - array(rep(ll, each = 
+      sum(model$numberOfStates)*model$lengthOfSequences), c(sum(model$numberOfStates), model$lengthOfSequences, model$numberOfSequences))
   
-  obsArray<-array(0,c(model$numberOfSequences,model$lengthOfSequences,model$numberOfChannels))
-  for(i in 1:model$numberOfChannels){
-    obsArray[,,i]<-data.matrix(model$observations[[i]])-1
-    obsArray[,,i][obsArray[,,i]>model$numberOfSymbols[i]]<-model$numberOfSymbols[i]
-  }    
-  storage.mode(obsArray)<-"integer"
-  emissionArray<-array(1,c(model$numberOfStates,max(model$numberOfSymbols)+1,model$numberOfChannels))
-  for(i in 1:model$numberOfChannels)
-    emissionArray[,1:model$numberOfSymbols[i],i]<-model$emissionMatrix[[i]]
-  
-  fw <- forward(model$transitionMatrix, emissionArray, 
-    model$initialProbs, obsArray)
-  bw <- backward(model$transitionMatrix, emissionArray, obsArray)
-  ll <- logLikHMM(model$transitionMatrix, emissionArray, 
-    model$initialProbs, obsArray)
-  out <- fw + bw - ll
-  
-  dimnames(out)<-list("state" = model$stateNames,"time" = 1:model$lengthOfSequences, "sequence" = 1:model$numberOfSequences)
+  dimnames(out)<-list("state" = rownames(fw), "time" = 1:model$lengthOfSequences, "sequence" = 1:model$numberOfSequences)
   out
 }
