@@ -9,11 +9,16 @@
 #' these are computed independently for each sequence.
 posteriorProbs<-function(model){
   
+  if(inherits(model,"mixHMModel")){
+    fw <- forwardProbs(model)[,model$lengthOfSequences,]
+    model <- combineModels(model)
+    mix<-TRUE
+  } else mix <- FALSE
+  
   if(model$numberOfChannels == 1){
     model$observations <- list(model$observations)
     model$emissionMatrix <- list(model$emissionMatrix)
   }
-  
   
   obsArray<-array(0,c(model$numberOfSequences,model$lengthOfSequences,model$numberOfChannels))
   for(i in 1:model$numberOfChannels){
@@ -31,6 +36,7 @@ posteriorProbs<-function(model){
   ll <- logLikHMM(model$transitionMatrix, emissionArray, 
     model$initialProbs, obsArray)
   out <- fw + bw - ll
+  
   dimnames(out)<-list("state" = model$stateNames,"time" = 1:model$lengthOfSequences, "sequence" = 1:model$numberOfSequences)
   out
 }
