@@ -16,9 +16,9 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
   cex.axis = 1, ...)
 }
 \arguments{
-\item{x}{Mixture hidden Markov model object of class \code{mixHMModel}.}
+\item{x}{Mixture hidden Markov model object of class \code{mhmm}.}
 
-\item{ask}{If true and \code{which.plots} is NULL, \code{plot.mixHMModel} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}.}
+\item{ask}{If true and \code{which.plots} is NULL, \code{plot.mhmm} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}.}
 
 \item{which.plots}{The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots.}
 
@@ -126,7 +126,7 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
 
 \item{ylab}{Labels for the channels. A vector of names for each channel
   (observations). The default value \code{"auto"} uses the names provided in
-  \code{x$channelNames} if \code{x} is an HMModel object; otherwise the
+  \code{x$channelNames} if \code{x} is an hmm object; otherwise the
   number of the channel. \code{FALSE} prints no labels.}
 
 \item{hidden.states.title}{Optional label for the hidden state plot (in the
@@ -150,7 +150,7 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
 }
 \description{
 Function \code{mssplot} plots stacked sequence plots of observation sequences
-and/or most probable hidden state paths for each model of the \code{mixHMModel}
+and/or most probable hidden state paths for each model of the \code{mhmm}
 object (model chosen according to the most probable path).
 }
 \examples{
@@ -162,34 +162,34 @@ biofam <- biofam[1:500,]
 
 ## Building one channel per type of event left, children or married
 bf <- as.matrix(biofam[, 10:25])
-children <-  bf==4 | bf==5 | bf==6
-married <- bf == 2 | bf== 3 | bf==6
-left <- bf==1 | bf==3 | bf==5 | bf==6 | bf==7
+children <-  bf == 4 | bf == 5 | bf == 6
+married <- bf == 2 | bf == 3 | bf == 6
+left <- bf == 1 | bf == 3 | bf == 5 | bf == 6 | bf == 7
 
-children[children==TRUE] <- "Children"
-children[children==FALSE] <- "Childless"
+children[children == TRUE] <- "Children"
+children[children == FALSE] <- "Childless"
 # Divorced parents
-div <- bf[(rowSums(bf==7)>0 & rowSums(bf==5)>0) |
-            (rowSums(bf==7)>0 & rowSums(bf==6)>0),]
-children[rownames(bf) \%in\% rownames(div) & bf==7] <- "Children"
+div <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 5) > 0) |
+            (rowSums(bf == 7) > 0 & rowSums(bf == 6) > 0),]
+children[rownames(bf) \%in\% rownames(div) & bf == 7] <- "Children"
 
-married[married==TRUE] <- "Married"
-married[married==FALSE] <- "Single"
-married[bf==7] <- "Divorced"
+married[married == TRUE] <- "Married"
+married[married == FALSE] <- "Single"
+married[bf == 7] <- "Divorced"
 
-left[left==TRUE] <- "Left home"
-left[left==FALSE] <- "With parents"
+left[left == TRUE] <- "Left home"
+left[left == FALSE] <- "With parents"
 # Divorced living with parents (before divorce)
-wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &
-          rowSums(bf==5)==0 & rowSums(bf==6)==0) |
-         (rowSums(bf==7)>0 & rowSums(bf==4)>0 & rowSums(bf==3)==0 &
-          rowSums(bf==5)==0 &  rowSums(bf==6)==0),]
-left[rownames(bf) \%in\% rownames(wp) & bf==7] <- "With parents"
+wp <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 2) > 0 & rowSums(bf == 3) == 0 &
+          rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0) |
+         (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 & rowSums(bf == 3) == 0 &
+         rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0),]
+left[rownames(bf) \%in\% rownames(wp) & bf == 7] <- "With parents"
 
 ## Building sequence objects
-child.seq <- seqdef(children, start=15)
-marr.seq <- seqdef(married, start=15)
-left.seq <- seqdef(left, start=15)
+child.seq <- seqdef(children, start = 15)
+marr.seq <- seqdef(married, start = 15)
+left.seq <- seqdef(left, start = 15)
 
 ## Starting values for emission probabilities
 
@@ -198,37 +198,37 @@ alphabet(child.seq) # Checking for the order of observed states
 B1_child <- matrix(c(0.99, 0.01, # High probability for childless
                      0.99, 0.01,
                      0.99, 0.01,
-                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
+                     0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE)
 
 alphabet(marr.seq)
 B1_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
                     0.01, 0.01, 0.98,
                     0.01, 0.98, 0.01, # High probability for married
                     0.98, 0.01, 0.01), # High probability for divorced
-                    nrow=4, ncol=3, byrow=TRUE)
+                    nrow = 4, ncol = 3, byrow = TRUE)
 
 alphabet(left.seq)
 B1_left <- matrix(c(0.01, 0.99, # High probability for living with parents
                     0.99, 0.01, # High probability for having left home
                     0.99, 0.01,
-                    0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
+                    0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE)
 
 # Cluster 2
 B2_child <- matrix(c(0.99, 0.01, # High probability for childless
                      0.99, 0.01,
                      0.99, 0.01,
-                     0.01, 0.99), nrow=4, ncol=2, byrow=TRUE)
+                     0.01, 0.99), nrow = 4, ncol = 2, byrow = TRUE)
 
 B2_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
                     0.01, 0.01, 0.98,
                     0.01, 0.98, 0.01, # High probability for married
                     0.29, 0.7, 0.01),
-                   nrow=4, ncol=3, byrow=TRUE)
+                   nrow = 4, ncol = 3, byrow = TRUE)
 
 B2_left <- matrix(c(0.01, 0.99, # High probability for living with parents
                     0.99, 0.01,
                     0.99, 0.01,
-                    0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
+                    0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE)
 
 # Cluster 3
 B3_child <- matrix(c(0.99, 0.01, # High probability for childless
@@ -236,7 +236,7 @@ B3_child <- matrix(c(0.99, 0.01, # High probability for childless
                      0.01, 0.99,
                      0.99, 0.01,
                      0.01, 0.99,
-                     0.01, 0.99), nrow=6, ncol=2, byrow=TRUE)
+                     0.01, 0.99), nrow = 6, ncol = 2, byrow = TRUE)
 
 B3_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
                     0.01, 0.01, 0.98,
@@ -244,21 +244,21 @@ B3_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
                     0.01, 0.98, 0.01,
                     0.01, 0.98, 0.01, # High probability for married
                     0.98, 0.01, 0.01), # High probability for divorced
-                   nrow=6, ncol=3, byrow=TRUE)
+                   nrow = 6, ncol = 3, byrow = TRUE)
 
 B3_left <- matrix(c(0.01, 0.99, # High probability for living with parents
                     0.99, 0.01,
                     0.50, 0.50,
                     0.01, 0.99,
                     0.99, 0.01,
-                    0.99, 0.01), nrow=6, ncol=2, byrow=TRUE)
+                    0.99, 0.01), nrow = 6, ncol = 2, byrow = TRUE)
 
 # Initial values for transition matrices
 A1 <- matrix(c(0.8,   0.16, 0.03, 0.01,
                  0,    0.9, 0.07, 0.03,
                  0,      0,  0.9,  0.1,
                  0,      0,    0,    1),
-             nrow=4, ncol=4, byrow=TRUE)
+             nrow = 4, ncol = 4, byrow = TRUE)
 
 A2 <- matrix(c(0.8, 0.10, 0.05,  0.03, 0.01, 0.01,
                  0,  0.7,  0.1,   0.1, 0.05, 0.05,
@@ -266,28 +266,29 @@ A2 <- matrix(c(0.8, 0.10, 0.05,  0.03, 0.01, 0.01,
                  0,    0,    0,   0.9, 0.05, 0.05,
                  0,    0,    0,     0,  0.9,  0.1,
                  0,    0,    0,     0,    0,    1),
-             nrow=6, ncol=6, byrow=TRUE)
+             nrow = 6, ncol = 6, byrow = TRUE)
 
 # Initial values for initial state probabilities
-initialProbs1 <- c(0.9, 0.07, 0.02, 0.01)
-initialProbs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
+initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
+initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 
 # Creating covariate swiss
-biofam$swiss <- biofam$nat_1_02=="Switzerland"
-biofam$swiss[biofam$swiss==TRUE] <- "Swiss"
-biofam$swiss[biofam$swiss==FALSE] <- "Other"
+biofam$swiss <- biofam$nat_1_02 == "Switzerland"
+biofam$swiss[biofam$swiss == TRUE] <- "Swiss"
+biofam$swiss[biofam$swiss == FALSE] <- "Other"
 
 # Build mixture HMM
-bMHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq),
-                       transitionMatrix=list(A1,A1,A2),
-                       emissionMatrix=list(list(B1_child, B1_marr, B1_left),
-                                           list(B2_child, B2_marr, B2_left),
-                                           list(B3_child, B3_marr, B3_left)),
-                       initialProbs=list(initialProbs1, initialProbs1,
-                                         initialProbs2),
-                       formula=~sex*birthyr+sex*swiss, data=biofam,
-                       clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
-                       channelNames=c("Parenthood", "Marriage", "Left home"))
+bMHMM <- buildMixHMM(
+  observations = list(child.seq, marr.seq, left.seq),
+  transition_matrix = list(A1,A1,A2),
+  emission_matrix = list(list(B1_child, B1_marr, B1_left),
+                        list(B2_child, B2_marr, B2_left),
+                        list(B3_child, B3_marr, B3_left)),
+  initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
+  formula = ~ sex * birthyr + sex * swiss, data = biofam,
+  clusterNames = c("Cluster 1", "Cluster 2", "Cluster 3"),
+  channel_names = c("Parenthood", "Marriage", "Left home")
+  )
 
 
 \dontrun{
@@ -298,9 +299,9 @@ bMHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq),
 mssplot(bMHMM, which.plots=1)
 }
 \seealso{
-\code{\link{buildMixHMM}} and \code{\link{fitMixHMM}} for building and
+\code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building and
   fitting Hidden Markov models, \code{\link{mostProbablePath}} for
   computing the most probable paths (Viterbi paths) of hidden states, and
-  \code{\link{plot.mixHMModel}} for plotting parameters of \code{mixHMModel} objects.
+  \code{\link{plot.mhmm}} for plotting parameters of \code{mhmm} objects.
 }
 

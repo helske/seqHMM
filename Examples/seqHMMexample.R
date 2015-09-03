@@ -132,23 +132,23 @@ A <- matrix(c(0.9, 0.06, 0.03, 0.01,
               0,      0,    0,    1), nrow = 4, ncol = 4, byrow = TRUE)
 
 # Initial values for initial state probabilities
-initialProbs <- c(0.9, 0.07, 0.02, 0.01)
+initial_probs <- c(0.9, 0.07, 0.02, 0.01)
 
 # Building the hidden Markov model with initial parameter values 
-bHMM <- buildHMM(
+bHMM <- build_hmm(
   observations = list(marr.seq, child.seq, left.seq),
-  initialProbs = initialProbs, transitionMatrix = A, 
-  emissionMatrix = list(B_marr, B_child, B_left),
-  channelNames = c("Marriage", "Parenthood", "Left home")
+  initial_probs = initial_probs, transition_matrix = A, 
+  emission_matrix = list(B_marr, B_child, B_left),
+  channel_names = c("Marriage", "Parenthood", "Left home")
 )
 
 # Fitting the HMM (using only the default MLSL algorithm)
-HMM <- fitHMM(bHMM)
+HMM <- fit_hmm(bHMM)
 HMM$logLik
 
 # Fitting with EM followed by MLSL algorithm
 # Here leads to a better likelihood
-HMM <- fitHMM(bHMM, use_em = TRUE, use_nloptr = TRUE)
+HMM <- fit_hmm(bHMM, use_em = TRUE, use_nloptr = TRUE)
 HMM$logLik
 
 
@@ -204,7 +204,7 @@ BIC(HMM$model)
 
 
 # Trimming HMM
-trimmedHMM <- trimHMM(HMM$model, maxit = 100, zerotol = 1e-04)
+trimmedHMM <- trim_hmm(HMM$model, maxit = 100, zerotol = 1e-04)
 
 # Emission probabilities of the original HMM
 HMM$model$emiss
@@ -298,8 +298,8 @@ A2 <- matrix(c(0.8, 0.10, 0.05,  0.03, 0.01, 0.01,
              nrow = 6, ncol = 6, byrow = TRUE)
 
 # Starting values for initial state probabilities
-initialProbs1 <- c(0.9, 0.07, 0.02, 0.01)
-initialProbs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
+initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
+initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 
 # Creating covariate swiss
 bio$swiss <- bio$nat_1_02 == "Switzerland"
@@ -307,22 +307,22 @@ bio$swiss[bio$swiss == TRUE] <- "Swiss"
 bio$swiss[bio$swiss == FALSE] <- "Other"
 
 # Build MHMM
-bMHMM <- buildMixHMM(
+bMHMM <- build_mhmm(
   observations = list(marr.seq, child.seq, left.seq),
-  transitionMatrix = list(A1, A1, A2),
-  emissionMatrix = list(list(B1_marr, B1_child, B1_left), 
+  transition_matrix = list(A1, A1, A2),
+  emission_matrix = list(list(B1_marr, B1_child, B1_left), 
                         list(B2_marr, B2_child, B2_left),
                         list(B3_marr, B3_child, B3_left)),
-  initialProbs = list(initialProbs1, initialProbs1, initialProbs2),
+  initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
   formula = ~ sex * birthyr + sex * swiss, data = bio, 
-  clusterNames = c("Cluster 1", "Cluster 2", "Cluster 3"),
-  channelNames = c("Marriage", "Parenthood", "Left home")
+  cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
+  channel_names = c("Marriage", "Parenthood", "Left home")
 )
 
-MHMM <- fitMixHMM(bMHMM)
+MHMM <- fit_mhmm(bMHMM)
 
 # Trim MHMM
-trMHMM <- trimHMM(MHMM$model, zerotol = 1e-04)
+trMHMM <- trim_hmm(MHMM$model, zerotol = 1e-04)
 
 
 ### Plotting MHMMs
@@ -332,7 +332,7 @@ trMHMM <- trimHMM(MHMM$model, zerotol = 1e-04)
 plot(trMHMM, interactive = TRUE)
 
 # Computing most probable paths
-mpp <- mostProbablePath(trMHMM)
+mpp <- most_probable_path(trMHMM)
 
 # Assigning colours to hidden states
 attr(mpp$mpp, "cpal") <- colorpalette[[14]]

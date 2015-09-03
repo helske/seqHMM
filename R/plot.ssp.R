@@ -11,7 +11,8 @@
 #' @param ... Ignored.
 #'   
 #' @seealso \code{\link{ssp}} for defining the plot before using 
-#'   \code{plot.ssp}, \code{\link{ssplot}} for straight plotting of sspobjects, \code{\link{gridplot}} for plotting multiple ssp objects.
+#'   \code{plot.ssp}, \code{\link{ssplot}} for straight plotting of sspobjects, 
+#'   \code{\link{gridplot}} for plotting multiple ssp objects.
 #'   
 #' @examples 
 #' require(TraMineR)

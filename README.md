@@ -146,7 +146,7 @@ gridplot(list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=2, byrow=TRUE,
 
 ### Fitting hidden Markov models
 
-When fitting Hidden Markov models (HMMs), initial values for model parameters are first given to the `buildHMM` function. After that, the model is fitted with the `fitHMM` function using EM algorithm, direct numerical estimation, or a combination of both.
+When fitting Hidden Markov models (HMMs), initial values for model parameters are first given to the `build_hmm` function. After that, the model is fitted with the `fit_hmm` function using EM algorithm, direct numerical estimation, or a combination of both.
 
 ```
 # Initial values for emission matrices
@@ -178,24 +178,24 @@ A <- matrix(c(0.9, 0.06, 0.03, 0.01,
               0,      0,    0,    1), nrow = 4, ncol = 4, byrow = TRUE)
 
 # Initial values for initial state probabilities
-initialProbs <- c(0.9, 0.07, 0.02, 0.01)
+initial_probs <- c(0.9, 0.07, 0.02, 0.01)
 
 # Building the hidden Markov model with initial parameter values 
-bHMM <- buildHMM(
+bHMM <- build_hmm(
   observations = list(marr.seq, child.seq, left.seq),
-  initialProbs = initialProbs, transitionMatrix = A, 
-  emissionMatrix = list(B_marr, B_child, B_left),
-  channelNames = c("Marriage", "Parenthood", "Left home")
+  initial_probs = initial_probs, transition_matrix = A, 
+  emission_matrix = list(B_marr, B_child, B_left),
+  channel_names = c("Marriage", "Parenthood", "Left home")
   )
 
 # Fitting the HMM (using only the default MLSL algorithm)
-HMM <- fitHMM(bHMM)
+HMM <- fit_hmm(bHMM)
 HMM$logLik
 # -14889.37
 
 # Fitting with EM followed by MLSL algorithm
 # Here leads to a better likelihood
-HMM <- fitHMM(bHMM, use_em = TRUE, use_nloptr = TRUE)
+HMM <- fit_hmm(bHMM, use_em = TRUE, use_nloptr = TRUE)
 HMM$logLik
 # -14883.86
 
@@ -203,7 +203,7 @@ HMM$logLik
 
 ### Plotting hidden Markov models
 
-A simple `plot` method is used to show an `HMModel` object as a graph. It shows hidden states as pie charts (vertices), with emission probabilities as slices and transition probabilities as arrows (edges). Initial probabilities are shown below the pies.
+A simple `plot` method is used to show an `hmm` object as a graph. It shows hidden states as pie charts (vertices), with emission probabilities as slices and transition probabilities as arrows (edges). Initial probabilities are shown below the pies.
 
 ```
 # Plot HMM
@@ -276,70 +276,70 @@ BIC(HMM$model)
 
 ### Trimming HMMs
 
-The `trimHMM` function can be used to trim models by setting small probabilities to zero. Here the trimmed model led to model with slightly improved likelihood, so probabilities less than 0.01 could be set to zero.
+The `trim_hmm` function can be used to trim models by setting small probabilities to zero. Here the trimmed model led to model with slightly improved likelihood, so probabilities less than 0.01 could be set to zero.
 
 ```
-trimmedHMM <- trimHMM(HMM$model, maxit = 100, zerotol = 1e-04)
+trimmedHMM <- trim_hmm(HMM$model, maxit = 100, zerotol = 1e-04)
 # "1 iteration(s) used."
 # "Trimming improved log-likelihood, ll_trim-ll_orig = 5.57e-05"
 
 # Emission probabilities of the original HMM
 HMM$model$emiss
 # $Marriage
-#           symbolNames
-# stateNames     Divorced     Married       Single
-#          1 0.000000e+00 2.67246e-20 1.000000e+00
-#          2 2.306849e-45 8.27522e-12 1.000000e+00
-#          3 4.978004e-02 9.50220e-01 1.046861e-12
-#          4 1.802198e-02 9.49011e-01 3.296703e-02
+#           symbol_names
+# state_names     Divorced     Married       Single
+#           1 0.000000e+00 2.67246e-20 1.000000e+00
+#           2 2.306849e-45 8.27522e-12 1.000000e+00
+#           3 4.978004e-02 9.50220e-01 1.046861e-12
+#           4 1.802198e-02 9.49011e-01 3.296703e-02
 # 
 # $Parenthood
-#           symbolNames
-# stateNames    Childless     Children
-#          1 9.995067e-01 4.933051e-04
-#          2 1.000000e+00 5.280791e-14
-#          3 1.000000e+00 7.495200e-14
-#          4 1.684766e-08 1.000000e+00
+#           symbol_names
+# state_names    Childless     Children
+#           1 9.995067e-01 4.933051e-04
+#           2 1.000000e+00 5.280791e-14
+#           3 1.000000e+00 7.495200e-14
+#           4 1.684766e-08 1.000000e+00
 # 
 # $`Left home`
-#           symbolNames
-# stateNames    Left home With parents
-#          1 2.064574e-21 1.000000e+00
-#          2 1.000000e+00 1.730974e-15
-#          3 7.024774e-01 2.975226e-01
-#          4 1.000000e+00 8.557133e-53
+#           symbol_names
+# state_names    Left home With parents
+#           1 2.064574e-21 1.000000e+00
+#           2 1.000000e+00 1.730974e-15
+#           3 7.024774e-01 2.975226e-01
+#           4 1.000000e+00 8.557133e-53
 
 # Emission probabilities of the trimmed HMM
 trimmedHMM$emiss
 # trimmedHMM$emiss
 # $Marriage
-#           symbolNames
-# stateNames   Divorced  Married     Single
-#          1 0.00000000 0.000000 1.00000000
-#          2 0.00000000 0.000000 1.00000000
-#          3 0.04978004 0.950220 0.00000000
-#          4 0.01802198 0.949011 0.03296703
+#           symbol_names
+# state_names   Divorced  Married     Single
+#           1 0.00000000 0.000000 1.00000000
+#           2 0.00000000 0.000000 1.00000000
+#           3 0.04978004 0.950220 0.00000000
+#           4 0.01802198 0.949011 0.03296703
 # 
 # $Parenthood
-#           symbolNames
-# stateNames Childless     Children
-#          1 0.9995067 0.0004933051
-#          2 1.0000000 0.0000000000
-#          3 1.0000000 0.0000000000
-#          4 0.0000000 1.0000000000
+#           symbol_names
+# state_names Childless     Children
+#           1 0.9995067 0.0004933051
+#           2 1.0000000 0.0000000000
+#           3 1.0000000 0.0000000000
+#           4 0.0000000 1.0000000000
 # 
 # $`Left home`
-#           symbolNames
-# stateNames Left home With parents
-#          1 0.0000000    1.0000000
-#          2 1.0000000    0.0000000
-#          3 0.7024774    0.2975226
-#          4 1.0000000    0.0000000
+#           symbol_names
+# state_names Left home With parents
+#           1 0.0000000    1.0000000
+#           2 1.0000000    0.0000000
+#           3 0.7024774    0.2975226
+#           4 1.0000000    0.0000000
 ```
 
 ### Converting multichannel to single channel models and data
 
-The `MCtoSC` function converts a multichannel model into a single channel representation. E.g. the `plot` function for `HMModel` objects uses this type of conversion. The `seqHMM` package also includes a similar function `MCtoSCdata` for merging multiple state sequence objects.
+The `MCtoSC` function converts a multichannel model into a single channel representation. E.g. the `plot` function for `hmm` objects uses this type of conversion. The `seqHMM` package also includes a similar function `MCtoSCdata` for merging multiple state sequence objects.
 
 ```
 scHMM <- MCtoSC(HMM$model)
@@ -351,7 +351,7 @@ ssplot(scHMM, plots = "both", sortv = "from.end", sort.channel = 0,
 
 ### Mixture hidden Markov models
 
-A mixture hidden Markov model (MHMM) is, by definition, a mixture of HMMs that are fitted together. These are fitted and plotted with similar functions to ones presented before. Starting values are given as a list consisting of the parameter values for each cluster. The `buildMixHMM` function checks that the model is properly constructed before fitting with the `fitMixHMM`function. Trimming is called with the `trimHMM`.
+A mixture hidden Markov model (MHMM) is, by definition, a mixture of HMMs that are fitted together. These are fitted and plotted with similar functions to ones presented before. Starting values are given as a list consisting of the parameter values for each cluster. The `buildMixHMM` function checks that the model is properly constructed before fitting with the `fitMixHMM`function. Trimming is called with the `trim_hmm`.
 ```
 # Starting values for emission probabilities
 
@@ -430,8 +430,8 @@ A2 <- matrix(c(0.8, 0.10, 0.05,  0.03, 0.01, 0.01,
              nrow = 6, ncol = 6, byrow = TRUE)
 
 # Starting values for initial state probabilities
-initialProbs1 <- c(0.9, 0.07, 0.02, 0.01)
-initialProbs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
+initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
+initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 
 # Creating covariate swiss
 bio$swiss <- bio$nat_1_02 == "Switzerland"
@@ -441,20 +441,20 @@ bio$swiss[bio$swiss == FALSE] <- "Other"
 # Build MHMM
 bMHMM <- buildMixHMM(
   observations = list(marr.seq, child.seq, left.seq),
-  transitionMatrix = list(A1, A1, A2),
-  emissionMatrix = list(list(B1_marr, B1_child, B1_left), 
+  transition_matrix = list(A1, A1, A2),
+  emission_matrix = list(list(B1_marr, B1_child, B1_left), 
                         list(B2_marr, B2_child, B2_left),
                         list(B3_marr, B3_child, B3_left)),
-  initialProbs = list(initialProbs1, initialProbs1, initialProbs2),
+  initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
   formula = ~ sex * birthyr + sex * swiss, data = bio, 
-  clusterNames = c("Cluster 1", "Cluster 2", "Cluster 3"),
-  channelNames = c("Marriage", "Parenthood", "Left home")
+  cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
+  channel_names = c("Marriage", "Parenthood", "Left home")
   )
 
 MHMM <- fitMixHMM(bMHMM)
 
 # Trim MHMM
-trMHMM <- trimHMM(MHMM$model, zerotol = 1e-04)
+trMHMM <- trim_hmm(MHMM$model, zerotol = 1e-04)
 ```
 
 Parameter coefficients are stored in `beta`. The first cluster is the reference.

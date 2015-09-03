@@ -1,19 +1,19 @@
 #' Stacked Plots of Multichannel Sequences and/or Most Probable 
 #' Paths from Hidden Markov Models
 #' 
-#' Function \code{ssplot} plots stacked sequence plots of sequence object created with the \code{\link{seqdef}} function or observations and/or most probable paths of \code{HMModel} objects.
+#' Function \code{ssplot} plots stacked sequence plots of sequence object created with the \code{\link{seqdef}} function or observations and/or most probable paths of \code{hmm} objects.
 #' 
 #' 
 #' 
 #' @export
 #' 
-#' @param x Either hidden Markov model object of class \code{HMModel} or a 
+#' @param x Either hidden Markov model object of class \code{hmm} or a 
 #'   sequence object created with the \code{\link{seqdef}} function or a list of
 #'   sequence objects.
 #'   
 #'   
-#' @param mpp Output from \code{\link{mostProbablePath}} function. Optional, if 
-#'   \code{x} is a HMModel object or if \code{type=="obs"}.
+#' @param mpp Output from \code{\link{most_probable_path}} function. Optional, if 
+#'   \code{x} is a hmm object or if \code{type=="obs"}.
 #'   
 #' @param plots What to plot. One of \code{"obs"} for observations (the default), 
 #'   \code{"mpp"} for most probable paths, or \code{"both"} for observations 
@@ -29,7 +29,7 @@
 #'   \code{which="both"} and \code{which="mpp"}. Options \code{"mds.obs"} and 
 #'   \code{"mds.mpp"} automatically arrange the sequences according to the 
 #'   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the 
-#'   observed or hidden states path data from \code{\link{mostProbablePath}}. 
+#'   observed or hidden states path data from \code{\link{most_probable_path}}. 
 #'   MDS scores are computed from distances/dissimilarities using a metric 
 #'   defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for 
 #'   more details on \code{"from.start"} and \code{"from.end"}.
@@ -95,12 +95,12 @@
 #'   
 #' @param mpp.color A vector of colors assigned to hidden states. The default 
 #'   value \code{"auto"} uses the colors assigned to the stslist object created 
-#'   with \code{seqdef} if \code{mpp} is given; otherwise gray scale colors are 
-#'   automatically created according to the number of hidden states.
+#'   with \code{seqdef} if \code{mpp} is given; otherwise otherwise colors from 
+#'   \code{\link{colorpalette}} are automatically used. 
 #'   
 #' @param mpp.labels Labels for the hidden states. The default value 
-#'   \code{"auto"} uses the names provided in \code{x$stateNames} if \code{x} is
-#'   an HMModel object; otherwise the number of the channel.
+#'   \code{"auto"} uses the names provided in \code{x$state_names} if \code{x} is
+#'   an hmm object; otherwise the number of the hidden state.
 #'   
 #' @param xaxis Controls whether an x-axis is plotted below the plot at the 
 #'   bottom. The default value is \code{TRUE}.
@@ -117,7 +117,7 @@
 #'   
 #' @param ylab Labels for the channels. A vector of names for each channel 
 #'   (observations). The default value \code{"auto"} uses the names provided in 
-#'   \code{x$channelNames} if \code{x} is an HMModel object; otherwise the 
+#'   \code{x$channel_names} if \code{x} is an hmm object; otherwise the 
 #'   number of the channel. \code{FALSE} prints no labels.
 #'   
 #' @param hidden.states.title Optional label for the hidden state plot (in the 
@@ -169,12 +169,12 @@
 #'               0.05, 0.05, 0.10, 0.80), nrow=4, ncol=4, byrow=TRUE)
 #' 
 #' # Starting values for initial state probabilities
-#' initialProbs <- c(0.9, 0.07, 0.02, 0.01)
+#' initial_probs <- c(0.9, 0.07, 0.02, 0.01)
 #' 
 #' # Building a hidden Markov model with starting values
-#' bHMM <- buildHMM(
-#'   observations = biofam.seq, transitionMatrix = A, 
-#'   emissionMatrix = B, initialProbs = initialProbs
+#' bHMM <- build_hmm(
+#'   observations = biofam.seq, transition_matrix = A, 
+#'   emission_matrix = B, initial_probs = initial_probs
 #' )
 #' 
 #' #########################################
@@ -248,18 +248,18 @@
 #'                 0,    0,    1), nrow = 3, ncol = 3, byrow = TRUE)
 #' 
 #' # Initial values for initial state probabilities
-#' initialProbs <- c(0.9, 0.09, 0.01)
+#' initial_probs <- c(0.9, 0.09, 0.01)
 #' 
 #' # Building hidden Markov model with initial parameter values
-#' bHMM <- buildHMM(
+#' bHMM <- build_hmm(
 #'   observations = list(child.seq, marr.seq, left.seq), 
-#'   transitionMatrix = A,
-#'   emissionMatrix = list(B_child, B_marr, B_left), 
-#'   initialProbs = initialProbs
+#'   transition_matrix = A,
+#'   emission_matrix = list(B_child, B_marr, B_left), 
+#'   initial_probs = initial_probs
 #'   )
 #' 
 #' # Fitting hidden Markov model
-#' HMM <- fitHMM(bHMM)
+#' HMM <- fit_hmm(bHMM)
 #' 
 #' # Plotting observations and  the most probable paths of hidden states
 #' ssplot(
@@ -274,7 +274,7 @@
 #'   )
 #' 
 #' # Computing the most probable hidden state paths
-#' mpp <- mostProbablePath(HMM$model)$mpp
+#' mpp <- most_probable_path(HMM$model)$mpp
 #' mpp.seq <- seqdef(
 #'   mpp, labels = c("Hidden state 1", "Hidden state 2", "Hidden state 3")
 #'   )
@@ -293,8 +293,8 @@
 #'   )
 #'   
 #' @seealso \code{\link{gridplot}} for plotting multiple ssp 
-#'   objects created with \code{\link{ssp}}, \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and 
-#'   fitting Hidden Markov models, and \code{\link{mostProbablePath}} for 
+#'   objects created with \code{\link{ssp}}, \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and 
+#'   fitting Hidden Markov models, and \code{\link{most_probable_path}} for 
 #'   computing the most probable paths (Viterbi paths) of hidden states.
 
 

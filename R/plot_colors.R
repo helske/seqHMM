@@ -21,10 +21,11 @@
 
 
 plot_colors <- function(x) {
+  
   if(!all(isColor(x))){
     stop("Please provide a vector of colors.")
   }
   par(mai=c(0.1, max(strwidth(x, "inch") + 0.4, na.rm = TRUE), 0.1, 0.4))
-  barplot(rep(1, length(x)), col=rev(x), space = 0.2, axes=FALSE, 
-          names.arg=rev(x), cex.names=0.8, horiz=T, las=1)  
+  barplot(rep(1, length(x)), col = rev(x), space = 0.2, axes = FALSE, 
+          names.arg = rev(x), cex.names = 0.8, horiz = TRUE, las = 1)  
 }

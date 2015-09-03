@@ -1,3 +1,5 @@
+# Used in plot.mhmm through mHMMplotgrid
+
 HMMplot <- function(x, layout="horizontal", pie=TRUE, 
                     vertex.size=40, vertex.label="initial.probs", 
                     vertex.label.dist="auto", vertex.label.pos="bottom",
@@ -39,7 +41,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
     withlegend <- match.arg(withlegend, c("bottom", "top", "left", "right"))
   }
   
-  if(x$numberOfChannels>1){
+  if(x$number_of_channels>1){
     x <- MCtoSC(x)
   }
   
@@ -65,34 +67,34 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
   if(length(vertex.label)==1){
     if(!is.na(vertex.label) && vertex.label!=FALSE){
       if(vertex.label=="initial.probs"){
-        vertex.label <- sapply(x$initialProbs, labelprint, labs=label.scientific)
+        vertex.label <- sapply(x$initial_probs, labelprint, labs=label.scientific)
       }else if(vertex.label=="names"){
-        vertex.label <- x$stateNames
+        vertex.label <- x$state_names
       }
     }
-  }else if(length(vertex.label)<length(x$stateNames)){
+  }else if(length(vertex.label)<length(x$state_names)){
     warning("The length of the vector provided for the argument \"vertex.label\" is less than the number of hidden states. The vertor was repeated to archieve the correct length.")
-    vertex.label <- rep(vertex.label, length.out=length(x$stateNames))
-  }else if(length(vertex.label)<length(x$stateNames)){
-    warning(paste("The length of the vector provided for the argument \"vertex.label\" is more than the number of number of hidden states. Only the first", length(x$stateNames), "labels were used."))
-    vertex.label <- vertex.label[1:length(x$stateNames)]
+    vertex.label <- rep(vertex.label, length.out=length(x$state_names))
+  }else if(length(vertex.label)<length(x$state_names)){
+    warning(paste("The length of the vector provided for the argument \"vertex.label\" is more than the number of number of hidden states. Only the first", length(x$state_names), "labels were used."))
+    vertex.label <- vertex.label[1:length(x$state_names)]
   }
   
   # Vertex label distances
   if(is.character(vertex.label.dist)){
     match.arg(vertex.label.dist, c("auto"))
     vertex.label.dist <- vertex.size*0.4/10
-  }else if(length(vertex.label.dist)>1 && length(vertex.label.dist)<x$numberOfStates){
+  }else if(length(vertex.label.dist)>1 && length(vertex.label.dist)<x$number_of_states){
     warning("The length of the vector provided for the argument \"vertex.label.dist\" is less than the number of edges. The vector was repeated to archieve the correct length.")
-    vertex.label.dist <- rep(vertex.label.dist, length.out=length(x$numberOfStates))
-  }else if(length(vertex.label.dist)>1 && length(vertex.label.dist)>x$numberOfStates){
-    warning(paste("The length of the vector provided for the argument \"vertex.label.dist\" is more than the number of edges. Only the first", length(x$numberOfStates), "labels were used."))
-    vertex.label.dist <- vertex.label.dist[1:length(x$numberOfStates)]
+    vertex.label.dist <- rep(vertex.label.dist, length.out=length(x$number_of_states))
+  }else if(length(vertex.label.dist)>1 && length(vertex.label.dist)>x$number_of_states){
+    warning(paste("The length of the vector provided for the argument \"vertex.label.dist\" is more than the number of edges. Only the first", length(x$number_of_states), "labels were used."))
+    vertex.label.dist <- vertex.label.dist[1:length(x$number_of_states)]
   }
   
   
   # Trimming
-  transM <- x$transitionMatrix
+  transM <- x$transition_matrix
   transM[transM<trim] <- 0
   
   # Adjacency matrix
@@ -147,7 +149,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
     glayout <- layout
   }else{
     if(layout=="horizontal"){
-      glayout <- layout.grid(g1, width=x$numberOfStates)
+      glayout <- layout.grid(g1, width=x$number_of_states)
     }else if(layout=="vertical"){
       glayout <- layout.grid(g1, width=1)
     }
@@ -171,11 +173,11 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
   # Legend position and number of columns
   if(withlegend!=FALSE && pie==TRUE){
     if(!is.null(ltext)){
-      if(length(ltext)!=x$numberOfSymbols){
+      if(length(ltext)!=x$number_of_symbols){
         warning("The length of the argument ltext does not match the number of observed states.")
       }
     }else{
-      ltext <- x$symbolNames
+      ltext <- x$symbol_names
     }
   }
   
@@ -236,12 +238,12 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
   
   # Plotting graph
   if(pie==TRUE){
-    pie.values <- lapply(seq_len(nrow(transM)), function(i) x$emissionMatrix[i,])
+    pie.values <- lapply(seq_len(nrow(transM)), function(i) x$emission_matrix[i,])
     if(combine.slices>0){
       pie.colors.l <- NULL
       if(withlegend!=FALSE){
         lt <- NULL
-        for(i in 1:x$numberOfStates){
+        for(i in 1:x$number_of_states){
           cs.prob <- sum(pie.values[[i]][pie.values[[i]]<combine.slices])
           pie.values[[i]][pie.values[[i]]<combine.slices] <- 0
           pie.colors.l <- c(pie.colors.l,pie.colors[pie.values[[i]]>=combine.slices])
@@ -250,7 +252,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
         }
         ltext <- c(unique(lt), combined.slice.label)
       }else{
-        for(i in 1:x$numberOfStates){
+        for(i in 1:x$number_of_states){
           cs.prob <- sum(pie.values[[i]][pie.values[[i]]<combine.slices])
           pie.values[[i]][pie.values[[i]]<combine.slices] <- 0
           pie.colors.l <- c(pie.colors.l,pie.colors[pie.values[[i]]>=combine.slices])
@@ -269,7 +271,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
     }else{
       if(ncol.legend=="auto"){
         if(withlegend=="bottom" || withlegend==TRUE || withlegend=="top"){
-          ncol.legend <- ceiling(ncol(x$emissionMatrix)/4)
+          ncol.legend <- ceiling(ncol(x$emission_matrix)/4)
         }else{
           ncol.legend <- 1
         }

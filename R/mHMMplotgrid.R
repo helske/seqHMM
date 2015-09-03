@@ -1,4 +1,4 @@
-mHMMplotgrid <- function(x, which.plots = NULL, rows=NA, cols=NA, byrow=FALSE,
+mHMMplotgrid <- function(x, which.plots = NULL, nrow=NA, ncol=NA, byrow=FALSE,
                          row.prop="auto", col.prop="auto", layout="horizontal", pie=TRUE, 
                          vertex.size=40, vertex.label="initial.probs", 
                          vertex.label.dist="auto", vertex.label.pos="bottom",
@@ -17,7 +17,7 @@ mHMMplotgrid <- function(x, which.plots = NULL, rows=NA, cols=NA, byrow=FALSE,
   opar <- par(no.readonly=TRUE)
   on.exit(opar)
   
-  divmodels <- sepMixHMM(x)
+  divmodels <- separate_mhmm(x)
   
   if(!is.numeric(ncol.legend) && ncol.legend!="auto"){
     warning("Argument ncol.legend only accepts values \"auto\" or a numerical vector.")
@@ -43,31 +43,31 @@ mHMMplotgrid <- function(x, which.plots = NULL, rows=NA, cols=NA, byrow=FALSE,
   
   # Number of plots
   if(is.null(which.plots)){
-    which.plots <- 1:x$numberOfClusters
+    which.plots <- 1:x$number_of_clusters
   }
   ngridplots <- length(which.plots)
   
   
-  if(is.na(rows) && is.na(cols)){
-    rows <- ceiling(sqrt(ngridplots))
-    cols <- ceiling(ngridplots/rows)
-  }else if(is.na(rows)){
-    rows <- ceiling(ngridplots/cols)
-  }else if(is.na(cols)){
-    cols <- ceiling(ngridplots/rows)
+  if(is.na(nrow) && is.na(ncol)){
+    nrow <- ceiling(sqrt(ngridplots))
+    ncol <- ceiling(ngridplots/nrow)
+  }else if(is.na(nrow)){
+    nrow <- ceiling(ngridplots/ncol)
+  }else if(is.na(ncol)){
+    ncol <- ceiling(ngridplots/nrow)
   }
   
   # Number of columns in legends
   if(!is.na(withlegend) && withlegend==TRUE){ 
     if(length(ncol.legend)==1 && ncol.legend=="auto"){
       ncol.legend <- rep(1, ngridplots)
-    }else if(length(ncol.legend)==1 && x$numberOfClusters>1){
+    }else if(length(ncol.legend)==1 && x$number_of_clusters>1){
       ncol.legend <- rep(ncol.legend, ngridplots)
     }else if(length(ncol.legend)<ngridplots){
       warning(paste0("The length of ncol.legend does not match the number of requested plots. The last were arranged in 1 column."))
       ncol.legend <- c(ncol.legend, rep(1,(ngridplots-length(ncol.legend))))
     }else if(length(ncol.legend)>ngridplots){
-      warning(paste0("The length of ncol.legend does not match the number of requested plots. Only the first ", x$numberOfClusters, " arguments of \"ncol.legend\" were used."))
+      warning(paste0("The length of ncol.legend does not match the number of requested plots. Only the first ", x$number_of_clusters, " arguments of \"ncol.legend\" were used."))
       ncol.legend <- ncol.legend[1:ngridplots]
     }
   }
@@ -78,64 +78,64 @@ mHMMplotgrid <- function(x, which.plots = NULL, rows=NA, cols=NA, byrow=FALSE,
   
   # Cells' proportions
   if(!is.numeric(row.prop) && row.prop=="auto"){
-    row.prop <- rep(1/rows, rows)
+    row.prop <- rep(1/nrow, nrow)
   }
   if(!is.numeric(col.prop) && col.prop=="auto"){
-    col.prop <- rep(1/cols, cols)
+    col.prop <- rep(1/ncol, ncol)
   }
-  if(length(row.prop)!=rows){
-    warning("The length of the vector provided for row.prop does not match the number of rows in the plot. Argument row.prop was changed to \"auto\".")
-    row.prop <- rep(1/rows, rows)
+  if(length(row.prop)!=nrow){
+    warning("The length of the vector provided for row.prop does not match the number of nrow in the plot. Argument row.prop was changed to \"auto\".")
+    row.prop <- rep(1/nrow, nrow)
   }
-  if(length(col.prop)!=cols){
+  if(length(col.prop)!=ncol){
     warning("The length of the vector provided for col.prop does not match the number of columns in the plot. Argument col.prop was changed to \"auto\".")
-    col.prop <- rep(1/cols, cols)
+    col.prop <- rep(1/ncol, ncol)
   }
   
   # Plotting order for layout
   if(!is.na(withlegend) && withlegend!=FALSE){
     if(byrow==FALSE){
-      plotlayout <- matrix(c(1:ngridplots, rep(0,rows*cols-ngridplots)), nrow=rows)
-      legendlayout <- matrix(c((ngridplots+1):(2*ngridplots), rep(0,rows*cols-ngridplots)), nrow=rows)
+      plotlayout <- matrix(c(1:ngridplots, rep(0,nrow*ncol-ngridplots)), nrow=nrow)
+      legendlayout <- matrix(c((ngridplots+1):(2*ngridplots), rep(0,nrow*ncol-ngridplots)), nrow=nrow)
       if(withlegend=="right"){
         # Matrix for layout
         lmatrix <- cbind(plotlayout[,1], legendlayout[,1])
-        if(cols>1){
-          for(i in 2:cols){
+        if(ncol>1){
+          for(i in 2:ncol){
             lmatrix <- cbind(lmatrix,plotlayout[,i], legendlayout[,i])
           }
         }
         cprops <- c(col.prop[1]*(1-legend.prop),col.prop[1]*legend.prop)
-        if(cols>1){
-          for(i in 2:cols){
+        if(ncol>1){
+          for(i in 2:ncol){
             cprops <- c(cprops,col.prop[i]*(1-legend.prop),col.prop[i]*legend.prop)
           }
         }
         rprops <- row.prop
       }else if(withlegend=="left"){
         lmatrix <- cbind(legendlayout[,1], plotlayout[,1])
-        if(cols>1){
-          for(i in 2:cols){
+        if(ncol>1){
+          for(i in 2:ncol){
             lmatrix <- cbind(lmatrix,legendlayout[,i], plotlayout[,i])
           }
         }
         cprops <- c(col.prop[1]*legend.prop,col.prop[1]*(1-legend.prop))
-        if(cols>1){
-          for(i in 2:cols){
+        if(ncol>1){
+          for(i in 2:ncol){
             cprops <- c(cprops,col.prop[i]*legend.prop,col.prop[i]*(1-legend.prop))
           }
         }
         rprops <- row.prop
       }else if(withlegend=="bottom"){
         lmatrix <- rbind(plotlayout[1,], legendlayout[1,])
-        if(rows>1){
-          for(i in 2:rows){
+        if(nrow>1){
+          for(i in 2:nrow){
             lmatrix <- rbind(lmatrix, plotlayout[i,], legendlayout[i,])
           }
         }
         rprops <- c(row.prop[1]*(1-legend.prop),row.prop[1]*legend.prop)
-        if(rows>1){
-          for(i in 2:rows){
+        if(nrow>1){
+          for(i in 2:nrow){
             rprops <- c(rprops,row.prop[i]*(1-legend.prop),row.prop[i]*legend.prop)
           }
         }
@@ -143,14 +143,14 @@ mHMMplotgrid <- function(x, which.plots = NULL, rows=NA, cols=NA, byrow=FALSE,
         # withlegend=="top"
       }else{
         lmatrix <- rbind(legendlayout[1,], plotlayout[1,])
-        if(rows>1){
-          for(i in 2:rows){
+        if(nrow>1){
+          for(i in 2:nrow){
             lmatrix <- rbind(lmatrix,legendlayout[i,], plotlayout[i,])
           }
         }
         rprops <- c(row.prop[1]*legend.prop,row.prop[1]*(1-legend.prop))
-        if(rows>1){
-          for(i in 2:rows){
+        if(nrow>1){
+          for(i in 2:nrow){
             rprops <- c(rprops,row.prop[i]*legend.prop,row.prop[i]*(1-legend.prop))
           }
         }
@@ -158,51 +158,51 @@ mHMMplotgrid <- function(x, which.plots = NULL, rows=NA, cols=NA, byrow=FALSE,
       }
       # byrow=TRUE
     }else{
-      plotlayout <- matrix(c(1:ngridplots, rep(0,rows*cols-ngridplots)), nrow=rows, byrow=TRUE)
-      legendlayout <- matrix(c((ngridplots+1):(2*ngridplots), rep(0,rows*cols-ngridplots)), nrow=rows, byrow=TRUE)
-      if(rows*cols>ngridplots){
+      plotlayout <- matrix(c(1:ngridplots, rep(0,nrow*ncol-ngridplots)), nrow=nrow, byrow=TRUE)
+      legendlayout <- matrix(c((ngridplots+1):(2*ngridplots), rep(0,nrow*ncol-ngridplots)), nrow=nrow, byrow=TRUE)
+      if(nrow*ncol>ngridplots){
         plotlayout[plotlayout>ngridplots] <- 0
         legendlayout[legendlayout>(2*ngridplots)] <- 0
       }
       if(withlegend=="right"){
         # Matrix for layout
         lmatrix <- cbind(plotlayout[,1], legendlayout[,1])
-        if(cols>1){
-          for(i in 2:cols){
+        if(ncol>1){
+          for(i in 2:ncol){
             lmatrix <- cbind(lmatrix,plotlayout[,i], legendlayout[,i])
           }
         }
         cprops <- c(col.prop[1]*(1-legend.prop),col.prop[1]*legend.prop)
-        if(cols>1){
-          for(i in 2:cols){
+        if(ncol>1){
+          for(i in 2:ncol){
             cprops <- c(cprops,col.prop[i]*(1-legend.prop),col.prop[i]*legend.prop)
           }
         }
         rprops <- row.prop
       }else if(withlegend=="left"){
         lmatrix <- cbind(legendlayout[,1], plotlayout[,1])
-        if(cols>1){
-          for(i in 2:cols){
+        if(ncol>1){
+          for(i in 2:ncol){
             lmatrix <- cbind(lmatrix,legendlayout[,i], plotlayout[,i])
           }
         }
         cprops <- c(col.prop[1]*legend.prop,col.prop[1]*(1-legend.prop))
-        if(cols>1){
-          for(i in 2:cols){
+        if(ncol>1){
+          for(i in 2:ncol){
             cprops <- c(cprops,col.prop[i]*legend.prop,col.prop[i]*(1-legend.prop))
           }
         }
         rprops <- row.prop 
       }else if(withlegend=="bottom"){
         lmatrix <- rbind(plotlayout[1,], legendlayout[1,])
-        if(rows>1){
-          for(i in 2:rows){
+        if(nrow>1){
+          for(i in 2:nrow){
             lmatrix <- rbind(lmatrix, plotlayout[i,], legendlayout[i,])
           }
         }
         rprops <- c(row.prop[1]*(1-legend.prop),row.prop[1]*legend.prop)
-        if(rows>1){
-          for(i in 2:rows){
+        if(nrow>1){
+          for(i in 2:nrow){
             rprops <- c(rprops,row.prop[i]*(1-legend.prop),row.prop[i]*legend.prop)
           }
         }
@@ -210,14 +210,14 @@ mHMMplotgrid <- function(x, which.plots = NULL, rows=NA, cols=NA, byrow=FALSE,
         # "top"
       }else{
         lmatrix <- rbind(legendlayout[1,], plotlayout[1,])
-        if(rows>1){
-          for(i in 2:rows){
+        if(nrow>1){
+          for(i in 2:nrow){
             lmatrix <- rbind(lmatrix,legendlayout[i,], plotlayout[i,])
           }
         }
         rprops <- c(row.prop[1]*legend.prop,row.prop[1]*(1-legend.prop))
-        if(rows>1){
-          for(i in 2:rows){
+        if(nrow>1){
+          for(i in 2:nrow){
             rprops <- c(rprops,row.prop[i]*legend.prop,row.prop[i]*(1-legend.prop))
           }
         }
@@ -227,14 +227,14 @@ mHMMplotgrid <- function(x, which.plots = NULL, rows=NA, cols=NA, byrow=FALSE,
     # No legends
   }else{
     if(byrow==FALSE){
-      plotlayout <- matrix(c(1:ngridplots, rep(0,rows*cols-ngridplots)), nrow=rows)
-      legendlayout <- matrix(c((ngridplots+1):(2*ngridplots), rep(0,rows*cols-ngridplots)), nrow=rows)
+      plotlayout <- matrix(c(1:ngridplots, rep(0,nrow*ncol-ngridplots)), nrow=nrow)
+      legendlayout <- matrix(c((ngridplots+1):(2*ngridplots), rep(0,nrow*ncol-ngridplots)), nrow=nrow)
       cprops <- col.prop
       rprops <- row.prop
       # byrow=TRUE
     }else{
-      plotlayout <- matrix(c(1:ngridplots, rep(0,rows*cols-ngridplots)), nrow=rows, byrow=TRUE)
-      legendlayout <- matrix(c((ngridplots+1):(2*ngridplots), rep(0,rows*cols-ngridplots)), nrow=rows, byrow=TRUE)
+      plotlayout <- matrix(c(1:ngridplots, rep(0,nrow*ncol-ngridplots)), nrow=nrow, byrow=TRUE)
+      legendlayout <- matrix(c((ngridplots+1):(2*ngridplots), rep(0,nrow*ncol-ngridplots)), nrow=nrow, byrow=TRUE)
       cprops <- col.prop
       rprops <- row.prop
     }

@@ -2,20 +2,20 @@
 #' Paths for Mixture Hidden Markov Models
 #' 
 #' Function \code{mssplot} plots stacked sequence plots of observation sequences 
-#' and/or most probable hidden state paths for each model of the \code{mixHMModel} 
+#' and/or most probable hidden state paths for each model of the \code{mhmm} 
 #' object (model chosen according to the most probable path).
 #' 
 #' 
 #' 
 #' @export
 #' 
-#' @param x Mixture hidden Markov model object of class \code{mixHMModel}.
+#' @param x Mixture hidden Markov model object of class \code{mhmm}.
 #'
-#' @param ask If true and \code{which.plots} is NULL, \code{plot.mixHMModel} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}.
+#' @param ask If true and \code{which.plots} is NULL, \code{plot.mhmm} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}.
 #' 
 #' @param which.plots The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots.
 #'   
-#' @param mpp Output from \code{\link{mostProbablePath}} function.
+#' @param mpp Output from \code{\link{most_probable_path}} function.
 #'   
 #' @param plots What to plot. One of \code{"obs"} for observations, \code{"mpp"}
 #'   for most probable paths, or \code{"both"} for observations 
@@ -31,7 +31,7 @@
 #'   \code{which="both"} and \code{which="mpp"}. Options \code{"mds.obs"} and 
 #'   \code{"mds.mpp"} automatically arrange the sequences according to the 
 #'   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the 
-#'   observed or hidden states path data from \code{\link{mostProbablePath}}. 
+#'   observed or hidden states path data from \code{\link{most_probable_path}}. 
 #'   MDS scores are computed from distances/dissimilarities using a metric 
 #'   defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for 
 #'   more details on \code{"from.start"} and \code{"from.end"}.
@@ -96,7 +96,7 @@
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #'   
 #' @param mpp.color A vector of colors assigned to hidden states (as ordered by 
-#'   the \code{\link{mostProbablePath}} function). The default value \code{"auto"} uses 
+#'   the \code{\link{most_probable_path}} function). The default value \code{"auto"} uses 
 #'   the colors assigned to the stslist object created with \code{seqdef} if \code{mpp} 
 #'   is given; otherwise colors from \code{\link{colorpalette}} are automatically used. 
 #'   
@@ -119,7 +119,7 @@
 #'   
 #' @param ylab Labels for the channels. A vector of names for each channel 
 #'   (observations). The default value \code{"auto"} uses the names provided in 
-#'   \code{x$channelNames} if \code{x} is an HMModel object; otherwise the 
+#'   \code{x$channel_names} if \code{x} is an hmm object; otherwise the 
 #'   number of the channel. \code{FALSE} prints no labels.
 #'   
 #' @param hidden.states.title Optional label for the hidden state plot (in the 
@@ -150,34 +150,34 @@
 #' 
 #' ## Building one channel per type of event left, children or married
 #' bf <- as.matrix(biofam[, 10:25])
-#' children <-  bf==4 | bf==5 | bf==6
-#' married <- bf == 2 | bf== 3 | bf==6
-#' left <- bf==1 | bf==3 | bf==5 | bf==6 | bf==7
+#' children <-  bf == 4 | bf == 5 | bf == 6
+#' married <- bf == 2 | bf == 3 | bf == 6
+#' left <- bf == 1 | bf == 3 | bf == 5 | bf == 6 | bf == 7
 #' 
-#' children[children==TRUE] <- "Children"
-#' children[children==FALSE] <- "Childless"
+#' children[children == TRUE] <- "Children"
+#' children[children == FALSE] <- "Childless"
 #' # Divorced parents
-#' div <- bf[(rowSums(bf==7)>0 & rowSums(bf==5)>0) | 
-#'             (rowSums(bf==7)>0 & rowSums(bf==6)>0),]
-#' children[rownames(bf) %in% rownames(div) & bf==7] <- "Children"
+#' div <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 5) > 0) | 
+#'             (rowSums(bf == 7) > 0 & rowSums(bf == 6) > 0),]
+#' children[rownames(bf) %in% rownames(div) & bf == 7] <- "Children"
 #' 
-#' married[married==TRUE] <- "Married"
-#' married[married==FALSE] <- "Single"
-#' married[bf==7] <- "Divorced"
+#' married[married == TRUE] <- "Married"
+#' married[married == FALSE] <- "Single"
+#' married[bf == 7] <- "Divorced"
 #' 
-#' left[left==TRUE] <- "Left home"
-#' left[left==FALSE] <- "With parents"
+#' left[left == TRUE] <- "Left home"
+#' left[left == FALSE] <- "With parents"
 #' # Divorced living with parents (before divorce)
-#' wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &  
-#'           rowSums(bf==5)==0 & rowSums(bf==6)==0) | 
-#'          (rowSums(bf==7)>0 & rowSums(bf==4)>0 & rowSums(bf==3)==0 &  
-#'           rowSums(bf==5)==0 &  rowSums(bf==6)==0),]
-#' left[rownames(bf) %in% rownames(wp) & bf==7] <- "With parents"
+#' wp <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 2) > 0 & rowSums(bf == 3) == 0 &  
+#'           rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0) | 
+#'          (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 & rowSums(bf == 3) == 0 &  
+#'          rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0),]
+#' left[rownames(bf) %in% rownames(wp) & bf == 7] <- "With parents"
 #' 
 #' ## Building sequence objects
-#' child.seq <- seqdef(children, start=15)
-#' marr.seq <- seqdef(married, start=15)
-#' left.seq <- seqdef(left, start=15)
+#' child.seq <- seqdef(children, start = 15)
+#' marr.seq <- seqdef(married, start = 15)
+#' left.seq <- seqdef(left, start = 15)
 #' 
 #' ## Starting values for emission probabilities
 #' 
@@ -186,37 +186,37 @@
 #' B1_child <- matrix(c(0.99, 0.01, # High probability for childless
 #'                      0.99, 0.01,
 #'                      0.99, 0.01,
-#'                      0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
+#'                      0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE)
 #' 
 #' alphabet(marr.seq)                      
 #' B1_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
 #'                     0.01, 0.01, 0.98,
 #'                     0.01, 0.98, 0.01, # High probability for married
 #'                     0.98, 0.01, 0.01), # High probability for divorced
-#'                     nrow=4, ncol=3, byrow=TRUE)                   
+#'                     nrow = 4, ncol = 3, byrow = TRUE)                   
 #' 
 #' alphabet(left.seq)
 #' B1_left <- matrix(c(0.01, 0.99, # High probability for living with parents
 #'                     0.99, 0.01, # High probability for having left home
 #'                     0.99, 0.01,
-#'                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
+#'                     0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE)
 #' 
 #' # Cluster 2
 #' B2_child <- matrix(c(0.99, 0.01, # High probability for childless
 #'                      0.99, 0.01,
 #'                      0.99, 0.01,
-#'                      0.01, 0.99), nrow=4, ncol=2, byrow=TRUE)
+#'                      0.01, 0.99), nrow = 4, ncol = 2, byrow = TRUE)
 #'                      
 #' B2_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
 #'                     0.01, 0.01, 0.98,
 #'                     0.01, 0.98, 0.01, # High probability for married
 #'                     0.29, 0.7, 0.01),
-#'                    nrow=4, ncol=3, byrow=TRUE)                   
+#'                    nrow = 4, ncol = 3, byrow = TRUE)                   
 #' 
 #' B2_left <- matrix(c(0.01, 0.99, # High probability for living with parents
 #'                     0.99, 0.01,
 #'                     0.99, 0.01,
-#'                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE) 
+#'                     0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE) 
 #' 
 #' # Cluster 3
 #' B3_child <- matrix(c(0.99, 0.01, # High probability for childless
@@ -224,7 +224,7 @@
 #'                      0.01, 0.99,
 #'                      0.99, 0.01,
 #'                      0.01, 0.99,
-#'                      0.01, 0.99), nrow=6, ncol=2, byrow=TRUE)
+#'                      0.01, 0.99), nrow = 6, ncol = 2, byrow = TRUE)
 #' 
 #' B3_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
 #'                     0.01, 0.01, 0.98,
@@ -232,21 +232,21 @@
 #'                     0.01, 0.98, 0.01,
 #'                     0.01, 0.98, 0.01, # High probability for married
 #'                     0.98, 0.01, 0.01), # High probability for divorced
-#'                    nrow=6, ncol=3, byrow=TRUE)                   
+#'                    nrow = 6, ncol = 3, byrow = TRUE)                   
 #' 
 #' B3_left <- matrix(c(0.01, 0.99, # High probability for living with parents
 #'                     0.99, 0.01,
 #'                     0.50, 0.50,
 #'                     0.01, 0.99,
 #'                     0.99, 0.01,
-#'                     0.99, 0.01), nrow=6, ncol=2, byrow=TRUE) 
+#'                     0.99, 0.01), nrow = 6, ncol = 2, byrow = TRUE) 
 #' 
 #' # Initial values for transition matrices
 #' A1 <- matrix(c(0.8,   0.16, 0.03, 0.01,
 #'                  0,    0.9, 0.07, 0.03, 
 #'                  0,      0,  0.9,  0.1, 
 #'                  0,      0,    0,    1), 
-#'              nrow=4, ncol=4, byrow=TRUE)
+#'              nrow = 4, ncol = 4, byrow = TRUE)
 #' 
 #' A2 <- matrix(c(0.8, 0.10, 0.05,  0.03, 0.01, 0.01,
 #'                  0,  0.7,  0.1,   0.1, 0.05, 0.05,
@@ -254,28 +254,29 @@
 #'                  0,    0,    0,   0.9, 0.05, 0.05,
 #'                  0,    0,    0,     0,  0.9,  0.1,
 #'                  0,    0,    0,     0,    0,    1), 
-#'              nrow=6, ncol=6, byrow=TRUE)
+#'              nrow = 6, ncol = 6, byrow = TRUE)
 #' 
 #' # Initial values for initial state probabilities 
-#' initialProbs1 <- c(0.9, 0.07, 0.02, 0.01)
-#' initialProbs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
+#' initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
+#' initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 #' 
 #' # Creating covariate swiss
-#' biofam$swiss <- biofam$nat_1_02=="Switzerland"
-#' biofam$swiss[biofam$swiss==TRUE] <- "Swiss"
-#' biofam$swiss[biofam$swiss==FALSE] <- "Other"
+#' biofam$swiss <- biofam$nat_1_02 == "Switzerland"
+#' biofam$swiss[biofam$swiss == TRUE] <- "Swiss"
+#' biofam$swiss[biofam$swiss == FALSE] <- "Other"
 #' 
 #' # Build mixture HMM
-#' bMHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq), 
-#'                        transitionMatrix=list(A1,A1,A2), 
-#'                        emissionMatrix=list(list(B1_child, B1_marr, B1_left),
-#'                                            list(B2_child, B2_marr, B2_left),
-#'                                            list(B3_child, B3_marr, B3_left)),
-#'                        initialProbs=list(initialProbs1, initialProbs1,
-#'                                          initialProbs2), 
-#'                        formula=~sex*birthyr+sex*swiss, data=biofam,
-#'                        clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
-#'                        channelNames=c("Parenthood", "Marriage", "Left home"))
+#' bMHMM <- buildMixHMM(
+#'   observations = list(child.seq, marr.seq, left.seq),
+#'   transition_matrix = list(A1,A1,A2),
+#'   emission_matrix = list(list(B1_child, B1_marr, B1_left),
+#'                         list(B2_child, B2_marr, B2_left), 
+#'                         list(B3_child, B3_marr, B3_left)),
+#'   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
+#'   formula = ~ sex * birthyr + sex * swiss, data = biofam,
+#'   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
+#'   channel_names = c("Parenthood", "Marriage", "Left home")
+#'   )
 #' 
 #' 
 #' \dontrun{
@@ -285,10 +286,10 @@
 #' # Plotting the first cluster only
 #' mssplot(bMHMM, which.plots=1)
 #'   
-#' @seealso \code{\link{buildMixHMM}} and \code{\link{fitMixHMM}} for building and 
-#'   fitting Hidden Markov models, \code{\link{mostProbablePath}} for 
+#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building and 
+#'   fitting Hidden Markov models, \code{\link{most_probable_path}} for 
 #'   computing the most probable paths (Viterbi paths) of hidden states, and
-#'   \code{\link{plot.mixHMModel}} for plotting parameters of \code{mixHMModel} objects.
+#'   \code{\link{plot.mhmm}} for plotting parameters of \code{mhmm} objects.
 
 
 mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
@@ -306,8 +307,8 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
                     cex.lab=1, cex.axis=1, ...){
   
   # Checking for class of x
-  if(!inherits(x, "mixHMModel")){
-    stop("Your object x is not a mixHMModel object. Use buildMixHMM and fitMixHMM to create one.")
+  if(!inherits(x, "mhmm")){
+    stop("Your object x is not a mhmm object. Use build_mhmm and fit_mhmm to create one.")
   }
   
   oldPar <- par(no.readonly=TRUE)
@@ -319,7 +320,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   
   allobs <- x$obs
   
-  # ssp arguments (besides mixHMModel object and mpp)
+  # ssp arguments (besides mhmm object and mpp)
   args <- as.list(match.call())[-(1:2)]
   if("ask" %in% names(args)){
     args <- args[-which(names(args)=="ask")]
@@ -331,33 +332,33 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     args <- args[-which(names(args)=="mpp")]
   }
   if(!("title" %in% names(args))){
-    titles <- x$clusterNames
+    titles <- x$cluster_names
   }else{
-    if(length(title)!=x$numberOfClusters){
+    if(length(title)!=x$number_of_clusters){
       warning("The length of the vector provided for the title argument does not match the number of clusters. Automatic titles were used instead.")
-      titles <- x$clusterNames
+      titles <- x$cluster_names
     }else{
       titles <- args$title
     }
     args <- args[-which(names(args)=="title")]
   }
   if(length(ylab)==1 && ylab=="auto"){
-    args$ylab <- x$channelNames
+    args$ylab <- x$channel_names
   }
   
   if(is.null(mpp)){
-    mpp <- suppressWarnings(suppressMessages(mostProbablePath(x)))
+    mpp <- suppressWarnings(suppressMessages(most_probable_path(x)))
   }
   
   if(!("mpp.labels" %in% names(args))){
     mpp.labels <- NULL
-    for(i in 1:x$numberOfClusters){
+    for(i in 1:x$number_of_clusters){
       mpp.labels <- c(mpp.labels, paste("State", 1:x$numberOfStates[i]))
     }
   }
   mpplabs <- list()
   k <- 0
-  for(i in 1:x$numberOfClusters){
+  for(i in 1:x$number_of_clusters){
     mpplabs[[i]] <- mpp.labels[(k+1):(k+x$numberOfStates[i])]
     k <- k+x$numberOfStates[i]
   }
@@ -367,27 +368,27 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   }
   mppcols <- list()
   k <- 0
-  for(i in 1:x$numberOfClusters){
+  for(i in 1:x$number_of_clusters){
     mppcols[[i]] <- mpp.color[(k+1):(k+x$numberOfStates[i])]
     k <- k+x$numberOfStates[i]
   }
   
   mppm <- unique(mpp$cluster)
   mm <- NULL
-  if(length(mppm)<x$numberOfClusters){
-    mm <- which(!(x$clusterNames%in%mppm))
-    warning(paste("When computing the most probable paths, no subjects were assigned to following clusters:", paste(x$clusterNames[mm], collapse=", ")))
+  if(length(mppm)<x$number_of_clusters){
+    mm <- which(!(x$cluster_names%in%mppm))
+    warning(paste("When computing the most probable paths, no subjects were assigned to following clusters:", paste(x$cluster_names[mm], collapse=", ")))
   }
   
   if(!is.null(which.plots)){
-    if(any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$numberOfClusters))){
-      stop(paste0("The which.plot argument only accepts numerical values between 1 and ", x$numberOfClusters, "."))
+    if(any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$number_of_clusters))){
+      stop(paste0("The which.plot argument only accepts numerical values between 1 and ", x$number_of_clusters, "."))
     }else if(any(which.plots %in% mm)){
       warning("You requested cluster(s) with no subjects. Plotting only relevant clusters.")
       which.plots <- setdiff(which.plots, mm)
     }
   }else if(!ask && is.null(which.plots)){
-    which.plots <- 1:x$numberOfClusters
+    which.plots <- 1:x$number_of_clusters
     # removing clusters with no subjects (according to mpp)
     which.plots <- setdiff(which.plots, mm)
   }
@@ -395,19 +396,19 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   
   
   if (ask && is.null(which.plots)) {
-    tmenu <- 1:x$numberOfClusters
+    tmenu <- 1:x$number_of_clusters
     tmenu <- setdiff(tmenu, mm)
-    tmenunames <- x$clusterNames[tmenu]
+    tmenunames <- x$cluster_names[tmenu]
     plot.new()
     repeat {
       pick <- menu(tmenunames, title = "\n Select cluster (or 0 to exit):\n")
       if(pick==0){
         return(invisible())
       }else{
-        args$x <- lapply(allobs, function(y) y[mpp$cluster==x$clusterNames[[tmenu[pick]]],])
+        args$x <- lapply(allobs, function(y) y[mpp$cluster==x$cluster_names[[tmenu[pick]]],])
         args$mpp.labels <- mpplabs[[pick]]
         args$mpp <- suppressWarnings(suppressMessages(
-          seqdef(mpp$mpp[mpp$cluster==x$clusterNames[[tmenu[pick]]],], 
+          seqdef(mpp$mpp[mpp$cluster==x$cluster_names[[tmenu[pick]]],], 
                  labels=args$mpp.labels)))
         args$mpp.color <- mppcols[[pick]]
         args$title <- titles[tmenu[pick]]
@@ -416,17 +417,17 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     }
   }else if (ask && !is.null(which.plots)) {
     tmenu <- which.plots
-    tmenunames <- x$clusterNames[which.plots]
+    tmenunames <- x$cluster_names[which.plots]
     plot.new()
     repeat {
       pick <- menu(tmenunames, title = "\n Select cluster (or 0 to exit):\n")
       if(pick==0){
         return(invisible())
       }else{
-        args$x <- lapply(allobs, function(y) y[mpp$cluster==x$clusterNames[[tmenu[pick]]],])
+        args$x <- lapply(allobs, function(y) y[mpp$cluster==x$cluster_names[[tmenu[pick]]],])
         args$mpp.labels <- mpplabs[[pick]]
         args$mpp <- suppressWarnings(suppressMessages(
-          seqdef(mpp$mpp[mpp$cluster==x$clusterNames[[tmenu[pick]]],], 
+          seqdef(mpp$mpp[mpp$cluster==x$cluster_names[[tmenu[pick]]],], 
                  labels=args$mpp.labels)))
         args$mpp.color <- mppcols[[pick]]
         args$title <- titles[tmenu[pick]]
@@ -437,10 +438,10 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     ask <- length(which.plots) > 1
     plot.new()
     for (i in which.plots) {
-      args$x <- lapply(allobs, function(y) y[mpp$cluster==x$clusterNames[[i]],])
+      args$x <- lapply(allobs, function(y) y[mpp$cluster==x$cluster_names[[i]],])
       args$mpp.labels <- mpplabs[[i]]
       args$mpp <- suppressWarnings(suppressMessages(
-        seqdef(mpp$mpp[mpp$cluster==x$clusterNames[[i]],], labels=args$mpp.labels)))
+        seqdef(mpp$mpp[mpp$cluster==x$cluster_names[[i]],], labels=args$mpp.labels)))
       args$mpp.color <- mppcols[[i]]
       args$title <- titles[i]
       do.call(ssplotM,args=args)

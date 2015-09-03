@@ -11,7 +11,7 @@
 #'   
 #' @param x A list of \code{ssp} objects.
 #'   
-#' @param rows,cols Optional arguments to arrange plots.
+#' @param nrow,ncol Optional arguments to arrange plots.
 #'   
 #' @param byrow Controls the order of plotting. Defaults to \code{FALSE}, i.e. plots
 #'   are arranged columnwise.
@@ -105,7 +105,7 @@
 #'   )
 #' 
 #' # Plotting state distribution plots of observations for women and men in two columns 
-#' gridplot(list(ssp_f, ssp_m), cols = 2, withlegend = FALSE)
+#' gridplot(list(ssp_f, ssp_m), ncol = 2, withlegend = FALSE)
 #' 
 #' # Preparing plots for women's state distributions
 #' ssp_f2 <- ssp(
@@ -136,13 +136,13 @@
 #' # Plotting state distributions and index plots of observations 
 #' # for women and men in two columns 
 #' gridplot(
-#'   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=3, byrow=TRUE, 
+#'   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol=3, byrow=TRUE, 
 #'   withlegend="combined", legend.pos="right", col.prop=c(0.35,0.35,0.3)
 #'   )
 #'   
 #' # The same with different positioning
 #' gridplot(
-#'   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols = 2, rows = 3, byrow=TRUE, 
+#'   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 2, nrow = 3, byrow=TRUE, 
 #'   # defining the legend positions by the cell numbers
 #'   legend.pos = 3:4
 #'   )
@@ -151,7 +151,7 @@
 #' @seealso \code{\link{ssp}} for defining the plot before using
 #'   \code{gridplot}, and \code{\link{plot.ssp}} for plotting only one ssp object.
 
-gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
+gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
                      withlegend="auto", legend.pos="auto", 
                      legend.pos2="center", title.legend="auto",
                      ncol.legend="auto", 
@@ -211,23 +211,23 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
   }
   
   
-  if(is.na(rows) && is.na(cols)){
-    rows <- ceiling(sqrt(ngridplots))
-    cols <- ceiling(ngridplots/rows)
+  if(is.na(nrow) && is.na(ncol)){
+    nrow <- ceiling(sqrt(ngridplots))
+    ncol <- ceiling(ngridplots/nrow)
     rcfixed <- "none"
-  }else if(is.na(rows)){
-    rows <- ceiling(ngridplots/cols)
-    rcfixed <- "cols"
-  }else if(is.na(cols)){
-    cols <- ceiling(ngridplots/rows)
-    rcfixed <- "rows"
+  }else if(is.na(nrow)){
+    nrow <- ceiling(ngridplots/ncol)
+    rcfixed <- "ncol"
+  }else if(is.na(ncol)){
+    ncol <- ceiling(ngridplots/nrow)
+    rcfixed <- "nrow"
   }else{
     rcfixed <- "both"
   }
   
   
   
-  emptycells <- rows*cols-ngridplots
+  emptycells <- nrow*ncol-ngridplots
   
   if((is.na(withlegend) && withlegend!=FALSE) && length(legend.pos)>1 && emptycells < ngridplots){
     warning("There were not enough empty cells for the legends. Legends were positioned automatically.")
@@ -236,10 +236,10 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
   
   
   
-  gridrows <- rows
-  gridcols <- cols
+  gridnrow <- nrow
+  gridncol <- ncol
   
-  emptycells <- gridrows*gridcols-ngridplots
+  emptycells <- gridnrow*gridncol-ngridplots
   
   # Legend titles
   if(!is.na(withlegend) && withlegend!=FALSE){
@@ -281,40 +281,40 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
       if(byrow==FALSE){
         if(emptycells==0){
           if(rcfixed=="both"){
-            warning(paste0("Legend does not fit to requested grid with ", rows, " rows and ", cols, " columns. A row was added."))
-            gridrows <- rows+1
-            emptycells <- gridrows*gridcols-ngridplots
-          }else if(rcfixed=="cols" || rcfixed=="none"){
-            gridrows <- rows+1
-            emptycells <- gridrows*gridcols-ngridplots
+            warning(paste0("Legend does not fit to requested grid with ", nrow, " nrow and ", ncol, " columns. A row was added."))
+            gridnrow <- nrow+1
+            emptycells <- gridnrow*gridncol-ngridplots
+          }else if(rcfixed=="ncol" || rcfixed=="none"){
+            gridnrow <- nrow+1
+            emptycells <- gridnrow*gridncol-ngridplots
           }else{
-            gridcols <- cols+1
-            emptycells <- gridrows*gridcols-ngridplots
+            gridncol <- ncol+1
+            emptycells <- gridnrow*gridncol-ngridplots
           }
         }
-        if(emptycells<=gridcols){
-          legend.pos <- c(c(gridcols:1)*gridrows)[emptycells:1]
+        if(emptycells<=gridncol){
+          legend.pos <- c(c(gridncol:1)*gridnrow)[emptycells:1]
         }else{
-          legend.pos <- c(gridcols:1)*gridrows
+          legend.pos <- c(gridncol:1)*gridnrow
         }
       }else{
         if(emptycells==0){
           if(rcfixed=="both"){
-            warning(paste0("Legend does not fit to requested grid with ", rows, " rows and ", cols, " columns. A row was added."))
-            gridrows <- rows+1
-            emptycells <- gridrows*gridcols-ngridplots
-          }else if(rcfixed=="cols" || rcfixed=="none"){
-            gridrows <- rows+1
-            emptycells <- gridrows*gridcols-ngridplots
+            warning(paste0("Legend does not fit to requested grid with ", nrow, " nrow and ", ncol, " columns. A row was added."))
+            gridnrow <- nrow+1
+            emptycells <- gridnrow*gridncol-ngridplots
+          }else if(rcfixed=="ncol" || rcfixed=="none"){
+            gridnrow <- nrow+1
+            emptycells <- gridnrow*gridncol-ngridplots
           }else{
-            gridcols <- cols+1
-            emptycells <- gridrows*gridcols-ngridplots
+            gridncol <- ncol+1
+            emptycells <- gridnrow*gridncol-ngridplots
           }
         }
-        if(emptycells<=gridcols){
-          legend.pos <- c((gridrows*gridcols-emptycells+1):(gridrows*gridcols))
+        if(emptycells<=gridncol){
+          legend.pos <- c((gridnrow*gridncol-emptycells+1):(gridnrow*gridncol))
         }else{
-          legend.pos <- c((gridrows*gridcols-floor(emptycells/gridcols)*gridcols+1):(gridrows*gridcols))
+          legend.pos <- c((gridnrow*gridncol-floor(emptycells/gridncol)*gridncol+1):(gridnrow*gridncol))
         }
       }        
       if(length(ncol.legend)==1 && ncol.legend=="auto" && withlegend!=TRUE && 
@@ -327,41 +327,41 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
       if(byrow==FALSE){
         if(emptycells==0){
           if(rcfixed=="both"){
-            warning(paste0("Legend does not fit to requested grid with ", rows, " rows and ", cols, " columns. A column was added."))
-            gridcols <- cols+1
-            emptycells <- gridrows*gridcols-ngridplots
-          }else if(rcfixed=="rows" || rcfixed=="none"){
-            gridcols <- cols+1
-            emptycells <- gridrows*gridcols-ngridplots
+            warning(paste0("Legend does not fit to requested grid with ", nrow, " nrow and ", ncol, " columns. A column was added."))
+            gridncol <- ncol+1
+            emptycells <- gridnrow*gridncol-ngridplots
+          }else if(rcfixed=="nrow" || rcfixed=="none"){
+            gridncol <- ncol+1
+            emptycells <- gridnrow*gridncol-ngridplots
           }else{
-            gridrows <- rows+1
-            emptycells <- gridrows*gridcols-ngridplots
+            gridnrow <- nrow+1
+            emptycells <- gridnrow*gridncol-ngridplots
           }
         }
-        if(emptycells<=gridrows){
-          legend.pos <- c((gridrows*gridcols-emptycells+1):(gridrows*gridcols))
+        if(emptycells<=gridnrow){
+          legend.pos <- c((gridnrow*gridncol-emptycells+1):(gridnrow*gridncol))
         }else{
-          legend.pos <- c((gridrows*gridcols-floor(emptycells/gridrows)*gridrows+1):(gridrows*gridcols))
+          legend.pos <- c((gridnrow*gridncol-floor(emptycells/gridnrow)*gridnrow+1):(gridnrow*gridncol))
         }
         # byrow=TRUE
       }else{
         if(emptycells==0){
           if(rcfixed=="both"){
-            warning(paste0("Legend does not fit to requested grid with ", rows, " rows and ", cols, " columns. A column was added."))
-            gridcols <- cols+1
-            emptycells <- gridrows*gridcols-ngridplots
-          }else if(rcfixed=="rows" || rcfixed=="none"){
-            gridcols <- cols+1
-            emptycells <- gridrows*gridcols-ngridplots
+            warning(paste0("Legend does not fit to requested grid with ", nrow, " nrow and ", ncol, " columns. A column was added."))
+            gridncol <- ncol+1
+            emptycells <- gridnrow*gridncol-ngridplots
+          }else if(rcfixed=="nrow" || rcfixed=="none"){
+            gridncol <- ncol+1
+            emptycells <- gridnrow*gridncol-ngridplots
           }else{
-            gridrows <- rows+1
-            emptycells <- gridrows*gridcols-ngridplots
+            gridnrow <- nrow+1
+            emptycells <- gridnrow*gridncol-ngridplots
           }
         }
-        if(emptycells<=gridrows){
-          legend.pos <- c(c(gridrows:1)*gridcols)[emptycells:1]
+        if(emptycells<=gridnrow){
+          legend.pos <- c(c(gridnrow:1)*gridncol)[emptycells:1]
         }else{
-          legend.pos <- c(gridrows:1)*gridcols
+          legend.pos <- c(gridnrow:1)*gridncol
         }
       }  
       if(length(ncol.legend)==1 && ncol.legend=="auto" && withlegend!=TRUE && 
@@ -373,23 +373,23 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
     if(withlegend==TRUE || withlegend=="auto" || withlegend=="many"){
       if(length(ncol.legend)==1 && ncol.legend=="auto"){
         ncol.legend <- rep(1, x[[1]]$nplots)
-        legend.rows <- sapply(lapply(x[[1]]$obs, "alphabet"), "length")
+        legend.nrow <- sapply(lapply(x[[1]]$obs, "alphabet"), "length")
       }else if(length(ncol.legend)==1 && x[[1]]$nplots>1){
-        legend.rows <- ceiling(sapply(lapply(x[[1]]$obs, "alphabet"), "length")/ncol.legend)
+        legend.nrow <- ceiling(sapply(lapply(x[[1]]$obs, "alphabet"), "length")/ncol.legend)
         ncol.legend <- rep(ncol.legend, x[[1]]$nplots)
       }else if(length(ncol.legend)<x[[1]]$nplots){
         warning(paste0("The length of ncol.legend does not match the number of requested plots. The last were arranged in 1 column."))
         ncol.legend <- c(ncol.legend, rep(1,(x[[1]]$nplots-length(ncol.legend))))
-        legend.rows <- ceiling(sapply(lapply(x[[1]]$obs, "alphabet"), "length")/ncol.legend)
+        legend.nrow <- ceiling(sapply(lapply(x[[1]]$obs, "alphabet"), "length")/ncol.legend)
       }else if(length(ncol.legend)>x[[1]]$nplots){
         warning(paste0("The length of ncol.legend does not match the number of requested plots. Only the first ", x[[1]]$nplots, " arguments of \"ncol.legend\" were used."))
-        legend.rows <- ceiling(sapply(lapply(x[[1]]$obs, "alphabet"), "length")/ncol.legend[1:x[[1]]$nplots])
+        legend.nrow <- ceiling(sapply(lapply(x[[1]]$obs, "alphabet"), "length")/ncol.legend[1:x[[1]]$nplots])
       }else{
-        legend.rows <- ceiling(x$numberOfStates/ncol.legend)
+        legend.nrow <- ceiling(x$number_of_states/ncol.legend)
       }
       
       if(!is.na(title.legend) && title.legend!=FALSE && !is.null(title.legend)){
-        legend.rows <- legend.rows+1
+        legend.nrow <- legend.nrow+1
       }
     }
   }
@@ -399,29 +399,29 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
   
   # Cells' proportions
   if(!is.numeric(row.prop) && row.prop=="auto"){
-    row.prop <- rep(1/gridrows, gridrows)
+    row.prop <- rep(1/gridnrow, gridnrow)
   }
   if(!is.numeric(col.prop) && col.prop=="auto"){
-    col.prop <- rep(1/gridcols, gridcols)
+    col.prop <- rep(1/gridncol, gridncol)
   }
-  if(length(row.prop)!=gridrows){
-    warning("The length of the vector provided for row.prop does not match the number of rows in the plot. Argument row.prop was changed to \"auto\".")
-    row.prop <- rep(1/gridrows, gridrows)
+  if(length(row.prop)!=gridnrow){
+    warning("The length of the vector provided for row.prop does not match the number of nrow in the plot. Argument row.prop was changed to \"auto\".")
+    row.prop <- rep(1/gridnrow, gridnrow)
   }
-  if(length(col.prop)!=gridcols){
+  if(length(col.prop)!=gridncol){
     warning("The length of the vector provided for col.prop does not match the number of columns in the plot. Argument col.prop was changed to \"auto\".")
-    col.prop <- rep(1/gridcols, gridcols)
+    col.prop <- rep(1/gridncol, gridncol)
   }
   
 
   if(byrow==FALSE){
-    plotrows <- rep(c(1:gridrows), times=gridcols)
-    plotcols <- rep(c(1:gridcols), each=gridrows)
-    plotgrid <- cbind(plotrows,plotcols)
+    plotnrow <- rep(c(1:gridnrow), times=gridncol)
+    plotncol <- rep(c(1:gridncol), each=gridnrow)
+    plotgrid <- cbind(plotnrow,plotncol)
     if(!is.na(withlegend) && withlegend!=FALSE){
-      lpos <- matrix(c(1:nrow(plotgrid)), byrow=FALSE, nrow=gridrows)
-      legendplace <- matrix(c(lpos[,] %in% legend.pos), byrow=FALSE, nrow=gridrows)
-      plotplace <- matrix(c(!(lpos[,] %in% legend.pos)), byrow=FALSE, nrow=gridrows)
+      lpos <- matrix(c(1:nrow(plotgrid)), byrow=FALSE, nrow=gridnrow)
+      legendplace <- matrix(c(lpos[,] %in% legend.pos), byrow=FALSE, nrow=gridnrow)
+      plotplace <- matrix(c(!(lpos[,] %in% legend.pos)), byrow=FALSE, nrow=gridnrow)
       plotcells <- plotgrid[c(plotplace),,drop=FALSE][1:ngridplots,]
       plotlegend <- plotgrid[c(legendplace),,drop=FALSE]
       if(legendp=="bottom"){
@@ -442,13 +442,13 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
       plotcells <- plotgrid[1:ngridplots,,drop=FALSE]
     }
   }else{
-    plotrows <- rep(c(1:gridrows), each=gridcols)
-    plotcols <- rep(c(1:gridcols), times=gridrows)
-    plotgrid <- cbind(plotrows,plotcols)
+    plotnrow <- rep(c(1:gridnrow), each=gridncol)
+    plotncol <- rep(c(1:gridncol), times=gridnrow)
+    plotgrid <- cbind(plotnrow,plotncol)
     if(!is.na(withlegend) && withlegend!=FALSE){
-      lpos <- matrix(c(1:nrow(plotgrid)), byrow=TRUE, nrow=gridrows)
-      legendplace <- matrix(c(lpos[,] %in% legend.pos), byrow=FALSE, nrow=gridrows)
-      plotplace <- matrix(c(!(lpos[,] %in% legend.pos)), byrow=FALSE, nrow=gridrows)
+      lpos <- matrix(c(1:nrow(plotgrid)), byrow=TRUE, nrow=gridnrow)
+      legendplace <- matrix(c(lpos[,] %in% legend.pos), byrow=FALSE, nrow=gridnrow)
+      plotplace <- matrix(c(!(lpos[,] %in% legend.pos)), byrow=FALSE, nrow=gridnrow)
       plotcells <- plotgrid[c(t(plotplace)),,drop=FALSE][1:ngridplots,]
       plotlegend <- plotgrid[c(t(legendplace)),,drop=FALSE]
       if(legendp=="right"){
@@ -472,7 +472,7 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
 
   
   multitop.vp <- viewport(layout=
-                            grid.layout(gridrows,gridcols,
+                            grid.layout(gridnrow,gridncol,
                                         widths = do.call(unit,
                                                          args=list(col.prop, 
                                                                    rep("npc", 
@@ -567,7 +567,7 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
       if(legendp=="right"){
         pushViewport(viewport(layout=
                                 grid.layout(nrow=x[[1]]$nplots, ncol=1,
-                                            heights=unit((legend.rows/sum(legend.rows)), 
+                                            heights=unit((legend.nrow/sum(legend.nrow)), 
                                                          "npc")), 
                               width=unit(0.95, "npc")))
         # Legends for channels
@@ -597,7 +597,7 @@ gridplot <- function(x, rows=NA, cols=NA, byrow=FALSE,
       }else{
         pushViewport(viewport(layout=
                                 grid.layout(ncol=x[[1]]$nplots, nrow=1,
-                                            widths=unit((legend.rows/sum(legend.rows)), 
+                                            widths=unit((legend.nrow/sum(legend.nrow)), 
                                                         "npc")), 
                               width=unit(0.95, "npc")))
         # Legends for channels

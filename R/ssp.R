@@ -8,13 +8,13 @@
 #' 
 #' @export
 #' 
-#' @param x Either hidden Markov model object of class \code{HMModel} or a 
+#' @param x Either hidden Markov model object of class \code{hmm} or a 
 #'   sequence object created with the \code{\link{seqdef}} function or a list of
 #'   sequence objects.
 #'   
 #'   
-#' @param mpp Output from \code{\link{mostProbablePath}} function. Optional, if 
-#'   \code{x} is a HMModel object or if \code{type=="obs"}.
+#' @param mpp Output from \code{\link{most_probable_path}} function. Optional, if 
+#'   \code{x} is a hmm object or if \code{type=="obs"}.
 #'   
 #' @param plots What to plot. One of \code{"obs"} for observations (the default), 
 #'   \code{"mpp"} for most probable paths, or \code{"both"} for observations 
@@ -30,7 +30,7 @@
 #'   \code{which="both"} and \code{which="mpp"}. Options \code{"mds.obs"} and 
 #'   \code{"mds.mpp"} automatically arrange the sequences according to the 
 #'   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the 
-#'   observed or hidden states path data from \code{\link{mostProbablePath}}. 
+#'   observed or hidden states path data from \code{\link{most_probable_path}}. 
 #'   MDS scores are computed from distances/dissimilarities using a metric 
 #'   defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for 
 #'   more details on \code{"from.start"} and \code{"from.end"}.
@@ -100,8 +100,8 @@
 #'   \code{\link{colorpalette}} are automatically used. 
 #'   
 #' @param mpp.labels Labels for the hidden states. The default value 
-#'   \code{"auto"} uses the names provided in \code{x$stateNames} if \code{x} is
-#'   an HMModel object; otherwise the number of the hidden state.
+#'   \code{"auto"} uses the names provided in \code{x$state_names} if \code{x} is
+#'   an hmm object; otherwise the number of the hidden state.
 #'   
 #' @param xaxis Controls whether an x-axis is plotted below the plot at the 
 #'   bottom. The default value is \code{TRUE}.
@@ -118,7 +118,7 @@
 #'   
 #' @param ylab Labels for the channels. A vector of names for each channel 
 #'   (observations). The default value \code{"auto"} uses the names provided in 
-#'   \code{x$channelNames} if \code{x} is an HMModel object; otherwise the 
+#'   \code{x$channel_names} if \code{x} is an hmm object; otherwise the 
 #'   number of the channel. \code{FALSE} prints no labels.
 #'   
 #' @param hidden.states.title Optional label for the hidden state plot (in the 
@@ -216,18 +216,18 @@
 #'                 0,    0,    1), nrow = 3, ncol = 3, byrow = TRUE)
 #' 
 #' # Initial values for initial state probabilities
-#' initialProbs <- c(0.9, 0.09, 0.01)
+#' initial_probs <- c(0.9, 0.09, 0.01)
 #' 
 #' # Building hidden Markov model with initial parameter values
-#' bHMM <- buildHMM(
+#' bHMM <- build_hmm(
 #'   observations = list(child.seq, marr.seq, left.seq), 
-#'   transitionMatrix = A,
-#'   emissionMatrix = list(B_child, B_marr, B_left), 
-#'   initialProbs = initialProbs
+#'   transition_matrix = A,
+#'   emission_matrix = list(B_child, B_marr, B_left), 
+#'   initial_probs = initial_probs
 #'   )
 #' 
 #' # Fitting hidden Markov model
-#' HMM <- fitHMM(bHMM)
+#' HMM <- fit_hmm(bHMM)
 #' 
 #' # Plotting observations and hidden states (most probable) paths
 #' ssp3 <- ssp(
@@ -243,7 +243,7 @@
 #' plot(ssp3)
 #' 
 #' # Computing the most probable paths
-#' mpp <- mostProbablePath(HMM$model)$mpp
+#' mpp <- most_probable_path(HMM$model)$mpp
 #' mpp.seq <- seqdef(
 #'   mpp, labels=c("Hidden state 1", "Hidden state 2", "Hidden state 3")
 #'   )
@@ -265,10 +265,10 @@
 #' @return Object of class \code{ssp}.
 #'   
 #' @seealso \code{\link{plot.ssp}} for plotting objects created with 
-#'   \code{ssp}, \code{\link{gridplot}} for plotting multiple ssp 
-#'   objects, \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and 
-#'   fitting Hidden Markov models, and \code{\link{mostProbablePath}} for 
-#'   computing the most probable paths (Viterbi paths) of hidden states.
+#'   the \code{ssp} function, \code{\link{gridplot}} for plotting multiple \code{ssp} 
+#'   objects, \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and 
+#'   fitting hidden Markov models, and \code{\link{most_probable_path}} for 
+#'   computing the most probable paths of hidden states.
 
 
 ssp <- function(x, mpp=NULL,
@@ -287,8 +287,8 @@ ssp <- function(x, mpp=NULL,
   
   arguments <- list()
   
-  if(!inherits(x,"HMModel") && (plots=="both" || plots=="mpp") && is.null(mpp)){
-    stop(paste("For plotting the most probable paths, you need to add the argument mpp or give an object of class HMModel to x."))
+  if(!inherits(x,"hmm") && (plots=="both" || plots=="mpp") && is.null(mpp)){
+    stop(paste("For plotting the most probable paths, you need to add the argument mpp or give an object of class hmm to x."))
   }
   
   if(!is.null(mpp) && !inherits(mpp,"stslist")){
@@ -322,26 +322,26 @@ ssp <- function(x, mpp=NULL,
   
   dist.method <- match.arg(dist.method, c("OM", "LCP", "RLCP", "LCS", "HAM", "DHD"))
   
-  if(inherits(x,"HMModel")){
+  if(inherits(x,"hmm")){
     obs <- x$observations
-    channelNames <- x$channelNames
+    channel_names <- x$channel_names
     if(length(ylab)>1 || (!is.na(ylab) && ylab!=FALSE)){
       if(plots!="mpp"){
         if(length(ylab)==1 && ylab=="auto"){
-          ylab <- x$channelNames
+          ylab <- x$channel_names
         }else if(length(ylab)==1 && 
-                   x$numberOfChannels>1 && ylab!="auto"){
+                   x$number_of_channels>1 && ylab!="auto"){
           warning("The length of ylab does not match the number of channels.")
-          ylab <- rep(ylab, x$numberOfChannels)
-          channelNames <- ylab
-        }else if(length(ylab) < x$numberOfChannels && !is.na(ylab)){
+          ylab <- rep(ylab, x$number_of_channels)
+          channel_names <- ylab
+        }else if(length(ylab) < x$number_of_channels && !is.na(ylab)){
           warning("The length of ylab does not match the number of channels.")
-          ylab <- rep(ylab, x$numberOfChannels)
-          channelNames <- ylab
-        }else if(length(ylab) > x$numberOfChannels){
+          ylab <- rep(ylab, x$number_of_channels)
+          channel_names <- ylab
+        }else if(length(ylab) > x$number_of_channels){
           warning("The length of ylab does not match the number of channels.")
-          ylab <- ylab[1:x$numberOfChannels]
-          channelNames <- ylab
+          ylab <- ylab[1:x$number_of_channels]
+          channel_names <- ylab
         }
       }else{
         if(!is.null(ylab) && hidden.states.title=="Hidden states"){
@@ -352,25 +352,25 @@ ssp <- function(x, mpp=NULL,
     # Single channel stslist
   }else if(inherits(x, "stslist")){
     obs <- x
-    channelNames <- 1
+    channel_names <- 1
     if(length(ylab)>1 || (!is.na(ylab) && ylab!=FALSE)){
       if(length(ylab)==1 && ylab=="auto"){
         ylab <- 1
       }else if(length(ylab) > 1){
         warning("The length of ylab does not match the number of channels (1).")
         ylab <- ylab[1]
-        channelNames <- ylab
+        channel_names <- ylab
       }
     }
     # List of stslists
   }else{
     for(i in 1:length(x)){
       if(!inherits(x[[i]], "stslist")){
-        stop("At least one of the list members is not an stslist object. Use seqdef to create one or provide an object of class HMModel.")
+        stop("At least one of the list members is not an stslist object. Use seqdef to create one or provide an object of class hmm.")
       }
     }
     obs <- x
-    channelNames <- 1:length(obs)
+    channel_names <- 1:length(obs)
     if(length(ylab)>1 || (!is.na(ylab) && ylab!=FALSE)){
       if(length(ylab)==1 && ylab=="auto"){
         ylab <- 1:length(obs)
@@ -378,21 +378,21 @@ ssp <- function(x, mpp=NULL,
                  length(obs)>1 && ylab!="auto"){
         warning("The length of ylab does not match the number of channels.")
         ylab <- rep(ylab, length(obs))
-        channelNames <- ylab
+        channel_names <- ylab
       }else if(length(ylab) < length(obs)){
         warning("The length of ylab does not match the number of channels.")
         ylab <- rep(ylab, length(obs))
-        channelNames <- ylab
+        channel_names <- ylab
       }else if(length(ylab) > length(obs)){
         warning("The length of ylab does not match the number of channels.")
         ylab <- ylab[1:length(obs)]
-        channelNames <- ylab
+        channel_names <- ylab
       }
     }
   }  
   
   # Number of channels
-  nchannels <- length(channelNames)
+  nchannels <- length(channel_names)
   
   # Check the number of sequences
   ncheck <- NULL
@@ -494,7 +494,7 @@ ssp <- function(x, mpp=NULL,
     xt.space <- 1
   }
   
-  arguments <- list(obs=obs, nchannels=nchannels, channelNames=channelNames, nplots=nplots, 
+  arguments <- list(obs=obs, nchannels=nchannels, channel_names=channel_names, nplots=nplots, 
                     legend.c.prop=legend.c.prop, legend.r.prop=legend.r.prop,
                     ylab.space=ylab.space, xaxis.space=xaxis.space, xt.space=xt.space)
   
@@ -567,7 +567,7 @@ ssp <- function(x, mpp=NULL,
     }
     # Computing mpp
     if(is.null(mpp)){
-      mpp <- suppressMessages(mostProbablePath(x)$mpp)
+      mpp <- suppressMessages(most_probable_path(x)$mpp)
       if(length(mpp.labels)==1 && is.null(mpp.labels)){
         mpp.labels <- rep("", length(alphabet(mpp)))
       }

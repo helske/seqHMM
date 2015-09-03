@@ -4,7 +4,7 @@
 \alias{gridplot}
 \title{Plot Multidimensional Sequence Plots in a Grid}
 \usage{
-gridplot(x, rows = NA, cols = NA, byrow = FALSE, withlegend = "auto",
+gridplot(x, nrow = NA, ncol = NA, byrow = FALSE, withlegend = "auto",
   legend.pos = "auto", legend.pos2 = "center", title.legend = "auto",
   ncol.legend = "auto", with.missing.legend = "auto", row.prop = "auto",
   col.prop = "auto", cex.legend = 1)
@@ -12,7 +12,7 @@ gridplot(x, rows = NA, cols = NA, byrow = FALSE, withlegend = "auto",
 \arguments{
 \item{x}{A list of \code{ssp} objects.}
 
-\item{rows,cols}{Optional arguments to arrange plots.}
+\item{nrow,ncol}{Optional arguments to arrange plots.}
 
 \item{byrow}{Controls the order of plotting. Defaults to \code{FALSE}, i.e. plots
   are arranged columnwise.}
@@ -110,7 +110,7 @@ ssp_m <- ssp(
   )
 
 # Plotting state distribution plots of observations for women and men in two columns
-gridplot(list(ssp_f, ssp_m), cols = 2, withlegend = FALSE)
+gridplot(list(ssp_f, ssp_m), ncol = 2, withlegend = FALSE)
 
 # Preparing plots for women's state distributions
 ssp_f2 <- ssp(
@@ -141,13 +141,13 @@ ssp_m3 <- update(
 # Plotting state distributions and index plots of observations
 # for women and men in two columns
 gridplot(
-  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=3, byrow=TRUE,
+  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol=3, byrow=TRUE,
   withlegend="combined", legend.pos="right", col.prop=c(0.35,0.35,0.3)
   )
 
 # The same with different positioning
 gridplot(
-  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols = 2, rows = 3, byrow=TRUE,
+  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 2, nrow = 3, byrow=TRUE,
   # defining the legend positions by the cell numbers
   legend.pos = 3:4
   )

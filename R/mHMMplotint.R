@@ -16,28 +16,28 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout="horizontal",
   on.exit(par(oldPar))
   on.exit(par(mfrow=c(1,1)))
   
-  divmodels <- sepMixHMM(x)
+  divmodels <- separate_mhmm(x)
   
   if (is.null(which.plots) && !ask){
-    which.plots <- 1:x$numberOfClusters
+    which.plots <- 1:x$number_of_clusters
   }
   
   if(!is.null(which.plots)){
-    if(any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$numberOfClusters))){
-      stop(paste0("The which.plot argument only accepts numerical values between 1 and ", x$numberOfClusters, "."))
+    if(any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$number_of_clusters))){
+      stop(paste0("The which.plot argument only accepts numerical values between 1 and ", x$number_of_clusters, "."))
     }
   }else if(!ask && is.null(which.plots)){
-    which.plots <- 1:x$numberOfClusters
+    which.plots <- 1:x$number_of_clusters
   }
   
   if (ask && is.null(which.plots)) {
-    tmenu <- x$clusterNames
+    tmenu <- x$cluster_names
     repeat {
       pick <- menu(tmenu, title = "\nSelect graph (or 0 to exit):\n")
       if(pick==0){
         return(invisible())
       }else{
-        plot.HMModel(divmodels[[pick]], layout, pie, 
+        plot.hmm(divmodels[[pick]], layout, pie, 
                      vertex.size, vertex.label, 
                      vertex.label.dist, vertex.label.pos,
                      vertex.label.family,
@@ -59,7 +59,7 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout="horizontal",
       if(pick==0){
         return(invisible())
       }else{
-        plot.HMModel(divmodels[[pick]], layout, pie, 
+        plot.hmm(divmodels[[pick]], layout, pie, 
                      vertex.size, vertex.label, 
                      vertex.label.dist, vertex.label.pos,
                      vertex.label.family,
@@ -77,7 +77,7 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout="horizontal",
   }else {
     ask <- length(which.plots) > 1
     for (i in which.plots) {
-      plot.HMModel(divmodels[[i]], layout, pie, 
+      plot.hmm(divmodels[[i]], layout, pie, 
                    vertex.size, vertex.label, 
                    vertex.label.dist, vertex.label.pos,
                    vertex.label.family,

@@ -1,4 +1,4 @@
-SSPlotter <- function(obs, nchannels, channelNames, nplots, 
+SSPlotter <- function(obs, nchannels, channel_names, nplots, 
                        legend.c.prop, legend.r.prop,
                        ylab.space, xaxis.space, xt.space,
                        mpp.seq=NULL, orderv=NULL,

@@ -15,12 +15,12 @@ ssp(x, mpp = NULL, plots = "obs", type = "I", sortv = NULL,
   ylab.pos = "auto", cex.lab = 1, cex.axis = 1, ...)
 }
 \arguments{
-\item{x}{Either hidden Markov model object of class \code{HMModel} or a
+\item{x}{Either hidden Markov model object of class \code{hmm} or a
   sequence object created with the \code{\link{seqdef}} function or a list of
   sequence objects.}
 
 \item{mpp}{Output from \code{\link{mostProbablePath}} function. Optional, if
-  \code{x} is a HMModel object or if \code{type=="obs"}.}
+  \code{x} is a hmm object or if \code{type=="obs"}.}
 
 \item{plots}{What to plot. One of \code{"obs"} for observations (the default),
   \code{"mpp"} for most probable paths, or \code{"both"} for observations
@@ -106,8 +106,8 @@ ssp(x, mpp = NULL, plots = "obs", type = "I", sortv = NULL,
   \code{\link{colorpalette}} are automatically used.}
 
 \item{mpp.labels}{Labels for the hidden states. The default value
-  \code{"auto"} uses the names provided in \code{x$stateNames} if \code{x} is
-  an HMModel object; otherwise the number of the hidden state.}
+  \code{"auto"} uses the names provided in \code{x$state_names} if \code{x} is
+  an hmm object; otherwise the number of the hidden state.}
 
 \item{xaxis}{Controls whether an x-axis is plotted below the plot at the
   bottom. The default value is \code{TRUE}.}
@@ -124,7 +124,7 @@ ssp(x, mpp = NULL, plots = "obs", type = "I", sortv = NULL,
 
 \item{ylab}{Labels for the channels. A vector of names for each channel
   (observations). The default value \code{"auto"} uses the names provided in
-  \code{x$channelNames} if \code{x} is an HMModel object; otherwise the
+  \code{x$channel_names} if \code{x} is an hmm object; otherwise the
   number of the channel. \code{FALSE} prints no labels.}
 
 \item{hidden.states.title}{Optional label for the hidden state plot (in the
@@ -229,18 +229,18 @@ A <- matrix(c(0.9, 0.07, 0.03,
                 0,    0,    1), nrow = 3, ncol = 3, byrow = TRUE)
 
 # Initial values for initial state probabilities
-initialProbs <- c(0.9, 0.09, 0.01)
+initial_probs <- c(0.9, 0.09, 0.01)
 
 # Building hidden Markov model with initial parameter values
-bHMM <- buildHMM(
+bHMM <- build_hmm(
   observations = list(child.seq, marr.seq, left.seq),
-  transitionMatrix = A,
-  emissionMatrix = list(B_child, B_marr, B_left),
-  initialProbs = initialProbs
+  transition_matrix = A,
+  emission_matrix = list(B_child, B_marr, B_left),
+  initial_probs = initial_probs
   )
 
 # Fitting hidden Markov model
-HMM <- fitHMM(bHMM)
+HMM <- fit_hmm(bHMM)
 
 # Plotting observations and hidden states (most probable) paths
 ssp3 <- ssp(
@@ -277,9 +277,9 @@ plot(ssp4)
 }
 \seealso{
 \code{\link{plot.ssp}} for plotting objects created with
-  \code{ssp}, \code{\link{gridplot}} for plotting multiple ssp
-  objects, \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and
-  fitting Hidden Markov models, and \code{\link{mostProbablePath}} for
-  computing the most probable paths (Viterbi paths) of hidden states.
+  the \code{ssp} function, \code{\link{gridplot}} for plotting multiple \code{ssp}
+  objects, \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and
+  fitting hidden Markov models, and \code{\link{mostProbablePath}} for
+  computing the most probable paths of hidden states.
 }
 
