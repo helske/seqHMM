@@ -523,8 +523,7 @@ mssplot(
 Coming later
 ---------------------------------------------------------------------------------------
 
-<ul> 
- <li>Function for computing posterior probabilities</li>
+<ul>
  <li>Markov models</li>
  <li>Simulating sequences from HMMs</li>
 </ul> 
