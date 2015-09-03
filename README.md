@@ -13,13 +13,12 @@ Package is still under development and should be available at CRAN in 2015.
 
 We would be happy to hear feedback! If you have any questions, comments, or wishes, please contact Satu Helske or Jouni Helske, firstname.lastname@jyu.fi.
 
-If you want to try the `seqHMM` package, you can install it via the `devtools` package. Install also the latest version of `igraph`, which is needed for plotting HMMs. Just paste the following lines in R and you are ready to go.
+If you want to try the `seqHMM` package, you can install it via the `devtools` package:
 
 ```R
 install.packages("devtools")
 library(devtools)
 install_github("helske/seqHMM")
-install_github("igraph/rigraph")
 ```
 
 Preview of the `seqHMM` package

@@ -22,7 +22,7 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
 
 \item{which.plots}{The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots.}
 
-\item{mpp}{Output from \code{\link{mostProbablePath}} function.}
+\item{mpp}{Output from \code{\link{most_probable_path}} function.}
 
 \item{plots}{What to plot. One of \code{"obs"} for observations, \code{"mpp"}
   for most probable paths, or \code{"both"} for observations
@@ -38,7 +38,7 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
   \code{which="both"} and \code{which="mpp"}. Options \code{"mds.obs"} and
   \code{"mds.mpp"} automatically arrange the sequences according to the
   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the
-  observed or hidden states path data from \code{\link{mostProbablePath}}.
+  observed or hidden states path data from \code{\link{most_probable_path}}.
   MDS scores are computed from distances/dissimilarities using a metric
   defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for
   more details on \code{"from.start"} and \code{"from.end"}.}
@@ -103,7 +103,7 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
   reduce the size of the font, values greater than 1 will increase the size.}
 
 \item{mpp.color}{A vector of colors assigned to hidden states (as ordered by
-  the \code{\link{mostProbablePath}} function). The default value \code{"auto"} uses
+  the \code{\link{most_probable_path}} function). The default value \code{"auto"} uses
   the colors assigned to the stslist object created with \code{seqdef} if \code{mpp}
   is given; otherwise colors from \code{\link{colorpalette}} are automatically used.}
 
@@ -126,7 +126,7 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
 
 \item{ylab}{Labels for the channels. A vector of names for each channel
   (observations). The default value \code{"auto"} uses the names provided in
-  \code{x$channelNames} if \code{x} is an hmm object; otherwise the
+  \code{x$channel_names} if \code{x} is an hmm object; otherwise the
   number of the channel. \code{FALSE} prints no labels.}
 
 \item{hidden.states.title}{Optional label for the hidden state plot (in the
@@ -286,7 +286,7 @@ bMHMM <- buildMixHMM(
                         list(B3_child, B3_marr, B3_left)),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
   formula = ~ sex * birthyr + sex * swiss, data = biofam,
-  clusterNames = c("Cluster 1", "Cluster 2", "Cluster 3"),
+  cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
   channel_names = c("Parenthood", "Marriage", "Left home")
   )
 
@@ -300,7 +300,7 @@ mssplot(bMHMM, which.plots=1)
 }
 \seealso{
 \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building and
-  fitting Hidden Markov models, \code{\link{mostProbablePath}} for
+  fitting Hidden Markov models, \code{\link{most_probable_path}} for
   computing the most probable paths (Viterbi paths) of hidden states, and
   \code{\link{plot.mhmm}} for plotting parameters of \code{mhmm} objects.
 }
