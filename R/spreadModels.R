@@ -1,55 +1,55 @@
-# Transform a mixHMModel object to separate HMModel objects
+# Transform a mhmm object to separate hmm objects
 
-spreadModels <- function(model){
+spread_models <- function(model){
   
-  stnames <-unlist(model$originalStateNames)
-  rownames(model$transitionMatrix) <- colnames(model$transitionMatrix) <- stnames
+  stnames <-unlist(model$original_state_names)
+  rownames(model$transition_matrix) <- colnames(model$transition_matrix) <- stnames
   
-  if(model$numberOfChannels==1){
-    rownames(model$emissionMatrix) <- stnames
+  if(model$number_of_channels==1){
+    rownames(model$emission_matrix) <- stnames
   }else{  
-    for(j in 1:model$numberOfChannels){
-      rownames(model$emissionMatrix[[j]]) <- stnames
+    for(j in 1:model$number_of_channels){
+      rownames(model$emission_matrix[[j]]) <- stnames
     }
   }
   
-  names(model$emissionMatrix) <- model$channelNames
+  names(model$emission_matrix) <- model$channel_names
   
-  transM <- vector("list", model$numberOfClusters)
-  emissM <- vector("list", model$numberOfClusters)
-  init <- vector("list", model$numberOfClusters)
+  transM <- vector("list", model$number_of_clusters)
+  emissM <- vector("list", model$number_of_clusters)
+  init <- vector("list", model$number_of_clusters)
   k <- 0
-  if(model$numberOfChannels==1){
-    for(m in 1:model$numberOfClusters){
-      transM[[m]] <- model$transitionMatrix[(k+1):(k+model$numberOfStatesInClusters[m]),
-                                            (k+1):(k+model$numberOfStatesInClusters[m])]
-        emissM[[m]] <- model$emissionMatrix[(k+1):(k+model$numberOfStatesInClusters[m]),]
-      names(emissM[[m]]) <- model$channelNames
-      init[[m]] <- unname(model$initialProbs[(k+1):(k+model$numberOfStatesInClusters[m])])
-      k <- sum(model$numberOfStatesInClusters[1:m])
+  if(model$number_of_channels==1){
+    for(m in 1:model$number_of_clusters){
+      transM[[m]] <- model$transition_matrix[(k+1):(k+model$number_of_states_in_clusters[m]),
+                                            (k+1):(k+model$number_of_states_in_clusters[m])]
+        emissM[[m]] <- model$emission_matrix[(k+1):(k+model$number_of_states_in_clusters[m]),]
+      names(emissM[[m]]) <- model$channel_names
+      init[[m]] <- unname(model$initial_probs[(k+1):(k+model$number_of_states_in_clusters[m])])
+      k <- sum(model$number_of_states_in_clusters[1:m])
     }
   }else{  
-    for(m in 1:model$numberOfClusters){
-      transM[[m]] <- model$transitionMatrix[(k+1):(k+model$numberOfStatesInClusters[m]),
-                                            (k+1):(k+model$numberOfStatesInClusters[m])]
-      for(j in 1:model$numberOfChannels){
-        emissM[[m]][[j]] <- model$emissionMatrix[[j]][(k+1):(k+model$numberOfStatesInClusters[m]),]
+    for(m in 1:model$number_of_clusters){
+      transM[[m]] <- model$transition_matrix[(k+1):(k+model$number_of_states_in_clusters[m]),
+                                            (k+1):(k+model$number_of_states_in_clusters[m])]
+      for(j in 1:model$number_of_channels){
+        emissM[[m]][[j]] <- model$emission_matrix[[j]][(k+1):(k+model$number_of_states_in_clusters[m]),]
       }
-      names(emissM[[m]]) <- model$channelNames
-      init[[m]] <- unname(model$initialProbs[(k+1):(k+model$numberOfStatesInClusters[m])])
-      k <- sum(model$numberOfStatesInClusters[1:m])
+      names(emissM[[m]]) <- model$channel_names
+      init[[m]] <- unname(model$initial_probs[(k+1):(k+model$number_of_states_in_clusters[m])])
+      k <- sum(model$number_of_states_in_clusters[1:m])
     }
   }
   
-  names(transM) <- names(emissM) <- names(init) <- model$ClusterNames
+  names(transM) <- names(emissM) <- names(init) <- model$cluster_names
   
-  model$transitionMatrix <- transM
-  model$emissionMatrix <- emissM
-  model$initialProbs <- init
-  model$stateNames <- model$originalStateNames
-  model$numberOfStates <- model$numberOfStatesInClusters
-  model$originalStateNames<-model$numberOfStatesInClusters<-NULL
-  class(model) <- "mixHMModel"
+  model$transition_matrix <- transM
+  model$emission_matrix <- emissM
+  model$initial_probs <- init
+  model$state_names <- model$original_state_names
+  model$number_of_states <- model$number_of_states_in_clusters
+  model$original_state_names<-model$number_of_states_in_clusters<-NULL
+  class(model) <- "mhmm"
   
   model
 }

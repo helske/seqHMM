@@ -1,21 +1,21 @@
 #' Posterior Probabilities for Hidden Markov Model
 #'
-#' Function \code{posteriorProbs} computes the posterior probabilities of hidden states of
-#' hidden Markov model given the observations in logarithm scale.
+#' Function \code{posterior_probs} computes the posterior probabilities of hidden states of
+#' a hidden Markov model given the observations in logarithm scale.
 #'
 #' @export 
-#' @param model Hidden Markov model of class \code{HMModel}.
+#' @param model A (mixture) hidden Markov model of class \code{hmm} or \code{mhmm}.
 #' @return Posterior probabilities in logarithm scale. In case of multiple observations,
 #' these are computed independently for each sequence.
-posteriorProbs<-function(model){
+posterior_probs<-function(model){
   
   fw <- forwardProbs(model)
   bw <- backwardProbs(model)
   ll <- logLik(model, partials = TRUE)
   
   out <- fw + bw - array(rep(ll, each = 
-      sum(model$numberOfStates)*model$lengthOfSequences), c(sum(model$numberOfStates), model$lengthOfSequences, model$numberOfSequences))
+      sum(model$number_of_states)*model$length_of_sequences), c(sum(model$number_of_states), model$length_of_sequences, model$number_of_sequences))
   
-  dimnames(out)<-list("state" = rownames(fw), "time" = 1:model$lengthOfSequences, "sequence" = 1:model$numberOfSequences)
+  dimnames(out)<-list("state" = rownames(fw), "time" = 1:model$length_of_sequences, "sequence" = 1:model$number_of_sequences)
   out
 }

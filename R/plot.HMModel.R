@@ -1,16 +1,16 @@
 
 #' Plot hidden Markov models
 #' 
-#' Function \code{plot.HMModel} plots a directed graph with pie charts of 
+#' Function \code{plot.hmm} plots a directed graph with pie charts of 
 #' emission probabilities as vertices/nodes.
 #' 
 #' @import igraph
 #' @export
 #' 
-#' @param x A hidden Markov model object of class HMModel created with 
-#'   \code{\link{buildHMM}} and \code{\link{fitHMM}}. Multichannel 
-#'   HMModel objects are automatically transformed to single channel objects. 
-#'   See function \code{\link{MCtoSC}} for more information on the 
+#' @param x A hidden Markov model object of class hmm created with 
+#'   \code{\link{build_hmm}} and \code{\link{fit_hmm}}. Multichannel 
+#'   hmm objects are automatically transformed to single channel objects. 
+#'   See function \code{\link{mc_to_sc}} for more information on the 
 #'   transformation.
 #' @param layout specifies the layout of the vertices (nodes). Accepts a 
 #'   numerical matrix, a layout function, or either of \code{"horizontal"} (the 
@@ -87,16 +87,16 @@
 #'   \code{"auto"} sets the number of columns automatically.
 #' @param cpal Optional color palette for the (combinations of) observed states.
 #'   The default value \code{"auto"} uses automatic color palette. Otherwise a 
-#'   vector of length \code{x$numberOfSymbols} is given, i.e. requires a color 
+#'   vector of length \code{x$number_of_symbols} is given, i.e. requires a color 
 #'   specified for all (combinations of) observed states even if they are not 
 #'   plotted (if the probability is less than combine.slices).
 #' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as 
 #'   \code{vertex.color}, \code{vertex.label.cex}, \code{edge.lty}, 
 #'   \code{margin}, or \code{main}.
 #'   
-#' @seealso \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and 
-#'   fitting Hidden Markov models, \code{\link{MCtoSC}} for transforming 
-#'   multistate HMModel objects to single channel objects, and 
+#' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and 
+#'   fitting Hidden Markov models, \code{\link{mc_to_sc}} for transforming 
+#'   multistate hmm objects to single channel objects, and 
 #'   \code{\link{plot.igraph}} for the general plotting function of directed graphs.
 #'   
 #' @examples 
@@ -130,16 +130,16 @@
 #'               0.05, 0.05, 0.10, 0.80), nrow=4, ncol=4, byrow=TRUE)
 #' 
 #' # Starting values for initial state probabilities
-#' initialProbs <- c(0.9, 0.07, 0.02, 0.01)
+#' initial_probs <- c(0.9, 0.07, 0.02, 0.01)
 #' 
 #' # Building a hidden Markov model with starting values
-#' bHMM <- buildHMM(
-#'   observations = biofam.seq, transitionMatrix = A, 
-#'   emissionMatrix = B, initialProbs = initialProbs
+#' bHMM <- build_hmm(
+#'   observations = biofam.seq, transition_matrix = A, 
+#'   emission_matrix = B, initial_probs = initial_probs
 #' )
 #' 
 #' # Fitting HMM
-#' HMM <- fitHMM(bHMM)
+#' HMM <- fit_hmm(bHMM)
 #' 
 #' # Plotting HMM
 #' plot(HMM$model)
@@ -201,18 +201,18 @@
 #'             nrow=4, ncol=4, byrow=TRUE)
 #'   
 #' # Initial values for initial state probabilities 
-#' initialProbs <- c(0.9, 0.07, 0.02, 0.01)
+#' initial_probs <- c(0.9, 0.07, 0.02, 0.01)
 #'   
 #' # Building hidden Markov model with initial parameter values 
-#' bHMM <- buildHMM(observations=list(child.seq, marr.seq, left.seq), 
-#'                  transitionMatrix=A, 
-#'                  emissionMatrix=list(B_child, B_marr, B_left),
-#'                  initialProbs=initialProbs)
+#' bHMM <- build_hmm(observations=list(child.seq, marr.seq, left.seq), 
+#'                  transition_matrix=A, 
+#'                  emission_matrix=list(B_child, B_marr, B_left),
+#'                  initial_probs=initial_probs)
 #'   
 #' # Fitting hidden Markov model 
-#' HMM <- fitHMM(bHMM)
+#' HMM <- fit_hmm(bHMM)
 #'   
-#' # Plotting HMModel object 
+#' # Plotting hmm object 
 #' plot(HMM$model)
 #' 
 #' # Plotting HMM with
@@ -277,7 +277,7 @@
 #'      vertex.label.dist=0)
 
 
-plot.HMModel <- function(x, layout="horizontal", pie=TRUE, 
+plot.hmm <- function(x, layout="horizontal", pie=TRUE, 
                          vertex.size=40, vertex.label="initial.probs", 
                          vertex.label.dist="auto", vertex.label.pos="bottom",
                          vertex.label.family="sans",
@@ -323,8 +323,8 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
     withlegend <- match.arg(withlegend, c("bottom", "top", "left", "right"))
   }
   
-  if(x$numberOfChannels>1){
-    x <- MCtoSC(x)
+  if(x$number_of_channels>1){
+    x <- mc_to_sc(x)
   }
   
   if(pie==FALSE && withlegend!=FALSE){
@@ -349,34 +349,34 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
   if(length(vertex.label)==1){
     if(!is.na(vertex.label) && vertex.label!=FALSE){
       if(vertex.label=="initial.probs"){
-        vertex.label <- sapply(x$initialProbs, labelprint, labs=label.scientific)
+        vertex.label <- sapply(x$initial_probs, labelprint, labs=label.scientific)
       }else if(vertex.label=="names"){
-        vertex.label <- x$stateNames
+        vertex.label <- x$state_names
       }
     }
-  }else if(length(vertex.label)<length(x$stateNames)){
+  }else if(length(vertex.label)<length(x$state_names)){
     warning("The length of the vector provided for the argument \"vertex.label\" is less than the number of hidden states. The vertor was repeated to archieve the correct length.")
-    vertex.label <- rep(vertex.label, length.out=length(x$stateNames))
-  }else if(length(vertex.label)<length(x$stateNames)){
-    warning(paste("The length of the vector provided for the argument \"vertex.label\" is more than the number of number of hidden states. Only the first", length(x$stateNames), "labels were used."))
-    vertex.label <- vertex.label[1:length(x$stateNames)]
+    vertex.label <- rep(vertex.label, length.out=length(x$state_names))
+  }else if(length(vertex.label)<length(x$state_names)){
+    warning(paste("The length of the vector provided for the argument \"vertex.label\" is more than the number of number of hidden states. Only the first", length(x$state_names), "labels were used."))
+    vertex.label <- vertex.label[1:length(x$state_names)]
   }
   
   # Vertex label distances
   if(is.character(vertex.label.dist)){
     match.arg(vertex.label.dist, c("auto"))
     vertex.label.dist <- vertex.size*0.4/10
-  }else if(length(vertex.label.dist)>1 && length(vertex.label.dist)<x$numberOfStates){
+  }else if(length(vertex.label.dist)>1 && length(vertex.label.dist)<x$number_of_states){
     warning("The length of the vector provided for the argument \"vertex.label.dist\" is less than the number of edges. The vector was repeated to archieve the correct length.")
-    vertex.label.dist <- rep(vertex.label.dist, length.out=length(x$numberOfStates))
-  }else if(length(vertex.label.dist)>1 && length(vertex.label.dist)>x$numberOfStates){
-    warning(paste("The length of the vector provided for the argument \"vertex.label.dist\" is more than the number of edges. Only the first", length(x$numberOfStates), "labels were used."))
-    vertex.label.dist <- vertex.label.dist[1:length(x$numberOfStates)]
+    vertex.label.dist <- rep(vertex.label.dist, length.out=length(x$number_of_states))
+  }else if(length(vertex.label.dist)>1 && length(vertex.label.dist)>x$number_of_states){
+    warning(paste("The length of the vector provided for the argument \"vertex.label.dist\" is more than the number of edges. Only the first", length(x$number_of_states), "labels were used."))
+    vertex.label.dist <- vertex.label.dist[1:length(x$number_of_states)]
   }
   
   
   # Trimming
-  transM <- x$transitionMatrix
+  transM <- x$transition_matrix
   transM[transM<trim] <- 0
   
   # Adjacency matrix
@@ -431,7 +431,7 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
     glayout <- layout
   }else{
     if(layout=="horizontal"){
-      glayout <- layout_on_grid(g1, width=x$numberOfStates)
+      glayout <- layout_on_grid(g1, width=x$number_of_states)
     }else if(layout=="vertical"){
       glayout <- layout_on_grid(g1, width=1)
     }
@@ -455,11 +455,11 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
   # Legend position and number of columns
   if(withlegend!=FALSE && pie==TRUE){
     if(!is.null(ltext)){
-      if(length(ltext)!=x$numberOfSymbols){
+      if(length(ltext)!=x$number_of_symbols){
         warning("The length of the argument ltext does not match the number of observed states.")
       }
     }else{
-      ltext <- x$symbolNames
+      ltext <- x$symbol_names
     }
     if(withlegend=="bottom" || withlegend==TRUE){
       graphics::layout(matrix(1:2, nrow=2), heights=c(1-legend.prop, legend.prop))
@@ -530,12 +530,12 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
   
   # Plotting graph
   if(pie==TRUE){
-    pie.values <- lapply(seq_len(nrow(transM)), function(i) x$emissionMatrix[i,])
+    pie.values <- lapply(seq_len(nrow(transM)), function(i) x$emission_matrix[i,])
     if(combine.slices>0){
       pie.colors.l <- NULL
       if(withlegend!=FALSE){
         lt <- NULL
-        for(i in 1:x$numberOfStates){
+        for(i in 1:x$number_of_states){
           cs.prob <- sum(pie.values[[i]][pie.values[[i]]<combine.slices])
           pie.values[[i]][pie.values[[i]]<combine.slices] <- 0
           pie.colors.l <- c(pie.colors.l,pie.colors[pie.values[[i]]>=combine.slices])
@@ -544,7 +544,7 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
         }
         ltext <- c(unique(lt), combined.slice.label)
       }else{
-        for(i in 1:x$numberOfStates){
+        for(i in 1:x$number_of_states){
           cs.prob <- sum(pie.values[[i]][pie.values[[i]]<combine.slices])
           pie.values[[i]][pie.values[[i]]<combine.slices] <- 0
           pie.colors.l <- c(pie.colors.l,pie.colors[pie.values[[i]]>=combine.slices])
@@ -563,7 +563,7 @@ plot.HMModel <- function(x, layout="horizontal", pie=TRUE,
     }else{
       if(ncol.legend=="auto"){
         if(withlegend=="bottom" || withlegend==TRUE || withlegend=="top"){
-          ncol.legend <- ceiling(ncol(x$emissionMatrix)/4)
+          ncol.legend <- ceiling(ncol(x$emission_matrix)/4)
         }else{
           ncol.legend <- 1
         }

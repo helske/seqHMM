@@ -1,18 +1,18 @@
-#' Interactive Plotting for Mixed Hidden Markov Model (mixHMModel)
+#' Interactive Plotting for Mixed Hidden Markov Model (mhmm)
 #' 
-#' Function \code{plot.mixHMModel} plots a directed graph of the parameters of each model 
+#' Function \code{plot.mhmm} plots a directed graph of the parameters of each model 
 #' with pie charts of emission probabilities as vertices/nodes.
 #' 
 #' @export
 #' 
-#' @param x A hidden Markov model object of class mixHMModel created with 
-#'   \code{\link{buildMixHMM}} and \code{\link{fitMixHMM}}. Multichannel 
-#'   HMModel objects are automatically transformed to single channel objects. 
-#'   See function \code{\link{MCtoSC}} for more information on the 
+#' @param x A hidden Markov model object of class mhmm created with 
+#'   \code{\link{build_mhmm}} and \code{\link{fit_mhmm}}. Multichannel 
+#'   mhmm objects are automatically transformed to single channel objects. 
+#'   See function \code{\link{mc_to_sc}} for more information on the 
 #'   transformation.
 #' @param interactive Whether to plot each cluster in succession or in a grid. Defaults to TRUE, i.e. clusters are plotted one after another.
 #' 
-#' @param ask If true and \code{which.plots} is NULL, \code{plot.mixHMModel} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}. Ignored if \code{interactive=FALSE}.
+#' @param ask If true and \code{which.plots} is NULL, \code{plot.mhmm} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}. Ignored if \code{interactive=FALSE}.
 #' @param which.plots The number(s) of the requested cluster(s) as an integer vector. The default \code{NULL} produces all plots. Ignored if \code{interactive=FALSE}.
 #' 
 #' @param rows,cols Optional arguments to arrange plots in a grid. Ignored if \code{interactive=TRUE}.
@@ -104,14 +104,14 @@
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #' @param cpal Optional color palette for the (combinations of) observed states.
 #'   The default value \code{"auto"} uses automatic color palette. Otherwise a 
-#'   vector of length \code{x$numberOfSymbols} is given, i.e. requires a color 
+#'   vector of length \code{x$number_of_symbols} is given, i.e. requires a color 
 #'   specified for all (combinations of) observed states even if they are not 
 #'   plotted (if the probability is less than combine.slices).
 #' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as 
 #'   \code{vertex.color}, \code{vertex.label.cex}, \code{edge.lty}, 
 #'   \code{margin}, or \code{main}.
 #'   
-#' @seealso \code{\link{buildMixHMM}} and \code{\link{fitMixHMM}} for building and 
+#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building and 
 #'   fitting mixture hidden Markov models, and 
 #'   \code{\link{plot.igraph}} for the general plotting function of directed graphs.
 #'   
@@ -231,8 +231,8 @@
 #'              nrow = 6, ncol = 6, byrow = TRUE)
 #' 
 #' # Initial values for initial state probabilities 
-#' initialProbs1 <- c(0.9, 0.07, 0.02, 0.01)
-#' initialProbs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
+#' initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
+#' initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 #' 
 #' # Creating covariate swiss
 #' biofam$swiss <- biofam$nat_1_02 == "Switzerland"
@@ -240,16 +240,16 @@
 #' biofam$swiss[biofam$swiss == FALSE] <- "Other"
 #' 
 #' # Build mixture HMM
-#' bMHMM <- buildMixHMM(
+#' bMHMM <- build_mhmm(
 #'   observations = list(child.seq, marr.seq, left.seq),
-#'   transitionMatrix = list(A1,A1,A2),
-#'   emissionMatrix = list(list(B1_child, B1_marr, B1_left),
+#'   transition_matrix = list(A1,A1,A2),
+#'   emission_matrix = list(list(B1_child, B1_marr, B1_left),
 #'                         list(B2_child, B2_marr, B2_left), 
 #'                         list(B3_child, B3_marr, B3_left)),
-#'   initialProbs = list(initialProbs1, initialProbs1, initialProbs2),
+#'   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
 #'   formula = ~sex*birthyr+sex*swiss, data = biofam,
-#'   clusterNames = c("Cluster 1", "Cluster 2", "Cluster 3"),
-#'   channelNames = c("Parenthood", "Marriage", "Left home")
+#'   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
+#'   channel_names = c("Parenthood", "Marriage", "Left home")
 #'   )
 #' 
 #' 
@@ -264,7 +264,7 @@
 #' plot(bMHMM, which.plots = 1)
 
 
-plot.mixHMModel <- function(x, interactive=TRUE,
+plot.mhmm <- function(x, interactive=TRUE,
                             ask = FALSE, which.plots = NULL, 
                             rows=NA, cols=NA, byrow=FALSE,
                             row.prop="auto", col.prop="auto", 

@@ -1,21 +1,21 @@
 #' Trim Small Probabilities of Hidden Markov Model
 #' 
-#' Function \code{trimHMM} tries to set small insignificant probabilities to zero 
+#' Function \code{trim_hmm} tries to set small insignificant probabilities to zero 
 #' without decreasing the likelihood significantly.
 #' 
 #' @export
-#' @param model Model of class \code{HMModel} or \code{mixHMModel} for which 
+#' @param model Model of class \code{hmm} or \code{mhmm} for which 
 #'   trimming is performed.
 #' @param maxit Number of iterations. After zeroing small values, the model is 
 #'   refitted, and this is repeated until there is nothing to trim or maxit 
 #'   iterations are done.
-#' @param return.loglik Return the log-likelihood of the trimmed model together with
+#' @param return_loglik Return the log-likelihood of the trimmed model together with
 #'   the model object. The default is \code{FALSE}.
 #' @param zerotol Values smaller than this are trimmed to zero.
-#' @param ... Further parameters passed on to \code{fitHMM}.
+#' @param ... Further parameters passed on to \code{fit_hmm}.
 #'   
-#' @seealso \code{\link{buildHMM}} for building Hidden Markov models before 
-#'   fitting and \code{\link{fitHMM}} for fitting Hidden Markov models.
+#' @seealso \code{\link{build_hmm}} for building Hidden Markov models before 
+#'   fitting and \code{\link{fit_hmm}} for fitting Hidden Markov models.
 #'   
 #' @examples 
 #' require(TraMineR)
@@ -25,7 +25,7 @@
 #' 
 #' ## Building one channel per type of event left, children or married
 #' bf <- as.matrix(biofam[, 10:25])
-#' children <-  bf == 4 | bf == 5 | bf == 6
+#' children <- bf == 4 | bf == 5 | bf == 6
 #' married <- bf == 2 | bf == 3 | bf == 6
 #' left <- bf == 1 | bf == 3 | bf == 5 | bf == 6
 #' 
@@ -68,232 +68,232 @@
 #'                 0,    0,    1), nrow=3, ncol=3, byrow=TRUE)
 #' 
 #' # Initial values for initial state probabilities
-#' initialProbs <- c(0.9, 0.09, 0.01)
+#' initial_probs <- c(0.9, 0.09, 0.01)
 #' 
 #' # Building hidden Markov model with initial parameter values
-#' bHMM <- buildHMM(
+#' bHMM <- build_hmm(
 #'   observations = list(child.seq, marr.seq, left.seq), 
-#'   transitionMatrix = A,
-#'   emissionMatrix = list(B_child, B_marr, B_left), 
-#'   initialProbs = initialProbs
+#'   transition_matrix = A,
+#'   emission_matrix = list(B_child, B_marr, B_left), 
+#'   initial_probs = initial_probs
 #'   )
 #' 
 #' # Fitting hidden Markov model
-#' HMM <- fitHMM(bHMM)
+#' HMM <- fit_hmm(bHMM)
 #' 
 #' # Testing if changing parameter values smaller than 1e-03 to zero 
 #' # leads to improved log-likelihood.
-#' HMMtrim <- trimHMM(HMM$model, zerotol=1e-03, maxit=10)
+#' HMMtrim <- trim_hmm(HMM$model, zerotol=1e-03, maxit=10)
 #' 
-trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,...){
+trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
   
-  if(inherits(model, "HMModel")){
+  if(inherits(model, "hmm")){
     
-    if(model$numberOfChannels==1){
-      if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
-             any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
-           || any(model$emissionMatrix<zerotol & model$emissionMatrix>0))){
+    if(model$number_of_channels==1){
+      if(!(any(model$initial_probs < zerotol & model$initial_probs > 0) || 
+             any(model$transition_matrix < zerotol & model$transition_matrix > 0)
+           || any(model$emission_matrix < zerotol & model$emission_matrix > 0))){
         
         print("Nothing to trim.")
-        if(return.loglik){
+        if(return_loglik){
           return(list(model=model,loglik=logLik(model)))
         } else return(model)
       }
-      ll_original<- logLik(model)
+      ll_original <- logLik(model)
       
-      model$initialProbs[model$initialProbs<zerotol]<-0
-      model$initialProbs<-model$initialProbs/sum(model$initialProbs)
-      model$transitionMatrix[model$transitionMatrix<zerotol]<-0
-      model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)
-      model$emissionMatrix[model$emissionMatrix<zerotol]<-0
-      model$emissionMatrix<-model$emissionMatrix/rowSums(model$emissionMatrix)
+      model$initial_probs[model$initial_probs < zerotol] <- 0
+      model$initial_probs <- model$initial_probs/sum(model$initial_probs)
+      model$transition_matrix[model$transition_matrix < zerotol] <- 0
+      model$transition_matrix <- model$transition_matrix/rowSums(model$transition_matrix)
+      model$emission_matrix[model$emission_matrix < zerotol] <- 0
+      model$emission_matrix <- model$emission_matrix/rowSums(model$emission_matrix)
       
       
-      if(!is.finite(ll0<-logLik(model)))
+      if(!is.finite(ll0 <- logLik(model)))
         stop("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
       
-      if(maxit>0){
+      if(maxit > 0){
         for(ii in 1:maxit){
-          fit<-fitHMM(model,...)
-          ll<- fit$logLik
+          fit <- fit_hmm(model,...)
+          ll <- fit$logLik
           
-          if(ll>ll0){
-            model<-fit$model
-            ll0<-ll
+          if(ll > ll0){
+            model <- fit$model
+            ll0 <- ll
           } else break
           
-          if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
-                 any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
-               || any(model$emissionMatrix<zerotol & model$emissionMatrix>0)))
+          if(!(any(model$initial_probs < zerotol & model$initial_probs > 0) || 
+                 any(model$transition_matrix < zerotol & model$transition_matrix > 0)
+               || any(model$emission_matrix < zerotol & model$emission_matrix > 0)))
             break
           
-          model$initialProbs[model$initialProbs<zerotol]<-0
-          model$initialProbs<-model$initialProbs/sum(model$initialProbs)
-          model$transitionMatrix[model$transitionMatrix<zerotol]<-0
-          model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)
-          model$emissionMatrix[model$emissionMatrix<zerotol]<-0
-          model$emissionMatrix<-model$emissionMatrix/rowSums(model$emissionMatrix)
+          model$initial_probs[model$initial_probs < zerotol] <- 0
+          model$initial_probs <- model$initial_probs/sum(model$initial_probs)
+          model$transition_matrix[model$transition_matrix < zerotol] <- 0
+          model$transition_matrix <- model$transition_matrix/rowSums(model$transition_matrix)
+          model$emission_matrix[model$emission_matrix < zerotol] <- 0
+          model$emission_matrix <- model$emission_matrix/rowSums(model$emission_matrix)
           
         }
       }
       
     } else {
-      if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
-             any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
-           || any(sapply(model$emissionMatrix,function(x) any(x<zerotol & x>0))))){
+      if(!(any(model$initial_probs < zerotol & model$initial_probs > 0) || 
+             any(model$transition_matrix < zerotol & model$transition_matrix > 0)
+           || any(sapply(model$emission_matrix,function(x) any(x < zerotol & x > 0))))){
         print("Nothing to trim.")
-        if(return.loglik){
+        if(return_loglik){
           return(list(model=model,loglik=logLik(model)))
         } else return(model)
       }
-      ll_original<- logLik(model)
+      ll_original <- logLik(model)
       
-      model$initialProbs[model$initialProbs<zerotol]<-0
-      model$initialProbs<-model$initialProbs/sum(model$initialProbs)
-      model$transitionMatrix[model$transitionMatrix<zerotol]<-0
-      model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)
-      for(i in 1:model$numberOfChannels){
-        model$emissionMatrix[[i]][model$emissionMatrix[[i]]<zerotol]<-0
-        model$emissionMatrix[[i]]<-model$emissionMatrix[[i]]/
-          rowSums(model$emissionMatrix[[i]])
+      model$initial_probs[model$initial_probs < zerotol] <- 0
+      model$initial_probs <- model$initial_probs/sum(model$initial_probs)
+      model$transition_matrix[model$transition_matrix < zerotol] <- 0
+      model$transition_matrix <- model$transition_matrix/rowSums(model$transition_matrix)
+      for(i in 1:model$number_of_channels){
+        model$emission_matrix[[i]][model$emission_matrix[[i]] < zerotol] <- 0
+        model$emission_matrix[[i]] <- model$emission_matrix[[i]]/
+          rowSums(model$emission_matrix[[i]])
         
       }
       
       
-      if(!is.finite(ll0<-logLik(model)))
+      if(!is.finite(ll0 <- logLik(model)))
         stop("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
       
-      if(maxit>0){
+      if(maxit > 0){
         for(ii in 1:maxit){
-          fit<-fitHMM(model,...)
-          ll<- fit$logLik
+          fit <- fit_hmm(model,...)
+          ll <- fit$logLik
           
-          if(ll>ll0){
-            model<-fit$model
-            ll0<-ll
+          if(ll > ll0){
+            model <- fit$model
+            ll0 <- ll
           } else break
           
-          if(!(any(model$initialProbs<zerotol & model$initialProbs>0) || 
-                 any(model$transitionMatrix<zerotol & model$transitionMatrix>0)
-               || any(sapply(model$emissionMatrix,function(x) any(x<zerotol & x>0)))))
+          if(!(any(model$initial_probs < zerotol & model$initial_probs > 0) || 
+                 any(model$transition_matrix < zerotol & model$transition_matrix > 0)
+               || any(sapply(model$emission_matrix,function(x) any(x < zerotol & x > 0)))))
             break
           
-          model$initialProbs[model$initialProbs<zerotol]<-0
-          model$initialProbs<-model$initialProbs/sum(model$initialProbs)
-          model$transitionMatrix[model$transitionMatrix<zerotol]<-0
-          model$transitionMatrix<-model$transitionMatrix/rowSums(model$transitionMatrix)
-          for(i in 1:model$numberOfChannels){
-            model$emissionMatrix[[i]][model$emissionMatrix[[i]]<zerotol]<-0
-            model$emissionMatrix[[i]]<-model$emissionMatrix[[i]]/
-              rowSums(model$emissionMatrix[[i]])          
+          model$initial_probs[model$initial_probs < zerotol] <- 0
+          model$initial_probs <- model$initial_probs/sum(model$initial_probs)
+          model$transition_matrix[model$transition_matrix < zerotol] <- 0
+          model$transition_matrix <- model$transition_matrix/rowSums(model$transition_matrix)
+          for(i in 1:model$number_of_channels){
+            model$emission_matrix[[i]][model$emission_matrix[[i]] < zerotol] <- 0
+            model$emission_matrix[[i]] <- model$emission_matrix[[i]]/
+              rowSums(model$emission_matrix[[i]])          
           }       
         }
       }
     }
     
-  }else if(inherits(model, "mixHMModel")){
-    if(model$numberOfChannels==1){
-      if(!(any(unlist(model$initialProbs)<zerotol & unlist(model$initialProbs)>0) || 
-             any(unlist(model$transitionMatrix)<zerotol & unlist(model$transitionMatrix)>0)
-           || any(unlist(model$emissionMatrix)<zerotol & unlist(model$emissionMatrix)>0))){
+  }else if(inherits(model, "mixhmm")){
+    if(model$number_of_channels==1){
+      if(!(any(unlist(model$initial_probs) < zerotol & unlist(model$initial_probs) > 0) || 
+             any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
+           || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0))){
         
         print("Nothing to trim.")
-        if(return.loglik){
+        if(return_loglik){
           return(list(model=model,loglik=logLik(model)))
         } else return(model)
       }
-      ll_original<- logLik(model)
+      ll_original <- logLik(model)
       
-      for(m in 1:model$numberOfClusters){
-        model$initialProbs[[m]][model$initialProbs[[m]]<zerotol]<-0
-        model$initialProbs[[m]]<-model$initialProbs[[m]]/sum(model$initialProbs[[m]])
-        model$transitionMatrix[[m]][model$transitionMatrix[[m]]<zerotol]<-0
-        model$transitionMatrix[[m]]<-model$transitionMatrix[[m]]/rowSums(model$transitionMatrix[[m]])
-        model$emissionMatrix[[m]][model$emissionMatrix[[m]]<zerotol]<-0
-        model$emissionMatrix[[m]]<-model$emissionMatrix[[m]]/rowSums(model$emissionMatrix[[m]])
+      for(m in 1:model$number_of_clusters){
+        model$initial_probs[[m]][model$initial_probs[[m]] < zerotol] <- 0
+        model$initial_probs[[m]] <- model$initial_probs[[m]]/sum(model$initial_probs[[m]])
+        model$transition_matrix[[m]][model$transition_matrix[[m]] < zerotol] <- 0
+        model$transition_matrix[[m]] <- model$transition_matrix[[m]]/rowSums(model$transition_matrix[[m]])
+        model$emission_matrix[[m]][model$emission_matrix[[m]] < zerotol] <- 0
+        model$emission_matrix[[m]] <- model$emission_matrix[[m]]/rowSums(model$emission_matrix[[m]])
       }
       
-      if(!is.finite(ll0<-logLik(model)))
+      if(!is.finite(ll0 <- logLik(model)))
         stop("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
       
-      if(maxit>0){
+      if(maxit > 0){
         for(ii in 1:maxit){
-          fit<-fitMixHMM(model,...)
-          ll<- fit$logLik
+          fit <- fit_mhmm(model,...)
+          ll <- fit$logLik
           
-          if(ll>ll0){
-            model<-fit$model
-            ll0<-ll
+          if(ll > ll0){
+            model <- fit$model
+            ll0 <- ll
           } else break
           
-          if(!(any(unlist(model$initialProbs)<zerotol & unlist(model$initialProbs)>0) || 
-                 any(unlist(model$transitionMatrix)<zerotol & unlist(model$transitionMatrix)>0)
-               || any(unlist(model$emissionMatrix)<zerotol & unlist(model$emissionMatrix)>0)))
+          if(!(any(unlist(model$initial_probs) < zerotol & unlist(model$initial_probs) > 0) || 
+                 any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
+               || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0)))
             break
           
-          for(m in 1:model$numberOfClusters){
-            model$initialProbs[[m]][model$initialProbs[[m]]<zerotol]<-0
-            model$initialProbs[[m]]<-model$initialProbs[[m]]/sum(model$initialProbs[[m]])
-            model$transitionMatrix[[m]][model$transitionMatrix[[m]]<zerotol]<-0
-            model$transitionMatrix[[m]]<-model$transitionMatrix[[m]]/rowSums(model$transitionMatrix[[m]])
-            model$emissionMatrix[[m]][model$emissionMatrix[[m]]<zerotol]<-0
-            model$emissionMatrix[[m]]<-model$emissionMatrix[[m]]/rowSums(model$emissionMatrix[[m]])
+          for(m in 1:model$number_of_clusters){
+            model$initial_probs[[m]][model$initial_probs[[m]] < zerotol] <- 0
+            model$initial_probs[[m]] <- model$initial_probs[[m]]/sum(model$initial_probs[[m]])
+            model$transition_matrix[[m]][model$transition_matrix[[m]] < zerotol] <- 0
+            model$transition_matrix[[m]] <- model$transition_matrix[[m]]/rowSums(model$transition_matrix[[m]])
+            model$emission_matrix[[m]][model$emission_matrix[[m]] < zerotol] <- 0
+            model$emission_matrix[[m]] <- model$emission_matrix[[m]]/rowSums(model$emission_matrix[[m]])
           }  
         }
       }
       
     } else {
-      if(!(any(unlist(model$initialProbs)<zerotol & unlist(model$initialProbs)>0) || 
-             any(unlist(model$transitionMatrix)<zerotol & unlist(model$transitionMatrix)>0)
-           || any(unlist(model$emissionMatrix)<zerotol & unlist(model$emissionMatrix)>0))){
+      if(!(any(unlist(model$initial_probs) < zerotol & unlist(model$initial_probs) > 0) || 
+             any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
+           || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0))){
         print("Nothing to trim.")
-        if(return.loglik){
+        if(return_loglik){
           return(list(model=model,loglik=logLik(model)))
         } else return(model)
       }
-      ll_original<- logLik(model)
+      ll_original <- logLik(model)
       
-      for(m in 1:model$numberOfClusters){
-        model$initialProbs[[m]][model$initialProbs[[m]]<zerotol]<-0
-        model$initialProbs[[m]]<-model$initialProbs[[m]]/sum(model$initialProbs[[m]])
-        model$transitionMatrix[[m]][model$transitionMatrix[[m]]<zerotol]<-0
-        model$transitionMatrix[[m]]<-model$transitionMatrix[[m]]/rowSums(model$transitionMatrix[[m]])
-        for(i in 1:model$numberOfChannels){
-          model$emissionMatrix[[m]][[i]][model$emissionMatrix[[m]][[i]]<zerotol]<-0
-          model$emissionMatrix[[m]][[i]]<-model$emissionMatrix[[m]][[i]]/
-            rowSums(model$emissionMatrix[[m]][[i]])
+      for(m in 1:model$number_of_clusters){
+        model$initial_probs[[m]][model$initial_probs[[m]] < zerotol] <- 0
+        model$initial_probs[[m]] <- model$initial_probs[[m]]/sum(model$initial_probs[[m]])
+        model$transition_matrix[[m]][model$transition_matrix[[m]] < zerotol] <- 0
+        model$transition_matrix[[m]] <- model$transition_matrix[[m]]/rowSums(model$transition_matrix[[m]])
+        for(i in 1:model$number_of_channels){
+          model$emission_matrix[[m]][[i]][model$emission_matrix[[m]][[i]] < zerotol] <- 0
+          model$emission_matrix[[m]][[i]] <- model$emission_matrix[[m]][[i]]/
+            rowSums(model$emission_matrix[[m]][[i]])
           
         }
       }
       
       
-      if(!is.finite(ll0<-logLik(model)))
+      if(!is.finite(ll0 <- logLik(model)))
         stop("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
       
-      if(maxit>0){
+      if(maxit > 0){
         for(ii in 1:maxit){
-          fit<-fitMixHMM(model,...)
-          ll<- fit$logLik
+          fit <- fit_mhmm(model,...)
+          ll <- fit$logLik
           
-          if(ll>ll0){
-            model<-fit$model
-            ll0<-ll
+          if(ll > ll0){
+            model <- fit$model
+            ll0 <- ll
           } else break
           
-          if(!(any(unlist(model$initialProbs)<zerotol & unlist(model$initialProbs)>0) || 
-                 any(unlist(model$transitionMatrix)<zerotol & unlist(model$transitionMatrix)>0)
-               || any(unlist(model$emissionMatrix)<zerotol & unlist(model$emissionMatrix)>0)))
+          if(!(any(unlist(model$initial_probs) < zerotol & unlist(model$initial_probs) > 0) || 
+                 any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
+               || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0)))
             break
           
-          for(m in 1:model$numberOfClusters){
-            model$initialProbs[[m]][model$initialProbs[[m]]<zerotol]<-0
-            model$initialProbs[[m]]<-model$initialProbs[[m]]/sum(model$initialProbs[[m]])
-            model$transitionMatrix[[m]][model$transitionMatrix[[m]]<zerotol]<-0
-            model$transitionMatrix[[m]]<-model$transitionMatrix[[m]]/rowSums(model$transitionMatrix[[m]])
-            for(i in 1:model$numberOfChannels){
-              model$emissionMatrix[[m]][[i]][model$emissionMatrix[[m]][[i]]<zerotol]<-0
-              model$emissionMatrix[[m]][[i]]<-model$emissionMatrix[[m]][[i]]/
-                rowSums(model$emissionMatrix[[m]][[i]])
+          for(m in 1:model$number_of_clusters){
+            model$initial_probs[[m]][model$initial_probs[[m]] < zerotol] <- 0
+            model$initial_probs[[m]] <- model$initial_probs[[m]]/sum(model$initial_probs[[m]])
+            model$transition_matrix[[m]][model$transition_matrix[[m]] < zerotol] <- 0
+            model$transition_matrix[[m]] <- model$transition_matrix[[m]]/rowSums(model$transition_matrix[[m]])
+            for(i in 1:model$number_of_channels){
+              model$emission_matrix[[m]][[i]][model$emission_matrix[[m]][[i]] < zerotol] <- 0
+              model$emission_matrix[[m]][[i]] <- model$emission_matrix[[m]][[i]]/
+                rowSums(model$emission_matrix[[m]][[i]])
               
             }
           }
@@ -302,20 +302,20 @@ trimHMM<-function(model,maxit=0,return.loglik=FALSE,zerotol=1e-8,...){
       }
     }
   }else{
-    stop("An object of class HMModel or mixHMModel required.")
+    stop("An object of class hmm or mixhmm required.")
   }
   
   
-  if(maxit>0)
+  if(maxit > 0)
     print(paste(ii,"iteration(s) used."))
   
-  if(ll0<ll_original){
+  if(ll0 < ll_original){
     print(paste("Log-likelihood of the trimmed model is smaller than the original log-likelihood, ll_trim-ll_orig =", signif(ll0-ll_original, 3)))
   } else print(paste("Trimming improved log-likelihood, ll_trim-ll_orig =", signif(ll0-ll_original, 3)))
   
   
   
-  if(return.loglik){
+  if(return_loglik){
     list(model=model,loglik=ll0)
   } else model 
 }

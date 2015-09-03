@@ -1,20 +1,20 @@
 #' Print Method for a Hidden Markov Model
 #'
-#' Function \code{print.HMModel} prints the parameters of a hidden Markov model.
+#' Function \code{print.hmm} prints the parameters of a hidden Markov model.
 #'
 #'
 #' @export
 #' @rdname print
-#' @method print HMModel
-#' @param x Hidden Markov model of class \code{HMModel} or \code{mixHMModel}.
+#' @method print hmm
+#' @param x Hidden Markov model of class \code{hmm} or \code{mhmm}.
 #' @param ... Ignored.
-#' @seealso \code{\link{buildHMM}} and \code{\link{fitHMM}} for building and 
-#'   fitting hidden Markov models and \code{\link{buildMixHMM}} and 
-#'   \code{\link{fitMixHMM}} for building and 
+#' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and 
+#'   fitting hidden Markov models and \code{\link{build_mhmm}} and 
+#'   \code{\link{fit_mhmm}} for building and 
 #'   fitting mixture hidden Markov models.
 
 
-print.HMModel <- function(x, ...){
-  print(list(transitionMatrix=x$transitionMatrix, emissionMatrix=x$emissionMatrix, 
-       initialProbs=x$initialProbs))
+print.hmm <- function(x, ...){
+  print(list(transition_matrix=x$transition_matrix, emission_matrix=x$emission_matrix, 
+       initial_probs=x$initial_probs))
 }

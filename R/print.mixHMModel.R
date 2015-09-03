@@ -1,8 +1,8 @@
 #' @export
 #' @rdname print
-#' @method print HMModel
+#' @method print hmm
 
-print.mixHMModel <- function(x, ...){
-  print(list(transitionMatrix=x$transitionMatrix, emissionMatrix=x$emissionMatrix, 
-             initialProbs=x$initialProbs, beta=x$beta))
+print.mhmm <- function(x, ...){
+  print(list(transition_matrix=x$transition_matrix, emission_matrix=x$emission_matrix, 
+             initial_probs=x$initial_probs, beta=x$beta))
 }

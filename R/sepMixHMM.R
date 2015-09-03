@@ -1,17 +1,18 @@
-#' Reorganize a mixture HMM to a list of separate HMMs (covariates ignored)
+#' Reorganize a mixture hidden Markov model to a list of separate hidden Markov models 
+#' (covariates ignored)
 #' 
-#' The \code{sepMixHMM} function reorganizes the parameters of a \code{mixHMModel} object 
-#' into a list where each element is an object of class \code{HMModel} consisting of the 
+#' The \code{separate_mhmm} function reorganizes the parameters of a \code{mhmm} object 
+#' into a list where each element is an object of class \code{hmm} consisting of the 
 #' parameters of the corresponding cluster.
 #' 
 #' @export
-#' @param model Hidden Markov model of class \code{mixHMModel}.
+#' @param model Mixture hidden Markov model of class \code{mhmm}.
 #' 
-#' @return List with components of class \code{HMModel}.
+#' @return List with components of class \code{hmm}.
 #' 
-#' @seealso \code{\link{buildMixHMM}} and \code{\link{fitMixHMM}} for building 
-#' and fitting mixture HMM's, and \code{\link{buildHMM}} and \code{\link{fitHMM}} 
-#' for building and fitting HMMs without covariates.
+#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building 
+#' and fitting MHMMs, and \code{\link{build_hmm}} and \code{\link{fit_hmm}} 
+#' for building and fitting HMMs.
 #' 
 #' @examples
 #' require(TraMineR)
@@ -129,8 +130,8 @@
 #'              nrow = 6, ncol = 6, byrow = TRUE)
 #' 
 #' # Initial values for initial state probabilities 
-#' initialProbs1 <- c(0.9, 0.07, 0.02, 0.01)
-#' initialProbs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
+#' initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
+#' initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 #' 
 #' # Creating covariate swiss
 #' biofam$swiss <- biofam$nat_1_02 == "Switzerland"
@@ -140,29 +141,29 @@
 #' # Build mixture HMM
 #' bMHMM <- buildMixHMM(
 #'   observations = list(child.seq, marr.seq, left.seq),
-#'   transitionMatrix = list(A1,A1,A2),
-#'   emissionMatrix = list(list(B1_child, B1_marr, B1_left),
+#'   transition_matrix = list(A1,A1,A2),
+#'   emission_matrix = list(list(B1_child, B1_marr, B1_left),
 #'                         list(B2_child, B2_marr, B2_left), 
 #'                         list(B3_child, B3_marr, B3_left)),
-#'   initialProbs = list(initialProbs1, initialProbs1, initialProbs2),
-#'   formula = ~sex*birthyr+sex*swiss, data = biofam,
-#'   clusterNames = c("Cluster 1", "Cluster 2", "Cluster 3"),
-#'   channelNames = c("Parenthood", "Marriage", "Left home")
+#'   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
+#'   formula = ~ sex * birthyr + sex * swiss, data = biofam,
+#'   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
+#'   channel_names = c("Parenthood", "Marriage", "Left home")
 #'   )
 #' 
 #' 
 #' # Separate models for clusters
-#' sepHMM <- sepMixHMM(bMHMM)
+#' sepHMM <- separate_mhmm(bMHMM)
 
-sepMixHMM <- function(model){
+separate_mhmm <- function(model){
   
-  divmodels <- replicate(model$numberOfClusters, list())
+  divmodels <- replicate(model$number_of_clusters, list())
   
-  for(i in 1:model$numberOfClusters){
-    divmodels[[i]] <- buildHMM(observations=model$observations,
-                               transitionMatrix=model$transitionMatrix[[i]],
-                               emissionMatrix=model$emissionMatrix[[i]],
-                               initialProbs=model$initialProbs[[i]])
+  for(i in 1:model$number_of_clusters){
+    divmodels[[i]] <- build_hmm(observations=model$observations,
+                               transition_matrix=model$transition_matrix[[i]],
+                               emission_matrix=model$emission_matrix[[i]],
+                               initial_probs=model$initial_probs[[i]])
   }
   divmodels
 }

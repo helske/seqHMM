@@ -1,19 +1,19 @@
 #' Build a Mixture Hidden Markov Model
 #' 
-#' Function buildMixHMM constructs a mixture of hidden Markov models.
+#' Function build_mhmm constructs a mixture of hidden Markov models.
 #' 
 #' @export
 #' @useDynLib seqHMM
 #' @param observations TraMineR stslist (see \code{\link{seqdef}}) containing
 #'   the sequences, or a list of such objects (one for each channel).
-#' @param transitionMatrix A list of matrices of transition 
+#' @param transition_matrix A list of matrices of transition 
 #'   probabilities for submodels of each cluster.
-#' @param emissionMatrix A list which contains matrices of emission probabilities or
+#' @param emission_matrix A list which contains matrices of emission probabilities or
 #'   a list of such objects (one for each channel) for submodels of each cluster. 
 #'   Note that the matrices must have dimensions m x s where m is the number of 
 #'   hidden states and s is the number of unique symbols (observed states) in the 
 #'   data.
-#' @param initialProbs A list which contains vectors of initial state 
+#' @param initial_probs A list which contains vectors of initial state 
 #'   probabilities for submodels of each cluster.
 #' @param formula Covariates as an object of class \code{\link{formula}}, 
 #' left side omitted.
@@ -24,10 +24,10 @@
 #'   covariates for mixture probabilities, where l is the number of clusters and k
 #'   is the number of covariates. A logit-link is used for mixture probabilities.
 #'   The first column is set to zero.
-#' @param clusterNames A vector of optional names for the clusters.
-#' @param stateNames A list of optional labels for the hidden states.
-#' @param channelNames A vector of optional names for the channels.
-#' @return Object of class \code{mixHMModel}
+#' @param cluster_names A vector of optional names for the clusters.
+#' @param state_names A list of optional labels for the hidden states.
+#' @param channel_names A vector of optional names for the channels.
+#' @return Object of class \code{mhmm}
 #' @seealso \code{\link{fitMixHMM}} for fitting mixture Hidden Markov models.
 #' 
 #' @examples
@@ -39,34 +39,34 @@
 #' 
 #' ## Building one channel per type of event left, children or married
 #' bf <- as.matrix(biofam[, 10:25])
-#' children <-  bf==4 | bf==5 | bf==6
-#' married <- bf == 2 | bf== 3 | bf==6
-#' left <- bf==1 | bf==3 | bf==5 | bf==6 | bf==7
+#' children <-  bf == 4 | bf == 5 | bf == 6
+#' married <- bf == 2 | bf == 3 | bf == 6
+#' left <- bf == 1 | bf == 3 | bf == 5 | bf == 6 | bf == 7
 #' 
-#' children[children==TRUE] <- "Children"
-#' children[children==FALSE] <- "Childless"
+#' children[children == TRUE] <- "Children"
+#' children[children == FALSE] <- "Childless"
 #' # Divorced parents
-#' div <- bf[(rowSums(bf==7)>0 & rowSums(bf==5)>0) | 
-#'             (rowSums(bf==7)>0 & rowSums(bf==6)>0),]
-#' children[rownames(bf) %in% rownames(div) & bf==7] <- "Children"
+#' div <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 5) > 0) | 
+#'             (rowSums(bf == 7) > 0 & rowSums(bf == 6) > 0),]
+#' children[rownames(bf) %in% rownames(div) & bf == 7] <- "Children"
 #' 
-#' married[married==TRUE] <- "Married"
-#' married[married==FALSE] <- "Single"
-#' married[bf==7] <- "Divorced"
+#' married[married == TRUE] <- "Married"
+#' married[married == FALSE] <- "Single"
+#' married[bf == 7] <- "Divorced"
 #' 
-#' left[left==TRUE] <- "Left home"
-#' left[left==FALSE] <- "With parents"
+#' left[left == TRUE] <- "Left home"
+#' left[left == FALSE] <- "With parents"
 #' # Divorced living with parents (before divorce)
-#' wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &  
-#'           rowSums(bf==5)==0 & rowSums(bf==6)==0) | 
-#'          (rowSums(bf==7)>0 & rowSums(bf==4)>0 & rowSums(bf==3)==0 &  
-#'          rowSums(bf==5)==0 & rowSums(bf==6)==0),]
-#' left[rownames(bf) %in% rownames(wp) & bf==7] <- "With parents"
+#' wp <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 2) > 0 & rowSums(bf == 3) == 0 &  
+#'           rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0) | 
+#'          (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 & rowSums(bf == 3) == 0 &  
+#'          rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0),]
+#' left[rownames(bf) %in% rownames(wp) & bf == 7] <- "With parents"
 #' 
 #' ## Building sequence objects
-#' child.seq <- seqdef(children, start=15)
-#' marr.seq <- seqdef(married, start=15)
-#' left.seq <- seqdef(left, start=15)
+#' child.seq <- seqdef(children, start = 15)
+#' marr.seq <- seqdef(married, start = 15)
+#' left.seq <- seqdef(left, start = 15)
 #' 
 #' ## Starting values for emission probabilities
 #' 
@@ -75,37 +75,37 @@
 #' B1_child <- matrix(c(0.99, 0.01, # High probability for childless
 #'                      0.99, 0.01,
 #'                      0.99, 0.01,
-#'                      0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
+#'                      0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE)
 #' 
 #' alphabet(marr.seq)                      
 #' B1_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
 #'                     0.01, 0.01, 0.98,
 #'                     0.01, 0.98, 0.01, # High probability for married
 #'                     0.98, 0.01, 0.01), # High probability for divorced
-#'                     nrow=4, ncol=3, byrow=TRUE)                   
+#'                     nrow = 4, ncol = 3, byrow = TRUE)                   
 #' 
 #' alphabet(left.seq)
 #' B1_left <- matrix(c(0.01, 0.99, # High probability for living with parents
 #'                     0.99, 0.01, # High probability for having left home
 #'                     0.99, 0.01,
-#'                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE)
+#'                     0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE)
 #' 
 #' # Cluster 2
 #' B2_child <- matrix(c(0.99, 0.01, # High probability for childless
 #'                      0.99, 0.01,
 #'                      0.99, 0.01,
-#'                      0.01, 0.99), nrow=4, ncol=2, byrow=TRUE)
+#'                      0.01, 0.99), nrow = 4, ncol = 2, byrow = TRUE)
 #'                      
 #' B2_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
 #'                     0.01, 0.01, 0.98,
 #'                     0.01, 0.98, 0.01, # High probability for married
 #'                     0.29, 0.7, 0.01),
-#'                    nrow=4, ncol=3, byrow=TRUE)                   
+#'                    nrow = 4, ncol = 3, byrow = TRUE)                   
 #' 
 #' B2_left <- matrix(c(0.01, 0.99, # High probability for living with parents
 #'                     0.99, 0.01,
 #'                     0.99, 0.01,
-#'                     0.99, 0.01), nrow=4, ncol=2, byrow=TRUE) 
+#'                     0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE) 
 #' 
 #' # Cluster 3
 #' B3_child <- matrix(c(0.99, 0.01, # High probability for childless
@@ -113,7 +113,7 @@
 #'                      0.01, 0.99,
 #'                      0.99, 0.01,
 #'                      0.01, 0.99,
-#'                      0.01, 0.99), nrow=6, ncol=2, byrow=TRUE)
+#'                      0.01, 0.99), nrow = 6, ncol = 2, byrow = TRUE)
 #' 
 #' B3_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
 #'                     0.01, 0.01, 0.98,
@@ -121,21 +121,21 @@
 #'                     0.01, 0.98, 0.01,
 #'                     0.01, 0.98, 0.01, # High probability for married
 #'                     0.98, 0.01, 0.01), # High probability for divorced
-#'                    nrow=6, ncol=3, byrow=TRUE)                   
+#'                    nrow = 6, ncol = 3, byrow = TRUE)                   
 #' 
 #' B3_left <- matrix(c(0.01, 0.99, # High probability for living with parents
 #'                     0.99, 0.01,
 #'                     0.50, 0.50,
 #'                     0.01, 0.99,
 #'                     0.99, 0.01,
-#'                     0.99, 0.01), nrow=6, ncol=2, byrow=TRUE) 
+#'                     0.99, 0.01), nrow = 6, ncol = 2, byrow = TRUE) 
 #' 
 #' # Initial values for transition matrices
 #' A1 <- matrix(c(0.8,   0.16, 0.03, 0.01,
 #'                  0,    0.9, 0.07, 0.03, 
 #'                  0,      0,  0.9,  0.1, 
 #'                  0,      0,    0,    1), 
-#'              nrow=4, ncol=4, byrow=TRUE)
+#'              nrow = 4, ncol = 4, byrow = TRUE)
 #' 
 #' A2 <- matrix(c(0.8, 0.10, 0.05,  0.03, 0.01, 0.01,
 #'                  0,  0.7,  0.1,   0.1, 0.05, 0.05,
@@ -143,71 +143,72 @@
 #'                  0,    0,    0,   0.9, 0.05, 0.05,
 #'                  0,    0,    0,     0,  0.9,  0.1,
 #'                  0,    0,    0,     0,    0,    1), 
-#'              nrow=6, ncol=6, byrow=TRUE)
+#'              nrow = 6, ncol = 6, byrow = TRUE)
 #' 
 #' # Initial values for initial state probabilities 
-#' initialProbs1 <- c(0.9, 0.07, 0.02, 0.01)
-#' initialProbs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
+#' initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
+#' initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 #' 
 #' # Creating covariate swiss
-#' biofam$swiss <- biofam$nat_1_02=="Switzerland"
-#' biofam$swiss[biofam$swiss==TRUE] <- "Swiss"
-#' biofam$swiss[biofam$swiss==FALSE] <- "Other"
+#' biofam$swiss <- biofam$nat_1_02 == "Switzerland"
+#' biofam$swiss[biofam$swiss == TRUE] <- "Swiss"
+#' biofam$swiss[biofam$swiss == FALSE] <- "Other"
 #' 
 #' # Build mixture HMM
-#' bmHMM <- buildMixHMM(observations=list(child.seq, marr.seq, left.seq), 
-#'                        transitionMatrix=list(A1,A1,A2), 
-#'                        emissionMatrix=list(list(B1_child, B1_marr, B1_left),
-#'                                            list(B2_child, B2_marr, B2_left),
-#'                                            list(B3_child, B3_marr, B3_left)),
-#'                        initialProbs=list(initialProbs1, initialProbs1,
-#'                                          initialProbs2), 
-#'                        formula=~sex*birthyr+sex*swiss, data=biofam,
-#'                        clusterNames=c("Cluster 1", "Cluster 2", "Cluster 3"),
-#'                        channelNames=c("Parenthood", "Marriage", "Left home"))
+#' bMHMM <- buildMixHMM(
+#'   observations = list(child.seq, marr.seq, left.seq),
+#'   transition_matrix = list(A1,A1,A2),
+#'   emission_matrix = list(list(B1_child, B1_marr, B1_left),
+#'                         list(B2_child, B2_marr, B2_left), 
+#'                         list(B3_child, B3_marr, B3_left)),
+#'   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
+#'   formula = ~ sex * birthyr + sex * swiss, data = biofam,
+#'   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
+#'   channel_names = c("Parenthood", "Marriage", "Left home")
+#'   )
 #'                     
-buildMixHMM <- 
-  function(observations,transitionMatrix,emissionMatrix,initialProbs, 
-           formula, data, beta, clusterNames=NULL, stateNames=NULL, channelNames=NULL){
+build_mhmm <- 
+  function(observations,transition_matrix,emission_matrix,initial_probs, 
+           formula, data, beta, cluster_names=NULL, state_names=NULL, channel_names=NULL){
     
-    numberOfClusters<-length(transitionMatrix)
-    if(length(emissionMatrix)!=numberOfClusters || length(initialProbs)!=numberOfClusters)
-      stop("Unequal lengths of transitionMatrix, emissionMatrix and initialProbs.")
+    number_of_clusters<-length(transition_matrix)
+    if(length(emission_matrix)!=number_of_clusters || length(initial_probs)!=number_of_clusters)
+      stop("Unequal lengths of transition_matrix, emission_matrix and initial_probs.")
     
-    if(is.null(clusterNames)){
-      clusterNames <- paste("Cluster", 1:numberOfClusters)
-    }else if(length(clusterNames)!=numberOfClusters){
-      warning("The length of argument clusterNames does not match the number of clusters. Names were not used.")
-      clusterNames <- paste("Cluster", 1:numberOfClusters)
+    if(is.null(cluster_names)){
+      cluster_names <- paste("Cluster", 1:number_of_clusters)
+    }else if(length(cluster_names)!=number_of_clusters){
+      warning("The length of argument cluster_names does not match the number of clusters. Names were not used.")
+      cluster_names <- paste("Cluster", 1:number_of_clusters)
     }
       
-    model <- vector("list", length = numberOfClusters)
+    model <- vector("list", length = number_of_clusters)
     
     # States
-    numberOfStates <- unlist(lapply(transitionMatrix,nrow))
+    number_of_states <- unlist(lapply(transition_matrix,nrow))
     
-    if(any(rep(numberOfStates,each=2)!=unlist(lapply(transitionMatrix,dim))))
+    if(any(rep(number_of_states,each=2)!=unlist(lapply(transition_matrix,dim))))
       stop("Transition matrices must be square matrices.")
     
-    if(is.null(stateNames)){
-      stateNames <- vector("list", numberOfClusters)
-      for(m in 1:numberOfClusters){
-        stateNames[[m]] <- as.character(1:numberOfStates[m])
+    if(is.null(state_names)){
+      state_names <- vector("list", number_of_clusters)
+      for(m in 1:number_of_clusters){
+        state_names[[m]] <- as.character(1:number_of_states[m])
       }
     }
     
-    if(!all(1==unlist(sapply(transitionMatrix,rowSums))))
-      stop("Transition probabilities in transitionMatrix do not sum to one.")
+    if(!all(1==unlist(sapply(transition_matrix,rowSums))))
+      stop("Transition probabilities in transition_matrix do not sum to one.")
     
-    if(!all(1==unlist(sapply(initialProbs,sum))))
+    if(!all(1==unlist(sapply(initial_probs,sum))))
       stop("Initial state probabilities do not sum to one.")
 
-    for(i in 1:numberOfClusters){
+    for(i in 1:number_of_clusters){
 
-      dimnames(transitionMatrix[[i]]) <- list(from=stateNames[[i]],to=stateNames[[i]])
-      # Single channel but emissionMatrix is list of lists  
-      if(is.list(emissionMatrix[[i]]) && length(emissionMatrix[[i]])==1)   
-        emissionMatrix[[i]] <- emissionMatrix[[i]][[1]]
+      dimnames(transition_matrix[[i]]) <- list(from=state_names[[i]],to=state_names[[i]])
+      # Single channel but emission_matrix is list of lists  
+      if(is.list(emission_matrix[[i]]) && length(emission_matrix[[i]])==1)   
+        emission_matrix[[i]] <- emission_matrix[[i]][[1]]
     }
     
     
@@ -217,58 +218,58 @@ buildMixHMM <-
     if(is.list(observations) && length(observations)==1)
       observations <- observations[[1]]
     
-    numberOfChannels <- ifelse(is.list(emissionMatrix[[1]]),length(emissionMatrix[[1]]),1)
+    number_of_channels <- ifelse(is.list(emission_matrix[[1]]),length(emission_matrix[[1]]),1)
     
-    if(numberOfChannels>1 && any(sapply(emissionMatrix,length)!=numberOfChannels))
+    if(number_of_channels>1 && any(sapply(emission_matrix,length)!=number_of_channels))
       stop("Number of channels defined by emission matrices differ from each other.")
     
-    if(numberOfChannels>1){
-      if(length(observations)!=numberOfChannels){
-        stop("Number of channels defined by emissionMatrix differs from one defined by observations.")
+    if(number_of_channels>1){
+      if(length(observations)!=number_of_channels){
+        stop("Number of channels defined by emission_matrix differs from one defined by observations.")
       }
       
       
-      numberOfSequences<-nrow(observations[[1]])
-      lengthOfSequences<-ncol(observations[[1]])
+      number_of_sequences<-nrow(observations[[1]])
+      length_of_sequences<-ncol(observations[[1]])
       
 
-      symbolNames<-lapply(observations,alphabet)
-      numberOfSymbols<-sapply(symbolNames,length)
-      for(i in 1:numberOfClusters){
-        if(any(lapply(emissionMatrix[[i]],nrow)!=numberOfStates[i]))
-          stop(paste("Number of rows in emissionMatrix of cluster", i, "is not equal to the number of states."))
+      symbol_names<-lapply(observations,alphabet)
+      number_of_symbols<-sapply(symbol_names,length)
+      for(i in 1:number_of_clusters){
+        if(any(lapply(emission_matrix[[i]],nrow)!=number_of_states[i]))
+          stop(paste("Number of rows in emission_matrix of cluster", i, "is not equal to the number of states."))
         
-        if(any(numberOfSymbols!=sapply(emissionMatrix[[i]],ncol)))
-          stop(paste("Number of columns in emissionMatrix of cluster", i, "is not equal to the number of symbols."))
-        if(!isTRUE(all.equal(c(sapply(emissionMatrix[[i]],rowSums)),
-                             rep(1,numberOfChannels*numberOfStates[i]),check.attributes=FALSE)))
-          stop(paste("Emission probabilities in emissionMatrix of cluster", i, "do not sum to one."))
-        if(is.null(channelNames)){
-          channelNames<-as.character(1:numberOfChannels)
-        }else if(length(channelNames)!=numberOfChannels){
-          warning("The length of argument channelNames does not match the number of channels. Names were not used.")
-          channelNames<-as.character(1:numberOfChannels)
+        if(any(number_of_symbols!=sapply(emission_matrix[[i]],ncol)))
+          stop(paste("Number of columns in emission_matrix of cluster", i, "is not equal to the number of symbols."))
+        if(!isTRUE(all.equal(c(sapply(emission_matrix[[i]],rowSums)),
+                             rep(1,number_of_channels*number_of_states[i]),check.attributes=FALSE)))
+          stop(paste("Emission probabilities in emission_matrix of cluster", i, "do not sum to one."))
+        if(is.null(channel_names)){
+          channel_names<-as.character(1:number_of_channels)
+        }else if(length(channel_names)!=number_of_channels){
+          warning("The length of argument channel_names does not match the number of channels. Names were not used.")
+          channel_names<-as.character(1:number_of_channels)
         }
-        for(j in 1:numberOfChannels)
-          dimnames(emissionMatrix[[i]][[j]])<-list(stateNames=stateNames[[i]],symbolNames=symbolNames[[j]])
-        names(emissionMatrix[[i]])<-channelNames
+        for(j in 1:number_of_channels)
+          dimnames(emission_matrix[[i]][[j]])<-list(state_names=state_names[[i]],symbol_names=symbol_names[[j]])
+        names(emission_matrix[[i]])<-channel_names
       }
     } else {
-      numberOfChannels <- 1
-      channelNames<-NULL
-      numberOfSequences<-nrow(observations)
-      lengthOfSequences<-ncol(observations)
-      symbolNames<-alphabet(observations)
-      numberOfSymbols<-length(symbolNames)
+      number_of_channels <- 1
+      channel_names<-NULL
+      number_of_sequences<-nrow(observations)
+      length_of_sequences<-ncol(observations)
+      symbol_names<-alphabet(observations)
+      number_of_symbols<-length(symbol_names)
       
-      for(i in 1:numberOfClusters){
-        if(numberOfStates[i]!=dim(emissionMatrix[[i]])[1])
-          stop("Number of rows in emissionMatrix is not equal to the number of states.")
-        if(numberOfSymbols!=dim(emissionMatrix[[i]])[2])
-          stop("Number of columns in emissionMatrix is not equal to the number of symbols.")
-        if(!isTRUE(all.equal(rep(1,numberOfStates[i]),rowSums(emissionMatrix[[i]]),check.attributes=FALSE)))
-          stop("Emission probabilities in emissionMatrix do not sum to one.")
-        dimnames(emissionMatrix[[i]])<-list(stateNames=stateNames[[i]],symbolNames=symbolNames)
+      for(i in 1:number_of_clusters){
+        if(number_of_states[i]!=dim(emission_matrix[[i]])[1])
+          stop("Number of rows in emission_matrix is not equal to the number of states.")
+        if(number_of_symbols!=dim(emission_matrix[[i]])[2])
+          stop("Number of columns in emission_matrix is not equal to the number of symbols.")
+        if(!isTRUE(all.equal(rep(1,number_of_states[i]),rowSums(emission_matrix[[i]]),check.attributes=FALSE)))
+          stop("Emission probabilities in emission_matrix do not sum to one.")
+        dimnames(emission_matrix[[i]])<-list(state_names=state_names[[i]],symbol_names=symbol_names)
       }
       
     }
@@ -277,43 +278,43 @@ buildMixHMM <-
     if(!missing(formula)){
       if(inherits(formula, "formula")){
       X <- model.matrix(formula, data) #[,-1,drop=FALSE]
-      if(nrow(X)!=numberOfSequences)
+      if(nrow(X)!=number_of_sequences)
         stop("Number of subjects in data for covariates does not match the number of subjects in the sequence data.")
-      numberOfCovariates<-ncol(X)
+      number_of_covariates<-ncol(X)
       }else{
         stop("Object given for argument formula is not of class formula.")
       }
       if(missing(beta)){
-        beta<-matrix(0,numberOfCovariates,numberOfClusters)
+        beta<-matrix(0,number_of_covariates,number_of_clusters)
       } else {
-        if(ncol(beta)!=numberOfClusters | nrow(beta)!=numberOfCovariates)
+        if(ncol(beta)!=number_of_clusters | nrow(beta)!=number_of_covariates)
           stop("Wrong dimensions of beta.")
         beta[,1]<-0
       }       
     } else { #Just intercept
-      numberOfCovariates <-1
-      X <- matrix(1,nrow=numberOfSequences)
-      beta <- matrix(0,1,numberOfClusters)        
+      number_of_covariates <-1
+      X <- matrix(1,nrow=number_of_sequences)
+      beta <- matrix(0,1,number_of_clusters)        
     }
     
     rownames(beta) <- colnames(X)
-    colnames(beta) <- clusterNames
+    colnames(beta) <- cluster_names
     
-    names(transitionMatrix) <- names(emissionMatrix) <- names(initialProbs) <- clusterNames
+    names(transition_matrix) <- names(emission_matrix) <- names(initial_probs) <- cluster_names
     
     pr <- exp(X%*%beta)
-    clusterProbabilities <- pr/rowSums(pr)
+    cluster_probabilities <- pr/rowSums(pr)
     
-    model<-list(observations=observations, transitionMatrix=transitionMatrix,
-                emissionMatrix=emissionMatrix, initialProbs=initialProbs,
-                beta=beta, X=X, clusterNames=clusterNames, stateNames=stateNames, 
-                symbolNames=symbolNames, channelNames=channelNames, 
-                lengthOfSequences=lengthOfSequences,
-                numberOfSequences=numberOfSequences, numberOfClusters=numberOfClusters,
-                numberOfSymbols=numberOfSymbols, numberOfStates=numberOfStates,
-                numberOfChannels=numberOfChannels,
-                numberOfCovariates=numberOfCovariates, 
-                clusterProbabilities=clusterProbabilities)
-    class(model)<-"mixHMModel"
+    model<-list(observations=observations, transition_matrix=transition_matrix,
+                emission_matrix=emission_matrix, initial_probs=initial_probs,
+                beta=beta, X=X, cluster_names=cluster_names, state_names=state_names, 
+                symbol_names=symbol_names, channel_names=channel_names, 
+                length_of_sequences=length_of_sequences,
+                number_of_sequences=number_of_sequences, number_of_clusters=number_of_clusters,
+                number_of_symbols=number_of_symbols, number_of_states=number_of_states,
+                number_of_channels=number_of_channels,
+                number_of_covariates=number_of_covariates, 
+                cluster_probabilities=cluster_probabilities)
+    class(model)<-"mhmm"
     model
   }
