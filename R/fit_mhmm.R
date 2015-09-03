@@ -228,7 +228,7 @@
 
 
 fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
-  em_control = list(), global_control = list(), local_control = list(), lb, ub, soft = TRUE, ...){
+  em_control = list(), global_control = list(), local_control = list(), lb, ub, ...){
   
   
   
@@ -275,11 +275,11 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     if(global_step || local_step){
       k <- 0
       for(m in 1:model$number_of_clusters){
-        original_model$initial_probs[[m]] <- unname(resEM$initial_probs[(k+1):(k+model$number_of_states_in_clusters[m])])
+        original_model$initial_probs[[m]] <- unname(resEM$initialProbs[(k+1):(k+model$number_of_states_in_clusters[m])])
         k <- sum(model$number_of_states_in_clusters[1:m])
       }
-    } else model$initial_probs[] <- resEM$initial_probs
-    model$transition_matrix[]<-resEM$transition_matrix
+    } else model$initial_probs[] <- resEM$initialProbs
+    model$transition_matrix[]<-resEM$transitionMatrix
     model$beta[]<-resEM$beta
     ll <- resEM$logLik
   } else resEM <-NULL

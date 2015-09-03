@@ -171,7 +171,7 @@
 #' 
 fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
   em_control=list(), global_control=list(), 
-  local_control=list(), lb, ub, soft = TRUE, ...){
+  local_control=list(), lb, ub, ...){
   
   if(!em_step && !global_step && !local_step){
     stop("No method chosen for estimation. Choose at least one from em_step, global_step, and local_step.")
@@ -215,8 +215,8 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
       model$emission_matrix[[i]][]<-resEM$emissionArray[ , 1:model$number_of_symbols[i], i]                                     
     
     
-    model$initial_probs[]<-resEM$initial_probs
-    model$transition_matrix[]<-resEM$transition_matrix
+    model$initial_probs[]<-resEM$initialProbs
+    model$transition_matrix[]<-resEM$transitionMatrix
     ll <- resEM$logLik
   } else resEM <-NULL
   
