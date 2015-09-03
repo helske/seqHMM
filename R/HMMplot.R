@@ -42,7 +42,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
   }
   
   if(x$number_of_channels>1){
-    x <- MCtoSC(x)
+    x <- mc_to_sc(x)
   }
   
   if(pie==FALSE && withlegend!=FALSE){

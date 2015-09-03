@@ -214,7 +214,7 @@ trimmedHMM$emiss
 
 
 # Multichannel to single channel HMM
-scHMM <- MCtoSC(HMM$model)
+scHMM <- mc_to_sc(HMM$model)
 
 ssplot(scHMM, plots = "both", sortv = "from.end", sort.channel = 0, 
        xtlab = 15:30, legend.prop = 0.5)

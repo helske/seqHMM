@@ -3,18 +3,23 @@
 seqHMM: Hidden Markov Models for Life Sequences and Other Multivariate, Multichannel Categorical Time Series
 ====================================================================================================
 
-The seqHMM package is designed for the inference of hidden Markov models where both the hidden state space and the symbol space of observations are discrete and the observations consist of multiple sequences possibly with multiple channels (such as life history data with multiple life domains). Maximum likelihood estimation via EM algorithm and direct numerical maximization with analytical gradients is supported. All main algorithms are written in C++.
+Note! Function names and arguments were changed for version 0.12
+
+The `seqHMM` package is designed for fitting hidden (or latent) Markov models (HMMs) and mixture hidden Markov models (MHMMs) for social sequence data and other categorical time series. The package supports models for one or multiple subjects with one or multiple interdependent sequences (channels). External covariates can be added to explain cluster membership in MHMMs. The package provides functions for evaluating and comparing models, as well as functions for easy plotting of multichannel sequences and hidden Markov models.
+
+Maximum likelihood estimation via EM algorithm and direct numerical maximization with analytical gradients is supported. All main algorithms are written in C++.
 
 Package is still under development and should be available at CRAN in 2015.
 
-If you have any questions or wishes, please contact Satu Helske or Jouni Helske, firstname.lastname (at) jyu.fi.
+We would be happy to hear feedback! If you have any questions, comments, or wishes, please contact Satu Helske or Jouni Helske, firstname.lastname@jyu.fi.
 
-If you want to try the `seqHMM` package, you can install it via the `devtools` package:
+If you want to try the `seqHMM` package, you can install it via the `devtools` package. Install also the latest version of `igraph`, which is needed for plotting HMMs. Just paste the following lines in R and you are ready to go.
 
 ```R
 install.packages("devtools")
 library(devtools)
 install_github("helske/seqHMM")
+install_github("igraph/rigraph")
 ```
 
 Preview of the `seqHMM` package
@@ -339,10 +344,10 @@ trimmedHMM$emiss
 
 ### Converting multichannel to single channel models and data
 
-The `MCtoSC` function converts a multichannel model into a single channel representation. E.g. the `plot` function for `hmm` objects uses this type of conversion. The `seqHMM` package also includes a similar function `MCtoSCdata` for merging multiple state sequence objects.
+The `mc_to_sc` function converts a multichannel model into a single channel representation. E.g. the `plot` function for `hmm` objects uses this type of conversion. The `seqHMM` package also includes a similar function `mc_to_sc_data` for merging multiple state sequence objects.
 
 ```
-scHMM <- MCtoSC(HMM$model)
+scHMM <- mc_to_sc(HMM$model)
 
 ssplot(scHMM, plots = "both", sortv = "from.end", sort.channel = 0, 
        xtlab = 15:30, legend.prop = 0.5)

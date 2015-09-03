@@ -10,7 +10,7 @@
 #' @param x A hidden Markov model object of class hmm created with 
 #'   \code{\link{build_hmm}} and \code{\link{fit_hmm}}. Multichannel 
 #'   hmm objects are automatically transformed to single channel objects. 
-#'   See function \code{\link{MCtoSC}} for more information on the 
+#'   See function \code{\link{mc_to_sc}} for more information on the 
 #'   transformation.
 #' @param layout specifies the layout of the vertices (nodes). Accepts a 
 #'   numerical matrix, a layout function, or either of \code{"horizontal"} (the 
@@ -95,7 +95,7 @@
 #'   \code{margin}, or \code{main}.
 #'   
 #' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and 
-#'   fitting Hidden Markov models, \code{\link{MCtoSC}} for transforming 
+#'   fitting Hidden Markov models, \code{\link{mc_to_sc}} for transforming 
 #'   multistate hmm objects to single channel objects, and 
 #'   \code{\link{plot.igraph}} for the general plotting function of directed graphs.
 #'   
@@ -324,7 +324,7 @@ plot.hmm <- function(x, layout="horizontal", pie=TRUE,
   }
   
   if(x$number_of_channels>1){
-    x <- MCtoSC(x)
+    x <- mc_to_sc(x)
   }
   
   if(pie==FALSE && withlegend!=FALSE){

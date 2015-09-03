@@ -8,7 +8,7 @@
 #' @param x A hidden Markov model object of class mhmm created with 
 #'   \code{\link{build_mhmm}} and \code{\link{fit_mhmm}}. Multichannel 
 #'   mhmm objects are automatically transformed to single channel objects. 
-#'   See function \code{\link{MCtoSC}} for more information on the 
+#'   See function \code{\link{mc_to_sc}} for more information on the 
 #'   transformation.
 #' @param interactive Whether to plot each cluster in succession or in a grid. Defaults to TRUE, i.e. clusters are plotted one after another.
 #' 
