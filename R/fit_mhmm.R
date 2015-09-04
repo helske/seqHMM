@@ -466,7 +466,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
         model$number_of_symbols, model$beta, model$X, model$number_of_states_in_clusters)
   }
   ses <- try(sqrt(diag(solve(jacobian(gradbetaf,model$beta[,-1], model = model)))), silent = TRUE)
-  if(!class(ses)!="try-error"){
+  if(class(ses)!="try-error"){
     ses <- matrix(ses, ncol = model$number_of_clusters - 1)
     rownames(ses) <- rownames(model$beta)
     colnames(ses) <- colnames(model$beta)[-1]
