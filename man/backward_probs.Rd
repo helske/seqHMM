@@ -14,6 +14,6 @@ Backward probabilities in logarithm scale. In case of multiple observations,
 these are computed independently for each sequence.
 }
 \description{
-Function \code{backwardProbs} computes the backward probabilities of hidden Markov model in logarithm scale.
+Function \code{backward_probs} computes the backward probabilities of hidden Markov model in logarithm scale.
 }
 

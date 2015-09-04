@@ -14,6 +14,6 @@ Forward probabilities in logarithm scale. In case of multiple observations,
 these are computed independently for each sequence.
 }
 \description{
-Function \code{forwardProbs} computes the forward probabilities of hidden Markov model in logarithm scale.
+Function \code{forward_probs} computes the forward probabilities of hidden Markov model in logarithm scale.
 }
 

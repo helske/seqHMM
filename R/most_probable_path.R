@@ -147,7 +147,7 @@ most_probable_path<-function(model){
     p <- 0
 
     for(i in 1:model$number_of_clusters){
-      clP[[i]] <- colSums(exp(fw[(p+1):(p+model$number_of_states_in_clusters[i]),] - 
+      clP[[i]] <- colSums(exp(fw[(p+1):(p+model$number_of_states_in_clusters[i]), , drop = FALSE] - 
                                 rep(ll, each = model$number_of_states_in_clusters[i])))
       p <- p + model$number_of_states_in_clusters[i]
     }
