@@ -228,7 +228,7 @@
 
 
 fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
-  em_control = list(), global_control = list(), local_control = list(), lb, ub, soft = TRUE, ...){
+  em_control = list(), global_control = list(), local_control = list(), lb, ub, ...){
   
   
   

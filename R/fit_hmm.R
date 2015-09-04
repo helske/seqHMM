@@ -171,7 +171,7 @@
 #' 
 fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
   em_control=list(), global_control=list(), 
-  local_control=list(), lb, ub, soft = TRUE, ...){
+  local_control=list(), lb, ub, ...){
   
   if(!em_step && !global_step && !local_step){
     stop("No method chosen for estimation. Choose at least one from em_step, global_step, and local_step.")
@@ -200,13 +200,9 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
     for(i in 1:model$number_of_channels)
       emissionArray[,1:model$number_of_symbols[i],i]<-model$emission_matrix[[i]]
     
-    if(soft){
-      resEM<-EM(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
+    resEM<-EM(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
         model$number_of_symbols, em.con$maxeval, em.con$reltol,em.con$print_level)
-    } else {
-      resEM<-hardEMMC(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
-        model$number_of_symbols, em.con$maxeval, em.con$reltol,em.con$print_level)
-    }
+
     if(resEM$change< -1e-5)
       warning("EM algorithm stopped due to the decreasing log-likelihood. ")
     

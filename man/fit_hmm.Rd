@@ -54,6 +54,8 @@ Default is 1e-8.} }}
 Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)].
 Used only in the global optimization step.}
 
+\item{soft}{}
+
 \item{...}{Additional arguments to nloptr}
 }
 \value{
