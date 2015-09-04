@@ -6,6 +6,7 @@
 #' original zero probabilities.
 #' 
 #' @export
+#' @importFrom numDeriv jacobian
 #' @importFrom Matrix .bdiag
 #' @param model Hidden Markov model of class \code{mhmm}.
 #' @param em_step Logical, use EM algorithm at the start of parameter estimation.
@@ -392,8 +393,6 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
         }
         model
       }
-
-      
     }
     
     if(global_step){
@@ -460,7 +459,19 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     model$observations <- model$observations[[1]]
     model$emission_matrix <- model$emission_matrix[[1]]
   }
-  list(model = spread_models(model), logLik = ll, 
-    em_results=resEM[5:7], global_results = globalres, local_results = localres)
+  
+  gradbetaf<-function(pars, model){
+    model$beta[,-1] <- pars
+      gradbeta(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
+        model$number_of_symbols, model$beta, model$X, model$number_of_states_in_clusters)
+  }
+  ses <- try(sqrt(diag(solve(jacobian(gradbetaf,model$beta[,-1], model = model)))), silent = TRUE)
+  if(!class(ses)!="try-error"){
+    ses <- matrix(ses, ncol = model$number_of_clusters - 1)
+    rownames(ses) <- rownames(model$beta)
+    colnames(ses) <- colnames(model$beta)[-1]
+  }
+  list(model = spread_models(model), standard_errors = ses, 
+    logLik = ll, em_results=resEM[5:7], global_results = globalres, local_results = localres)
   
 }
