@@ -6,7 +6,7 @@
 \usage{
 fit_mhmm(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
   em_control = list(), global_control = list(), local_control = list(),
-  lb, ub, soft = TRUE, ...)
+  lb, ub, ...)
 }
 \arguments{
 \item{model}{Hidden Markov model of class \code{mhmm}.}

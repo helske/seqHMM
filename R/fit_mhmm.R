@@ -461,6 +461,6 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     model$emission_matrix <- model$emission_matrix[[1]]
   }
   list(model = spread_models(model), logLik = ll, 
-    em_results=resEM[4:6], global_results = globalres, local_results = localres)
+    em_results=resEM[5:7], global_results = globalres, local_results = localres)
   
 }

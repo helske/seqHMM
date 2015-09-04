@@ -255,8 +255,9 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
     emissNZ<-array(0,c(model$number_of_states,max(model$number_of_symbols),model$number_of_channels))
     for(i in 1:model$number_of_channels){
       emissNZ[,1:model$number_of_symbols[i],i]<-model$emission_matrix[[i]] > 0
-      emissNZ[,1:model$number_of_symbols[i],i][maxEM[[i]]]<-0
-      
+      if(model$number_of_states == 1){
+        emissNZ[,1:model$number_of_symbols[i],i][maxEM[[i]][2]]<-0
+      } else emissNZ[,1:model$number_of_symbols[i],i][maxEM[[i]]]<-0      
     }       
     
     initialvalues<-c(log(c(

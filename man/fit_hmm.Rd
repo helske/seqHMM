@@ -6,7 +6,7 @@
 \usage{
 fit_hmm(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
   em_control = list(), global_control = list(), local_control = list(),
-  lb, ub, soft = TRUE, ...)
+  lb, ub, ...)
 }
 \arguments{
 \item{model}{Hidden Markov model of class \code{hmm}.}
@@ -53,8 +53,6 @@ Default is 1e-8.} }}
 \item{lb,ub}{Lower and upper bounds for parameters in Softmax parameterization.
 Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)].
 Used only in the global optimization step.}
-
-\item{soft}{}
 
 \item{...}{Additional arguments to nloptr}
 }

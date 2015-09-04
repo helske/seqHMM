@@ -5,7 +5,7 @@
 #'
 #' @export
 #' @param object Hidden Markov model of class \code{mhmm}.
-#' #' @param partials Return a vector containing the individual contributions of each sequence to the total log-likelihood. 
+#' @param partials Return a vector containing the individual contributions of each sequence to the total log-likelihood. 
 #' Default is FALSE, which returns the sum of all log-likelihood components.
 #' @param ... Ignored.
 #' @return Log-likelihood of hidden Markov model.
@@ -33,7 +33,7 @@ logLik.mhmm<-function(object, partials = FALSE, ...){
     emissionArray[,1:object$number_of_symbols[i],i]<-object$emission_matrix[[i]]
   
   ll <- logLikMixHMM(object$transition_matrix, emissionArray, object$initial_probs, obsArray,
-    object$beta, object$X, object$number_of_statesInClusters) 
+    object$beta, object$X, object$number_of_states_in_clusters) 
   
   
   if(partials){
