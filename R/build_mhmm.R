@@ -215,7 +215,7 @@ build_mhmm <-
     
     
     # Single channel but observations is a list
-    if(is.list(observations) && length(observations)==1)
+    if(is.list(observations) && !inherits(observations, "stslist") && length(observations)==1)
       observations <- observations[[1]]
     
     number_of_channels <- ifelse(is.list(emission_matrix[[1]]),length(emission_matrix[[1]]),1)

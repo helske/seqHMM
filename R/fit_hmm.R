@@ -260,7 +260,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
       } else emissNZ[,1:model$number_of_symbols[i],i][maxEM[[i]]]<-0      
     }       
     
-    initialvalues<-c(log(c(
+    initialvalues<-c(if((npTM+sum(npEM)+npIPAll)>0) log(c(
       if(npTM>0) model$transition_matrix[paramTM],
       if(sum(npEM)>0) unlist(sapply(1:model$number_of_channels,
         function(x) model$emission_matrix[[x]][paramEM[[x]]])),

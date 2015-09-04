@@ -113,9 +113,10 @@ IntegerVector obsArray, IntegerVector nSymbols, int itermax=100, double tol=1e-8
         }
       }      
     }
-    
+    if(oDims[1]>1){
     ksii.each_col() /= sum(ksii,1);
     transition = log(ksii);
+    }
     for(int r=0; r<eDims[2]; r++){
       
       gamma.slice(r).cols(0,nSymbols(r)-1).each_col() /= sum(gamma.slice(r).cols(0,nSymbols(r)-1),1);
