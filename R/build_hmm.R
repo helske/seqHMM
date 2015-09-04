@@ -133,8 +133,8 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
   if(is.list(emission_matrix) && length(emission_matrix)==1){
     emission_matrix <- emission_matrix[[1]]   
   }
-  if(is.list(observations) && length(observations)==1){
-    observations <- observations[[1]]    
+  if(is.list(observations) && !inherits(observations, "stslist") && length(observations)==1){
+    observations <- observations[[1]]
   }
   
   
