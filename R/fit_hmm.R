@@ -211,8 +211,8 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
       model$emission_matrix[[i]][]<-resEM$emissionArray[ , 1:model$number_of_symbols[i], i]                                     
     
     
-    model$initial_probs[]<-resEM$initial_probs
-    model$transition_matrix[]<-resEM$transition_matrix
+    model$initial_probs[]<-resEM$initialProbs
+    model$transition_matrix[]<-resEM$transitionMatrix
     ll <- resEM$logLik
   } else resEM <-NULL
   
