@@ -7,8 +7,7 @@
 \method{logLik}{mhmm}(object, partials = FALSE, ...)
 }
 \arguments{
-\item{object}{Hidden Markov model of class \code{mhmm}.
-#'}
+\item{object}{Hidden Markov model of class \code{mhmm}.}
 
 \item{partials}{Return a vector containing the individual contributions of each sequence to the total log-likelihood.
 Default is FALSE, which returns the sum of all log-likelihood components.}

@@ -1,6 +1,6 @@
 #' Forward Probabilities for Hidden Markov Model
 #'
-#' Function \code{forwardProbs} computes the forward probabilities of hidden Markov model in logarithm scale.
+#' Function \code{forward_probs} computes the forward probabilities of hidden Markov model in logarithm scale.
 #'
 #' @export 
 #' @param model Hidden Markov model of class \code{hmm}.
@@ -41,7 +41,7 @@ forward_probs<-function(model){
 
 #' Backward Probabilities for Hidden Markov Model
 #'
-#' Function \code{backwardProbs} computes the backward probabilities of hidden Markov model in logarithm scale.
+#' Function \code{backward_probs} computes the backward probabilities of hidden Markov model in logarithm scale.
 #'
 #' @export 
 #' @param model Hidden Markov model of class \code{hmm}.

@@ -9,8 +9,8 @@
 #' these are computed independently for each sequence.
 posterior_probs<-function(model){
   
-  fw <- forwardProbs(model)
-  bw <- backwardProbs(model)
+  fw <- forward_probs(model)
+  bw <- backward_probs(model)
   ll <- logLik(model, partials = TRUE)
   
   out <- fw + bw - array(rep(ll, each = 

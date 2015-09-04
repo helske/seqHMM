@@ -93,7 +93,7 @@ most_probable_path<-function(model){
   
   ll <- logLik(model, partials = TRUE)
   if(inherits(model,"mhmm")){
-    fw <- forwardProbs(model)[,model$length_of_sequences,]
+    fw <- forward_probs(model)[,model$length_of_sequences,]
     model <- combine_models(model)
     mix<-TRUE
   } else mix <- FALSE
