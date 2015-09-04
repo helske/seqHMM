@@ -21,10 +21,6 @@ forwardx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, co
     .Call('seqHMM_forwardx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates)
 }
 
-hardEM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax = 100L, tol = 1e-8, trace = 0L) {
-    .Call('seqHMM_hardEM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol, trace)
-}
-
 logLikHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
     .Call('seqHMM_logLikHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
@@ -43,14 +39,6 @@ objectivex <- function(transitionMatrix, emissionArray, initialProbs, obsArray, 
 
 viterbi <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
     .Call('seqHMM_viterbi', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
-}
-
-viterbiMCx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates) {
-    .Call('seqHMM_viterbiMCx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates)
-}
-
-viterbiProb <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
-    .Call('seqHMM_viterbiProb', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
 
 viterbix <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates) {
