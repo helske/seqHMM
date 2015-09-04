@@ -89,13 +89,16 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     iter++;
     gamma.zeros();
     ksii.zeros();
-    delta.zeros();        
-
+    delta.zeros(); 
+    
+    
+    
     for(int k = 0; k < oDims[0]; k++){
       
      
       delta += exp(alpha.slice(k).col(0) + beta.slice(k).col(0) - ll(k));
       
+    
       for(int i = 0; i < eDims[0]; i++){
         for(int j = 0; j < eDims[0]; j++){
           sumtmp = neginf;
@@ -135,8 +138,10 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
       }      
     }
     
+    if(oDims[1]>1){
     ksii.each_col() /= sum(ksii,1);
     transition = log(ksii);
+    }
     for(int r=0; r<eDims[2]; r++){
       
       gamma.slice(r).cols(0,nSymbols(r)-1).each_col() /= sum(gamma.slice(r).cols(0,nSymbols(r)-1),1);
