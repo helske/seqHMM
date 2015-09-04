@@ -191,7 +191,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
       }
     }
     
-  }else if(inherits(model, "mixhmm")){
+  }else if(inherits(model, "mhmm")){
     if(model$number_of_channels==1){
       if(!(any(unlist(model$initial_probs) < zerotol & unlist(model$initial_probs) > 0) || 
              any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
