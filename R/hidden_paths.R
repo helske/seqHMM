@@ -93,7 +93,7 @@ hidden_paths <- function(model){
   } else mix <- FALSE
   
   
-  if(model$number_of_channels == 1){
+  if(model$n_channels == 1){
     model$observations <- list(model$observations)
     model$emission_matrix <- list(model$emission_matrix)
   }
@@ -102,28 +102,28 @@ hidden_paths <- function(model){
   model$initial_probs <- log(model$initial_probs)
   model$transition_matrix <- log(model$transition_matrix)
   
-  obsArray <- array(0,c(model$number_of_sequences,model$length_of_sequences,model$number_of_channels))
-  for(i in 1:model$number_of_channels){
+  obsArray <- array(0,c(model$n_sequences,model$length_of_sequences,model$n_channels))
+  for(i in 1:model$n_channels){
     obsArray[,,i] <- data.matrix(model$observations[[i]])-1
-    obsArray[,,i][obsArray[,,i]>model$number_of_symbols[i]] <- model$number_of_symbols[i]
+    obsArray[,,i][obsArray[,,i]>model$n_symbols[i]] <- model$n_symbols[i]
   }       
   storage.mode(obsArray) <- "integer"
   
-  emissionArray <- array(0,c(model$number_of_states,max(model$number_of_symbols)+1,model$number_of_channels))
-  for(i in 1:model$number_of_channels)
-    emissionArray[,1:model$number_of_symbols[i],i] <- log(model$emission_matrix[[i]])
+  emissionArray <- array(0,c(model$n_states,max(model$n_symbols)+1,model$n_channels))
+  for(i in 1:model$n_channels)
+    emissionArray[,1:model$n_symbols[i],i] <- log(model$emission_matrix[[i]])
   
   if(mix){
     out <- viterbix(model$transition_matrix, emissionArray, 
       model$initial_probs, obsArray, model$beta, 
-      model$X, model$number_of_states_in_clusters)
+      model$X, model$n_states_in_clusters)
   } else{
     out <- viterbi(model$transition_matrix, emissionArray, 
       model$initial_probs, obsArray)
   }
   
   
-  if(model$number_of_sequences==1){
+  if(model$n_sequences==1){
     mpp <- t(model$state_names[out$q+1])
   }else{
     mpp <- apply(out$q+1,2,function(x) model$state_names[x])
@@ -137,7 +137,7 @@ hidden_paths <- function(model){
     )
   )
   
-  attr(mpp, "cpal") <- colorpalette[[sum(model$number_of_states)]]
+  attr(mpp, "cpal") <- colorpalette[[sum(model$n_states)]]
   
   attr(mpp, "log_prob") <- out$logp
   

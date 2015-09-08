@@ -9,7 +9,7 @@ build_mhmm(observations, transition_matrix, emission_matrix, initial_probs,
   channel_names = NULL)
 }
 \arguments{
-\item{observations}{TraMineR stslist (see \code{\link{seqdef}}) containing
+\item{observations}{TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences, or a list of such objects (one for each channel).}
 
 \item{transition_matrix}{A list of matrices of transition

@@ -12,23 +12,23 @@ forward_probs<-function(model){
     model <- combine_models(model)
   } else mix <- FALSE
   
-  if(model$number_of_channels == 1){
+  if(model$n_channels == 1){
     model$observations <- list(model$observations)
     model$emission_matrix <- list(model$emission_matrix)
   }
   
-  obsArray<-array(0,c(model$number_of_sequences,model$length_of_sequences,model$number_of_channels))
-  for(i in 1:model$number_of_channels){
+  obsArray<-array(0,c(model$n_sequences,model$length_of_sequences,model$n_channels))
+  for(i in 1:model$n_channels){
     obsArray[,,i]<-data.matrix(model$observations[[i]])-1
-    obsArray[,,i][obsArray[,,i]>model$number_of_symbols[i]]<-model$number_of_symbols[i]
+    obsArray[,,i][obsArray[,,i]>model$n_symbols[i]]<-model$n_symbols[i]
   }    
   storage.mode(obsArray)<-"integer"
-  emissionArray<-array(1,c(model$number_of_states,max(model$number_of_symbols)+1,model$number_of_channels))
-  for(i in 1:model$number_of_channels)
-    emissionArray[,1:model$number_of_symbols[i],i]<-model$emission_matrix[[i]]
+  emissionArray<-array(1,c(model$n_states,max(model$n_symbols)+1,model$n_channels))
+  for(i in 1:model$n_channels)
+    emissionArray[,1:model$n_symbols[i],i]<-model$emission_matrix[[i]]
   if(mix){
     out<-forwardx(model$transition_matrix, emissionArray, 
-      model$initial_probs, obsArray, model$beta,model$X,model$number_of_states_in_clusters)
+      model$initial_probs, obsArray, model$beta,model$X,model$n_states_in_clusters)
   } else{
     out<-forward(model$transition_matrix, emissionArray, 
       model$initial_probs, obsArray)
@@ -51,20 +51,20 @@ backward_probs<-function(model){
   if(inherits(model,"mhmm"))
     model <- combine_models(model)
   
-  if(model$number_of_channels == 1){
+  if(model$n_channels == 1){
     model$observations <- list(model$observations)
     model$emission_matrix <- list(model$emission_matrix)
   }
   
-  obsArray<-array(0,c(model$number_of_sequences,model$length_of_sequences,model$number_of_channels))
-  for(i in 1:model$number_of_channels){
+  obsArray<-array(0,c(model$n_sequences,model$length_of_sequences,model$n_channels))
+  for(i in 1:model$n_channels){
     obsArray[,,i]<-data.matrix(model$observations[[i]])-1
-    obsArray[,,i][obsArray[,,i]>model$number_of_symbols[i]]<-model$number_of_symbols[i]
+    obsArray[,,i][obsArray[,,i]>model$n_symbols[i]]<-model$n_symbols[i]
   }    
   storage.mode(obsArray)<-"integer"
-  emissionArray<-array(1,c(model$number_of_states,max(model$number_of_symbols)+1,model$number_of_channels))
-  for(i in 1:model$number_of_channels)
-    emissionArray[,1:model$number_of_symbols[i],i]<-model$emission_matrix[[i]]
+  emissionArray<-array(1,c(model$n_states,max(model$n_symbols)+1,model$n_channels))
+  for(i in 1:model$n_channels)
+    emissionArray[,1:model$n_symbols[i],i]<-model$emission_matrix[[i]]
   
   out<-backward(model$transition_matrix, emissionArray, obsArray)
   

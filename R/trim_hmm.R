@@ -89,7 +89,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
   
   if(inherits(model, "hmm")){
     
-    if(model$number_of_channels==1){
+    if(model$n_channels==1){
       if(!(any(model$initial_probs < zerotol & model$initial_probs > 0) || 
              any(model$transition_matrix < zerotol & model$transition_matrix > 0)
            || any(model$emission_matrix < zerotol & model$emission_matrix > 0))){
@@ -152,7 +152,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
       model$initial_probs <- model$initial_probs/sum(model$initial_probs)
       model$transition_matrix[model$transition_matrix < zerotol] <- 0
       model$transition_matrix <- model$transition_matrix/rowSums(model$transition_matrix)
-      for(i in 1:model$number_of_channels){
+      for(i in 1:model$n_channels){
         model$emission_matrix[[i]][model$emission_matrix[[i]] < zerotol] <- 0
         model$emission_matrix[[i]] <- model$emission_matrix[[i]]/
           rowSums(model$emission_matrix[[i]])
@@ -182,7 +182,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
           model$initial_probs <- model$initial_probs/sum(model$initial_probs)
           model$transition_matrix[model$transition_matrix < zerotol] <- 0
           model$transition_matrix <- model$transition_matrix/rowSums(model$transition_matrix)
-          for(i in 1:model$number_of_channels){
+          for(i in 1:model$n_channels){
             model$emission_matrix[[i]][model$emission_matrix[[i]] < zerotol] <- 0
             model$emission_matrix[[i]] <- model$emission_matrix[[i]]/
               rowSums(model$emission_matrix[[i]])          
@@ -192,7 +192,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
     }
     
   }else if(inherits(model, "mhmm")){
-    if(model$number_of_channels==1){
+    if(model$n_channels==1){
       if(!(any(unlist(model$initial_probs) < zerotol & unlist(model$initial_probs) > 0) || 
              any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
            || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0))){
@@ -204,7 +204,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
       }
       ll_original <- logLik(model)
       
-      for(m in 1:model$number_of_clusters){
+      for(m in 1:model$n_clusters){
         model$initial_probs[[m]][model$initial_probs[[m]] < zerotol] <- 0
         model$initial_probs[[m]] <- model$initial_probs[[m]]/sum(model$initial_probs[[m]])
         model$transition_matrix[[m]][model$transition_matrix[[m]] < zerotol] <- 0
@@ -231,7 +231,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
                || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0)))
             break
           
-          for(m in 1:model$number_of_clusters){
+          for(m in 1:model$n_clusters){
             model$initial_probs[[m]][model$initial_probs[[m]] < zerotol] <- 0
             model$initial_probs[[m]] <- model$initial_probs[[m]]/sum(model$initial_probs[[m]])
             model$transition_matrix[[m]][model$transition_matrix[[m]] < zerotol] <- 0
@@ -253,12 +253,12 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
       }
       ll_original <- logLik(model)
       
-      for(m in 1:model$number_of_clusters){
+      for(m in 1:model$n_clusters){
         model$initial_probs[[m]][model$initial_probs[[m]] < zerotol] <- 0
         model$initial_probs[[m]] <- model$initial_probs[[m]]/sum(model$initial_probs[[m]])
         model$transition_matrix[[m]][model$transition_matrix[[m]] < zerotol] <- 0
         model$transition_matrix[[m]] <- model$transition_matrix[[m]]/rowSums(model$transition_matrix[[m]])
-        for(i in 1:model$number_of_channels){
+        for(i in 1:model$n_channels){
           model$emission_matrix[[m]][[i]][model$emission_matrix[[m]][[i]] < zerotol] <- 0
           model$emission_matrix[[m]][[i]] <- model$emission_matrix[[m]][[i]]/
             rowSums(model$emission_matrix[[m]][[i]])
@@ -285,12 +285,12 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
                || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0)))
             break
           
-          for(m in 1:model$number_of_clusters){
+          for(m in 1:model$n_clusters){
             model$initial_probs[[m]][model$initial_probs[[m]] < zerotol] <- 0
             model$initial_probs[[m]] <- model$initial_probs[[m]]/sum(model$initial_probs[[m]])
             model$transition_matrix[[m]][model$transition_matrix[[m]] < zerotol] <- 0
             model$transition_matrix[[m]] <- model$transition_matrix[[m]]/rowSums(model$transition_matrix[[m]])
-            for(i in 1:model$number_of_channels){
+            for(i in 1:model$n_channels){
               model$emission_matrix[[m]][[i]][model$emission_matrix[[m]][[i]] < zerotol] <- 0
               model$emission_matrix[[m]][[i]] <- model$emission_matrix[[m]][[i]]/
                 rowSums(model$emission_matrix[[m]][[i]])

@@ -92,12 +92,12 @@ BIC.hmm <- function(object, trim = FALSE,...){
   } else loglik <- logLik(object)
   
   
-  if(object$number_of_channels == 1){
-    -2*loglik + log(object$number_of_sequences*object$length_of_sequences)*
+  if(object$n_channels == 1){
+    -2*loglik + log(object$n_sequences*object$length_of_sequences)*
       (sum(object$initial_probs>0)+sum(object$transition_matrix>0)+
          sum(object$emission_matrix>0))
   } else{  
-    -2*loglik + log(object$number_of_sequences*object$length_of_sequences)*
+    -2*loglik + log(object$n_sequences*object$length_of_sequences)*
       (sum(object$initial_probs>0)+sum(object$transition_matrix>0)+
          sum(sapply(object$emission_matrix,function(x) sum(x>0))))
   }

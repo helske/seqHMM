@@ -87,7 +87,7 @@
 #'   \code{"auto"} sets the number of columns automatically.
 #' @param cpal Optional color palette for the (combinations of) observed states.
 #'   The default value \code{"auto"} uses automatic color palette. Otherwise a 
-#'   vector of length \code{x$number_of_symbols} is given, i.e. requires a color 
+#'   vector of length \code{x$n_symbols} is given, i.e. requires a color 
 #'   specified for all (combinations of) observed states even if they are not 
 #'   plotted (if the probability is less than combine.slices).
 #' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as 
@@ -323,7 +323,7 @@ plot.hmm <- function(x, layout="horizontal", pie=TRUE,
     withlegend <- match.arg(withlegend, c("bottom", "top", "left", "right"))
   }
   
-  if(x$number_of_channels>1){
+  if(x$n_channels>1){
     x <- mc_to_sc(x)
   }
   
@@ -366,12 +366,12 @@ plot.hmm <- function(x, layout="horizontal", pie=TRUE,
   if(is.character(vertex.label.dist)){
     match.arg(vertex.label.dist, c("auto"))
     vertex.label.dist <- vertex.size*0.4/10
-  }else if(length(vertex.label.dist)>1 && length(vertex.label.dist)<x$number_of_states){
+  }else if(length(vertex.label.dist)>1 && length(vertex.label.dist)<x$n_states){
     warning("The length of the vector provided for the argument \"vertex.label.dist\" is less than the number of edges. The vector was repeated to archieve the correct length.")
-    vertex.label.dist <- rep(vertex.label.dist, length.out=length(x$number_of_states))
-  }else if(length(vertex.label.dist)>1 && length(vertex.label.dist)>x$number_of_states){
-    warning(paste("The length of the vector provided for the argument \"vertex.label.dist\" is more than the number of edges. Only the first", length(x$number_of_states), "labels were used."))
-    vertex.label.dist <- vertex.label.dist[1:length(x$number_of_states)]
+    vertex.label.dist <- rep(vertex.label.dist, length.out=length(x$n_states))
+  }else if(length(vertex.label.dist)>1 && length(vertex.label.dist)>x$n_states){
+    warning(paste("The length of the vector provided for the argument \"vertex.label.dist\" is more than the number of edges. Only the first", length(x$n_states), "labels were used."))
+    vertex.label.dist <- vertex.label.dist[1:length(x$n_states)]
   }
   
   
@@ -431,7 +431,7 @@ plot.hmm <- function(x, layout="horizontal", pie=TRUE,
     glayout <- layout
   }else{
     if(layout=="horizontal"){
-      glayout <- layout_on_grid(g1, width=x$number_of_states)
+      glayout <- layout_on_grid(g1, width=x$n_states)
     }else if(layout=="vertical"){
       glayout <- layout_on_grid(g1, width=1)
     }
@@ -455,7 +455,7 @@ plot.hmm <- function(x, layout="horizontal", pie=TRUE,
   # Legend position and number of columns
   if(withlegend!=FALSE && pie==TRUE){
     if(!is.null(ltext)){
-      if(length(ltext)!=x$number_of_symbols){
+      if(length(ltext)!=x$n_symbols){
         warning("The length of the argument ltext does not match the number of observed states.")
       }
     }else{
@@ -535,7 +535,7 @@ plot.hmm <- function(x, layout="horizontal", pie=TRUE,
       pie.colors.l <- NULL
       if(withlegend!=FALSE){
         lt <- NULL
-        for(i in 1:x$number_of_states){
+        for(i in 1:x$n_states){
           cs.prob <- sum(pie.values[[i]][pie.values[[i]]<combine.slices])
           pie.values[[i]][pie.values[[i]]<combine.slices] <- 0
           pie.colors.l <- c(pie.colors.l,pie.colors[pie.values[[i]]>=combine.slices])
@@ -544,7 +544,7 @@ plot.hmm <- function(x, layout="horizontal", pie=TRUE,
         }
         ltext <- c(unique(lt), combined.slice.label)
       }else{
-        for(i in 1:x$number_of_states){
+        for(i in 1:x$n_states){
           cs.prob <- sum(pie.values[[i]][pie.values[[i]]<combine.slices])
           pie.values[[i]][pie.values[[i]]<combine.slices] <- 0
           pie.colors.l <- c(pie.colors.l,pie.colors[pie.values[[i]]>=combine.slices])

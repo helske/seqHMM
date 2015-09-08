@@ -15,25 +15,25 @@ logLik.mhmm<-function(object, partials = FALSE, ...){
   
   object <- combine_models(object)
   
-  if(object$number_of_channels == 1){
+  if(object$n_channels == 1){
     object$observations <- list(object$observations)
     object$emission_matrix <- list(object$emission_matrix)
   }
   
   
-  obsArray<-array(0,c(object$number_of_sequences,object$length_of_sequences,object$number_of_channels))
-  for(i in 1:object$number_of_channels){
+  obsArray<-array(0,c(object$n_sequences,object$length_of_sequences,object$n_channels))
+  for(i in 1:object$n_channels){
     obsArray[,,i]<-data.matrix(object$observations[[i]])-1
-    obsArray[,,i][obsArray[,,i]>object$number_of_symbols[i]]<-object$number_of_symbols[i]
+    obsArray[,,i][obsArray[,,i]>object$n_symbols[i]]<-object$n_symbols[i]
   }       
   storage.mode(obsArray)<-"integer"
   
-  emissionArray<-array(1,c(object$number_of_states,max(object$number_of_symbols)+1,object$number_of_channels))
-  for(i in 1:object$number_of_channels)
-    emissionArray[,1:object$number_of_symbols[i],i]<-object$emission_matrix[[i]]
+  emissionArray<-array(1,c(object$n_states,max(object$n_symbols)+1,object$n_channels))
+  for(i in 1:object$n_channels)
+    emissionArray[,1:object$n_symbols[i],i]<-object$emission_matrix[[i]]
   
   ll <- logLikMixHMM(object$transition_matrix, emissionArray, object$initial_probs, obsArray,
-    object$beta, object$X, object$number_of_states_in_clusters) 
+    object$beta, object$X, object$n_states_in_clusters) 
   
   
   if(partials){

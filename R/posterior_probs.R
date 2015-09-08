@@ -14,8 +14,8 @@ posterior_probs<-function(model){
   ll <- logLik(model, partials = TRUE)
   
   out <- fw + bw - array(rep(ll, each = 
-      sum(model$number_of_states)*model$length_of_sequences), c(sum(model$number_of_states), model$length_of_sequences, model$number_of_sequences))
+      sum(model$n_states)*model$length_of_sequences), c(sum(model$n_states), model$length_of_sequences, model$n_sequences))
   
-  dimnames(out)<-list("state" = rownames(fw), "time" = 1:model$length_of_sequences, "sequence" = 1:model$number_of_sequences)
+  dimnames(out)<-list("state" = rownames(fw), "time" = 1:model$length_of_sequences, "sequence" = 1:model$n_sequences)
   out
 }

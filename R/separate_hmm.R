@@ -157,9 +157,9 @@
 
 separate_mhmm <- function(model){
   
-  divmodels <- replicate(model$number_of_clusters, list())
+  divmodels <- replicate(model$n_clusters, list())
   
-  for(i in 1:model$number_of_clusters){
+  for(i in 1:model$n_clusters){
     divmodels[[i]] <- build_hmm(observations=model$observations,
                                transition_matrix=model$transition_matrix[[i]],
                                emission_matrix=model$emission_matrix[[i]],

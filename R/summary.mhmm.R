@@ -106,20 +106,20 @@ summary.mhmm <- function(model, parameters = FALSE){
 
   
   gr <- sub("^.*?_","",mpp[,1])
-  gr <- factor(gr, levels=1:model$number_of_clusters, labels=model$cluster_names)
+  gr <- factor(gr, levels=1:model$n_clusters, labels=model$cluster_names)
   
-  clP <- vector("list", model$number_of_clusters)
+  clP <- vector("list", model$n_clusters)
   p <- 0
   
-  for(i in 1:model$number_of_clusters){
-    clP[[i]] <- colSums(exp(fw[(p+1):(p+model$number_of_states[i]), , drop = FALSE] - 
-                              rep(ll, each = model$number_of_states[i])))
-    p <- p + model$number_of_states[i]
+  for(i in 1:model$n_clusters){
+    clP[[i]] <- colSums(exp(fw[(p+1):(p+model$n_states[i]), , drop = FALSE] - 
+                              rep(ll, each = model$n_states[i])))
+    p <- p + model$n_states[i]
   }
-  clProbs <- matrix(NA, nrow = model$number_of_clusters, ncol = model$number_of_clusters)
+  clProbs <- matrix(NA, nrow = model$n_clusters, ncol = model$n_clusters)
   rownames(clProbs) <- colnames(clProbs) <- model$cluster_names
-  for(i in 1:model$number_of_clusters){
-    for(j in 1:model$number_of_clusters){
+  for(i in 1:model$n_clusters){
+    for(j in 1:model$n_clusters){
       clProbs[i,j] <- mean(clP[[j]][gr == model$cluster_names[i]])
     }
   }

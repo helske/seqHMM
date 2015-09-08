@@ -330,17 +330,17 @@ ssp <- function(x, mpp=NULL,
         if(length(ylab)==1 && ylab=="auto"){
           ylab <- x$channel_names
         }else if(length(ylab)==1 && 
-                   x$number_of_channels>1 && ylab!="auto"){
+                   x$n_channels>1 && ylab!="auto"){
           warning("The length of ylab does not match the number of channels.")
-          ylab <- rep(ylab, x$number_of_channels)
+          ylab <- rep(ylab, x$n_channels)
           channel_names <- ylab
-        }else if(length(ylab) < x$number_of_channels && !is.na(ylab)){
+        }else if(length(ylab) < x$n_channels && !is.na(ylab)){
           warning("The length of ylab does not match the number of channels.")
-          ylab <- rep(ylab, x$number_of_channels)
+          ylab <- rep(ylab, x$n_channels)
           channel_names <- ylab
-        }else if(length(ylab) > x$number_of_channels){
+        }else if(length(ylab) > x$n_channels){
           warning("The length of ylab does not match the number of channels.")
-          ylab <- ylab[1:x$number_of_channels]
+          ylab <- ylab[1:x$n_channels]
           channel_names <- ylab
         }
       }else{

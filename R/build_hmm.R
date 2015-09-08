@@ -2,11 +2,10 @@
 #' 
 #' Function build_hmm constructs an object of class \code{hmm}.
 #' 
-#' @import TraMineR
 #' @importFrom Rcpp evalCpp
 #' @export
 #' @useDynLib seqHMM
-#' @param observations TraMineR stslist (see \code{\link{seqdef}}) containing 
+#' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing 
 #' the sequences, or a list of such objects (one for each channel).
 #' @param transition_matrix A matrix of transition probabilities.
 #' @param emission_matrix A matrix of emission probabilities or a list of such 
@@ -121,9 +120,9 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
   
   if(dim(transition_matrix)[1]!=dim(transition_matrix)[2])
     stop("transition_matrix must be a square matrix.")
-  number_of_states<-nrow(transition_matrix)
+  n_states<-nrow(transition_matrix)
   if(is.null(state_names))
-    state_names<-as.character(1:number_of_states)
+    state_names<-as.character(1:n_states)
   
   if(!isTRUE(all.equal(rowSums(transition_matrix),rep(1,dim(transition_matrix)[1]),check.attributes=FALSE)))
     stop("Transition probabilities in transition_matrix do not sum to one.")
@@ -143,43 +142,43 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
     if(length(observations)!=length(emission_matrix)){
       stop("Number of channels defined by emission_matrix differs from one defined by observations.")
     }
-    number_of_channels <- length(emission_matrix)
+    n_channels <- length(emission_matrix)
     
-    number_of_sequences<-nrow(observations[[1]])
+    n_sequences<-nrow(observations[[1]])
     length_of_sequences<-ncol(observations[[1]])
     
     symbol_names<-lapply(observations,alphabet)
-    number_of_symbols<-sapply(symbol_names,length)
+    n_symbols<-sapply(symbol_names,length)
     
-    if(any(sapply(emission_matrix,nrow)!=number_of_states))
+    if(any(sapply(emission_matrix,nrow)!=n_states))
       stop("Number of rows in emission_matrix is not equal to the number of states.")
-    if(any(number_of_symbols!=sapply(emission_matrix,ncol)))
+    if(any(n_symbols!=sapply(emission_matrix,ncol)))
       stop("Number of columns in emission_matrix is not equal to the number of symbols.")
-    if(!isTRUE(all.equal(c(sapply(emission_matrix,rowSums)),rep(1,number_of_channels*number_of_states),check.attributes=FALSE)))
+    if(!isTRUE(all.equal(c(sapply(emission_matrix,rowSums)),rep(1,n_channels*n_states),check.attributes=FALSE)))
       stop("Emission probabilities in emission_matrix do not sum to one.")
     
     if(is.null(channel_names)){
-      channel_names<-as.character(1:number_of_channels)
-    }else if(length(channel_names)!=number_of_channels){
+      channel_names<-as.character(1:n_channels)
+    }else if(length(channel_names)!=n_channels){
       warning("The length of argument channel_names does not match the number of channels. Names were not used.")
-      channel_names<-as.character(1:number_of_channels)
+      channel_names<-as.character(1:n_channels)
     }
-    for(i in 1:number_of_channels)
+    for(i in 1:n_channels)
       dimnames(emission_matrix[[i]])<-list(state_names=state_names,symbol_names=symbol_names[[i]])
     names(emission_matrix)<-channel_names
   } else {
-    number_of_channels <- 1
+    n_channels <- 1
     channel_names<-NULL
-    number_of_sequences<-nrow(observations)
+    n_sequences<-nrow(observations)
     length_of_sequences<-ncol(observations)
     symbol_names<-alphabet(observations)
-    number_of_symbols<-length(symbol_names)
+    n_symbols<-length(symbol_names)
     
-    if(number_of_states!=dim(emission_matrix)[1])
+    if(n_states!=dim(emission_matrix)[1])
       stop("Number of rows in emission_matrix is not equal to the number of states.")
-    if(number_of_symbols!=dim(emission_matrix)[2])
+    if(n_symbols!=dim(emission_matrix)[2])
       stop("Number of columns in emission_matrix is not equal to the number of symbols.")
-    if(!isTRUE(all.equal(rep(1,number_of_states),rowSums(emission_matrix),check.attributes=FALSE)))
+    if(!isTRUE(all.equal(rep(1,n_states),rowSums(emission_matrix),check.attributes=FALSE)))
       stop("Emission probabilities in emission_matrix do not sum to one.")
     dimnames(emission_matrix)<-list(state_names=state_names,symbol_names=symbol_names)
     
@@ -190,9 +189,9 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
               state_names=state_names,
               symbol_names=symbol_names,channel_names=channel_names,
               length_of_sequences=length_of_sequences,
-              number_of_sequences=number_of_sequences,
-              number_of_symbols=number_of_symbols,number_of_states=number_of_states,
-              number_of_channels=number_of_channels)
+              n_sequences=n_sequences,
+              n_symbols=n_symbols,n_states=n_states,
+              n_channels=n_channels)
   class(model)<-"hmm"
   model
 }

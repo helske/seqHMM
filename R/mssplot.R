@@ -334,7 +334,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   if(!("title" %in% names(args))){
     titles <- x$cluster_names
   }else{
-    if(length(title)!=x$number_of_clusters){
+    if(length(title)!=x$n_clusters){
       warning("The length of the vector provided for the title argument does not match the number of clusters. Automatic titles were used instead.")
       titles <- x$cluster_names
     }else{
@@ -352,13 +352,13 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   
   if(!("mpp.labels" %in% names(args))){
     mpp.labels <- NULL
-    for(i in 1:x$number_of_clusters){
+    for(i in 1:x$n_clusters){
       mpp.labels <- c(mpp.labels, paste("State", 1:x$numberOfStates[i]))
     }
   }
   mpplabs <- list()
   k <- 0
-  for(i in 1:x$number_of_clusters){
+  for(i in 1:x$n_clusters){
     mpplabs[[i]] <- mpp.labels[(k+1):(k+x$numberOfStates[i])]
     k <- k+x$numberOfStates[i]
   }
@@ -368,27 +368,27 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   }
   mppcols <- list()
   k <- 0
-  for(i in 1:x$number_of_clusters){
+  for(i in 1:x$n_clusters){
     mppcols[[i]] <- mpp.color[(k+1):(k+x$numberOfStates[i])]
     k <- k+x$numberOfStates[i]
   }
   
   mppm <- unique(mpp$cluster)
   mm <- NULL
-  if(length(mppm)<x$number_of_clusters){
+  if(length(mppm)<x$n_clusters){
     mm <- which(!(x$cluster_names%in%mppm))
     warning(paste("When computing the most probable paths, no subjects were assigned to following clusters:", paste(x$cluster_names[mm], collapse=", ")))
   }
   
   if(!is.null(which.plots)){
-    if(any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$number_of_clusters))){
-      stop(paste0("The which.plot argument only accepts numerical values between 1 and ", x$number_of_clusters, "."))
+    if(any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$n_clusters))){
+      stop(paste0("The which.plot argument only accepts numerical values between 1 and ", x$n_clusters, "."))
     }else if(any(which.plots %in% mm)){
       warning("You requested cluster(s) with no subjects. Plotting only relevant clusters.")
       which.plots <- setdiff(which.plots, mm)
     }
   }else if(!ask && is.null(which.plots)){
-    which.plots <- 1:x$number_of_clusters
+    which.plots <- 1:x$n_clusters
     # removing clusters with no subjects (according to mpp)
     which.plots <- setdiff(which.plots, mm)
   }
@@ -396,7 +396,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   
   
   if (ask && is.null(which.plots)) {
-    tmenu <- 1:x$number_of_clusters
+    tmenu <- 1:x$n_clusters
     tmenu <- setdiff(tmenu, mm)
     tmenunames <- x$cluster_names[tmenu]
     plot.new()

@@ -16,7 +16,7 @@
 #'   \code{\link{nloptr}} (possibly after the EM step). The default is \code{TRUE}.
 #'@param local_step Logical, use local optimization via 
 #'   \code{\link{nloptr}} (possibly after the EM and/or global steps). The default is \code{TRUE}.
-#' @param em_control Optional list of control parameters for for EM algorithm. 
+#' @param control_em Optional list of control parameters for for EM algorithm. 
 #'   Possible arguments are \describe{ 
 #'   \item{maxeval}{Maximum number of iterations, default is 100.} 
 #'   \item{print_level}{Level of printing. Possible values are 0 
@@ -24,7 +24,7 @@
 #'   2 (prints at every iteration).} 
 #'   \item{reltol}{Relative tolerance for convergence defined as \eqn{(sumLogLikNew - sumLogLikOld)/(abs(sumLogLikOld)+0.1)}. 
 #'   Default is 1e-8.} }
-#' @param global_control Optional list of additional arguments for 
+#' @param control_global Optional list of additional arguments for 
 #'   \code{\link{nloptr}} argument \code{opts}. The default values are
 #'   \describe{
 #'    \item{algorithm}{\code{"NLOPT_GD_MLSL_LDS"}}
@@ -37,7 +37,7 @@
 #' @param lb,ub Lower and upper bounds for parameters in Softmax parameterization. 
 #' Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)]. 
 #' Used only in the global optimization step.
-#' @param local_control Optional list of additional arguments for 
+#' @param control_local Optional list of additional arguments for 
 #'   \code{\link{nloptr}} argument \code{opts}. The default values are
 #'   \describe{
 #'    \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
@@ -66,12 +66,12 @@
 #'   By default the \code{fit_hmm} function starts with the EM algorithm,
 #'   uses the multilevel single-linkage method (MLSL) with the LDS modification 
 #'   for global optimization (\code{NLOPT_GD_MLSL_LDS} as \code{algorithm} in 
-#'   \code{global_control}), and finishes with LBFGS as the local optimizer. 
+#'   \code{control_global}), and finishes with LBFGS as the local optimizer. 
 #'   The MLSL method draws random starting points and performs a local optimization 
 #'   from each. The LDS modification uses low-discrepancy sequences instead of 
 #'   pseudo-random numbers as starting points and should improve the convergence rate. 
 #'   By default, \code{fit_hmm} uses the BFGS algorithm as the local optimizer in the 
-#'   MLSL (\code{NLOPT_LD_LBFGS} as \code{local_opts} in \code{global_control}). 
+#'   MLSL (\code{NLOPT_LD_LBFGS} as \code{local_opts} in \code{control_global}). 
 #'   In order to reduce the computation time spent on non-global optima, the 
 #'   convergence tolerance of the local optimizer is set relatively large. At step 3, 
 #'   a local optimization (BFGS by default) is run with a lower tolerance to find the 
@@ -158,57 +158,57 @@
 #' 
 #' # Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
 #' HMM4 <- fit_hmm(bHMM, em_step = FALSE, global_step = TRUE, local_step = TRUE, 
-#'   global_control = list(maxeval = 3000, maxtime = 0))
+#'   control_global = list(maxeval = 3000, maxtime = 0))
 #' HMM4$logLik #-5403.383
 #' 
 #' # As previously, but now we use five iterations from EM algorithm for defining initial values and boundaries
 #' # Note smaller maxeval for global optimization
 #' HMM5 <- fit_hmm(bHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
-#'   em_control = list(maxeval = 5), global_control = list(maxeval = 750, maxtime = 0))
+#'   control_em = list(maxeval = 5), control_global = list(maxeval = 750, maxtime = 0))
 #' HMM5$logLik #-5403.383
 #' 
 #' }
 #' 
 fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
-  em_control=list(), global_control=list(), 
-  local_control=list(), lb, ub, ...){
+  control_em=list(), control_global=list(), 
+  control_local=list(), lb, ub, ...){
   
   if(!em_step && !global_step && !local_step){
     stop("No method chosen for estimation. Choose at least one from em_step, global_step, and local_step.")
   }
   
-  if(model$number_of_channels == 1){
+  if(model$n_channels == 1){
     model$observations <- list(model$observations)
     model$emission_matrix <- list(model$emission_matrix)
   }
   
-  obsArray<-array(0,c(model$number_of_sequences,model$length_of_sequences,model$number_of_channels))
-  for(i in 1:model$number_of_channels){
+  obsArray<-array(0,c(model$n_sequences,model$length_of_sequences,model$n_channels))
+  for(i in 1:model$n_channels){
     obsArray[,,i]<-data.matrix(model$observations[[i]])-1
-    obsArray[,,i][obsArray[,,i]>model$number_of_symbols[i]]<-model$number_of_symbols[i]
+    obsArray[,,i][obsArray[,,i]>model$n_symbols[i]]<-model$n_symbols[i]
   }
   
   if(em_step){
     em.con <- list(print_level = 0, maxeval = 100, reltol = 1e-8)
     nmsC <- names(em.con)  
-    em.con[(namc <- names(em_control))] <- em_control
+    em.con[(namc <- names(control_em))] <- control_em
     if (length(noNms <- namc[!namc %in% nmsC])) 
-      warning("Unknown names in em_control: ", paste(noNms, collapse = ", "))
+      warning("Unknown names in control_em: ", paste(noNms, collapse = ", "))
     
     
-    emissionArray<-array(1,c(model$number_of_states,max(model$number_of_symbols)+1,model$number_of_channels))
-    for(i in 1:model$number_of_channels)
-      emissionArray[,1:model$number_of_symbols[i],i]<-model$emission_matrix[[i]]
+    emissionArray<-array(1,c(model$n_states,max(model$n_symbols)+1,model$n_channels))
+    for(i in 1:model$n_channels)
+      emissionArray[,1:model$n_symbols[i],i]<-model$emission_matrix[[i]]
     
     resEM<-EM(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
-        model$number_of_symbols, em.con$maxeval, em.con$reltol,em.con$print_level)
+        model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level)
 
     if(resEM$change< -1e-5)
       warning("EM algorithm stopped due to the decreasing log-likelihood. ")
     
     
-    for(i in 1:model$number_of_channels)
-      model$emission_matrix[[i]][]<-resEM$emissionArray[ , 1:model$number_of_symbols[i], i]                                     
+    for(i in 1:model$n_channels)
+      model$emission_matrix[[i]][]<-resEM$emissionArray[ , 1:model$n_symbols[i], i]                                     
     
     
     model$initial_probs[]<-resEM$initialProbs
@@ -228,7 +228,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
     
     x<-which(model$transition_matrix>0,arr.ind=TRUE)  
     transNZ<-x[order(x[,1]),]
-    maxTM<-cbind(1:model$number_of_states,max.col(model$transition_matrix,ties.method="first"))
+    maxTM<-cbind(1:model$n_states,max.col(model$transition_matrix,ties.method="first"))
     maxTMvalue<-apply(model$transition_matrix,1,max)
     paramTM <- rbind(transNZ,maxTM)
     paramTM <- paramTM[!(duplicated(paramTM)|duplicated(paramTM,fromLast=TRUE)),,drop=FALSE]
@@ -241,35 +241,35 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
       x[order(x[,1]),]
     })
     
-    maxEM<-lapply(model$emission_matrix,function(i) cbind(1:model$number_of_states,max.col(i,ties.method="first")))
+    maxEM<-lapply(model$emission_matrix,function(i) cbind(1:model$n_states,max.col(i,ties.method="first")))
     
-    maxEMvalue<-lapply(1:model$number_of_channels, function(i) 
+    maxEMvalue<-lapply(1:model$n_channels, function(i) 
       apply(model$emission_matrix[[i]],1,max))
     
-    paramEM<-lapply(1:model$number_of_channels,function(i) {
+    paramEM<-lapply(1:model$n_channels,function(i) {
       x<-rbind(emissNZ[[i]],maxEM[[i]])
       x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
     })
     npEM<-sapply(paramEM,nrow)
     
-    emissNZ<-array(0,c(model$number_of_states,max(model$number_of_symbols),model$number_of_channels))
-    for(i in 1:model$number_of_channels){
-      emissNZ[,1:model$number_of_symbols[i],i]<-model$emission_matrix[[i]] > 0
-      if(model$number_of_states == 1){
-        emissNZ[,1:model$number_of_symbols[i],i][maxEM[[i]][2]]<-0
-      } else emissNZ[,1:model$number_of_symbols[i],i][maxEM[[i]]]<-0      
+    emissNZ<-array(0,c(model$n_states,max(model$n_symbols),model$n_channels))
+    for(i in 1:model$n_channels){
+      emissNZ[,1:model$n_symbols[i],i]<-model$emission_matrix[[i]] > 0
+      if(model$n_states == 1){
+        emissNZ[,1:model$n_symbols[i],i][maxEM[[i]][2]]<-0
+      } else emissNZ[,1:model$n_symbols[i],i][maxEM[[i]]]<-0      
     }       
     
     initialvalues<-c(if((npTM+sum(npEM)+npIPAll)>0) log(c(
       if(npTM>0) model$transition_matrix[paramTM],
-      if(sum(npEM)>0) unlist(sapply(1:model$number_of_channels,
+      if(sum(npEM)>0) unlist(sapply(1:model$n_channels,
         function(x) model$emission_matrix[[x]][paramEM[[x]]])),
       if(npIP>0) model$initial_probs[paramIP]))
     )         
     
-    emissionArray<-array(1,c(model$number_of_states,max(model$number_of_symbols)+1,model$number_of_channels))
-    for(i in 1:model$number_of_channels)
-      emissionArray[,1:model$number_of_symbols[i],i]<-model$emission_matrix[[i]]          
+    emissionArray<-array(1,c(model$n_states,max(model$n_symbols)+1,model$n_channels))
+    for(i in 1:model$n_channels)
+      emissionArray[,1:model$n_symbols[i],i]<-model$emission_matrix[[i]]          
     
     objectivef<-function(pars, model, estimate = TRUE){
       
@@ -281,12 +281,12 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
         model$transition_matrix<-model$transition_matrix/rowSums(model$transition_matrix)         
       }
       if(sum(npEM)>0){            
-        for(i in 1:model$number_of_channels){
-          emissionArray[,1:model$number_of_symbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]    
-          emissionArray[,1:model$number_of_symbols[i],i][paramEM[[i]]]<-
+        for(i in 1:model$n_channels){
+          emissionArray[,1:model$n_symbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]    
+          emissionArray[,1:model$n_symbols[i],i][paramEM[[i]]]<-
             exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])      
-          emissionArray[,1:model$number_of_symbols[i],i]<-
-            emissionArray[,1:model$number_of_symbols[i],i]/rowSums(emissionArray[,1:model$number_of_symbols[i],i, drop = FALSE])
+          emissionArray[,1:model$n_symbols[i],i]<-
+            emissionArray[,1:model$n_symbols[i],i]/rowSums(emissionArray[,1:model$n_symbols[i],i, drop = FALSE])
         }
       }
       
@@ -297,11 +297,11 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
       } 
       if(estimate){
         objective(model$transition_matrix, emissionArray, model$initial_probs, obsArray,
-          transNZ, emissNZ, initNZ, model$number_of_symbols)
+          transNZ, emissNZ, initNZ, model$n_symbols)
       } else {
         if(sum(npEM)>0){
-          for(i in 1:model$number_of_channels){
-            model$emission_matrix[[i]][]<-emissionArray[,1:model$number_of_symbols[i],i]
+          for(i in 1:model$n_channels){
+            model$emission_matrix[[i]][]<-emissionArray[,1:model$n_symbols[i],i]
           }
         }
         model
@@ -320,42 +320,42 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
       lb <- pmin(lb, 2*initialvalues)
       ub <- pmax(ub, 2*initialvalues)
       
-      if(is.null(global_control$maxeval)){
-        global_control$maxeval <- 10000
+      if(is.null(control_global$maxeval)){
+        control_global$maxeval <- 10000
       }
-      if(is.null(global_control$maxtime)){
-        global_control$maxtime <- 60
+      if(is.null(control_global$maxtime)){
+        control_global$maxtime <- 60
       }
-      if(is.null(global_control$algorithm)){
-        global_control$algorithm <- "NLOPT_GD_MLSL_LDS"
-        global_control$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)
-        global_control$ranseed <- 123
-        global_control$population <- 4*length(initialvalues)
+      if(is.null(control_global$algorithm)){
+        control_global$algorithm <- "NLOPT_GD_MLSL_LDS"
+        control_global$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)
+        control_global$ranseed <- 123
+        control_global$population <- 4*length(initialvalues)
       }
       
       globalres <- nloptr(x0 = initialvalues, eval_f = objectivef, lb = lb, ub = ub,
-        opts = global_control, model = model, estimate = TRUE, ...)
+        opts = control_global, model = model, estimate = TRUE, ...)
       initialvalues <- globalres$solution
       model <- objectivef(globalres$solution, model, FALSE)
       ll <- -globalres$objective
     } else globalres <- NULL
     
     if(local_step){
-      if(is.null(local_control$maxeval)){
-        local_control$maxeval <- 10000
+      if(is.null(control_local$maxeval)){
+        control_local$maxeval <- 10000
       }
-      if(is.null(local_control$maxtime)){
-        local_control$maxtime <- 60
+      if(is.null(control_local$maxtime)){
+        control_local$maxtime <- 60
       }
-      if(is.null(local_control$algorithm)){
-        local_control$algorithm <- "NLOPT_LD_LBFGS"
-        local_control$xtol_rel <- 1e-8
+      if(is.null(control_local$algorithm)){
+        control_local$algorithm <- "NLOPT_LD_LBFGS"
+        control_local$xtol_rel <- 1e-8
       }
       ub <- rep(300,length(initialvalues))
       ub <- pmax(ub, 2*initialvalues)
       localres<-nloptr(x0 = initialvalues, 
         eval_f = objectivef,
-        opts = local_control, model = model, estimate = TRUE, ub = ub, ...)
+        opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
       model <- objectivef(localres$solution,model, FALSE)
       ll <- -localres$objective
     } else localres <- NULL
@@ -363,7 +363,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
     
   } else globalres <- localres <- NULL
   
-  if(model$number_of_channels == 1){
+  if(model$n_channels == 1){
     model$observations <- model$observations[[1]]
     model$emission_matrix <- model$emission_matrix[[1]]
   }
