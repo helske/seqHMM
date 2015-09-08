@@ -15,7 +15,7 @@
 #' 
 #' @param which.plots The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots.
 #'   
-#' @param mpp Output from \code{\link{most_probable_path}} function.
+#' @param mpp Output from \code{\link{hidden_paths}} function.
 #'   
 #' @param plots What to plot. One of \code{"obs"} for observations, \code{"mpp"}
 #'   for most probable paths, or \code{"both"} for observations 
@@ -31,7 +31,7 @@
 #'   \code{which="both"} and \code{which="mpp"}. Options \code{"mds.obs"} and 
 #'   \code{"mds.mpp"} automatically arrange the sequences according to the 
 #'   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the 
-#'   observed or hidden states path data from \code{\link{most_probable_path}}. 
+#'   observed or hidden states path data from \code{\link{hidden_paths}}. 
 #'   MDS scores are computed from distances/dissimilarities using a metric 
 #'   defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for 
 #'   more details on \code{"from.start"} and \code{"from.end"}.
@@ -96,7 +96,7 @@
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #'   
 #' @param mpp.color A vector of colors assigned to hidden states (as ordered by 
-#'   the \code{\link{most_probable_path}} function). The default value \code{"auto"} uses 
+#'   the \code{\link{hidden_paths}} function). The default value \code{"auto"} uses 
 #'   the colors assigned to the stslist object created with \code{seqdef} if \code{mpp} 
 #'   is given; otherwise colors from \code{\link{colorpalette}} are automatically used. 
 #'   
@@ -287,7 +287,7 @@
 #' mssplot(bMHMM, which.plots=1)
 #'   
 #' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building and 
-#'   fitting Hidden Markov models, \code{\link{most_probable_path}} for 
+#'   fitting Hidden Markov models, \code{\link{hidden_paths}} for 
 #'   computing the most probable paths (Viterbi paths) of hidden states, and
 #'   \code{\link{plot.mhmm}} for plotting parameters of \code{mhmm} objects.
 
@@ -347,7 +347,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   }
   
   if(is.null(mpp)){
-    mpp <- suppressWarnings(suppressMessages(most_probable_path(x)))
+    mpp <- suppressWarnings(suppressMessages(hidden_paths(x)))
   }
   
   if(!("mpp.labels" %in% names(args))){

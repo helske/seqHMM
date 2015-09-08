@@ -332,13 +332,7 @@ trMHMM <- trim_hmm(MHMM$model, zerotol = 1e-04)
 plot(trMHMM, interactive = TRUE)
 
 # Computing most probable paths
-mpp <- most_probable_path(trMHMM)
-
-# Assigning colours to hidden states
-attr(mpp$mpp, "cpal") <- colorpalette[[14]]
-
-# Number of individuals in each cluster
-table(mpp$cluster)
+mpp <- hidden_paths(trMHMM)
 
 # Plotting observed sequences and most probable hidden states
 # Interactive plot, one cluster at a time
