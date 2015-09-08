@@ -448,8 +448,6 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     
   } else globalres <- localres <- NULL
   
-  pr <- exp(model$X%*%model$beta)
-  model$cluster_probabilities <- pr/rowSums(pr)
   if(model$number_of_channels == 1){
     model$observations <- model$observations[[1]]
     model$emission_matrix <- model$emission_matrix[[1]]
