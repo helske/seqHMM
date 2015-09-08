@@ -3,7 +3,7 @@ using namespace Rcpp;
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
-void optCoef(const arma::icube& obs, const arma::mat transition, const arma::cube& emission, const arma::vec& init, 
+arma::mat optCoef(const arma::icube& obs, const arma::mat transition, const arma::cube& emission, const arma::vec& init, 
   arma::mat& coef, const arma::mat& X, const IntegerVector cumsumstate, const IntegerVector numberOfStates, int trace) {
   
   arma::mat weights = exp(X*coef).t();
@@ -48,13 +48,14 @@ void optCoef(const arma::icube& obs, const arma::mat transition, const arma::cub
     iter++;
     if(trace==3){
       Rcout<<"beta optimization iter: "<< iter;
-      Rcout<<" new beta: "<< coefnew;
+      Rcout<<" new beta: "<< std::endl<<coefnew<<std::endl;
       Rcout<<" relative change: "<<change<<std::endl;
     }
     
-    if((change>1e-10) & (iter<1000)){
+    
       weights = exp(X*coef).t();
       weights.each_row() /= sum(weights,0);
+    if((change>1e-10) & (iter<1000)){
       for(int k = 0; k < obs.n_rows; k++){    
         initk.col(k) = init + reparma(log(weights.col(k)),numberOfStates);
       }
@@ -73,6 +74,8 @@ void optCoef(const arma::icube& obs, const arma::mat transition, const arma::cub
       //Rcout<<iter<<" "<<change<<std::endl;
     }
   }
+ 
+ return(log(weights));
 }
 
 
