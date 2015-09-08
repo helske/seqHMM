@@ -137,7 +137,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
       }      
     }
     
-    lweights = optCoef(obs, transition, emission, init, coef, X, cumsumstate, numberOfStates, trace);
+    lweights = optCoef(obs, emission, initk, beta, ll, coef, X, cumsumstate, numberOfStates, trace);
     
     if(oDims[1]>1){
       ksii.each_col() /= sum(ksii,1);

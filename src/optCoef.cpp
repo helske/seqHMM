@@ -3,42 +3,19 @@ using namespace Rcpp;
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
-arma::mat optCoef(const arma::icube& obs, const arma::mat transition, const arma::cube& emission, const arma::vec& init, 
-  arma::mat& coef, const arma::mat& X, const IntegerVector cumsumstate, const IntegerVector numberOfStates, int trace) {
+arma::mat optCoef(const arma::icube& obs, const arma::cube& emission, const arma::mat& initk, 
+  const arma::cube& beta, const arma::vec& ll, arma::mat& coef, const arma::mat& X, 
+  const IntegerVector cumsumstate, const IntegerVector numberOfStates, int trace) {
   
   arma::mat weights = exp(X*coef).t();
   weights.each_row() /= sum(weights,0);
   
-  arma::mat initk(emission.n_rows,obs.n_rows);
-  for(int k = 0; k < obs.n_rows; k++){    
-    initk.col(k) = init + reparma(log(weights.col(k)),numberOfStates);
-  }
-  
-  arma::cube alpha(emission.n_rows,obs.n_cols,obs.n_rows); //m,n,k
-  arma::cube beta(emission.n_rows,obs.n_cols,obs.n_rows); //m,n,k
-  
-  internalForwardx(transition, emission, initk, obs, alpha);
-  internalBackward(transition, emission, obs, beta);
-  
-  arma::vec ll(obs.n_rows);
-  
-  double tmp = 0.0;
-  double neginf = -arma::math::inf();
-  for(int k=0;k<obs.n_rows;k++){    
-    tmp =neginf;
-    for(int i = 0; i < emission.n_rows; i++){
-      if(alpha(i,obs.n_cols-1,k)>neginf){
-        tmp = logSumExp(alpha(i,obs.n_cols-1,k),tmp); 
-      }
-    }
-    ll(k) = tmp;
-  }
   int p = X.n_cols;
   arma::vec tmpvec(p * (weights.n_rows - 1));
   arma::mat coefnew(coef.n_rows,coef.n_cols - 1);
   int iter = 0;
   double change = 1.0;
-  while((change>1e-10) & (iter<1000)){
+  while((change>1e-8) & (iter<100)){
     tmpvec = arma::solve(hCoef(weights, X), gCoef(obs, beta, emission, initk, weights, ll, X, cumsumstate, numberOfStates));
     for(int i = 0; i < (weights.n_rows - 1); i++){
       coefnew.col(i) = coef.col(i + 1) - tmpvec.subvec(i * p, (i + 1) * p - 1);
@@ -51,31 +28,11 @@ arma::mat optCoef(const arma::icube& obs, const arma::mat transition, const arma
       Rcout<<" new beta: "<< std::endl<<coefnew<<std::endl;
       Rcout<<" relative change: "<<change<<std::endl;
     }
-    
-    
-      weights = exp(X*coef).t();
-      weights.each_row() /= sum(weights,0);
-    if((change>1e-10) & (iter<1000)){
-      for(int k = 0; k < obs.n_rows; k++){    
-        initk.col(k) = init + reparma(log(weights.col(k)),numberOfStates);
-      }
-      
-      internalForwardx(transition, emission, initk, obs, alpha);
-      internalBackward(transition, emission, obs, beta);
-      for(int k=0;k<obs.n_rows;k++){    
-        tmp = neginf;
-        for(int i = 0; i < emission.n_rows; i++){
-          if(alpha(i,obs.n_cols-1,k)>neginf){
-            tmp = logSumExp(alpha(i,obs.n_cols-1,k),tmp); 
-          }
-        }
-        ll(k) = tmp;
-      }
-      //Rcout<<iter<<" "<<change<<std::endl;
-    }
+    weights = exp(X*coef).t();
+    weights.each_row() /= sum(weights,0);
   }
- 
- return(log(weights));
+  
+  return(log(weights));
 }
 
 
