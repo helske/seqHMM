@@ -20,10 +20,10 @@ NumericVector initialProbs, IntegerVector obsArray) {
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
   
   
-  arma::colvec init(initialProbs.begin(),eDims[0]);
-  arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0]);
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2]);
-  arma::Cube<int> obs(obsArray.begin(), oDims[0], oDims[1], oDims[2]);
+  arma::colvec init(initialProbs.begin(),eDims[0], true);
+  arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0], true);
+  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
+  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
   
   arma::vec alpha(eDims[0]); //m,n,k
   arma::vec alphatmp(eDims[0]); //m,n,k  

@@ -18,10 +18,10 @@ NumericVector initialProbs, IntegerVector obsArray) {
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
   
-  arma::vec init(initialProbs.begin(), eDims[0], true);
-  arma::mat transition(transitionMatrix.begin(), eDims[0], eDims[0], true);
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
-  arma::Cube<int> obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], true);
+  arma::vec init(initialProbs.begin(), eDims[0], false);
+  arma::mat transition(transitionMatrix.begin(), eDims[0], eDims[0], false);
+  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
+  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
   
   arma::umat q(oDims[0], oDims[1]);
   arma::vec logp(oDims[0]);
