@@ -22,7 +22,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   arma::vec init(initialProbs.begin(), eDims[0], true);
   arma::mat transition(transitionMatrix.begin(), eDims[0], eDims[0], true);
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
-  arma::Cube<int> obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
+  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
   
   int q = coefs.nrow();
   arma::mat coef(coefs.begin(),q,coefs.ncol());
@@ -37,7 +37,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   transition = log(transition); 
   emission = log(emission);
   init = log(init); 
-
+  
   arma::mat initk(eDims[0],oDims[0]);
   for(int k = 0; k < oDims[0]; k++){    
     initk.col(k) = init + reparma(lweights.col(k),numberOfStates);
@@ -65,7 +65,6 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
       }
     }
     ll(k) = tmp;
-   
   }
   
   double sumlogLik = sum(ll);
@@ -83,8 +82,8 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   
   
   IntegerVector cumsumstate = cumsum(numberOfStates);
- 
- 
+  
+  
   while((change>tol) & (iter<itermax)){   
     iter++;
     gamma.zeros();
@@ -95,10 +94,10 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     
     for(int k = 0; k < oDims[0]; k++){
       
-     
+      
       delta += exp(alpha.slice(k).col(0) + beta.slice(k).col(0) - ll(k));
       
-    
+      
       for(int i = 0; i < eDims[0]; i++){
         for(int j = 0; j < eDims[0]; j++){
           sumtmp = neginf;
@@ -138,9 +137,11 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
       }      
     }
     
+    optCoef(obs, transition, emission, init, coef, X, cumsumstate, numberOfStates, trace);
+    
     if(oDims[1]>1){
-    ksii.each_col() /= sum(ksii,1);
-    transition = log(ksii);
+      ksii.each_col() /= sum(ksii,1);
+      transition = log(ksii);
     }
     for(int r=0; r<eDims[2]; r++){
       
@@ -153,11 +154,6 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
         arma::as_scalar(arma::accu(delta.subvec(cumsumstate(i)-numberOfStates(i),cumsumstate(i)-1)));
     }   
     init = log(delta);
-    
-    
-    optCoef(alpha.tube(0,0,alpha.n_rows-1,0),beta.tube(0,0,alpha.n_rows-1,0),ll,coef,X,lweights, cumsumstate,numberOfStates);
-    
-  
     
     for(int k = 0; k < oDims[0]; k++){    
       initk.col(k) = init + reparma(lweights.col(k),numberOfStates);

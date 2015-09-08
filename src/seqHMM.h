@@ -15,19 +15,14 @@ void internalForwardx(const arma::mat& transition, const arma::cube& emission,
 void internalBackward(const arma::mat& transition, const arma::cube& emission, 
   const arma::Cube<int>& obs, arma::cube& beta);
 
-void optCoef(arma::mat alpha, arma::mat beta, arma::vec& ll, arma::mat& coef,
-  arma::mat& X, arma::mat& lweights,Rcpp::IntegerVector cumsumstate,
-  Rcpp::IntegerVector numberOfStates);
 
-arma::vec gCoef(arma::mat& usums, arma::mat& lweights, arma::mat& X);
+void optCoef(const arma::icube& obs, const arma::mat transition, const arma::cube& emission, const arma::vec& init, 
+  arma::mat& coef, const arma::mat& X, const Rcpp::IntegerVector cumsumstate, const Rcpp::IntegerVector numberOfStates, int trace);
 
-arma::mat hCoef(arma::mat& usums, arma::mat& lweights, arma::mat& X);
+arma::vec gCoef(const arma::icube& obs, const arma::cube& beta, const arma::cube& emission, const arma::mat& initk,
+  const arma::mat& weights, const arma::vec& ll, const arma::mat& X, const Rcpp::IntegerVector cumsumstate, 
+  const Rcpp::IntegerVector numberOfStates);
 
-
-void viterbiForEM(arma::mat& transition, arma::cube& emission, arma::vec& init, arma::icube& obs, 
-  arma::vec& logp, arma::umat& q);
-
-void viterbiForEMx(arma::mat& transition, arma::cube& emission, arma::mat& init, arma::icube& obs, 
-  arma::vec& logp, arma::umat& q);
+arma::mat hCoef(const arma::mat& weights, const arma::mat& X);
 
 #endif

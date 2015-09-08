@@ -247,6 +247,9 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     obsArray[,,i]<-data.matrix(model$observations[[i]])-1
     obsArray[,,i][obsArray[,,i]>model$number_of_symbols[i]] <- model$number_of_symbols[i]
   } 
+  emissionArray<-array(1,c(model$number_of_states,max(model$number_of_symbols)+1,model$number_of_channels))
+  for(i in 1:model$number_of_channels)
+    emissionArray[,1:model$number_of_symbols[i],i]<-model$emission_matrix[[i]]
   
   if(em_step){
     em.con <- list(trace = 0, maxeval=100,reltol=1e-8)
@@ -255,12 +258,6 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     if (length(noNms <- namc[!namc %in% nmsC])) 
       warning("Unknown names in em_control: ", paste(noNms, collapse = ", "))
     
-    
-    
-    emissionArray<-array(1,c(model$number_of_states,max(model$number_of_symbols)+1,model$number_of_channels))
-    for(i in 1:model$number_of_channels)
-      emissionArray[,1:model$number_of_symbols[i],i]<-model$emission_matrix[[i]]
-    
     resEM <- EMx(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
       model$number_of_symbols, model$beta, model$X, model$number_of_states_in_clusters, em.con$maxeval, em.con$reltol,em.con$trace)
     if(!is.null(resEM$error))
@@ -268,10 +265,9 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     if(resEM$change< -1e-5)
       warning("EM algorithm stopped due to decreasing log-likelihood. ")
     
-    
+    emissionArray <- resEM$emissionArray
     for(i in 1:model$number_of_channels)
-      model$emission_matrix[[i]][]<-resEM$emissionArray[ , 1:model$number_of_symbols[i], i]                                     
-    
+      model$emission_matrix[[i]][]<-emissionArray[ , 1:model$number_of_symbols[i], i]
     
     if(global_step || local_step){
       k <- 0
@@ -279,7 +275,10 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
         original_model$initial_probs[[m]] <- unname(resEM$initialProbs[(k+1):(k+model$number_of_states_in_clusters[m])])
         k <- sum(model$number_of_states_in_clusters[1:m])
       }
-    } else model$initial_probs[] <- resEM$initialProbs
+    } else {
+      model$initial_probs[] <- resEM$initialProbs
+    }
+    
     model$transition_matrix[]<-resEM$transitionMatrix
     model$beta[]<-resEM$beta
     ll <- resEM$logLik
@@ -348,10 +347,6 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     )),
       model$beta[,-1]
     )         
-    
-    emissionArray<-array(1,c(model$number_of_states,max(model$number_of_symbols)+1,model$number_of_channels))
-    for(i in 1:model$number_of_channels)
-      emissionArray[,1:model$number_of_symbols[i],i]<-model$emission_matrix[[i]]          
     
     
     objectivef<-function(pars,model, estimate = TRUE){      
@@ -460,18 +455,13 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     model$emission_matrix <- model$emission_matrix[[1]]
   }
   
-  gradbetaf<-function(pars, model){
-    model$beta[,-1] <- pars
-      gradbeta(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
-        model$number_of_symbols, model$beta, model$X, model$number_of_states_in_clusters)
-  }
-  ses <- try(sqrt(diag(solve(jacobian(gradbetaf,model$beta[,-1], model = model)))), silent = TRUE)
-  if(class(ses)!="try-error"){
-    ses <- matrix(ses, ncol = model$number_of_clusters - 1)
-    rownames(ses) <- rownames(model$beta)
-    colnames(ses) <- colnames(model$beta)[-1]
-  }
-  list(model = spread_models(model), standard_errors = ses, 
+
+  #if(class(ses)!="try-error"){
+  #  ses <- matrix(ses, ncol = model$number_of_clusters - 1)
+  #  rownames(ses) <- rownames(model$beta)
+  #  colnames(ses) <- colnames(model$beta)[-1]
+  #}
+  list(model = spread_models(model),# standard_errors = ses, 
     logLik = ll, em_results=resEM[5:7], global_results = globalres, local_results = localres)
   
 }

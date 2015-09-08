@@ -89,24 +89,6 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// gradbeta
-NumericVector gradbeta(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, IntegerVector nSymbols, NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates);
-RcppExport SEXP seqHMM_gradbeta(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP nSymbolsSEXP, SEXP coefsSEXP, SEXP X_SEXP, SEXP numberOfStatesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type nSymbols(nSymbolsSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type coefs(coefsSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type numberOfStates(numberOfStatesSEXP);
-    __result = Rcpp::wrap(gradbeta(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, coefs, X_, numberOfStates));
-    return __result;
-END_RCPP
-}
 // logLikHMM
 NumericVector logLikHMM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray);
 RcppExport SEXP seqHMM_logLikHMM(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP) {
@@ -174,6 +156,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type numberOfStates(numberOfStatesSEXP);
     __result = Rcpp::wrap(objectivex(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coefs, X_, numberOfStates));
+    return __result;
+END_RCPP
+}
+// varcoef
+NumericMatrix varcoef(NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates);
+RcppExport SEXP seqHMM_varcoef(SEXP coefsSEXP, SEXP X_SEXP, SEXP numberOfStatesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericMatrix >::type coefs(coefsSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type numberOfStates(numberOfStatesSEXP);
+    __result = Rcpp::wrap(varcoef(coefs, X_, numberOfStates));
     return __result;
 END_RCPP
 }
