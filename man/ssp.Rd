@@ -19,7 +19,7 @@ ssp(x, mpp = NULL, plots = "obs", type = "I", sortv = NULL,
   sequence object created with the \code{\link{seqdef}} function or a list of
   sequence objects.}
 
-\item{mpp}{Output from \code{\link{most_probable_path}} function. Optional, if
+\item{mpp}{Output from \code{\link{hidden_paths}} function. Optional, if
   \code{x} is a hmm object or if \code{type=="obs"}.}
 
 \item{plots}{What to plot. One of \code{"obs"} for observations (the default),
@@ -36,7 +36,7 @@ ssp(x, mpp = NULL, plots = "obs", type = "I", sortv = NULL,
   \code{which="both"} and \code{which="mpp"}. Options \code{"mds.obs"} and
   \code{"mds.mpp"} automatically arrange the sequences according to the
   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the
-  observed or hidden states path data from \code{\link{most_probable_path}}.
+  observed or hidden states path data from \code{\link{hidden_paths}}.
   MDS scores are computed from distances/dissimilarities using a metric
   defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for
   more details on \code{"from.start"} and \code{"from.end"}.}
@@ -256,7 +256,7 @@ ssp3 <- ssp(
 plot(ssp3)
 
 # Computing the most probable paths
-mpp <- most_probable_path(HMM$model)$mpp
+mpp <- hidden_paths(HMM$model)$mpp
 mpp.seq <- seqdef(
   mpp, labels=c("Hidden state 1", "Hidden state 2", "Hidden state 3")
   )
@@ -279,7 +279,7 @@ plot(ssp4)
 \code{\link{plot.ssp}} for plotting objects created with
   the \code{ssp} function, \code{\link{gridplot}} for plotting multiple \code{ssp}
   objects, \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and
-  fitting hidden Markov models, and \code{\link{most_probable_path}} for
+  fitting hidden Markov models, and \code{\link{hidden_paths}} for
   computing the most probable paths of hidden states.
 }
 
