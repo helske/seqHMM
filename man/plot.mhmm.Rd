@@ -5,7 +5,7 @@
 \title{Interactive Plotting for Mixed Hidden Markov Model (mhmm)}
 \usage{
 \method{plot}{mhmm}(x, interactive = TRUE, ask = FALSE,
-  which.plots = NULL, rows = NA, cols = NA, byrow = FALSE,
+  which.plots = NULL, nrow = NA, ncol = NA, byrow = FALSE,
   row.prop = "auto", col.prop = "auto", layout = "horizontal",
   pie = TRUE, vertex.size = 40, vertex.label = "initial.probs",
   vertex.label.dist = "auto", vertex.label.pos = "bottom",
@@ -31,7 +31,7 @@ transformation.}
 
 \item{which.plots}{The number(s) of the requested cluster(s) as an integer vector. The default \code{NULL} produces all plots. Ignored if \code{interactive=FALSE}.}
 
-\item{rows,cols}{Optional arguments to arrange plots in a grid. Ignored if \code{interactive=TRUE}.}
+\item{nrow,ncol}{Optional arguments to arrange plots in a grid. Ignored if \code{interactive=TRUE}.}
 
 \item{byrow}{Controls the order of plotting in a grid. Defaults to \code{FALSE}, i.e. plots
 are arranged columnwise. Ignored if \code{interactive=TRUE}.}
