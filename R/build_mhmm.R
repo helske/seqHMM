@@ -277,10 +277,15 @@ build_mhmm <-
     
     if(!missing(formula)){
       if(inherits(formula, "formula")){
-      X <- model.matrix(formula, data) #[,-1,drop=FALSE]
-      if(nrow(X)!=number_of_sequences)
-        stop("Number of subjects in data for covariates does not match the number of subjects in the sequence data.")
-      number_of_covariates<-ncol(X)
+        X <- model.matrix(formula, data) #[,-1,drop=FALSE]
+        if(nrow(X)!=number_of_sequences){
+          if(sum(!complete.cases(data[all.vars(formula)])) > 0){
+            stop("Missing cases are not allowed in covariates. Use e.g. the complete.cases function to detect them, then fix, impute, or remove.") 
+          }else{
+            stop("Number of subjects in data for covariates does not match the number of subjects in the sequence data.")
+          }
+        }
+        number_of_covariates<-ncol(X)
       }else{
         stop("Object given for argument formula is not of class formula.")
       }

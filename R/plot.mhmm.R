@@ -15,7 +15,7 @@
 #' @param ask If true and \code{which.plots} is NULL, \code{plot.mhmm} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}. Ignored if \code{interactive=FALSE}.
 #' @param which.plots The number(s) of the requested cluster(s) as an integer vector. The default \code{NULL} produces all plots. Ignored if \code{interactive=FALSE}.
 #' 
-#' @param rows,cols Optional arguments to arrange plots in a grid. Ignored if \code{interactive=TRUE}.
+#' @param nrow,ncol Optional arguments to arrange plots in a grid. Ignored if \code{interactive=TRUE}.
 #' @param byrow Controls the order of plotting in a grid. Defaults to \code{FALSE}, i.e. plots
 #'   are arranged columnwise. Ignored if \code{interactive=TRUE}.
 #' @param row.prop Sets the proportions of the row heights of the grid. The default
@@ -119,7 +119,6 @@
 #' require(TraMineR)
 #' 
 #' data(biofam)
-#' biofam <- biofam[complete.cases(biofam[c(2:4)]),]
 #' biofam <- biofam[1:500,]
 #' 
 #' ## Building one channel per type of event left, children or married
@@ -234,10 +233,11 @@
 #' initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
 #' initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 #' 
-#' # Creating covariate swiss
-#' biofam$swiss <- biofam$nat_1_02 == "Switzerland"
-#' biofam$swiss[biofam$swiss == TRUE] <- "Swiss"
-#' biofam$swiss[biofam$swiss == FALSE] <- "Other"
+#' # Birth cohort
+#' biofam$cohort <- cut(biofam$birthyr, c(1908, 1935, 1945, 1957))
+#' biofam$cohort <- factor(
+#'   biofam$cohort, labels=c("1909-1935", "1936-1945", "1946-1957")
+#' )
 #' 
 #' # Build mixture HMM
 #' bMHMM <- build_mhmm(
@@ -247,7 +247,7 @@
 #'                         list(B2_child, B2_marr, B2_left), 
 #'                         list(B3_child, B3_marr, B3_left)),
 #'   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
-#'   formula = ~sex*birthyr+sex*swiss, data = biofam,
+#'   formula = ~ sex + cohort, data = biofam,
 #'   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
 #'   channel_names = c("Parenthood", "Marriage", "Left home")
 #'   )
@@ -266,7 +266,7 @@
 
 plot.mhmm <- function(x, interactive=TRUE,
                             ask = FALSE, which.plots = NULL, 
-                            rows=NA, cols=NA, byrow=FALSE,
+                            nrow=NA, ncol=NA, byrow=FALSE,
                             row.prop="auto", col.prop="auto", 
                             layout="horizontal", pie=TRUE, 
                             vertex.size=40, vertex.label="initial.probs", 
@@ -299,7 +299,7 @@ plot.mhmm <- function(x, interactive=TRUE,
                                 withlegend=withlegend, ltext=ltext, legend.prop=legend.prop, 
                                 cex.legend=cex.legend, ncol.legend=ncol.legend, cpal=cpal), list(...)))
   }else{
-    do.call(mHMMplotgrid, c(list(x=x, which.plots =  which.plots, rows=rows, cols=cols, 
+    do.call(mHMMplotgrid, c(list(x=x, which.plots =  which.plots, nrow=nrow, ncol=ncol, 
                                  byrow=byrow,
                                  row.prop=row.prop, col.prop=col.prop, 
                                  layout=layout, pie=pie, 
