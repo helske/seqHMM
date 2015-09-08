@@ -128,12 +128,16 @@ hidden_paths <- function(model){
   }else{
     mpp <- apply(out$q+1,2,function(x) model$state_names[x])
   }
-  mpp <- seqdef(mpp,alphabet=model$state_names,
-    id=rownames(model$obs[[1]]),
-    start=attr(model$obs[[1]],"start"),
-    xtstep=attr(model$obs[[1]],"xtstep"))
+  mpp <- suppressWarnings(
+    suppressMessages(
+      seqdef(
+        mpp,alphabet=model$state_names, id=rownames(model$obs[[1]]),
+        start=attr(model$obs[[1]],"start"), xtstep=attr(model$obs[[1]],"xtstep")
+      )
+    )
+  )
   
-  attr(mpp, "cpal") <- colorpalette[[sum(number_of_states)]]
+  attr(mpp, "cpal") <- colorpalette[[sum(model$number_of_states)]]
   
   attr(mpp, "log_prob") <- out$logp
   
