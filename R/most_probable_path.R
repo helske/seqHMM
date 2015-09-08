@@ -1,19 +1,14 @@
-#' Most Probable Path of Hidden States of Hidden Markov Model given the
-#' Sequence.
+#' Most Probable Paths of Hidden States
 #' 
-#' Function \code{most_probable_path} computes the most probable path of the
-#' hidden states of the hidden Markov model given the observed sequence.
+#' Function \code{hidden_paths} computes the most probable path of
+#' hidden states of a (mixture) hidden Markov model given the observed sequences.
 #' 
 #' @export
 #' @param model Hidden Markov model of class \code{hmm} or
 #'  mixture HMM of class \code{mhmm}.
 #' 
-#' @return List which contains the most probable paths of hidden states (\code{mpp}) 
-#'   given the observations and the log-probability (\code{log_prob}). 
-#'   For mixture hidden Markov models also the most probable clusters (\code{clusters}) 
-#'   and a matrix of cluster probabilities (in columns) by the most probable cluster 
-#'   (in rows) (\code{classification_probabilities}). In a case of multiple 
-#'   subjects, the most probable path is computed independently for each subject.
+#' @return Most probable paths of hidden states as an \code{stslist} object
+#' (see \code{\link{seqdef}}). The log-probability included as an attribute.
 #'   
 #' @examples 
 #' require(TraMineR)
@@ -80,22 +75,21 @@
 #' HMM <- fit_hmm(bHMM)
 #'   
 #' # Computing the most probable paths 
-#' mpp <- most_probable_path(HMM$model)$mpp
+#' mpp <- hidden_paths(HMM$model)$mpp
 #'   
 #' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and 
-#'   fitting Hidden Markov models, \code{\link{build_mhmm}} and 
-#'   \code{\link{fit_mhmm}} for building and fitting mixture hidden Markov models, 
+#'   fitting Hidden Markov models; \code{\link{build_mhmm}} and 
+#'   \code{\link{fit_mhmm}} for building and fitting mixture hidden Markov models; 
 #'   and \code{\link{seqIplot}}, \code{\link{ssplot}}, or \code{\link{mssplot}}
 #'   for plotting the most probable paths.
 #'   
 
-most_probable_path<-function(model){
+hidden_paths <- function(model){
   
   ll <- logLik(model, partials = TRUE)
   if(inherits(model,"mhmm")){
-    fw <- forward_probs(model)[,model$length_of_sequences,]
     model <- combine_models(model)
-    mix<-TRUE
+    mix <- TRUE
   } else mix <- FALSE
   
   
@@ -108,60 +102,40 @@ most_probable_path<-function(model){
   model$initial_probs <- log(model$initial_probs)
   model$transition_matrix <- log(model$transition_matrix)
   
-  obsArray<-array(0,c(model$number_of_sequences,model$length_of_sequences,model$number_of_channels))
+  obsArray <- array(0,c(model$number_of_sequences,model$length_of_sequences,model$number_of_channels))
   for(i in 1:model$number_of_channels){
-    obsArray[,,i]<-data.matrix(model$observations[[i]])-1
-    obsArray[,,i][obsArray[,,i]>model$number_of_symbols[i]]<-model$number_of_symbols[i]
+    obsArray[,,i] <- data.matrix(model$observations[[i]])-1
+    obsArray[,,i][obsArray[,,i]>model$number_of_symbols[i]] <- model$number_of_symbols[i]
   }       
-  storage.mode(obsArray)<-"integer"
+  storage.mode(obsArray) <- "integer"
   
-  emissionArray<-array(0,c(model$number_of_states,max(model$number_of_symbols)+1,model$number_of_channels))
+  emissionArray <- array(0,c(model$number_of_states,max(model$number_of_symbols)+1,model$number_of_channels))
   for(i in 1:model$number_of_channels)
     emissionArray[,1:model$number_of_symbols[i],i] <- log(model$emission_matrix[[i]])
   
   if(mix){
-    out<-viterbix(model$transition_matrix, emissionArray, 
+    out <- viterbix(model$transition_matrix, emissionArray, 
       model$initial_probs, obsArray, model$beta, 
       model$X, model$number_of_states_in_clusters)
   } else{
-    out<-viterbi(model$transition_matrix, emissionArray, 
+    out <- viterbi(model$transition_matrix, emissionArray, 
       model$initial_probs, obsArray)
   }
   
   
   if(model$number_of_sequences==1){
-    mpp<-t(model$state_names[out$q+1])
+    mpp <- t(model$state_names[out$q+1])
   }else{
-    mpp<-apply(out$q+1,2,function(x) model$state_names[x])
+    mpp <- apply(out$q+1,2,function(x) model$state_names[x])
   }
-  mpp<-seqdef(mpp,alphabet=model$state_names,
+  mpp <- seqdef(mpp,alphabet=model$state_names,
     id=rownames(model$obs[[1]]),
     start=attr(model$obs[[1]],"start"),
     xtstep=attr(model$obs[[1]],"xtstep"))
   
-  if(mix==TRUE){
-    gr <- sub("^.*?_","",mpp[,1])
-    gr <- factor(gr, levels=1:model$number_of_clusters, labels=model$cluster_names)
-    
-    clP <- vector("list", model$number_of_clusters)
-    p <- 0
-
-    for(i in 1:model$number_of_clusters){
-      clP[[i]] <- colSums(exp(fw[(p+1):(p+model$number_of_states_in_clusters[i]), , drop = FALSE] - 
-                                rep(ll, each = model$number_of_states_in_clusters[i])))
-      p <- p + model$number_of_states_in_clusters[i]
-    }
-    clProbs <- matrix(NA, nrow = model$number_of_clusters, ncol = model$number_of_clusters)
-    rownames(clProbs) <- colnames(clProbs) <- model$cluster_names
-    for(i in 1:model$number_of_clusters){
-      for(j in 1:model$number_of_clusters){
-        clProbs[i,j] <- mean(clP[[j]][gr == model$cluster_names[i]])
-      }
-    }
-    
-    list(mpp=mpp, cluster=gr, classification_probabilities = clProbs, log_prob=out$logp)
-  }else{
-    list(mpp=mpp, log_prob=out$logp)
-  }
+  attr(mpp, "cpal") <- colorpalette[[sum(number_of_states)]]
   
+  attr(mpp, "log_prob") <- out$logp
+  
+  mpp
 }
