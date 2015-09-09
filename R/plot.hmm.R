@@ -6,7 +6,7 @@
 #' 
 #' @import igraph
 #' @export
-#' 
+#' @importFrom TraMineR seqlegend
 #' @param x A hidden Markov model object of class hmm created with 
 #'   \code{\link{build_hmm}} and \code{\link{fit_hmm}}. Multichannel 
 #'   hmm objects are automatically transformed to single channel objects. 

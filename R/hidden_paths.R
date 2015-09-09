@@ -137,7 +137,7 @@ hidden_paths <- function(model){
     )
   )
   
-  attr(mpp, "cpal") <- colorpalette[[sum(model$n_states)]]
+  attr(mpp, "cpal") <- seqHMM::colorpalette[[sum(model$n_states)]]
   
   attr(mpp, "log_prob") <- out$logp
   

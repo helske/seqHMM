@@ -7,12 +7,12 @@
 #' 
 #' 
 #' @export
-#' 
+#' @importFrom TraMineR seqdist
+#' @importFrom TraMineR seqdistmc
 #' @param x Either hidden Markov model object of class \code{hmm} or a 
 #'   sequence object created with the \code{\link{seqdef}} function or a list of
 #'   sequence objects.
-#'   
-#'   
+#'
 #' @param mpp Output from \code{\link{hidden_paths}} function. Optional, if 
 #'   \code{x} is a hmm object or if \code{type=="obs"}.
 #'   
