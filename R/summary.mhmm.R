@@ -8,8 +8,8 @@
 #' @param object Mixture hidden Markov model of class \code{mhmm}.
 #' @param parameters Whether or not to print parameters of transition, emission, and 
 #' initial probabilities.
-#' @param digits Number of significant digits to be used when printing parameters. The 
-#' default is 2.
+#' @param digits Number of decimal places to be used when printing parameters. The 
+#' default is 3.
 #' @param ... Ignored.
 #' 
 #' @return \describe{
