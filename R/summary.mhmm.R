@@ -5,7 +5,7 @@
 #' 
 #' @export
 #' @method summary mhmm 
-#' @param model Mixture hidden Markov model of class \code{mhmm}.
+#' @param object Mixture hidden Markov model of class \code{mhmm}.
 #' 
 #' @return \describe{
 #'    \item{logLik}{Log-likelihood}
@@ -89,7 +89,7 @@
 #' @seealso \code{\link{fit_mhmm}} for building and fitting mixture hidden Markov models.
 #'   
 
-summary.mhmm <- function(model, parameters = FALSE){
+summary.mhmm <- function(object, parameters = FALSE, ...){
   
   logLik = logLik(model)
   
