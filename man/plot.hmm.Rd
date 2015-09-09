@@ -122,7 +122,7 @@ reduce the size of the font, values greater than 1 will increase the size.}
 
 \item{cpal}{Optional color palette for the (combinations of) observed states.
 The default value \code{"auto"} uses automatic color palette. Otherwise a
-vector of length \code{x$number_of_symbols} is given, i.e. requires a color
+vector of length \code{x$n_symbols} is given, i.e. requires a color
 specified for all (combinations of) observed states even if they are not
 plotted (if the probability is less than combine.slices).}
 

@@ -28,7 +28,7 @@
 #' @param state_names A list of optional labels for the hidden states.
 #' @param channel_names A vector of optional names for the channels.
 #' @return Object of class \code{mhmm}
-#' @seealso \code{\link{fitMixHMM}} for fitting mixture Hidden Markov models.
+#' @seealso \code{\link{fit_mhmm}} for fitting mixture Hidden Markov models.
 #' 
 #' @examples
 #' require(TraMineR)
@@ -155,7 +155,7 @@
 #' biofam$swiss[biofam$swiss == FALSE] <- "Other"
 #' 
 #' # Build mixture HMM
-#' bMHMM <- buildMixHMM(
+#' bMHMM <- build_mhmm(
 #'   observations = list(child.seq, marr.seq, left.seq),
 #'   transition_matrix = list(A1,A1,A2),
 #'   emission_matrix = list(list(B1_child, B1_marr, B1_left),

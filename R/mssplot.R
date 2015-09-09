@@ -266,7 +266,7 @@
 #' )
 #' 
 #' # Build mixture HMM
-#' bMHMM <- buildMixHMM(
+#' bMHMM <- build_mhmm(
 #'   observations = list(child.seq, marr.seq, left.seq),
 #'   transition_matrix = list(A1,A1,A2),
 #'   emission_matrix = list(list(B1_child, B1_marr, B1_left),
@@ -353,14 +353,14 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   if(!("mpp.labels" %in% names(args))){
     mpp.labels <- NULL
     for(i in 1:x$n_clusters){
-      mpp.labels <- c(mpp.labels, paste("State", 1:x$numberOfStates[i]))
+      mpp.labels <- c(mpp.labels, paste("State", 1:x$number_of_states[i]))
     }
   }
   mpplabs <- list()
   k <- 0
   for(i in 1:x$n_clusters){
-    mpplabs[[i]] <- mpp.labels[(k+1):(k+x$numberOfStates[i])]
-    k <- k+x$numberOfStates[i]
+    mpplabs[[i]] <- mpp.labels[(k+1):(k+x$number_of_states[i])]
+    k <- k+x$number_of_states[i]
   }
   
   if(!("mpp.color" %in% names(args))){
@@ -369,8 +369,8 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   mppcols <- list()
   k <- 0
   for(i in 1:x$n_clusters){
-    mppcols[[i]] <- mpp.color[(k+1):(k+x$numberOfStates[i])]
-    k <- k+x$numberOfStates[i]
+    mppcols[[i]] <- mpp.color[(k+1):(k+x$number_of_states[i])]
+    k <- k+x$number_of_states[i]
   }
   
   mppm <- unique(mpp$cluster)
