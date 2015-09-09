@@ -4,8 +4,8 @@
 #'   
 #' 
 #' @export
-#' @param model Hidden Markov model of class \code{hmm} or
-#'  mixture HMM of class \code{mhmm}.
+#' @method summary mhmm 
+#' @param model Mixture hidden Markov model of class \code{mhmm}.
 #' 
 #' @return \describe{
 #'    \item{logLik}{Log-likelihood}
