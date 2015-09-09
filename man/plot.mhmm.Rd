@@ -27,22 +27,22 @@ transformation.}
 
 \item{interactive}{Whether to plot each cluster in succession or in a grid. Defaults to TRUE, i.e. clusters are plotted one after another.}
 
-\item{ask}{If true and \code{which.plots} is NULL, \code{plot.mhmm} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}. Ignored if \code{interactive=FALSE}.}
+\item{ask}{If true and \code{which.plots} is NULL, \code{plot.mhmm} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}. Ignored if \code{interactive = FALSE}.}
 
-\item{which.plots}{The number(s) of the requested cluster(s) as an integer vector. The default \code{NULL} produces all plots. Ignored if \code{interactive=FALSE}.}
+\item{which.plots}{The number(s) of the requested cluster(s) as an integer vector. The default \code{NULL} produces all plots. Ignored if \code{interactive = FALSE}.}
 
-\item{nrow,ncol}{Optional arguments to arrange plots in a grid. Ignored if \code{interactive=TRUE}.}
+\item{nrow,ncol}{Optional arguments to arrange plots in a grid. Ignored if \code{interactive = TRUE}.}
 
 \item{byrow}{Controls the order of plotting in a grid. Defaults to \code{FALSE}, i.e. plots
-are arranged columnwise. Ignored if \code{interactive=TRUE}.}
+are arranged columnwise. Ignored if \code{interactive = TRUE}.}
 
 \item{row.prop}{Sets the proportions of the row heights of the grid. The default
 value is \code{"auto"} for even row heights. Takes a vector of values from
-0 to 1, with values summing to 1. Ignored if \code{interactive=TRUE}.}
+0 to 1, with values summing to 1. Ignored if \code{interactive = TRUE}.}
 
 \item{col.prop}{Sets the proportion of the column heights of the grid. The default
   value is \code{"auto"} for even column widths. Takes a vector of values
-  from 0 to 1, with values summing to 1. Ignored if \code{interactive=TRUE}.}
+  from 0 to 1, with values summing to 1. Ignored if \code{interactive = TRUE}.}
 
 \item{layout}{specifies the layout of the vertices (nodes). Accepts a
 numerical matrix, a layout function, or either of \code{"horizontal"} (the
@@ -168,29 +168,29 @@ biofam <- biofam[1:500,]
 
 ## Building one channel per type of event left, children or married
 bf <- as.matrix(biofam[, 10:25])
-children <-  bf == 4 | bf == 5 | bf == 6
-married <- bf == 2 | bf == 3 | bf == 6
-left <- bf == 1 | bf == 3 | bf == 5 | bf == 6 | bf == 7
+children <-  bf = 4 | bf = 5 | bf = 6
+married <- bf = 2 | bf = 3 | bf = 6
+left <- bf = 1 | bf = 3 | bf = 5 | bf = 6 | bf = 7
 
-children[children == TRUE] <- "Children"
-children[children == FALSE] <- "Childless"
+children[children = TRUE] <- "Children"
+children[children = FALSE] <- "Childless"
 # Divorced parents
-div <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 5) > 0) |
-            (rowSums(bf == 7) > 0 & rowSums(bf == 6) > 0),]
-children[rownames(bf) \%in\% rownames(div) & bf == 7] <- "Children"
+div <- bf[(rowSums(bf = 7) > 0 & rowSums(bf = 5) > 0) |
+            (rowSums(bf = 7) > 0 & rowSums(bf = 6) > 0),]
+children[rownames(bf) \%in\% rownames(div) & bf = 7] <- "Children"
 
-married[married == TRUE] <- "Married"
-married[married == FALSE] <- "Single"
-married[bf == 7] <- "Divorced"
+married[married = TRUE] <- "Married"
+married[married = FALSE] <- "Single"
+married[bf = 7] <- "Divorced"
 
-left[left == TRUE] <- "Left home"
-left[left == FALSE] <- "With parents"
+left[left = TRUE] <- "Left home"
+left[left = FALSE] <- "With parents"
 # Divorced living with parents (before divorce)
-wp <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 2) > 0 & rowSums(bf == 3) == 0 &
-          rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0) |
-         (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 & rowSums(bf == 3) == 0 &
-         rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0),]
-left[rownames(bf) \%in\% rownames(wp) & bf == 7] <- "With parents"
+wp <- bf[(rowSums(bf = 7) > 0 & rowSums(bf = 2) > 0 & rowSums(bf = 3) = 0 &
+          rowSums(bf = 5) = 0 & rowSums(bf = 6) = 0) |
+         (rowSums(bf = 7) > 0 & rowSums(bf = 4) > 0 & rowSums(bf = 3) = 0 &
+         rowSums(bf = 5) = 0 & rowSums(bf = 6) = 0),]
+left[rownames(bf) \%in\% rownames(wp) & bf = 7] <- "With parents"
 
 ## Building sequence objects
 child.seq <- seqdef(children, start = 15)
@@ -281,7 +281,7 @@ initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 # Birth cohort
 biofam$cohort <- cut(biofam$birthyr, c(1908, 1935, 1945, 1957))
 biofam$cohort <- factor(
-  biofam$cohort, labels=c("1909-1935", "1936-1945", "1946-1957")
+  biofam$cohort, labels = c("1909-1935", "1936-1945", "1946-1957")
 )
 
 # Build mixture HMM

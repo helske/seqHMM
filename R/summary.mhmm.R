@@ -6,7 +6,10 @@
 #' @export
 #' @method summary mhmm 
 #' @param object Mixture hidden Markov model of class \code{mhmm}.
-#' @param parameters Whether or not to print parameters of transition, emission, and initial probabilities.
+#' @param parameters Whether or not to print parameters of transition, emission, and 
+#' initial probabilities.
+#' @param digits Number of significant digits to be used when printing parameters. The 
+#' default is 2.
 #' @param ... Ignored.
 #' 
 #' @return \describe{
@@ -91,7 +94,7 @@
 #' @seealso \code{\link{fit_mhmm}} for building and fitting mixture hidden Markov models.
 #'   
 
-summary.mhmm <- function(object, parameters = FALSE, ...){
+summary.mhmm <- function(object, parameters = FALSE, digits = 2, ...){
   
   ll <- logLik(object, partials = TRUE)
   sum_logLik <- sum(ll)
@@ -145,7 +148,8 @@ summary.mhmm <- function(object, parameters = FALSE, ...){
       beta = object$beta, beta_se = beta_se,
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
-      classification_table = clProbs
+      classification_table = clProbs,
+      digits = digits
     )
   }
   class(summary_mhmm) <- "summary.mhmm"
