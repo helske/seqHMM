@@ -43,14 +43,11 @@ library(TraMineR)
 
 data(biofam)
 
-# Complete cases in sex, birthyear, and first nationality
-bio <- biofam[complete.cases(biofam[c(2:4)]),]
-
 # Sequence data for the first six individuals
-head(bio[10:25])
+head(biofam[10:25])
 
 # Building one channel per type of event (married, children, or left)
-bf <- as.matrix(bio[, 10:25])
+bf <- as.matrix(biofam[, 10:25])
 married <- bf == 2 | bf == 3 | bf == 6
 children <-  bf == 4 | bf == 5 | bf == 6
 left <- bf == 1 | bf == 3 | bf == 5 | bf == 6 | bf == 7
@@ -437,10 +434,11 @@ A2 <- matrix(c(0.8, 0.10, 0.05,  0.03, 0.01, 0.01,
 initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
 initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 
-# Creating covariate swiss
-bio$swiss <- bio$nat_1_02 == "Switzerland"
-bio$swiss[bio$swiss == TRUE] <- "Swiss"
-bio$swiss[bio$swiss == FALSE] <- "Other"
+# Birth cohort
+biofam$cohort <- cut(biofam$birthyr, c(1908, 1935, 1945, 1957))
+biofam$cohort <- factor(
+    biofam$cohort, labels=c("1909-1935", "1936-1945", "1946-1957")
+  )
 
 # Build MHMM
 bMHMM <- build_mhmm(
@@ -450,7 +448,7 @@ bMHMM <- build_mhmm(
                         list(B2_marr, B2_child, B2_left),
                         list(B3_marr, B3_child, B3_left)),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
-  formula = ~ sex * birthyr + sex * swiss, data = bio, 
+  formula = ~ sex * cohort, data = biofam, 
   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
   channel_names = c("Marriage", "Parenthood", "Left home")
   )
@@ -461,34 +459,72 @@ MHMM <- fit_mhmm(bMHMM)
 trMHMM <- trim_hmm(MHMM$model, zerotol = 1e-04)
 ```
 
-Parameter coefficients are stored in `beta`. The first cluster is the reference.
-```
-# trMHMM$beta
-#                     Cluster 1    Cluster 2   Cluster 3
-# (Intercept)                 0 -23.39241097 64.04751144
-# sexwoman                    0  19.27426708 33.17879462
-# birthyr                     0   0.01266753 -0.03279321
-# swissSwiss                  0   0.11541402 -0.54893429
-# sexwoman:birthyr            0  -0.01008529 -0.01725546
-# sexwoman:swissSwiss         0   0.23815091  0.54652612
-```
-The most probable cluster for each individual is determined by the most probable path of hidden states. It is computed with the `mostProbablePath` function. The most probable clusters are stored in `mpp$cluster` and `mpp$classification_probabilities` gives the probability of each cluster (in columns) by the most probable cluster (rows). For individuals assigned to cluster 1, the average probability for cluster 1 is 0.84, 0.16 for cluster 2, and close to 0 for cluster 3. The highest probability for the assigned cluster is 0.94 for cluster 3.
+### Summary of MHMM
+
+The `summary` method gives a summary of the MHMM: estimates and standard errors for covariates, log-likelihood and BIC, information on most probable clusters and prior and posterior probabilities, and classification table, which shows the mean probabilities of belonging to each cluster by the most probable cluster. The most probable cluster is determined by the posterior probabilities (or the most probable hidden state paths given by the `hidden_paths` function). A good model shoud have high proportions in the diagonal. Here, for individuals assigned to cluster 1, the average probability for cluster 1 is 0.84, 0.16 for cluster 2, and close to 0 for cluster 3. The highest probability for the assigned cluster is 0.93 for cluster 3.
 
 ```
-# Computing most probable paths
-mpp <- mostProbablePath(trMHMM)
-# Assigning colours to hidden states
-attr(mpp$mpp, "cpal") <- colorpalette[[14]]
-# Number of individuals in each cluster
-table(mpp$cluster)
+summ <- summary(trMHMM)
+summ
+# Parameter coefficients for covariates :
+# 
+# Cluster 1 is the reference.
+# 
+# Cluster 2 :
+#                           Estimate  Std. error
+# (Intercept)                 1.1400       0.176
+# sexwoman                   -0.2150       0.241
+# cohort1936-1945             0.0829       0.239
+# cohort1946-1957             0.1420       0.218
+# sexwoman:cohort1936-1945    0.2960       0.329
+# sexwoman:cohort1946-1957    0.0715       0.295
+# 
+# Cluster 3 :
+#                           Estimate  Std. error
+# (Intercept)                  0.430       0.197
+# sexwoman                     0.149       0.263
+# cohort1936-1945             -0.647       0.290
+# cohort1946-1957             -0.899       0.269
+# sexwoman:cohort1936-1945     0.212       0.387
+# sexwoman:cohort1946-1957    -0.122       0.356
+# 
+# 
+# Log-likelihood :
+# 
+# -12712.65
+# 
+# 
+# BIC :
+# 
+# 26348.53
+# 
+# 
+# Most probable clusters :
+# 
+#    Cluster 1  Cluster 2  Cluster 3
+# n        310       1364        326
+# %       15.5       68.2       16.3
+# 
+# 
+# Means of prior cluster probabilities :
+# 
 # Cluster 1 Cluster 2 Cluster 3 
-#       258      1236       281
-# Cluster probabilities by the most probable cluster
-mpp$classification_probabilities
-#            Cluster 1  Cluster 2    Cluster 3
-# Cluster 1 0.83738794 0.16213321 0.0004788443
-# Cluster 2 0.07874202 0.87207334 0.0491846416
-# Cluster 3 0.01403737 0.05066261 0.9353000274
+#     0.191     0.622     0.187 
+# 
+# 
+# Means of posterior cluster probabilities :
+# 
+# Cluster 1 Cluster 2 Cluster 3 
+#     0.191     0.622     0.187 
+# 
+# 
+# Classification table :
+# Mean cluster probabilities (in columns) by the most probable cluster (rows)
+# 
+#           Cluster 1 Cluster 2 Cluster 3
+# Cluster 1     0.839     0.161     0.000
+# Cluster 2     0.085     0.863     0.052
+# Cluster 3     0.017     0.050     0.933
 ```
 
 ### Plotting MHMMs

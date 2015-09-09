@@ -4,7 +4,7 @@
 \alias{summary.mhmm}
 \title{Summary method for mixture hidden Markov models}
 \usage{
-\method{summary}{mhmm}(object, parameters = FALSE, digits = 2, ...)
+\method{summary}{mhmm}(object, parameters = FALSE, digits = 3, ...)
 }
 \arguments{
 \item{object}{Mixture hidden Markov model of class \code{mhmm}.}
@@ -12,8 +12,8 @@
 \item{parameters}{Whether or not to print parameters of transition, emission, and
 initial probabilities.}
 
-\item{digits}{Number of significant digits to be used when printing parameters. The
-default is 2.}
+\item{digits}{Number of decimal places to be used when printing parameters. The
+default is 3.}
 
 \item{...}{Ignored.}
 }

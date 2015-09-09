@@ -324,6 +324,10 @@ MHMM <- fit_mhmm(bMHMM)
 # Trim MHMM
 trMHMM <- trim_hmm(MHMM$model, zerotol = 1e-04)
 
+### Summary of MHMM
+
+summ <- summary(trMHMM)
+summ
 
 ### Plotting MHMMs
 
