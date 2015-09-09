@@ -7,7 +7,7 @@
 \usage{
 \method{print}{hmm}(x, ...)
 
-print.mhmm(x, ...)
+\method{print}{mhmm}(x, ...)
 }
 \arguments{
 \item{x}{Hidden Markov model of class \code{hmm} or \code{mhmm}.}

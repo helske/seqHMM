@@ -353,14 +353,14 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   if(!("mpp.labels" %in% names(args))){
     mpp.labels <- NULL
     for(i in 1:x$n_clusters){
-      mpp.labels <- c(mpp.labels, paste("State", 1:x$number_of_states[i]))
+      mpp.labels <- c(mpp.labels, paste("State", 1:x$n_states[i]))
     }
   }
   mpplabs <- list()
   k <- 0
   for(i in 1:x$n_clusters){
-    mpplabs[[i]] <- mpp.labels[(k+1):(k+x$number_of_states[i])]
-    k <- k+x$number_of_states[i]
+    mpplabs[[i]] <- mpp.labels[(k+1):(k+x$n_states[i])]
+    k <- k+x$n_states[i]
   }
   
   if(!("mpp.color" %in% names(args))){
@@ -369,8 +369,8 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   mppcols <- list()
   k <- 0
   for(i in 1:x$n_clusters){
-    mppcols[[i]] <- mpp.color[(k+1):(k+x$number_of_states[i])]
-    k <- k+x$number_of_states[i]
+    mppcols[[i]] <- mpp.color[(k+1):(k+x$n_states[i])]
+    k <- k+x$n_states[i]
   }
   
   mppm <- unique(mpp$cluster)
