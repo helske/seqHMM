@@ -4,11 +4,14 @@
 \alias{summary.mhmm}
 \title{Summary method for mixture hidden Markov models}
 \usage{
-summary.mhmm(model, parameters = FALSE)
+\method{summary}{mhmm}(object, parameters = FALSE, ...)
 }
 \arguments{
-\item{model}{Hidden Markov model of class \code{hmm} or
- mixture HMM of class \code{mhmm}.}
+\item{object}{Mixture hidden Markov model of class \code{mhmm}.}
+
+\item{parameters}{Whether or not to print parameters of transition, emission, and initial probabilities.}
+
+\item{...}{Ignored.}
 }
 \value{
 \describe{

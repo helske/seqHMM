@@ -93,61 +93,61 @@
 
 summary.mhmm <- function(object, parameters = FALSE, ...){
   
-  logLik = logLik(model)
+  ll <- logLik(object, partials = TRUE)
+  sum_logLik <- sum(ll)
+  BIC <- -2*sum_logLik + log(object$n_sequences*object$length_of_sequences)*
+    (sum(unlist(object$initial_probs)>0)+sum(unlist(object$transition_matrix)>0)+
+        sum(unlist(object$emission_matrix)>0))
   
-  ll <- logLik(model, partials = TRUE)
+  beta_se <- sd_beta(object)
+  rownames(beta_se) <- rownames(object$beta)
+  colnames(beta_se) <- colnames(object$beta)
   
-  BIC = BIC(model)
+  fw <- forward_probs(object)[,object$length_of_sequences,]
   
-  beta_se = sd_beta(model)
-  rownames(beta_se) <- rownames(beta)
-  colnames(beta_se) <- colnames(beta)
-  
-  fw <- forward_probs(model)[,model$length_of_sequences,]
-  
-  pr <- exp(model$X%*%model$beta)
-  cluster_probabilities <- pr/rowSums(pr)
+  pr <- exp(object$X%*%object$beta)
+  prior_cluster_probabilities <- pr/rowSums(pr)
 
-  
-  gr <- sub("^.*?_","",mpp[,1])
-  gr <- factor(gr, levels=1:model$n_clusters, labels=model$cluster_names)
-  
-  clP <- vector("list", model$n_clusters)
+
+  posterior_cluster_probabilities <- prior_cluster_probabilities
   p <- 0
-  
-  for(i in 1:model$n_clusters){
-    clP[[i]] <- colSums(exp(fw[(p+1):(p+model$n_states[i]), , drop = FALSE] - 
-                              rep(ll, each = model$n_states[i])))
-    p <- p + model$n_states[i]
+  for(i in 1:object$n_clusters){
+    posterior_cluster_probabilities[,i] <- colSums(exp(fw[(p+1):(p+object$n_states[i]), , drop = FALSE] - 
+                              rep(ll, each = object$n_states[i])))
+    p <- p + object$n_states[i]
   }
-  clProbs <- matrix(NA, nrow = model$n_clusters, ncol = model$n_clusters)
-  rownames(clProbs) <- colnames(clProbs) <- model$cluster_names
-  for(i in 1:model$n_clusters){
-    for(j in 1:model$n_clusters){
-      clProbs[i,j] <- mean(clP[[j]][gr == model$cluster_names[i]])
+  most_probable_cluster <- factor(apply(posterior_cluster_probabilities, 1, which.max), 
+    levels = 1:object$n_clusters, labels = object$cluster_names)
+  
+
+  clProbs <- matrix(NA, nrow = object$n_clusters, ncol = object$n_clusters)
+  rownames(clProbs) <- colnames(clProbs) <- object$cluster_names
+  for(i in 1:object$n_clusters){
+    for(j in 1:object$n_clusters){
+      clProbs[i,j] <- mean(posterior_cluster_probabilities[most_probable_cluster == object$cluster_names[i], i])
     }
   }
   
   if(!parameters){
     summary_mhmm <- list(
-      logLik = logLik, BIC = BIC, most_probable_cluster = gr, 
-      beta = model$beta, beta_se = beta_se,
-      prior_cluster_probabilities = cluster_probabilities, 
-      posterior_cluster_probabilities = clP,
+      logLik = sum_logLik, BIC = BIC, most_probable_cluster = most_probable_cluster, 
+      beta = object$beta, beta_se = beta_se,
+      prior_cluster_probabilities = prior_cluster_probabilities, 
+      posterior_cluster_probabilities = posterior_cluster_probabilities,
       classification_table = clProbs
     )
   }else{
     summary_mhmm <- list(
-      transition_matrix = model$transition_matrix,
-      emission_matrix = model$emission_matrix,
-      initial_probs = model$initial_probs,
-      logLik = logLik, BIC = BIC, most_probable_cluster = gr, 
-      beta = model$beta, beta_se = beta_se,
-      prior_cluster_probabilities = cluster_probabilities, 
-      posterior_cluster_probabilities = clP,
+      transition_matrix = object$transition_matrix,
+      emission_matrix = object$emission_matrix,
+      initial_probs = object$initial_probs,
+      logLik = sum_logLik, BIC = BIC, most_probable_cluster = most_probable_cluster, 
+      beta = object$beta, beta_se = beta_se,
+      prior_cluster_probabilities = prior_cluster_probabilities, 
+      posterior_cluster_probabilities = posterior_cluster_probabilities,
       classification_table = clProbs
     )
   }
-  class(summary_mhmm)<-"summary.mhmm"
+  class(summary_mhmm) <- "summary.mhmm"
   summary_mhmm
 }

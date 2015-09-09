@@ -172,6 +172,12 @@ biofam$swiss <- biofam$nat_1_02 == "Switzerland"
 biofam$swiss[biofam$swiss == TRUE] <- "Swiss"
 biofam$swiss[biofam$swiss == FALSE] <- "Other"
 
+# Birth cohort
+biofam$cohort <- cut(biofam$birthyr, c(1908, 1935, 1945, 1957))
+biofam$cohort <- factor(
+  biofam$cohort, labels=c("1909-1935", "1936-1945", "1946-1957")
+)
+
 # Build mixture HMM
 bMHMM <- build_mhmm(
   observations = list(child.seq, marr.seq, left.seq),
@@ -180,12 +186,12 @@ bMHMM <- build_mhmm(
                         list(B2_child, B2_marr, B2_left),
                         list(B3_child, B3_marr, B3_left)),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
-  formula = ~ sex * birthyr + sex * swiss, data = biofam,
+  formula = ~ sex + cohort, data = biofam,
   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
   channel_names = c("Parenthood", "Marriage", "Left home")
   )
 }
 \seealso{
-\code{\link{fit_mhmm}} for fitting mixture Hidden Markov models.
+\code{\link{fitMixHMM}} for fitting mixture Hidden Markov models.
 }
 
