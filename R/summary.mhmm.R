@@ -94,7 +94,7 @@
 #' @seealso \code{\link{fit_mhmm}} for building and fitting mixture hidden Markov models.
 #'   
 
-summary.mhmm <- function(object, parameters = FALSE, digits = 2, ...){
+summary.mhmm <- function(object, parameters = FALSE, digits = 3, ...){
   
   ll <- logLik(object, partials = TRUE)
   sum_logLik <- sum(ll)
@@ -137,7 +137,8 @@ summary.mhmm <- function(object, parameters = FALSE, digits = 2, ...){
       beta = object$beta, beta_se = beta_se,
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
-      classification_table = clProbs
+      classification_table = clProbs,
+      digits = digits
     )
   }else{
     summary_mhmm <- list(
