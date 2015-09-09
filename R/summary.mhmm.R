@@ -98,6 +98,8 @@ summary.mhmm <- function(model, parameters = FALSE){
   BIC = BIC(model)
   
   beta_se = sd_beta(model)
+  rownames(beta_se) <- rownames(beta)
+  colnames(beta_se) <- colnames(beta)
   
   fw <- forward_probs(model)[,model$length_of_sequences,]
   
@@ -124,10 +126,26 @@ summary.mhmm <- function(model, parameters = FALSE){
     }
   }
   
-  list(logLik = logLik, BIC = BIC, most_probable_cluster = gr, 
-       beta = model$beta, beta_se = beta_se,
-       prior_cluster_probabilities = cluster_probabilities, 
-       posterior_cluster_probabilities = clP,
-       classification_table = clProbs
-       )
+  if(!parameters){
+    summary_mhmm <- list(
+      logLik = logLik, BIC = BIC, most_probable_cluster = gr, 
+      beta = model$beta, beta_se = beta_se,
+      prior_cluster_probabilities = cluster_probabilities, 
+      posterior_cluster_probabilities = clP,
+      classification_table = clProbs
+    )
+  }else{
+    summary_mhmm <- list(
+      transition_matrix = model$transition_matrix,
+      emission_matrix = model$emission_matrix,
+      initial_probs = model$initial_probs,
+      logLik = logLik, BIC = BIC, most_probable_cluster = gr, 
+      beta = model$beta, beta_se = beta_se,
+      prior_cluster_probabilities = cluster_probabilities, 
+      posterior_cluster_probabilities = clP,
+      classification_table = clProbs
+    )
+  }
+  class(summary_mhmm)<-"summary.mhmm"
+  summary_mhmm
 }

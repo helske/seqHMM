@@ -5,7 +5,7 @@
 \title{Estimate Parameters of Hidden Markov Model}
 \usage{
 fit_hmm(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
-  em_control = list(), global_control = list(), local_control = list(),
+  control_em = list(), control_global = list(), control_local = list(),
   lb, ub, ...)
 }
 \arguments{
@@ -21,7 +21,7 @@ but is even more prone to get stuck in a local optimum.}
 \item{local_step}{Logical, use local optimization via
 \code{\link{nloptr}} (possibly after the EM and/or global steps). The default is \code{TRUE}.}
 
-\item{em_control}{Optional list of control parameters for for EM algorithm.
+\item{control_em}{Optional list of control parameters for for EM algorithm.
 Possible arguments are \describe{
 \item{maxeval}{Maximum number of iterations, default is 100.}
 \item{print_level}{Level of printing. Possible values are 0
@@ -30,7 +30,7 @@ Possible arguments are \describe{
 \item{reltol}{Relative tolerance for convergence defined as \eqn{(sumLogLikNew - sumLogLikOld)/(abs(sumLogLikOld)+0.1)}.
 Default is 1e-8.} }}
 
-\item{global_control}{Optional list of additional arguments for
+\item{control_global}{Optional list of additional arguments for
   \code{\link{nloptr}} argument \code{opts}. The default values are
   \describe{
    \item{algorithm}{\code{"NLOPT_GD_MLSL_LDS"}}
@@ -41,7 +41,7 @@ Default is 1e-8.} }}
    \item{population}{\code{4*length(initialvalues)}} (number of starting points)
 }}
 
-\item{local_control}{Optional list of additional arguments for
+\item{control_local}{Optional list of additional arguments for
 \code{\link{nloptr}} argument \code{opts}. The default values are
 \describe{
  \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
@@ -80,12 +80,12 @@ The fitting function provides three estimation steps: 1) EM algorithm,
   By default the \code{fit_hmm} function starts with the EM algorithm,
   uses the multilevel single-linkage method (MLSL) with the LDS modification
   for global optimization (\code{NLOPT_GD_MLSL_LDS} as \code{algorithm} in
-  \code{global_control}), and finishes with LBFGS as the local optimizer.
+  \code{control_global}), and finishes with LBFGS as the local optimizer.
   The MLSL method draws random starting points and performs a local optimization
   from each. The LDS modification uses low-discrepancy sequences instead of
   pseudo-random numbers as starting points and should improve the convergence rate.
   By default, \code{fit_hmm} uses the BFGS algorithm as the local optimizer in the
-  MLSL (\code{NLOPT_LD_LBFGS} as \code{local_opts} in \code{global_control}).
+  MLSL (\code{NLOPT_LD_LBFGS} as \code{local_opts} in \code{control_global}).
   In order to reduce the computation time spent on non-global optima, the
   convergence tolerance of the local optimizer is set relatively large. At step 3,
   a local optimization (BFGS by default) is run with a lower tolerance to find the
@@ -173,13 +173,13 @@ HMM3$logLik #-5493.271
 
 # Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
 HMM4 <- fit_hmm(bHMM, em_step = FALSE, global_step = TRUE, local_step = TRUE,
-  global_control = list(maxeval = 3000, maxtime = 0))
+  control_global = list(maxeval = 3000, maxtime = 0))
 HMM4$logLik #-5403.383
 
 # As previously, but now we use five iterations from EM algorithm for defining initial values and boundaries
 # Note smaller maxeval for global optimization
 HMM5 <- fit_hmm(bHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE,
-  em_control = list(maxeval = 5), global_control = list(maxeval = 750, maxtime = 0))
+  control_em = list(maxeval = 5), control_global = list(maxeval = 750, maxtime = 0))
 HMM5$logLik #-5403.383
 
 }

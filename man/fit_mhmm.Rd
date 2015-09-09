@@ -5,7 +5,7 @@
 \title{Estimate Parameters of Mixture Hidden Markov Model}
 \usage{
 fit_mhmm(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
-  em_control = list(), global_control = list(), local_control = list(),
+  control_em = list(), control_global = list(), control_local = list(),
   lb, ub, ...)
 }
 \arguments{
@@ -21,7 +21,7 @@ but is even more prone to get stuck in a local optimum.}
 \item{local_step}{Logical, use local optimization via
 \code{\link{nloptr}} (possibly after the EM and/or global steps). The default is \code{TRUE}.}
 
-\item{em_control}{Optional list of control parameters for for EM algorithm.
+\item{control_em}{Optional list of control parameters for for EM algorithm.
 Possible arguments are \describe{
 \item{maxeval}{Maximum number of iterations, default is 100.}
 \item{trace}{Level of printing. Possible values are 0
@@ -30,7 +30,7 @@ Possible arguments are \describe{
 \item{reltol}{Relative tolerance for convergence defined as \eqn{(sumLogLikNew - sumLogLikOld)/(abs(sumLogLikOld)+0.1)}.
 Default is 1e-8.} }}
 
-\item{global_control}{Optional list of additional arguments for
+\item{control_global}{Optional list of additional arguments for
   \code{\link{nloptr}} argument \code{opts}. The default values are
   \describe{
    \item{algorithm}{\code{"NLOPT_GD_MLSL_LDS"}}
@@ -40,7 +40,7 @@ Default is 1e-8.} }}
    \item{maxtime}{\code{60} (maximum run time in seconds)}
 }}
 
-\item{local_control}{Optional list of additional arguments for
+\item{control_local}{Optional list of additional arguments for
 \code{\link{nloptr}} argument \code{opts}. The default values are
 \describe{
  \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
@@ -218,19 +218,19 @@ MHMM2$logLik # -3081.383
 
 # Only LBFGS
 MHMM3 <- fit_mhmm(bMHMM, em_step = FALSE, global_step = FALSE, local_step = TRUE,
-  local_control = list(maxeval = 5000, maxtime = 0))
+  control_local = list(maxeval = 5000, maxtime = 0))
 MHMM3$logLik # -3087.499373
 
 # Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
 MHMM4 <- fit_mhmm(bMHMM, em_step = FALSE, global_step = TRUE, local_step = TRUE,
-  global_control = list(maxeval = 5000, maxtime = 0))
+  control_global = list(maxeval = 5000, maxtime = 0))
 MHMM4$logLik # -3150.796
 
 # As previously, but now we use ten iterations from EM algorithm for defining initial values and boundaries
 # Note smaller maxeval for global optimization
 MHMM5 <- fit_mhmm(bMHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE,
-  em_control = list(maxeval = 10), global_control = list(maxeval = 1000, maxtime = 0),
-  local_control = list(maxeval = 500, maxtime = 0))
+  control_em = list(maxeval = 10), control_global = list(maxeval = 1000, maxtime = 0),
+  control_local = list(maxeval = 500, maxtime = 0))
 MHMM5$logLik #-3081.383
 }
 # Coefficients of covariates
