@@ -124,7 +124,7 @@ summary.mhmm <- function(object, parameters = FALSE, ...){
   rownames(clProbs) <- colnames(clProbs) <- object$cluster_names
   for(i in 1:object$n_clusters){
     for(j in 1:object$n_clusters){
-      clProbs[i,j] <- mean(posterior_cluster_probabilities[most_probable_cluster == object$cluster_names[i], i])
+      clProbs[i,j] <- mean(posterior_cluster_probabilities[most_probable_cluster == object$cluster_names[i], j])
     }
   }
   

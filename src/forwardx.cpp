@@ -17,7 +17,7 @@ NumericVector forwardx(NumericVector transitionMatrix, NumericVector emissionArr
   arma::colvec init(initialProbs.begin(),eDims[0],true);
   arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0],true);
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2],true);
-  arma::Cube<int> obs(obsArray.begin(), oDims[0], oDims[1], oDims[2],false);
+  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2],false);
   
   int q = coefs.nrow();
   arma::mat coef(coefs.begin(),q,coefs.ncol());

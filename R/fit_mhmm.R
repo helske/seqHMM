@@ -274,8 +274,6 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
         original_model$initial_probs[[m]] <- unname(resEM$initialProbs[(k+1):(k+model$n_states_in_clusters[m])])
         k <- sum(model$n_states_in_clusters[1:m])
       }
-    } else {
-      model$initial_probs[] <- resEM$initialProbs
     }
     
     model$transition_matrix[]<-resEM$transitionMatrix
@@ -451,14 +449,8 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     model$observations <- model$observations[[1]]
     model$emission_matrix <- model$emission_matrix[[1]]
   }
-  
 
-  #if(class(ses)!="try-error"){
-  #  ses <- matrix(ses, ncol = model$n_clusters - 1)
-  #  rownames(ses) <- rownames(model$beta)
-  #  colnames(ses) <- colnames(model$beta)[-1]
-  #}
-  list(model = spread_models(model),# standard_errors = ses, 
+  list(model = spread_models(model), 
     logLik = ll, em_results=resEM[5:7], global_results = globalres, local_results = localres)
   
 }
