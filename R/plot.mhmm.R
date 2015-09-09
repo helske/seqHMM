@@ -12,18 +12,18 @@
 #'   transformation.
 #' @param interactive Whether to plot each cluster in succession or in a grid. Defaults to TRUE, i.e. clusters are plotted one after another.
 #' 
-#' @param ask If true and \code{which.plots} is NULL, \code{plot.mhmm} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}. Ignored if \code{interactive=FALSE}.
-#' @param which.plots The number(s) of the requested cluster(s) as an integer vector. The default \code{NULL} produces all plots. Ignored if \code{interactive=FALSE}.
+#' @param ask If true and \code{which.plots} is NULL, \code{plot.mhmm} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}. Ignored if \code{interactive = FALSE}.
+#' @param which.plots The number(s) of the requested cluster(s) as an integer vector. The default \code{NULL} produces all plots. Ignored if \code{interactive = FALSE}.
 #' 
-#' @param nrow,ncol Optional arguments to arrange plots in a grid. Ignored if \code{interactive=TRUE}.
+#' @param nrow,ncol Optional arguments to arrange plots in a grid. Ignored if \code{interactive = TRUE}.
 #' @param byrow Controls the order of plotting in a grid. Defaults to \code{FALSE}, i.e. plots
-#'   are arranged columnwise. Ignored if \code{interactive=TRUE}.
+#'   are arranged columnwise. Ignored if \code{interactive = TRUE}.
 #' @param row.prop Sets the proportions of the row heights of the grid. The default
 #'   value is \code{"auto"} for even row heights. Takes a vector of values from
-#'   0 to 1, with values summing to 1. Ignored if \code{interactive=TRUE}.
+#'   0 to 1, with values summing to 1. Ignored if \code{interactive = TRUE}.
 #' @param col.prop Sets the proportion of the column heights of the grid. The default
 #'   value is \code{"auto"} for even column widths. Takes a vector of values
-#'   from 0 to 1, with values summing to 1. Ignored if \code{interactive=TRUE}.
+#'   from 0 to 1, with values summing to 1. Ignored if \code{interactive = TRUE}.
 #'   
 #' @param layout specifies the layout of the vertices (nodes). Accepts a 
 #'   numerical matrix, a layout function, or either of \code{"horizontal"} (the 
@@ -123,29 +123,29 @@
 #' 
 #' ## Building one channel per type of event left, children or married
 #' bf <- as.matrix(biofam[, 10:25])
-#' children <-  bf == 4 | bf == 5 | bf == 6
-#' married <- bf == 2 | bf == 3 | bf == 6
-#' left <- bf == 1 | bf == 3 | bf == 5 | bf == 6 | bf == 7
+#' children <-  bf = 4 | bf = 5 | bf = 6
+#' married <- bf = 2 | bf = 3 | bf = 6
+#' left <- bf = 1 | bf = 3 | bf = 5 | bf = 6 | bf = 7
 #' 
-#' children[children == TRUE] <- "Children"
-#' children[children == FALSE] <- "Childless"
+#' children[children = TRUE] <- "Children"
+#' children[children = FALSE] <- "Childless"
 #' # Divorced parents
-#' div <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 5) > 0) | 
-#'             (rowSums(bf == 7) > 0 & rowSums(bf == 6) > 0),]
-#' children[rownames(bf) %in% rownames(div) & bf == 7] <- "Children"
+#' div <- bf[(rowSums(bf = 7) > 0 & rowSums(bf = 5) > 0) | 
+#'             (rowSums(bf = 7) > 0 & rowSums(bf = 6) > 0),]
+#' children[rownames(bf) %in% rownames(div) & bf = 7] <- "Children"
 #' 
-#' married[married == TRUE] <- "Married"
-#' married[married == FALSE] <- "Single"
-#' married[bf == 7] <- "Divorced"
+#' married[married = TRUE] <- "Married"
+#' married[married = FALSE] <- "Single"
+#' married[bf = 7] <- "Divorced"
 #' 
-#' left[left == TRUE] <- "Left home"
-#' left[left == FALSE] <- "With parents"
+#' left[left = TRUE] <- "Left home"
+#' left[left = FALSE] <- "With parents"
 #' # Divorced living with parents (before divorce)
-#' wp <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 2) > 0 & rowSums(bf == 3) == 0 &  
-#'           rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0) | 
-#'          (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 & rowSums(bf == 3) == 0 &  
-#'          rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0),]
-#' left[rownames(bf) %in% rownames(wp) & bf == 7] <- "With parents"
+#' wp <- bf[(rowSums(bf = 7) > 0 & rowSums(bf = 2) > 0 & rowSums(bf = 3) = 0 &  
+#'           rowSums(bf = 5) = 0 & rowSums(bf = 6) = 0) | 
+#'          (rowSums(bf = 7) > 0 & rowSums(bf = 4) > 0 & rowSums(bf = 3) = 0 &  
+#'          rowSums(bf = 5) = 0 & rowSums(bf = 6) = 0),]
+#' left[rownames(bf) %in% rownames(wp) & bf = 7] <- "With parents"
 #' 
 #' ## Building sequence objects
 #' child.seq <- seqdef(children, start = 15)
@@ -236,7 +236,7 @@
 #' # Birth cohort
 #' biofam$cohort <- cut(biofam$birthyr, c(1908, 1935, 1945, 1957))
 #' biofam$cohort <- factor(
-#'   biofam$cohort, labels=c("1909-1935", "1936-1945", "1946-1957")
+#'   biofam$cohort, labels = c("1909-1935", "1936-1945", "1946-1957")
 #' )
 #' 
 #' # Build mixture HMM
@@ -264,59 +264,59 @@
 #' plot(bMHMM, which.plots = 1)
 
 
-plot.mhmm <- function(x, interactive=TRUE,
+plot.mhmm <- function(x, interactive = TRUE,
                             ask = FALSE, which.plots = NULL, 
-                            nrow=NA, ncol=NA, byrow=FALSE,
-                            row.prop="auto", col.prop="auto", 
-                            layout="horizontal", pie=TRUE, 
-                            vertex.size=40, vertex.label="initial.probs", 
-                            vertex.label.dist="auto", vertex.label.pos="bottom",
-                            vertex.label.family="sans",
-                            loops=FALSE, edge.curved=TRUE, edge.label="auto", 
-                            edge.width="auto", cex.edge.width=1, 
-                            edge.arrow.size=1.5, edge.label.family="sans",
-                            label.signif=2, label.scientific=FALSE, label.max.length=6,
-                            trim=1e-15, 
-                            combine.slices=0.05, combined.slice.color="white", 
-                            combined.slice.label="others",
-                            withlegend="bottom", legend.pos="center", ltext=NULL, 
-                            legend.prop=0.5, cex.legend=1, ncol.legend="auto", 
-                            cpal="auto", ...){
+                            nrow = NA, ncol = NA, byrow = FALSE,
+                            row.prop = "auto", col.prop = "auto", 
+                            layout = "horizontal", pie = TRUE, 
+                            vertex.size = 40, vertex.label = "initial.probs", 
+                            vertex.label.dist = "auto", vertex.label.pos = "bottom",
+                            vertex.label.family = "sans",
+                            loops = FALSE, edge.curved = TRUE, edge.label = "auto", 
+                            edge.width = "auto", cex.edge.width = 1, 
+                            edge.arrow.size = 1.5, edge.label.family = "sans",
+                            label.signif = 2, label.scientific = FALSE, label.max.length = 6,
+                            trim = 1e-15, 
+                            combine.slices = 0.05, combined.slice.color = "white", 
+                            combined.slice.label = "others",
+                            withlegend = "bottom", legend.pos = "center", ltext = NULL, 
+                            legend.prop = 0.5, cex.legend = 1, ncol.legend = "auto", 
+                            cpal = "auto", ...){
   
   if(interactive){
-    do.call(mHMMplotint, c(list(x=x, ask = ask, which.plots = which.plots, layout=layout, pie=pie, 
-                                vertex.size=vertex.size, vertex.label=vertex.label, 
-                                vertex.label.dist=vertex.label.dist, vertex.label.pos=vertex.label.pos,
-                                vertex.label.family=vertex.label.family,
-                                loops=loops, edge.curved=edge.curved, edge.label=edge.label, 
-                                edge.width=edge.width, cex.edge.width=cex.edge.width, 
-                                edge.arrow.size=edge.arrow.size, edge.label.family=edge.label.family,
-                                label.signif=label.signif, label.scientific=label.scientific, 
-                                label.max.length=label.max.length,
-                                trim=trim, 
-                                combine.slices=combine.slices, combined.slice.color=combined.slice.color, 
-                                combined.slice.label=combined.slice.label,
-                                withlegend=withlegend, ltext=ltext, legend.prop=legend.prop, 
-                                cex.legend=cex.legend, ncol.legend=ncol.legend, cpal=cpal), list(...)))
+    do.call(mHMMplotint, c(list(x = x, ask = ask, which.plots = which.plots, layout = layout, pie = pie, 
+                                vertex.size = vertex.size, vertex.label = vertex.label, 
+                                vertex.label.dist = vertex.label.dist, vertex.label.pos = vertex.label.pos,
+                                vertex.label.family = vertex.label.family,
+                                loops = loops, edge.curved = edge.curved, edge.label = edge.label, 
+                                edge.width = edge.width, cex.edge.width = cex.edge.width, 
+                                edge.arrow.size = edge.arrow.size, edge.label.family = edge.label.family,
+                                label.signif = label.signif, label.scientific = label.scientific, 
+                                label.max.length = label.max.length,
+                                trim = trim, 
+                                combine.slices = combine.slices, combined.slice.color = combined.slice.color, 
+                                combined.slice.label = combined.slice.label,
+                                withlegend = withlegend, ltext = ltext, legend.prop = legend.prop, 
+                                cex.legend = cex.legend, ncol.legend = ncol.legend, cpal = cpal), list(...)))
   }else{
-    do.call(mHMMplotgrid, c(list(x=x, which.plots =  which.plots, nrow=nrow, ncol=ncol, 
-                                 byrow=byrow,
-                                 row.prop=row.prop, col.prop=col.prop, 
-                                 layout=layout, pie=pie, 
-                                 vertex.size=vertex.size, vertex.label=vertex.label, 
-                                 vertex.label.dist=vertex.label.dist, vertex.label.pos=vertex.label.pos,
-                                 vertex.label.family=vertex.label.family,
-                                 loops=loops, edge.curved=edge.curved, edge.label=edge.label, 
-                                 edge.width=edge.width, cex.edge.width=cex.edge.width, 
-                                 edge.arrow.size=edge.arrow.size, edge.label.family=edge.label.family,
-                                 label.signif=label.signif, label.scientific=label.scientific, 
-                                 label.max.length=label.max.length,
-                                 trim=trim, 
-                                 combine.slices=combine.slices, combined.slice.color=combined.slice.color, 
-                                 combined.slice.label=combined.slice.label,
-                                 withlegend=withlegend, legend.pos=legend.pos, ltext=ltext, 
-                                 legend.prop=legend.prop, 
-                                 cex.legend=cex.legend, ncol.legend=ncol.legend, cpal=cpal), list(...)))
+    do.call(mHMMplotgrid, c(list(x = x, which.plots =  which.plots, nrow = nrow, ncol = ncol, 
+                                 byrow = byrow,
+                                 row.prop = row.prop, col.prop = col.prop, 
+                                 layout = layout, pie = pie, 
+                                 vertex.size = vertex.size, vertex.label = vertex.label, 
+                                 vertex.label.dist = vertex.label.dist, vertex.label.pos = vertex.label.pos,
+                                 vertex.label.family = vertex.label.family,
+                                 loops = loops, edge.curved = edge.curved, edge.label = edge.label, 
+                                 edge.width = edge.width, cex.edge.width = cex.edge.width, 
+                                 edge.arrow.size = edge.arrow.size, edge.label.family = edge.label.family,
+                                 label.signif = label.signif, label.scientific = label.scientific, 
+                                 label.max.length = label.max.length,
+                                 trim = trim, 
+                                 combine.slices = combine.slices, combined.slice.color = combined.slice.color, 
+                                 combined.slice.label = combined.slice.label,
+                                 withlegend = withlegend, legend.pos = legend.pos, ltext = ltext, 
+                                 legend.prop = legend.prop, 
+                                 cex.legend = cex.legend, ncol.legend = ncol.legend, cpal = cpal), list(...)))
   }
   
 }

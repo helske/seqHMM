@@ -15,7 +15,7 @@
 #' 
 #' @param which.plots The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots.
 #'   
-#' @param mpp Output from \code{\link{hidden_paths}} function.
+#' @param mpp Most probable paths of hidden states, i.e. output from \code{\link{hidden_paths}} function.
 #'   
 #' @param plots What to plot. One of \code{"obs"} for observations, \code{"mpp"}
 #'   for most probable paths, or \code{"both"} for observations 
@@ -31,7 +31,7 @@
 #'   \code{which="both"} and \code{which="mpp"}. Options \code{"mds.obs"} and 
 #'   \code{"mds.mpp"} automatically arrange the sequences according to the 
 #'   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the 
-#'   observed or hidden states path data from \code{\link{hidden_paths}}. 
+#'   observed sequences or most probable paths of hidden states from \code{\link{hidden_paths}}. 
 #'   MDS scores are computed from distances/dissimilarities using a metric 
 #'   defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for 
 #'   more details on \code{"from.start"} and \code{"from.end"}.
@@ -97,8 +97,9 @@
 #'   
 #' @param mpp.color A vector of colors assigned to hidden states (as ordered by 
 #'   the \code{\link{hidden_paths}} function). The default value \code{"auto"} uses 
-#'   the colors assigned to the stslist object created with \code{seqdef} if \code{mpp} 
-#'   is given; otherwise colors from \code{\link{colorpalette}} are automatically used. 
+#'   the colors assigned to the \code{stslist} object created with \code{seqdef} if 
+#'   \code{mpp} is given; otherwise colors from \code{\link{colorpalette}} are 
+#'   automatically used. 
 #'   
 #' @param mpp.labels Labels for the hidden states. The default value 
 #'   \code{"auto"} uses the labels of the \code{mpp} argument if given; otherwise the number
@@ -373,7 +374,9 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     k <- k+x$n_states[i]
   }
   
-  mppm <- unique(mpp$cluster)
+  summ <- summary(x)
+  
+  mppm <- unique(summ$most_probable_cluster)
   mm <- NULL
   if(length(mppm)<x$n_clusters){
     mm <- which(!(x$cluster_names%in%mppm))
@@ -405,10 +408,10 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
       if(pick==0){
         return(invisible())
       }else{
-        args$x <- lapply(allobs, function(y) y[mpp$cluster==x$cluster_names[[tmenu[pick]]],])
+        args$x <- lapply(allobs, function(y) y[summ$most_probable_cluster==x$cluster_names[[tmenu[pick]]],])
         args$mpp.labels <- mpplabs[[pick]]
         args$mpp <- suppressWarnings(suppressMessages(
-          seqdef(mpp$mpp[mpp$cluster==x$cluster_names[[tmenu[pick]]],], 
+          seqdef(mpp[summ$most_probable_cluster==x$cluster_names[[tmenu[pick]]],], 
                  labels=args$mpp.labels)))
         args$mpp.color <- mppcols[[pick]]
         args$title <- titles[tmenu[pick]]
@@ -424,10 +427,10 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
       if(pick==0){
         return(invisible())
       }else{
-        args$x <- lapply(allobs, function(y) y[mpp$cluster==x$cluster_names[[tmenu[pick]]],])
+        args$x <- lapply(allobs, function(y) y[summ$most_probable_cluster==x$cluster_names[[tmenu[pick]]],])
         args$mpp.labels <- mpplabs[[pick]]
         args$mpp <- suppressWarnings(suppressMessages(
-          seqdef(mpp$mpp[mpp$cluster==x$cluster_names[[tmenu[pick]]],], 
+          seqdef(mpp[summ$most_probable_cluster==x$cluster_names[[tmenu[pick]]],], 
                  labels=args$mpp.labels)))
         args$mpp.color <- mppcols[[pick]]
         args$title <- titles[tmenu[pick]]
@@ -438,10 +441,10 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     ask <- length(which.plots) > 1
     plot.new()
     for (i in which.plots) {
-      args$x <- lapply(allobs, function(y) y[mpp$cluster==x$cluster_names[[i]],])
+      args$x <- lapply(allobs, function(y) y[summ$most_probable_cluster==x$cluster_names[[i]],])
       args$mpp.labels <- mpplabs[[i]]
       args$mpp <- suppressWarnings(suppressMessages(
-        seqdef(mpp$mpp[mpp$cluster==x$cluster_names[[i]],], labels=args$mpp.labels)))
+        seqdef(mpp[summ$most_probable_cluster==x$cluster_names[[i]],], labels=args$mpp.labels)))
       args$mpp.color <- mppcols[[i]]
       args$title <- titles[i]
       do.call(ssplotM,args=args)
