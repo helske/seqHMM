@@ -274,7 +274,7 @@
 #'   )
 #' 
 #' # Computing the most probable hidden state paths
-#' mpp <- hidden_paths(HMM$model)$mpp
+#' mpp <- hidden_paths(HMM$model)
 #' mpp.seq <- seqdef(
 #'   mpp, labels = c("Hidden state 1", "Hidden state 2", "Hidden state 3")
 #'   )

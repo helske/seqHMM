@@ -256,7 +256,7 @@ ssp3 <- ssp(
 plot(ssp3)
 
 # Computing the most probable paths
-mpp <- hidden_paths(HMM$model)$mpp
+mpp <- hidden_paths(HMM$model)
 mpp.seq <- seqdef(
   mpp, labels=c("Hidden state 1", "Hidden state 2", "Hidden state 3")
   )

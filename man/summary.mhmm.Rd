@@ -97,7 +97,7 @@ bHMM <- build_hmm(
 HMM <- fit_hmm(bHMM)
 
 # Computing the most probable paths
-mpp <- hidden_paths(HMM$model)$mpp
+mpp <- hidden_paths(HMM$model)
 }
 \seealso{
 \code{\link{fit_mhmm}} for building and fitting mixture hidden Markov models.

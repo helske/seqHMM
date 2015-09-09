@@ -168,29 +168,29 @@ biofam <- biofam[1:500,]
 
 ## Building one channel per type of event left, children or married
 bf <- as.matrix(biofam[, 10:25])
-children <-  bf = 4 | bf = 5 | bf = 6
-married <- bf = 2 | bf = 3 | bf = 6
-left <- bf = 1 | bf = 3 | bf = 5 | bf = 6 | bf = 7
+children <-  bf == 4 | bf == 5 | bf == 6
+married <- bf == 2 | bf == 3 | bf == 6
+left <- bf == 1 | bf == 3 | bf == 5 | bf == 6 | bf == 7
 
-children[children = TRUE] <- "Children"
-children[children = FALSE] <- "Childless"
+children[children == TRUE] <- "Children"
+children[children == FALSE] <- "Childless"
 # Divorced parents
-div <- bf[(rowSums(bf = 7) > 0 & rowSums(bf = 5) > 0) |
-            (rowSums(bf = 7) > 0 & rowSums(bf = 6) > 0),]
-children[rownames(bf) \%in\% rownames(div) & bf = 7] <- "Children"
+div <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 5) > 0) |
+            (rowSums(bf == 7) > 0 & rowSums(bf == 6) > 0),]
+children[rownames(bf) \%in\% rownames(div) & bf == 7] <- "Children"
 
-married[married = TRUE] <- "Married"
-married[married = FALSE] <- "Single"
-married[bf = 7] <- "Divorced"
+married[married == TRUE] <- "Married"
+married[married == FALSE] <- "Single"
+married[bf == 7] <- "Divorced"
 
-left[left = TRUE] <- "Left home"
-left[left = FALSE] <- "With parents"
+left[left == TRUE] <- "Left home"
+left[left == FALSE] <- "With parents"
 # Divorced living with parents (before divorce)
-wp <- bf[(rowSums(bf = 7) > 0 & rowSums(bf = 2) > 0 & rowSums(bf = 3) = 0 &
-          rowSums(bf = 5) = 0 & rowSums(bf = 6) = 0) |
-         (rowSums(bf = 7) > 0 & rowSums(bf = 4) > 0 & rowSums(bf = 3) = 0 &
-         rowSums(bf = 5) = 0 & rowSums(bf = 6) = 0),]
-left[rownames(bf) \%in\% rownames(wp) & bf = 7] <- "With parents"
+wp <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 2) > 0 & rowSums(bf == 3) == 0 &
+          rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0) |
+         (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 & rowSums(bf == 3) == 0 &
+         rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0),]
+left[rownames(bf) \%in\% rownames(wp) & bf == 7] <- "With parents"
 
 ## Building sequence objects
 child.seq <- seqdef(children, start = 15)

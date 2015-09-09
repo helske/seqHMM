@@ -9,6 +9,8 @@
 #' @export
 #' @importFrom TraMineR seqdist
 #' @importFrom TraMineR seqdistmc
+#' @importFrom TraMineR seqplot
+#' @importFrom TraMineR seqlength
 #' @param x Either hidden Markov model object of class \code{hmm} or a 
 #'   sequence object created with the \code{\link{seqdef}} function or a list of
 #'   sequence objects.
@@ -243,7 +245,7 @@
 #' plot(ssp3)
 #' 
 #' # Computing the most probable paths
-#' mpp <- hidden_paths(HMM$model)$mpp
+#' mpp <- hidden_paths(HMM$model)
 #' mpp.seq <- seqdef(
 #'   mpp, labels=c("Hidden state 1", "Hidden state 2", "Hidden state 3")
 #'   )
@@ -483,11 +485,7 @@ ssp <- function(x, mpp=NULL,
   if(is.na(xlab) || xlab==FALSE){
     xlab.pos <- 0
   }
-  if(xaxis==FALSE){
-    xaxis.space <- 0
-  }else{
-    xaxis.space <- 1
-  }
+  xaxis.space <- ifelse(xaxis, 1, 0)
   if(length(xtlab)==1 && (is.null(xtlab) || is.na(xtlab) || xtlab==FALSE)){
     xt.space <- 0
   }else{
@@ -567,7 +565,7 @@ ssp <- function(x, mpp=NULL,
     }
     # Computing mpp
     if(is.null(mpp)){
-      mpp <- suppressMessages(hidden_paths(x)$mpp)
+      mpp <- suppressMessages(hidden_paths(x))
       if(length(mpp.labels)==1 && is.null(mpp.labels)){
         mpp.labels <- rep("", length(alphabet(mpp)))
       }
