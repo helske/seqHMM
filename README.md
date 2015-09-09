@@ -352,7 +352,7 @@ ssplot(scHMM, plots = "both", sortv = "from.end", sort.channel = 0,
 
 ### Mixture hidden Markov models
 
-A mixture hidden Markov model (MHMM) is, by definition, a mixture of HMMs that are fitted together. These are fitted and plotted with similar functions to ones presented before. Starting values are given as a list consisting of the parameter values for each cluster. The `buildMixHMM` function checks that the model is properly constructed before fitting with the `fitMixHMM`function. Trimming is called with the `trim_hmm`.
+A mixture hidden Markov model (MHMM) is, by definition, a mixture of HMMs that are fitted together. These are fitted and plotted with similar functions to ones presented before. Starting values are given as a list consisting of the parameter values for each cluster. The `build_mhmm` function checks that the model is properly constructed before fitting with the `fit_mhmm`function. Trimming is called with the `trim_hmm`.
 ```
 # Starting values for emission probabilities
 

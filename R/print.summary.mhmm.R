@@ -38,10 +38,11 @@ print.summary.mhmm <- function(x, ...){
   cat(x$BIC)
   cat("\n\n\n")
   
-  cl <- matrix(c(as.character(table(summ$most_pr)), 
-                 as.character(prop.table(table(summ$most_pr))*100)), 
+  tbl <- table(x$most_probable_cluster)
+  cl <- matrix(c(as.character(tbl), 
+                 as.character(prop.table(tbl)*100)), 
                nrow = 2, byrow = TRUE)
-  colnames(cl) <- levels(summ$most_pr)
+  colnames(cl) <- levels(x$most_probable_cluster)
   rownames(cl) <- c("n", "%")
   cat("Most probable clusters :\n\n")
   print.default(cl, quote = FALSE, print.gap = 2, right = TRUE)
