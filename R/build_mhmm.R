@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #' Build a Mixture Hidden Markov Model
 #' 
 #' Function build_mhmm constructs a mixture of hidden Markov models.
@@ -154,15 +155,21 @@
 #' biofam$swiss[biofam$swiss == TRUE] <- "Swiss"
 #' biofam$swiss[biofam$swiss == FALSE] <- "Other"
 #' 
+#' # Birth cohort
+#' biofam$cohort <- cut(biofam$birthyr, c(1908, 1935, 1945, 1957))
+#' biofam$cohort <- factor(
+#'   biofam$cohort, labels=c("1909-1935", "1936-1945", "1946-1957")
+#' )
+#' 
 #' # Build mixture HMM
-#' bMHMM <- buildMixHMM(
+#' bMHMM <- build_mhmm(
 #'   observations = list(child.seq, marr.seq, left.seq),
 #'   transition_matrix = list(A1,A1,A2),
 #'   emission_matrix = list(list(B1_child, B1_marr, B1_left),
 #'                         list(B2_child, B2_marr, B2_left), 
 #'                         list(B3_child, B3_marr, B3_left)),
 #'   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
-#'   formula = ~ sex * birthyr + sex * swiss, data = biofam,
+#'   formula = ~ sex + cohort, data = biofam,
 #'   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
 #'   channel_names = c("Parenthood", "Marriage", "Left home")
 #'   )
@@ -307,9 +314,6 @@ build_mhmm <-
     
     names(transition_matrix) <- names(emission_matrix) <- names(initial_probs) <- cluster_names
     
-    pr <- exp(X%*%beta)
-    cluster_probabilities <- pr/rowSums(pr)
-    
     model<-list(observations=observations, transition_matrix=transition_matrix,
                 emission_matrix=emission_matrix, initial_probs=initial_probs,
                 beta=beta, X=X, cluster_names=cluster_names, state_names=state_names, 
@@ -318,8 +322,7 @@ build_mhmm <-
                 n_sequences=n_sequences, n_clusters=n_clusters,
                 n_symbols=n_symbols, n_states=n_states,
                 n_channels=n_channels,
-                n_covariates=n_covariates, 
-                cluster_probabilities=cluster_probabilities)
+                n_covariates=n_covariates)
     class(model)<-"mhmm"
     model
   }

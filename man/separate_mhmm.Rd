@@ -143,7 +143,7 @@ biofam$cohort <- factor(
 )
 
 # Build mixture HMM
-bMHMM <- buildMixHMM(
+bMHMM <- build_mhmm(
   observations = list(child.seq, marr.seq, left.seq),
   transition_matrix = list(A1,A1,A2),
   emission_matrix = list(list(B1_child, B1_marr, B1_left),

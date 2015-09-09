@@ -443,7 +443,7 @@ bio$swiss[bio$swiss == TRUE] <- "Swiss"
 bio$swiss[bio$swiss == FALSE] <- "Other"
 
 # Build MHMM
-bMHMM <- buildMixHMM(
+bMHMM <- build_mhmm(
   observations = list(marr.seq, child.seq, left.seq),
   transition_matrix = list(A1, A1, A2),
   emission_matrix = list(list(B1_marr, B1_child, B1_left), 
@@ -455,7 +455,7 @@ bMHMM <- buildMixHMM(
   channel_names = c("Marriage", "Parenthood", "Left home")
   )
 
-MHMM <- fitMixHMM(bMHMM)
+MHMM <- fit_mhmm(bMHMM)
 
 # Trim MHMM
 trMHMM <- trim_hmm(MHMM$model, zerotol = 1e-04)

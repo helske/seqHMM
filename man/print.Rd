@@ -7,7 +7,7 @@
 \usage{
 \method{print}{hmm}(x, ...)
 
-\method{print}{mhmm}(x, ...)
+print.mhmm(x, ...)
 }
 \arguments{
 \item{x}{Hidden Markov model of class \code{hmm} or \code{mhmm}.}
@@ -15,7 +15,7 @@
 \item{...}{Ignored.}
 }
 \description{
-Function \code{print.hmm} prints the parameters of a hidden Markov model.
+Prints the parameters of a (mixture) hidden Markov model.
 }
 \seealso{
 \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and

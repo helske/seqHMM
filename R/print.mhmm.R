@@ -1,8 +1,9 @@
 #' @export
-#' @rdname print
 #' @method print mhmm
-
+#' @rdname print
 print.mhmm <- function(x, ...){
-  print(list(transition_matrix=x$transition_matrix, emission_matrix=x$emission_matrix, 
-             initial_probs=x$initial_probs, beta=x$beta))
+  print.listof(list("transition matrix" = x$transition_matrix, 
+    "emission matrix" = x$emission_matrix, 
+    "initial probabilities" = x$initial_probs, 
+    "beta" = x$beta))
 }
