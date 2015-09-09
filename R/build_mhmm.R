@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #' Build a Mixture Hidden Markov Model
 #' 
 #' Function build_mhmm constructs a mixture of hidden Markov models.
