@@ -6,6 +6,8 @@
 #' @export
 #' @method summary mhmm 
 #' @param object Mixture hidden Markov model of class \code{mhmm}.
+#' @param parameters Whether or not to print parameters of transition, emission, and initial probabilities.
+#' @param ... Ignored.
 #' 
 #' @return \describe{
 #'    \item{logLik}{Log-likelihood}
