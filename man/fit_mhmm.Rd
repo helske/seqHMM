@@ -226,7 +226,8 @@ MHMM4 <- fit_mhmm(bMHMM, em_step = FALSE, global_step = TRUE, local_step = TRUE,
   control_global = list(maxeval = 5000, maxtime = 0))
 MHMM4$logLik # -3150.796
 
-# As previously, but now we use ten iterations from EM algorithm for defining initial values and boundaries
+# As previously, but now we use ten iterations from EM algorithm for
+# defining initial values and boundaries
 # Note smaller maxeval for global optimization
 MHMM5 <- fit_mhmm(bMHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE,
   control_em = list(maxeval = 10), control_global = list(maxeval = 1000, maxtime = 0),

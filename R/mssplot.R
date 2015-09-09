@@ -364,7 +364,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   }
   
   if(!("mpp.color" %in% names(args))){
-    mpp.color <- seqHMM::colorpalette[[length(alphabet(mpp$mpp))]]
+    mpp.color <- seqHMM::colorpalette[[length(alphabet(mpp))]]
   }
   mppcols <- list()
   k <- 0

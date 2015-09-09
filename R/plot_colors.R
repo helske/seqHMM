@@ -7,7 +7,7 @@
 #' 
 #' @param x A vector of colors.
 #' 
-#' @seealso See e.g. the \code{\link{colorpalette}} data and \code{\link{RColorBrewer}} 
+#' @seealso See e.g. the \code{\link{colorpalette}} data and \code{RColorBrewer} 
 #' package for ready-made color palettes.
 #'
 #' @examples

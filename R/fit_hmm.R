@@ -161,7 +161,8 @@
 #'   control_global = list(maxeval = 3000, maxtime = 0))
 #' HMM4$logLik #-5403.383
 #' 
-#' # As previously, but now we use five iterations from EM algorithm for defining initial values and boundaries
+#' # As previously, but now we use ten iterations from EM algorithm for 
+#' # defining initial values and boundaries
 #' # Note smaller maxeval for global optimization
 #' HMM5 <- fit_hmm(bHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
 #'   control_em = list(maxeval = 5), control_global = list(maxeval = 750, maxtime = 0))

@@ -192,6 +192,6 @@ bMHMM <- build_mhmm(
   )
 }
 \seealso{
-\code{\link{fitMixHMM}} for fitting mixture Hidden Markov models.
+\code{\link{fit_mhmm}} for fitting mixture Hidden Markov models.
 }
 
