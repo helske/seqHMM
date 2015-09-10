@@ -214,7 +214,8 @@ summary.mhmm <- function(object, parameters = FALSE, digits = 3, ...){
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
       classification_table = clProbs,
-      digits = digits
+      digits = digits,
+      model = object
     )
   }else{
     summary_mhmm <- list(

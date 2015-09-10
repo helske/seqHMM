@@ -187,7 +187,7 @@ build_mhmm <-
       warning("The length of argument cluster_names does not match the number of clusters. Names were not used.")
       cluster_names <- paste("Cluster", 1:n_clusters)
     }
-      
+    
     model <- vector("list", length = n_clusters)
     
     # States
@@ -208,9 +208,9 @@ build_mhmm <-
     
     if(!all(1==unlist(sapply(initial_probs,sum))))
       stop("Initial state probabilities do not sum to one.")
-
+    
     for(i in 1:n_clusters){
-
+      
       dimnames(transition_matrix[[i]]) <- list(from=state_names[[i]],to=state_names[[i]])
       # Single channel but emission_matrix is list of lists  
       if(is.list(emission_matrix[[i]]) && length(emission_matrix[[i]])==1)   
@@ -238,7 +238,7 @@ build_mhmm <-
       n_sequences<-nrow(observations[[1]])
       length_of_sequences<-ncol(observations[[1]])
       
-
+      
       symbol_names<-lapply(observations,alphabet)
       n_symbols<-sapply(symbol_names,length)
       for(i in 1:n_clusters){
@@ -281,34 +281,32 @@ build_mhmm <-
       }
       
     }
-    
-    
-    if(!missing(formula)){
-      if(inherits(formula, "formula")){
-        X <- model.matrix(formula, data) #[,-1,drop=FALSE]
-        if(nrow(X)!=n_sequences){
-          if(sum(!complete.cases(data[all.vars(formula)])) > 0){
-            stop("Missing cases are not allowed in covariates. Use e.g. the complete.cases function to detect them, then fix, impute, or remove.") 
-          }else{
-            stop("Number of subjects in data for covariates does not match the number of subjects in the sequence data.")
-          }
-        }
-        n_covariates<-ncol(X)
-      }else{
-        stop("Object given for argument formula is not of class formula.")
-      }
-      if(missing(beta)){
-        beta<-matrix(0,n_covariates,n_clusters)
-      } else {
-        if(ncol(beta)!=n_clusters | nrow(beta)!=n_covariates)
-          stop("Wrong dimensions of beta.")
-        beta[,1]<-0
-      }       
-    } else { #Just intercept
-      n_covariates <-1
-      X <- matrix(1,nrow=n_sequences)
-      beta <- matrix(0,1,n_clusters)        
+    if(missing(formula)){
+      formula <- stats::formula(rep(1, n_sequences) ~ 1)
     }
+    if(missing(data))
+      data <- environment(formula)
+    if(inherits(formula, "formula")){
+      X <- model.matrix(formula, data)
+      if(nrow(X)!=n_sequences){
+        if(length(all.vars(formula)) > 0 && sum(!complete.cases(data[all.vars(formula)])) > 0){
+          stop("Missing cases are not allowed in covariates. Use e.g. the complete.cases function to detect them, then fix, impute, or remove.") 
+        }else{
+          stop("Number of subjects in data for covariates does not match the number of subjects in the sequence data.")
+        }
+      }
+      n_covariates<-ncol(X)
+    }else{
+      stop("Object given for argument formula is not of class formula.")
+    }
+    if(missing(beta)){
+      beta<-matrix(0,n_covariates,n_clusters)
+    } else {
+      if(ncol(beta)!=n_clusters | nrow(beta)!=n_covariates)
+        stop("Wrong dimensions of beta.")
+      beta[,1]<-0
+    }       
+    
     
     rownames(beta) <- colnames(X)
     colnames(beta) <- cluster_names
