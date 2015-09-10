@@ -259,6 +259,7 @@ build_mhmm <-
         for(j in 1:n_channels)
           dimnames(emission_matrix[[i]][[j]])<-list(state_names=state_names[[i]],symbol_names=symbol_names[[j]])
         names(emission_matrix[[i]])<-channel_names
+        names(initial_probs[[i]]) <- state_names[[i]]
       }
     } else {
       n_channels <- 1
@@ -276,6 +277,7 @@ build_mhmm <-
         if(!isTRUE(all.equal(rep(1,n_states[i]),rowSums(emission_matrix[[i]]),check.attributes=FALSE)))
           stop("Emission probabilities in emission_matrix do not sum to one.")
         dimnames(emission_matrix[[i]])<-list(state_names=state_names[[i]],symbol_names=symbol_names)
+        names(initial_probs[[i]]) <- state_names[[i]]
       }
       
     }
@@ -312,6 +314,7 @@ build_mhmm <-
     colnames(beta) <- cluster_names
     
     names(transition_matrix) <- names(emission_matrix) <- names(initial_probs) <- cluster_names
+    
     
     model<-list(observations=observations, transition_matrix=transition_matrix,
                 emission_matrix=emission_matrix, initial_probs=initial_probs,

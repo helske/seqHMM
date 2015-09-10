@@ -25,7 +25,7 @@ print.summary.mhmm <- function(x, ...){
     colnames(coeff[[i]]) <- c("Estimate", "Std. error")
   }
   names(coeff) <- levels(x$most_probable_cluster)[-1]
-  cat("Parameter coefficients for covariates :\n\n")
+  cat("Covariate effects :\n\n")
   cat(levels(x$most_probable_cluster)[1], "is the reference.\n\n")
   print.listof(coeff, print.gap = 2)
   cat("\n")

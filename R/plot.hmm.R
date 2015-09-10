@@ -101,42 +101,44 @@
 #'   
 #' @examples 
 #' require(TraMineR)
-#'   
-#' data(biofam) 
 #' 
-#' biofam <- biofam[1:500,]
+#' # Single-channel data
+#'
+#' data(mvad)
 #' 
-#' #' #' # Single-channel data
-#' 
-#' biofam.seq <- seqdef(
-#'   biofam[, 10:25], 
-#'   states = c("Parent", "Left", "Married", "Left+Marr",
-#'              "Left+Child", "Left+Marr+Child", "Divorced"),
-#'   start = 15
-#'   )
+#' mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school", 
+#'                    "training")
+#' mvad.labels <- c("employment", "further education", "higher education", 
+#'                  "joblessness", "school", "training")
+#' mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
+#' mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes, 
+#'                    labels = mvad.labels, xtstep = 6)
 #' 
 #' # Starting values for the emission matrix
-#' B <- matrix(NA, nrow = 4, ncol = 7)
-#' B[1,] <- seqstatf(biofam.seq[, 1:4])[, 2] + 0.1
-#' B[2,] <- seqstatf(biofam.seq[, 5:8])[, 2] + 0.1
-#' B[3,] <- seqstatf(biofam.seq[, 9:12])[, 2] + 0.1
-#' B[4,] <- seqstatf(biofam.seq[, 13:15])[, 2] + 0.1
+#' B <- matrix(NA, nrow = 4, ncol = 6)
+#' B[1,] <- seqstatf(mvad.seq[, 1:12])[, 2] + 0.1
+#' B[2,] <- seqstatf(mvad.seq[, 13:24])[, 2] + 0.1
+#' B[3,] <- seqstatf(mvad.seq[, 25:48])[, 2] + 0.1
+#' B[4,] <- seqstatf(mvad.seq[, 49:70])[, 2] + 0.1
 #' B <- B / rowSums(B)
 #' 
 #' # Starting values for the transition matrix
-#' A <- matrix(c(0.80, 0.10, 0.05, 0.05,
-#'               0.05, 0.80, 0.10, 0.05,
-#'               0.05, 0.05, 0.80, 0.10,
-#'               0.05, 0.05, 0.10, 0.80), nrow=4, ncol=4, byrow=TRUE)
+#' 
+#' A <-  matrix(c(0.80, 0.10, 0.05, 0.05,
+#'                0.05, 0.80, 0.10, 0.05,
+#'                0.05, 0.05, 0.80, 0.10,
+#'                0.05, 0.05, 0.10, 0.80), nrow=4, ncol=4, byrow=TRUE)
 #' 
 #' # Starting values for initial state probabilities
-#' initial_probs <- c(0.9, 0.07, 0.02, 0.01)
+#' initial_probs <- c(0.3, 0.3, 0.2, 0.2)
 #' 
 #' # Building a hidden Markov model with starting values
 #' bHMM <- build_hmm(
-#'   observations = biofam.seq, transition_matrix = A, 
+#'   observations = mvad.seq, transition_matrix = A, 
 #'   emission_matrix = B, initial_probs = initial_probs
 #' )
+#' 
+#' HMM <- fit_hmm(bHMM, global = FALSE, local = FALSE)
 #' 
 #' # Fitting HMM
 #' HMM <- fit_hmm(bHMM)
@@ -144,13 +146,13 @@
 #' # Plotting HMM
 #' plot(HMM$model)
 #' 
-#' # Modifying edge curvature
-#' plot(HMM$model, edge.curved = c(0, -0.6, 0.6, 0.3, -0.6, 0.3, 0))
-#' 
 #' #########################################
 #' 
 #' # Multichannel data
-#'   
+#' 
+#' data(biofam)
+#' biofam <- biofam[1:500,]
+#' 
 #' # Building one channel per type of event left, children or married 
 #' bf <- as.matrix(biofam[, 10:25]) 
 #' children <-  bf==4 | bf==5 | bf==6 

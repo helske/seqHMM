@@ -466,7 +466,7 @@ The `summary` method computes summaries of the MHMM, e.g. standard errors for co
 ```
 summ <- summary(trMHMM)
 summ
-# Parameter coefficients for covariates :
+# Covariate effects :
 # 
 # Cluster 1 is the reference.
 # 

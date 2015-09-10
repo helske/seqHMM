@@ -12,7 +12,19 @@
 #'   \code{\link{fit_mhmm}} for building and 
 #'   fitting mixture hidden Markov models.
 print.hmm <- function(x, ...){
-  print.listof(list("transition matrix" = x$transition_matrix, 
-    "emission matrix" = x$emission_matrix, 
-    "initial probabilities" = x$initial_probs))
+  if(x$n_channels == 1){
+    print.listof(list("Transition matrix" = x$transition_matrix, 
+                      "Emission matrix" = x$emission_matrix, 
+                      "Initial probabilities" = x$initial_probs))
+  }else{
+    print.listof(list("Transition matrix" = round(x$transition_matrix, digits = 3)))
+    cat("\n")
+    cat("Emission matrix :\n\n")
+    for(i in 1:length(x$emission_matrix)){
+      cat(names(x$emission_matrix)[i], ":\n")
+      print(round(x$emission_matrix[[i]], digits = 3))
+    }
+    cat("\n\n")
+    print.listof(list("Initial probabilities" = round(x$initial_probs, digits = 3)))
+  }
 }
