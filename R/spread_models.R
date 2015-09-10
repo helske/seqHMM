@@ -42,6 +42,7 @@ spread_models <- function(model){
   }
   
   names(transM) <- names(emissM) <- names(init) <- model$cluster_names
+
   
   model$transition_matrix <- transM
   model$emission_matrix <- emissM
@@ -49,6 +50,9 @@ spread_models <- function(model){
   model$state_names <- model$original_state_names
   model$n_states <- model$n_states_in_clusters
   model$original_state_names<-model$n_states_in_clusters<-NULL
+  for(m in 1:model$n_clusters){
+    names(model$initial_probs[[m]]) <- model$state_names[[m]]
+  }
   class(model) <- "mhmm"
   
   model

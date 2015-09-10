@@ -56,6 +56,56 @@
 #' \dontrun{
 #' require(TraMineR)
 #' 
+#' # Single-channel
+#' 
+#' data(mvad)
+#' 
+#' mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school", 
+#'                    "training")
+#' mvad.labels <- c("employment", "further education", "higher education", 
+#'                  "joblessness", "school", "training")
+#' mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
+#' mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes, 
+#'                    labels = mvad.labels, xtstep = 6)
+#'                    
+#' # Starting values for emission matrices
+#' B1 <- matrix(c(0.26, 0.39, 0.01, 0.06, 0.04, 0.24,
+#'                0.58, 0.12, 0.09, 0.10, 0.01, 0.10,
+#'                0.73, 0.02, 0.09, 0.13, 0.01, 0.02), nrow = 3, ncol = 6, byrow = TRUE)
+#' 
+#' B2 <- matrix(c(0.01, 0.02, 0.01, 0.01, 0.94, 0.01,
+#'                0.05, 0.06, 0.15, 0.01, 0.72, 0.01,
+#'                0.19, 0.13, 0.60, 0.01, 0.05, 0.02,
+#'                0.32, 0.03, 0.60, 0.03, 0.01, 0.01), nrow = 4, ncol = 6, byrow = TRUE)
+#' 
+#' # Starting values for transition matrices
+#' 
+#' A1 <-  matrix(c(0.80, 0.10, 0.10,
+#'                 0.10, 0.80, 0.10,
+#'                 0.10, 0.10, 0.80), nrow=3, ncol=3, byrow=TRUE)
+#' 
+#' A2 <-  matrix(c(0.80, 0.10, 0.05, 0.05,
+#'                 0.05, 0.80, 0.10, 0.05,
+#'                 0.05, 0.05, 0.80, 0.10,
+#'                 0.05, 0.05, 0.10, 0.80), nrow=4, ncol=4, byrow=TRUE)
+#' 
+#' # Starting values for initial state probabilities
+#' initial_probs1 <- c(0.4, 0.3, 0.3)
+#' initial_probs2 <- c(0.3, 0.3, 0.2, 0.2)
+#' 
+#' # Building a hidden Markov model with starting values
+#' bMHMM <- build_mhmm(
+#'   observations = mvad.seq, 
+#'   transition_matrix = list(A1, A2), 
+#'   emission_matrix = list(B1, B2), 
+#'   initial_probs = list(initial_probs1, initial_probs2)
+#' )                   
+#' 
+#' 
+#' ##############################################################
+#' 
+#' # Multichannel
+#' 
 #' data(biofam)
 #' biofam <- biofam[1:500,]
 #' 

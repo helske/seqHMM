@@ -13,9 +13,9 @@
 #'   fitting mixture hidden Markov models.
 print.hmm <- function(x, ...){
   if(x$n_channels == 1){
-    print.listof(list("Transition matrix" = x$transition_matrix, 
-                      "Emission matrix" = x$emission_matrix, 
-                      "Initial probabilities" = x$initial_probs))
+    print.listof(list("Transition matrix" = round(x$transition_matrix, digits = 3), 
+                      "Emission matrix" = round(x$emission_matrix, digits = 3), 
+                      "Initial probabilities" = round(x$initial_probs, digits = 3)))
   }else{
     print.listof(list("Transition matrix" = round(x$transition_matrix, digits = 3)))
     cat("\n")
