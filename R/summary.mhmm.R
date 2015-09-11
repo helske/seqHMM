@@ -162,7 +162,7 @@
 #'   )
 #'   
 #' # Fitting hidden Markov model 
-#' MHMM <- fit_hmm(bMHMM)
+#' MHMM <- fit_mhmm(bMHMM)
 #'   
 #' # Model summary
 #' summary(MHMM$model)
