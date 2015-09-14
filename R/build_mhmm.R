@@ -314,7 +314,7 @@ build_mhmm <-
     names(transition_matrix) <- names(emission_matrix) <- names(initial_probs) <- cluster_names
     
     
-    model<-list(observations=observations, transition_matrix=transition_matrix,
+    model <- structure(list(observations=observations, transition_matrix=transition_matrix,
                 emission_matrix=emission_matrix, initial_probs=initial_probs,
                 beta=beta, X=X, cluster_names=cluster_names, state_names=state_names, 
                 symbol_names=symbol_names, channel_names=channel_names, 
@@ -322,7 +322,10 @@ build_mhmm <-
                 n_sequences=n_sequences, n_clusters=n_clusters,
                 n_symbols=n_symbols, n_states=n_states,
                 n_channels=n_channels,
-                n_covariates=n_covariates)
-    class(model)<-"mhmm"
+                n_covariates=n_covariates), class = "mhmm", 
+      nobs = if (n_channels>1) sum(!sapply(observations, is.na)) else sum(!is.na(observations)),
+      df = sum(unlist(initial_probs) > 0) - n_clusters + 
+      sum(unlist(transition_matrix) > 0) - sum(n_states) + 
+        sum(unlist(emission_matrix) > 0) - sum(n_states) * n_channels)
     model
   }

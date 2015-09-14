@@ -13,6 +13,9 @@
 #'   fitting mixture Hidden Markov models.
 logLik.mhmm<-function(object, partials = FALSE, ...){
   
+  df <- attr(object, "df")
+  nobs <- attr(object, "nobs")
+  
   object <- combine_models(object)
   
   if(object$n_channels == 1){
@@ -36,7 +39,5 @@ logLik.mhmm<-function(object, partials = FALSE, ...){
     object$beta, object$X, object$n_states_in_clusters) 
   
   
-  if(partials){
-    ll
-  } else sum(ll) 
+  structure(if (partials) ll else sum(ll), class = "logLik", df = df, nobs = nobs)
 }

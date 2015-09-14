@@ -281,7 +281,8 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
   control_em = list(), control_global = list(), control_local = list(), lb, ub, ...){
   
   
-  
+  df <- attr(model, "df")
+  nobs <- attr(model, "nobs")
   original_model <- model
   model <- combine_models(model)
   
@@ -500,7 +501,11 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     model$emission_matrix <- model$emission_matrix[[1]]
   }
 
-  list(model = spread_models(model), 
+  model <- spread_models(model)
+  attr(model, "df") <- df
+  attr(model, "nobs") <- nobs
+  
+  list(model = model, 
     logLik = ll, em_results=resEM[5:7], global_results = globalres, local_results = localres)
   
 }

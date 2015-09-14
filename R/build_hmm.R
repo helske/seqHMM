@@ -105,7 +105,7 @@
 #' @seealso \code{\link{fit_hmm}} for fitting Hidden Markov models.
 
 build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs,
-                   state_names=NULL, channel_names=NULL){
+  state_names=NULL, channel_names=NULL){
   
   
   if(dim(transition_matrix)[1]!=dim(transition_matrix)[2])
@@ -116,7 +116,7 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
   
   if(!isTRUE(all.equal(rowSums(transition_matrix),rep(1,dim(transition_matrix)[1]),check.attributes=FALSE)))
     stop("Transition probabilities in transition_matrix do not sum to one.")
-
+  
   dimnames(transition_matrix)<-list(from=state_names,to=state_names)
   
   if(is.list(emission_matrix) && length(emission_matrix)==1){
@@ -176,14 +176,17 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
   
   names(initial_probs) <- state_names
   
-  model<-list(observations=observations,transition_matrix=transition_matrix,
-              emission_matrix=emission_matrix,initial_probs=initial_probs,
-              state_names=state_names,
-              symbol_names=symbol_names,channel_names=channel_names,
-              length_of_sequences=length_of_sequences,
-              n_sequences=n_sequences,
-              n_symbols=n_symbols,n_states=n_states,
-              n_channels=n_channels)
-  class(model)<-"hmm"
-  model
+  model <- structure(list(observations=observations,transition_matrix=transition_matrix,
+    emission_matrix=emission_matrix,initial_probs=initial_probs,
+    state_names=state_names,
+    symbol_names=symbol_names,channel_names=channel_names,
+    length_of_sequences=length_of_sequences,
+    n_sequences=n_sequences,
+    n_symbols=n_symbols,n_states=n_states,
+    n_channels=n_channels), class = "hmm", 
+    nobs = if (n_channels>1) sum(!sapply(observations, is.na)) else sum(!is.na(observations)),
+    df = sum(initial_probs > 0) - 1 + sum(transition_matrix > 0) - n_states + 
+      sum(unlist(emission_matrix) > 0) - n_states * n_channels)
+    
+    model
 }
