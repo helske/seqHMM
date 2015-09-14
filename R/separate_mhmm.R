@@ -11,8 +11,9 @@
 #' @return List with components of class \code{hmm}.
 #' 
 #' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building 
-#' and fitting MHMMs, and \code{\link{build_hmm}} and \code{\link{fit_hmm}} 
-#' for building and fitting HMMs.
+#' and fitting MHMMs, \code{\link{build_hmm}} and \code{\link{fit_hmm}} 
+#' for building and fitting HMMs; and \code{\link{mhmm_biofam}} for
+#' more information on the model used in examples.
 #' 
 #' @examples
 #' # Loading mixture hidden Markov model (mhmm object)
@@ -28,9 +29,9 @@ separate_mhmm <- function(model){
   
   for(i in 1:model$n_clusters){
     divmodels[[i]] <- build_hmm(observations=model$observations,
-                               transition_matrix=model$transition_matrix[[i]],
-                               emission_matrix=model$emission_matrix[[i]],
-                               initial_probs=model$initial_probs[[i]])
+                                transition_matrix=model$transition_matrix[[i]],
+                                emission_matrix=model$emission_matrix[[i]],
+                                initial_probs=model$initial_probs[[i]])
   }
   divmodels
 }

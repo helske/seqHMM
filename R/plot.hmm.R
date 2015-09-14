@@ -96,129 +96,34 @@
 #'   
 #' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and 
 #'   fitting Hidden Markov models, \code{\link{mc_to_sc}} for transforming 
-#'   multistate hmm objects to single channel objects, and 
+#'   multistate hmm objects to single channel objects,
+#'   \code{\link{hmm_biofam}} and \code{\link{hmm_mvad}} for information on the models 
+#'   used in the examples, and 
 #'   \code{\link{plot.igraph}} for the general plotting function of directed graphs.
 #'   
 #' @examples 
 #' require(TraMineR)
 #' 
 #' # Single-channel data
-#'
-#' data(mvad)
 #' 
-#' mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school", 
-#'                    "training")
-#' mvad.labels <- c("employment", "further education", "higher education", 
-#'                  "joblessness", "school", "training")
-#' mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-#' mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes, 
-#'                    labels = mvad.labels, xtstep = 6)
-#' 
-#' # Starting values for the emission matrix
-#' B <- matrix(NA, nrow = 4, ncol = 6)
-#' B[1,] <- seqstatf(mvad.seq[, 1:12])[, 2] + 0.1
-#' B[2,] <- seqstatf(mvad.seq[, 13:24])[, 2] + 0.1
-#' B[3,] <- seqstatf(mvad.seq[, 25:48])[, 2] + 0.1
-#' B[4,] <- seqstatf(mvad.seq[, 49:70])[, 2] + 0.1
-#' B <- B / rowSums(B)
-#' 
-#' # Starting values for the transition matrix
-#' 
-#' A <-  matrix(c(0.80, 0.10, 0.05, 0.05,
-#'                0.05, 0.80, 0.10, 0.05,
-#'                0.05, 0.05, 0.80, 0.10,
-#'                0.05, 0.05, 0.10, 0.80), nrow=4, ncol=4, byrow=TRUE)
-#' 
-#' # Starting values for initial state probabilities
-#' initial_probs <- c(0.3, 0.3, 0.2, 0.2)
-#' 
-#' # Building a hidden Markov model with starting values
-#' bHMM <- build_hmm(
-#'   observations = mvad.seq, transition_matrix = A, 
-#'   emission_matrix = B, initial_probs = initial_probs
-#' )
-#' 
-#' HMM <- fit_hmm(bHMM, global = FALSE, local = FALSE)
-#' 
-#' # Fitting HMM
-#' HMM <- fit_hmm(bHMM)
+#' # Loading a hidden Markov model of the mvad data (hmm object)
+#' data(hmm_mvad)
 #' 
 #' # Plotting HMM
-#' plot(HMM$model)
+#' plot(hmm_mvad)
 #' 
 #' #########################################
 #' 
 #' # Multichannel data
 #' 
-#' data(biofam)
-#' biofam <- biofam[1:500,]
-#' 
-#' # Building one channel per type of event left, children or married 
-#' bf <- as.matrix(biofam[, 10:25]) 
-#' children <-  bf==4 | bf==5 | bf==6 
-#' married <- bf == 2 | bf== 3 | bf==6 
-#' left <- bf==1 | bf==3 | bf==5 | bf==6
-#'   
-#' children[children==TRUE] <- "Children" 
-#' children[children==FALSE] <- "Childless"
-#'   
-#' married[married==TRUE] <- "Married" 
-#' married[married==FALSE] <- "Single"
-#'   
-#' left[left==TRUE] <- "Left home" 
-#' left[left==FALSE] <- "With parents"
-#'   
-#' # Building sequence objects 
-#' child.seq <- seqdef(children) 
-#' marr.seq <- seqdef(married) 
-#' left.seq <- seqdef(left)
-#'   
-#' # Initial values for emission matrices 
-#' B_child <- matrix(NA, nrow=4, ncol=2) 
-#' B_child[1,] <- seqstatf(child.seq[,1:4])[,2]+0.1 
-#' B_child[2,] <- seqstatf(child.seq[,5:8])[,2]+0.1 
-#' B_child[3,] <- seqstatf(child.seq[,9:11])[,2]+0.1 
-#' B_child[4,] <- seqstatf(child.seq[,12:15])[,2]+0.1 
-#' B_child <- B_child/rowSums(B_child)
-#'   
-#' B_marr <- matrix(NA, nrow=4, ncol=2) 
-#' B_marr[1,] <- seqstatf(marr.seq[,1:4])[,2]+0.1 
-#' B_marr[2,] <- seqstatf(marr.seq[,5:8])[,2]+0.1 
-#' B_marr[3,] <- seqstatf(marr.seq[,9:11])[,2]+0.1 
-#' B_marr[4,] <- seqstatf(marr.seq[,12:15])[,2]+0.1 
-#' B_marr <- B_marr/rowSums(B_marr)
-#'   
-#' B_left <- matrix(NA, nrow=4, ncol=2) 
-#' B_left[1,] <- seqstatf(left.seq[,1:4])[,2]+0.1 
-#' B_left[2,] <- seqstatf(left.seq[,5:8])[,2]+0.1 
-#' B_left[3,] <- seqstatf(left.seq[,9:11])[,2]+0.1 
-#' B_left[4,] <- seqstatf(left.seq[,12:15])[,2]+0.1 
-#' B_left <- B_left/rowSums(B_left)
-#'   
-#' # Initial values for transition matrix 
-#' A <- matrix(c(0.9,   0.06, 0.03, 0.01,
-#'                 0,    0.9, 0.07, 0.03, 
-#'                 0,      0,  0.9,  0.1, 
-#'                 0,      0,    0,    1), 
-#'             nrow=4, ncol=4, byrow=TRUE)
-#'   
-#' # Initial values for initial state probabilities 
-#' initial_probs <- c(0.9, 0.07, 0.02, 0.01)
-#'   
-#' # Building hidden Markov model with initial parameter values 
-#' bHMM <- build_hmm(observations=list(child.seq, marr.seq, left.seq), 
-#'                  transition_matrix=A, 
-#'                  emission_matrix=list(B_child, B_marr, B_left),
-#'                  initial_probs=initial_probs)
-#'   
-#' # Fitting hidden Markov model 
-#' HMM <- fit_hmm(bHMM)
+#' # Loading a HMM of the biofam data
+#' data(hmm_biofam)
 #'   
 #' # Plotting hmm object 
-#' plot(HMM$model)
+#' plot(hmm_biofam)
 #' 
 #' # Plotting HMM with
-#' plot(HMM$model,
+#' plot(hmm_biofam,
 #'      # larger vertices
 #'      vertex.size=50,
 #'      # varying curvature of edges
@@ -229,7 +134,7 @@
 #'      combined.slice.label="States with probability < 0.05")
 #' 
 #' # Plotting HMM with given coordinates
-#' plot(HMM$model,
+#' plot(hmm_biofam,
 #'      # layout given in 2x4 matrix
 #'      # x coordinates in the first column
 #'      # y coordinates in the second column
@@ -254,13 +159,13 @@
 #' 
 #' # Plotting HMM with own color palette 
 #' ## States with emission probability less than 0.2 removed
-#' plot(HMM$model, cpal=1:10, combine.slices=0.2)
+#' plot(hmm_biofam, cpal=1:10, combine.slices=0.2)
 #'   
 #' # Plotting HMM without pie graph and with a different layout 
 #' require(igraph)
 #' # Setting the seed for a random layout
 #' set.seed(321)
-#' plot(HMM$model,
+#' plot(hmm_biofam,
 #'      # Without pie graph
 #'      pie=FALSE,
 #'      # Fruchterman-Reingold layout

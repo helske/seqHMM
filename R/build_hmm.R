@@ -60,28 +60,12 @@
 #' 
 #' # Multichannel data
 #' 
-#' data(biofam)
-#' biofam <- biofam[1:500,]
-#' 
-#' # Building one channel per type of event left, children or married
-#' bf <- as.matrix(biofam[, 10:25])
-#' children <-  bf==4 | bf==5 | bf==6
-#' married <- bf == 2 | bf== 3 | bf==6
-#' left <- bf==1 | bf==3 | bf==5 | bf==6
-#' 
-#' children[children==TRUE] <- "Children"
-#' children[children==FALSE] <- "Childless"
-#' 
-#' married[married==TRUE] <- "Married"
-#' married[married==FALSE] <- "Single"
-#' 
-#' left[left==TRUE] <- "Left home"
-#' left[left==FALSE] <- "With parents"
+#' data(biofam3c)
 #' 
 #' # Building sequence objects
-#' child.seq <- seqdef(children)
-#' marr.seq <- seqdef(married)
-#' left.seq <- seqdef(left)
+#' child.seq <- seqdef(biofam3c$children)
+#' marr.seq <- seqdef(biofam3c$married)
+#' left.seq <- seqdef(biofam3c$left)
 #' 
 #' # Starting values for emission matrices
 #' B_child <- matrix(NA, nrow = 3, ncol = 2)
@@ -90,7 +74,7 @@
 #' B_child[3,] <- seqstatf(child.seq[, 11:15])[, 2] + 0.1
 #' B_child <- B_child / rowSums(B_child)
 #' 
-#' B_marr <- matrix(NA, nrow = 3, ncol = 2)
+#' B_marr <- matrix(NA, nrow = 3, ncol = 3)
 #' B_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 0.1
 #' B_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 0.1
 #' B_marr[3,] <- seqstatf(marr.seq[, 11:15])[, 2] + 0.1
