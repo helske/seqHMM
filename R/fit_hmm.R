@@ -156,6 +156,9 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
   control_em=list(), control_global=list(), 
   control_local=list(), lb, ub, ...){
   
+  if(!inherits(model, "hmm"))
+    stop("Argument model must be an object of class 'hmm'.")
+  
   if(!em_step && !global_step && !local_step){
     stop("No method chosen for estimation. Choose at least one from em_step, global_step, and local_step.")
   }
@@ -184,8 +187,8 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
       emissionArray[,1:model$n_symbols[i],i]<-model$emission_matrix[[i]]
     
     resEM<-EM(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
-        model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level)
-
+      model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level)
+    
     if(resEM$change< -1e-5)
       warning("EM algorithm stopped due to the decreasing log-likelihood. ")
     
@@ -224,23 +227,31 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
       x[order(x[,1]),]
     })
     
-    maxEM<-lapply(model$emission_matrix,function(i) cbind(1:model$n_states,max.col(i,ties.method="first")))
-    
+    if(model$n_states > 1){
+      maxEM <- lapply(model$emission_matrix,function(i) cbind(1:model$n_states,max.col(i,ties.method="first")))
+      paramEM<-lapply(1:model$n_channels,function(i) {
+        x<-rbind(emissNZ[[i]],maxEM[[i]])
+        x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
+      })
+      npEM<-sapply(paramEM,nrow)
+    } else {
+      maxEM <- lapply(model$emission_matrix,function(i) max.col(i,ties.method="first"))
+      paramEM<-lapply(1:model$n_channels,function(i) {
+        x<-rbind(emissNZ[[i]],c(1,maxEM[[i]]))
+        x[!(duplicated(x)|duplicated(x,fromLast=TRUE))][2]
+      })
+      npEM<-sapply(paramEM, length)
+    }
     maxEMvalue<-lapply(1:model$n_channels, function(i) 
       apply(model$emission_matrix[[i]],1,max))
     
-    paramEM<-lapply(1:model$n_channels,function(i) {
-      x<-rbind(emissNZ[[i]],maxEM[[i]])
-      x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
-    })
-    npEM<-sapply(paramEM,nrow)
+    
+    
     
     emissNZ<-array(0,c(model$n_states,max(model$n_symbols),model$n_channels))
     for(i in 1:model$n_channels){
       emissNZ[,1:model$n_symbols[i],i]<-model$emission_matrix[[i]] > 0
-      if(model$n_states == 1){
-        emissNZ[,1:model$n_symbols[i],i][maxEM[[i]][2]]<-0
-      } else emissNZ[,1:model$n_symbols[i],i][maxEM[[i]]]<-0      
+      emissNZ[,1:model$n_symbols[i],i][maxEM[[i]]]<-0      
     }       
     
     initialvalues<-c(if((npTM+sum(npEM)+npIP)>0) log(c(

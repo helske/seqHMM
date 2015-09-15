@@ -17,9 +17,9 @@
 #' @param control_em Optional list of control parameters for for EM algorithm. 
 #'   Possible arguments are \describe{ 
 #'   \item{maxeval}{Maximum number of iterations, default is 100.} 
-#'   \item{trace}{Level of printing. Possible values are 0 
-#'   (prints nothing), 1 (prints information at start and end of algorithm), and
-#'   2 (prints at every iteration).} 
+#'   \item{print_level}{Level of printing. Possible values are 0 
+#'   (prints nothing), 1 (prints information at start and end of algorithm), 
+#'   2 (prints at every iteration), and 3 (prints also inside the coefficient optimization).} 
 #'   \item{reltol}{Relative tolerance for convergence defined as \eqn{(sumLogLikNew - sumLogLikOld)/(abs(sumLogLikOld)+0.1)}. 
 #'   Default is 1e-8.} }
 #' @param control_global Optional list of additional arguments for 
@@ -280,6 +280,8 @@
 fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
   control_em = list(), control_global = list(), control_local = list(), lb, ub, ...){
   
+  if(!inherits(model, "mhmm"))
+    stop("Argument model must be an object of class 'mhmm'.")
   
   df <- attr(model, "df")
   nobs <- attr(model, "nobs")
@@ -302,14 +304,14 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     emissionArray[,1:model$n_symbols[i],i]<-model$emission_matrix[[i]]
   
   if(em_step){
-    em.con <- list(trace = 0, maxeval=100,reltol=1e-8)
+    em.con <- list(print_level = 0, maxeval=100, reltol=1e-8)
     nmsC <- names(em.con)  
     em.con[(namc <- names(control_em))] <- control_em
     if (length(noNms <- namc[!namc %in% nmsC])) 
       warning("Unknown names in control_em: ", paste(noNms, collapse = ", "))
     
     resEM <- EMx(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
-      model$n_symbols, model$beta, model$X, model$n_states_in_clusters, em.con$maxeval, em.con$reltol,em.con$trace)
+      model$n_symbols, model$beta, model$X, model$n_states_in_clusters, em.con$maxeval, em.con$reltol,em.con$print_level)
     if(!is.null(resEM$error))
       stop("Initial values for beta resulted non-finite cluster probabilities.")
     if(resEM$change< -1e-5)
@@ -368,16 +370,25 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
       x[order(x[,1]),]
     })
     
-    maxEM<-lapply(model$emission_matrix,function(i) cbind(1:model$n_states,max.col(i,ties.method="first")))
+    if(model$n_states > 1){
+      maxEM <- lapply(model$emission_matrix,function(i) cbind(1:model$n_states,max.col(i,ties.method="first")))
+      paramEM<-lapply(1:model$n_channels,function(i) {
+        x<-rbind(emissNZ[[i]],maxEM[[i]])
+        x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
+      })
+      npEM<-sapply(paramEM,nrow)
+    } else {
+      maxEM <- lapply(model$emission_matrix,function(i) max.col(i,ties.method="first"))
+      paramEM<-lapply(1:model$n_channels,function(i) {
+        x<-rbind(emissNZ[[i]],c(1,maxEM[[i]]))
+        x[!(duplicated(x)|duplicated(x,fromLast=TRUE))][2]
+      })
+      npEM<-length(unlist(paramEM))
+    }
     
     maxEMvalue<-lapply(1:model$n_channels, function(i) 
       apply(model$emission_matrix[[i]],1,max))
-    
-    paramEM<-lapply(1:model$n_channels,function(i) {
-      x<-rbind(emissNZ[[i]],maxEM[[i]])
-      x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
-    })
-    npEM<-sapply(paramEM,nrow)
+
     
     emissNZ<-array(0,c(model$n_states,max(model$n_symbols),model$n_channels))
     for(i in 1:model$n_channels){
