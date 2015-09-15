@@ -34,7 +34,6 @@ logLik.hmm<-function(object, partials = FALSE, ...){
   ll <- logLikHMM(object$transition_matrix, emissionArray, 
     object$initial_probs, obsArray)
   
-  if(partials){
-    ll
-  } else sum(ll) 
+  structure(if (partials) ll else sum(ll), class = "logLik", df = attr(object, "df"), nobs = attr(object, "nobs"))
+  
 }

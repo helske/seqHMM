@@ -175,7 +175,7 @@
 #'                     
 build_mhmm <- 
   function(observations,transition_matrix,emission_matrix,initial_probs, 
-           formula, data, beta, cluster_names=NULL, state_names=NULL, channel_names=NULL){
+    formula, data, beta, cluster_names=NULL, state_names=NULL, channel_names=NULL){
     
     n_clusters<-length(transition_matrix)
     if(length(emission_matrix)!=n_clusters || length(initial_probs)!=n_clusters)
@@ -248,7 +248,7 @@ build_mhmm <-
         if(any(n_symbols!=sapply(emission_matrix[[i]],ncol)))
           stop(paste("Number of columns in emission_matrix of cluster", i, "is not equal to the number of symbols."))
         if(!isTRUE(all.equal(c(sapply(emission_matrix[[i]],rowSums)),
-                             rep(1,n_channels*n_states[i]),check.attributes=FALSE)))
+          rep(1,n_channels*n_states[i]),check.attributes=FALSE)))
           stop(paste("Emission probabilities in emission_matrix of cluster", i, "do not sum to one."))
         if(is.null(channel_names)){
           channel_names<-as.character(1:n_channels)
@@ -314,15 +314,17 @@ build_mhmm <-
     names(transition_matrix) <- names(emission_matrix) <- names(initial_probs) <- cluster_names
     
     
-    model<-list(observations=observations, transition_matrix=transition_matrix,
-                emission_matrix=emission_matrix, initial_probs=initial_probs,
-                beta=beta, X=X, cluster_names=cluster_names, state_names=state_names, 
-                symbol_names=symbol_names, channel_names=channel_names, 
-                length_of_sequences=length_of_sequences,
-                n_sequences=n_sequences, n_clusters=n_clusters,
-                n_symbols=n_symbols, n_states=n_states,
-                n_channels=n_channels,
-                n_covariates=n_covariates)
-    class(model)<-"mhmm"
+    model <- structure(list(observations=observations, transition_matrix=transition_matrix,
+      emission_matrix=emission_matrix, initial_probs=initial_probs,
+      beta=beta, X=X, cluster_names=cluster_names, state_names=state_names, 
+      symbol_names=symbol_names, channel_names=channel_names, 
+      length_of_sequences=length_of_sequences,
+      n_sequences=n_sequences, n_clusters=n_clusters,
+      n_symbols=n_symbols, n_states=n_states,
+      n_channels=n_channels,
+      n_covariates=n_covariates), class = "mhmm", 
+      nobs = if (n_channels>1) sum(!sapply(observations, is.na)) else sum(!is.na(observations)),
+      df = sum(unlist(initial_probs) > 0) - n_clusters + sum(unlist(transition_matrix) > 0) - sum(n_states) + 
+        sum(unlist(emission_matrix) > 0) - sum(n_states) * n_channels + n_covariates * (n_clusters - 1))
     model
   }
