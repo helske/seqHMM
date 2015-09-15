@@ -27,7 +27,7 @@
 #' @param cluster_names A vector of optional names for the clusters.
 #' @param state_names A list of optional labels for the hidden states.
 #' @param channel_names A vector of optional names for the channels.
-#' @return Object of class \code{mhmm}
+#' @return Object of class \code{mhmm}.
 #' @seealso \code{\link{fit_mhmm}} for fitting mixture Hidden Markov models.
 #' 
 #' @examples
@@ -313,6 +313,9 @@ build_mhmm <-
     
     names(transition_matrix) <- names(emission_matrix) <- names(initial_probs) <- cluster_names
     
+    nobs <- sum(sapply(observations, function(x) sum(!(x == attr(observations[[1]], "nr") |
+        x == attr(observations[[1]], "void") |
+        is.na(x)))))/n_channels
     
     model <- structure(list(observations=observations, transition_matrix=transition_matrix,
       emission_matrix=emission_matrix, initial_probs=initial_probs,
@@ -323,7 +326,7 @@ build_mhmm <-
       n_symbols=n_symbols, n_states=n_states,
       n_channels=n_channels,
       n_covariates=n_covariates), class = "mhmm", 
-      nobs = if (n_channels>1) sum(!sapply(observations, is.na)) else sum(!is.na(observations)),
+      nobs = nobs,
       df = sum(unlist(initial_probs) > 0) - n_clusters + sum(unlist(transition_matrix) > 0) - sum(n_states) + 
         sum(unlist(emission_matrix) > 0) - sum(n_states) * n_channels + n_covariates * (n_clusters - 1))
     model
