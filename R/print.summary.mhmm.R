@@ -48,6 +48,10 @@ print.summary.mhmm <- function(x, ...){
   cat(x$BIC)
   cat("\n\n\n")
   
+  cat("Means of prior cluster probabilities :\n\n")
+  print(round(colMeans(x$prior_cluster_probabilities), digits = x$digits))
+  cat("\n\n")
+  
   tbl <- table(x$most_probable_cluster)
   cl <- matrix(c(as.character(tbl), 
                  as.character(round(prop.table(tbl)*100, digits = x$digits))), 
@@ -56,14 +60,6 @@ print.summary.mhmm <- function(x, ...){
   rownames(cl) <- c("n", "%")
   cat("Most probable clusters :\n\n")
   print.default(cl, quote = FALSE, print.gap = 2, right = TRUE)
-  cat("\n\n")
-  
-  cat("Means of prior cluster probabilities :\n\n")
-  print(round(colMeans(x$prior_cluster_probabilities), digits = x$digits))
-  cat("\n\n")
-  
-  cat("Means of posterior cluster probabilities :\n\n")
-  print(round(colMeans(x$posterior_cluster_probabilities), digits = x$digits))
   cat("\n\n")
   
   cat("Classification table :\n")
