@@ -312,7 +312,7 @@ build_mhmm <-
     colnames(beta) <- cluster_names
     
     names(transition_matrix) <- names(emission_matrix) <- names(initial_probs) <- cluster_names
-    if(nchannels > 1){
+    if(n_channels > 1){
     nobs <- sum(sapply(observations, function(x) sum(!(x == attr(observations[[1]], "nr") |
         x == attr(observations[[1]], "void") |
         is.na(x)))))/n_channels
