@@ -176,9 +176,15 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
   
   names(initial_probs) <- state_names
   
-  nobs <- sum(sapply(observations, function(x) sum(!(x == attr(observations[[1]], "nr") |
-      x == attr(observations[[1]], "void") |
-      is.na(x)))))/n_channels
+  if(nchannels > 1){
+    nobs <- sum(sapply(observations, function(x) sum(!(x == attr(observations[[1]], "nr") |
+        x == attr(observations[[1]], "void") |
+        is.na(x)))))/n_channels
+  } else {
+    nobs <- sum(!(x == attr(observations, "nr") |
+        x == attr(observations, "void") |
+        is.na(x)))
+  }
   
   model <- structure(list(observations=observations,transition_matrix=transition_matrix,
     emission_matrix=emission_matrix,initial_probs=initial_probs,

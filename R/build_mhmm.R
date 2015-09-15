@@ -312,11 +312,15 @@ build_mhmm <-
     colnames(beta) <- cluster_names
     
     names(transition_matrix) <- names(emission_matrix) <- names(initial_probs) <- cluster_names
-    
+    if(nchannels > 1){
     nobs <- sum(sapply(observations, function(x) sum(!(x == attr(observations[[1]], "nr") |
         x == attr(observations[[1]], "void") |
         is.na(x)))))/n_channels
-    
+    } else {
+      nobs <- sum(!(x == attr(observations, "nr") |
+          x == attr(observations, "void") |
+          is.na(x)))
+    }
     model <- structure(list(observations=observations, transition_matrix=transition_matrix,
       emission_matrix=emission_matrix, initial_probs=initial_probs,
       beta=beta, X=X, cluster_names=cluster_names, state_names=state_names, 
