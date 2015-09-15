@@ -22,8 +22,8 @@ spread_models <- function(model){
   if(model$n_channels==1){
     for(m in 1:model$n_clusters){
       transM[[m]] <- model$transition_matrix[(k+1):(k+model$n_states_in_clusters[m]),
-                                            (k+1):(k+model$n_states_in_clusters[m])]
-        emissM[[m]] <- model$emission_matrix[(k+1):(k+model$n_states_in_clusters[m]),]
+                                            (k+1):(k+model$n_states_in_clusters[m]),drop=FALSE]
+        emissM[[m]] <- model$emission_matrix[(k+1):(k+model$n_states_in_clusters[m]),,drop=FALSE]
       names(emissM[[m]]) <- model$channel_names
       init[[m]] <- unname(model$initial_probs[(k+1):(k+model$n_states_in_clusters[m])])
       k <- sum(model$n_states_in_clusters[1:m])
@@ -31,9 +31,9 @@ spread_models <- function(model){
   }else{  
     for(m in 1:model$n_clusters){
       transM[[m]] <- model$transition_matrix[(k+1):(k+model$n_states_in_clusters[m]),
-                                            (k+1):(k+model$n_states_in_clusters[m])]
+                                            (k+1):(k+model$n_states_in_clusters[m]),drop=FALSE]
       for(j in 1:model$n_channels){
-        emissM[[m]][[j]] <- model$emission_matrix[[j]][(k+1):(k+model$n_states_in_clusters[m]),]
+        emissM[[m]][[j]] <- model$emission_matrix[[j]][(k+1):(k+model$n_states_in_clusters[m]),,drop=FALSE]
       }
       names(emissM[[m]]) <- model$channel_names
       init[[m]] <- unname(model$initial_probs[(k+1):(k+model$n_states_in_clusters[m])])

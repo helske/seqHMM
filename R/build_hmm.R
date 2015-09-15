@@ -14,7 +14,7 @@
 #' @param initial_probs A vector of initial state probabilities.
 #' @param state_names A list of optional labels for the hidden states.
 #' @param channel_names A vector of optional names for the channels.
-#' @return Object of class \code{hmm}
+#' @return Object of class \code{hmm}.
 #' 
 #' @examples 
 #' require(TraMineR)
@@ -176,6 +176,16 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
   
   names(initial_probs) <- state_names
   
+  if(n_channels > 1){
+    nobs <- sum(sapply(observations, function(x) sum(!(x == attr(observations[[1]], "nr") |
+        x == attr(observations[[1]], "void") |
+        is.na(x)))))/n_channels
+  } else {
+    nobs <- sum(!(x == attr(observations, "nr") |
+        x == attr(observations, "void") |
+        is.na(x)))
+  }
+  
   model <- structure(list(observations=observations,transition_matrix=transition_matrix,
     emission_matrix=emission_matrix,initial_probs=initial_probs,
     state_names=state_names,
@@ -184,7 +194,7 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
     n_sequences=n_sequences,
     n_symbols=n_symbols,n_states=n_states,
     n_channels=n_channels), class = "hmm", 
-    nobs = if (n_channels>1) sum(!sapply(observations, is.na)) else sum(!is.na(observations)),
+    nobs = nobs,
     df = sum(initial_probs > 0) - 1 + sum(transition_matrix > 0) - n_states + 
       sum(unlist(emission_matrix) > 0) - n_states * n_channels)
     
