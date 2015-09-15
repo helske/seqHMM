@@ -326,6 +326,6 @@ build_mhmm <-
       nobs = if (n_channels>1) sum(!sapply(observations, is.na)) else sum(!is.na(observations)),
       df = sum(unlist(initial_probs) > 0) - n_clusters + 
       sum(unlist(transition_matrix) > 0) - sum(n_states) + 
-        sum(unlist(emission_matrix) > 0) - sum(n_states) * n_channels)
+        sum(unlist(emission_matrix) > 0) - sum(n_states) * n_channels + n_covariates * (n_clusters - 1))
     model
   }
