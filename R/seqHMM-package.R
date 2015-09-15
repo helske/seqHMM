@@ -165,8 +165,8 @@
 #' # Step 2) Global optimization via MLSL_LDS with LBFGS as local optimizer;
 #' #         3000 evaluations, unlimited time
 #' # Step 3) Local optimization with LBFGS algorithm for "final polishing";
-#'           3000 evaluations, unlimited time
-#' # Note: estimation time limited to 60 seconds by default
+#' #         3000 evaluations, unlimited time
+#' # Note: estimation time is limited to 60 seconds by default
 #' \dontrun{
 #' hmm_biofam <- fit_hmm(
 #'   bhmm_biofam, 
