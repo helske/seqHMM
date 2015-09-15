@@ -83,13 +83,13 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
     
     B <- vector("list", model$n_clusters)
     for(m in 1:model$n_clusters){
-      B[[m]] <- matrix(0,model$n_states_in_clusters[m],prod(model$n_symbols))
+      B[[m]] <- matrix(0,model$n_states[m],prod(model$n_symbols))
       
       colnames(B[[m]])<-apply(
         expand.grid(lapply(model$emission_matrix[[m]],colnames)),                
         1,paste0,collapse="/")
       rownames(B[[m]])<-rownames(model$emission_matrix[[m]][[1]])
-      for(i in 1:model$n_states_in_clusters[[m]]){
+      for(i in 1:model$n_states[[m]]){
         B[[m]][i,]<-apply(expand.grid(lapply(model$emission_matrix[[m]],function(x) x[i,])),1,prod)   
       }
       B[[m]] <- B[[m]][, order(colnames(B[[m]]))]
