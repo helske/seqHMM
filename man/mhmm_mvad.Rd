@@ -15,7 +15,7 @@ data(mhmm_mvad)
 
 summary(mhmm_mvad)
 
-#' \dontrun{
+\dontrun{
 # Plotting the model for each cluster (change with Enter)
 plot(mhmm_mvad)
 }

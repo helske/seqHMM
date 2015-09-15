@@ -86,7 +86,7 @@ B_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 0.1
 B_child[3,] <- seqstatf(child.seq[, 11:15])[, 2] + 0.1
 B_child <- B_child / rowSums(B_child)
 
-B_marr <- matrix(NA, nrow = 3, ncol = 2)
+B_marr <- matrix(NA, nrow = 3, ncol = 3)
 B_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 0.1
 B_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 0.1
 B_marr[3,] <- seqstatf(marr.seq[, 11:15])[, 2] + 0.1

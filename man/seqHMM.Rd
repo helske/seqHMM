@@ -18,4 +18,165 @@ and hidden Markov models.
 Maximum likelihood estimation via EM algorithm and direct numerical maximization
 with analytical gradients is supported. All main algorithms are written in C++.
 }
+\examples{
+require(TraMineR)
+
+# Loading mvad and biofam3c data
+data(mvad)
+data(biofam3c)
+
+###############################################################
+
+##### Plotting multichannel data #####
+
+# Creating sequence objects (data: biofam3c)
+child.seq <- seqdef(biofam3c$children, start = 15)
+marr.seq <- seqdef(biofam3c$married, start = 15)
+left.seq <- seqdef(biofam3c$left, start = 15)
+
+## Choosing colors
+attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
+attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+
+# Plotting state distribution plots of observations
+ssplot(list(child.seq, marr.seq, left.seq), type = "d", plots = "obs")
+
+# Plotting sequence index plots of observations
+ssplot(
+  list(child.seq, marr.seq, left.seq), type = "I", plots = "obs",
+  # Sorting subjects according to the beginning of the 2nd channel (marr.seq)
+  sortv = "from.start", sort.channel = 2,
+  # Controlling the size, positions, and names for channel labels
+  ylab.pos = c(1, 2, 1), cex.lab = 1, ylab = c("Children", "Married", "Left home"),
+  # Plotting without legend
+  withlegend = FALSE
+  )
+
+##### Plotting sequence data in a grid #####
+
+# Creating sequence data (data: mvad)
+
+mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school",
+"training")
+mvad.labels <- c("employment", "further education", "higher education",
+                 "joblessness", "school", "training")
+mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
+mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes,
+                   labels = mvad.labels, xtstep = 6)
+
+
+
+
+###############################################################
+
+##### Building and fitting single-channel mvad data #####
+
+mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school",
+                   "training")
+mvad.labels <- c("employment", "further education", "higher education",
+                 "joblessness", "school", "training")
+mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
+mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes,
+                   labels = mvad.labels, xtstep = 6)
+
+# Starting values for the emission matrix
+emiss <- matrix(NA, nrow = 4, ncol = 6)
+emiss[1,] <- seqstatf(mvad.seq[, 1:12])[, 2] + 0.1
+emiss[2,] <- seqstatf(mvad.seq[, 13:24])[, 2] + 0.1
+emiss[3,] <- seqstatf(mvad.seq[, 25:48])[, 2] + 0.1
+emiss[4,] <- seqstatf(mvad.seq[, 49:70])[, 2] + 0.1
+emiss <- emiss / rowSums(emiss)
+
+# Starting values for the transition matrix
+
+trans <-  matrix(c(0.80, 0.10, 0.05, 0.05,
+                0.05, 0.80, 0.10, 0.05,
+                0.05, 0.05, 0.80, 0.10,
+                0.05, 0.05, 0.10, 0.80), nrow=4, ncol=4, byrow=TRUE)
+
+# Starting values for initial state probabilities
+initialpr <- c(0.3, 0.3, 0.2, 0.2)
+
+# Building a hidden Markov model with starting values
+bhmm_mvad <- build_hmm(
+  observations = mvad.seq, transition_matrix = trans,
+  emission_matrix = emiss, initial_probs = initialpr
+)
+
+# Fitting with the EM algorithm
+hmm_mvad <- fit_hmm(
+  bhmm_mvad, em_step = TRUE,
+  global_step = FALSE, local_step = FALSE
+  )
+
+#############################################################
+
+# Fitting multichannel biofam3c data
+
+# Building sequence objects
+child.seq <- seqdef(biofam3c$children, start = 15)
+marr.seq <- seqdef(biofam3c$married, start = 15)
+left.seq <- seqdef(biofam3c$left, start = 15)
+
+# Starting values for emission matrices
+B_marr <- matrix(NA, nrow=4, ncol=3)
+B_marr[1,] <- seqstatf(marr.seq[, 1:4])[, 2] + 0.1
+B_marr[2,] <- seqstatf(marr.seq[, 5:8])[, 2] + 0.1
+B_marr[3,] <- seqstatf(marr.seq[, 9:12])[, 2] + 0.1
+B_marr[4,] <- seqstatf(marr.seq[, 13:16])[, 2] + 0.1
+B_marr <- B_marr / rowSums(B_marr)
+
+B_child <- matrix(NA, nrow=4, ncol=2)
+B_child[1,] <- seqstatf(child.seq[, 1:4])[, 2] + 0.1
+B_child[2,] <- seqstatf(child.seq[, 5:8])[, 2] + 0.1
+B_child[3,] <- seqstatf(child.seq[, 9:12])[, 2] + 0.1
+B_child[4,] <- seqstatf(child.seq[, 13:16])[, 2] + 0.1
+B_child <- B_child / rowSums(B_child)
+
+B_left <- matrix(NA, nrow=4, ncol=2)
+B_left[1,] <- seqstatf(left.seq[, 1:4])[, 2] + 0.1
+B_left[2,] <- seqstatf(left.seq[, 5:8])[, 2] + 0.1
+B_left[3,] <- seqstatf(left.seq[, 9:12])[, 2] + 0.1
+B_left[4,] <- seqstatf(left.seq[, 13:16])[, 2] + 0.1
+B_left <- B_left / rowSums(B_left)
+
+# Initial values for transition matrix
+A <- matrix(c(0.9, 0.06, 0.03, 0.01,
+              0,    0.9, 0.07, 0.03,
+              0,      0,  0.9,  0.1,
+              0,      0,    0,    1), nrow = 4, ncol = 4, byrow = TRUE)
+
+# Initial values for initial state probabilities
+initial_probs <- c(0.9, 0.07, 0.02, 0.01)
+
+# Building hidden Markov model with initial parameter values
+bhmm_biofam <- build_hmm(
+  observations = list(child.seq, marr.seq, left.seq),
+  transition_matrix = A,
+  emission_matrix = list(B_child, B_marr, B_left),
+  initial_probs = initial_probs
+  )
+
+# Fitting with default steps:
+# Step 1) EM algorithm
+# Step 2) Global optimization via MLSL_LDS with LBFGS as local optimizer;
+#         3000 evaluations, unlimited time
+# Step 3) Local optimization with LBFGS algorithm for "final polishing";
+          3000 evaluations, unlimited time
+# Note: estimation time limited to 60 seconds by default
+\dontrun{
+hmm_biofam <- fit_hmm(
+  bhmm_biofam,
+  control_global = list(maxeval = 3000, maxtime = 0),
+  control_local = list(maxeval = 3000, maxtime = 0)
+  )
+}
+
+Loading pre-fitted model
+data(hmm_biofam)
+
+logLik(hmm_biofam)
+BIC(hmm_biofam)
+}
 

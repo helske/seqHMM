@@ -142,68 +142,16 @@
 #' @examples 
 #' require(TraMineR)
 #' 
-#' data(biofam)
-#' biofam <- biofam[1:500,]
+#' data(biofam3c)
 #' 
-#' #' # Single-channel data
-#' 
-#' biofam.seq <- seqdef(
-#'   biofam[, 10:25], 
-#'   states = c("Parent", "Left", "Married", "Left+Marr",
-#'              "Left+Child", "Left+Marr+Child", "Divorced"),
-#'   start = 15
-#'   )
-#' 
-#' # Starting values for the emission matrix
-#' B <- matrix(NA, nrow = 4, ncol = 7)
-#' B[1,] <- seqstatf(biofam.seq[, 1:4])[, 2] + 0.1
-#' B[2,] <- seqstatf(biofam.seq[, 5:8])[, 2] + 0.1
-#' B[3,] <- seqstatf(biofam.seq[, 9:12])[, 2] + 0.1
-#' B[4,] <- seqstatf(biofam.seq[, 13:15])[, 2] + 0.1
-#' B <- B / rowSums(B)
-#' 
-#' # Starting values for the transition matrix
-#' A <- matrix(c(0.80, 0.10, 0.05, 0.05,
-#'               0.05, 0.80, 0.10, 0.05,
-#'               0.05, 0.05, 0.80, 0.10,
-#'               0.05, 0.05, 0.10, 0.80), nrow=4, ncol=4, byrow=TRUE)
-#' 
-#' # Starting values for initial state probabilities
-#' initial_probs <- c(0.9, 0.07, 0.02, 0.01)
-#' 
-#' # Building a hidden Markov model with starting values
-#' bHMM <- build_hmm(
-#'   observations = biofam.seq, transition_matrix = A, 
-#'   emission_matrix = B, initial_probs = initial_probs
-#' )
-#' 
-#' #########################################
-#' 
-#' # Multichannel data
-#' 
-#' # Building one channel per type of event left, children or married
-#' bf <- as.matrix(biofam[, 10:25])
-#' children <-  bf == 4 | bf == 5 | bf == 6
-#' married <- bf == 2 | bf == 3 | bf == 6
-#' left <- bf == 1 | bf == 3 | bf == 5 | bf == 6
-#' 
-#' children[children == TRUE] <- "Children"
-#' children[children == FALSE] <- "Childless"
-#' 
-#' married[married == TRUE] <- "Married"
-#' married[married == FALSE] <- "Single"
-#' 
-#' left[left == TRUE] <- "Left home"
-#' left[left == FALSE] <- "With parents"
-#' 
-#' # Building sequence objects
-#' child.seq <- seqdef(children)
-#' marr.seq <- seqdef(married)
-#' left.seq <- seqdef(left)
+#' # Creating sequence objects
+#' child.seq <- seqdef(biofam3c$children, start = 15)
+#' marr.seq <- seqdef(biofam3c$married, start = 15)
+#' left.seq <- seqdef(biofam3c$left, start = 15)
 #' 
 #' ## Choosing colors
 #' attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
-#' attr(marr.seq, "cpal") <- c("#E7298A", "#E6AB02")
+#' attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
 #' attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 #' 
 #' 
@@ -223,7 +171,7 @@
 #' 
 #' # Plotting hidden Markov models
 #' 
-#' # Loading data
+#' # Loading a ready-made HMM for the biofam data
 #' data(hmm_biofam)
 #' 
 #' # Plotting observations and hidden states paths

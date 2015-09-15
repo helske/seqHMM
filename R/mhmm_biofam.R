@@ -18,7 +18,7 @@
 #' 
 #' summary(mhmm_biofam)
 #' 
-#' #' \dontrun{
+#' \dontrun{
 #' # Plotting the model for each cluster (change with Enter)
 #' plot(mhmm_biofam)
 #' }
