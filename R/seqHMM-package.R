@@ -1,4 +1,4 @@
-#' seqHMM
+#' The seqHMM package
 #' 
 #' The seqHMM package is designed for fitting hidden (or latent) Markov models (HMMs) and 
 #' mixture hidden Markov models (MHMMs) for social sequence data and other categorical 
@@ -23,6 +23,8 @@
 #' 
 #' 
 #' ###############################################################
+#' 
+#' ####### Dealing with multichannel sequence data #######
 #' 
 #' ##### Plotting multichannel data #####
 #' 
@@ -65,17 +67,19 @@
 #' # Defining plots for gridplot                   
 #' ssp_m <- ssp(
 #'   mvad.seq[mvad$male == "yes",], type = "d", withlegend = FALSE,
-#'   title = "Men"
+#'   title = "Men", ylab = NA, border = NA
 #'   )
 #' ssp_f <- update(ssp_m, x = mvad.seq[mvad$male == "no",], title = "Women")
 #' 
 #' # Plotting ssp_m and ssp_f in a grid
-#' gridplot(list(ssp_m, ssp_f), ncol = 2)
+#' gridplot(list(ssp_m, ssp_f), ncol = 2, ncol.legend = 2)
 #' 
 #' 
 #' ##### Converting multichannel to single-channel data #####
 #' 
 #' sc_biofam <- mc_to_sc_data(list(marr.seq, child.seq, left.seq))
+#' 
+#' ssplot(sc_biofam, type = "d", legend.prop = 0.5, ylab = "Proportion")
 #' 
 #' 
 #' ###############################################################
@@ -84,14 +88,6 @@
 #' 
 #' ##### Single-channel mvad data #####
 #'
-#' mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school", 
-#'                    "training")
-#' mvad.labels <- c("employment", "further education", "higher education", 
-#'                  "joblessness", "school", "training")
-#' mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-#' mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes, 
-#'                    labels = mvad.labels, xtstep = 6)
-#' 
 #' # Starting values for the emission matrix
 #' emiss <- matrix(NA, nrow = 4, ncol = 6)
 #' emiss[1,] <- seqstatf(mvad.seq[, 1:12])[, 2] + 0.1
@@ -124,11 +120,6 @@
 #'   
 #'   
 #' ##### Multichannel biofam3c data #####
-#' 
-#' # Building sequence objects
-#' child.seq <- seqdef(biofam3c$children, start = 15)
-#' marr.seq <- seqdef(biofam3c$married, start = 15)
-#' left.seq <- seqdef(biofam3c$left, start = 15)
 #' 
 #' # Starting values for emission matrices
 #' B_marr <- matrix(NA, nrow=4, ncol=3)
@@ -369,16 +360,16 @@
 #' 
 #' 
 #' ##### Trimming (mixture) hidden Markov models #####
-#' # i.e. setting small (< 1e-04) parameter values to zero
+#' # i.e. setting small (< zerotol) parameter values to zero
 #' 
 #' trhmm_biofam <- trim_hmm(hmm_biofam, zerotol = 1e-04)
-#' trmhmm_biofam <- trim_hmm(mhmm_biofam, zerotol = 1e-04)
+#' trmhmm_biofam <- trim_hmm(mhmm_biofam, zerotol = 1e-03)
 #' 
 #' 
 #' ##### Converting multichannel models to single-channel models #####
 #' 
-#' schmm_biofam <- sc_to_mc(hmm_biofam)
-#' scmhmm_biofam <- sc_to_mc(mhmm_biofam) 
+#' schmm_biofam <- mc_to_sc(hmm_biofam)
+#' scmhmm_biofam <- mc_to_sc(mhmm_biofam) 
 #' 
 #' 
 #' ##### Summary of the MHMM #####
@@ -418,10 +409,9 @@
 #' plot(mhmm_biofam)
 #' 
 #' # Choosing the cluster (one at a time)
+#' # Exit with 0
 #' plot(mhmm_biofam, ask = TRUE)
 #' }
-
-
 NULL
 
 
