@@ -23,5 +23,6 @@ Imports:
     grid,
     gridBase,
     igraph
+Suggests: MASS, nnet
 License: GPL (>= 2)
 Encoding: UTF-8
