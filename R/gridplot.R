@@ -59,47 +59,33 @@
 #'   
 #' @examples 
 #' require(TraMineR)
-#' data(biofam)
-#' biofam <- biofam[1:500,]
+#' data(biofam3c)
 #' 
-#' ## Building one channel per type of event left, children or married
-#' bf <- as.matrix(biofam[, 10:25])
-#' children <-  bf == 4 | bf == 5 | bf == 6
-#' married <- bf == 2 | bf == 3 | bf == 6
-#' left <- bf == 1 | bf == 3 | bf == 5 | bf == 6
-#' 
-#' children[children == TRUE] <- "Children"
-#' children[children == FALSE] <- "Childless"
-#' 
-#' married[married == TRUE] <- "Married"
-#' married[married == FALSE] <- "Single"
-#' 
-#' left[left == TRUE] <- "Left home"
-#' left[left == FALSE] <- "With parents"
-#' 
-#' ## Building sequence objects
-#' child.seq <- seqdef(children)
-#' marr.seq <- seqdef(married)
-#' left.seq <- seqdef(left)
+#' # Creating sequence objects
+#' child.seq <- seqdef(biofam3c$children, start = 15)
+#' marr.seq <- seqdef(biofam3c$married, start = 15)
+#' left.seq <- seqdef(biofam3c$left, start = 15)
 #' 
 #' ## Choosing colors
 #' attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
-#' attr(marr.seq, "cpal") <- c("#E7298A", "#E6AB02")
+#' attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
 #' attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 #' 
 #' 
 #' # Preparing plot for state distribution plots of observations for women
 #' ssp_f <- ssp(
-#'   list(child.seq[biofam$sex == "woman",], marr.seq[biofam$sex == "woman",], 
-#'        left.seq[biofam$sex == "woman",]),
+#'   list(child.seq[biofam3c$covariates$sex == "woman",], 
+#'        marr.seq[biofam3c$covariates$sex == "woman",], 
+#'        left.seq[biofam3c$covariates$sex == "woman",]),
 #'   type = "d", plots = "obs", title = "Women", 
 #'   ylab = c("Children", "Married", "Left home")
 #'   )
 #' 
 #' # Preparing plot for state distribution plots of observations for men
 #' ssp_m <- ssp(
-#'   list(child.seq[biofam$sex == "man",], marr.seq[biofam$sex == "man",], 
-#'        left.seq[biofam$sex == "man",]), 
+#'   list(child.seq[biofam3c$covariates$sex == "man",], 
+#'        marr.seq[biofam3c$covariates$sex == "man",], 
+#'        left.seq[biofam3c$covariates$sex == "man",]), 
 #'   type = "d", plots = "obs", title = "Men", 
 #'   ylab = c("Children", "Married", "Left home")
 #'   )
@@ -109,8 +95,9 @@
 #' 
 #' # Preparing plots for women's state distributions
 #' ssp_f2 <- ssp(
-#'   list(marr.seq[biofam$sex == "woman",], child.seq[biofam$sex == "woman",],
-#'        left.seq[biofam$sex == "woman",]),
+#'   list(marr.seq[biofam3c$covariates$sex == "woman",], 
+#'        child.seq[biofam3c$covariates$sex == "woman",],
+#'        left.seq[biofam3c$covariates$sex == "woman",]),
 #'   type = "d", border = NA, withlegend = FALSE, 
 #'   title = "State distributions for women", title.n = FALSE, xtlab = 15:30,
 #'   ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home")
@@ -124,8 +111,9 @@
 #' # State distributions with men's data
 #' ssp_m2 <- update(
 #'   ssp_f2, title = "State distributions for men", 
-#'   x = list(marr.seq[biofam$sex == "man",], child.seq[biofam$sex == "man",],
-#'            left.seq[biofam$sex == "man",])
+#'   x = list(marr.seq[biofam3c$covariates$sex == "man",], 
+#'            child.seq[biofam3c$covariates$sex == "man",],
+#'            left.seq[biofam3c$covariates$sex == "man",])
 #'   )
 #' 
 #' # Men's sequences
@@ -210,6 +198,11 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
     }  
   }
   
+  if(x[[1]]$nchannels == 1 && (withlegend == "many" || 
+                               withlegend == TRUE || 
+                               withlegend == "auto")){
+    withlegend <- "combined"
+  }
   
   if(is.na(nrow) && is.na(ncol)){
     nrow <- ceiling(sqrt(ngridplots))
@@ -265,7 +258,7 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
         }else{
           legendp <- "bottom"
         }
-      # byrow=FALSE
+        # byrow=FALSE
       }else{
         if(max(legend.pos)-min(legend.pos)+1>length(legend.pos)){
           legendp <- "bottom"
@@ -274,7 +267,7 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
         }
       }
     }      
-      
+    
     # Legends at bottom
     if(length(legend.pos)==1 && (legend.pos=="auto" || legend.pos=="bottom")){
       legendp <- "bottom"
@@ -318,7 +311,7 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
         }
       }        
       if(length(ncol.legend)==1 && ncol.legend=="auto" && withlegend!=TRUE && 
-           withlegend=="combined"){
+         withlegend=="combined"){
         ncol.legend <- x[[1]]$nplots
       }
       # Legend at right
@@ -365,7 +358,7 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
         }
       }  
       if(length(ncol.legend)==1 && ncol.legend=="auto" && withlegend!=TRUE && 
-           withlegend=="combined"){
+         withlegend=="combined"){
         ncol.legend <- 1
       }
     }
@@ -413,7 +406,7 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
     col.prop <- rep(1/gridncol, gridncol)
   }
   
-
+  
   if(byrow==FALSE){
     plotnrow <- rep(c(1:gridnrow), times=gridncol)
     plotncol <- rep(c(1:gridncol), each=gridnrow)
@@ -469,7 +462,7 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
       plotcells <- plotgrid[1:ngridplots,,drop=FALSE]
     }
   }
-
+  
   
   multitop.vp <- viewport(layout=
                             grid.layout(gridnrow,gridncol,
@@ -522,6 +515,12 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
     upViewport()
   }
   
+  for(i in 1:ngridplots){
+    if(x[[i]]$nchannels == 1){
+      x[[i]]$obs <- list(x[[i]]$obs)
+    }
+  }
+  
   # Legends
   if(!is.na(withlegend) && withlegend!=FALSE){
     if(x[[1]]$plots=="both" || x[[1]]$plots=="mpp"){
@@ -548,7 +547,6 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
             anymissing <- TRUE
           }
         }
-        
       }
       for(j in 1:x[[1]]$nchannels){
         ltext <- c(ltext, unlist(ltexts[[j]]))

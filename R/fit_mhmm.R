@@ -93,54 +93,31 @@
 #' initial_probs1 <- c(0.4, 0.3, 0.3)
 #' initial_probs2 <- c(0.3, 0.3, 0.2, 0.2)
 #' 
-#' # Building a hidden Markov model with starting values
-#' bMHMM <- build_mhmm(
+#' # Building a MHMM with the starting values
+#' bMHMM_mvad <- build_mhmm(
 #'   observations = mvad.seq, 
 #'   transition_matrix = list(A1, A2), 
 #'   emission_matrix = list(B1, B2), 
 #'   initial_probs = list(initial_probs1, initial_probs2)
 #' )                   
 #' 
+#' # Fitting the model with the EM algorithm
+#' MHMM_mvad <- fit_mhmm(
+#'   bMHMM_mvad, em_step = TRUE, global_step = FALSE, local_step = FALSE
+#'   )
 #' 
 #' ##############################################################
 #' 
 #' # Multichannel
 #' 
-#' data(biofam)
-#' biofam <- biofam[1:500,]
+#' data(biofam3c)
 #' 
-#' ## Building one channel per type of event left, children or married
-#' bf <- as.matrix(biofam[, 10:25])
-#' children <-  bf == 4 | bf == 5 | bf == 6
-#' married <- bf == 2 | bf == 3 | bf == 6
-#' left <- bf == 1 | bf == 3 | bf == 5 | bf == 6 | bf == 7
+#' # Building sequence objects
+#' child.seq <- seqdef(biofam3c$children, start = 15)
+#' marr.seq <- seqdef(biofam3c$married, start = 15)
+#' left.seq <- seqdef(biofam3c$left, start = 15)
 #' 
-#' children[children == TRUE] <- "Children"
-#' children[children == FALSE] <- "Childless"
-#' # Divorced parents
-#' div <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 5) > 0) | 
-#'             (rowSums(bf == 7) > 0 & rowSums(bf == 6) > 0),]
-#' children[rownames(bf) %in% rownames(div) & bf == 7] <- "Children"
-#' 
-#' married[married == TRUE] <- "Married"
-#' married[married == FALSE] <- "Single"
-#' married[bf == 7] <- "Divorced"
-#' 
-#' left[left == TRUE] <- "Left home"
-#' left[left == FALSE] <- "With parents"
-#' # Divorced living with parents (before divorce)
-#' wp <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 2) > 0 & rowSums(bf == 3) == 0 &  
-#'           rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0) | 
-#'          (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 & rowSums(bf == 3) == 0 &  
-#'          rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0),]
-#' left[rownames(bf) %in% rownames(wp) & bf == 7] <- "With parents"
-#' 
-#' ## Building sequence objects
-#' child.seq <- seqdef(children, start = 15)
-#' marr.seq <- seqdef(married, start = 15)
-#' left.seq <- seqdef(left, start = 15)
-#' 
-#' ## Starting values for emission probabilities
+#' # Starting values for emission probabilities
 #' 
 #' # Cluster 1
 #' alphabet(child.seq) # Checking for the order of observed states
@@ -222,9 +199,9 @@
 #' initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 #' 
 #' # Birth cohort
-#' biofam$cohort <- cut(biofam$birthyr, c(1908, 1935, 1945, 1957))
-#' biofam$cohort <- factor(
-#'   biofam$cohort, labels=c("1909-1935", "1936-1945", "1946-1957")
+#' biofam3c$covariates$cohort <- cut(biofam3c$covariates$birthyr, c(1908, 1935, 1945, 1957))
+#' biofam3c$covariates$cohort <- factor(
+#'   biofam3c$covariates$cohort, labels=c("1909-1935", "1936-1945", "1946-1957")
 #' )
 #' 
 #' # Build mixture HMM
@@ -235,7 +212,7 @@
 #'                         list(B2_child, B2_marr, B2_left), 
 #'                         list(B3_child, B3_marr, B3_left)),
 #'   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
-#'   formula = ~ sex + cohort, data = biofam,
+#'   formula = ~ sex + cohort, data = biofam3c$covariates,
 #'   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
 #'   channel_names = c("Parenthood", "Marriage", "Left home")
 #'   )
