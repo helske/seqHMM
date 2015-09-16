@@ -29,4 +29,3 @@ left[rownames(bf) %in% rownames(wp) & bf == 7] <- "with parents"
 list("children" = children, "married" = married, 
      "left" = left, "covariates" = biofam[, c(1:9, 26:27)])
 })
-biofam3c

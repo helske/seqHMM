@@ -21,9 +21,11 @@ life states from age 15 to 30: \code{childless} or (having) \code{children};
 \code{single}, \code{married}, or \code{divorced}; and (living) \code{with parents} or
 \code{left home}.
 
+Note that the \code{divorced} state does not give information on parenthood or residence,
+so a guess is made based on preceeding states.
+
 The fourth data frame \code{covariates} is a collection of
 additional variables from the original data:
-
 \tabular{ll}{
  \code{idhous }\tab id\cr
  \code{sex }\tab sex\cr
@@ -40,11 +42,10 @@ additional variables from the original data:
 
 The data is created by calling \code{data(biofam3c)}. It \code{\link{source}}s the
 following code:
-
 \preformatted{
-require(TraMineR)
-data(biofam)
-
+data(biofam, package = "TraMineR")
+biofam3c <- with(biofam, {
+#'
 ## Building one channel per type of event left, children or married
 bf <- as.matrix(biofam[, 10:25])
 children <- bf == 4 | bf == 5 | bf == 6
@@ -65,14 +66,17 @@ married[bf == 7] <- "divorced"
 left[left == TRUE] <- "left home"
 left[left == FALSE] <- "with parents"
 # Divorced living with parents (before divorce)
-wp <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 2) > 0 & rowSums(bf == 3) == 0 &
-            rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0) |
-           (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 & rowSums(bf == 3) == 0 &
-              rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0),]
+wp <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 2) > 0 &
+          rowSums(bf == 3) == 0 & rowSums(bf == 5) == 0 &
+          rowSums(bf == 6) == 0) |
+         (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 &
+          rowSums(bf == 3) == 0 & rowSums(bf == 5) == 0 &
+          rowSums(bf == 6) == 0), ]
 left[rownames(bf) %in% rownames(wp) & bf == 7] <- "with parents"
 
-biofam3c <- list("children" = children, "married" = married,
-                 "left" = left, "covariates" = biofam[, c(1:9, 26:27)])
+list("children" = children, "married" = married, "left" = left,
+  "covariates" = biofam[, c(1:9, 26:27)])
+})
 }
 }
 \references{

@@ -17,7 +17,6 @@
 #' 
 #' The fourth data frame \code{covariates} is a collection of 
 #' additional variables from the original data:
-#' 
 #' \tabular{ll}{
 #'  \code{idhous }\tab id\cr
 #'  \code{sex }\tab sex\cr
@@ -31,14 +30,13 @@
 #'  \code{wp00tbgp }\tab weights inflating to the Swiss population\cr
 #'  \code{wp00tbgs }\tab weights respecting sample size
 #'  }
-#' 
+#'
 #' The data is created by calling \code{data(biofam3c)}. It \code{\link{source}}s the
 #' following code:
-#' 
 #' \preformatted{
 #' data(biofam, package = "TraMineR")
 #' biofam3c <- with(biofam, {
-#' 
+#' #' 
 #' ## Building one channel per type of event left, children or married
 #' bf <- as.matrix(biofam[, 10:25])
 #' children <- bf == 4 | bf == 5 | bf == 6
@@ -65,14 +63,12 @@
 #'          (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 & 
 #'           rowSums(bf == 3) == 0 & rowSums(bf == 5) == 0 & 
 #'           rowSums(bf == 6) == 0), ]
-#' left[rownames(bf) \%in\% rownames(wp) & bf == 7] <- "with parents"
+#' left[rownames(bf) %in% rownames(wp) & bf == 7] <- "with parents"
 #' 
-#' list(
-#'   "children" = children, "married" = married, "left" = left, 
-#'   "covariates" = biofam[, c(1:9, 26:27)]
-#'   )
+#' list("children" = children, "married" = married, "left" = left, 
+#'   "covariates" = biofam[, c(1:9, 26:27)])
 #' })
-#' biofam3c
+#' }
 #' 
 #' @source \code{\link[TraMineR]{biofam}} data constructed from the Swiss Household Panel 
 #' \url{www.swisspanel.ch}

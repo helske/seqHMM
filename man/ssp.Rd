@@ -207,7 +207,7 @@ plot(ssp3)
 # Computing the most probable paths of hidden states
 mpp <- hidden_paths(hmm_biofam)
 mpp.seq <- seqdef(
-  mpp, labels=paste("Hidden states", 1:4)
+  mpp, labels=paste("Hidden state", 1:4)
   )
 
 # Plotting observations and hidden state paths
