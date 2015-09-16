@@ -51,7 +51,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
       
       
       if(!is.finite(ll0 <- logLik(model))){
-        warning("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+        warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
       
@@ -104,7 +104,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
       
       
       if(!is.finite(ll0 <- logLik(model))){
-        warning("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+        warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
       
@@ -159,7 +159,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
       }
       
       if(!is.finite(ll0 <- logLik(model))){
-        warning("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+        warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
       
@@ -215,7 +215,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
       
       
       if(!is.finite(ll0 <- logLik(model))){
-        warning("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+        warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
       
