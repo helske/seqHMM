@@ -140,6 +140,7 @@
 #'   the appropriate plot method.
 #'   
 #' @examples 
+#' \dontrun{
 #' require(TraMineR)
 #' 
 #' data(biofam3c)
@@ -204,7 +205,7 @@
 #'   # Plotting without title and y label
 #'   title = FALSE, ylab = FALSE
 #'   )
-#'   
+#'   }
 #' @seealso \code{\link{plot.ssp}} for plotting objects created with 
 #'   the \code{ssp} function; \code{\link{gridplot}} for plotting multiple \code{ssp} 
 #'   objects; \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and 

@@ -23,6 +23,8 @@
 #' @importFrom stats logLik
 #' @importFrom TraMineR alphabet seqstatf seqdef seqlegend seqdist seqdistmc seqplot seqlength
 #' @examples 
+#' 
+#' \dontrun{
 #' require(TraMineR)
 #' 
 #' # Loading mvad and biofam3c data
@@ -175,13 +177,13 @@
 #' # Step 3) Local optimization with LBFGS algorithm for "final polishing";
 #' #         3000 evaluations, unlimited time
 #' # Note: estimation time is limited to 60 seconds by default
-#' \dontrun{
+#' 
 #' hmm_biofam <- fit_hmm(
 #'   bhmm_biofam, 
 #'   control_global = list(maxeval = 3000, maxtime = 0),
 #'   control_local = list(maxeval = 3000, maxtime = 0)
 #'   )
-#' }
+#' 
 #' 
 #' 
 #' ###############################################################
@@ -343,12 +345,12 @@
 #' # Step 3) Local optimization with LBFGS algorithm for "final polishing";
 #' #         3000 evaluations, unlimited time
 #' # Note: estimation time limited to 60 seconds by default
-#' \dontrun{
+#' 
 #' mhmm_biofam <- fit_mhmm(
 #'   control_em = list(maxeval = 10), control_global = list(maxeval = 3000, maxtime = 0),
 #'   control_local = list(maxeval = 3000, maxtime = 0)
 #'   )
-#' }
+#' 
 #' 
 #' ###############################################################
 #' 
@@ -412,14 +414,13 @@
 #' # Plotting only the first cluster
 #' plot(mhmm_biofam, which.plots = 1)
 #' 
-#' \dontrun{
 #' # Plotting each cluster (change with Enter)
 #' plot(mhmm_biofam)
 #' 
 #' # Choosing the cluster (one at a time)
 #' # Exit with 0
 #' plot(mhmm_biofam, ask = TRUE)
-#' }
+#' 
 #' 
 #' 
 #' # Binomial regression
@@ -461,7 +462,7 @@
 #' summary(fit$model)[c("beta", "beta_se", "logLik")]
 #' BIC(fit$model)
 #' multinom(y ~ x1 + x2, data = data.frame(X[,-1]))
-#' 
+#' }
 NULL
 
 

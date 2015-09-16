@@ -150,6 +150,7 @@ ssplot(x, mpp = NULL, plots = "obs", type = "I", sortv = NULL,
 Function \code{ssplot} plots stacked sequence plots of sequence object created with the \code{\link{seqdef}} function or observations and/or most probable paths of \code{hmm} objects.
 }
 \examples{
+\dontrun{
 require(TraMineR)
 
 data(biofam3c)
@@ -214,6 +215,7 @@ ssplot(
   # Plotting without title and y label
   title = FALSE, ylab = FALSE
   )
+  }
 }
 \seealso{
 \code{\link{plot.ssp}} for plotting objects created with

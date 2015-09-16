@@ -139,6 +139,8 @@
 #'   the appropriate plot method.
 #'   
 #' @examples 
+#' 
+#' \dontrun{
 #' require(TraMineR)
 #' 
 #' data(biofam3c)
@@ -208,7 +210,7 @@
 #'   title = FALSE, ylab = FALSE
 #'   )
 #' plot(ssp4)
-#' 
+#' }
 #' @return Object of class \code{ssp}.
 #'   
 #' @seealso \code{\link{plot.ssp}} for plotting objects created with 
