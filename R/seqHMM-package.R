@@ -463,9 +463,6 @@
 #' multinom(y ~ x1 + x2, data = data.frame(X[,-1]))
 #' 
 NULL
-.onLoad <- function(libname, pkgname) {
-  data("colorpalette", package = pkgname, envir = parent.env(environment()))
-}
 
 
 
