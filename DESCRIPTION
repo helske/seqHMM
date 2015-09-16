@@ -12,7 +12,7 @@ Description: Package seqHMM is designed for inference of hidden Markov models
     Maximum likelihood estimation via EM algorithm and direct numerical
     maximization with analytical gradients is supported. All main algorithms
     are written in C++.
-LazyData: no
+LazyData: true
 LinkingTo: Rcpp, RcppArmadillo
 Imports:
     Matrix,
