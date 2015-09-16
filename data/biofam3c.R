@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 
 data(biofam, package = "TraMineR")
+=======
+>>>>>>> d56b4dcacfa117b2f4bc8517cd2971c9ac362ab7
 
+data(biofam, package = "TraMineR")
+biofam3c <- with(biofam, {
 ## Building one channel per type of event left, children or married
 bf <- as.matrix(biofam[, 10:25])
 children <-  bf==4 | bf==5 | bf==6
@@ -27,6 +32,7 @@ wp <- bf[(rowSums(bf==7)>0 & rowSums(bf==2)>0 & rowSums(bf==3)==0 &
               rowSums(bf==5)==0 & rowSums(bf==6)==0),]
 left[rownames(bf) %in% rownames(wp) & bf==7] <- "with parents"
 
-biofam3c <- list("children" = children, "married" = married, 
+list("children" = children, "married" = married, 
                  "left" = left, "covariates" = biofam[, c(1:9, 26:27)])
+})
 biofam3c

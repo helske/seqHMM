@@ -40,6 +40,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
         } else return(model)
       }
       ll_original <- logLik(model)
+      model_original <- model
       
       model$initial_probs[model$initial_probs < zerotol] <- 0
       model$initial_probs <- model$initial_probs/sum(model$initial_probs)
@@ -49,8 +50,10 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
       model$emission_matrix <- model$emission_matrix/rowSums(model$emission_matrix)
       
       
-      if(!is.finite(ll0 <- logLik(model)))
-        stop("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+      if(!is.finite(ll0 <- logLik(model))){
+        warning("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+        return(model_original)
+      }
       
       if(maxit > 0){
         for(ii in 1:maxit){
@@ -100,8 +103,10 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
       }
       
       
-      if(!is.finite(ll0 <- logLik(model)))
-        stop("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+      if(!is.finite(ll0 <- logLik(model))){
+        warning("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+        return(model_original)
+      }
       
       if(maxit > 0){
         for(ii in 1:maxit){
@@ -153,8 +158,10 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
         model$emission_matrix[[m]] <- model$emission_matrix[[m]]/rowSums(model$emission_matrix[[m]])
       }
       
-      if(!is.finite(ll0 <- logLik(model)))
-        stop("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+      if(!is.finite(ll0 <- logLik(model))){
+        warning("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+        return(model_original)
+      }
       
       if(maxit > 0){
         for(ii in 1:maxit){
@@ -207,8 +214,10 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
       }
       
       
-      if(!is.finite(ll0 <- logLik(model)))
-        stop("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+      if(!is.finite(ll0 <- logLik(model))){
+        warning("Initial trimming resulted a non-finite log-likelihood. Try changing the zerotol parameter.")
+        return(model_original)
+      }
       
       if(maxit > 0){
         for(ii in 1:maxit){
@@ -242,7 +251,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
       }
     }
   }else{
-    stop("An object of class hmm or mixhmm required.")
+    stop("An object of class hmm or mhmm required.")
   }
   
   

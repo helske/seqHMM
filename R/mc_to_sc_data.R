@@ -43,26 +43,21 @@
 #' @seealso \code{\link{seqdef}} for creating state sequence objects.
 
 mc_to_sc_data <- function(data, combine_missing=TRUE, all_combinations=FALSE){
-
-  alph <- apply(
-    expand.grid(lapply(data,alphabet)),                
-    1,paste0,collapse="/")
-    
+  
+  alph <- apply(expand.grid(lapply(data,alphabet)), 1, paste0, collapse = "/")
+  
   datax <- data[[1]]
   for(i in 2:length(data))
     datax <- as.data.frame(mapply(paste, datax,
-                                              data[[i]],
-                                              USE.NAMES=FALSE,SIMPLIFY=FALSE,
-                                              MoreArgs=list(sep="/")))
+      data[[i]], USE.NAMES=FALSE,SIMPLIFY=FALSE,
+      MoreArgs=list(sep="/")))
   names(datax) <- names(data[[1]])   
   if(combine_missing==TRUE){
-    datax[Reduce("|",
-                               lapply(
-                                 data, 
-                                 function(x) 
-                                   x==attr(data[[1]], "nr") |
-                                   x==attr(data[[1]], "void") |
-                                   is.na(x)))]<-NA
+    datax[Reduce("|", lapply(data, 
+        function(x) 
+          x==attr(data[[1]], "nr") |
+          x==attr(data[[1]], "void") |
+          is.na(x)))]<-NA
   }
   
   cpal <- colorpalette[[length(alph)]]
