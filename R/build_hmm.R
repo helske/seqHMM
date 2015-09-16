@@ -1,9 +1,6 @@
 #' Build a Hidden Markov Model
 #' 
 #' Function build_hmm constructs an object of class \code{hmm}.
-#' 
-#' @importFrom Rcpp evalCpp
-#' @importFrom TraMineR alphabet
 #' @export
 #' @useDynLib seqHMM
 #' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing 

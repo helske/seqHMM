@@ -14,6 +14,14 @@
 #' @docType package
 #' @name seqHMM
 #' @aliases seqHMM
+#' @import igraph
+#' @import gridBase
+#' @import grid
+#' @import nloptr
+#' @importFrom Rcpp evalCpp
+#' @importFrom Matrix .bdiag
+#' @importFrom stats logLik
+#' @importFrom TraMineR alphabet seqstatf seqdef seqlegend seqdist seqdistmc seqplot seqlength
 #' @examples 
 #' require(TraMineR)
 #' 
@@ -333,7 +341,7 @@
 #' # Step 2) Global optimization via MLSL_LDS with LBFGS as local optimizer;
 #' #         3000 evaluations, unlimited time
 #' # Step 3) Local optimization with LBFGS algorithm for "final polishing";
-#'           3000 evaluations, unlimited time
+#' #         3000 evaluations, unlimited time
 #' # Note: estimation time limited to 60 seconds by default
 #' \dontrun{
 #' mhmm_biofam <- fit_mhmm(
@@ -447,13 +455,17 @@
 #' b2 <- matrix(c(0, 1, 0),ncol=3)
 #' b3 <- matrix(c(0, 0, 1),ncol=3)
 #' model <- build_mhmm(obs= seqdef(y), ~ x1 + x2,  data.frame(X[, -1]),
-#'   transition_matrix = list(a, a, a),initial_probs = list(1, 1, 1), emission_matrix = list(b1, b2, b3))
+#'   transition_matrix = list(a, a, a), 
+#'   initial_probs = list(1, 1, 1), emission_matrix = list(b1, b2, b3))
 #' fit <- fit_mhmm(model, local_step = FALSE, global_step = FALSE)
 #' summary(fit$model)[c("beta", "beta_se", "logLik")]
 #' BIC(fit$model)
 #' multinom(y ~ x1 + x2, data = data.frame(X[,-1]))
 #' 
 NULL
+.onLoad <- function(libname, pkgname) {
+  data("colorpalette", package = pkgname, envir = parent.env(environment()))
+}
 
 
 

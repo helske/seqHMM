@@ -4,9 +4,7 @@
 #' Function \code{plot.hmm} plots a directed graph with pie charts of 
 #' emission probabilities as vertices/nodes.
 #' 
-#' @import igraph
 #' @export
-#' @importFrom TraMineR seqlegend
 #' @param x A hidden Markov model object of class hmm created with 
 #'   \code{\link{build_hmm}} and \code{\link{fit_hmm}}. Multichannel 
 #'   hmm objects are automatically transformed to single channel objects. 

@@ -7,7 +7,6 @@
 #' to direct numerical maximization.
 #' 
 #' @export 
-#' @import nloptr
 #' @param model Hidden Markov model of class \code{hmm}.
 #' @param em_step Logical, use EM algorithm at the start of parameter estimation.
 #'   The default is \code{TRUE}. Note that EM algorithm is faster than direct numerical optimization, 

@@ -7,10 +7,6 @@
 #' 
 #' 
 #' @export
-#' @importFrom TraMineR seqdist
-#' @importFrom TraMineR seqdistmc
-#' @importFrom TraMineR seqplot
-#' @importFrom TraMineR seqlength
 #' @param x Either hidden Markov model object of class \code{hmm} or a 
 #'   sequence object created with the \code{\link{seqdef}} function or a list of
 #'   sequence objects.
@@ -558,12 +554,12 @@ ssp <- function(x, mpp=NULL,
     # Color palette for mpp
     if(length(mpp.color)==1 && mpp.color=="auto" && length(mpp)>1){
       if(is.null(attr(mpp, "cpal"))){
-        attr(mpp.seq, "cpal") <- seqHMM::colorpalette[[length(alphabet(mpp.seq))]]
+        attr(mpp.seq, "cpal") <- colorpalette[[length(alphabet(mpp.seq))]]
       }else{
         attr(mpp.seq, "cpal") <- attr(mpp, "cpal")
       }
     }else if(!is.null(mpp.labels) && length(mpp.labels)==1 && mpp.color=="auto" && length(mpp)==1 && is.null(mpp)){
-      attr(mpp.seq, "cpal") <- seqHMM::colorpalette[[length(alphabet(mpp.seq))]]
+      attr(mpp.seq, "cpal") <- colorpalette[[length(alphabet(mpp.seq))]]
     }else if(all(isColor(mpp.color))){
       if(length(mpp.color)!=length(alphabet(mpp.seq))){
         warning(paste0("Number of colors assigned to mpp.color does not match the number of hidden states. \n
