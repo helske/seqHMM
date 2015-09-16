@@ -141,7 +141,6 @@
 #' @examples 
 #' 
 #' \dontrun{
-#' require(TraMineR)
 #' 
 #' data(biofam3c)
 #' 

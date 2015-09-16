@@ -18,14 +18,13 @@
 #' hidden Markov models; and \code{\link{hmm_biofam}} for information on the model used 
 #' in the example.
 #'   
-#' @examples 
-#' \dontrun{
+#' @examples
 #' data(hmm_biofam)
 #' 
 #' # Testing if changing parameter values smaller than 1e-04 to zero 
 #' # leads to improved log-likelihood.
 #' hmm_trim <- trim_hmm(hmm_biofam, zerotol = 1e-04, maxit = 10)
-#' }
+#' 
 trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
   
   ll_original <- logLik(model)

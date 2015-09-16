@@ -155,7 +155,6 @@ Function \code{ssp} defines the arguments for plotting with
 }
 \examples{
 \dontrun{
-require(TraMineR)
 
 data(biofam3c)
 

@@ -26,13 +26,11 @@ Function \code{trim_hmm} tries to set small insignificant probabilities to zero
 without decreasing the likelihood significantly.
 }
 \examples{
-\dontrun{
 data(hmm_biofam)
 
 # Testing if changing parameter values smaller than 1e-04 to zero
 # leads to improved log-likelihood.
 hmm_trim <- trim_hmm(hmm_biofam, zerotol = 1e-04, maxit = 10)
-}
 }
 \seealso{
 \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and fitting

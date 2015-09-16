@@ -145,7 +145,7 @@ data(hmm_mvad)
 # Plotting HMM
 plot(hmm_mvad)
 
-#########################################
+\dontrun{
 
 # Multichannel data
 
@@ -215,6 +215,7 @@ plot(hmm_biofam,
      vertex.label = "names",
      # Labels insidde vertices
      vertex.label.dist = 0)
+}
 }
 \seealso{
 \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and

@@ -110,7 +110,7 @@
 #' # Plotting HMM
 #' plot(hmm_mvad)
 #' 
-#' #########################################
+#' \dontrun{
 #' 
 #' # Multichannel data
 #' 
@@ -180,6 +180,7 @@
 #'      vertex.label = "names",
 #'      # Labels insidde vertices
 #'      vertex.label.dist = 0)
+#' }
 
 
 plot.hmm  <- function(x, layout = "horizontal", pie = TRUE, 

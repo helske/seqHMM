@@ -58,7 +58,6 @@
 #'   
 #' @examples 
 #' \dontrun{
-#' require(TraMineR)
 #' data(biofam3c)
 #' 
 #' # Creating sequence objects

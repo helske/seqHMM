@@ -151,7 +151,6 @@ Function \code{ssplot} plots stacked sequence plots of sequence object created w
 }
 \examples{
 \dontrun{
-require(TraMineR)
 
 data(biofam3c)
 

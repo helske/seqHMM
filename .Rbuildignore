@@ -4,5 +4,4 @@
 ^.*\.project
 ^\.travis\.yml$
 ^README.md$
-mixhmmexample.R
 ^Examples$
