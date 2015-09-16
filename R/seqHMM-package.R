@@ -371,7 +371,7 @@
 #' # i.e. setting small (< zerotol) parameter values to zero
 #' 
 #' trhmm_biofam <- trim_hmm(hmm_biofam, zerotol = 1e-04)
-#' trmhmm_biofam <- trim_hmm(mhmm_biofam, zerotol = 1e-03)
+#' trmhmm_biofam <- trim_hmm(mhmm_biofam, zerotol = 1e-04)
 #' 
 #' 
 #' ##### Converting multichannel models to single-channel models #####
