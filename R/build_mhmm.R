@@ -317,9 +317,9 @@ build_mhmm <-
         x == attr(observations[[1]], "void") |
         is.na(x)))))/n_channels
     } else {
-      nobs <- sum(!(x == attr(observations, "nr") |
-          x == attr(observations, "void") |
-          is.na(x)))
+      nobs <- sum(!(observations == attr(observations, "nr") |
+          observations == attr(observations, "void") |
+          is.na(observations)))
     }
     model <- structure(list(observations=observations, transition_matrix=transition_matrix,
       emission_matrix=emission_matrix, initial_probs=initial_probs,

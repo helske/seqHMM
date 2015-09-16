@@ -1,5 +1,5 @@
-require(TraMineR)
-data(biofam)
+
+data(biofam, package = "TraMineR")
 
 ## Building one channel per type of event left, children or married
 bf <- as.matrix(biofam[, 10:25])

@@ -1,4 +1,4 @@
-#' @importFrom Matrix .bdiag
+
 combine_models <- function(model){
   
   n_states_in_clusters <- model$n_states

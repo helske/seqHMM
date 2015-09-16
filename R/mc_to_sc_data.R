@@ -65,7 +65,7 @@ mc_to_sc_data <- function(data, combine_missing=TRUE, all_combinations=FALSE){
                                    is.na(x)))]<-NA
   }
   
-  cpal <- seqHMM::colorpalette[[length(alph)]]
+  cpal <- colorpalette[[length(alph)]]
   
   if(all_combinations==TRUE){
     datax <- suppressWarnings(suppressMessages(seqdef(datax, alphabet=alph)))

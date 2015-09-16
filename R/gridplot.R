@@ -6,8 +6,7 @@
 #' 
 #' 
 #' @export
-#' @import gridBase
-#' @import grid
+
 #'   
 #' @param x A list of \code{ssp} objects.
 #'   

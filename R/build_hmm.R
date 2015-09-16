@@ -1,9 +1,6 @@
 #' Build a Hidden Markov Model
 #' 
 #' Function build_hmm constructs an object of class \code{hmm}.
-#' 
-#' @importFrom Rcpp evalCpp
-#' @importFrom TraMineR alphabet
 #' @export
 #' @useDynLib seqHMM
 #' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing 
@@ -181,9 +178,9 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
         x == attr(observations[[1]], "void") |
         is.na(x)))))/n_channels
   } else {
-    nobs <- sum(!(x == attr(observations, "nr") |
-        x == attr(observations, "void") |
-        is.na(x)))
+    nobs <- sum(!(observations == attr(observations, "nr") |
+        observations == attr(observations, "void") |
+        is.na(observations)))
   }
   
   model <- structure(list(observations=observations,transition_matrix=transition_matrix,

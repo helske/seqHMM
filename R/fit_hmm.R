@@ -7,7 +7,6 @@
 #' to direct numerical maximization.
 #' 
 #' @export 
-#' @import nloptr
 #' @param model Hidden Markov model of class \code{hmm}.
 #' @param em_step Logical, use EM algorithm at the start of parameter estimation.
 #'   The default is \code{TRUE}. Note that EM algorithm is faster than direct numerical optimization, 
@@ -53,8 +52,7 @@
 #'   \item{local_results}{Results after the local step. }
 #' @seealso \code{\link{build_hmm}} for building Hidden Markov models before 
 #'   fitting, \code{\link{trim_hmm}} for finding better models by changing small
-#'   parameter values to zero, \code{\link{BIC.hmm}} for computing the
-#'   value of the Bayesian information criterion of the model, and 
+#'   parameter values to zero, and 
 #'   \code{\link{plot.hmm}} and \code{\link{ssplot}} for plotting 
 #'   hmm objects.
 #' @details The fitting function provides three estimation steps: 1) EM algorithm, 
