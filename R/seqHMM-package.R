@@ -435,7 +435,7 @@
 #'   transition_matrix = list(a, a), initial_probs = list(1, 1), emission_matrix = list(b1, b2))
 #' fit <- fit_mhmm(model)
 #' summary(fit$model)[c("beta", "beta_se", "logLik")]
-#' summary(glm(low ~ age + lwt + smoke + ht, binomial, data = bwt))
+#' summary(glm(low ~ age + lwt + smoke + ht, binomial, data = birthwt))
 #' 
 # multinomial regression
 #' 
