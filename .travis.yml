@@ -4,3 +4,7 @@ sudo: required
 warnings_are_errors: false
 
 r_check_args: "--as-cran --no-manual"
+notifications:
+ email:
+    on_success: change
+    on_failure: change
