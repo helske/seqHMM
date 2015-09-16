@@ -15,3 +15,4 @@ src-x64
 *.so
 *.Rproj.user
 .Rproj.user
+.settings
