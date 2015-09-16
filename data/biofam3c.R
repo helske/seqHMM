@@ -1,4 +1,3 @@
-library(TraMineR)
 utils::data(biofam, package = "TraMineR")
 biofam3c <- with(biofam, {
 ## Building one channel per type of event left, children or married
