@@ -90,7 +90,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
         } else return(model)
       }
       ll_original <- logLik(model)
-      
+      model_original <- model
       model$initial_probs[model$initial_probs < zerotol] <- 0
       model$initial_probs <- model$initial_probs/sum(model$initial_probs)
       model$transition_matrix[model$transition_matrix < zerotol] <- 0
@@ -148,7 +148,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
         } else return(model)
       }
       ll_original <- logLik(model)
-      
+      model_original <- model
       for(m in 1:model$n_clusters){
         model$initial_probs[[m]][model$initial_probs[[m]] < zerotol] <- 0
         model$initial_probs[[m]] <- model$initial_probs[[m]]/sum(model$initial_probs[[m]])
@@ -199,7 +199,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
         } else return(model)
       }
       ll_original <- logLik(model)
-      
+      model <- model_original
       for(m in 1:model$n_clusters){
         model$initial_probs[[m]][model$initial_probs[[m]] < zerotol] <- 0
         model$initial_probs[[m]] <- model$initial_probs[[m]]/sum(model$initial_probs[[m]])

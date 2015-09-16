@@ -14,6 +14,7 @@ Description: Package seqHMM is designed for inference of hidden Markov models
     are written in C++.
 LazyData: true
 LinkingTo: Rcpp, RcppArmadillo
+Depends: R (>= 3.0.0)
 Imports:
     Matrix,
     nloptr,
