@@ -13,6 +13,7 @@ src-x64
 *.o
 *.dll
 *.so
+*.Rproj
 *.Rproj.user
 .Rproj.user
 .settings
