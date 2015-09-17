@@ -339,7 +339,7 @@ build_mhmm <-
       n_sequences=n_sequences, n_clusters=n_clusters,
       n_symbols=n_symbols, n_states=n_states,
       n_channels=n_channels,
-      n_covariates=n_covariates), class = "mhmm", 
+      n_covariates=n_covariates, formula = formula), class = "mhmm", 
       nobs = nobs,
       df = sum(unlist(initial_probs) > 0) - n_clusters + sum(unlist(transition_matrix) > 0) - sum(n_states) + 
         sum(unlist(emission_matrix) > 0) - sum(n_states) * n_channels + n_covariates * (n_clusters - 1))

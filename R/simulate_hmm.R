@@ -2,7 +2,7 @@
 #' 
 #' Simulate sequences of observed and hidden states given parameters of a hidden Markov model.
 #'
-#' @param n Number of simulations.
+#' @param n_sequences Number of simulations.
 #' @param initial_probs A vector of initial state probabilities.
 #' @param transition_matrix A matrix of transition probabilities.
 #' @param emission_matrix A matrix of emission probabilities or a list of such objects (one for each channel).
@@ -27,11 +27,11 @@
 #' 
 #' # Simulating sequences
 #' sim <- simulate_hmm(
-#'   n = 10, initial_probs = initial_probs, 
+#'   n_sequences = 10, initial_probs = initial_probs, 
 #'   transition_matrix = transition_matrix, emission_matrix = emission_matrix, 
 #'   sequence_length = 20)
 
-simulate_hmm <- function(n, initial_probs, transition_matrix, emission_matrix, 
+simulate_hmm <- function(n_sequences, initial_probs, transition_matrix, emission_matrix, 
   sequence_length){
   
   if (is.list(emission_matrix)) {
@@ -51,14 +51,14 @@ simulate_hmm <- function(n, initial_probs, transition_matrix, emission_matrix,
       symbol_names <- lapply(1:n_channels, function(i) 1:n_symbols[i])
   } else symbol_names <- lapply(1:n_channels, function(i) colnames(emission_matrix[[i]]))
   
-  if (channel_names <- is.null(names(emission_matrix))) {
+  if (is.null(channel_names <- names(emission_matrix))) {
     channel_names <- 1:n_channels
   }
   
-  states <- array(NA, c(n, sequence_length))
-  obs  <- array(NA, c(n, sequence_length, n_channels))
+  states <- array(NA, c(n_sequences, sequence_length))
+  obs  <- array(NA, c(n_sequences, sequence_length, n_channels))
   
-  for (i in 1:n) {
+  for (i in 1:n_sequences) {
     states[i, 1] <- sample(state_names, 1, prob = initial_probs)
     for (k in 1:n_channels) {
       obs[i, 1, k] <- sample(symbol_names[[k]], 1, 
@@ -68,7 +68,7 @@ simulate_hmm <- function(n, initial_probs, transition_matrix, emission_matrix,
   
   
   if (sequence_length > 1) {
-    for (i in 1:n) {
+    for (i in 1:n_sequences) {
       for (t in 2:sequence_length) {
         states[i, t] <- sample(state_names, 1, prob = transition_matrix[states[i, t - 1], ])
         for (k in 1:n_channels) {
@@ -79,7 +79,25 @@ simulate_hmm <- function(n, initial_probs, transition_matrix, emission_matrix,
     }
     
   }
-  obs <- suppressMessages(apply(obs, 3, seqdef))
+  obs <- suppressMessages(lapply(1:n_channels, function(i) 
+    seqdef(obs[, , i], alphabet = symbol_names[[i]])))
   if(n_channels == 1) obs <- obs[[1]]
-  list(observations = obs, states = suppressMessages(seqdef(states)))
+  
+  states <- suppressMessages(seqdef(states, alphabet = state_names))
+  
+  
+  p <- 0
+  for (i in 1:n_channels) {
+    attr(obs[[i]], "cpal") <- seqHMM::colorpalette[[
+      length(unlist(symbol_names))]][(p + 1):(p + n_symbols[[i]])]
+    p <- 1
+  }
+  
+  if (length(unlist(symbol_names)) != length(alphabet(states))) {
+    attr(states, "cpal") <- seqHMM::colorpalette[[length(alphabet(states))]]
+  } else {
+    attr(states, "cpal") <- seqHMM::colorpalette[[length(alphabet(states)) + 1]][1:length(alphabet(states))]
+  }
+  
+  list(observations = obs, states = states)
 }
