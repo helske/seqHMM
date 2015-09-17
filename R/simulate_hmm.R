@@ -42,10 +42,10 @@ simulate_hmm <- function(n_sequences, initial_probs, transition_matrix, emission
   }
   
   n_states <- length(initial_probs)
-  if (is.null(state_names <- colnames(transition_matrix))) {
+  if (is.null(state_names <- rownames(transition_matrix))) {
     state_names <- 1:n_states
   }
-  
+  for (i in 1:n_channels) rownames(emission_matrix[[i]]) <- rownames(transition_matrix)
   n_symbols <- sapply(emission_matrix, ncol)
   if (is.null(colnames(emission_matrix[[1]]))) {
       symbol_names <- lapply(1:n_channels, function(i) 1:n_symbols[i])
@@ -81,7 +81,7 @@ simulate_hmm <- function(n_sequences, initial_probs, transition_matrix, emission
   }
   obs <- suppressMessages(lapply(1:n_channels, function(i) 
     seqdef(obs[, , i], alphabet = symbol_names[[i]])))
-  if(n_channels == 1) obs <- obs[[1]]
+
   
   states <- suppressMessages(seqdef(states, alphabet = state_names))
   
@@ -98,6 +98,8 @@ simulate_hmm <- function(n_sequences, initial_probs, transition_matrix, emission
   } else {
     attr(states, "cpal") <- seqHMM::colorpalette[[length(alphabet(states)) + 1]][1:length(alphabet(states))]
   }
+  
+  if (n_channels == 1) obs <- obs[[1]]
   
   list(observations = obs, states = states)
 }

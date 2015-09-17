@@ -25,6 +25,50 @@
 #' information on state sequence objects; and \code{\link{simulate_hmm}}
 #' for simulating hidden Markov models.
 #' @export
+#' @examples 
+#' emission_matrix_1 <- matrix(c(0.75, 0.05, 0.25, 0.95), 2, 2)
+#' emission_matrix_2 <- matrix(c(0.1, 0.8, 0.9, 0.2), 2, 2)
+#' colnames(emission_matrix_1) <- colnames(emission_matrix_2) <- c("heads", "tails")
+#' transition_matrix_1 <- matrix(c(9, 0.1, 1, 9.9)/10, 2, 2)
+#' transition_matrix_2 <- matrix(c(35, 1, 1, 35)/36, 2, 2)
+#' rownames(emission_matrix_1) <- rownames(transition_matrix_1) <- 
+#'   colnames(transition_matrix_1) <- c("coin 1", "coin 2")
+#' rownames(emission_matrix_2) <- rownames(transition_matrix_2) <- 
+#'   colnames(transition_matrix_2) <- c("coin 3", "coin 4")
+#' initial_probs_1 <- c(1, 0)
+#' initial_probs_2 <- c(1, 0)
+#' 
+#' n <- 50
+#' set.seed(123)
+#' covariate_1 <- runif(n)
+#' covariate_2 <- sample(c("A", "B"), size = n, replace = TRUE, 
+#'   prob = c(0.3, 0.7))
+#' dataf <- data.frame(covariate_1, covariate_2)
+#' 
+#' coefs <- cbind(cluster_1 = c(0, 0, 0), cluster_2 = c(-1.5, 3, -0.7))
+#' rownames(coefs) <- c("(Intercept)", "covariate_1", "covariate_2B")
+#' 
+#' sim <- simulate_mhmm(
+#'   n = n, initial_probs = list(initial_probs_1, initial_probs_2), 
+#'   transition_matrix = list(transition_matrix_1, transition_matrix_2), 
+#'   emission_matrix = list(emission_matrix_1, emission_matrix_2), 
+#'   sequence_length = 25, formula = ~covariate_1 + covariate_2,
+#'   data = dataf, coef = coefs)
+#' 
+#' ssplot(sim$observations, mpp = sim$states, plots = "both", sortv = "mds.mpp")
+#' 
+#' hmm <- build_mhmm(sim$observations, initial_probs = list(initial_probs_1, initial_probs_2), 
+#'   transition_matrix = list(transition_matrix_1, transition_matrix_2), 
+#'   emission_matrix = list(emission_matrix_1, emission_matrix_2), formula = ~covariate_1 + covariate_2,
+#'   data = dataf)
+#' 
+#' fit <- fit_mhmm(hmm, local = FALSE, global = FALSE)
+#' 
+#' paths <- hidden_paths(fit$model)
+#' 
+#' ssplot(list(estimates = states, true = sim$states), sortv = "mds.obs", 
+#'   ylab = c("estimated paths", "true (simulated)"))
+#' 
 simulate_mhmm <- function(n_sequences, initial_probs, transition_matrix, 
   emission_matrix, sequence_length, formula, data, coef){
   
@@ -92,8 +136,9 @@ simulate_mhmm <- function(n_sequences, initial_probs, transition_matrix,
     symbol_names <- lapply(1:n_channels, function(i) 1:n_symbols[i])
   } else symbol_names <- lapply(1:n_channels, function(i) colnames(emission_matrix[[1]][[i]]))
   
-  obs <- lapply(1:n_channels, function(i) suppressWarnings(suppressMessages(seqdef(matrix(NA, n_sequences, sequence_length), 
-    alphabet = symbol_names[[i]]))))
+  obs <- lapply(1:n_channels, function(i) {
+    suppressWarnings(suppressMessages(seqdef(matrix(NA, n_sequences, sequence_length), 
+    alphabet = symbol_names[[i]])))})
   
   names(obs) <- channel_names
   
@@ -102,20 +147,21 @@ simulate_mhmm <- function(n_sequences, initial_probs, transition_matrix,
     state_names <- lapply(1:n_clusters, function(i) 1:n_states[i])
   } else state_names <- lapply(1:n_clusters, function(i) rownames(transition_matrix[[i]]))
   v_state_names <- unlist(state_names)
-  if (length(unique(v_state_names)) != length(v_state_names)){
+  if (length(unique(v_state_names)) != length(v_state_names)) {
     for (i in 1:n_clusters) {
       colnames(transition_matrix[[i]]) <- rownames(transition_matrix[[i]]) <- 
-        paste(cluster_names[i], state_names[[i]], sep=":")
+        paste(cluster_names[i], state_names[[i]], sep = ":")
     }
-  }
+    v_state_names <- paste(rep(cluster_names, n_states), v_state_names, sep = ":")
+  } 
   for (i in 1:n_clusters) {
     for (j in 1:n_channels) {
       rownames(emission_matrix[[i]][[j]]) <- 
-        paste(cluster_names[i], state_names[[i]], sep=":")
+        colnames(transition_matrix[[i]])
     }
   }
   
-  v_state_names <- paste(rep(cluster_names, n_states), v_state_names, sep=":")
+ 
   
   states <- suppressWarnings(suppressMessages(seqdef(matrix(NA, 
     n_sequences, sequence_length), alphabet = v_state_names)))
@@ -128,9 +174,11 @@ simulate_mhmm <- function(n_sequences, initial_probs, transition_matrix,
     if(sum(clusters == cluster_names[i]) > 0) {
       sim <- simulate_hmm(n_sequences = sum(clusters == cluster_names[i]), initial_probs[[i]],
         transition_matrix[[i]], emission_matrix[[i]], sequence_length)
+      if(n_channels > 1){
       for (k in 1:n_channels) {
         obs[[k]][clusters == cluster_names[i], ] <- sim$observations[[k]]
       }
+      } else  obs[[1]][clusters == cluster_names[i], ] <- sim$observations
       states[clusters == cluster_names[i], ] <- sim$states
     }
   }
@@ -148,6 +196,8 @@ simulate_mhmm <- function(n_sequences, initial_probs, transition_matrix,
   } else {
     attr(states, "cpal") <- seqHMM::colorpalette[[length(alphabet(states)) + 1]][1:length(alphabet(states))]
   }
+  
+  if (n_channels == 1) obs <- obs[[1]]
   
   
   list(observations = obs, states = states)
