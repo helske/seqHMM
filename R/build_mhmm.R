@@ -177,9 +177,13 @@ build_mhmm <-
   function(observations,transition_matrix,emission_matrix,initial_probs, 
     formula, data, beta, cluster_names=NULL, state_names=NULL, channel_names=NULL){
     
-    n_clusters<-length(transition_matrix)
+    if (is.list(transition_matrix)){
+      n_clusters<-length(transition_matrix)
+    }else{
+      stop("transition_matrix is not a list.")
+    }
     if(length(emission_matrix)!=n_clusters || length(initial_probs)!=n_clusters)
-      stop("Unequal lengths of transition_matrix, emission_matrix and initial_probs.")
+      stop("Unequal list lengths of transition_matrix, emission_matrix and initial_probs.")
     
     if(is.null(cluster_names)){
       cluster_names <- paste("Cluster", 1:n_clusters)
@@ -200,6 +204,12 @@ build_mhmm <-
       state_names <- vector("list", n_clusters)
       for(m in 1:n_clusters){
         state_names[[m]] <- as.character(1:n_states[m])
+      }
+    } else {
+      for (m in 1:n_clusters) {
+        if (length(state_names[[m]]) != n_states[m]) {
+          stop(paste0("Length of state_names for cluster ", m, " is not equal to the number of hidden states."))
+        }
       }
     }
     
@@ -313,9 +323,9 @@ build_mhmm <-
     
     names(transition_matrix) <- names(emission_matrix) <- names(initial_probs) <- cluster_names
     if(n_channels > 1){
-    nobs <- sum(sapply(observations, function(x) sum(!(x == attr(observations[[1]], "nr") |
-        x == attr(observations[[1]], "void") |
-        is.na(x)))))/n_channels
+      nobs <- sum(sapply(observations, function(x) sum(!(x == attr(observations[[1]], "nr") |
+          x == attr(observations[[1]], "void") |
+          is.na(x)))))/n_channels
     } else {
       nobs <- sum(!(observations == attr(observations, "nr") |
           observations == attr(observations, "void") |

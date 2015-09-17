@@ -107,9 +107,13 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
   
   if(dim(transition_matrix)[1]!=dim(transition_matrix)[2])
     stop("transition_matrix must be a square matrix.")
-  n_states<-nrow(transition_matrix)
-  if(is.null(state_names))
-    state_names<-as.character(1:n_states)
+  n_states <- nrow(transition_matrix)
+  
+  if (is.null(state_names)) {
+    state_names <- as.character(1:n_states)
+  } else {
+    if (length(state_names) != n_states) stop("Length of state_names is not equal to the number of hidden states.")
+  }
   
   if(!isTRUE(all.equal(rowSums(transition_matrix),rep(1,dim(transition_matrix)[1]),check.attributes=FALSE)))
     stop("Transition probabilities in transition_matrix do not sum to one.")
