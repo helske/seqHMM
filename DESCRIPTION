@@ -24,6 +24,6 @@ Imports:
     grid,
     gridBase,
     igraph
-Suggests: MASS, nnet
+Suggests: MASS, nnet, testthat
 License: GPL (>= 2)
 Encoding: UTF-8

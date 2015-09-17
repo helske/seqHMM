@@ -78,7 +78,7 @@ fit <- fit_mhmm(hmm, local = FALSE, global = FALSE)
 
 paths <- hidden_paths(fit$model)
 
-ssplot(list(estimates = states, true = sim$states), sortv = "mds.obs",
+ssplot(list(estimates = paths, true = sim$states), sortv = "mds.obs",
   ylab = c("estimated paths", "true (simulated)"))
 }
 \seealso{
