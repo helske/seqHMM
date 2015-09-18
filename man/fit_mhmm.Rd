@@ -262,7 +262,7 @@ MHMM5 <- fit_mhmm(bMHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE,
 MHMM5$logLik #-3081.383
 }
 # Coefficients of covariates
-MHMM1$model$beta
+coef(MHMM1$model)
 
 # Probabilities of belonging to each model for the first six subjects
 head(MHMM1$model$cluster_prob)

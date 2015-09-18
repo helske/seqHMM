@@ -56,7 +56,7 @@ hidden_paths <- function(model){
   
   if(mix){
     out <- viterbix(model$transition_matrix, emissionArray, 
-      model$initial_probs, obsArray, model$beta, 
+      model$initial_probs, obsArray, model$coefficients, 
       model$X, model$n_states_in_clusters)
   } else{
     out <- viterbi(model$transition_matrix, emissionArray, 

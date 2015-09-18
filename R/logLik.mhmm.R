@@ -36,7 +36,7 @@ logLik.mhmm<-function(object, partials = FALSE, ...){
     emissionArray[,1:object$n_symbols[i],i]<-object$emission_matrix[[i]]
   
   ll <- logLikMixHMM(object$transition_matrix, emissionArray, object$initial_probs, obsArray,
-    object$beta, object$X, object$n_states_in_clusters) 
+    object$coefficients, object$X, object$n_states_in_clusters) 
   
   
   structure(if (partials) ll else sum(ll), class = "logLik", df = df, nobs = nobs)

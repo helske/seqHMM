@@ -4,7 +4,7 @@
 print.mhmm <- function(x, ...){
   
   cat("Coefficients :\n\n")
-  print(x$beta, digits = 3)
+  print(x$coefficients, digits = 3)
   
   cat("\nInitial probabilities :\n\n")
   print.listof(x$initial_probs, digits = 3)

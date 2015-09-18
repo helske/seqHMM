@@ -435,7 +435,7 @@
 #' model <- build_mhmm(obs= seqdef(birthwt$low), low ~ age + lwt + smoke + ht, birthwt,
 #'   transition_matrix = list(a, a), initial_probs = list(1, 1), emission_matrix = list(b1, b2))
 #' fit <- fit_mhmm(model)
-#' summary(fit$model)[c("beta", "beta_se", "logLik")]
+#' summary(fit$model)[c("coefficients", "coef_se", "logLik")]
 #' summary(glm(low ~ age + lwt + smoke + ht, binomial, data = birthwt))
 #' 
 # multinomial regression
@@ -445,8 +445,8 @@
 #' set.seed(123)
 #' n <- 100
 #' X <- cbind(1, x1 = runif(n, 0, 1), x2 =  runif(n, 0, 1))
-#' beta <- cbind(0,c(-2, 5, -2), c(0, -2, 2))
-#' pr <- exp(X %*% beta)  + rnorm(n*3)
+#' coefs <- cbind(0,c(-2, 5, -2), c(0, -2, 2))
+#' pr <- exp(X %*% coefs)  + rnorm(n*3)
 #' pr <- pr/rowSums(pr)
 #' y <- apply(pr, 1, which.max)
 #' table(y)
@@ -459,7 +459,7 @@
 #'   transition_matrix = list(a, a, a), 
 #'   initial_probs = list(1, 1, 1), emission_matrix = list(b1, b2, b3))
 #' fit <- fit_mhmm(model, local_step = FALSE, global_step = FALSE)
-#' summary(fit$model)[c("beta", "beta_se", "logLik")]
+#' summary(fit$model)[c("coefficients", "coef_se", "logLik")]
 #' BIC(fit$model)
 #' multinom(y ~ x1 + x2, data = data.frame(X[,-1]))
 #' }

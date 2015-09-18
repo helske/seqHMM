@@ -24,8 +24,8 @@ arma::mat optCoef(const arma::icube& obs, const arma::cube& emission, const arma
     coef.submat(0, 1, coef.n_rows - 1, coef.n_cols - 1) = coefnew;
     iter++;
     if(trace==3){
-      Rcout<<"beta optimization iter: "<< iter;
-      Rcout<<" new beta: "<< std::endl<<coefnew<<std::endl;
+      Rcout<<"coefficient optimization iter: "<< iter;
+      Rcout<<" new coefficients: "<< std::endl<<coefnew<<std::endl;
       Rcout<<" relative change: "<<change<<std::endl;
     }
     weights = exp(X*coef).t();

@@ -26,7 +26,7 @@ combine_models <- function(model){
                 transition_matrix = transition_matrix,
                 emission_matrix=emission_matrix,
                 initial_probs = unlist(model$initial_probs),
-                beta=model$beta, X=model$X,
+    coefficients = model$coefficients, X = model$X,
                 cluster_names=model$cluster_names,
                 state_names=state_names,
                 symbol_names=model$symbol_names,

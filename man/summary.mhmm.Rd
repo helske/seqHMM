@@ -21,8 +21,8 @@ default is 3.}
 \describe{
    \item{logLik}{Log-likelihood}
    \item{BIC}{Bayesian information criterion}
-   \item{beta}{Coefficients of covariate parameters}
-   \item{beta_se}{Standard errors for coefficients}
+   \item{coefficients}{Coefficients of covariates}
+   \item{coef_se}{Standard errors for coefficients}
    \item{most_probable_cluster}{The most probable cluster according to posterior probabilities}
    \item{prior_cluster_probabilities}{Cluster probabilities (mixing proportions) given by the covariates}
    \item{posterior_cluster_probabilities}{Posterior class membership probabilities}

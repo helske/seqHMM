@@ -20,7 +20,7 @@
 #' @param data An optional data frame, list or environment containing the variables 
 #' in the model. If not found in data, the variables are taken from 
 #' \code{environment(formula)}.
-#' @param beta An optional k x l matrix of regression coefficients for time-constant 
+#' @param coefficients An optional k x l matrix of regression coefficients for time-constant 
 #'   covariates for mixture probabilities, where l is the number of clusters and k
 #'   is the number of covariates. A logit-link is used for mixture probabilities.
 #'   The first column is set to zero.
@@ -175,7 +175,7 @@
 #'                     
 build_mhmm <- 
   function(observations,transition_matrix,emission_matrix,initial_probs, 
-    formula, data, beta, cluster_names=NULL, state_names=NULL, channel_names=NULL){
+    formula, data, coefficients, cluster_names=NULL, state_names=NULL, channel_names=NULL){
     
     if (is.list(transition_matrix)){
       n_clusters<-length(transition_matrix)
@@ -309,17 +309,17 @@ build_mhmm <-
     }else{
       stop("Object given for argument formula is not of class formula.")
     }
-    if(missing(beta)){
-      beta<-matrix(0,n_covariates,n_clusters)
+    if(missing(coefficients)){
+      coefficients<-matrix(0,n_covariates,n_clusters)
     } else {
-      if(ncol(beta)!=n_clusters | nrow(beta)!=n_covariates)
-        stop("Wrong dimensions of beta.")
-      beta[,1]<-0
+      if(ncol(coefficients)!=n_clusters | nrow(coefficients)!=n_covariates)
+        stop("Wrong dimensions of coefficients.")
+      coefficients[,1]<-0
     }       
     
     
-    rownames(beta) <- colnames(X)
-    colnames(beta) <- cluster_names
+    rownames(coefficients) <- colnames(X)
+    colnames(coefficients) <- cluster_names
     
     names(transition_matrix) <- names(emission_matrix) <- names(initial_probs) <- cluster_names
     if(n_channels > 1){
@@ -333,7 +333,7 @@ build_mhmm <-
     }
     model <- structure(list(observations=observations, transition_matrix=transition_matrix,
       emission_matrix=emission_matrix, initial_probs=initial_probs,
-      beta=beta, X=X, cluster_names=cluster_names, state_names=state_names, 
+      coefficients=coefficients, X=X, cluster_names=cluster_names, state_names=state_names, 
       symbol_names=symbol_names, channel_names=channel_names, 
       length_of_sequences=length_of_sequences,
       n_sequences=n_sequences, n_clusters=n_clusters,
