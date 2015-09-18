@@ -5,7 +5,7 @@
 \title{Simulate Mixture Hidden Markov Models}
 \usage{
 simulate_mhmm(n_sequences, initial_probs, transition_matrix, emission_matrix,
-  sequence_length, formula, data, coef)
+  sequence_length, formula, data, coefficients)
 }
 \arguments{
 \item{n_sequences}{Number of simulations.}
@@ -27,7 +27,7 @@ dimensions m x s where m is the number of hidden states and s is the number of u
 \item{data}{An optional data frame, list or environment containing the variables in the model.
 If not found in data, the variables are taken from \code{environment(formula)}.}
 
-\item{An}{optional k x l matrix of regression coefficients for time-constant covariates
+\item{coefficients}{An optional k x l matrix of regression coefficients for time-constant covariates
 for mixture probabilities, where l is the number of clusters and k is the number of
 covariates. A logit-link is used for mixture probabilities. The first column is set to zero.}
 }
@@ -65,13 +65,15 @@ sim <- simulate_mhmm(
   transition_matrix = list(transition_matrix_1, transition_matrix_2),
   emission_matrix = list(emission_matrix_1, emission_matrix_2),
   sequence_length = 25, formula = ~covariate_1 + covariate_2,
-  data = dataf, coef = coefs)
+  data = dataf, coefficients = coefs)
 
 ssplot(sim$observations, mpp = sim$states, plots = "both", sortv = "mds.mpp")
 
-hmm <- build_mhmm(sim$observations, initial_probs = list(initial_probs_1, initial_probs_2),
+hmm <- build_mhmm(sim$observations,
+initial_probs = list(initial_probs_1, initial_probs_2),
   transition_matrix = list(transition_matrix_1, transition_matrix_2),
-  emission_matrix = list(emission_matrix_1, emission_matrix_2), formula = ~covariate_1 + covariate_2,
+  emission_matrix = list(emission_matrix_1, emission_matrix_2),
+  formula = ~covariate_1 + covariate_2,
   data = dataf)
 
 fit <- fit_mhmm(hmm, local = FALSE, global = FALSE)

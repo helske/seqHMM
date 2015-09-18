@@ -46,7 +46,7 @@ summary.mhmm <- function(object, parameters = FALSE, digits = 3, ...){
     (sum(unlist(object$initial_probs)>0)+sum(unlist(object$transition_matrix)>0)+
         sum(unlist(object$emission_matrix)>0))
   
-  coef_se <- sd_coef(object)
+  coef_se <- se_coef(object)
   rownames(coef_se) <- rownames(object$coefficients)
   colnames(coef_se) <- colnames(object$coefficients)
   

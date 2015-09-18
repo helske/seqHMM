@@ -14,7 +14,7 @@
 #' @param formula Covariates as an object of class \code{\link{formula}}, left side omitted.
 #' @param data An optional data frame, list or environment containing the variables in the model. 
 #' If not found in data, the variables are taken from \code{environment(formula)}.
-#' @param An optional k x l matrix of regression coefficients for time-constant covariates 
+#' @param coefficients An optional k x l matrix of regression coefficients for time-constant covariates 
 #' for mixture probabilities, where l is the number of clusters and k is the number of 
 #' covariates. A logit-link is used for mixture probabilities. The first column is set to zero.
 #' 
@@ -53,13 +53,15 @@
 #'   transition_matrix = list(transition_matrix_1, transition_matrix_2), 
 #'   emission_matrix = list(emission_matrix_1, emission_matrix_2), 
 #'   sequence_length = 25, formula = ~covariate_1 + covariate_2,
-#'   data = dataf, coef = coefs)
+#'   data = dataf, coefficients = coefs)
 #' 
 #' ssplot(sim$observations, mpp = sim$states, plots = "both", sortv = "mds.mpp")
 #' 
-#' hmm <- build_mhmm(sim$observations, initial_probs = list(initial_probs_1, initial_probs_2), 
+#' hmm <- build_mhmm(sim$observations, 
+#' initial_probs = list(initial_probs_1, initial_probs_2), 
 #'   transition_matrix = list(transition_matrix_1, transition_matrix_2), 
-#'   emission_matrix = list(emission_matrix_1, emission_matrix_2), formula = ~covariate_1 + covariate_2,
+#'   emission_matrix = list(emission_matrix_1, emission_matrix_2), 
+#'   formula = ~covariate_1 + covariate_2,
 #'   data = dataf)
 #' 
 #' fit <- fit_mhmm(hmm, local = FALSE, global = FALSE)
@@ -70,7 +72,7 @@
 #'   ylab = c("estimated paths", "true (simulated)"))
 #' 
 simulate_mhmm <- function(n_sequences, initial_probs, transition_matrix, 
-  emission_matrix, sequence_length, formula, data, coef){
+  emission_matrix, sequence_length, formula, data, coefficients){
   
   if (is.list(transition_matrix)){
     n_clusters<-length(transition_matrix)
@@ -118,16 +120,16 @@ simulate_mhmm <- function(n_sequences, initial_probs, transition_matrix,
   } else {
     stop("Object given for argument formula is not of class formula.")
   }
-  if (missing(coef)) {
-    coef <- matrix(0, n_covariates, n_clusters)
+  if (missing(coefficients)) {
+    coefficients <- matrix(0, n_covariates, n_clusters)
   } else {
-    if (ncol(coef) != n_clusters | nrow(coef) != n_covariates) {
-      stop("Wrong dimensions of coef.")
+    if (ncol(coefficients) != n_clusters | nrow(coefficients) != n_covariates) {
+      stop("Wrong dimensions of coefficients")
     }
-    coef[, 1] <- 0
+    coefficients[, 1] <- 0
   }       
   
-  pr <- exp(X %*% coef)
+  pr <- exp(X %*% coefficients)
   pr <- pr / rowSums(pr)
   
   
@@ -138,7 +140,7 @@ simulate_mhmm <- function(n_sequences, initial_probs, transition_matrix,
   
   obs <- lapply(1:n_channels, function(i) {
     suppressWarnings(suppressMessages(seqdef(matrix(NA, n_sequences, sequence_length), 
-    alphabet = symbol_names[[i]])))})
+      alphabet = symbol_names[[i]])))})
   
   names(obs) <- channel_names
   
@@ -161,7 +163,7 @@ simulate_mhmm <- function(n_sequences, initial_probs, transition_matrix,
     }
   }
   
- 
+  
   
   states <- suppressWarnings(suppressMessages(seqdef(matrix(NA, 
     n_sequences, sequence_length), alphabet = v_state_names)))
@@ -175,15 +177,15 @@ simulate_mhmm <- function(n_sequences, initial_probs, transition_matrix,
       sim <- simulate_hmm(n_sequences = sum(clusters == cluster_names[i]), initial_probs[[i]],
         transition_matrix[[i]], emission_matrix[[i]], sequence_length)
       if(n_channels > 1){
-      for (k in 1:n_channels) {
-        obs[[k]][clusters == cluster_names[i], ] <- sim$observations[[k]]
-      }
+        for (k in 1:n_channels) {
+          obs[[k]][clusters == cluster_names[i], ] <- sim$observations[[k]]
+        }
       } else  obs[[1]][clusters == cluster_names[i], ] <- sim$observations
       states[clusters == cluster_names[i], ] <- sim$states
     }
   }
   
-
+  
   p <- 0
   for (i in 1:n_channels) {
     attr(obs[[i]], "cpal") <- seqHMM::colorpalette[[

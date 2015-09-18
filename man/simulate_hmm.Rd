@@ -36,7 +36,8 @@ set.seed(1)
 # Simulating sequences
 sim <- simulate_hmm(
   n_sequences = 10, initial_probs = initial_probs,
-  transition_matrix = transition_matrix, emission_matrix = emission_matrix,
+  transition_matrix = transition_matrix,
+  emission_matrix = emission_matrix,
   sequence_length = 20)
 }
 \seealso{

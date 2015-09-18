@@ -28,7 +28,8 @@
 #' # Simulating sequences
 #' sim <- simulate_hmm(
 #'   n_sequences = 10, initial_probs = initial_probs, 
-#'   transition_matrix = transition_matrix, emission_matrix = emission_matrix, 
+#'   transition_matrix = transition_matrix, 
+#'   emission_matrix = emission_matrix, 
 #'   sequence_length = 20)
 
 simulate_hmm <- function(n_sequences, initial_probs, transition_matrix, emission_matrix, 
@@ -48,7 +49,7 @@ simulate_hmm <- function(n_sequences, initial_probs, transition_matrix, emission
   for (i in 1:n_channels) rownames(emission_matrix[[i]]) <- rownames(transition_matrix)
   n_symbols <- sapply(emission_matrix, ncol)
   if (is.null(colnames(emission_matrix[[1]]))) {
-      symbol_names <- lapply(1:n_channels, function(i) 1:n_symbols[i])
+    symbol_names <- lapply(1:n_channels, function(i) 1:n_symbols[i])
   } else symbol_names <- lapply(1:n_channels, function(i) colnames(emission_matrix[[i]]))
   
   if (is.null(channel_names <- names(emission_matrix))) {
@@ -81,7 +82,7 @@ simulate_hmm <- function(n_sequences, initial_probs, transition_matrix, emission
   }
   obs <- suppressMessages(lapply(1:n_channels, function(i) 
     seqdef(obs[, , i], alphabet = symbol_names[[i]])))
-
+  
   
   states <- suppressMessages(seqdef(states, alphabet = state_names))
   
