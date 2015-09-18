@@ -4,6 +4,54 @@
 #' 
 #' @format A hidden Markov model of class \code{hmm}; 
 #' unrestricted model with six hidden states.
+#' 
+#' @details 
+#' The model is loaded by calling \code{data(hmm_mvad)}. It was created with the 
+#' following code:
+#' \preformatted{
+#' require(TraMineR)
+#' data(mvad)
+#' 
+#' mvad.alphabet <- c(
+#'   "employment", "FE", "HE", "joblessness", "school", "training")
+#' mvad.labels <- c(
+#'   "employment", "further education", "higher education", 
+#'   "joblessness", "school", "training")
+#' mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
+#' mvad.seq <- seqdef(
+#'   mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes, 
+#'   labels = mvad.labels, xtstep = 6)
+#' 
+#' # Starting values for the emission matrix
+#' emiss <- matrix(
+#'   c(0.1, 0.1, 0.1, 0.1, 0.5, 0.1, # SC
+#'     0.1, 0.5, 0.1, 0.1, 0.1, 0.1, # FE
+#'     0.1, 0.1, 0.1, 0.3, 0.1, 0.3, # JL, TR
+#'     0.1, 0.1, 0.5, 0.1, 0.1, 0.1, # HE
+#'     0.5, 0.1, 0.1, 0.1, 0.1, 0.1),# EM 
+#'   nrow = 5, ncol = 6, byrow = TRUE)
+#' 
+#' # Starting values for the transition matrix
+#' trans <-  matrix(
+#'   c(0.80, 0.05, 0.05, 0.05, 0.05,
+#'     0.05, 0.05, 0.80, 0.05, 0.05,
+#'     0.05, 0.05, 0.80, 0.05, 0.05,
+#'     0.05, 0.05, 0.05, 0.80, 0.05,
+#'     0.05, 0.05, 0.05, 0.05, 0.80), 
+#'   nrow=5, ncol=5, byrow=TRUE)
+#' 
+#' # Starting values for initial state probabilities
+#' initial_probsm <- c(0.2, 0.2, 0.2, 0.2, 0.2)
+#' 
+#' # Building a hidden Markov model with starting values
+#' bHMMm <- build_hmm(
+#'   observations = mvad.seq, transition_matrix = trans, 
+#'   emission_matrix = emiss, initial_probs = initial_probsm)
+#' 
+#' HMMm <- fit_hmm(
+#'   bHMMm, control_global = list(maxtime = 0),
+#'   control_local = list(maxtime = 0))
+#' }
 #'   
 #' @seealso Examples of building and fitting HMMs in \code{\link{build_hmm}} and 
 #' \code{\link{fit_hmm}}; and \code{\link[TraMineR]{mvad}} for more information on the data.
