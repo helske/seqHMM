@@ -31,7 +31,7 @@
 #'  \code{wp00tbgs }\tab weights respecting sample size
 #'  }
 #'
-#' The data is created by calling \code{data(biofam3c)}. It \code{\link{source}}s the
+#' The data is loaded by calling \code{data(biofam3c)}. It \code{\link{source}}s the
 #' following code:
 #' \preformatted{
 #' data(biofam, package = "TraMineR")
