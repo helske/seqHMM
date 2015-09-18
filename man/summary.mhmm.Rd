@@ -10,7 +10,7 @@
 \item{object}{Mixture hidden Markov model of class \code{mhmm}.}
 
 \item{parameters}{Whether or not to print parameters of transition, emission, and
-initial probabilities.}
+initial probabilities. \code{FALSE} by default.}
 
 \item{digits}{Number of decimal places to be used when printing parameters. The
 default is 3.}
@@ -31,6 +31,12 @@ default is 3.}
 }
 \description{
 Function \code{summary.mhmm} gives a summary of a mixture hidden Markov model.
+}
+\details{
+The \code{summary.mhmm} function computes features from a mixture hidden Markov
+model and stores them as a list. A \code{print} method prints summaries of these:
+log-likelihood and BIC, coefficients and standard errors of covariates, means of prior
+cluster probabilities, and information on most probable clusters.
 }
 \examples{
 # Loading mixture hidden Markov model (mhmm object)

@@ -54,10 +54,10 @@ print.summary.mhmm <- function(x, ...){
   
   tbl <- table(x$most_probable_cluster)
   cl <- matrix(c(as.character(tbl), 
-                 as.character(round(prop.table(tbl)*100, digits = x$digits))), 
+                 as.character(round(prop.table(tbl), digits = x$digits))), 
                nrow = 2, byrow = TRUE)
   colnames(cl) <- x$model$cluster_names
-  rownames(cl) <- c("n", "%")
+  rownames(cl) <- c("count", "proportion")
   cat("Most probable clusters :\n\n")
   print.default(cl, quote = FALSE, print.gap = 2, right = TRUE)
   cat("\n\n")
