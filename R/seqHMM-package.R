@@ -23,6 +23,8 @@
 #' @importFrom stats logLik
 #' @importFrom TraMineR alphabet seqstatf seqdef seqlegend seqdist seqdistmc seqplot seqlength
 #' @examples 
+#' 
+#' \dontrun{
 #' require(TraMineR)
 #' 
 #' # Loading mvad and biofam3c data
@@ -175,13 +177,13 @@
 #' # Step 3) Local optimization with LBFGS algorithm for "final polishing";
 #' #         3000 evaluations, unlimited time
 #' # Note: estimation time is limited to 60 seconds by default
-#' \dontrun{
+#' 
 #' hmm_biofam <- fit_hmm(
 #'   bhmm_biofam, 
 #'   control_global = list(maxeval = 3000, maxtime = 0),
 #'   control_local = list(maxeval = 3000, maxtime = 0)
 #'   )
-#' }
+#' 
 #' 
 #' 
 #' ###############################################################
@@ -343,12 +345,12 @@
 #' # Step 3) Local optimization with LBFGS algorithm for "final polishing";
 #' #         3000 evaluations, unlimited time
 #' # Note: estimation time limited to 60 seconds by default
-#' \dontrun{
+#' 
 #' mhmm_biofam <- fit_mhmm(
 #'   control_em = list(maxeval = 10), control_global = list(maxeval = 3000, maxtime = 0),
 #'   control_local = list(maxeval = 3000, maxtime = 0)
 #'   )
-#' }
+#' 
 #' 
 #' ###############################################################
 #' 
@@ -412,14 +414,13 @@
 #' # Plotting only the first cluster
 #' plot(mhmm_biofam, which.plots = 1)
 #' 
-#' \dontrun{
 #' # Plotting each cluster (change with Enter)
 #' plot(mhmm_biofam)
 #' 
 #' # Choosing the cluster (one at a time)
 #' # Exit with 0
 #' plot(mhmm_biofam, ask = TRUE)
-#' }
+#' 
 #' 
 #' 
 #' # Binomial regression
@@ -434,7 +435,7 @@
 #' model <- build_mhmm(obs= seqdef(birthwt$low), low ~ age + lwt + smoke + ht, birthwt,
 #'   transition_matrix = list(a, a), initial_probs = list(1, 1), emission_matrix = list(b1, b2))
 #' fit <- fit_mhmm(model)
-#' summary(fit$model)[c("beta", "beta_se", "logLik")]
+#' summary(fit$model)[c("coefficients", "coef_se", "logLik")]
 #' summary(glm(low ~ age + lwt + smoke + ht, binomial, data = birthwt))
 #' 
 # multinomial regression
@@ -444,8 +445,8 @@
 #' set.seed(123)
 #' n <- 100
 #' X <- cbind(1, x1 = runif(n, 0, 1), x2 =  runif(n, 0, 1))
-#' beta <- cbind(0,c(-2, 5, -2), c(0, -2, 2))
-#' pr <- exp(X %*% beta)  + rnorm(n*3)
+#' coefs <- cbind(0,c(-2, 5, -2), c(0, -2, 2))
+#' pr <- exp(X %*% coefs)  + rnorm(n*3)
 #' pr <- pr/rowSums(pr)
 #' y <- apply(pr, 1, which.max)
 #' table(y)
@@ -458,10 +459,10 @@
 #'   transition_matrix = list(a, a, a), 
 #'   initial_probs = list(1, 1, 1), emission_matrix = list(b1, b2, b3))
 #' fit <- fit_mhmm(model, local_step = FALSE, global_step = FALSE)
-#' summary(fit$model)[c("beta", "beta_se", "logLik")]
+#' summary(fit$model)[c("coefficients", "coef_se", "logLik")]
 #' BIC(fit$model)
 #' multinom(y ~ x1 + x2, data = data.frame(X[,-1]))
-#' 
+#' }
 NULL
 
 

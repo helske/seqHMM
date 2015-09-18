@@ -28,7 +28,7 @@ forward_probs<-function(model){
     emissionArray[,1:model$n_symbols[i],i]<-model$emission_matrix[[i]]
   if(mix){
     out<-forwardx(model$transition_matrix, emissionArray, 
-      model$initial_probs, obsArray, model$beta,model$X,model$n_states_in_clusters)
+      model$initial_probs, obsArray, model$coefficients,model$X,model$n_states_in_clusters)
   } else{
     out<-forward(model$transition_matrix, emissionArray, 
       model$initial_probs, obsArray)

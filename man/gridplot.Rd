@@ -63,7 +63,7 @@ Function \code{gridplot} plots multiple \code{ssp} objects to a
 grid.
 }
 \examples{
-require(TraMineR)
+\dontrun{
 data(biofam3c)
 
 # Creating sequence objects
@@ -139,6 +139,7 @@ gridplot(
   # defining the legend positions by the cell numbers
   legend.pos = 3:4
   )
+ }
 }
 \seealso{
 \code{\link{ssp}} for defining the plot before using

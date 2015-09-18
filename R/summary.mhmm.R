@@ -15,8 +15,8 @@
 #' @return \describe{
 #'    \item{logLik}{Log-likelihood}
 #'    \item{BIC}{Bayesian information criterion}
-#'    \item{beta}{Coefficients of covariate parameters}
-#'    \item{beta_se}{Standard errors for coefficients}
+#'    \item{coefficients}{Coefficients of covariates}
+#'    \item{coef_se}{Standard errors for coefficients}
 #'    \item{most_probable_cluster}{The most probable cluster according to posterior probabilities}
 #'    \item{prior_cluster_probabilities}{Cluster probabilities (mixing proportions) given by the covariates}
 #'    \item{posterior_cluster_probabilities}{Posterior class membership probabilities}
@@ -46,13 +46,13 @@ summary.mhmm <- function(object, parameters = FALSE, digits = 3, ...){
     (sum(unlist(object$initial_probs)>0)+sum(unlist(object$transition_matrix)>0)+
         sum(unlist(object$emission_matrix)>0))
   
-  beta_se <- sd_beta(object)
-  rownames(beta_se) <- rownames(object$beta)
-  colnames(beta_se) <- colnames(object$beta)
+  coef_se <- se_coef(object)
+  rownames(coef_se) <- rownames(object$coefficients)
+  colnames(coef_se) <- colnames(object$coefficients)
   
   fw <- forward_probs(object)[,object$length_of_sequences,]
   
-  pr <- exp(object$X%*%object$beta)
+  pr <- exp(object$X%*%object$coefficients)
   prior_cluster_probabilities <- pr/rowSums(pr)
 
 
@@ -78,7 +78,7 @@ summary.mhmm <- function(object, parameters = FALSE, digits = 3, ...){
   if(!parameters){
     summary_mhmm <- list(
       logLik = sum_logLik, BIC = BIC, most_probable_cluster = most_probable_cluster, 
-      beta = object$beta, beta_se = beta_se,
+      coefficients = object$coefficients, coef_se = coef_se,
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
       classification_table = clProbs,
@@ -91,7 +91,7 @@ summary.mhmm <- function(object, parameters = FALSE, digits = 3, ...){
       emission_matrix = object$emission_matrix,
       initial_probs = object$initial_probs,
       logLik = sum_logLik, BIC = BIC, most_probable_cluster = most_probable_cluster, 
-      beta = object$beta, beta_se = beta_se,
+      coefficients = object$coefficients, coef_se = coef_se,
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
       classification_table = clProbs,

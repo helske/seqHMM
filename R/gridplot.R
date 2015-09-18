@@ -57,7 +57,7 @@
 #'   from 0 to 1, with values summing to 1.
 #'   
 #' @examples 
-#' require(TraMineR)
+#' \dontrun{
 #' data(biofam3c)
 #' 
 #' # Creating sequence objects
@@ -133,7 +133,7 @@
 #'   # defining the legend positions by the cell numbers
 #'   legend.pos = 3:4
 #'   )
-#'                   
+#'  }                 
 #'                   
 #' @seealso \code{\link{ssp}} for defining the plot before using
 #'   \code{gridplot}, and \code{\link{plot.ssp}} for plotting only one ssp object.

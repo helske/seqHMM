@@ -192,6 +192,6 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     }
     Rcpp::Rcout<<"Final log-likelihood: "<< sumlogLik<<std::endl;
   }
-  return List::create(Named("beta") = wrap(coef), Named("initialProbs") = wrap(exp(init)), Named("transitionMatrix") = wrap(exp(transition)),
+  return List::create(Named("coefficients") = wrap(coef), Named("initialProbs") = wrap(exp(init)), Named("transitionMatrix") = wrap(exp(transition)),
     Named("emissionArray") = wrap(exp(emission)),Named("logLik") = sumlogLik,Named("iterations")=iter,Named("change")=change);
 }

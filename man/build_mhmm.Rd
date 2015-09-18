@@ -5,7 +5,7 @@
 \title{Build a Mixture Hidden Markov Model}
 \usage{
 build_mhmm(observations, transition_matrix, emission_matrix, initial_probs,
-  formula, data, beta, cluster_names = NULL, state_names = NULL,
+  formula, data, coefficients, cluster_names = NULL, state_names = NULL,
   channel_names = NULL)
 }
 \arguments{
@@ -31,7 +31,7 @@ left side omitted.}
 in the model. If not found in data, the variables are taken from
 \code{environment(formula)}.}
 
-\item{beta}{An optional k x l matrix of regression coefficients for time-constant
+\item{coefficients}{An optional k x l matrix of regression coefficients for time-constant
 covariates for mixture probabilities, where l is the number of clusters and k
 is the number of covariates. A logit-link is used for mixture probabilities.
 The first column is set to zero.}

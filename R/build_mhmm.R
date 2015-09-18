@@ -20,7 +20,7 @@
 #' @param data An optional data frame, list or environment containing the variables 
 #' in the model. If not found in data, the variables are taken from 
 #' \code{environment(formula)}.
-#' @param beta An optional k x l matrix of regression coefficients for time-constant 
+#' @param coefficients An optional k x l matrix of regression coefficients for time-constant 
 #'   covariates for mixture probabilities, where l is the number of clusters and k
 #'   is the number of covariates. A logit-link is used for mixture probabilities.
 #'   The first column is set to zero.
@@ -175,11 +175,15 @@
 #'                     
 build_mhmm <- 
   function(observations,transition_matrix,emission_matrix,initial_probs, 
-    formula, data, beta, cluster_names=NULL, state_names=NULL, channel_names=NULL){
+    formula, data, coefficients, cluster_names=NULL, state_names=NULL, channel_names=NULL){
     
-    n_clusters<-length(transition_matrix)
+    if (is.list(transition_matrix)){
+      n_clusters<-length(transition_matrix)
+    }else{
+      stop("transition_matrix is not a list.")
+    }
     if(length(emission_matrix)!=n_clusters || length(initial_probs)!=n_clusters)
-      stop("Unequal lengths of transition_matrix, emission_matrix and initial_probs.")
+      stop("Unequal list lengths of transition_matrix, emission_matrix and initial_probs.")
     
     if(is.null(cluster_names)){
       cluster_names <- paste("Cluster", 1:n_clusters)
@@ -200,6 +204,12 @@ build_mhmm <-
       state_names <- vector("list", n_clusters)
       for(m in 1:n_clusters){
         state_names[[m]] <- as.character(1:n_states[m])
+      }
+    } else {
+      for (m in 1:n_clusters) {
+        if (length(state_names[[m]]) != n_states[m]) {
+          stop(paste0("Length of state_names for cluster ", m, " is not equal to the number of hidden states."))
+        }
       }
     }
     
@@ -299,23 +309,23 @@ build_mhmm <-
     }else{
       stop("Object given for argument formula is not of class formula.")
     }
-    if(missing(beta)){
-      beta<-matrix(0,n_covariates,n_clusters)
+    if(missing(coefficients)){
+      coefficients<-matrix(0,n_covariates,n_clusters)
     } else {
-      if(ncol(beta)!=n_clusters | nrow(beta)!=n_covariates)
-        stop("Wrong dimensions of beta.")
-      beta[,1]<-0
+      if(ncol(coefficients)!=n_clusters | nrow(coefficients)!=n_covariates)
+        stop("Wrong dimensions of coefficients.")
+      coefficients[,1]<-0
     }       
     
     
-    rownames(beta) <- colnames(X)
-    colnames(beta) <- cluster_names
+    rownames(coefficients) <- colnames(X)
+    colnames(coefficients) <- cluster_names
     
     names(transition_matrix) <- names(emission_matrix) <- names(initial_probs) <- cluster_names
     if(n_channels > 1){
-    nobs <- sum(sapply(observations, function(x) sum(!(x == attr(observations[[1]], "nr") |
-        x == attr(observations[[1]], "void") |
-        is.na(x)))))/n_channels
+      nobs <- sum(sapply(observations, function(x) sum(!(x == attr(observations[[1]], "nr") |
+          x == attr(observations[[1]], "void") |
+          is.na(x)))))/n_channels
     } else {
       nobs <- sum(!(observations == attr(observations, "nr") |
           observations == attr(observations, "void") |
@@ -323,13 +333,13 @@ build_mhmm <-
     }
     model <- structure(list(observations=observations, transition_matrix=transition_matrix,
       emission_matrix=emission_matrix, initial_probs=initial_probs,
-      beta=beta, X=X, cluster_names=cluster_names, state_names=state_names, 
+      coefficients=coefficients, X=X, cluster_names=cluster_names, state_names=state_names, 
       symbol_names=symbol_names, channel_names=channel_names, 
       length_of_sequences=length_of_sequences,
       n_sequences=n_sequences, n_clusters=n_clusters,
       n_symbols=n_symbols, n_states=n_states,
       n_channels=n_channels,
-      n_covariates=n_covariates), class = "mhmm", 
+      n_covariates=n_covariates, formula = formula), class = "mhmm", 
       nobs = nobs,
       df = sum(unlist(initial_probs) > 0) - n_clusters + sum(unlist(transition_matrix) > 0) - sum(n_states) + 
         sum(unlist(emission_matrix) > 0) - sum(n_states) * n_channels + n_covariates * (n_clusters - 1))

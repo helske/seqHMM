@@ -154,7 +154,7 @@ Function \code{ssp} defines the arguments for plotting with
 \code{\link{ssplot}} or \code{\link{gridplot}}.
 }
 \examples{
-require(TraMineR)
+\dontrun{
 
 data(biofam3c)
 
@@ -223,6 +223,7 @@ ssp4 <- ssp(
   title = FALSE, ylab = FALSE
   )
 plot(ssp4)
+}
 }
 \seealso{
 \code{\link{plot.ssp}} for plotting objects created with

@@ -184,15 +184,14 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   if(!inherits(x, "mhmm")){
     stop("Your object x is not a mhmm object. Use build_mhmm and fit_mhmm to create one.")
   }
-  
+
+    
   oldPar <- par(no.readonly=TRUE)
   on.exit(par(oldPar))
   
   oldWarn <- options("warn")
   options(warn=1)
   on.exit(options(oldWarn), add=TRUE)
-  
-  allobs <- x$obs
   
   # ssp arguments (besides mhmm object and mpp)
   args <- as.list(match.call())[-(1:2)]
@@ -270,7 +269,9 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   }
   
   
-  
+  if(x$n_channels == 1){
+    x$observations <- list(x$observations)
+  }
   if (ask && is.null(which.plots)) {
     tmenu <- 1:x$n_clusters
     tmenu <- setdiff(tmenu, mm)
@@ -281,10 +282,10 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
       if(pick==0){
         return(invisible())
       }else{
-        args$x <- lapply(allobs, function(y) y[summ$most_probable_cluster==x$cluster_names[[tmenu[pick]]],])
+        args$x <- lapply(x$observations, function(y) y[summ$most_probable_cluster==x$cluster_names[tmenu[pick]],])
         args$mpp.labels <- mpplabs[[pick]]
         args$mpp <- suppressWarnings(suppressMessages(
-          seqdef(mpp[summ$most_probable_cluster==x$cluster_names[[tmenu[pick]]],], 
+          seqdef(mpp[summ$most_probable_cluster==x$cluster_names[tmenu[pick]],], 
                  labels=args$mpp.labels)))
         args$mpp.color <- mppcols[[pick]]
         args$title <- titles[tmenu[pick]]
@@ -300,10 +301,10 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
       if(pick==0){
         return(invisible())
       }else{
-        args$x <- lapply(allobs, function(y) y[summ$most_probable_cluster==x$cluster_names[[tmenu[pick]]],])
+        args$x <- lapply(x$observations, function(y) y[summ$most_probable_cluster==x$cluster_names[tmenu[pick]],])
         args$mpp.labels <- mpplabs[[pick]]
         args$mpp <- suppressWarnings(suppressMessages(
-          seqdef(mpp[summ$most_probable_cluster==x$cluster_names[[tmenu[pick]]],], 
+          seqdef(mpp[summ$most_probable_cluster==x$cluster_names[tmenu[pick]],], 
                  labels=args$mpp.labels)))
         args$mpp.color <- mppcols[[pick]]
         args$title <- titles[tmenu[pick]]
@@ -314,10 +315,10 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     ask <- length(which.plots) > 1
     plot.new()
     for (i in which.plots) {
-      args$x <- lapply(allobs, function(y) y[summ$most_probable_cluster==x$cluster_names[[i]],])
+      args$x <- lapply(x$observations, function(y) y[summ$most_probable_cluster==x$cluster_names[i],])
       args$mpp.labels <- mpplabs[[i]]
       args$mpp <- suppressWarnings(suppressMessages(
-        seqdef(mpp[summ$most_probable_cluster==x$cluster_names[[i]],], labels=args$mpp.labels)))
+        seqdef(mpp[summ$most_probable_cluster==x$cluster_names[i],], labels=args$mpp.labels)))
       args$mpp.color <- mppcols[[i]]
       args$title <- titles[i]
       do.call(ssplotM,args=args)

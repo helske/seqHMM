@@ -5,51 +5,51 @@
 print.summary.mhmm <- function(x, ...){
   if(exists("transition_matrix", x)){
     if(x$model$n_channels == 1){
-      cat("Transition matrix :\n\n")
-      print.listof(lapply(x$transition_matrix, round, digits = x$digits))
-      cat("Emission matrix :\n\n")
-      print.listof(lapply(x$emission_matrix, round, digits = x$digits))
       cat("Initial probabilities :\n\n")
-      print.listof(lapply(x$initial_probs, round, digits = x$digits))
-      cat("\n\n\n")
-    }else{
+      print.listof(x$initial_probs, digits = x$digits)
       cat("Transition matrix :\n\n")
-      print.listof(lapply(x$transition_matrix, round, digits = x$digits))
+      print.listof(x$transition_matrix, digits = x$digits)
+      cat("Emission matrix :\n\n")
+      print.listof(x$emission_matrix, digits = x$digits)
+      cat("\n")
+    }else{
+      cat("Initial probabilities :\n\n")
+      print.listof(x$initial_probs, digits = x$digits)
+      cat("Transition matrix :\n\n")
+      print.listof(x$transition_matrix, digits = x$digits)
       cat("Emission matrix :\n\n")
       for(i in 1:length(x$emission_matrix)){
         cat(names(x$emission_matrix)[i], ":\n\n")
-        print.listof(lapply(x$emission_matrix[[i]], round, digits = x$digits))
+        print.listof(x$emission_matrix[[i]],  digits = x$digits)
       }
-      cat("Initial probabilities :\n\n")
-      print.listof(lapply(x$initial_probs, round, digits = x$digits))
-      cat("\n\n\n")
+      cat("\n")
     }
   }
   
-  coeff <- replicate((x$model$n_clusters - 1), 
-                     matrix(NA, nrow = nrow(x$beta), ncol = 2), simplify = FALSE)
-  for(i in 1:length(coeff)){
-    coeff[[i]][, 1] <- signif(x$beta[, i+1], digits = x$digits)
-    coeff[[i]][, 2] <- signif(x$beta_se[, i+1], digits = x$digits)
-    rownames(coeff[[i]]) <- rownames(x$beta)
-    colnames(coeff[[i]]) <- c("Estimate", "Std. error")
+  coefs <- replicate((x$model$n_clusters - 1), 
+                     matrix(NA, nrow = nrow(x$coefficients), ncol = 2), simplify = FALSE)
+  for(i in 1:length(coefs)){
+    coefs[[i]][, 1] <- signif(x$coefficients[, i+1], digits = x$digits)
+    coefs[[i]][, 2] <- signif(x$coef_se[, i+1], digits = x$digits)
+    rownames(coefs[[i]]) <- rownames(x$coefficients)
+    colnames(coefs[[i]]) <- c("Estimate", "Std. error")
   }
-  names(coeff) <- x$model$cluster_names[-1]
+  names(coefs) <- x$model$cluster_names[-1]
   cat("Covariate effects :\n\n")
   cat(x$model$cluster_names[1], "is the reference.\n\n")
-  print.listof(coeff, print.gap = 2)
+  print.listof(coefs, print.gap = 2)
   cat("\n")
   
   cat("Log-likelihood :\n\n")
   cat(x$logLik)
-  cat("\n\n\n")
+  cat("\n\n")
   
   cat("BIC :\n\n")
   cat(x$BIC)
-  cat("\n\n\n")
+  cat("\n\n")
   
   cat("Means of prior cluster probabilities :\n\n")
-  print(round(colMeans(x$prior_cluster_probabilities), digits = x$digits))
+  print(colMeans(x$prior_cluster_probabilities), digits = x$digits)
   cat("\n\n")
   
   tbl <- table(x$most_probable_cluster)

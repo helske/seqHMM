@@ -247,7 +247,7 @@
 #' MHMM5$logLik #-3081.383
 #' }
 #' # Coefficients of covariates
-#' MHMM1$model$beta
+#' coef(MHMM1$model)
 #' 
 #' # Probabilities of belonging to each model for the first six subjects
 #' head(MHMM1$model$cluster_prob)
@@ -288,9 +288,9 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
       warning("Unknown names in control_em: ", paste(noNms, collapse = ", "))
     
     resEM <- EMx(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
-      model$n_symbols, model$beta, model$X, model$n_states_in_clusters, em.con$maxeval, em.con$reltol,em.con$print_level)
+      model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, em.con$maxeval, em.con$reltol,em.con$print_level)
     if(!is.null(resEM$error))
-      stop("Initial values for beta resulted non-finite cluster probabilities.")
+      stop("Initial values for coefficients of covariates resulted non-finite cluster probabilities.")
     if(resEM$change< -1e-5)
       warning("EM algorithm stopped due to decreasing log-likelihood. ")
     
@@ -307,7 +307,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     }
     
     model$transition_matrix[]<-resEM$transitionMatrix
-    model$beta[]<-resEM$beta
+    model$coefficients[]<-resEM$coefficients
     ll <- resEM$logLik
   } else resEM <-NULL
   
@@ -338,8 +338,8 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     transNZ<-model$transition_matrix>0
     transNZ[maxTM]<-0    
     
-    npBeta<-length(model$beta[,-1])
-    model$beta[,1] <- 0
+    npCoef<-length(model$coefficients[,-1])
+    model$coefficients[,1] <- 0
     
     
     emissNZ<-lapply(model$emission_matrix,function(i){
@@ -381,7 +381,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
       if(npIPAll>0) unlist(sapply(1:original_model$n_clusters,function(m)
         if(npIP[m]>0) original_model$initial_probs[[m]][paramIP[[m]]]))
     )),
-      model$beta[,-1]
+      model$coefficients[,-1]
     )         
     
     
@@ -410,12 +410,12 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
         }
       }
       model$initial_probs <- unlist(original_model$initial_probs)
-      model$beta[,-1] <- pars[npTM+sum(npEM)+npIPAll+1:npBeta]
+      model$coefficients[,-1] <- pars[npTM+sum(npEM)+npIPAll+1:npCoef]
      
       if(estimate){
         objectivex(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
           transNZ, emissNZ, initNZ, model$n_symbols, 
-          model$beta, model$X, model$n_states_in_clusters)
+          model$coefficients, model$X, model$n_states_in_clusters)
       } else {
         if(sum(npEM)>0){
           for(i in 1:model$n_channels){
@@ -429,12 +429,12 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     if(global_step){
      
       if(missing(lb)){
-        lb <- c(rep(-10,length(initialvalues)-npBeta),rep(-150/apply(abs(model$X),2,max),model$n_clusters-1))
+        lb <- c(rep(-10,length(initialvalues)-npCoef),rep(-150/apply(abs(model$X),2,max),model$n_clusters-1))
       }
       lb <- pmin(lb, 2*initialvalues)
       if(missing(ub)){
-        ub <- c(rep(10,length(initialvalues)-npBeta),rep(150/apply(abs(model$X),2,max),model$n_clusters-1))
-        #pmin(c(rep(250,length(initialvalues)-npBeta),rep(250/apply(abs(model$X),2,max),model$n_clusters-1)),
+        ub <- c(rep(10,length(initialvalues)-npCoef),rep(150/apply(abs(model$X),2,max),model$n_clusters-1))
+        #pmin(c(rep(250,length(initialvalues)-npCoef),rep(250/apply(abs(model$X),2,max),model$n_clusters-1)),
         #  pmax(250, 2*initialvalues))
       }
       ub <- pmax(ub, 2*initialvalues)
@@ -470,7 +470,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
         control_local$algorithm <- "NLOPT_LD_LBFGS"
         control_local$xtol_rel <- 1e-8
       }
-      ub <- c(rep(300,length(initialvalues)-npBeta),rep(300/apply(abs(model$X),2,max),model$n_clusters-1))
+      ub <- c(rep(300,length(initialvalues)-npCoef),rep(300/apply(abs(model$X),2,max),model$n_clusters-1))
       ub <- pmax(ub, 2*initialvalues)
      localres<-nloptr(x0 = initialvalues, eval_f = objectivef,
         opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
@@ -479,8 +479,8 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
       ll <- -localres$objective
     } else localres <- NULL
     
-    rownames(model$beta) <- colnames(model$X)
-    colnames(model$beta) <- model$cluster_names
+    rownames(model$coefficients) <- colnames(model$X)
+    colnames(model$coefficients) <- model$cluster_names
     
   } else globalres <- localres <- NULL
   

@@ -6,7 +6,7 @@ combine_models <- function(model){
   transition_matrix <- as.matrix(.bdiag(model$transition_matrix))
   state_names <- unlist(original_state_names<-model$state_names)
   if (length(unique(state_names))!= length(state_names)){
-    state_names <- paste(state_names,rep(1:model$n_clusters,model$n_states),sep="_")
+    state_names <- paste(rep(model$cluster_names, model$n_states), state_names, sep=":")
   }
   dimnames(transition_matrix) <- replicate(2, state_names, simplify=FALSE)
   
@@ -26,7 +26,7 @@ combine_models <- function(model){
                 transition_matrix = transition_matrix,
                 emission_matrix=emission_matrix,
                 initial_probs = unlist(model$initial_probs),
-                beta=model$beta, X=model$X,
+    coefficients = model$coefficients, X = model$X,
                 cluster_names=model$cluster_names,
                 state_names=state_names,
                 symbol_names=model$symbol_names,
