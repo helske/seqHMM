@@ -73,6 +73,7 @@
 #'   )
 #' })
 #' biofam3c
+#' }
 #' 
 #' @source \code{\link[TraMineR]{biofam}} data constructed from the Swiss Household Panel 
 #' \url{www.swisspanel.ch}

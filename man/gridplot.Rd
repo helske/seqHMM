@@ -118,7 +118,7 @@ ssp_m2 <- update(
   ssp_f2, title = "State distributions for men",
   x = list(marr.seq[biofam3c$covariates$sex == "man",],
            child.seq[biofam3c$covariates$sex == "man",],
-           left.seq[biofam3c$covariates$sex == "man",])
+           left.seq[biofam3c$covariates$sex == "man",]),
   )
 
 # Men's sequences

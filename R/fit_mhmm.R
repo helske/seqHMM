@@ -493,6 +493,13 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
   attr(model, "df") <- df
   attr(model, "nobs") <- nobs
   
+  for(i in 1:model$n_clusters){
+    dimnames(model$transition_matrix[[i]]) <- dimnames(original_model$transition_matrix[[i]])
+    for(j in 1:model$n_channels){
+      dimnames(model$emission_matrix[[i]][[j]]) <- dimnames(original_model$emission_matrix[[i]][[j]])
+    }
+  }
+  
   list(model = model, 
     logLik = ll, em_results=resEM[5:7], global_results = globalres, local_results = localres)
   
