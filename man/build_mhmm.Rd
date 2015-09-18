@@ -51,145 +51,127 @@ Function build_mhmm constructs a mixture of hidden Markov models.
 \examples{
 require(TraMineR)
 
-data(biofam)
-biofam <- biofam[complete.cases(biofam[c(2:4)]),]
-biofam <- biofam[1:500,]
+data(biofam3c)
 
-## Building one channel per type of event left, children or married
-bf <- as.matrix(biofam[, 10:25])
-children <-  bf == 4 | bf == 5 | bf == 6
-married <- bf == 2 | bf == 3 | bf == 6
-left <- bf == 1 | bf == 3 | bf == 5 | bf == 6 | bf == 7
-
-children[children == TRUE] <- "Children"
-children[children == FALSE] <- "Childless"
-# Divorced parents
-div <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 5) > 0) |
-            (rowSums(bf == 7) > 0 & rowSums(bf == 6) > 0),]
-children[rownames(bf) \%in\% rownames(div) & bf == 7] <- "Children"
-
-married[married == TRUE] <- "Married"
-married[married == FALSE] <- "Single"
-married[bf == 7] <- "Divorced"
-
-left[left == TRUE] <- "Left home"
-left[left == FALSE] <- "With parents"
-# Divorced living with parents (before divorce)
-wp <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 2) > 0 & rowSums(bf == 3) == 0 &
-          rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0) |
-         (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 & rowSums(bf == 3) == 0 &
-         rowSums(bf == 5) == 0 & rowSums(bf == 6) == 0),]
-left[rownames(bf) \%in\% rownames(wp) & bf == 7] <- "With parents"
-
-## Building sequence objects
-child.seq <- seqdef(children, start = 15)
-marr.seq <- seqdef(married, start = 15)
-left.seq <- seqdef(left, start = 15)
+# Building sequence objects
+child.seq <- seqdef(biofam3c$children)
+marr.seq <- seqdef(biofam3c$married)
+left.seq <- seqdef(biofam3c$left)
 
 ## Starting values for emission probabilities
 
 # Cluster 1
 alphabet(child.seq) # Checking for the order of observed states
-B1_child <- matrix(c(0.99, 0.01, # High probability for childless
-                     0.99, 0.01,
-                     0.99, 0.01,
-                     0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE)
+emiss_1_child <- matrix(
+  c(0.99, 0.01, # High probability for childless
+    0.99, 0.01,
+    0.99, 0.01,
+    0.99, 0.01),
+  nrow = 4, ncol = 2, byrow = TRUE)
 
 alphabet(marr.seq)
-B1_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
-                    0.01, 0.01, 0.98,
-                    0.01, 0.98, 0.01, # High probability for married
-                    0.98, 0.01, 0.01), # High probability for divorced
-                    nrow = 4, ncol = 3, byrow = TRUE)
+emiss_1_marr <- matrix(
+  c(0.01, 0.01, 0.98, # High probability for single
+    0.01, 0.01, 0.98,
+    0.01, 0.98, 0.01, # High probability for married
+    0.98, 0.01, 0.01), # High probability for divorced
+  nrow = 4, ncol = 3, byrow = TRUE)
 
 alphabet(left.seq)
-B1_left <- matrix(c(0.01, 0.99, # High probability for living with parents
-                    0.99, 0.01, # High probability for having left home
-                    0.99, 0.01,
-                    0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE)
+emiss_1_left <- matrix(
+  c(0.01, 0.99, # High probability for living with parents
+    0.99, 0.01, # High probability for having left home
+    0.99, 0.01,
+    0.99, 0.01),
+  nrow = 4, ncol = 2, byrow = TRUE)
 
 # Cluster 2
-B2_child <- matrix(c(0.99, 0.01, # High probability for childless
-                     0.99, 0.01,
-                     0.99, 0.01,
-                     0.01, 0.99), nrow = 4, ncol = 2, byrow = TRUE)
+emiss_2_child <- matrix(
+  c(0.99, 0.01, # High probability for childless
+    0.99, 0.01,
+    0.99, 0.01,
+    0.01, 0.99),
+  nrow = 4, ncol = 2, byrow = TRUE)
 
-B2_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
-                    0.01, 0.01, 0.98,
-                    0.01, 0.98, 0.01, # High probability for married
-                    0.29, 0.7, 0.01),
-                   nrow = 4, ncol = 3, byrow = TRUE)
+emiss_2_marr <- matrix(
+  c(0.01, 0.01, 0.98, # High probability for single
+    0.01, 0.01, 0.98,
+    0.01, 0.98, 0.01, # High probability for married
+    0.29, 0.7, 0.01),
+  nrow = 4, ncol = 3, byrow = TRUE)
 
-B2_left <- matrix(c(0.01, 0.99, # High probability for living with parents
-                    0.99, 0.01,
-                    0.99, 0.01,
-                    0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE)
+emiss_2_left <- matrix(
+  c(0.01, 0.99, # High probability for living with parents
+    0.99, 0.01,
+    0.99, 0.01,
+    0.99, 0.01),
+  nrow = 4, ncol = 2, byrow = TRUE)
 
 # Cluster 3
-B3_child <- matrix(c(0.99, 0.01, # High probability for childless
-                     0.99, 0.01,
-                     0.01, 0.99,
-                     0.99, 0.01,
-                     0.01, 0.99,
-                     0.01, 0.99), nrow = 6, ncol = 2, byrow = TRUE)
+emiss_3_child <- matrix(
+  c(0.99, 0.01, # High probability for childless
+    0.99, 0.01,
+    0.01, 0.99,
+    0.99, 0.01,
+    0.01, 0.99,
+    0.01, 0.99),
+  nrow = 6, ncol = 2, byrow = TRUE)
 
-B3_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
-                    0.01, 0.01, 0.98,
-                    0.01, 0.01, 0.98,
-                    0.01, 0.98, 0.01,
-                    0.01, 0.98, 0.01, # High probability for married
-                    0.98, 0.01, 0.01), # High probability for divorced
-                   nrow = 6, ncol = 3, byrow = TRUE)
+emiss_3_marr <- matrix(
+  c(0.01, 0.01, 0.98, # High probability for single
+    0.01, 0.01, 0.98,
+    0.01, 0.01, 0.98,
+    0.01, 0.98, 0.01,
+    0.01, 0.98, 0.01, # High probability for married
+    0.98, 0.01, 0.01), # High probability for divorced
+  nrow = 6, ncol = 3, byrow = TRUE)
 
-B3_left <- matrix(c(0.01, 0.99, # High probability for living with parents
-                    0.99, 0.01,
-                    0.50, 0.50,
-                    0.01, 0.99,
-                    0.99, 0.01,
-                    0.99, 0.01), nrow = 6, ncol = 2, byrow = TRUE)
+emiss_3_left <- matrix(
+  c(0.01, 0.99, # High probability for living with parents
+    0.99, 0.01,
+    0.50, 0.50,
+    0.01, 0.99,
+    0.99, 0.01,
+    0.99, 0.01),
+  nrow = 6, ncol = 2, byrow = TRUE)
 
 # Initial values for transition matrices
-A1 <- matrix(c(0.8,   0.16, 0.03, 0.01,
-                 0,    0.9, 0.07, 0.03,
-                 0,      0,  0.9,  0.1,
-                 0,      0,    0,    1),
-             nrow = 4, ncol = 4, byrow = TRUE)
+trans_1 <- matrix(
+  c(0.80,   0.16, 0.03, 0.01,
+       0,   0.90, 0.07, 0.03,
+       0,      0, 0.90, 0.10,
+       0,      0,    0,    1),
+  nrow = 4, ncol = 4, byrow = TRUE)
 
-A2 <- matrix(c(0.8, 0.10, 0.05,  0.03, 0.01, 0.01,
-                 0,  0.7,  0.1,   0.1, 0.05, 0.05,
-                 0,    0, 0.85,  0.01,  0.1, 0.04,
-                 0,    0,    0,   0.9, 0.05, 0.05,
-                 0,    0,    0,     0,  0.9,  0.1,
-                 0,    0,    0,     0,    0,    1),
-             nrow = 6, ncol = 6, byrow = TRUE)
+trans_2 <- matrix(
+  c(0.80, 0.10, 0.05,  0.03, 0.01, 0.01,
+       0, 0.70, 0.10,  0.10, 0.05, 0.05,
+       0,    0, 0.85,  0.01, 0.10, 0.04,
+       0,    0,    0,  0.90, 0.05, 0.05,
+       0,    0,    0,     0, 0.90, 0.10,
+       0,    0,    0,     0,    0,    1),
+  nrow = 6, ncol = 6, byrow = TRUE)
 
 # Initial values for initial state probabilities
 initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
 initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 
-# Creating covariate swiss
-biofam$swiss <- biofam$nat_1_02 == "Switzerland"
-biofam$swiss[biofam$swiss == TRUE] <- "Swiss"
-biofam$swiss[biofam$swiss == FALSE] <- "Other"
-
 # Birth cohort
-biofam$cohort <- cut(biofam$birthyr, c(1908, 1935, 1945, 1957))
-biofam$cohort <- factor(
-  biofam$cohort, labels=c("1909-1935", "1936-1945", "1946-1957")
-)
+biofam3c$covariates$cohort <- cut(biofam3c$covariates$birthyr, c(1908, 1935, 1945, 1957))
+biofam3c$covariates$cohort <- factor(
+  biofam3c$covariates$cohort, labels=c("1909-1935", "1936-1945", "1946-1957"))
 
 # Build mixture HMM
-bMHMM <- build_mhmm(
+bmhmm <- build_mhmm(
   observations = list(child.seq, marr.seq, left.seq),
-  transition_matrix = list(A1,A1,A2),
-  emission_matrix = list(list(B1_child, B1_marr, B1_left),
-                        list(B2_child, B2_marr, B2_left),
-                        list(B3_child, B3_marr, B3_left)),
+  transition_matrix = list(trans_1, trans_1, trans_2),
+  emission_matrix = list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
+                        list(emiss_2_child, emiss_2_marr, emiss_2_left),
+                        list(emiss_3_child, emiss_3_marr, emiss_3_left)),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
-  formula = ~ sex + cohort, data = biofam,
+  formula = ~sex + cohort, data = biofam3c$covariates,
   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
-  channel_names = c("Parenthood", "Marriage", "Left home")
-  )
+  channel_names = c("Parenthood", "Marriage", "Left home"))
 }
 \seealso{
 \code{\link{fit_mhmm}} for fitting mixture Hidden Markov models.

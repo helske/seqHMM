@@ -103,68 +103,73 @@ marr.seq <- seqdef(biofam3c$married)
 left.seq <- seqdef(biofam3c$left)
 
 # Starting values for emission matrices
-B_child <- matrix(NA, nrow = 3, ncol = 2)
-B_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 0.1
-B_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 0.1
-B_child[3,] <- seqstatf(child.seq[, 11:15])[, 2] + 0.1
-B_child <- B_child / rowSums(B_child)
+emiss_child <- matrix(NA, nrow = 3, ncol = 2)
+emiss_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 0.1
+emiss_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 0.1
+emiss_child[3,] <- seqstatf(child.seq[, 11:15])[, 2] + 0.1
+emiss_child <- emiss_child / rowSums(emiss_child)
 
-B_marr <- matrix(NA, nrow = 3, ncol = 3)
-B_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 0.1
-B_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 0.1
-B_marr[3,] <- seqstatf(marr.seq[, 11:15])[, 2] + 0.1
-B_marr <- B_marr / rowSums(B_marr)
+emiss_marr <- matrix(NA, nrow = 3, ncol = 3)
+emiss_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 0.1
+emiss_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 0.1
+emiss_marr[3,] <- seqstatf(marr.seq[, 11:15])[, 2] + 0.1
+emiss_marr <- emiss_marr / rowSums(emiss_marr)
 
-B_left <- matrix(NA, nrow = 3, ncol = 2)
-B_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 0.1
-B_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 0.1
-B_left[3,] <- seqstatf(left.seq[, 11:15])[, 2] + 0.1
-B_left <- B_left / rowSums(B_left)
+emiss_left <- matrix(NA, nrow = 3, ncol = 2)
+emiss_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 0.1
+emiss_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 0.1
+emiss_left[3,] <- seqstatf(left.seq[, 11:15])[, 2] + 0.1
+emiss_left <- emiss_left / rowSums(emiss_left)
 
 # Starting values for transition matrix
-A <- matrix(c(0.9, 0.07, 0.03,
-                0,  0.9,  0.1,
-                0,    0,    1), nrow = 3, ncol = 3, byrow = TRUE)
+trans <- matrix(
+  c(0.90, 0.07, 0.03,
+       0, 0.90, 0.10,
+       0,    0,    1),
+  nrow = 3, ncol = 3, byrow = TRUE)
 
 # Starting values for initial state probabilities
 init <- c(0.9, 0.09, 0.01)
 
 # Building hidden Markov model with initial parameter values
-bHMM <- build_hmm(
+bhmm <- build_hmm(
   observations = list(child.seq, marr.seq, left.seq),
-  transition_matrix = A,
-  emission_matrix = list(B_child, B_marr, B_left),
-  initial_probs = init
-  )
+  transition_matrix = trans,
+  emission_matrix = list(emiss_child, emiss_marr, emiss_left),
+  initial_probs = init)
 
 # Fitting the model with different settings
 
 # Only EM with default values
-HMM1 <- fit_hmm(bHMM, em_step = TRUE, global_step = FALSE, local_step = FALSE)
-HMM1$logLik #-5507.003
+hmm_1 <- fit_hmm(
+  bhmm, em_step = TRUE, global_step = FALSE, local_step = FALSE)
+hmm_1$logLik #-5507.003
 
 \dontrun{
 
 # EM with LBFGS
-HMM2 <- fit_hmm(bHMM, em_step = TRUE, global_step = FALSE, local_step = TRUE)
-HMM2$logLik # -5507.003
+hmm_2 <- fit_hmm(
+  bhmm, em_step = TRUE, global_step = FALSE, local_step = TRUE)
+hmm_2$logLik # -5507.003
 
 # Only LBFGS
-HMM3 <- fit_hmm(bHMM, em_step = FALSE, global_step = FALSE, local_step = TRUE)
-HMM3$logLik #-5493.271
+hmm_3 <- fit_hmm(
+  bhmm, em_step = FALSE, global_step = FALSE, local_step = TRUE)
+hmm_3$logLik #-5493.271
 
 # Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
-HMM4 <- fit_hmm(bHMM, em_step = FALSE, global_step = TRUE, local_step = TRUE,
+hmm_4 <- fit_hmm(
+  bhmm, em_step = FALSE, global_step = TRUE, local_step = TRUE,
   control_global = list(maxeval = 3000, maxtime = 0))
-HMM4$logLik #-5403.383
+hmm_4$logLik #-5403.383
 
 # As previously, but now we use five iterations from EM algorithm for
 # defining initial values and boundaries
 # Note smaller maxeval for global optimization
-HMM5 <- fit_hmm(bHMM, em_step = TRUE, global_step = TRUE, local_step = TRUE,
+hmm_5 <- fit_hmm(
+  bhmm, em_step = TRUE, global_step = TRUE, local_step = TRUE,
   control_em = list(maxeval = 5), control_global = list(maxeval = 750, maxtime = 0))
-HMM5$logLik #-5403.383
-
+hmm_5$logLik #-5403.383
 }
 }
 \seealso{

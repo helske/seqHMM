@@ -24,7 +24,7 @@ parameters of the corresponding cluster.
 data(mhmm_biofam)
 
 # Separate models for clusters
-sepHMM <- separate_mhmm(mhmm_biofam)
+sep_hmm <- separate_mhmm(mhmm_biofam)
 }
 \seealso{
 \code{\link{build_hmm}} and \code{\link{fit_hmm}}

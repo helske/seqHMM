@@ -207,7 +207,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
   if(!("title" %in% names(args))){
     titles <- x$cluster_names
   }else{
-    if(length(title)! = x$n_clusters){
+    if(length(title) != x$n_clusters){
       warning("The length of the vector provided for the title argument does not match the number of clusters. Automatic titles were used instead.")
       titles <- x$cluster_names
     }else{

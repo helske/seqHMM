@@ -5,15 +5,15 @@
 \title{Interactive Stacked Plots of Multichannel Sequences and/or Most Probable
 Paths for Mixture Hidden Markov Models}
 \usage{
-mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
-  type = "I", sortv = NULL, sort.channel = 1, dist.method = "OM",
-  with.missing = FALSE, title = NA, title.n = TRUE, cex.title = 1,
-  title.pos = 1, withlegend = "auto", ncol.legend = "auto",
-  with.missing.legend = "auto", legend.prop = 0.3, cex.legend = 1,
-  mpp.color = "auto", mpp.labels = "auto", xaxis = TRUE, xlab = NA,
-  xtlab = NULL, xlab.pos = 1, ylab = "auto",
-  hidden.states.title = "Hidden states", ylab.pos = "auto", cex.lab = 1,
-  cex.axis = 1, ...)
+mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
+  plots = "both", type = "I", sortv = NULL, sort.channel = 1,
+  dist.method = "OM", with.missing = FALSE, title = NA, title.n = TRUE,
+  cex.title = 1, title.pos = 1, withlegend = "auto",
+  ncol.legend = "auto", with.missing.legend = "auto", legend.prop = 0.3,
+  cex.legend = 1, hidden.states.color = "auto",
+  hidden.states.labels = "auto", xaxis = TRUE, xlab = NA, xtlab = NULL,
+  xlab.pos = 1, ylab = "auto", hidden.states.title = "Hidden states",
+  ylab.pos = "auto", cex.lab = 1, cex.axis = 1, ...)
 }
 \arguments{
 \item{x}{Mixture hidden Markov model object of class \code{mhmm}.}
@@ -22,9 +22,9 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
 
 \item{which.plots}{The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots.}
 
-\item{mpp}{Most probable paths of hidden states, i.e. output from \code{\link{hidden_paths}} function.}
+\item{hidden.paths}{Most probable paths of hidden states, i.e. output from \code{\link{hidden_paths}} function.}
 
-\item{plots}{What to plot. One of \code{"obs"} for observations, \code{"mpp"}
+\item{plots}{What to plot. One of \code{"obs"} for observations, \code{"hidden.paths"}
   for most probable paths, or \code{"both"} for observations
   and most probable paths (the default).}
 
@@ -33,10 +33,10 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
   \code{\link{seqplot}} for details.}
 
 \item{sortv}{A sorting variable or a sort method (one of \code{"from.start"},
-  \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.mpp"}) for
-  \code{type=="I"}. The value \code{"mds.mpp"} is only available for
-  \code{which="both"} and \code{which="mpp"}. Options \code{"mds.obs"} and
-  \code{"mds.mpp"} automatically arrange the sequences according to the
+  \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.hidden"}) for
+  \code{type == "I"}. The value \code{"mds.hidden"} is only available for
+  \code{which = "both"} and \code{which = "hidden.paths"}. Options \code{"mds.obs"} and
+  \code{"mds.hidden"} automatically arrange the sequences according to the
   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the
   observed sequences or most probable paths of hidden states from \code{\link{hidden_paths}}.
   MDS scores are computed from distances/dissimilarities using a metric
@@ -57,11 +57,11 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
   \code{\link{seqdef}} for more information on the metrics.}
 
 \item{with.missing}{Controls whether missing states are included in state
-  distribution plots (\code{type="d"}). The default is \code{FALSE}.}
+  distribution plots (\code{type = "d"}). The default is \code{FALSE}.}
 
 \item{title}{A vector of titles for the graphics. The default is \code{NA}: if
-  \code{title.n=TRUE}, only the number of subjects is plotted. \code{FALSE}
-  prints no title, even when \code{title.n=TRUE}.}
+  \code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE}
+  prints no title, even when \code{title.n = TRUE}.}
 
 \item{title.n}{Controls whether the number of subjects is printed in the
   title of the plot. The default is \code{TRUE}: n is plotted if \code{title}
@@ -88,9 +88,9 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
 
 \item{with.missing.legend}{If set to \code{"auto"} (the default), a legend
   for the missing state is added automatically if one or more of the
-  sequences in the data/channel contains missing states and \code{type="I"}.
-  If \code{type="d"} missing states are omitted from the legends unless
-  \code{with.missing=TRUE}. With the value \code{TRUE} a
+  sequences in the data/channel contains missing states and \code{type = "I"}.
+  If \code{type = "d"} missing states are omitted from the legends unless
+  \code{with.missing = TRUE}. With the value \code{TRUE} a
   legend for the missing state is added in any case; equivalently
   \code{FALSE} omits the legend for the missing state.}
 
@@ -102,14 +102,14 @@ mssplot(x, ask = FALSE, which.plots = NULL, mpp = NULL, plots = "both",
   labels in the legend. The default value is 1. Values lesser than 1 will
   reduce the size of the font, values greater than 1 will increase the size.}
 
-\item{mpp.color}{A vector of colors assigned to hidden states (as ordered by
+\item{hidden.states.color}{A vector of colors assigned to hidden states (as ordered by
   the \code{\link{hidden_paths}} function). The default value \code{"auto"} uses
   the colors assigned to the \code{stslist} object created with \code{seqdef} if
-  \code{mpp} is given; otherwise colors from \code{\link{colorpalette}} are
+  \code{hidden.paths} is given; otherwise colors from \code{\link{colorpalette}} are
   automatically used.}
 
-\item{mpp.labels}{Labels for the hidden states. The default value
-  \code{"auto"} uses the labels of the \code{mpp} argument if given; otherwise the number
+\item{hidden.states.labels}{Labels for the hidden states. The default value
+  \code{"auto"} uses the labels of the \code{hidden.paths} argument if given; otherwise the number
   of the hidden state.}
 
 \item{xaxis}{Controls whether an x-axis is plotted below the plot at the

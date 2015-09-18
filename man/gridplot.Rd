@@ -83,8 +83,7 @@ ssp_f <- ssp(
        marr.seq[biofam3c$covariates$sex == "woman",],
        left.seq[biofam3c$covariates$sex == "woman",]),
   type = "d", plots = "obs", title = "Women",
-  ylab = c("Children", "Married", "Left home")
-  )
+  ylab = c("Children", "Married", "Left home"))
 
 # Preparing plot for state distribution plots of observations for men
 ssp_m <- ssp(
@@ -92,8 +91,7 @@ ssp_m <- ssp(
        marr.seq[biofam3c$covariates$sex == "man",],
        left.seq[biofam3c$covariates$sex == "man",]),
   type = "d", plots = "obs", title = "Men",
-  ylab = c("Children", "Married", "Left home")
-  )
+  ylab = c("Children", "Married", "Left home"))
 
 # Plotting state distribution plots of observations for women and men in two columns
 gridplot(list(ssp_f, ssp_m), ncol = 2, withlegend = FALSE)
@@ -105,40 +103,34 @@ ssp_f2 <- ssp(
        left.seq[biofam3c$covariates$sex == "woman",]),
   type = "d", border = NA, withlegend = FALSE,
   title = "State distributions for women", title.n = FALSE, xtlab = 15:30,
-  ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home")
-  )
+  ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home"))
 
 # The same plot with sequences instead of state distributions
 ssp_f3 <- update(
-  ssp_f2, type = "I", sortv="mds.obs", title = "Sequences for women"
-  )
+  ssp_f2, type = "I", sortv="mds.obs", title = "Sequences for women")
 
 # State distributions with men's data
 ssp_m2 <- update(
   ssp_f2, title = "State distributions for men",
   x = list(marr.seq[biofam3c$covariates$sex == "man",],
            child.seq[biofam3c$covariates$sex == "man",],
-           left.seq[biofam3c$covariates$sex == "man",]),
-  )
+           left.seq[biofam3c$covariates$sex == "man",]))
 
 # Men's sequences
 ssp_m3 <- update(
-  ssp_m2, type = "I", sortv="mds.obs", title = "Sequences for women"
-  )
+  ssp_m2, type = "I", sortv="mds.obs", title = "Sequences for women")
 
 # Plotting state distributions and index plots of observations
 # for women and men in two columns
 gridplot(
   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol=3, byrow=TRUE,
-  withlegend="combined", legend.pos="right", col.prop=c(0.35,0.35,0.3)
-  )
+  withlegend="combined", legend.pos="right", col.prop=c(0.35, 0.35, 0.3))
 
 # The same with different positioning
 gridplot(
   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 2, nrow = 3, byrow=TRUE,
   # defining the legend positions by the cell numbers
-  legend.pos = 3:4
-  )
+  legend.pos = 3:4)
  }
 }
 \seealso{

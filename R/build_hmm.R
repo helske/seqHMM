@@ -29,27 +29,29 @@
 #'                    labels = mvad.labels, xtstep = 6)
 #' 
 #' # Starting values for the emission matrix
-#' B <- matrix(NA, nrow = 4, ncol = 6)
-#' B[1,] <- seqstatf(mvad.seq[, 1:12])[, 2] + 0.1
-#' B[2,] <- seqstatf(mvad.seq[, 13:24])[, 2] + 0.1
-#' B[3,] <- seqstatf(mvad.seq[, 25:48])[, 2] + 0.1
-#' B[4,] <- seqstatf(mvad.seq[, 49:70])[, 2] + 0.1
-#' B <- B / rowSums(B)
+#' emiss <- matrix(NA, nrow = 4, ncol = 6)
+#' emiss[1,] <- seqstatf(mvad.seq[, 1:12])[, 2] + 0.1
+#' emiss[2,] <- seqstatf(mvad.seq[, 13:24])[, 2] + 0.1
+#' emiss[3,] <- seqstatf(mvad.seq[, 25:48])[, 2] + 0.1
+#' emiss[4,] <- seqstatf(mvad.seq[, 49:70])[, 2] + 0.1
+#' emiss <- emiss / rowSums(emiss)
 #' 
 #' # Starting values for the transition matrix
 #' 
-#' A <-  matrix(c(0.80, 0.10, 0.05, 0.05,
-#'                0.05, 0.80, 0.10, 0.05,
-#'                0.05, 0.05, 0.80, 0.10,
-#'                0.05, 0.05, 0.10, 0.80), nrow=4, ncol=4, byrow=TRUE)
+#' tr <- matrix(
+#'   c(0.80, 0.10, 0.05, 0.05,
+#'     0.05, 0.80, 0.10, 0.05,
+#'     0.05, 0.05, 0.80, 0.10,
+#'     0.05, 0.05, 0.10, 0.80), 
+#'   nrow=4, ncol=4, byrow=TRUE)
 #' 
 #' # Starting values for initial state probabilities
-#' initial_probs <- c(0.3, 0.3, 0.2, 0.2)
+#' init <- c(0.3, 0.3, 0.2, 0.2)
 #' 
 #' # Building a hidden Markov model with starting values
-#' bHMM <- build_hmm(
-#'   observations = mvad.seq, transition_matrix = A, 
-#'   emission_matrix = B, initial_probs = initial_probs
+#' bhmm <- build_hmm(
+#'   observations = mvad.seq, transition_matrix = tr, 
+#'   emission_matrix = emiss, initial_probs = init
 #' )
 #' 
 #' #########################################
@@ -65,39 +67,38 @@
 #' left.seq <- seqdef(biofam3c$left)
 #' 
 #' # Starting values for emission matrices
-#' B_child <- matrix(NA, nrow = 3, ncol = 2)
-#' B_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 0.1
-#' B_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 0.1
-#' B_child[3,] <- seqstatf(child.seq[, 11:15])[, 2] + 0.1
-#' B_child <- B_child / rowSums(B_child)
+#' emiss_child <- matrix(NA, nrow = 3, ncol = 2)
+#' emiss_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 0.1
+#' emiss_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 0.1
+#' emiss_child[3,] <- seqstatf(child.seq[, 11:15])[, 2] + 0.1
+#' emiss_child <- emiss_child / rowSums(emiss_child)
 #' 
-#' B_marr <- matrix(NA, nrow = 3, ncol = 3)
-#' B_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 0.1
-#' B_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 0.1
-#' B_marr[3,] <- seqstatf(marr.seq[, 11:15])[, 2] + 0.1
-#' B_marr <- B_marr / rowSums(B_marr)
+#' emiss_marr <- matrix(NA, nrow = 3, ncol = 3)
+#' emiss_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 0.1
+#' emiss_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 0.1
+#' emiss_marr[3,] <- seqstatf(marr.seq[, 11:15])[, 2] + 0.1
+#' emiss_marr <- emiss_marr / rowSums(emiss_marr)
 #' 
-#' B_left <- matrix(NA, nrow = 3, ncol = 2)
-#' B_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 0.1
-#' B_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 0.1
-#' B_left[3,] <- seqstatf(left.seq[, 11:15])[, 2] + 0.1
-#' B_left <- B_left / rowSums(B_left)
+#' emiss_left <- matrix(NA, nrow = 3, ncol = 2)
+#' emiss_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 0.1
+#' emiss_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 0.1
+#' emiss_left[3,] <- seqstatf(left.seq[, 11:15])[, 2] + 0.1
+#' emiss_left <- emiss_left / rowSums(emiss_left)
 #' 
 #' # Starting values for transition matrix
-#' A <- matrix(c(0.9, 0.07, 0.03,
+#' trans <- matrix(c(0.9, 0.07, 0.03,
 #'                 0,  0.9,  0.1,
 #'                 0,    0,    1), nrow = 3, ncol = 3, byrow = TRUE)
 #' 
 #' # Starting values for initial state probabilities
-#' init <- c(0.9, 0.09, 0.01)
+#' initial <- c(0.9, 0.09, 0.01)
 #' 
 #' # Building hidden Markov model with initial parameter values
-#' bHMM <- build_hmm(
+#' bhmm <- build_hmm(
 #'   observations = list(child.seq, marr.seq, left.seq), 
-#'   transition_matrix = A,
-#'   emission_matrix = list(B_child, B_marr, B_left), 
-#'   initial_probs = init
-#'   )
+#'   transition_matrix = trans,
+#'   emission_matrix = list(emiss_child, emiss_marr, emiss_left), 
+#'   initial_probs = initial)
 #' 
 #' @seealso \code{\link{fit_hmm}} for fitting Hidden Markov models.
 

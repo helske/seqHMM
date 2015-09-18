@@ -20,7 +20,7 @@
 #' data(mhmm_biofam)
 #' 
 #' # Separate models for clusters
-#' sepHMM <- separate_mhmm(mhmm_biofam)
+#' sep_hmm <- separate_mhmm(mhmm_biofam)
 
 separate_mhmm <- function(model){
   

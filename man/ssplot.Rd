@@ -5,12 +5,12 @@
 \title{Stacked Plots of Multichannel Sequences and/or Most Probable
 Paths from Hidden Markov Models}
 \usage{
-ssplot(x, mpp = NULL, plots = "obs", type = "I", sortv = NULL,
+ssplot(x, hidden.paths = NULL, plots = "obs", type = "I", sortv = NULL,
   sort.channel = 1, dist.method = "OM", with.missing = FALSE,
   title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
   withlegend = "auto", ncol.legend = "auto", with.missing.legend = "auto",
-  legend.prop = 0.3, cex.legend = 1, mpp.color = "auto",
-  mpp.labels = "auto", xaxis = TRUE, xlab = NA, xtlab = NULL,
+  legend.prop = 0.3, cex.legend = 1, hidden.paths.color = "auto",
+  hidden.paths.labels = "auto", xaxis = TRUE, xlab = NA, xtlab = NULL,
   xlab.pos = 1, ylab = "auto", hidden.states.title = "Hidden states",
   ylab.pos = "auto", cex.lab = 1, cex.axis = 1, ...)
 }
@@ -19,11 +19,11 @@ ssplot(x, mpp = NULL, plots = "obs", type = "I", sortv = NULL,
   sequence object created with the \code{\link{seqdef}} function or a list of
   sequence objects.}
 
-\item{mpp}{Output from \code{\link{hidden_paths}} function. Optional, if
+\item{hidden.paths}{Output from \code{\link{hidden_paths}} function. Optional, if
   \code{x} is a hmm object or if \code{type=="obs"}.}
 
 \item{plots}{What to plot. One of \code{"obs"} for observations (the default),
-  \code{"mpp"} for most probable paths, or \code{"both"} for observations
+  \code{"hidden.paths"} for most probable paths, or \code{"both"} for observations
   and most probable paths.}
 
 \item{type}{The type of the plot. Available types are \code{"I"} for index
@@ -31,10 +31,10 @@ ssplot(x, mpp = NULL, plots = "obs", type = "I", sortv = NULL,
   \code{\link{seqplot}} for details.}
 
 \item{sortv}{A sorting variable or a sort method (one of \code{"from.start"},
-  \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.mpp"}) for
-  \code{type=="I"}. The value \code{"mds.mpp"} is only available for
-  \code{which="both"} and \code{which="mpp"}. Options \code{"mds.obs"} and
-  \code{"mds.mpp"} automatically arrange the sequences according to the
+  \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.hidden"}) for
+  \code{type=="I"}. The value \code{"mds.hidden"} is only available for
+  \code{which="both"} and \code{which="hidden.paths"}. Options \code{"mds.obs"} and
+  \code{"mds.hidden"} automatically arrange the sequences according to the
   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the
   observed or hidden states path data from \code{\link{hidden_paths}}.
   MDS scores are computed from distances/dissimilarities using a metric
@@ -100,12 +100,12 @@ ssplot(x, mpp = NULL, plots = "obs", type = "I", sortv = NULL,
   labels in the legend. The default value is 1. Values lesser than 1 will
   reduce the size of the font, values greater than 1 will increase the size.}
 
-\item{mpp.color}{A vector of colors assigned to hidden states. The default
+\item{hidden.paths.color}{A vector of colors assigned to hidden states. The default
   value \code{"auto"} uses the colors assigned to the stslist object created
-  with \code{seqdef} if \code{mpp} is given; otherwise otherwise colors from
+  with \code{seqdef} if \code{hidden.paths} is given; otherwise otherwise colors from
   \code{\link{colorpalette}} are automatically used.}
 
-\item{mpp.labels}{Labels for the hidden states. The default value
+\item{hidden.paths.labels}{Labels for the hidden states. The default value
   \code{"auto"} uses the names provided in \code{x$state_names} if \code{x} is
   an hmm object; otherwise the number of the hidden state.}
 
@@ -188,7 +188,7 @@ data(hmm_biofam)
 ssplot(
   hmm_biofam, type = "I", plots = "both",
   # Sorting according to multidimensional scaling of hidden states paths
-  sortv = "mds.mpp",
+  sortv = "mds.hidden",
   ylab = c("Children", "Married", "Left home"),
   # Controlling title
   title = "Biofam", cex.title = 1.5,
@@ -197,16 +197,16 @@ ssplot(
   )
 
 # Computing the most probable paths of hidden states
-mpp <- hidden_paths(hmm_biofam)
-mpp.seq <- seqdef(
-  mpp, labels=paste("Hidden state", 1:4)
+hidden.paths <- hidden_paths(hmm_biofam)
+hidden.paths.seq <- seqdef(
+  hidden.paths, labels=paste("Hidden state", 1:4)
   )
 
 # Plotting observations and hidden state paths
 ssplot(
-  hmm_biofam, type = "I", plots = "mpp",
+  hmm_biofam, type = "I", plots = "hidden.paths",
   # Sequence object of most probable paths
-  mpp = mpp.seq,
+  hidden.paths = hidden.paths.seq,
   # Sorting according to the end of hidden state paths
   sortv = "from.end", sort.channel = 0,
   # Contolling legend position, type, and proportion
@@ -217,11 +217,11 @@ ssplot(
   }
 }
 \seealso{
-\code{\link{plot.ssp}} for plotting objects created with
-  the \code{ssp} function; \code{\link{gridplot}} for plotting multiple \code{ssp}
-  objects; \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and
-  fitting hidden Markov models; \code{\link{hidden_paths}} for
-  computing the most probable paths of hidden states; and
-  \code{\link{hmm_biofam}} for information on the model used in the example.
+\code{\link{ssp}} for creating \code{ssp} objects and \code{\link{plot.ssp}}
+and \code{\link{gridplot}} for plotting these;
+\code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and
+fitting hidden Markov models; \code{\link{hidden_paths}} for
+computing the most probable paths of hidden states; and \code{\link{biofam3c}}
+\code{\link{hmm_biofam}} for information on the data and model used in the example.
 }
 
