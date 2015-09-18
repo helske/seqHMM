@@ -15,9 +15,9 @@
 #' 
 #' @param which.plots The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots.
 #'   
-#' @param mpp Most probable paths of hidden states, i.e. output from \code{\link{hidden_paths}} function.
+#' @param hidden.paths Most probable paths of hidden states, i.e. output from \code{\link{hidden_paths}} function.
 #'   
-#' @param plots What to plot. One of \code{"obs"} for observations, \code{"mpp"}
+#' @param plots What to plot. One of \code{"obs"} for observations, \code{"hidden.paths"}
 #'   for most probable paths, or \code{"both"} for observations 
 #'   and most probable paths (the default).
 #'   
@@ -26,10 +26,10 @@
 #'   \code{\link{seqplot}} for details.
 #'   
 #' @param sortv A sorting variable or a sort method (one of \code{"from.start"},
-#'   \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.mpp"}) for 
-#'   \code{type=="I"}. The value \code{"mds.mpp"} is only available for 
-#'   \code{which="both"} and \code{which="mpp"}. Options \code{"mds.obs"} and 
-#'   \code{"mds.mpp"} automatically arrange the sequences according to the 
+#'   \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.hidden"}) for 
+#'   \code{type == "I"}. The value \code{"mds.hidden"} is only available for 
+#'   \code{which = "both"} and \code{which = "hidden.paths"}. Options \code{"mds.obs"} and 
+#'   \code{"mds.hidden"} automatically arrange the sequences according to the 
 #'   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the 
 #'   observed sequences or most probable paths of hidden states from \code{\link{hidden_paths}}. 
 #'   MDS scores are computed from distances/dissimilarities using a metric 
@@ -50,11 +50,11 @@
 #'   \code{\link{seqdef}} for more information on the metrics.
 #'   
 #' @param with.missing Controls whether missing states are included in state 
-#'   distribution plots (\code{type="d"}). The default is \code{FALSE}.
+#'   distribution plots (\code{type = "d"}). The default is \code{FALSE}.
 #'   
 #' @param title A vector of titles for the graphics. The default is \code{NA}: if 
-#'   \code{title.n=TRUE}, only the number of subjects is plotted. \code{FALSE} 
-#'   prints no title, even when \code{title.n=TRUE}.
+#'   \code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE} 
+#'   prints no title, even when \code{title.n = TRUE}.
 #'   
 #' @param title.n Controls whether the number of subjects is printed in the 
 #'   title of the plot. The default is \code{TRUE}: n is plotted if \code{title}
@@ -81,9 +81,9 @@
 #'   
 #' @param with.missing.legend If set to \code{"auto"} (the default), a legend 
 #'   for the missing state is added automatically if one or more of the 
-#'   sequences in the data/channel contains missing states and \code{type="I"}. 
-#'   If \code{type="d"} missing states are omitted from the legends unless 
-#'   \code{with.missing=TRUE}. With the value \code{TRUE} a 
+#'   sequences in the data/channel contains missing states and \code{type = "I"}. 
+#'   If \code{type = "d"} missing states are omitted from the legends unless 
+#'   \code{with.missing = TRUE}. With the value \code{TRUE} a 
 #'   legend for the missing state is added in any case; equivalently 
 #'   \code{FALSE} omits the legend for the missing state.
 #'   
@@ -95,14 +95,14 @@
 #'   labels in the legend. The default value is 1. Values lesser than 1 will 
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #'   
-#' @param mpp.color A vector of colors assigned to hidden states (as ordered by 
+#' @param hidden.states.color A vector of colors assigned to hidden states (as ordered by 
 #'   the \code{\link{hidden_paths}} function). The default value \code{"auto"} uses 
 #'   the colors assigned to the \code{stslist} object created with \code{seqdef} if 
-#'   \code{mpp} is given; otherwise colors from \code{\link{colorpalette}} are 
+#'   \code{hidden.paths} is given; otherwise colors from \code{\link{colorpalette}} are 
 #'   automatically used. 
 #'   
-#' @param mpp.labels Labels for the hidden states. The default value 
-#'   \code{"auto"} uses the labels of the \code{mpp} argument if given; otherwise the number
+#' @param hidden.states.labels Labels for the hidden states. The default value 
+#'   \code{"auto"} uses the labels of the \code{hidden.paths} argument if given; otherwise the number
 #'   of the hidden state.
 #'   
 #' @param xaxis Controls whether an x-axis is plotted below the plot at the 
@@ -166,19 +166,19 @@
 #'   \code{\link{plot.mhmm}} for plotting \code{mhmm} objects as directed graphs.
 
 
-mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
-                    plots="both", type="I", 
-                    sortv=NULL, sort.channel=1, dist.method="OM",
-                    with.missing=FALSE,
-                    title=NA, title.n=TRUE, cex.title=1, title.pos=1,
-                    withlegend="auto", ncol.legend="auto", 
-                    with.missing.legend="auto",                         
-                    legend.prop=0.3, cex.legend=1,
-                    mpp.color="auto", mpp.labels="auto",
-                    xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
-                    ylab="auto", hidden.states.title="Hidden states", 
-                    ylab.pos="auto", 
-                    cex.lab=1, cex.axis=1, ...){
+mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
+                    plots = "both", type = "I", 
+                    sortv = NULL, sort.channel = 1, dist.method = "OM",
+                    with.missing = FALSE,
+                    title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
+                    withlegend = "auto", ncol.legend = "auto", 
+                    with.missing.legend = "auto",                         
+                    legend.prop = 0.3, cex.legend = 1,
+                    hidden.states.color = "auto", hidden.states.labels = "auto",
+                    xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
+                    ylab = "auto", hidden.states.title = "Hidden states", 
+                    ylab.pos = "auto", 
+                    cex.lab = 1, cex.axis = 1, ...){
   
   # Checking for class of x
   if(!inherits(x, "mhmm")){
@@ -186,73 +186,73 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
   }
 
     
-  oldPar <- par(no.readonly=TRUE)
+  oldPar <- par(no.readonly = TRUE)
   on.exit(par(oldPar))
   
   oldWarn <- options("warn")
-  options(warn=1)
-  on.exit(options(oldWarn), add=TRUE)
+  options(warn = 1)
+  on.exit(options(oldWarn), add = TRUE)
   
-  # ssp arguments (besides mhmm object and mpp)
+  # ssp arguments (besides mhmm object and hidden.paths)
   args <- as.list(match.call())[-(1:2)]
   if("ask" %in% names(args)){
-    args <- args[-which(names(args)=="ask")]
+    args <- args[-which(names(args) == "ask")]
   }
   if("which.plots" %in% names(args)){
-    args <- args[-which(names(args)=="which.plots")]
+    args <- args[-which(names(args) == "which.plots")]
   }
-  if("mpp" %in% names(args)){
-    args <- args[-which(names(args)=="mpp")]
+  if("hidden.paths" %in% names(args)){
+    args <- args[-which(names(args) == "hidden.paths")]
   }
   if(!("title" %in% names(args))){
     titles <- x$cluster_names
   }else{
-    if(length(title)!=x$n_clusters){
+    if(length(title)! = x$n_clusters){
       warning("The length of the vector provided for the title argument does not match the number of clusters. Automatic titles were used instead.")
       titles <- x$cluster_names
     }else{
       titles <- args$title
     }
-    args <- args[-which(names(args)=="title")]
+    args <- args[-which(names(args) == "title")]
   }
-  if(length(ylab)==1 && ylab=="auto"){
+  if(length(ylab) == 1 && ylab == "auto"){
     args$ylab <- x$channel_names
   }
   
-  if(is.null(mpp)){
-    mpp <- suppressWarnings(suppressMessages(hidden_paths(x)))
+  if(is.null(hidden.paths)){
+    hidden.paths <- suppressWarnings(suppressMessages(hidden_paths(x)))
   }
   
-  if(!("mpp.labels" %in% names(args))){
-    mpp.labels <- NULL
+  if(!("hidden.states.labels" %in% names(args))){
+    hidden.states.labels <- NULL
     for(i in 1:x$n_clusters){
-      mpp.labels <- c(mpp.labels, paste("State", 1:x$n_states[i]))
+      hidden.states.labels <- c(hidden.states.labels, paste("State", 1:x$n_states[i]))
     }
   }
-  mpplabs <- list()
+  hidden.pathslabs <- list()
   k <- 0
   for(i in 1:x$n_clusters){
-    mpplabs[[i]] <- mpp.labels[(k+1):(k+x$n_states[i])]
+    hidden.pathslabs[[i]] <- hidden.states.labels[(k+1):(k+x$n_states[i])]
     k <- k+x$n_states[i]
   }
   
-  if(!("mpp.color" %in% names(args))){
-    mpp.color <- seqHMM::colorpalette[[length(alphabet(mpp))]]
+  if(!("hidden.states.color" %in% names(args))){
+    hidden.states.color <- seqHMM::colorpalette[[length(alphabet(hidden.paths))]]
   }
-  mppcols <- list()
+  hidden.pathscols <- list()
   k <- 0
   for(i in 1:x$n_clusters){
-    mppcols[[i]] <- mpp.color[(k+1):(k+x$n_states[i])]
+    hidden.pathscols[[i]] <- hidden.states.color[(k+1):(k+x$n_states[i])]
     k <- k+x$n_states[i]
   }
   
   summ <- summary(x)
   
-  mppm <- unique(summ$most_probable_cluster)
+  hidden.pathsm <- unique(summ$most_probable_cluster)
   mm <- NULL
-  if(length(mppm)<x$n_clusters){
-    mm <- which(!(x$cluster_names%in%mppm))
-    warning(paste("When computing the most probable paths, no subjects were assigned to following clusters:", paste(x$cluster_names[mm], collapse=", ")))
+  if(length(hidden.pathsm)<x$n_clusters){
+    mm <- which(!(x$cluster_names%in%hidden.pathsm))
+    warning(paste("When computing the most probable paths, no subjects were assigned to following clusters:", paste(x$cluster_names[mm], collapse = ", ")))
   }
   
   if(!is.null(which.plots)){
@@ -264,7 +264,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     }
   }else if(!ask && is.null(which.plots)){
     which.plots <- 1:x$n_clusters
-    # removing clusters with no subjects (according to mpp)
+    # removing clusters with no subjects (according to hidden.paths)
     which.plots <- setdiff(which.plots, mm)
   }
   
@@ -279,17 +279,17 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     plot.new()
     repeat {
       pick <- menu(tmenunames, title = "\n Select cluster (or 0 to exit):\n")
-      if(pick==0){
+      if(pick == 0){
         return(invisible())
       }else{
-        args$x <- lapply(x$observations, function(y) y[summ$most_probable_cluster==x$cluster_names[tmenu[pick]],])
-        args$mpp.labels <- mpplabs[[pick]]
-        args$mpp <- suppressWarnings(suppressMessages(
-          seqdef(mpp[summ$most_probable_cluster==x$cluster_names[tmenu[pick]],], 
-                 labels=args$mpp.labels)))
-        args$mpp.color <- mppcols[[pick]]
+        args$x <- lapply(x$observations, function(y) y[summ$most_probable_cluster == x$cluster_names[tmenu[pick]],])
+        args$hidden.states.labels <- hidden.pathslabs[[pick]]
+        args$hidden.paths <- suppressWarnings(suppressMessages(
+          seqdef(hidden.paths[summ$most_probable_cluster == x$cluster_names[tmenu[pick]],], 
+                 labels = args$hidden.states.labels)))
+        args$hidden.states.color <- hidden.pathscols[[pick]]
         args$title <- titles[tmenu[pick]]
-        do.call(ssplotM,args=args)
+        do.call(ssplotM,args = args)
       }
     }
   }else if (ask && !is.null(which.plots)) {
@@ -298,30 +298,30 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, mpp=NULL,
     plot.new()
     repeat {
       pick <- menu(tmenunames, title = "\n Select cluster (or 0 to exit):\n")
-      if(pick==0){
+      if(pick == 0){
         return(invisible())
       }else{
-        args$x <- lapply(x$observations, function(y) y[summ$most_probable_cluster==x$cluster_names[tmenu[pick]],])
-        args$mpp.labels <- mpplabs[[pick]]
-        args$mpp <- suppressWarnings(suppressMessages(
-          seqdef(mpp[summ$most_probable_cluster==x$cluster_names[tmenu[pick]],], 
-                 labels=args$mpp.labels)))
-        args$mpp.color <- mppcols[[pick]]
+        args$x <- lapply(x$observations, function(y) y[summ$most_probable_cluster == x$cluster_names[tmenu[pick]],])
+        args$hidden.states.labels <- hidden.pathslabs[[pick]]
+        args$hidden.paths <- suppressWarnings(suppressMessages(
+          seqdef(hidden.paths[summ$most_probable_cluster == x$cluster_names[tmenu[pick]],], 
+                 labels = args$hidden.states.labels)))
+        args$hidden.states.color <- hidden.pathscols[[pick]]
         args$title <- titles[tmenu[pick]]
-        do.call(ssplotM,args=args)
+        do.call(ssplotM,args = args)
       }
     }
   }else{
     ask <- length(which.plots) > 1
     plot.new()
     for (i in which.plots) {
-      args$x <- lapply(x$observations, function(y) y[summ$most_probable_cluster==x$cluster_names[i],])
-      args$mpp.labels <- mpplabs[[i]]
-      args$mpp <- suppressWarnings(suppressMessages(
-        seqdef(mpp[summ$most_probable_cluster==x$cluster_names[i],], labels=args$mpp.labels)))
-      args$mpp.color <- mppcols[[i]]
+      args$x <- lapply(x$observations, function(y) y[summ$most_probable_cluster == x$cluster_names[i],])
+      args$hidden.states.labels <- hidden.pathslabs[[i]]
+      args$hidden.paths <- suppressWarnings(suppressMessages(
+        seqdef(hidden.paths[summ$most_probable_cluster == x$cluster_names[i],], labels = args$hidden.states.labels)))
+      args$hidden.states.color <- hidden.pathscols[[i]]
       args$title <- titles[i]
-      do.call(ssplotM,args=args)
+      do.call(ssplotM,args = args)
       if (ask) {
         op <- par(ask = TRUE)
       }

@@ -77,8 +77,7 @@
 #'        marr.seq[biofam3c$covariates$sex == "woman",], 
 #'        left.seq[biofam3c$covariates$sex == "woman",]),
 #'   type = "d", plots = "obs", title = "Women", 
-#'   ylab = c("Children", "Married", "Left home")
-#'   )
+#'   ylab = c("Children", "Married", "Left home"))
 #' 
 #' # Preparing plot for state distribution plots of observations for men
 #' ssp_m <- ssp(
@@ -86,8 +85,7 @@
 #'        marr.seq[biofam3c$covariates$sex == "man",], 
 #'        left.seq[biofam3c$covariates$sex == "man",]), 
 #'   type = "d", plots = "obs", title = "Men", 
-#'   ylab = c("Children", "Married", "Left home")
-#'   )
+#'   ylab = c("Children", "Married", "Left home"))
 #' 
 #' # Plotting state distribution plots of observations for women and men in two columns 
 #' gridplot(list(ssp_f, ssp_m), ncol = 2, withlegend = FALSE)
@@ -99,40 +97,34 @@
 #'        left.seq[biofam3c$covariates$sex == "woman",]),
 #'   type = "d", border = NA, withlegend = FALSE, 
 #'   title = "State distributions for women", title.n = FALSE, xtlab = 15:30,
-#'   ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home")
-#'   )
+#'   ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home"))
 #' 
 #' # The same plot with sequences instead of state distributions
 #' ssp_f3 <- update(
-#'   ssp_f2, type = "I", sortv="mds.obs", title = "Sequences for women"
-#'   )
+#'   ssp_f2, type = "I", sortv="mds.obs", title = "Sequences for women")
 #' 
 #' # State distributions with men's data
 #' ssp_m2 <- update(
 #'   ssp_f2, title = "State distributions for men", 
 #'   x = list(marr.seq[biofam3c$covariates$sex == "man",], 
 #'            child.seq[biofam3c$covariates$sex == "man",],
-#'            left.seq[biofam3c$covariates$sex == "man",]),
-#'   )
+#'            left.seq[biofam3c$covariates$sex == "man",]))
 #' 
 #' # Men's sequences
 #' ssp_m3 <- update(
-#'   ssp_m2, type = "I", sortv="mds.obs", title = "Sequences for women"
-#'   )
+#'   ssp_m2, type = "I", sortv="mds.obs", title = "Sequences for women")
 #'   
 #' # Plotting state distributions and index plots of observations 
 #' # for women and men in two columns 
 #' gridplot(
 #'   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol=3, byrow=TRUE, 
-#'   withlegend="combined", legend.pos="right", col.prop=c(0.35,0.35,0.3)
-#'   )
+#'   withlegend="combined", legend.pos="right", col.prop=c(0.35, 0.35, 0.3))
 #'   
 #' # The same with different positioning
 #' gridplot(
 #'   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 2, nrow = 3, byrow=TRUE, 
 #'   # defining the legend positions by the cell numbers
-#'   legend.pos = 3:4
-#'   )
+#'   legend.pos = 3:4)
 #'  }                 
 #'                   
 #' @seealso \code{\link{ssp}} for defining the plot before using
@@ -522,12 +514,12 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
   
   # Legends
   if(!is.na(withlegend) && withlegend!=FALSE){
-    if(x[[1]]$plots=="both" || x[[1]]$plots=="mpp"){
+    if(x[[1]]$plots=="both" || x[[1]]$plots=="hidden.paths"){
       maxhs <- 0
       maxhsplot <- 1
       for(i in 1:ngridplots){
-        if(length(alphabet(x[[i]]$mpp.seq))>maxhs){
-          maxhs <- length(alphabet(x[[i]]$mpp.seq))
+        if(length(alphabet(x[[i]]$hidden.paths.seq))>maxhs){
+          maxhs <- length(alphabet(x[[i]]$hidden.paths.seq))
           maxhsplot <- i
         }
       }
@@ -552,9 +544,9 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
         cpal <- c(cpal, unlist(cpals[[j]]))
       }
     }
-    if(x[[1]]$plots=="both" || x[[1]]$plots=="mpp"){
-      ltext <- c(ltext, attr(x[[maxhsplot]]$mpp.seq, "labels"))
-      cpal <- c(cpal, attr(x[[maxhsplot]]$mpp.seq, "cpal")) 
+    if(x[[1]]$plots=="both" || x[[1]]$plots=="hidden.paths"){
+      ltext <- c(ltext, attr(x[[maxhsplot]]$hidden.paths.seq, "labels"))
+      cpal <- c(cpal, attr(x[[maxhsplot]]$hidden.paths.seq, "cpal")) 
     }
     
     # Separate legends
@@ -580,10 +572,10 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
           }
         }      
         # Legends for most probable paths
-        if(x[[1]]$plots=="both" || x[[1]]$plots=="mpp"){
+        if(x[[1]]$plots=="both" || x[[1]]$plots=="hidden.paths"){
           pushViewport(viewport(layout.pos.col=1, layout.pos.row=x[[1]]$nplots))
           par(plt=gridPLT(), new=TRUE)
-          seqlegend(x[[maxhsplot]]$mpp.seq, fontsize=cex.legend, 
+          seqlegend(x[[maxhsplot]]$hidden.paths.seq, fontsize=cex.legend, 
                     position=legend.pos2, ncol=ncol.legend[length(ncol.legend)], 
                     with.missing=x[[maxhsplot]]$with.missing.legend,
                     title=title.legend[length(title.legend)])
@@ -610,10 +602,10 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
           }
         }      
         # Legends for most probable paths
-        if(x[[1]]$plots=="both" || x[[1]]$plots=="mpp"){
+        if(x[[1]]$plots=="both" || x[[1]]$plots=="hidden.paths"){
           pushViewport(viewport(layout.pos.col=x[[1]]$nplots, layout.pos.row=1))
           par(plt=gridPLT(), new=TRUE)
-          seqlegend(x[[maxhsplot]]$mpp.seq, fontsize=cex.legend, 
+          seqlegend(x[[maxhsplot]]$hidden.paths.seq, fontsize=cex.legend, 
                     position=legend.pos2, ncol=ncol.legend[length(ncol.legend)], 
                     with.missing=x[[maxhsplot]]$with.missing.legend,
                     title=title.legend[length(title.legend)])
@@ -634,10 +626,10 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
       #         }
       #       }
       #       # Legends for most probable paths
-      #       if(x[[1]]$plots=="both" || x[[1]]$plots=="mpp"){
+      #       if(x[[1]]$plots=="both" || x[[1]]$plots=="hidden.paths"){
       #         downViewport(paste0("vplegend",x[[1]]$nplots))
       #         par(plt=gridPLT(), new=TRUE)
-      #         seqlegend(x[[maxhsplot]]$mpp.seq, fontsize=cex.legend, 
+      #         seqlegend(x[[maxhsplot]]$hidden.paths.seq, fontsize=cex.legend, 
       #                   position=legend.pos2, ncol=ncol.legend[length(ncol.legend)], 
       #                   with.missing=x[[maxhsplot]]$with.missing.legend,
       #                   title=title.legend[length(title.legend)])
