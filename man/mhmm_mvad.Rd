@@ -43,7 +43,7 @@ emiss_2 <- matrix(
 
 # Starting values for the transition matrix
 
-trans_2 <-  matrix(
+trans_1 <-  matrix(
   c(0.92, 0.05, 0.03,
     0.01, 0.97, 0.02,
     0.02, 0.04, 0.94),
