@@ -9,7 +9,7 @@ ssp(x, hidden.paths = NULL, plots = "obs", type = "d", sortv = NULL,
   sort.channel = 1, dist.method = "OM", with.missing = FALSE,
   title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
   withlegend = "auto", ncol.legend = "auto", with.missing.legend = "auto",
-  legend.prop = 0.3, cex.legend = 1, hidden.states.color = "auto",
+  legend.prop = 0.3, cex.legend = 1, hidden.states.colors = "auto",
   hidden.states.labels = "auto", xaxis = TRUE, xlab = NA, xtlab = NULL,
   xlab.pos = 1, ylab = "auto", hidden.states.title = "Hidden states",
   ylab.pos = "auto", cex.lab = 1, cex.axis = 1, ...)
@@ -100,7 +100,7 @@ ssp(x, hidden.paths = NULL, plots = "obs", type = "d", sortv = NULL,
   labels in the legend. The default value is 1. Values lesser than 1 will
   reduce the size of the font, values greater than 1 will increase the size.}
 
-\item{hidden.states.color}{A vector of colors assigned to hidden states. The default
+\item{hidden.states.colors}{A vector of colors assigned to hidden states. The default
   value \code{"auto"} uses the colors assigned to the stslist object created
   with \code{seqdef} if \code{hidden.paths} is given; otherwise otherwise colors from
   \code{\link{colorpalette}} are automatically used.}
@@ -124,8 +124,9 @@ ssp(x, hidden.paths = NULL, plots = "obs", type = "d", sortv = NULL,
 
 \item{ylab}{Labels for the channels. A vector of names for each channel
   (observations). The default value \code{"auto"} uses the names provided in
-  \code{x$channel_names} if \code{x} is an hmm object; otherwise the
-  number of the channel. \code{FALSE} prints no labels.}
+  \code{x$channel_names} if \code{x} is an \code{hmm} object; otherwise the
+  names of the list in \code{x} if given, or the
+  number of the channel if names are not given. \code{FALSE} prints no labels.}
 
 \item{hidden.states.title}{Optional label for the hidden state plot (in the
   y-axis). The default is \code{"Hidden states"}.}

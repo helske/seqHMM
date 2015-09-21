@@ -95,7 +95,7 @@
 #'   labels in the legend. The default value is 1. Values lesser than 1 will 
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #'   
-#' @param hidden.states.color A vector of colors assigned to hidden states (as ordered by 
+#' @param hidden.states.colors A vector of colors assigned to hidden states (as ordered by 
 #'   the \code{\link{hidden_paths}} function). The default value \code{"auto"} uses 
 #'   the colors assigned to the \code{stslist} object created with \code{seqdef} if 
 #'   \code{hidden.paths} is given; otherwise colors from \code{\link{colorpalette}} are 
@@ -120,8 +120,9 @@
 #'   
 #' @param ylab Labels for the channels. A vector of names for each channel 
 #'   (observations). The default value \code{"auto"} uses the names provided in 
-#'   \code{x$channel_names} if \code{x} is an hmm object; otherwise the 
-#'   number of the channel. \code{FALSE} prints no labels.
+#'   \code{x$channel_names} if \code{x} is an \code{hmm} object; otherwise the 
+#'   names of the list in \code{x} if given, or the
+#'   number of the channel if names are not given. \code{FALSE} prints no labels.
 #'   
 #' @param hidden.states.title Optional label for the hidden state plot (in the 
 #'   y-axis). The default is \code{"Hidden states"}.
@@ -174,7 +175,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
                     withlegend = "auto", ncol.legend = "auto", 
                     with.missing.legend = "auto",                         
                     legend.prop = 0.3, cex.legend = 1,
-                    hidden.states.color = "auto", hidden.states.labels = "auto",
+                    hidden.states.colors = "auto", hidden.states.labels = "auto",
                     xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
                     ylab = "auto", hidden.states.title = "Hidden states", 
                     ylab.pos = "auto", 
@@ -236,13 +237,13 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
     k <- k+x$n_states[i]
   }
   
-  if(!("hidden.states.color" %in% names(args))){
-    hidden.states.color <- seqHMM::colorpalette[[length(alphabet(hidden.paths))]]
+  if(!("hidden.states.colors" %in% names(args))){
+    hidden.states.colors <- seqHMM::colorpalette[[length(alphabet(hidden.paths))]]
   }
   hidden.pathscols <- list()
   k <- 0
   for(i in 1:x$n_clusters){
-    hidden.pathscols[[i]] <- hidden.states.color[(k+1):(k+x$n_states[i])]
+    hidden.pathscols[[i]] <- hidden.states.colors[(k+1):(k+x$n_states[i])]
     k <- k+x$n_states[i]
   }
   
@@ -287,7 +288,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
         args$hidden.paths <- suppressWarnings(suppressMessages(
           seqdef(hidden.paths[summ$most_probable_cluster == x$cluster_names[tmenu[pick]],], 
                  labels = args$hidden.states.labels)))
-        args$hidden.states.color <- hidden.pathscols[[pick]]
+        args$hidden.states.colors <- hidden.pathscols[[pick]]
         args$title <- titles[tmenu[pick]]
         do.call(ssplotM,args = args)
       }
@@ -306,7 +307,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
         args$hidden.paths <- suppressWarnings(suppressMessages(
           seqdef(hidden.paths[summ$most_probable_cluster == x$cluster_names[tmenu[pick]],], 
                  labels = args$hidden.states.labels)))
-        args$hidden.states.color <- hidden.pathscols[[pick]]
+        args$hidden.states.colors <- hidden.pathscols[[pick]]
         args$title <- titles[tmenu[pick]]
         do.call(ssplotM,args = args)
       }
@@ -319,7 +320,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
       args$hidden.states.labels <- hidden.pathslabs[[i]]
       args$hidden.paths <- suppressWarnings(suppressMessages(
         seqdef(hidden.paths[summ$most_probable_cluster == x$cluster_names[i],], labels = args$hidden.states.labels)))
-      args$hidden.states.color <- hidden.pathscols[[i]]
+      args$hidden.states.colors <- hidden.pathscols[[i]]
       args$title <- titles[i]
       do.call(ssplotM,args = args)
       if (ask) {

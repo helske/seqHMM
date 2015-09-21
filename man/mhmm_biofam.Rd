@@ -14,6 +14,7 @@ A mixture hidden Markov model (MHMM) fitted for the \code{\link[TraMineR]{biofam
 The model is loaded by calling \code{data(mhmm_biofam)}. It was created with the
 following code:
 \preformatted{
+require(TraMineR)
 data(biofam3c)
 
 ## Building sequence objects
@@ -131,7 +132,7 @@ bmhmm_biofam <- build_mhmm(
   emission_matrix=list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
                        list(emiss_2_child, emiss_2_marr, emiss_2_left),
                        list(emiss_3_child, emiss_3_marr, emiss_3_left)),
-  initial_probs=list(initialProbs1, initialProbs_1, initialProbs_2),
+  initial_probs=list(initialProbs_1, initialProbs_1, initialProbs_2),
   formula = ~ sex + cohort, data = biofam3c$covariates,
   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
   channel_names = c("Parenthood", "Marriage", "Residence"),
@@ -139,7 +140,7 @@ bmhmm_biofam <- build_mhmm(
                      paste("State", 1:6)))
 
 # Fitting the model
-mhmm_biofam <- fit_mhmm(bmhmm_biofam, control_global = list(maxtime = 0))
+mhmm_biofam <- fit_mhmm(bmhmm_biofam, global_step = FALSE)
 
 # Trimming the model
 mhmm_biofam <- trim_hmm(mhmm_biofam$model, zerotol = 1e-04)

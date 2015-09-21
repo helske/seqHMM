@@ -36,55 +36,18 @@ This example uses the `biofam` data from the `TraMineR` package. The data consis
 - 6 = "left home+married+child"
 - 7 = "divorced"
 
-For the functions of the `seqHMM` package, sequence data is given as a state sequence object (`stslist`) using the `seqdef` function in the `TraMineR` package. To show a more complex example, the original data is split into three separate channels. For the divorced state there is no information on children or residence, so these are assessed using the preceding states.
+For the functions of the `seqHMM` package, sequence data is given as a state sequence object (`stslist`) using the `seqdef` function in the `TraMineR` package. To show a more complex example, the original data is split into three separate channels. This data is pre-generated and stored as
+`biofam3c`. It contains a list of three sequence data sets and a data frame including the covariates. Find more information and the code for the conversion by typing `help(biofam3c)`.
 
 ```
 library(TraMineR)
 
-data(biofam)
-
-# Sequence data for the first six individuals
-head(biofam[10:25])
-
-# Building one channel per type of event (married, children, or left)
-bf <- as.matrix(biofam[, 10:25])
-married <- bf == 2 | bf == 3 | bf == 6
-children <-  bf == 4 | bf == 5 | bf == 6
-left <- bf == 1 | bf == 3 | bf == 5 | bf == 6 | bf == 7
-
-# Giving labels and modifying sequences
-
-# Marriage
-married[married == TRUE] <- "Married"
-married[married == FALSE] <- "Single"
-married[bf == 7] <- "Divorced"
-
-# Parenthood
-children[children == TRUE] <- "Children"
-children[children == FALSE] <- "Childless"
-# Divorced parents
-div <- bf[
-  (rowSums(bf == 7)>0 & rowSums(bf == 5)>0) | 
-  (rowSums(bf == 7)>0 & rowSums(bf == 6)>0),
-  ]
-children[rownames(bf) %in% rownames(div) & bf == 7] <- "Children"
-
-# Residence
-left[left==TRUE] <- "Left home"
-left[left==FALSE] <- "With parents"
-# Divorced living with parents (before divorce)
-wp <- bf[
-  (rowSums(bf == 7) > 0 & rowSums(bf == 2) > 0 & rowSums(bf == 3) == 0 &
-   rowSums(bf == 5) == 0 &  rowSums(bf == 6) == 0) |
-  (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 & rowSums(bf == 3) == 0 &
-   rowSums(bf == 5) == 0 &  rowSums(bf==6) == 0),
-  ]
-left[rownames(bf) %in% rownames(wp) & bf == 7] <- "With parents"
+data(biofam3c)
 
 # Building sequence objects (starting at age 15)
-marr.seq <- seqdef(married, start = 15)
-child.seq <- seqdef(children, start = 15)
-left.seq <- seqdef(left, start = 15)
+marr.seq <- seqdef(biofam3c$married, start = 15)
+child.seq <- seqdef(biofam3c$children, start = 15)
+left.seq <- seqdef(biofam3c$left, start = 15)
 
 # Choosing colours for states
 attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
@@ -93,14 +56,14 @@ attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 ```
 
 ### Plotting multichannel sequence data
-Multichannel sequence data are easily plotted using the `ssplot` function (ssplot for Stacked Sequence Plot).
+Multichannel sequence data are easily plotted using the `ssplot` function (ssplot for Stacked Sequence Plot). It can plot two types of plots: sequences themselves (index plots) or state distributions at each time point. Plotting index plots with large sequence data can take time, especially if the sequences are also sorted at the same time, so by default the function plots states distributions.
 
 ```
 # Plotting state distribution plots of observations
 ssplot(
-  list(marr.seq, child.seq, left.seq), type = "d", plots = "obs", 
-  title = "State distribution plots"
-  )
+  list(marr.seq, child.seq, left.seq), title = "State distribution plots")
+  
+  ssplot(list("Marriage" = marr.seq, "Parenthood" = child.seq, "Residence" = left.seq), title = "State distribution plots")
 ```                  
 ![ssp1](https://github.com/helske/seqHMM/blob/master/Examples/ssp1.png)
 
@@ -114,33 +77,27 @@ ssp_f2 <- ssp(
        left.seq[bio$sex == "woman",]),
   type = "d", plots = "obs", border = NA, withlegend = FALSE,
   title = "State distributions for women", title.n = FALSE,
-  ylab = c("Married", "Parenthood", "Left home"), ylab.pos = c(1,2,1),
-  xlab = "Age", xtlab = 15:30
-  )
+  ylab = c("Married", "Parenthood", "Left home"), ylab.pos = c(1, 2, 1),
+  xlab = "Age", xtlab = 15:30)
 
 # Same plot, but sequences instead of state distributions
 ssp_f3 <- update(
-  ssp_f2, type = "I", sortv = "mds.obs", title = "Sequences for women"
-  )
+  ssp_f2, type = "I", sortv = "mds.obs", title = "Sequences for women")
 
 # State distributions with men's data
 ssp_m2 <- update(
   ssp_f2, x = list(marr.seq[bio$sex == "man",], child.seq[bio$sex == "man",], 
                    left.seq[bio$sex == "man",]),
-  type = "d", plots = "obs", border = NA,
-  title = "State distributions for men", title.n = FALSE,
-  ylab = c("Married", "Parenthood", "Left home"), 
-  withlegend = FALSE, ylab.pos = c(1,2,1)
-  )
+  title = "State distributions for men")
 
 # Men's sequences
 ssp_m3 <- update(
-  ssp_m2, type = "I", sortv = "mds.obs", title = "Sequences for men"
-  )
+  ssp_m2, type = "I", sortv = "mds.obs", title = "Sequences for men")
 
 # Plotting state distributions and index plots of observations for women and men 
-gridplot(list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols=2, byrow=TRUE, 
-         row.prop=c(0.42,0.42,0.16))
+gridplot(
+  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), cols = 2, byrow = TRUE, 
+  row.prop = c(0.42, 0.42, 0.16))
 
 ```
 ![gridplot](https://github.com/helske/seqHMM/blob/master/Examples/gridplot.png)
@@ -241,19 +198,19 @@ ssplot(
   HMM$model, type="I", plots="both",
   # Sorting subjects according to multidimensional
   # scaling scores of the most probable hidden state paths
-  sortv="mds.mpp", 
+  sortv="mds.hidden", 
   # Naming the channels
   ylab=c("Children", "Married", "Left home"), 
   # Title for the plot
   title="Observed sequences and the 
 most probable paths of hidden states",
   # Labels for hidden states (most common states)
-  mpp.labels=c("1: Childless single, with parents", 
-                "2: Childless single, left home",
-                "3: Married without children",
-                "4: Married parent, left home"),
+  hidden.states.labels=c("1: Childless single, with parents", 
+                         "2: Childless single, left home",
+                         "3: Married without children",
+                         "4: Married parent, left home"),
   # Colours for hidden states
-  mpp.col=c("olivedrab", "bisque", "plum", "indianred"),
+  hidden.states.col=c("olivedrab", "bisque", "plum", "indianred"),
   # Labels for x axis
   xtlab=15:30, xlab="Age",
   # Proportion for legends
@@ -435,9 +392,9 @@ initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
 initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 
 # Birth cohort
-biofam$cohort <- cut(biofam$birthyr, c(1908, 1935, 1945, 1957))
-biofam$cohort <- factor(
-    biofam$cohort, labels=c("1909-1935", "1936-1945", "1946-1957")
+biofam3c$covariates$cohort <- cut(biofam3c$covariates$birthyr, c(1908, 1935, 1945, 1957))
+biofam3c$covariates$cohort <- factor(
+    biofam3c$covariates$cohort, labels=c("1909-1935", "1936-1945", "1946-1957")
   )
 
 # Build MHMM
@@ -448,7 +405,7 @@ bMHMM <- build_mhmm(
                         list(B2_marr, B2_child, B2_left),
                         list(B3_marr, B3_child, B3_left)),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
-  formula = ~ sex * cohort, data = biofam, 
+  formula = ~ sex * cohort, data = biofam3c$covariates, 
   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
   channel_names = c("Marriage", "Parenthood", "Left home")
   )

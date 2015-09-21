@@ -92,7 +92,7 @@
 #'   labels in the legend. The default value is 1. Values lesser than 1 will 
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #'   
-#' @param hidden.states.color A vector of colors assigned to hidden states. The default 
+#' @param hidden.states.colors A vector of colors assigned to hidden states. The default 
 #'   value \code{"auto"} uses the colors assigned to the stslist object created 
 #'   with \code{seqdef} if \code{hidden.paths} is given; otherwise otherwise colors from 
 #'   \code{\link{colorpalette}} are automatically used. 
@@ -116,8 +116,9 @@
 #'   
 #' @param ylab Labels for the channels. A vector of names for each channel 
 #'   (observations). The default value \code{"auto"} uses the names provided in 
-#'   \code{x$channel_names} if \code{x} is an hmm object; otherwise the 
-#'   number of the channel. \code{FALSE} prints no labels.
+#'   \code{x$channel_names} if \code{x} is an \code{hmm} object; otherwise the 
+#'   names of the list in \code{x} if given, or the
+#'   number of the channel if names are not given. \code{FALSE} prints no labels.
 #'   
 #' @param hidden.states.title Optional label for the hidden state plot (in the 
 #'   y-axis). The default is \code{"Hidden states"}.
@@ -218,19 +219,19 @@
 #'   \code{\link{hmm_biofam}} for information on the data and model used in the example.
 
 
-ssp <- function(x, hidden.paths=NULL,
-                       plots="obs", type="d", 
-                       sortv=NULL, sort.channel=1, dist.method="OM",
-                       with.missing=FALSE,
-                       title=NA, title.n=TRUE, cex.title=1, title.pos=1,
-                       withlegend="auto", ncol.legend="auto", 
-                       with.missing.legend="auto",                         
-                       legend.prop=0.3, cex.legend=1,
-                       hidden.states.color="auto", hidden.states.labels="auto",
-                       xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
-                       ylab="auto", hidden.states.title="Hidden states", 
-                       ylab.pos="auto", 
-                       cex.lab=1, cex.axis=1, ...){
+ssp <- function(x, hidden.paths = NULL,
+                       plots = "obs", type = "d", 
+                       sortv = NULL, sort.channel = 1, dist.method = "OM",
+                       with.missing = FALSE,
+                       title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
+                       withlegend = "auto", ncol.legend = "auto", 
+                       with.missing.legend = "auto",                         
+                       legend.prop = 0.3, cex.legend = 1,
+                       hidden.states.colors = "auto", hidden.states.labels = "auto",
+                       xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
+                       ylab = "auto", hidden.states.title = "Hidden states", 
+                       ylab.pos = "auto", 
+                       cex.lab = 1, cex.axis = 1, ...){
   
   arguments <- list()
   
@@ -269,63 +270,53 @@ ssp <- function(x, hidden.paths=NULL,
   
   dist.method <- match.arg(dist.method, c("OM", "LCP", "RLCP", "LCS", "HAM", "DHD"))
   
-  if(inherits(x,"hmm")){
+  if (inherits(x,"hmm")) {
     obs <- x$observations
     channel_names <- x$channel_names
-    if(length(ylab)>1 || (!is.na(ylab) && ylab!=FALSE)){
-      if(plots != "hidden.paths"){
-        if(length(ylab)==1 && ylab=="auto"){
+    if (length(ylab) > 1 || (!is.na(ylab) && ylab != FALSE)) {
+      if (plots != "hidden.paths") {
+        if (length(ylab)==1 && ylab=="auto") {
           ylab <- x$channel_names
-        }else if(length(ylab)==1 && 
-                   x$n_channels>1 && ylab!="auto"){
-          ylab <- rep(ylab, x$n_channels)
-          channel_names <- ylab
-        }else if(length(ylab) < x$n_channels && !is.na(ylab)){
-          ylab <- rep(ylab, x$n_channels)
-          channel_names <- ylab
-        }else if(length(ylab) > x$n_channels){
-          ylab <- ylab[1:x$n_channels]
+        } else {
+          ylab <- rep(ylab, length.out = x$n_channels)
           channel_names <- ylab
         }
-      }else{
-        if(!is.null(ylab) && hidden.states.title=="Hidden states"){
+      } else {
+        if(!is.null(ylab) && hidden.states.title == "Hidden states"){
           warning("Argument ylab only modifies channel titles (observations). Did you mean to change hidden.states.title?")
         }
       }
     }
     # Single channel stslist
-  }else if(inherits(x, "stslist")){
+  } else if(inherits(x, "stslist")) {
     obs <- x
     channel_names <- "Observations"
-    if(length(ylab)>1 || (!is.na(ylab) && ylab!=FALSE)){
-      if(length(ylab)==1 && ylab=="auto"){
+    if (length(ylab) > 1 || (!is.na(ylab) && ylab != FALSE)) {
+      if (length(ylab) == 1 && ylab == "auto") {
         ylab <- "Observations"
-      }else if(length(ylab) > 1){
+      } else if(length(ylab) > 1) {
         ylab <- ylab[1]
         channel_names <- ylab
       }
     }
     # List of stslists
-  }else{
-    for(i in 1:length(x)){
+  } else {
+    for (i in 1:length(x)) {
       if(!inherits(x[[i]], "stslist")){
         stop("At least one of the list members is not an stslist object. Use seqdef to create one or provide an object of class hmm.")
       }
     }
     obs <- x
-    channel_names <- names(x)
-    if(length(ylab)>1 || (!is.na(ylab) && ylab!=FALSE)){
-      if(length(ylab)==1 && ylab=="auto"){
-        ylab <- names(x)
-      }else if(length(ylab)==1 && 
-                 length(obs)>1 && ylab!="auto"){
-        ylab <- rep(ylab, length(obs))
-        channel_names <- ylab
-      }else if(length(ylab) < length(obs)){
-        ylab <- rep(ylab, length(obs))
-        channel_names <- ylab
-      }else if(length(ylab) > length(obs)){
-        ylab <- ylab[1:length(obs)]
+    if (!is.null(names(x))) {
+      channel_names <- names(x)
+    } else {
+      channel_names <- 1:length(obs)
+    }
+    if (length(ylab) > 1 || (!is.na(ylab) && ylab != FALSE)) {
+      if (length(ylab)==1 && ylab=="auto") {
+        ylab <- channel_names
+      } else {
+        ylab <- rep(ylab, length.out = length(obs))
         channel_names <- ylab
       }
     }
@@ -363,15 +354,15 @@ ssp <- function(x, hidden.paths=NULL,
   }
   
   # Number of plots and positions of y labels
-  if(plots=="both"){
+  if (plots=="both") {
     nplots <- nchannels+1 
-    if(is.character(ylab.pos)){
-      if(ylab.pos=="auto"){
-        ylab.pos <- rep(1,(nchannels+1))
-      }else{
+    if (is.character(ylab.pos)) {
+      if (ylab.pos=="auto") {
+        ylab.pos <- rep(1, (nchannels + 1) )
+      } else {
         stop(paste("Argument ylab.pos only accepts the value \"auto\" or a numeric vector."))
       }
-    }else if(length(ylab.pos)!=(nchannels+1)){
+    }else if (length(ylab.pos) != (nchannels+1) ){
       ylab.pos <- rep(ylab.pos, length.out = (nchannels+1))
     }
   }else if (plots == "obs") {
@@ -383,11 +374,11 @@ ssp <- function(x, hidden.paths=NULL,
         stop(paste("Argument ylab.pos only accepts the value \"auto\" or a numeric vector."))
       }
     } else if(length(ylab.pos) != nchannels) {
-      ylab.pos <- rep(ylab.pos, length.out = nchannels+1)
+      ylab.pos <- rep(ylab.pos, length.out = nchannels)
     }
   }
   
-  if(type == "I"){
+  if (type == "I") {
     ylab.pos <- ylab.pos + 0.5
   }
   
@@ -502,23 +493,23 @@ ssp <- function(x, hidden.paths=NULL,
                                          xtstep=attr(obs,"xtstep"))))
     }
     # Color palette for hidden.paths
-    if(length(hidden.states.color)==1 && hidden.states.color=="auto" && length(hidden.paths)>1){
+    if(length(hidden.states.colors)==1 && hidden.states.colors=="auto" && length(hidden.paths)>1){
       if(is.null(attr(hidden.paths, "cpal"))){
         attr(hidden.paths.seq, "cpal") <- seqHMM::colorpalette[[length(alphabet(hidden.paths.seq))]]
       }else{
         attr(hidden.paths.seq, "cpal") <- attr(hidden.paths, "cpal")
       }
-    }else if(!is.null(hidden.states.labels) && length(hidden.states.labels)==1 && hidden.states.color=="auto" && length(hidden.paths)==1 && is.null(hidden.paths)){
+    }else if(!is.null(hidden.states.labels) && length(hidden.states.labels)==1 && hidden.states.colors=="auto" && length(hidden.paths)==1 && is.null(hidden.paths)){
       attr(hidden.paths.seq, "cpal") <- seqHMM::colorpalette[[length(alphabet(hidden.paths.seq))]]
-    }else if(all(isColor(hidden.states.color))){
-      if(length(hidden.states.color)!=length(alphabet(hidden.paths.seq))){
-        warning(paste0("Number of colors assigned to hidden.states.color does not match the number of hidden states. \n
+    }else if(all(isColor(hidden.states.colors))){
+      if(length(hidden.states.colors)!=length(alphabet(hidden.paths.seq))){
+        warning(paste0("Number of colors assigned to hidden.states.colors does not match the number of hidden states. \n
                        There are ", length(alphabet(hidden.paths.seq)), 
-                       " hidden states but ", length(hidden.states.color), " color(s)."))
+                       " hidden states but ", length(hidden.states.colors), " color(s)."))
       }
-      attr(hidden.paths.seq, "cpal") <- rep(hidden.states.color, length(alphabet(hidden.paths.seq)))[1:length(alphabet(hidden.paths.seq))]
+      attr(hidden.paths.seq, "cpal") <- rep(hidden.states.colors, length(alphabet(hidden.paths.seq)))[1:length(alphabet(hidden.paths.seq))]
     }else{
-      stop(paste("Please provide a vector of colors for argument hidden.states.color or use value \"auto\" to automatically determine gray scale colors."))
+      stop(paste("Please provide a vector of colors for argument hidden.states.colors or use value \"auto\" to automatically determine gray scale colors."))
     }
     arguments <- c(arguments, list(hidden.paths.seq=hidden.paths.seq))
     # Sorting sequences according to multidimensional scaling score of hidden.paths
@@ -669,7 +660,7 @@ ssp <- function(x, hidden.paths=NULL,
                                    withlegend=withlegend, ncol.legend=ncol.legend, 
                                    with.missing.legend=with.missing.legend,                         
                                    legend.prop=legend.prop, cex.legend=cex.legend,
-                                   hidden.states.color=hidden.states.color, hidden.states.labels=hidden.states.labels,
+                                   hidden.states.colors=hidden.states.colors, hidden.states.labels=hidden.states.labels,
                                    xaxis=xaxis, xlab=xlab, xtlab=xtlab, xlab.pos=xlab.pos,
                                    ylab=ylab, hidden.states.title=hidden.states.title, 
                                    ylab.pos=ylab.pos, 
@@ -682,7 +673,7 @@ ssp <- function(x, hidden.paths=NULL,
                                    withlegend=withlegend, ncol.legend=ncol.legend, 
                                    with.missing.legend=with.missing.legend,                         
                                    legend.prop=legend.prop, cex.legend=cex.legend,
-                                   hidden.states.color=hidden.states.color, hidden.states.labels=hidden.states.labels,
+                                   hidden.states.colors=hidden.states.colors, hidden.states.labels=hidden.states.labels,
                                    xaxis=xaxis, xlab=xlab, xtlab=xtlab, xlab.pos=xlab.pos,
                                    ylab=ylab, hidden.states.title=hidden.states.title, 
                                    ylab.pos=ylab.pos, 

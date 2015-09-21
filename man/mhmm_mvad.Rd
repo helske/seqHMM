@@ -69,7 +69,7 @@ bmhmm_mvad <- build_mhmm(
   initial_probs = list(initial_probs_1, initial_probs_2))
 
 # Fit the model
-mhmm_mvad <- fit_mhmm(bmhmm_mvad, control_global = list(maxtime = 0))
+mhmm_mvad <- fit_mhmm(bmhmm_mvad, global_step = FALSE)
 
 # Trim the model
 mhmm_mvad <- trim_hmm(mhmm_mvad$model, zerotol = 1e-04)
