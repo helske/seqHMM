@@ -67,7 +67,9 @@ sim <- simulate_mhmm(
   sequence_length = 25, formula = ~covariate_1 + covariate_2,
   data = dataf, coefficients = coefs)
 
-ssplot(sim$observations, mpp = sim$states, plots = "both", sortv = "mds.mpp")
+ssplot(
+  sim$observations, hidden.paths = sim$states, plots = "both",
+  sortv = "mds.mpp")
 
 hmm <- build_mhmm(sim$observations,
 initial_probs = list(initial_probs_1, initial_probs_2),
