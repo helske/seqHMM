@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/helske/seqHMM.svg?branch=master)](https://travis-ci.org/helske/seqHMM)
 
-# Note! Function names and arguments were changed in August and September 2015 (version 1.0.0 onwards). Sorry for the inconvenience.
+### Note! Function names and arguments were changed in August and September 2015 (version 1.0.0 onwards). Sorry for the inconvenience.
 
 
 seqHMM: Hidden Markov Models for Life Sequences and Other Multivariate, Multichannel Categorical Time Series
