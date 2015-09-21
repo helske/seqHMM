@@ -57,7 +57,7 @@
 #' 
 #' ssplot(
 #'   sim$observations, hidden.paths = sim$states, plots = "both", 
-#'   sortv = "mds.mpp")
+#'   sortv = "mds.hidden")
 #' 
 #' hmm <- build_mhmm(sim$observations, 
 #' initial_probs = list(initial_probs_1, initial_probs_2), 

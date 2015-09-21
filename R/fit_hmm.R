@@ -72,8 +72,20 @@
 #'   MLSL (\code{NLOPT_LD_LBFGS} as \code{local_opts} in \code{control_global}). 
 #'   In order to reduce the computation time spent on non-global optima, the 
 #'   convergence tolerance of the local optimizer is set relatively large. At step 3, 
-#'   a local optimization (BFGS by default) is run with a lower tolerance to find the 
+#'   a local optimization (LBFGS by default) is run with a lower tolerance to find the 
 #'   optimum with high precision.
+#'   
+#'   There are some theoretical guarantees that the MLSL method used as the default 
+#'   optimizer in step 2 shoud ﬁnd all local optima in a ﬁnite number of local 
+#'   optimizations. Of course, it might not always succeed in a reasonable time. 
+#'   The EM algorithm can help in finding good boundaries for the search, especially 
+#'   with good starting values, but in some cases it can mislead. A good strategy is to 
+#'   try a couple of different fitting options with different combinations of the methods: 
+#'   e.g. all steps, only global and local steps, and a few evaluations of EM followed by 
+#'   global and local optimization.
+#'   
+#'   By default, the estimation time is limited to 60 seconds in steps 2 and 3, so it is 
+#'   advisable to change the default settings for the final analysis. 
 #'   
 #'   Any method available in the \code{nloptr} function can be used for the global and 
 #'   local steps.

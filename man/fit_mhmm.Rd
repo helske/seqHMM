@@ -67,6 +67,42 @@ using numerical maximization of log-likelihood. Initial values for estimation
 are taken from the corresponding components of the model with preservation of
 original zero probabilities.
 }
+\details{
+The fitting function provides three estimation steps: 1) EM algorithm,
+  2) global optimization, and 3) local optimization. The user can call for one method
+  or any combination of these steps, but should note that they are preformed in the
+  above-mentioned order. The results from a former step are used as starting values
+  in a latter.
+
+  By default the \code{fit_hmm} function starts with the EM algorithm,
+  uses the multilevel single-linkage method (MLSL) with the LDS modification
+  for global optimization (\code{NLOPT_GD_MLSL_LDS} as \code{algorithm} in
+  \code{control_global}), and finishes with LBFGS as the local optimizer.
+  The MLSL method draws random starting points and performs a local optimization
+  from each. The LDS modification uses low-discrepancy sequences instead of
+  pseudo-random numbers as starting points and should improve the convergence rate.
+  By default, \code{fit_hmm} uses the BFGS algorithm as the local optimizer in the
+  MLSL (\code{NLOPT_LD_LBFGS} as \code{local_opts} in \code{control_global}).
+  In order to reduce the computation time spent on non-global optima, the
+  convergence tolerance of the local optimizer is set relatively large. At step 3,
+  a local optimization (LBFGS by default) is run with a lower tolerance to find the
+  optimum with high precision.
+
+  There are some theoretical guarantees that the MLSL method used as the default
+  optimizer in step 2 shoud ﬁnd all local optima in a ﬁnite number of local
+  optimizations. Of course, it might not always succeed in a reasonable time.
+  The EM algorithm can help in finding good boundaries for the search, especially
+  with good starting values, but in some cases it can mislead. A good strategy is to
+  try a couple of different fitting options with different combinations of the methods:
+  e.g. all steps, only global and local steps, and a few evaluations of EM followed by
+  global and local optimization.
+
+  By default, the estimation time is limited to 60 seconds in steps 2 and 3, so it is
+  advisable to change the default settings for the final analysis.
+
+  Any method available in the \code{nloptr} function can be used for the global and
+  local steps.
+}
 \examples{
 \dontrun{
 require(TraMineR)

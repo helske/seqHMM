@@ -170,33 +170,26 @@ SSPlotter <- function(obs, nchannels, channel_names, nplots,
   }
   
   # Plotting the most probable paths
-  if(plots=="both" || plots=="mpp"){  
+  if(plots=="both" || plots=="hidden.paths"){  
     if(type=="I"){    
       if(is.null(sortv)){
         pushViewport(viewport(layout.pos.col=1, layout.pos.row=nplots))
         par(plt=gridPLT(), new=TRUE)
-        seqplot(mpp.seq, type=type, sortv=sortv, withlegend=FALSE,
+        seqplot(hidden.paths.seq, type=type, sortv=sortv, withlegend=FALSE,
                 use.layout=FALSE, yaxis=FALSE, axes=xaxis, ylab=NA,
                 xtlab=xtlab, cex.plot=cex.axis, ...)
         popViewport()
       }else if(length(sortv)==1 && (sortv=="from.start" || sortv=="from.end")){
         pushViewport(viewport(layout.pos.col=1, layout.pos.row=nplots))
         par(plt=gridPLT(), new=TRUE)
-        seqplot(mpp.seq[orderv,], type=type, withlegend=FALSE,
+        seqplot(hidden.paths.seq[orderv,], type=type, withlegend=FALSE,
                 use.layout=FALSE, yaxis=FALSE, axes=xaxis, ylab=NA,
                 xtlab=xtlab, cex.plot=cex.axis, ...)
         popViewport()
-        #       }else if(length(sortv)==1 && sortv=="mds.mpp"){
-        #         pushViewport(viewport(layout.pos.col=1, layout.pos.row=nplots))
-        #         par(plt=gridPLT(), new=TRUE)
-        #         seqplot(mpp.seq, type=type, sortv=mds.mppscore, withlegend=FALSE,
-        #                 use.layout=FALSE, yaxis=FALSE, axes=xaxis, ylab=NA,
-        #                 xtlab=xtlab, cex.plot=cex.axis, ...)
-        #         popViewport()
       }else if(length(sortv)>1){
         pushViewport(viewport(layout.pos.col=1, layout.pos.row=nplots))
         par(plt=gridPLT(), new=TRUE)
-        seqplot(mpp.seq, type=type, sortv=sortv, withlegend=FALSE,
+        seqplot(hidden.paths.seq, type=type, sortv=sortv, withlegend=FALSE,
                 use.layout=FALSE, yaxis=FALSE, axes=xaxis, ylab=NA,
                 xtlab=xtlab, cex.plot=cex.axis, ...)
         popViewport()
@@ -204,7 +197,7 @@ SSPlotter <- function(obs, nchannels, channel_names, nplots,
     }else{    
       pushViewport(viewport(layout.pos.col=1, layout.pos.row=nplots))
       par(plt=gridPLT(), new=TRUE)
-      seqplot(mpp.seq, type=type, withlegend=FALSE,
+      seqplot(hidden.paths.seq, type=type, withlegend=FALSE,
               use.layout=FALSE, yaxis=FALSE, axes=xaxis, ylab=NA,
               xtlab=xtlab, cex.plot=cex.axis, ...)
       popViewport()
@@ -235,7 +228,7 @@ SSPlotter <- function(obs, nchannels, channel_names, nplots,
         popViewport()
       }
     }
-    if(plots=="both" || plots=="mpp"){
+    if(plots=="both" || plots=="hidden.paths"){
       pushViewport(viewport(layout.pos.row=nplots, 
                             layout.pos.col=1))
       grid.text(hidden.states.title, x = unit(ylab.space/cex.lab-
@@ -294,16 +287,16 @@ SSPlotter <- function(obs, nchannels, channel_names, nplots,
       }
     }
     # Legends for most probable paths
-    if(plots=="both" || plots=="mpp"){
+    if(plots=="both" || plots=="hidden.paths"){
       pushViewport(viewport(layout.pos.row=lposrow[nplots], 
                             layout.pos.col=lposcol[nplots]))
       pushViewport(viewport(width=unit(0.9, "npc")))
       par(plt=gridPLT(), new=TRUE)
       if(withlegend=="bottom.many"){
-        seqlegend(mpp.seq, fontsize=cex.legend, position="top", 
+        seqlegend(hidden.paths.seq, fontsize=cex.legend, position="top", 
                   ncol=ncol.legend[length(ncol.legend)], with.missing=with.missing.legend)
       }else{
-        seqlegend(mpp.seq, fontsize=cex.legend, position="left", 
+        seqlegend(hidden.paths.seq, fontsize=cex.legend, position="left", 
                   ncol=ncol.legend[length(ncol.legend)], 
                   with.missing=with.missing.legend)
       }
@@ -325,9 +318,9 @@ SSPlotter <- function(obs, nchannels, channel_names, nplots,
         cpal <- c(cpal, attr(obs, "cpal")) 
       }
     }
-    if(plots=="both" || plots=="mpp"){
-      ltext <- c(ltext, attr(mpp.seq, "labels"))
-      cpal <- c(cpal, attr(mpp.seq, "cpal")) 
+    if(plots=="both" || plots=="hidden.paths"){
+      ltext <- c(ltext, attr(hidden.paths.seq, "labels"))
+      cpal <- c(cpal, attr(hidden.paths.seq, "cpal")) 
     }
     anymissing <- FALSE
     if(nchannels>1){
@@ -375,24 +368,24 @@ SSPlotter <- function(obs, nchannels, channel_names, nplots,
     }else{
       if(nchannels>1){
         if(withlegend=="right"){
-          seqlegend(mpp, fontsize=cex.legend, position="left", 
+          seqlegend(hidden.paths, fontsize=cex.legend, position="left", 
                     ncol=ncol.legend, cpal=cpal, ltext=ltext,
                     with.missing=with.missing.legend, 
                     missing.color=attr(obs[[1]],"missing.color"))
         }else{ # withlegend=="bottom"
-          seqlegend(mpp, fontsize=cex.legend, position="top", 
+          seqlegend(hidden.paths, fontsize=cex.legend, position="top", 
                     ncol=ncol.legend, cpal=cpal, ltext=ltext,
                     with.missing=with.missing.legend, 
                     missing.color=attr(obs[[1]],"missing.color"))
         }
       }else{
         if(withlegend=="right"){
-          seqlegend(mpp, fontsize=cex.legend, position="left", 
+          seqlegend(hidden.paths, fontsize=cex.legend, position="left", 
                     ncol=ncol.legend, cpal=cpal, ltext=ltext,
                     with.missing=with.missing.legend, 
                     missing.color=attr(obs,"missing.color"))
         }else{ # withlegend=="bottom"
-          seqlegend(mpp, fontsize=cex.legend, position="top", 
+          seqlegend(hidden.paths, fontsize=cex.legend, position="top", 
                     ncol=ncol.legend, cpal=cpal, ltext=ltext,
                     with.missing=with.missing.legend, 
                     missing.color=attr(obs,"missing.color"))
