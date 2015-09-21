@@ -40,7 +40,7 @@
 #' 
 #' # Starting values for the transition matrix
 #' 
-#' trans_2 <-  matrix(
+#' trans_1 <-  matrix(
 #'   c(0.92, 0.05, 0.03,
 #'     0.01, 0.97, 0.02,
 #'     0.02, 0.04, 0.94), 
@@ -66,7 +66,7 @@
 #'   initial_probs = list(initial_probs_1, initial_probs_2))
 #' 
 #' # Fit the model
-#' mhmm_mvad <- fit_mhmm(bmhmm_mvad, control_global = list(maxtime = 0))
+#' mhmm_mvad <- fit_mhmm(bmhmm_mvad, global_step = FALSE)
 #' 
 #' # Trim the model
 #' mhmm_mvad <- trim_hmm(mhmm_mvad$model, zerotol = 1e-04)

@@ -93,12 +93,12 @@
 #'   labels in the legend. The default value is 1. Values lesser than 1 will 
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #'   
-#' @param hidden.paths.color A vector of colors assigned to hidden states. The default 
+#' @param hidden.states.color A vector of colors assigned to hidden states. The default 
 #'   value \code{"auto"} uses the colors assigned to the stslist object created 
 #'   with \code{seqdef} if \code{hidden.paths} is given; otherwise otherwise colors from 
 #'   \code{\link{colorpalette}} are automatically used. 
 #'   
-#' @param hidden.paths.labels Labels for the hidden states. The default value 
+#' @param hidden.states.labels Labels for the hidden states. The default value 
 #'   \code{"auto"} uses the names provided in \code{x$state_names} if \code{x} is
 #'   an hmm object; otherwise the number of the hidden state.
 #'   
@@ -221,7 +221,7 @@ ssplot <- function(x, hidden.paths=NULL,
                 withlegend="auto", ncol.legend="auto", 
                 with.missing.legend="auto",                         
                 legend.prop=0.3, cex.legend=1,
-                hidden.paths.color="auto", hidden.paths.labels="auto",
+                hidden.states.color="auto", hidden.states.labels="auto",
                 xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
                 ylab="auto", hidden.states.title="Hidden states", 
                 ylab.pos="auto", 
