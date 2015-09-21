@@ -273,20 +273,17 @@ ssp <- function(x, hidden.paths=NULL,
     obs <- x$observations
     channel_names <- x$channel_names
     if(length(ylab)>1 || (!is.na(ylab) && ylab!=FALSE)){
-      if(plots!="hidden.paths"){
+      if(plots != "hidden.paths"){
         if(length(ylab)==1 && ylab=="auto"){
           ylab <- x$channel_names
         }else if(length(ylab)==1 && 
                    x$n_channels>1 && ylab!="auto"){
-          warning("The length of ylab does not match the number of channels.")
           ylab <- rep(ylab, x$n_channels)
           channel_names <- ylab
         }else if(length(ylab) < x$n_channels && !is.na(ylab)){
-          warning("The length of ylab does not match the number of channels.")
           ylab <- rep(ylab, x$n_channels)
           channel_names <- ylab
         }else if(length(ylab) > x$n_channels){
-          warning("The length of ylab does not match the number of channels.")
           ylab <- ylab[1:x$n_channels]
           channel_names <- ylab
         }
@@ -299,12 +296,11 @@ ssp <- function(x, hidden.paths=NULL,
     # Single channel stslist
   }else if(inherits(x, "stslist")){
     obs <- x
-    channel_names <- 1
+    channel_names <- "Observations"
     if(length(ylab)>1 || (!is.na(ylab) && ylab!=FALSE)){
       if(length(ylab)==1 && ylab=="auto"){
-        ylab <- 1
+        ylab <- "Observations"
       }else if(length(ylab) > 1){
-        warning("The length of ylab does not match the number of channels (1).")
         ylab <- ylab[1]
         channel_names <- ylab
       }
@@ -317,21 +313,18 @@ ssp <- function(x, hidden.paths=NULL,
       }
     }
     obs <- x
-    channel_names <- 1:length(obs)
+    channel_names <- names(x)
     if(length(ylab)>1 || (!is.na(ylab) && ylab!=FALSE)){
       if(length(ylab)==1 && ylab=="auto"){
-        ylab <- 1:length(obs)
+        ylab <- names(x)
       }else if(length(ylab)==1 && 
                  length(obs)>1 && ylab!="auto"){
-        warning("The length of ylab does not match the number of channels.")
         ylab <- rep(ylab, length(obs))
         channel_names <- ylab
       }else if(length(ylab) < length(obs)){
-        warning("The length of ylab does not match the number of channels.")
         ylab <- rep(ylab, length(obs))
         channel_names <- ylab
       }else if(length(ylab) > length(obs)){
-        warning("The length of ylab does not match the number of channels.")
         ylab <- ylab[1:length(obs)]
         channel_names <- ylab
       }
@@ -378,37 +371,19 @@ ssp <- function(x, hidden.paths=NULL,
       }else{
         stop(paste("Argument ylab.pos only accepts the value \"auto\" or a numeric vector."))
       }
-    }else if(length(ylab.pos) == 1){
-      ylab.pos <- rep(ylab.pos, (nchannels+1))
     }else if(length(ylab.pos)!=(nchannels+1)){
-      warning(paste0("The vector provided for ylab.pos does not match the number of requested plots (",
-                     (nchannels+1), ")"))
+      ylab.pos <- rep(ylab.pos, length.out = (nchannels+1))
     }
-  }else if(plots=="obs"){
+  }else if (plots == "obs") {
     nplots <- nchannels
-    if(is.character(ylab.pos)){
-      if(ylab.pos=="auto"){
-        ylab.pos <- rep(1,nchannels)
-      }else{
+    if (is.character(ylab.pos)) {
+      if (ylab.pos == "auto") {
+        ylab.pos <- rep(1, nchannels)
+      } else {
         stop(paste("Argument ylab.pos only accepts the value \"auto\" or a numeric vector."))
       }
-    }else if(length(ylab.pos) == 1){
-      ylab.pos <- rep(ylab.pos, nchannels)
-    }else if(length(ylab.pos)!=nchannels){
-      warning(paste0("The vector provided for ylab.pos does not match the number of requested plots (",
-                     nchannels, ")"))
-    }
-  }else if(plots=="hidden.paths"){
-    nplots <- 1
-    if(is.character(ylab.pos)){
-      if(ylab.pos=="auto"){
-        ylab.pos <- 1
-      }else{
-        stop(paste("Argument ylab.pos only accepts the value \"auto\" or a numeric vector."))
-      }
-    }else if(length(ylab.pos)!=1){
-      warning(paste0("The vector provided for ylab.pos does not match the number of requested plots (",
-                     1, ")"))
+    } else if(length(ylab.pos) != nchannels) {
+      ylab.pos <- rep(ylab.pos, length.out = nchannels+1)
     }
   }
   
@@ -453,14 +428,11 @@ ssp <- function(x, hidden.paths=NULL,
         ncol.legend <- nchannels+1
       }
     }else if((withlegend==TRUE || withlegend=="auto") && length(ncol.legend)>(nchannels+1)){
-      warning(paste0("The length of ncol.legend does not match the number of requested plots. Only the first ", nchannels+1, " arguments of \"ncol.legend\" were used."))
+      ncol.legend <- ncol.legend[1:(nchannels + 1)]
     }else if((withlegend==TRUE || withlegend=="auto") && length(ncol.legend)<(nchannels+1)){
-      warning(paste0("The length of ncol.legend does not match the number of requested plots. The last were arranged in 1 column."))
-      ncol.legend[(nchannels+1-length(ncol.legend)+1):(nchannels+1)] <- 1
-      ncol.legend <- ncol.legend
+      ncol.legend <- rep(ncol.legend, length.out = (nchannels + 1))
     }else if((withlegend=="right" || withlegend=="bottom") && 
                length(ncol.legend)>1){
-      warning(paste0("The length of ncol.legend does not match the number of requested legends (1). Only the first argument of \"ncol.legend\" was used."))
       ncol.legend <- ncol.legend[1]
     }
   }else if(plots=="obs"){
@@ -474,24 +446,19 @@ ssp <- function(x, hidden.paths=NULL,
         ncol.legend <- nchannels
       }
     }else if((withlegend==TRUE || withlegend=="auto") && length(ncol.legend)>nchannels){
-      warning(paste0("The length of ncol.legend does not match the number of requested plots. Only the first ", nchannels, " arguments of \"ncol.legend\" were used."))
+      ncol.legend <- ncol.legend[1:nchannels]
     }else if((withlegend==TRUE || withlegend=="auto") && length(ncol.legend)<nchannels){
-      warning(paste0("The length of ncol.legend does not match the number of requested plots. The last were arranged in 1 column."))
-      ncol.legend[(nchannels-length(ncol.legend)+1):nchannels] <- 1
+      ncol.legend <- rep(ncol.legend, length.out = nchannels)
       ncol.legend <- ncol.legend
     }else if((withlegend=="right" || withlegend=="bottom") && 
                length(ncol.legend)>1){
-      warning(paste0("The length of ncol.legend does not match the number of requested legends (1). Only the first argument of \"ncol.legend\" was used."))
       ncol.legend <- ncol.legend[1]
     }
   }else if(plots=="hidden.paths"){
     if(length(ncol.legend)==1 && ncol.legend=="auto"){
       ncol.legend <- 1
-    }else if((withlegend==TRUE || withlegend=="auto") && length(ncol.legend)>1){
-      warning(paste0("The length of ncol.legend does not match the number of requested plots. Only the first argument of \"ncol.legend\" was used."))
-    }else if((withlegend=="right" || withlegend=="bottom") && 
-               length(ncol.legend)>1){
-      warning(paste0("The length of ncol.legend does not match the number of requested legends (1). Only the first argument of \"ncol.legend\" was used."))
+    }else if((withlegend==TRUE || withlegend=="auto" || 
+              withlegend=="right" || withlegend=="bottom") && length(ncol.legend)>1){
       ncol.legend <- ncol.legend[1]
     }
   }  
@@ -560,7 +527,6 @@ ssp <- function(x, hidden.paths=NULL,
         dist.hidden.paths <- suppressMessages(seqdist(hidden.paths.seq, method=dist.method, 
                                              sm="TRATE", with.missing=TRUE))
         sortv <- cmdscale(dist.hidden.paths, k=1)
-        #         arguments <- c(arguments, list(sortv=sortv))
       }
     } 
     }
@@ -573,7 +539,6 @@ ssp <- function(x, hidden.paths=NULL,
         dist.obs <- suppressMessages(seqdistmc(obs, method=dist.method, 
                                                sm="TRATE", with.missing=TRUE))
         sortv <- cmdscale(dist.obs, k=1)
-        #         arguments <- c(arguments, list(sortv=sortv))
       }
       # Sorting from start or end
       if(length(sortv)==1 && (sortv=="from.start" || sortv=="from.end")){

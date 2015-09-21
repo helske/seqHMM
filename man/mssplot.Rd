@@ -6,7 +6,7 @@
 Paths for Mixture Hidden Markov Models}
 \usage{
 mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
-  plots = "both", type = "I", sortv = NULL, sort.channel = 1,
+  plots = "both", type = "d", sortv = NULL, sort.channel = 1,
   dist.method = "OM", with.missing = FALSE, title = NA, title.n = TRUE,
   cex.title = 1, title.pos = 1, withlegend = "auto",
   ncol.legend = "auto", with.missing.legend = "auto", legend.prop = 0.3,
@@ -29,7 +29,7 @@ mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
   and most probable paths (the default).}
 
 \item{type}{The type of the plot. Available types are \code{"I"} for index
-  plots and \code{"d"} for state distribution plots. See
+  plots and \code{"d"} for state distribution plots (the default). See
   \code{\link{seqplot}} for details.}
 
 \item{sortv}{A sorting variable or a sort method (one of \code{"from.start"},

@@ -22,7 +22,7 @@
 #'   and most probable paths (the default).
 #'   
 #' @param type The type of the plot. Available types are \code{"I"} for index 
-#'   plots and \code{"d"} for state distribution plots. See 
+#'   plots and \code{"d"} for state distribution plots (the default). See 
 #'   \code{\link{seqplot}} for details.
 #'   
 #' @param sortv A sorting variable or a sort method (one of \code{"from.start"},
@@ -167,7 +167,7 @@
 
 
 mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
-                    plots = "both", type = "I", 
+                    plots = "both", type = "d", 
                     sortv = NULL, sort.channel = 1, dist.method = "OM",
                     with.missing = FALSE,
                     title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,

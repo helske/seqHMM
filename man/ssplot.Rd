@@ -5,7 +5,7 @@
 \title{Stacked Plots of Multichannel Sequences and/or Most Probable
 Paths from Hidden Markov Models}
 \usage{
-ssplot(x, hidden.paths = NULL, plots = "obs", type = "I", sortv = NULL,
+ssplot(x, hidden.paths = NULL, plots = "obs", type = "d", sortv = NULL,
   sort.channel = 1, dist.method = "OM", with.missing = FALSE,
   title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
   withlegend = "auto", ncol.legend = "auto", with.missing.legend = "auto",
@@ -27,7 +27,7 @@ ssplot(x, hidden.paths = NULL, plots = "obs", type = "I", sortv = NULL,
   and most probable paths.}
 
 \item{type}{The type of the plot. Available types are \code{"I"} for index
-  plots and \code{"d"} for state distribution plots. See
+  plots and \code{"d"} for state distribution plots (the default). See
   \code{\link{seqplot}} for details.}
 
 \item{sortv}{A sorting variable or a sort method (one of \code{"from.start"},
