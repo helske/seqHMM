@@ -89,7 +89,7 @@ The fitting function provides three estimation steps: 1) EM algorithm,
   optimum with high precision.
 
   There are some theoretical guarantees that the MLSL method used as the default
-  optimizer in step 2 shoud ﬁnd all local optima in a ﬁnite number of local
+  optimizer in step 2 shoud find all local optima in a finite number of local
   optimizations. Of course, it might not always succeed in a reasonable time.
   The EM algorithm can help in finding good boundaries for the search, especially
   with good starting values, but in some cases it can mislead. A good strategy is to
