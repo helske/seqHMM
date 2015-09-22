@@ -20,8 +20,12 @@
 #' @import nloptr
 #' @importFrom Rcpp evalCpp
 #' @importFrom Matrix .bdiag
-#' @importFrom stats logLik
+#' @importFrom stats logLik cmdscale complete.cases model.matrix
 #' @importFrom TraMineR alphabet seqstatf seqdef seqlegend seqdist seqdistmc seqplot seqlength
+#' @importFrom grDevices col2rgb rainbow
+#' @importFrom graphics barplot par plot plot.new polygon strwidth text
+#' @importFrom methods hasArg
+#' @importFrom utils menu
 #' @examples 
 #' 
 #' \dontrun{
