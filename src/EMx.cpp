@@ -2,12 +2,6 @@
 #include "seqHMM.h"
 using namespace Rcpp;
 
-// Below is a simple example of exporting a C++ function to R. You can
-// source this function into an R session using the Rcpp::sourceCpp 
-// function (or via the Source button on the editor toolbar)
-
-// For more on using Rcpp click the Help button on the editor toolbar
-// install_github( "Rcpp11/attributes" ) ; require('attributes') 
 
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
@@ -51,23 +45,13 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   
   arma::vec ll(oDims[0]);
   
-  double tmp = 0.0;
-  double sumtmp = 0.0;
   double neginf = -arma::math::inf();
   
-  
-  
-  for(int k=0;k<oDims[0];k++){    
-    tmp =neginf;
-    for(int i = 0; i < eDims[0]; i++){
-      if(alpha(i,oDims[1]-1,k)>neginf){
-        tmp = logSumExp(alpha(i,oDims[1]-1,k),tmp); 
-      }
-    }
-    ll(k) = tmp;
+  for(int k = 0; k < oDims[0]; k++){
+    ll(k) = logSumExp(alpha.slice(k).col(oDims[1]-1));
   }
-  
   double sumlogLik = sum(ll);
+  
   if(trace>0){
     Rcout<<"Log-likelihood of initial model: "<< sumlogLik<<std::endl;
   }
@@ -76,65 +60,52 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   //  
   double change = tol+1.0;
   int iter = 0;
-  arma::mat ksii(eDims[0],eDims[0]);
-  arma::cube gamma(eDims[0],eDims[1],eDims[2]);
-  arma::vec delta(eDims[0]);
-  
   
   IntegerVector cumsumstate = cumsum(numberOfStates);
   
-  
   while((change>tol) & (iter<itermax)){   
     iter++;
-    gamma.zeros();
-    ksii.zeros();
-    delta.zeros(); 
     
+    arma::mat ksii(eDims[0],eDims[0], arma::fill::zeros);
+    arma::cube gamma(eDims[0],eDims[1],eDims[2], arma::fill::zeros);
+    arma::vec delta(eDims[0], arma::fill::zeros); 
+    arma::vec tmpnm1(oDims[1] - 1);
+    arma::vec tmpn(oDims[1]);
     
     
     for(int k = 0; k < oDims[0]; k++){
       
-      
       delta += exp(alpha.slice(k).col(0) + beta.slice(k).col(0) - ll(k));
-      
       
       for(int i = 0; i < eDims[0]; i++){
         for(int j = 0; j < eDims[0]; j++){
-          sumtmp = neginf;
-          for(int t=0; t < (oDims[1]-1); t++){
-            tmp = alpha(i,t,k) + transition(i,j) + beta(j,t+1,k);
-            if(tmp>neginf){
-              for(int r=0; r < oDims[2]; r++){
-                tmp += emission(j,obs(k,t+1,r),r);
+          if(transition(i,j) > neginf){
+            for(int t = 0; t < (oDims[1] - 1); t++){
+              tmpnm1(t) = alpha(i,t,k) + transition(i,j) + beta(j,t+1,k);
+              for(int r = 0; r < oDims[2]; r++){
+                tmpnm1(t) += emission(j,obs(k,t+1,r),r);
               }
             }
-            if(tmp>neginf){
-              sumtmp = logSumExp(sumtmp,tmp);
-            }
+            ksii(i,j) += exp(logSumExp(tmpnm1)-ll(k));
           }
-          
-          ksii(i,j) += exp(sumtmp-ll(k));
-          
         }
       }
       
       
-      for(int r=0; r<eDims[2]; r++){
-        for(int i = 0; i<eDims[0]; i++){
-          for(int l = 0; l<nSymbols[r]; l++){
-            sumtmp = neginf;
-            for(int t=0; t<oDims[1];t++){
-              if(l == (obs(k,t,r))){
-                tmp = alpha(i,t,k) + beta(i,t,k);
-                if(tmp>neginf){
-                  sumtmp = logSumExp(sumtmp,tmp);
-                }
-              }              
+      for(int r = 0; r < eDims[2]; r++){
+        for(int i = 0; i < eDims[0]; i++){
+          for(int l = 0; l < nSymbols[r]; l++){
+            if(emission(i, l, r) > neginf){
+              for(int t = 0; t < oDims[1]; t++){
+                if(l == (obs(k, t, r))){
+                  tmpn(t) = alpha(i,t,k) + beta(i,t,k);
+                } else tmpn(t) = neginf;      
+              }
+              gamma(i,l,r) += exp(logSumExp(tmpn)-ll(k));
             }
-            gamma(i,l,r) += exp(sumtmp-ll(k));
           }
         }
-      }      
+      }       
     }
     
     lweights = optCoef(obs, emission, initk, beta, ll, coef, X, cumsumstate, numberOfStates, trace);
@@ -162,18 +133,11 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     internalForwardx(transition, emission, initk, obs, alpha);
     internalBackward(transition, emission, obs, beta);
     
-    for(int k=0;k<oDims[0];k++){
-      tmp =neginf;
-      for(int i = 0; i < eDims[0]; i++){
-        if(alpha(i,oDims[1]-1,k)>neginf){
-          tmp = logSumExp(alpha(i,oDims[1]-1,k),tmp); 
-        }
-      }
-      ll(k) = tmp;
+    for(int k = 0; k < oDims[0]; k++){
+      ll(k) = logSumExp(alpha.slice(k).col(oDims[1]-1));
     }
     
-    
-    tmp = sum(ll);
+    double tmp = sum(ll);
     change = (tmp - sumlogLik)/(abs(sumlogLik)+0.1);
     sumlogLik = tmp;
     if(trace>1){

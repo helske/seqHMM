@@ -45,14 +45,12 @@ NumericMatrix X_, IntegerVector numberOfStates) {
   transition = log(transition); 
   emission = log(emission); 
   init = log(init); 
-  
-  double sumtmp; 
-  double neginf = -arma::math::inf();   
-  
+   
   arma::vec initk(eDims[0]);
   
   for(int k = 0; k < oDims[0]; k++){    
     initk = init + reparma(lweights.col(k),numberOfStates);
+    
     for(int i=0; i < eDims[0]; i++){      
       alpha(i) = initk(i);
       for(int r = 0; r < oDims[2]; r++){
@@ -60,33 +58,18 @@ NumericMatrix X_, IntegerVector numberOfStates) {
       }
     }    
     
+    arma::vec alphatmp(eDims[0]);
+    
     for(int t = 1; t < oDims[1]; t++){  
       for(int i = 0; i < eDims[0]; i++){
-        sumtmp = neginf;
-        for(int j = 0; j < eDims[0]; j++){
-          tmp = alpha(j) + transition(j,i);
-          if(tmp > neginf){
-            sumtmp = logSumExp(sumtmp,tmp);
-          }
-        }
-        
+        alphatmp(i) = logSumExp(alpha + transition.col(i));
         for(int r = 0; r < oDims[2]; r++){
-          sumtmp += emission(i,obs(k,t,r),r);
+          alphatmp(i) += emission(i,obs(k,t,r),r);
         }
-        alphatmp(i) = sumtmp;
       }
       alpha = alphatmp;
-      
     }
-    
-    
-    tmp = neginf;
-    for(int i = 0; i < eDims[0]; i++){
-      if(alpha(i)>neginf){
-        tmp = logSumExp(alpha(i),tmp); 
-      }
-    }
-    ll(k) = tmp;    
+    ll(k) =  logSumExp(alpha);
     
   }  
   

@@ -52,18 +52,8 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
   internalBackward(transitionLog, emissionLog, obs, beta);     
   
   arma::vec ll(oDims[0]);
-  
-  double tmp=0.0;
-  double neginf = -arma::math::inf();
-  
-  for(int k=0;k<oDims[0];k++){
-    tmp =neginf;
-    for(int i = 0; i < eDims[0]; i++){
-      if(alpha(i,oDims[1]-1,k)>neginf){
-        tmp = logSumExp(alpha(i,oDims[1]-1,k),tmp); 
-      }
-    }
-    ll(k) = tmp;
+  for(int k = 0; k < oDims[0]; k++){
+    ll(k) = logSumExp(alpha.slice(k).col(oDims[1]-1));
   }
   
   int countgrad = 0;
@@ -86,7 +76,7 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
           for(int k = 0; k < oDims[0]; k++){
             for(int t = 0; t < (oDims[1]-1); t++){
               for(int j = 0; j < numberOfStates(jj); j++){ 
-                tmp = 0.0;
+                double tmp = 0.0;
                 for(int r = 0; r < oDims[2]; r++){
                   tmp += emissionLog(cumsumstate(jj)-numberOfStates(jj)+j,obs(k,t+1,r),r);
                 }
@@ -117,7 +107,7 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
           for(unsigned int j = 0; j < nSymbols[r]; j++){
             for(int k = 0; k < oDims[0]; k++){
               if(obs(k,0,r) == j){
-                tmp = 0.0;
+                double tmp = 0.0;
                 for(int r2 = 0; r2 < oDims[2]; r2++){
                   if(r2 != r){
                     tmp += emissionLog(i,obs(k,0,r2),r2);
@@ -127,7 +117,7 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
               }
               for(int t = 0; t < (oDims[1]-1); t++){ 
                 if(obs(k,t+1,r) == j){
-                  tmp = 0.0;
+                  double tmp = 0.0;
                   for(int r2 = 0; r2 < oDims[2]; r2++){
                     if(r2 != r){
                       tmp += emissionLog(i,obs(k,t+1,r2),r2);
@@ -153,7 +143,7 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
         arma::vec gradIrow(numberOfStates(i),arma::fill::zeros);  
         for(unsigned int j = 0; j < numberOfStates(i); j++){        
           for(int k = 0; k < oDims[0]; k++){ 
-            tmp = 0.0;
+            double tmp = 0.0;
             for(int r=0; r < oDims[2]; r++){
               tmp += emissionLog(cumsumstate(i)-numberOfStates(i)+j,obs(k,0,r),r);
             }
@@ -171,11 +161,10 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
     }
   }
   
-  double tmp2;
   for(unsigned int jj = 1; jj < numberOfStates.size(); jj++){
     for(int k = 0; k < oDims[0]; k++){
       for(unsigned int j = 0; j < eDims[0]; j++){                
-        tmp = 0.0;
+        double tmp = 0.0;
         for(int r=0; r < oDims[2]; r++){
           tmp += emissionLog(j,obs(k,0,r),r);
         }        

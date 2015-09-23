@@ -32,17 +32,8 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray, Nume
   
   arma::vec ll(oDims[0]);
   
-  double tmp = 0.0;
-  double neginf = -arma::math::inf();
-  
-  for(int k=0;k<oDims[0];k++){
-    tmp = neginf;
-    for(int i = 0; i < eDims[0]; i++){
-      if(alpha(i,oDims[1]-1,k)>neginf){
-        tmp = logSumExp(alpha(i,oDims[1]-1,k),tmp); 
-      }
-    }
-    ll(k) = tmp;
+  for(int k = 0; k < oDims[0]; k++){
+    ll(k) = logSumExp(alpha.slice(k).col(oDims[1]-1));
   }
   
   int countgrad = 0;
@@ -51,6 +42,7 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray, Nume
   // transitionMatrix
   arma::vec gradArow(eDims[0]);
   arma::mat gradA(eDims[0],eDims[0]);
+  
   for(int i = 0; i < eDims[0]; i++){
     arma::uvec ind = arma::find(ANZ.row(i));
     
@@ -63,7 +55,7 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray, Nume
       for(int k = 0; k < oDims[0]; k++){
         for(int t = 0; t < (oDims[1]-1); t++){
           for(int j = 0; j < eDims[0]; j++){ 
-            tmp = 0.0;
+            double tmp = 0.0;
             for(int r = 0; r < oDims[2]; r++){
               tmp += emissionLog(j,obs(k,t+1,r),r);
             }
@@ -91,7 +83,7 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray, Nume
         for(unsigned int j = 0; j < nSymbols[r]; j++){
           for(int k = 0; k < oDims[0]; k++){
             if(obs(k,0,r) == j){
-              tmp = 0.0;
+              double tmp = 0.0;
               for(int r2 = 0; r2 < oDims[2]; r2++){
                 if(r2 != r){
                   tmp += emissionLog(i,obs(k,0,r2),r2);
@@ -101,7 +93,7 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray, Nume
             }
             for(int t = 0; t < (oDims[1]-1); t++){ 
               if(obs(k,t+1,r) == j){
-                tmp = 0.0;
+                double tmp = 0.0;
                 for(int r2 = 0; r2 < oDims[2]; r2++){
                   if(r2 != r){
                     tmp += emissionLog(i,obs(k,t+1,r2),r2);
@@ -132,7 +124,7 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray, Nume
     gradI.each_col() %= init;
     for(int k = 0; k < oDims[0]; k++){
       for(int j = 0; j < eDims[0]; j++){ 
-        tmp = 0.0;
+        double tmp = 0.0;
         for(int r = 0; r < oDims[2]; r++){
           tmp += emissionLog(j,obs(k,0,r),r);
         }

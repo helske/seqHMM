@@ -4,8 +4,7 @@
 //#define ARMA_NO_DEBUG
 #include <RcppArmadillo.h>
 
-double logSumExp(const double& x,const double& y);
-
+double logSumExp(const arma::vec& x);
 arma::vec reparma(arma::vec x, Rcpp::IntegerVector y);
 
 void internalForward(const arma::mat& transition, const arma::cube& emission, 
