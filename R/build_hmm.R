@@ -7,9 +7,12 @@
 #' the sequences, or a list of such objects (one for each channel).
 #' @param transition_matrix A matrix of transition probabilities.
 #' @param emission_matrix A matrix of emission probabilities or a list of such 
-#' objects (one for each channel).
+#' objects (one for each channel). Emission probabilities should follow the 
+#' ordering of the alphabet of observations (\code{alphabet(observations)}, returned as \code{symbol_names}). 
 #' @param initial_probs A vector of initial state probabilities.
-#' @param state_names A list of optional labels for the hidden states.
+#' @param state_names A list of optional labels for the hidden states. If \code{NULL}, 
+#' the state names are taken as row names of {transition matrix. If this is also \code{NULL}, 
+#' numbered states are used.
 #' @param channel_names A vector of optional names for the channels.
 #' @return Object of class \code{hmm}.
 #' 
@@ -111,7 +114,9 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
   n_states <- nrow(transition_matrix)
   
   if (is.null(state_names)) {
-    state_names <- as.character(1:n_states)
+    if (is.null(state_names <- rownames(transition_matrix))) {
+      state_names <- as.character(1:n_states)
+    }
   } else {
     if (length(state_names) != n_states) stop("Length of state_names is not equal to the number of hidden states.")
   }
@@ -199,6 +204,6 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
     nobs = nobs,
     df = sum(initial_probs > 0) - 1 + sum(transition_matrix > 0) - n_states + 
       sum(unlist(emission_matrix) > 0) - n_states * n_channels)
-    
-    model
+  
+  model
 }

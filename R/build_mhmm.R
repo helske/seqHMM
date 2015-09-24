@@ -12,7 +12,8 @@
 #'   a list of such objects (one for each channel) for submodels of each cluster. 
 #'   Note that the matrices must have dimensions m x s where m is the number of 
 #'   hidden states and s is the number of unique symbols (observed states) in the 
-#'   data.
+#'   data. Emission probabilities should follow the ordering of the alphabet of 
+#'   observations (\code{alphabet(observations)}, returned as \code{symbol_names}).
 #' @param initial_probs A list which contains vectors of initial state 
 #'   probabilities for submodels of each cluster.
 #' @param formula Covariates as an object of class \code{\link{formula}}, 
@@ -25,7 +26,9 @@
 #'   is the number of covariates. A logit-link is used for mixture probabilities.
 #'   The first column is set to zero.
 #' @param cluster_names A vector of optional names for the clusters.
-#' @param state_names A list of optional labels for the hidden states.
+#' @param state_names A list of optional labels for the hidden states. If \code{NULL}, 
+#' the state names are taken as row names of transition matrices. If this is also \code{NULL}, 
+#' numbered states are used.
 #' @param channel_names A vector of optional names for the channels.
 #' @return Object of class \code{mhmm}.
 #' @seealso \code{\link{fit_mhmm}} for fitting mixture Hidden Markov models.
@@ -179,13 +182,15 @@ build_mhmm <-
     # States
     n_states <- unlist(lapply(transition_matrix,nrow))
     
-    if(any(rep(n_states,each=2)!=unlist(lapply(transition_matrix,dim))))
+    if(any(rep(n_states, each = 2) != unlist(lapply(transition_matrix, dim))))
       stop("Transition matrices must be square matrices.")
     
-    if(is.null(state_names)){
+    if (is.null(state_names)) {
       state_names <- vector("list", n_clusters)
       for(m in 1:n_clusters){
-        state_names[[m]] <- as.character(1:n_states[m])
+        if (is.null(state_names[[m]] <- rownames(transition_matrix[[m]]))) {
+          state_names[[m]] <- as.character(1:n_states[m])
+        }
       }
     } else {
       for (m in 1:n_clusters) {
