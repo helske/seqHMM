@@ -6,7 +6,7 @@
 #' @param model Hidden Markov model of class \code{hmm}.
 #' @return Forward probabilities in logarithm scale. In case of multiple observations,
 #' these are computed independently for each sequence.
-forward_probs<-function(model){
+forward_probs<-function(model, test = FALSE){
   if(inherits(model,"mhmm")){
     mix <- TRUE
     model <- combine_models(model)
@@ -30,8 +30,13 @@ forward_probs<-function(model){
     out<-forwardx(model$transition_matrix, emissionArray, 
       model$initial_probs, obsArray, model$coefficients,model$X,model$n_states_in_clusters)
   } else{
+    if(test){
+      out<-forward2(model$transition_matrix, emissionArray, 
+        model$initial_probs, obsArray)
+    } else {
     out<-forward(model$transition_matrix, emissionArray, 
       model$initial_probs, obsArray)
+    }
   } 
   
   dimnames(out)<-list("state" = model$state_names,"time" = 1:model$length_of_sequences)

@@ -17,6 +17,10 @@ forward <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
     .Call('seqHMM_forward', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
 }
 
+forward2 <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
+    .Call('seqHMM_forward2', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
+}
+
 forwardx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates) {
     .Call('seqHMM_forwardx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates)
 }
