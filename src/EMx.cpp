@@ -30,7 +30,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   
   arma::mat initk(eDims[0],oDims[0]);
   for(int k = 0; k < oDims[0]; k++){    
-    initk.col(k) = init * reparma(lweights.col(k),numberOfStates);
+    initk.col(k) = init % reparma(lweights.col(k),numberOfStates);
   }
   
   arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k
@@ -96,7 +96,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
       }       
     }
     
-    lweights = optCoef(obs, emission, initk, beta, ll, coef, X, cumsumstate, numberOfStates, trace);
+    lweights = optCoef(obs, emission, initk, beta, scales, coef, X, cumsumstate, numberOfStates, trace);
     
     if(oDims[1]>1){
       ksii.each_col() /= sum(ksii,1);
@@ -115,7 +115,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     init = delta;
     
     for(int k = 0; k < oDims[0]; k++){    
-      initk.col(k) = init * reparma(lweights.col(k),numberOfStates);
+      initk.col(k) = init % reparma(lweights.col(k),numberOfStates);
     }
     
     internalForwardx(transition, emission, initk, obs, alpha, scales);

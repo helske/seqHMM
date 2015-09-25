@@ -25,10 +25,6 @@ logLikMixHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray
     .Call('seqHMM_logLikMixHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates)
 }
 
-logSumExp <- function(x) {
-    .Call('seqHMM_logSumExp', PACKAGE = 'seqHMM', x)
-}
-
 objective <- function(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols) {
     .Call('seqHMM_objective', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols)
 }

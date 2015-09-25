@@ -109,17 +109,6 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// logSumExp
-double logSumExp(const arma::vec& x);
-RcppExport SEXP seqHMM_logSumExp(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
-    __result = Rcpp::wrap(logSumExp(x));
-    return __result;
-END_RCPP
-}
 // objective
 List objective(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols);
 RcppExport SEXP seqHMM_objective(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP transNZSEXP, SEXP emissNZSEXP, SEXP initNZSEXP, SEXP nSymbolsSEXP) {

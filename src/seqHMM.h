@@ -17,11 +17,11 @@ void internalBackward(const arma::mat& transition, const arma::cube& emission,
 
 
 arma::mat optCoef(const arma::icube& obs, const arma::cube& emission, const arma::mat& initk, 
-  const arma::cube& beta, const arma::vec& ll, arma::mat& coef, const arma::mat& X, 
+  const arma::cube& beta, const arma::mat& scales, arma::mat& coef, const arma::mat& X, 
   const Rcpp::IntegerVector cumsumstate, const Rcpp::IntegerVector numberOfStates, int trace);
 
-arma::vec gCoef(const arma::icube& obs, const arma::cube& beta, const arma::cube& emission, const arma::mat& initk,
-  const arma::mat& weights, const arma::vec& ll, const arma::mat& X, const Rcpp::IntegerVector cumsumstate, 
+arma::vec gCoef(const arma::icube& obs, const arma::cube& beta, const arma::mat& scales, const arma::cube& emission, const arma::mat& initk,
+  const arma::mat& weights, const arma::mat& X, const Rcpp::IntegerVector cumsumstate, 
   const Rcpp::IntegerVector numberOfStates);
 
 arma::mat hCoef(const arma::mat& weights, const arma::mat& X);

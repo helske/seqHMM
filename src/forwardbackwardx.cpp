@@ -27,7 +27,7 @@ List forwardbackwardx(NumericVector transitionMatrix, NumericVector emissionArra
   
   arma::mat initk(eDims[0],oDims[0]);
   for(int k = 0; k < oDims[0]; k++){    
-    initk.col(k) = init * reparma(lweights.col(k),numberOfStates);
+    initk.col(k) = init % reparma(lweights.col(k),numberOfStates);
   }
   arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k
   arma::mat scales(oDims[1],oDims[0]); //m,n,k

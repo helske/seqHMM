@@ -26,9 +26,9 @@ NumericVector logLikHMM(NumericVector transitionMatrix, NumericVector emissionAr
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
   
   arma::vec alpha(eDims[0]);
-  
   NumericVector ll(oDims[0]);  
   double tmp;
+  
   for(int k = 0; k < oDims[0]; k++){    
     
     for(int i=0; i < eDims[0]; i++){      
