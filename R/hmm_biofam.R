@@ -16,6 +16,11 @@
 #' marr.seq <- seqdef(biofam3c$married, start = 15)
 #' left.seq <- seqdef(biofam3c$left, start = 15)
 #' 
+#' ## Choosing colors
+#' attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
+#' attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+#' attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+#' 
 #' # Starting values for emission matrices
 #' emiss_marr <- matrix(NA, nrow=4, ncol=3)
 #' emiss_marr[1,] <- seqstatf(marr.seq[, 1:4])[, 2] + 0.1
@@ -50,7 +55,7 @@
 #' initial_probs <- c(0.9, 0.07, 0.02, 0.01)
 #' 
 #' # Building hidden Markov model with initial parameter values
-#' bHMMbf <- build_hmm(
+#' init_hmm_biofam <- build_hmm(
 #'   observations = list(child.seq, marr.seq, left.seq),
 #'   transition_matrix = trans,
 #'   emission_matrix = list(emiss_child, emiss_marr, emiss_left),
@@ -58,9 +63,11 @@
 #'   channel_names = c("Parenthood", "Marriage", "Residence"),
 #'   state_names = paste("State", 1:4))
 #' 
-#' HMMbf <- fit_hmm(
-#'    bHMMbf, control_global = list(maxtime = 0),
+#' fit_biofam <- fit_hmm(
+#'    init_hmm_biofam, control_global = list(maxtime = 0),
 #'    control_local = list(maxtime = 0))
+#'    
+#' hmm_biofam <- fit_biofam$model
 #' }
 #' 
 #' @seealso Examples of building and fitting HMMs in \code{\link{build_hmm}} and 

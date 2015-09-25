@@ -260,7 +260,9 @@ build_mhmm <-
       }
     } else {
       n_channels <- 1
-      channel_names<-NULL
+      if (is.null(channel_names)) {
+        channel_names <- "Observations"
+      }      
       n_sequences<-nrow(observations)
       length_of_sequences<-ncol(observations)
       symbol_names<-alphabet(observations)

@@ -24,6 +24,8 @@
 #'   mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes, 
 #'   labels = mvad.labels, xtstep = 6)
 #'
+#' attr(mvad.seq, "cpal") <- colorpalette[[6]]
+#' 
 #' # Starting values for the emission matrices
 #' emiss_1 <- matrix(
 #'   c(0.01, 0.17, 0.01, 0.01, 0.05, 0.75,
@@ -59,17 +61,17 @@
 #' 
 #' # Building a hidden Markov model with starting values
 #' # No covariates
-#' bmhmm_mvad <- build_mhmm(
+#' init_mhmm_mvad <- build_mhmm(
 #'   observations = mvad.seq, 
 #'   transition_matrix = list(trans_1, trans_2), 
 #'   emission_matrix = list(emiss_1, emiss_2), 
 #'   initial_probs = list(initial_probs_1, initial_probs_2))
 #' 
 #' # Fit the model
-#' mhmm_mvad <- fit_mhmm(bmhmm_mvad, global_step = FALSE)
+#' fit_mvad <- fit_mhmm(init_mhmm_mvad, global_step = FALSE)
 #' 
 #' # Trim the model
-#' mhmm_mvad <- trim_hmm(mhmm_mvad$model, zerotol = 1e-04)
+#' mhmm_mvad <- trim_hmm(fit_mvad$model, zerotol = 1e-04)
 #' }
 #'   
 #' @seealso Examples of building and fitting MHMMs in \code{\link{build_mhmm}} and 

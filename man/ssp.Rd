@@ -74,11 +74,11 @@ ssp(x, hidden.paths = NULL, plots = "obs", type = "d", sortv = NULL,
 
 \item{withlegend}{Defines if and where the legend for the states is plotted.
   The default value \code{"auto"} (equivalent to \code{TRUE} and
-  \code{right.many}) creates separate legends for each requested plot and
-  sets the positions automatically. Other possible values are \code{"right"},
-  \code{"bottom"} and \code{"bottom.many"}, of which the first two create a
-  combined legend in the selected position and the last one creates separate
-  legends for each requested plot at the bottom of the graph. Value
+  \code{right}) creates separate legends for each requested plot and
+  positiones them on the right-hand side of the plot. Other possible values
+  are \code{"bottom"},
+  \code{"right.combined"}, and \code{"bottom.combined"}, of which the last
+  two create a combined legend in the selected position. Value
   \code{FALSE} prints no legend.}
 
 \item{ncol.legend}{(A vector of) the number of columns for the legend(s). The
@@ -134,7 +134,8 @@ ssp(x, hidden.paths = NULL, plots = "obs", type = "d", sortv = NULL,
 \item{ylab.pos}{Controls the position of the y axis labels (labels for
   channels and/or hidden states). Either \code{"auto"} or a numerical vector
   indicating on how far away from the plots the titles are positioned. The
-  default value \code{"auto"} positions all titles on line 1.}
+  default value \code{"auto"} positions all titles on line 1.
+  Shorter vectors are recycled.}
 
 \item{cex.lab}{Expansion factor for setting the size of the font for the axis
   labels. The default value is 1. Values lesser than 1 will reduce the size
@@ -171,7 +172,8 @@ attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 
 # Defining the plot for state distribution plots of observations
-ssp1 <- ssp(list(child.seq, marr.seq, left.seq))
+ssp1 <- ssp(list("Parenthood" = child.seq, "Marriage" = marr.seq,
+                 "Residence" = left.seq))
 # Plotting ssp1
 plot(ssp1)
 
@@ -181,10 +183,9 @@ ssp2 <- ssp(
   # Sorting subjects according to the beginning of the 2nd channel (marr.seq)
   sortv = "from.start", sort.channel = 2,
   # Controlling the size, positions, and names for channel labels
-  ylab.pos = c(1, 2, 1), cex.lab = 1, ylab = c("Children", "Married", "Left home"),
+  ylab.pos = c(1, 2, 1), cex.lab = 1, ylab = c("Children", "Married", "Residence"),
   # Plotting without legend
-  withlegend = FALSE
-  )
+  withlegend = FALSE)
 plot(ssp2)
 
 # Plotting hidden Markov models
@@ -192,21 +193,20 @@ plot(ssp2)
 # Loading data
 data(hmm_biofam)
 
-# Plotting observations and hidden states (most probable) paths
+# Plotting observations and most probable hidden states paths
 ssp3 <- ssp(
   hmm_biofam, type = "I", plots = "both",
   # Sorting according to multidimensional scaling of hidden states paths
   sortv = "mds.hidden",
-  ylab = c("Children", "Married", "Left home"),
   # Controlling title
   title = "Biofam", cex.title = 1.5,
   # Labels for x axis and tick marks
-  xtlab = 15:30, xlab = "Age"
-  )
+  xtlab = 15:30, xlab = "Age")
 plot(ssp3)
 
 # Computing the most probable paths of hidden states
 hid <- hidden_paths(hmm_biofam)
+# Giving names for hidden states
 alphabet(hid) <- paste("Hidden state", 1:4)
 
 # Plotting observations and hidden state paths
@@ -217,10 +217,9 @@ ssp4 <- ssp(
   # Sorting according to the end of hidden state paths
   sortv = "from.end", sort.channel = 0,
   # Contolling legend position, type, and proportion
-  withlegend = "bottom", legend.prop = 0.15,
+  withlegend = "bottom.combined", legend.prop = 0.15,
   # Plotting without title and y label
-  title = FALSE, ylab = FALSE
-  )
+  title = FALSE, ylab = FALSE)
 plot(ssp4)
 }
 }

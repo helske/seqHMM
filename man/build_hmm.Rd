@@ -14,11 +14,14 @@ the sequences, or a list of such objects (one for each channel).}
 \item{transition_matrix}{A matrix of transition probabilities.}
 
 \item{emission_matrix}{A matrix of emission probabilities or a list of such
-objects (one for each channel).}
+objects (one for each channel). Emission probabilities should follow the
+ordering of the alphabet of observations (\code{alphabet(observations)}, returned as \code{symbol_names}).}
 
 \item{initial_probs}{A vector of initial state probabilities.}
 
-\item{state_names}{A list of optional labels for the hidden states.}
+\item{state_names}{A list of optional labels for the hidden states. If \code{NULL},
+the state names are taken from the row names of the transition matrix. If this is
+also \code{NULL}, numbered states are used.}
 
 \item{channel_names}{A vector of optional names for the channels.}
 }
