@@ -4,18 +4,16 @@
 //#define ARMA_NO_DEBUG
 #include <RcppArmadillo.h>
 
-void internalForward2(const arma::mat& transition, const arma::cube& emission, 
-  const arma::vec& init, const arma::Cube<int>& obs, arma::cube& alpha);
+void internalForward(const arma::mat& transition, const arma::cube& emission, 
+  const arma::vec& init, const arma::Cube<int>& obs, arma::cube& alpha, arma::mat& scales);
 
 double logSumExp(const arma::vec& x);
 arma::vec reparma(arma::vec x, Rcpp::IntegerVector y);
 
-void internalForward(const arma::mat& transition, const arma::cube& emission, 
-  const arma::vec& init, const arma::Cube<int>& obs, arma::cube& alpha);
 void internalForwardx(const arma::mat& transition, const arma::cube& emission,
-  const arma::mat& init, const arma::Cube<int>& obs, arma::cube& alpha);
+  const arma::mat& init, const arma::Cube<int>& obs, arma::cube& alpha, arma::mat& scales);
 void internalBackward(const arma::mat& transition, const arma::cube& emission, 
-  const arma::Cube<int>& obs, arma::cube& beta);
+  const arma::Cube<int>& obs, arma::cube& beta, const arma::mat& scales);
 
 
 arma::mat optCoef(const arma::icube& obs, const arma::cube& emission, const arma::mat& initk, 

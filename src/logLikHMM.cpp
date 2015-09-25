@@ -20,42 +20,40 @@ NumericVector logLikHMM(NumericVector transitionMatrix, NumericVector emissionAr
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
   
   
-  arma::colvec init(initialProbs.begin(),eDims[0], true);
-  arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0], true);
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
+  arma::colvec init(initialProbs.begin(),eDims[0], false);
+  arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0], false);
+  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
   
   arma::vec alpha(eDims[0]);
   
   NumericVector ll(oDims[0]);  
-  
-  transition = log(transition); 
-  emission = log(emission); 
-  init = log(init); 
-  
-  double neginf = -arma::math::inf();
-  
+  double tmp;
   for(int k = 0; k < oDims[0]; k++){    
     
     for(int i=0; i < eDims[0]; i++){      
       alpha(i) = init(i);
       for(int r = 0; r < oDims[2]; r++){
-        alpha(i) += emission(i,obs(k,0,r),r);
+        alpha(i) *= emission(i,obs(k,0,r),r);
       }
-    }    
+    } 
+    tmp = sum(alpha);
+    ll(k) = log(tmp);
+    alpha /= tmp;
     
     arma::vec alphatmp(eDims[0]);
     
     for(int t = 1; t < oDims[1]; t++){  
       for(int i = 0; i < eDims[0]; i++){
-        alphatmp(i) = logSumExp(alpha + transition.col(i));
+        alphatmp(i) = arma::as_scalar(transition.col(i).t()*alpha);
         for(int r = 0; r < oDims[2]; r++){
-          alphatmp(i) += emission(i,obs(k,t,r),r);
+          alphatmp(i) *= emission(i,obs(k,t,r),r);
         }
       }
-      alpha = alphatmp;
+      tmp = sum(alphatmp);
+      ll(k) += log(tmp);
+      alpha = alphatmp/tmp;
     }
-    ll(k) =  logSumExp(alpha);
   } 
   
   return ll;

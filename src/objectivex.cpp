@@ -47,9 +47,10 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
   
   arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k
   arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k 
+  arma::mat scales(oDims[1],oDims[0]); //m,n,k
   
-  internalForwardx(transitionLog, emissionLog, initk, obs, alpha);
-  internalBackward(transitionLog, emissionLog, obs, beta);     
+  internalForwardx(transitionLog, emissionLog, initk, obs, alpha, scales);
+  internalBackward(transitionLog, emissionLog, obs, beta, scales);     
   
   arma::vec ll(oDims[0]);
   for(int k = 0; k < oDims[0]; k++){

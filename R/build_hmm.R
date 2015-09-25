@@ -11,7 +11,7 @@
 #' ordering of the alphabet of observations (\code{alphabet(observations)}, returned as \code{symbol_names}). 
 #' @param initial_probs A vector of initial state probabilities.
 #' @param state_names A list of optional labels for the hidden states. If \code{NULL}, 
-#' the state names are taken as row names of {transition matrix. If this is also \code{NULL}, 
+#' the state names are taken as row names of transition matrix. If this is also \code{NULL}, 
 #' numbered states are used.
 #' @param channel_names A vector of optional names for the channels.
 #' @return Object of class \code{hmm}.
