@@ -58,7 +58,7 @@ NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissio
     
     for(int t = 1; t < oDims[1]; t++){  
       for(int i = 0; i < eDims[0]; i++){
-        alphatmp(i) = arma::as_scalar(transition.col(i).t()*alpha);
+        alphatmp(i) = arma::dot(transition.col(i), alpha);
         for(int r = 0; r < oDims[2]; r++){
           alphatmp(i) *= emission(i,obs(k,t,r),r);
         }
