@@ -366,6 +366,8 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
         original_model$initial_probs[[m]] <- unname(resEM$initialProbs[(k+1):(k+model$n_states_in_clusters[m])])
         k <- sum(model$n_states_in_clusters[1:m])
       }
+    } else {
+      model$initial_probs <- resEM$initialProbs
     }
     
     model$transition_matrix[]<-resEM$transitionMatrix
