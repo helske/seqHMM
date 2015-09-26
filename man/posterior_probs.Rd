@@ -10,11 +10,11 @@ posterior_probs(model)
 \item{model}{A (mixture) hidden Markov model of class \code{hmm} or \code{mhmm}.}
 }
 \value{
-Posterior probabilities in logarithm scale. In case of multiple observations,
+Posterior probabilities. In case of multiple observations,
 these are computed independently for each sequence.
 }
 \description{
 Function \code{posterior_probs} computes the posterior probabilities of hidden states of
-a hidden Markov model given the observations in logarithm scale.
+a hidden Markov model.
 }
 
