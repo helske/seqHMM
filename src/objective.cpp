@@ -21,20 +21,13 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray, Nume
  
   
   arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k
-  arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k 
+  arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k
+  arma::mat scales(oDims[1],oDims[0]); //m,n,k
   
-  arma::vec initLog = log(init);
-  arma::mat transitionLog = log(transition); 
-  arma::cube emissionLog = log(emission);
+  internalForward(transition, emission, init, obs, alpha, scales);
+  internalBackward(transition, emission, obs, beta, scales);     
   
-  internalForward(transitionLog, emissionLog, initLog, obs, alpha);
-  internalBackward(transitionLog, emissionLog, obs, beta);     
-  
-  arma::vec ll(oDims[0]);
-  
-  for(int k = 0; k < oDims[0]; k++){
-    ll(k) = logSumExp(alpha.slice(k).col(oDims[1]-1));
-  }
+  arma::rowvec ll = arma::sum(log(scales));
   
   int countgrad = 0;
   arma::vec grad(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ),arma::fill::zeros);
@@ -55,11 +48,11 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray, Nume
       for(int k = 0; k < oDims[0]; k++){
         for(int t = 0; t < (oDims[1]-1); t++){
           for(int j = 0; j < eDims[0]; j++){ 
-            double tmp = 0.0;
+            double tmp = 1.0;
             for(int r = 0; r < oDims[2]; r++){
-              tmp += emissionLog(j,obs(k,t+1,r),r);
+              tmp *= emission(j,obs(k,t+1,r),r);
             }
-            gradArow(j) += exp(alpha(i,t,k) + tmp + beta(j,t+1,k) - ll(k)); 
+            gradArow(j) += alpha(i,t,k) * tmp * beta(j,t+1,k) / scales(t+1,k); 
           }
           
         }
@@ -83,23 +76,23 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray, Nume
         for(unsigned int j = 0; j < nSymbols[r]; j++){
           for(int k = 0; k < oDims[0]; k++){
             if(obs(k,0,r) == j){
-              double tmp = 0.0;
+              double tmp = 1.0;
               for(int r2 = 0; r2 < oDims[2]; r2++){
                 if(r2 != r){
-                  tmp += emissionLog(i,obs(k,0,r2),r2);
+                  tmp *= emission(i,obs(k,0,r2),r2);
                 }
               }
-              gradBrow(j) += exp(initLog(i) + tmp + beta(i,0,k) - ll(k));
+              gradBrow(j) += init(i) * tmp * beta(i,0,k) / scales(0,k);
             }
             for(int t = 0; t < (oDims[1]-1); t++){ 
               if(obs(k,t+1,r) == j){
-                double tmp = 0.0;
+                double tmp = 1.0;
                 for(int r2 = 0; r2 < oDims[2]; r2++){
                   if(r2 != r){
-                    tmp += emissionLog(i,obs(k,t+1,r2),r2);
+                    tmp *= emission(i,obs(k,t+1,r2),r2);
                   }
                 }
-                gradBrow(j) += arma::accu(exp(alpha.slice(k).col(t) + tmp + transitionLog.col(i) + beta(i,t+1,k) - ll(k)));
+                gradBrow(j) += arma::dot(alpha.slice(k).col(t),transition.col(i)) * tmp * beta(i,t+1,k) / scales(t+1,k);
               }
             }
           }
@@ -124,11 +117,11 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray, Nume
     gradI.each_col() %= init;
     for(int k = 0; k < oDims[0]; k++){
       for(int j = 0; j < eDims[0]; j++){ 
-        double tmp = 0.0;
+        double tmp = 1.0;
         for(int r = 0; r < oDims[2]; r++){
-          tmp += emissionLog(j,obs(k,0,r),r);
+          tmp *= emission(j,obs(k,0,r),r);
         }
-        gradIrow(j) += exp(tmp + beta(j,0,k) - ll(k)); 
+        gradIrow(j) += tmp * beta(j,0,k) / scales(0,k); 
       }
     }
     gradIrow = gradI * gradIrow;
