@@ -1,7 +1,7 @@
 #ifndef SEQHMM_H
 #define SEQHMM_H
 
-//#define ARMA_NO_DEBUG
+#define ARMA_NO_DEBUG
 #include <RcppArmadillo.h>
 
 void internalForward(const arma::mat& transition, const arma::cube& emission, 
