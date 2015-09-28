@@ -200,14 +200,20 @@ build_mhmm <-
       }
     }
     
-    if(!all(1==unlist(sapply(transition_matrix,rowSums))))
-      stop("Transition probabilities in transition_matrix do not sum to one.")
+    for(i in 1:n_clusters){
+      if (!isTRUE(all.equal(rowSums(transition_matrix[[i]]),
+                           rep(1, n_states[i]), check.attributes=FALSE))) {
+        stop(paste("Row sums of the transition probabilities in cluster", i, "do not sum to one."))
+      }
+      if (!isTRUE(all.equal(sum(initial_probs[[i]]), 1, check.attributes=FALSE))){
+        stop(paste("Initial probabilities in cluster", i, "do not sum to one."))
+      }
+    }
     
-    if(!all(1==unlist(sapply(initial_probs,sum))))
-      stop("Initial state probabilities do not sum to one.")
+    
+    
     
     for(i in 1:n_clusters){
-      
       dimnames(transition_matrix[[i]]) <- list(from=state_names[[i]],to=state_names[[i]])
       # Single channel but emission_matrix is list of lists  
       if(is.list(emission_matrix[[i]]) && length(emission_matrix[[i]])==1)   

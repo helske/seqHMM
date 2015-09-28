@@ -62,8 +62,7 @@ Multichannel sequence data are easily plotted using the `ssplot` function (ssplo
 ```
 # Plotting state distribution plots of observations
 ssplot(
-  list(marr.seq, child.seq, left.seq), 
-  title = "State distribution plots")
+  list(marr.seq, child.seq, left.seq), title = "State distribution plots")
 ```                  
 ![ssp1](https://github.com/helske/seqHMM/blob/master/Examples/ssp1.png)
 
