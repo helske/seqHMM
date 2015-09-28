@@ -67,4 +67,15 @@ mc_to_sc_data <- function(data, combine_missing=TRUE, all_combinations=FALSE){
   }else{
     datax<-suppressWarnings(suppressMessages((seqdef(datax))))
   }
+  
+  
+  attr(datax, "xtstep") <- attr(data[[1]], "xtstep")
+  attr(datax, "missing.color") <- attr(data[[1]], "missing.color")
+  attr(datax, "nr") <- attr(data[[1]], "nr")
+  attr(datax, "void") <- attr(data[[1]], "void")
+  attr(datax, "missing") <- attr(data[[1]], "missing")
+  attr(datax, "start") <- attr(data[[1]], "start")
+  attr(datax, "cpal") <- seqHMM::colorpalette[[length(alphabet(datax))]]
+  
+  datax
 }
