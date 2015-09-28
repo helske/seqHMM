@@ -41,11 +41,11 @@ forward_backward <- function(model, forward_only = FALSE){
       model$initial_probs, obsArray, forward_only)
   }
   
-  if (!is.null(time_names <- colnames(model$observations[[1]]))) {
+  if (is.null(time_names <- colnames(model$observations[[1]]))) {
     time_names <- 1:model$length_of_sequences
   }
   
-  if (!is.null(sequence_names <- rownames(model$observations[[1]]))) {
+  if (is.null(sequence_names <- rownames(model$observations[[1]]))) {
     sequence_names <- 1:model$n_sequences
   } 
   
