@@ -322,6 +322,10 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
   if(!inherits(model, "mhmm"))
     stop("Argument model must be an object of class 'mhmm'.")
   
+  if(!em_step && !global_step && !local_step){
+    stop("No method chosen for estimation. Choose at least one from em_step, global_step, and local_step.")
+  }
+  
   df <- attr(model, "df")
   nobs <- attr(model, "nobs")
   original_model <- model
