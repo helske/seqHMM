@@ -144,7 +144,7 @@ trans <- matrix(
 init <- c(0.9, 0.09, 0.01)
 
 # Building hidden Markov model with initial parameter values
-bhmm <- build_hmm(
+init_hmm <- build_hmm(
   observations = list(child.seq, marr.seq, left.seq),
   transition_matrix = trans,
   emission_matrix = list(emiss_child, emiss_marr, emiss_left),
@@ -154,24 +154,24 @@ bhmm <- build_hmm(
 
 # Only EM with default values
 hmm_1 <- fit_hmm(
-  bhmm, em_step = TRUE, global_step = FALSE, local_step = FALSE)
+  init_hmm, em_step = TRUE, global_step = FALSE, local_step = FALSE)
 hmm_1$logLik #-5507.003
 
 \dontrun{
 
 # EM with LBFGS
 hmm_2 <- fit_hmm(
-  bhmm, em_step = TRUE, global_step = FALSE, local_step = TRUE)
+  init_hmm, em_step = TRUE, global_step = FALSE, local_step = TRUE)
 hmm_2$logLik # -5507.003
 
 # Only LBFGS
 hmm_3 <- fit_hmm(
-  bhmm, em_step = FALSE, global_step = FALSE, local_step = TRUE)
+  init_hmm, em_step = FALSE, global_step = FALSE, local_step = TRUE)
 hmm_3$logLik #-5493.271
 
 # Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
 hmm_4 <- fit_hmm(
-  bhmm, em_step = FALSE, global_step = TRUE, local_step = TRUE,
+  init_hmm, em_step = FALSE, global_step = TRUE, local_step = TRUE,
   control_global = list(maxeval = 3000, maxtime = 0))
 hmm_4$logLik #-5403.383
 
@@ -179,7 +179,7 @@ hmm_4$logLik #-5403.383
 # defining initial values and boundaries
 # Note smaller maxeval for global optimization
 hmm_5 <- fit_hmm(
-  bhmm, em_step = TRUE, global_step = TRUE, local_step = TRUE,
+  init_hmm, em_step = TRUE, global_step = TRUE, local_step = TRUE,
   control_em = list(maxeval = 5), control_global = list(maxeval = 750, maxtime = 0))
 hmm_5$logLik #-5403.383
 }

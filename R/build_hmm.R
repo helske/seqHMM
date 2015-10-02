@@ -52,7 +52,7 @@
 #' init <- c(0.3, 0.3, 0.2, 0.2)
 #' 
 #' # Building a hidden Markov model with starting values
-#' bhmm <- build_hmm(
+#' init_hmm_1 <- build_hmm(
 #'   observations = mvad.seq, transition_matrix = tr, 
 #'   emission_matrix = emiss, initial_probs = init
 #' )
@@ -97,7 +97,7 @@
 #' initial <- c(0.9, 0.09, 0.01)
 #' 
 #' # Building hidden Markov model with initial parameter values
-#' bhmm <- build_hmm(
+#' init_hmm_2 <- build_hmm(
 #'   observations = list(child.seq, marr.seq, left.seq), 
 #'   transition_matrix = trans,
 #'   emission_matrix = list(emiss_child, emiss_marr, emiss_left), 
@@ -108,6 +108,12 @@
 build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs,
   state_names=NULL, channel_names=NULL){
   
+  if (!is.matrix(transition_matrix)) {
+    stop(paste("Object provided for transition_matrix is not a matrix."))
+  }
+  if (!is.vector(initial_probs)) {
+    stop(paste("Object provided for initial_probs is not a vector."))
+  }
   
   if(dim(transition_matrix)[1]!=dim(transition_matrix)[2])
     stop("transition_matrix must be a square matrix.")
@@ -140,6 +146,11 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
       stop("Number of channels defined by emission_matrix differs from one defined by observations.")
     }
     n_channels <- length(emission_matrix)
+    for (j in 1:n_channels){
+      if (!is.matrix(emission_matrix[[j]])) {
+        stop(paste("Object provided in emission_matrix for channel", j, "is not a matrix."))
+      }
+    }
     
     n_sequences<-nrow(observations[[1]])
     length_of_sequences<-ncol(observations[[1]])
@@ -165,6 +176,9 @@ build_hmm<-function(observations,transition_matrix,emission_matrix,initial_probs
     names(emission_matrix)<-channel_names
   } else {
     n_channels <- 1
+    if (!is.matrix(emission_matrix)) {
+      stop(paste("Object provided for emission_matrix is not a matrix."))
+    }
     if (is.null(channel_names)) {
       channel_names <- "Observations"
     }

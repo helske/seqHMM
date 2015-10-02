@@ -31,7 +31,10 @@
 #' numbered states are used.
 #' @param channel_names A vector of optional names for the channels.
 #' @return Object of class \code{mhmm}.
-#' @seealso \code{\link{fit_mhmm}} for fitting mixture Hidden Markov models.
+#' @seealso \code{\link{fit_mhmm}} for fitting mixture Hidden Markov models; 
+#' \code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for 
+#' reorganizing a MHMM into a list of separate hidden Markov models; and
+#' \code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
 #' 
 #' @examples
 #' require(TraMineR)
@@ -147,7 +150,7 @@
 #'   biofam3c$covariates$cohort, labels=c("1909-1935", "1936-1945", "1946-1957"))
 #' 
 #' # Build mixture HMM
-#' bmhmm <- build_mhmm(
+#' init_mhmm <- build_mhmm(
 #'   observations = list(child.seq, marr.seq, left.seq),
 #'   transition_matrix = list(trans_1, trans_1, trans_2),
 #'   emission_matrix = list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
@@ -156,11 +159,11 @@
 #'   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
 #'   formula = ~sex + cohort, data = biofam3c$covariates,
 #'   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
-#'   channel_names = c("Parenthood", "Marriage", "Left home"))
+#'   channel_names = c("Parenthood", "Marriage", "Residence"))
 #'                     
 build_mhmm <- 
   function(observations,transition_matrix,emission_matrix,initial_probs, 
-    formula, data, coefficients, cluster_names=NULL, state_names=NULL, channel_names=NULL){
+           formula, data, coefficients, cluster_names=NULL, state_names=NULL, channel_names=NULL){
     
     if (is.list(transition_matrix)){
       n_clusters<-length(transition_matrix)
@@ -179,11 +182,21 @@ build_mhmm <-
     
     model <- vector("list", length = n_clusters)
     
+    for(i in 1:n_clusters){
+      if (!is.matrix(transition_matrix[[i]])) {
+        stop(paste("Object provided in transition_matrix for cluster", i, "is not a matrix."))
+      }
+      if (!is.vector(initial_probs[[i]])) {
+        stop(paste("Object provided in initial_probs for cluster", i, "is not a vector."))
+      }
+    }
+    
     # States
     n_states <- unlist(lapply(transition_matrix,nrow))
     
-    if(any(rep(n_states, each = 2) != unlist(lapply(transition_matrix, dim))))
+    if (any(rep(n_states, each = 2) != unlist(lapply(transition_matrix, dim)))) {
       stop("Transition matrices must be square matrices.")
+    }
     
     if (is.null(state_names)) {
       state_names <- vector("list", n_clusters)
@@ -202,9 +215,9 @@ build_mhmm <-
     
     for(i in 1:n_clusters){
       if (!isTRUE(all.equal(rowSums(transition_matrix[[i]]),
-                           rep(1, n_states[i]), check.attributes=FALSE))) {
+                            rep(1, n_states[i]), check.attributes=FALSE))) {
         stop(paste("Row sums of the transition probabilities in cluster", i, "do not sum to one."))
-      }
+      }      
       if (!isTRUE(all.equal(sum(initial_probs[[i]]), 1, check.attributes=FALSE))){
         stop(paste("Initial probabilities in cluster", i, "do not sum to one."))
       }
@@ -224,13 +237,29 @@ build_mhmm <-
     
     
     # Single channel but observations is a list
-    if(is.list(observations) && !inherits(observations, "stslist") && length(observations)==1)
+    if (is.list(observations) && !inherits(observations, "stslist") && length(observations)==1) {
       observations <- observations[[1]]
+    }
     
-    n_channels <- ifelse(is.list(emission_matrix[[1]]),length(emission_matrix[[1]]),1)
+    n_channels <- ifelse(is.list(emission_matrix[[1]]), length(emission_matrix[[1]]), 1)
     
-    if(n_channels>1 && any(sapply(emission_matrix,length)!=n_channels))
+    for(i in 1:n_clusters){
+      if (n_channels == 1){
+        if (!is.matrix(emission_matrix[[i]])) {
+          stop(paste("Object provided in emission_matrix for cluster", i, "is not a matrix."))
+        }
+      } else {
+        for (j in 1:n_channels){
+          if (!is.matrix(emission_matrix[[i]][[j]])) {
+            stop(paste("Object provided in emission_matrix for cluster", i, "and channel", j, "is not a matrix."))
+          }
+        }
+      }
+    }
+    
+    if (n_channels>1 && any(sapply(emission_matrix,length)!=n_channels)) {
       stop("Number of channels defined by emission matrices differ from each other.")
+    }
     
     if(n_channels>1){
       if(length(observations)!=n_channels){
@@ -244,23 +273,27 @@ build_mhmm <-
       
       symbol_names<-lapply(observations,alphabet)
       n_symbols<-sapply(symbol_names,length)
-      for(i in 1:n_clusters){
-        if(any(lapply(emission_matrix[[i]],nrow)!=n_states[i]))
+      for (i in 1:n_clusters) {
+        if (any(lapply(emission_matrix[[i]],nrow)!=n_states[i])) {
           stop(paste("Number of rows in emission_matrix of cluster", i, "is not equal to the number of states."))
+        }
         
-        if(any(n_symbols!=sapply(emission_matrix[[i]],ncol)))
+        if (any(n_symbols!=sapply(emission_matrix[[i]],ncol))) {
           stop(paste("Number of columns in emission_matrix of cluster", i, "is not equal to the number of symbols."))
-        if(!isTRUE(all.equal(c(sapply(emission_matrix[[i]],rowSums)),
-          rep(1,n_channels*n_states[i]),check.attributes=FALSE)))
+        }
+        if (!isTRUE(all.equal(c(sapply(emission_matrix[[i]],rowSums)),
+                              rep(1,n_channels*n_states[i]),check.attributes=FALSE))) {
           stop(paste("Emission probabilities in emission_matrix of cluster", i, "do not sum to one."))
-        if(is.null(channel_names)){
+        }
+        if (is.null(channel_names)) {
           channel_names<-as.character(1:n_channels)
-        }else if(length(channel_names)!=n_channels){
+        } else if (length(channel_names)!=n_channels) {
           warning("The length of argument channel_names does not match the number of channels. Names were not used.")
           channel_names<-as.character(1:n_channels)
         }
-        for(j in 1:n_channels)
+        for (j in 1:n_channels) {
           dimnames(emission_matrix[[i]][[j]])<-list(state_names=state_names[[i]],symbol_names=symbol_names[[j]])
+        }
         names(emission_matrix[[i]])<-channel_names
         names(initial_probs[[i]]) <- state_names[[i]]
       }
@@ -319,24 +352,24 @@ build_mhmm <-
     names(transition_matrix) <- names(emission_matrix) <- names(initial_probs) <- cluster_names
     if(n_channels > 1){
       nobs <- sum(sapply(observations, function(x) sum(!(x == attr(observations[[1]], "nr") |
-          x == attr(observations[[1]], "void") |
-          is.na(x)))))/n_channels
+                                                           x == attr(observations[[1]], "void") |
+                                                           is.na(x)))))/n_channels
     } else {
       nobs <- sum(!(observations == attr(observations, "nr") |
-          observations == attr(observations, "void") |
-          is.na(observations)))
+                      observations == attr(observations, "void") |
+                      is.na(observations)))
     }
     model <- structure(list(observations=observations, transition_matrix=transition_matrix,
-      emission_matrix=emission_matrix, initial_probs=initial_probs,
-      coefficients=coefficients, X=X, cluster_names=cluster_names, state_names=state_names, 
-      symbol_names=symbol_names, channel_names=channel_names, 
-      length_of_sequences=length_of_sequences,
-      n_sequences=n_sequences, n_clusters=n_clusters,
-      n_symbols=n_symbols, n_states=n_states,
-      n_channels=n_channels,
-      n_covariates=n_covariates, formula = formula), class = "mhmm", 
-      nobs = nobs,
-      df = sum(unlist(initial_probs) > 0) - n_clusters + sum(unlist(transition_matrix) > 0) - sum(n_states) + 
-        sum(unlist(emission_matrix) > 0) - sum(n_states) * n_channels + n_covariates * (n_clusters - 1))
+                            emission_matrix=emission_matrix, initial_probs=initial_probs,
+                            coefficients=coefficients, X=X, cluster_names=cluster_names, state_names=state_names, 
+                            symbol_names=symbol_names, channel_names=channel_names, 
+                            length_of_sequences=length_of_sequences,
+                            n_sequences=n_sequences, n_clusters=n_clusters,
+                            n_symbols=n_symbols, n_states=n_states,
+                            n_channels=n_channels,
+                            n_covariates=n_covariates, formula = formula), class = "mhmm", 
+                       nobs = nobs,
+                       df = sum(unlist(initial_probs) > 0) - n_clusters + sum(unlist(transition_matrix) > 0) - sum(n_states) + 
+                         sum(unlist(emission_matrix) > 0) - sum(n_states) * n_channels + n_covariates * (n_clusters - 1))
     model
   }

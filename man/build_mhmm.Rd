@@ -165,7 +165,7 @@ biofam3c$covariates$cohort <- factor(
   biofam3c$covariates$cohort, labels=c("1909-1935", "1936-1945", "1946-1957"))
 
 # Build mixture HMM
-bmhmm <- build_mhmm(
+init_mhmm <- build_mhmm(
   observations = list(child.seq, marr.seq, left.seq),
   transition_matrix = list(trans_1, trans_1, trans_2),
   emission_matrix = list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
@@ -174,9 +174,12 @@ bmhmm <- build_mhmm(
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
   formula = ~sex + cohort, data = biofam3c$covariates,
   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
-  channel_names = c("Parenthood", "Marriage", "Left home"))
+  channel_names = c("Parenthood", "Marriage", "Residence"))
 }
 \seealso{
-\code{\link{fit_mhmm}} for fitting mixture Hidden Markov models.
+\code{\link{fit_mhmm}} for fitting mixture Hidden Markov models;
+\code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for
+reorganizing a MHMM into a list of separate hidden Markov models; and
+\code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
 }
 

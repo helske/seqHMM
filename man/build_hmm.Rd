@@ -67,7 +67,7 @@ tr <- matrix(
 init <- c(0.3, 0.3, 0.2, 0.2)
 
 # Building a hidden Markov model with starting values
-bhmm <- build_hmm(
+init_hmm_1 <- build_hmm(
   observations = mvad.seq, transition_matrix = tr,
   emission_matrix = emiss, initial_probs = init
 )
@@ -112,7 +112,7 @@ trans <- matrix(c(0.9, 0.07, 0.03,
 initial <- c(0.9, 0.09, 0.01)
 
 # Building hidden Markov model with initial parameter values
-bhmm <- build_hmm(
+init_hmm_2 <- build_hmm(
   observations = list(child.seq, marr.seq, left.seq),
   transition_matrix = trans,
   emission_matrix = list(emiss_child, emiss_marr, emiss_left),
