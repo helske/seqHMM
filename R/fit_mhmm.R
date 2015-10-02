@@ -455,6 +455,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     
     objectivef<-function(pars,model, estimate = TRUE){      
       
+      
       if(npTM>0){
         model$transition_matrix[maxTM]<-maxTMvalue     
         model$transition_matrix[paramTM]<-exp(pars[1:npTM])
@@ -505,7 +506,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
         #pmin(c(rep(250,length(initialvalues)-npCoef),rep(250/apply(abs(model$X),2,max),model$n_clusters-1)),
         #  pmax(250, 2*initialvalues))
       }
-      ub <- pmax(ub, 2*initialvalues)
+      ub <- pmin(pmax(ub, 2*initialvalues),500)
       if(is.null(control_global$maxeval)){
         control_global$maxeval <- 10000
       }
@@ -539,7 +540,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
         control_local$xtol_rel <- 1e-8
       }
       ub <- c(rep(300,length(initialvalues)-npCoef),rep(300/apply(abs(model$X),2,max),model$n_clusters-1))
-      ub <- pmax(ub, 2*initialvalues)
+      ub <- pmin(pmax(ub, 2*initialvalues),500)
      localres<-nloptr(x0 = initialvalues, eval_f = objectivef,
         opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
       

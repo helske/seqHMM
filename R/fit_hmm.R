@@ -327,8 +327,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
         ub <- 10
       }
       lb <- pmin(lb, 2*initialvalues)
-      ub <- pmax(ub, 2*initialvalues)
-      
+      ub <- pmin(pmax(ub, 2*initialvalues),500)
       if(is.null(control_global$maxeval)){
         control_global$maxeval <- 10000
       }
@@ -361,7 +360,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
         control_local$xtol_rel <- 1e-8
       }
       ub <- rep(300,length(initialvalues))
-      ub <- pmax(ub, 2*initialvalues)
+      ub <- pmin(pmax(ub, 2*initialvalues),500)
       localres<-nloptr(x0 = initialvalues, 
         eval_f = objectivef,
         opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
