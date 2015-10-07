@@ -239,7 +239,19 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
   }
   
   if(!("hidden.states.colors" %in% names(args))){
-    hidden.states.colors <- seqHMM::colorpalette[[length(alphabet(hidden.paths))]]
+    if (length(alphabet(hidden.paths)) <= 200) {
+      hidden.states.colors <- seqHMM::colorpalette[[length(alphabet(hidden.paths))]]
+    } else {
+      cp <- NULL
+      k <- 200
+      p <- 0
+      while(length(alphabet(hidden.paths)) - p > 0){
+        cp <- c(cp, seqHMM::colorpalette[[k]])
+        p <- p + k
+        k <- k - 1
+      }
+      cpal <- cp[1:length(alphabet(hidden.paths))]
+    }
   }
   hidden.pathscols <- list()
   k <- 0

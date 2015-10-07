@@ -505,13 +505,37 @@ ssp <- function(x, hidden.paths = NULL,
     }
     # Color palette for hidden.paths
     if(length(hidden.states.colors)==1 && hidden.states.colors=="auto" && length(hidden.paths)>1){
-      if(is.null(attr(hidden.paths, "cpal"))){
-        attr(hidden.paths.seq, "cpal") <- seqHMM::colorpalette[[length(alphabet(hidden.paths.seq))]]
+      if (is.null(attr(hidden.paths, "cpal"))) {
+        if (length(alphabet(hidden.paths.seq)) <= 200) {
+          attr(hidden.paths.seq, "cpal") <- seqHMM::colorpalette[[length(alphabet(hidden.paths.seq))]]
+        } else {
+          cp <- NULL
+          k <- 200
+          p <- 0
+          while(length(alphabet(hidden.paths.seq)) - p > 0){
+            cp <- c(cp, seqHMM::colorpalette[[k]])
+            p <- p + k
+            k <- k - 1
+          }
+          attr(hidden.paths.seq, "cpal") <- cp[1:length(alphabet(hidden.paths.seq))]
+        }
       }else{
         attr(hidden.paths.seq, "cpal") <- attr(hidden.paths, "cpal")
       }
     }else if(!is.null(hidden.states.labels) && length(hidden.states.labels)==1 && hidden.states.colors=="auto" && length(hidden.paths)==1 && is.null(hidden.paths)){
-      attr(hidden.paths.seq, "cpal") <- seqHMM::colorpalette[[length(alphabet(hidden.paths.seq))]]
+      if (length(alphabet(hidden.paths.seq)) <= 200) {
+        attr(hidden.paths.seq, "cpal") <- seqHMM::colorpalette[[length(alphabet(hidden.paths.seq))]]
+      } else {
+        cp <- NULL
+        k <- 200
+        p <- 0
+        while(length(alphabet(hidden.paths.seq)) - p > 0){
+          cp <- c(cp, seqHMM::colorpalette[[k]])
+          p <- p + k
+          k <- k - 1
+        }
+        attr(hidden.paths.seq, "cpal") <- cp[1:length(alphabet(hidden.paths.seq))]
+      }
     }else if(all(isColor(hidden.states.colors))){
       if(length(hidden.states.colors)!=length(alphabet(hidden.paths.seq))){
         warning(paste0("Number of colors assigned to hidden.states.colors does not match the number of hidden states. \n
