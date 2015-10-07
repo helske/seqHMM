@@ -4,7 +4,7 @@
 \name{colorpalette}
 \alias{colorpalette}
 \title{Color palettes}
-\format{A list with 60 color palettes.}
+\format{A list with 200 color palettes.}
 \source{
 iWantHue web page \url{http://tools.medialab.sciences-po.fr/iwanthue/}
 }
@@ -20,8 +20,11 @@ colorpalette[[9]]
 colorpalette[[24]]
 }
 \seealso{
-Implementation of iWantHue for R:
-  \url{https://github.com/hoesler/rwantshue}.
+Implementations of iWantHue for R:
+  \itemize{
+    \item \url{https://github.com/hoesler/rwantshue}
+    \item \url{https://github.com/johnbaums/hues}
+  }
 }
 \keyword{datasets}
 
