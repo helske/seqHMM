@@ -114,6 +114,8 @@
 #' @param xlab.pos Controls the position of the x axis label. The default value 
 #'   is 1. Values greater to 1 will place the label further away from the plot.
 #'   
+#' @param yaxis whether or not to plot the y axis. The default is \code{FALSE}.
+#' 
 #' @param ylab Labels for the channels. A vector of names for each channel 
 #'   (observations). The default value \code{"auto"} uses the names provided in 
 #'   \code{x$channel_names} if \code{x} is an \code{hmm} object; otherwise the 
@@ -219,18 +221,18 @@
 
 
 ssp <- function(x, hidden.paths = NULL,
-                       plots = "obs", type = "d", 
-                       sortv = NULL, sort.channel = 1, dist.method = "OM",
-                       with.missing = FALSE,
-                       title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
-                       withlegend = "auto", ncol.legend = "auto", 
-                       with.missing.legend = "auto",                         
-                       legend.prop = 0.3, cex.legend = 1,
-                       hidden.states.colors = "auto", hidden.states.labels = "auto",
-                       xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
-                       ylab = "auto", hidden.states.title = "Hidden states", 
-                       ylab.pos = "auto", 
-                       cex.lab = 1, cex.axis = 1, ...){
+                plots = "obs", type = "d", 
+                sortv = NULL, sort.channel = 1, dist.method = "OM",
+                with.missing = FALSE,
+                title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
+                withlegend = "auto", ncol.legend = "auto", 
+                with.missing.legend = "auto",                         
+                legend.prop = 0.3, cex.legend = 1,
+                hidden.states.colors = "auto", hidden.states.labels = "auto",
+                xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
+                yaxis = FALSE, ylab = "auto", hidden.states.title = "Hidden states", 
+                ylab.pos = "auto", 
+                cex.lab = 1, cex.axis = 1, ...){
   
   arguments <- list()
   
@@ -281,7 +283,7 @@ ssp <- function(x, hidden.paths = NULL,
           channel_names <- ylab
         }
       } else {
-        if(!is.null(ylab) && hidden.states.title == "Hidden states"){
+        if(!is.null(ylab) && (length(ylab)==1 && ylab != "auto") && hidden.states.title == "Hidden states"){
           warning("Argument ylab only modifies channel titles (observations). Did you mean to change hidden.states.title?")
         }
       }
@@ -403,6 +405,15 @@ ssp <- function(x, hidden.paths = NULL,
   }else{
     ylab.space <- max(ylab.pos)*cex.lab
   }
+  if (yaxis) {
+    if(type == "d") {
+      ylab.space <- ylab.space + 2.5
+      ylab.pos <- ylab.pos + 2.5
+    } else {
+      ylab.space <- ylab.space + 1.5
+      ylab.pos <- ylab.pos + 1.5
+    }
+  }
   if(is.na(xlab) || xlab==FALSE){
     xlab.pos <- 0
   }
@@ -421,7 +432,7 @@ ssp <- function(x, hidden.paths = NULL,
   if(plots=="both"){
     if(length(ncol.legend)==1 && ncol.legend=="auto"){
       if(withlegend==TRUE || withlegend=="auto" || withlegend=="right" ||
-           withlegend=="bottom"){
+         withlegend=="bottom"){
         ncol.legend <- rep(1, (nchannels+1))
       }else if(withlegend=="right.combined"){
         ncol.legend <- 1
@@ -433,13 +444,13 @@ ssp <- function(x, hidden.paths = NULL,
     }else if((withlegend==TRUE || withlegend=="auto") && length(ncol.legend)<(nchannels+1)){
       ncol.legend <- rep(ncol.legend, length.out = (nchannels + 1))
     }else if((withlegend=="right.combined" || withlegend=="bottom.combined") && 
-               length(ncol.legend)>1){
+             length(ncol.legend)>1){
       ncol.legend <- ncol.legend[1]
     }
   }else if(plots=="obs"){
     if(length(ncol.legend)==1 && ncol.legend=="auto"){
       if(withlegend==TRUE || withlegend=="auto" || withlegend=="right" ||
-           withlegend=="bottom"){
+         withlegend=="bottom"){
         ncol.legend <- rep(1, nchannels)
       }else if(withlegend=="right.combined"){
         ncol.legend <- 1
@@ -452,7 +463,7 @@ ssp <- function(x, hidden.paths = NULL,
       ncol.legend <- rep(ncol.legend, length.out = nchannels)
       ncol.legend <- ncol.legend
     }else if((withlegend=="right.combined" || withlegend=="bottom.combined") && 
-               length(ncol.legend)>1){
+             length(ncol.legend)>1){
       ncol.legend <- ncol.legend[1]
     }
   }else if(plots=="hidden.paths"){
@@ -460,7 +471,7 @@ ssp <- function(x, hidden.paths = NULL,
       ncol.legend <- 1
     }else if((withlegend==TRUE || withlegend=="auto" || 
               withlegend=="right.combined" || withlegend=="bottom.combined") 
-              && length(ncol.legend)>1){
+             && length(ncol.legend)>1){
       ncol.legend <- ncol.legend[1]
     }
   }  
@@ -492,16 +503,16 @@ ssp <- function(x, hidden.paths = NULL,
     }
     if(nchannels>1){
       hidden.paths.seq <- suppressWarnings(suppressMessages(seqdef(hidden.paths, 
-                                         missing.color=attr(obs[[1]],"missing.color"),
-                                         labels=hidden.states.labels,
-                                         start=attr(obs[[1]],"start"),
-                                         xtstep=attr(obs[[1]],"xtstep"))))
+                                                                   missing.color=attr(obs[[1]],"missing.color"),
+                                                                   labels=hidden.states.labels,
+                                                                   start=attr(obs[[1]],"start"),
+                                                                   xtstep=attr(obs[[1]],"xtstep"))))
     }else{
       hidden.paths.seq <- suppressWarnings(suppressMessages(seqdef(hidden.paths, 
-                                         missing.color=attr(obs,"missing.color"),
-                                         labels=hidden.states.labels,
-                                         start=attr(obs,"start"),
-                                         xtstep=attr(obs,"xtstep"))))
+                                                                   missing.color=attr(obs,"missing.color"),
+                                                                   labels=hidden.states.labels,
+                                                                   start=attr(obs,"start"),
+                                                                   xtstep=attr(obs,"xtstep"))))
     }
     # Color palette for hidden.paths
     if(length(hidden.states.colors)==1 && hidden.states.colors=="auto" && length(hidden.paths)>1){
@@ -551,11 +562,11 @@ ssp <- function(x, hidden.paths = NULL,
     if(!is.null(sortv)){
       if(length(sortv)==1 && sortv=="mds.hidden"){
         dist.hidden.paths <- suppressMessages(seqdist(hidden.paths.seq, method=dist.method, 
-                                             sm="TRATE", with.missing=TRUE))
+                                                      sm="TRATE", with.missing=TRUE))
         sortv <- cmdscale(dist.hidden.paths, k=1)
       }
     } 
-    }
+  }
   
   # Ordering sequences for sortv
   if(type=="I" && !is.null(sortv)){
@@ -682,7 +693,7 @@ ssp <- function(x, hidden.paths = NULL,
   # Legends
   if(type=="d"){
     if(with.missing==FALSE && with.missing.legend!=FALSE && with.missing.legend!=TRUE &&
-                                 with.missing.legend=="auto"){
+       with.missing.legend=="auto"){
       with.missing.legend <- FALSE
     }
   }
@@ -697,7 +708,7 @@ ssp <- function(x, hidden.paths = NULL,
                                    legend.prop=legend.prop, cex.legend=cex.legend,
                                    hidden.states.colors=hidden.states.colors, hidden.states.labels=hidden.states.labels,
                                    xaxis=xaxis, xlab=xlab, xtlab=xtlab, xlab.pos=xlab.pos,
-                                   ylab=ylab, hidden.states.title=hidden.states.title, 
+                                   yaxis=yaxis, ylab=ylab, hidden.states.title=hidden.states.title, 
                                    ylab.pos=ylab.pos, 
                                    cex.lab=cex.lab, cex.axis=cex.axis, call=match.call()))
   }else{
@@ -710,7 +721,7 @@ ssp <- function(x, hidden.paths = NULL,
                                    legend.prop=legend.prop, cex.legend=cex.legend,
                                    hidden.states.colors=hidden.states.colors, hidden.states.labels=hidden.states.labels,
                                    xaxis=xaxis, xlab=xlab, xtlab=xtlab, xlab.pos=xlab.pos,
-                                   ylab=ylab, hidden.states.title=hidden.states.title, 
+                                   yaxis=yaxis, ylab=ylab, hidden.states.title=hidden.states.title, 
                                    ylab.pos=ylab.pos, 
                                    cex.lab=cex.lab, cex.axis=cex.axis, call=match.call()),
                    list(...))    
