@@ -5,7 +5,7 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 
 List objective(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-  IntegerVector obsArray, IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols) { 
+               IntegerVector obsArray, IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols) { 
   
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
@@ -18,19 +18,28 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray, Nume
   arma::imat ANZ(transNZ.begin(),eDims[0],eDims[0],false);
   arma::icube BNZ(emissNZ.begin(), eDims[0], eDims[1]-1,eDims[2],false);
   arma::ivec INZ(initNZ.begin(), eDims[0],false);
- 
+  
+  arma::vec grad(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ),arma::fill::zeros);
   
   arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k
   arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k
   arma::mat scales(oDims[1],oDims[0]); //m,n,k
   
   internalForward(transition, emission, init, obs, alpha, scales);
+  if(!alpha.is_finite()){
+    grad.fill(-arma::math::inf());
+    return List::create(Named("objective") = arma::math::inf(),
+                        Named("gradient") = wrap(grad));
+  }
   internalBackward(transition, emission, obs, beta, scales);     
-  
+  if(!beta.is_finite()){
+    grad.fill(-arma::math::inf());
+    return List::create(Named("objective") = arma::math::inf(), 
+                        Named("gradient") = wrap(grad));
+  }
   arma::rowvec ll = arma::sum(log(scales));
   
   int countgrad = 0;
-  arma::vec grad(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ),arma::fill::zeros);
   
   // transitionMatrix
   arma::vec gradArow(eDims[0]);
@@ -44,7 +53,7 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray, Nume
       gradA.eye();
       gradA.each_row() -= transition.row(i);
       gradA.each_col() %= transition.row(i).t();
-     
+      
       for(int k = 0; k < oDims[0]; k++){
         for(int t = 0; t < (oDims[1]-1); t++){
           for(int j = 0; j < eDims[0]; j++){ 

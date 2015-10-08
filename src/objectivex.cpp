@@ -29,8 +29,9 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
   arma::mat X(X_.begin(),oDims[0],q);
   arma::mat lweights = exp(X*coef).t();
   if(!lweights.is_finite()){
-    grad.fill(-std::numeric_limits<double>::max());
-    return List::create(Named("objective") = std::numeric_limits<double>::max(), Named("gradient") = wrap(grad));
+    grad.fill(-arma::math::inf());
+    return List::create(Named("objective") = arma::math::inf(), 
+                        Named("gradient") = wrap(grad));
   }
   
   lweights.each_row() /= sum(lweights,0);
@@ -45,8 +46,17 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
   arma::mat scales(oDims[1],oDims[0]); //m,n,k
   
   internalForwardx(transition, emission, initk, obs, alpha, scales);
+  if(!alpha.is_finite()){
+    grad.fill(-arma::math::inf());
+    return List::create(Named("objective") = arma::math::inf(),
+                        Named("gradient") = wrap(grad));
+  }
   internalBackward(transition, emission, obs, beta, scales);     
-  
+  if(!beta.is_finite()){
+    grad.fill(-arma::math::inf());
+    return List::create(Named("objective") = arma::math::inf(), 
+                        Named("gradient") = wrap(grad));
+  }
   arma::rowvec ll = arma::sum(log(scales));
   
   int countgrad = 0;

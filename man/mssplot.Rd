@@ -12,8 +12,9 @@ mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
   ncol.legend = "auto", with.missing.legend = "auto", legend.prop = 0.3,
   cex.legend = 1, hidden.states.colors = "auto",
   hidden.states.labels = "auto", xaxis = TRUE, xlab = NA, xtlab = NULL,
-  xlab.pos = 1, ylab = "auto", hidden.states.title = "Hidden states",
-  ylab.pos = "auto", cex.lab = 1, cex.axis = 1, ...)
+  xlab.pos = 1, yaxis = FALSE, ylab = "auto",
+  hidden.states.title = "Hidden states", ylab.pos = "auto", cex.lab = 1,
+  cex.axis = 1, ...)
 }
 \arguments{
 \item{x}{Mixture hidden Markov model object of class \code{mhmm}.}
@@ -124,6 +125,8 @@ mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
 
 \item{xlab.pos}{Controls the position of the x axis label. The default value
   is 1. Values greater to 1 will place the label further away from the plot.}
+
+\item{yaxis}{whether or not to plot the y axis. The default is \code{FALSE}.}
 
 \item{ylab}{Labels for the channels. A vector of names for each channel
   (observations). The default value \code{"auto"} uses the names provided in
