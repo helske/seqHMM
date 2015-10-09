@@ -24,11 +24,12 @@ print.summary.mhmm <- function(x, digits = 3, ...){
     }
   }
   
+  coef_se <- matrix(sqrt(diag(x$vcov)), model$n_covariates)
   coefs <- replicate((x$model$n_clusters - 1), 
-                     matrix(NA, nrow = nrow(x$coefficients), ncol = 2), simplify = FALSE)
+                     matrix(NA, nrow = x$model$n_covariates, ncol = 2), simplify = FALSE)
   for(i in 1:length(coefs)){
-    coefs[[i]][, 1] <- signif(x$coefficients[, i+1], digits = digits, ...)
-    coefs[[i]][, 2] <- signif(x$coef_se[, i + 1], digits = digits, ...)
+    coefs[[i]][, 1] <- signif(x$coefficients[, i + 1], digits = digits, ...)
+    coefs[[i]][, 2] <- signif(coef_se[, i], digits = digits, ...)
     rownames(coefs[[i]]) <- rownames(x$coefficients)
     colnames(coefs[[i]]) <- c("Estimate", "Std. error")
   }

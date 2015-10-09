@@ -8,7 +8,9 @@
 #' @param object Mixture hidden Markov model of class \code{mhmm}.
 #' @param parameters Whether or not to print parameters of transition, emission, and 
 #' initial probabilities. \code{FALSE} by default.
-#' @param ... Ignored.
+#' @param conditional_se Return conditional standard errors of coefficients. 
+#' See \code{\link{mcov.mhmm}} for details. \code{TRUE} by default.
+#' @param ... Further arguments to \code{\link{mcov.mhmm}}.
 #' 
 #' @details The \code{summary.mhmm} function computes features from a mixture hidden Markov
 #' model and stores them as a list. A \code{print} method prints summaries of these:
@@ -41,17 +43,13 @@
 #' @seealso \code{\link{fit_mhmm}} for building and fitting mixture hidden Markov models.
 #'   
 
-summary.mhmm <- function(object, parameters = FALSE, ...){
+summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, ...){
   
   ll <- logLik(object, partials = TRUE)
   sum_logLik <- sum(ll)
   BIC <- -2*sum_logLik + log(object$n_sequences*object$length_of_sequences)*
     (sum(unlist(object$initial_probs)>0)+sum(unlist(object$transition_matrix)>0)+
         sum(unlist(object$emission_matrix)>0))
-  
-  coef_se <- se_coef(object)
-  rownames(coef_se) <- rownames(object$coefficients)
-  colnames(coef_se) <- colnames(object$coefficients)
   
   fw <- forward_backward(object, forward_only = TRUE)$forward_probs[,object$length_of_sequences,]
   
@@ -80,7 +78,7 @@ summary.mhmm <- function(object, parameters = FALSE, ...){
   if(!parameters){
     summary_mhmm <- list(
       logLik = sum_logLik, BIC = BIC, most_probable_cluster = most_probable_cluster, 
-      coefficients = object$coefficients, coef_se = coef_se,
+      coefficients = object$coefficients, vcov = vcov(object, conditional_se, ...),
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
       classification_table = clProbs,
@@ -92,7 +90,7 @@ summary.mhmm <- function(object, parameters = FALSE, ...){
       emission_matrix = object$emission_matrix,
       initial_probs = object$initial_probs,
       logLik = sum_logLik, BIC = BIC, most_probable_cluster = most_probable_cluster, 
-      coefficients = object$coefficients, coef_se = coef_se,
+      coefficients = object$coefficients, vcov = vcov(object, conditional_se, ...),
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
       classification_table = clProbs,
