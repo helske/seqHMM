@@ -1,7 +1,7 @@
 #' Variance-Covariance for Regression Coefficients of Mixture Hidden Markov Model
 #'
 #' @importFrom numDeriv jacobian
-#' @param model Object of class \code{mhmm}.
+#' @param object Object of class \code{mhmm}.
 #' @param conditional If \code{TRUE} (default), compute standard errors using 
 #' analytical formulas by assuming that the coefficient estimates are not correlated with 
 #' other model parameter estimates (or if other parameters are assumed to be fixed). 
@@ -14,17 +14,17 @@
 #' @return Matrix containing the standard errors for coefficients.
 #' @export
 #'
-vcov.mhmm <- function(model, conditional = TRUE, ...){
+vcov.mhmm <- function(object, conditional = TRUE, ...){
   if (conditional) {
     #matrix(c(rep(0,model$n_covariates),
     #  sqrt(diag(varcoef(model$coefficients, model$X, model$n_states)))),
     #  nrow = model$n_covariates, ncol = model$n_clusters)
-    vcovm <- varcoef(model$coefficients, model$X, model$n_states)
+    vcovm <- varcoef(object$coefficients, object$X, object$n_states)
   } else {
     # copied from fit_mhmm
     # 
-    original_model <- model
-    model <- combine_models(model)
+    original_model <- object
+    model <- combine_models(object)
     
     if(model$n_channels == 1){
       model$observations <- list(model$observations)
