@@ -81,13 +81,14 @@
 #'   \item{em_results}{Results after the EM step. } 
 #'   \item{global_results}{Results after the global step. }
 #'   \item{local_results}{Results after the local step. }
-#' @seealso \code{\link{build_mhmm}} for building MHMMs; 
-#' \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and
+#' @seealso \code{\link{build_mhmm}} for building MHMMs; \code{\link{summary.mhmm}}
+#'   for a summary of a MHMM; \code{\link{separate_mhmm}} for reorganizing a MHMM into 
+#'   a list of separate hidden Markov models;
+#'   \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and
 #'   fitting hidden Markov models; \code{\link{plot.mhmm}}
-#'   for plotting \code{mhmm} objects and \code{\link{mssplot}} for plotting
+#'   for plotting \code{mhmm} objects; and \code{\link{mssplot}} for plotting
 #'   stacked sequence plots of \code{mhmm} objects.
 #' @examples 
-#' \dontrun{
 #' require(TraMineR)
 #' 
 #' # Single-channel
@@ -136,16 +137,15 @@
 #' init_2 <- c(0.3, 0.3, 0.2, 0.2)
 #' 
 #' # Building a MHMM with the starting values
-#' bmhmm_mvad <- build_mhmm(
+#' init_mhmm_mvad <- build_mhmm(
 #'   observations = mvad.seq, 
 #'   transition_matrix = list(tr_1, tr_2), 
 #'   emission_matrix = list(emiss_1, emiss_2), 
-#'   initial_probs = list(init_1, init_2)
-#' )                   
+#'   initial_probs = list(init_1, init_2))                   
 #' 
 #' # Fitting the model with the EM algorithm
 #' mhmm_mvad <- fit_mhmm(
-#'   bmhmm_mvad, em_step = TRUE, global_step = FALSE, local_step = FALSE)
+#'   init_mhmm_mvad, em_step = TRUE, global_step = FALSE, local_step = FALSE)
 #' 
 #' ##############################################################
 #' 
@@ -262,7 +262,7 @@
 #'   biofam3c$covariates$cohort, labels=c("1909-1935", "1936-1945", "1946-1957"))
 #' 
 #' # Build mixture HMM
-#' bmhmm <- build_mhmm(
+#' init_mhmm_bf <- build_mhmm(
 #'   observations = list(child.seq, marr.seq, left.seq),
 #'   transition_matrix = list(trans_1, trans_1, trans_2),
 #'   emission_matrix = list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
@@ -277,24 +277,24 @@
 #' 
 #' # Only EM with default values
 #' mhmm_1 <- fit_mhmm(
-#'   bmhmm, em_step = TRUE, global_step = FALSE, local_step = FALSE)
+#'   init_mhmm_bf, em_step = TRUE, global_step = FALSE, local_step = FALSE)
 #' mhmm_1$logLik # -3081.383
 #' 
 #' \dontrun{
 #' # EM with LBFGS
 #' mhmm_2 <- fit_mhmm(
-#'   bmhmm, em_step = TRUE, global_step = FALSE, local_step = TRUE)
+#'   init_mhmm_bf, em_step = TRUE, global_step = FALSE, local_step = TRUE)
 #' mhmm_2$logLik # -3081.383
 #' 
 #' # Only LBFGS
 #' mhmm_3 <- fit_mhmm(
-#'   bmhmm, em_step = FALSE, global_step = FALSE, local_step = TRUE,
+#'   init_mhmm_bf, em_step = FALSE, global_step = FALSE, local_step = TRUE,
 #'   control_local = list(maxeval = 5000, maxtime = 0))
 #' mhmm_3$logLik # -3087.499373
 #' 
 #' # Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
 #' mhmm_4 <- fit_mhmm(
-#'   bmhmm, em_step = FALSE, global_step = TRUE, local_step = TRUE, 
+#'   init_mhmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE, 
 #'   control_global = list(maxeval = 5000, maxtime = 0))
 #' mhmm_4$logLik # -3150.796
 #' 
@@ -302,25 +302,22 @@
 #' # defining initial values and boundaries
 #' # Note smaller maxeval for global optimization
 #' mhmm_5 <- fit_mhmm(
-#'   bmhmm, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
+#'   init_mhmm_bf, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
 #'   control_em = list(maxeval = 10), control_global = list(maxeval = 1000, maxtime = 0),
 #'   control_local = list(maxeval = 500, maxtime = 0))
 #' mhmm_5$logLik #-3081.383
 #' }
 #' 
-#' # Coefficients of covariates
-#' coef(mhmm_1$model)
-#' 
-#' # Probabilities of belonging to each model for the first six subjects
-#' head(mhmm_1$model$cluster_prob)
-#' }
-
 
 fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
   control_em = list(), control_global = list(), control_local = list(), lb, ub, ...){
   
   if(!inherits(model, "mhmm"))
     stop("Argument model must be an object of class 'mhmm'.")
+  
+  if(!em_step && !global_step && !local_step){
+    stop("No method chosen for estimation. Choose at least one from em_step, global_step, and local_step.")
+  }
   
   df <- attr(model, "df")
   nobs <- attr(model, "nobs")
@@ -366,6 +363,8 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
         original_model$initial_probs[[m]] <- unname(resEM$initialProbs[(k+1):(k+model$n_states_in_clusters[m])])
         k <- sum(model$n_states_in_clusters[1:m])
       }
+    } else {
+      model$initial_probs <- resEM$initialProbs
     }
     
     model$transition_matrix[]<-resEM$transitionMatrix
@@ -449,6 +448,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     
     objectivef<-function(pars,model, estimate = TRUE){      
       
+      
       if(npTM>0){
         model$transition_matrix[maxTM]<-maxTMvalue     
         model$transition_matrix[paramTM]<-exp(pars[1:npTM])
@@ -499,7 +499,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
         #pmin(c(rep(250,length(initialvalues)-npCoef),rep(250/apply(abs(model$X),2,max),model$n_clusters-1)),
         #  pmax(250, 2*initialvalues))
       }
-      ub <- pmax(ub, 2*initialvalues)
+      ub <- pmin(pmax(ub, 2*initialvalues),500)
       if(is.null(control_global$maxeval)){
         control_global$maxeval <- 10000
       }
@@ -533,7 +533,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
         control_local$xtol_rel <- 1e-8
       }
       ub <- c(rep(300,length(initialvalues)-npCoef),rep(300/apply(abs(model$X),2,max),model$n_clusters-1))
-      ub <- pmax(ub, 2*initialvalues)
+      ub <- pmin(pmax(ub, 2*initialvalues),500)
      localres<-nloptr(x0 = initialvalues, eval_f = objectivef,
         opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
       

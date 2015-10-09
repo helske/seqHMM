@@ -181,7 +181,7 @@ gridplot <- function(x, nrow=NA, ncol=NA, byrow=FALSE,
     nlegend <- x[[1]]$nplots
     for(i in 2:ngridplots){
       if(nlegend != x[[i]]$nplots){
-        warning("The number of requested plots is not the same in all requested plots. Legends could not be printed.")
+        warning("The number of legends is not the same in all requested plots. Legends could not be printed.")
         withlegend <- FALSE
         break()
       }

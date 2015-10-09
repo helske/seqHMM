@@ -8,8 +8,6 @@
 #' @param object Mixture hidden Markov model of class \code{mhmm}.
 #' @param parameters Whether or not to print parameters of transition, emission, and 
 #' initial probabilities. \code{FALSE} by default.
-#' @param digits Number of decimal places to be used when printing parameters. The 
-#' default is 3.
 #' @param ... Ignored.
 #' 
 #' @details The \code{summary.mhmm} function computes features from a mixture hidden Markov
@@ -43,7 +41,7 @@
 #' @seealso \code{\link{fit_mhmm}} for building and fitting mixture hidden Markov models.
 #'   
 
-summary.mhmm <- function(object, parameters = FALSE, digits = 3, ...){
+summary.mhmm <- function(object, parameters = FALSE, ...){
   
   ll <- logLik(object, partials = TRUE)
   sum_logLik <- sum(ll)
@@ -55,7 +53,7 @@ summary.mhmm <- function(object, parameters = FALSE, digits = 3, ...){
   rownames(coef_se) <- rownames(object$coefficients)
   colnames(coef_se) <- colnames(object$coefficients)
   
-  fw <- forward_probs(object)[,object$length_of_sequences,]
+  fw <- forward_backward(object, forward_only = TRUE)$forward_probs[,object$length_of_sequences,]
   
   pr <- exp(object$X%*%object$coefficients)
   prior_cluster_probabilities <- pr/rowSums(pr)
@@ -64,8 +62,7 @@ summary.mhmm <- function(object, parameters = FALSE, digits = 3, ...){
   posterior_cluster_probabilities <- prior_cluster_probabilities
   p <- 0
   for(i in 1:object$n_clusters){
-    posterior_cluster_probabilities[,i] <- colSums(exp(fw[(p+1):(p+object$n_states[i]), , drop = FALSE] - 
-                              rep(ll, each = object$n_states[i])))
+    posterior_cluster_probabilities[,i] <- colSums(fw[(p+1):(p+object$n_states[i]), , drop = FALSE])
     p <- p + object$n_states[i]
   }
   most_probable_cluster <- factor(apply(posterior_cluster_probabilities, 1, which.max), 
@@ -87,7 +84,6 @@ summary.mhmm <- function(object, parameters = FALSE, digits = 3, ...){
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
       classification_table = clProbs,
-      digits = digits,
       model = object
     )
   }else{
@@ -100,7 +96,6 @@ summary.mhmm <- function(object, parameters = FALSE, digits = 3, ...){
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
       classification_table = clProbs,
-      digits = digits,
       model = object
     )
   }

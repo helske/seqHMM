@@ -6,16 +6,18 @@
 \alias{print.summary.mhmm}
 \title{Print Method for a Hidden Markov Model}
 \usage{
-\method{print}{hmm}(x, ...)
+\method{print}{hmm}(x, digits = 3, ...)
 
-\method{print}{mhmm}(x, ...)
+\method{print}{mhmm}(x, digits = 3, ...)
 
-\method{print}{summary.mhmm}(x, ...)
+\method{print}{summary.mhmm}(x, digits = 3, ...)
 }
 \arguments{
 \item{x}{Hidden Markov model of class \code{hmm} or \code{mhmm}.}
 
-\item{...}{Ignored.}
+\item{digits}{Minimum number of significant digits to print.}
+
+\item{...}{Further arguments to \code{print.default}.}
 }
 \description{
 Prints the parameters of a (mixture) hidden Markov model.

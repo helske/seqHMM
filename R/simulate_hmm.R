@@ -88,16 +88,57 @@ simulate_hmm <- function(n_sequences, initial_probs, transition_matrix, emission
   
   
   p <- 0
-  for (i in 1:n_channels) {
-    attr(obs[[i]], "cpal") <- seqHMM::colorpalette[[
-      length(unlist(symbol_names))]][(p + 1):(p + n_symbols[[i]])]
-    p <- 1
+  if (length(unlist(symbol_names)) <= 200) {
+    for (i in 1:n_channels) {
+      attr(obs[[i]], "cpal") <- seqHMM::colorpalette[[
+        length(unlist(symbol_names))]][(p + 1):(p + n_symbols[[i]])]
+      p <- 1
+    }
+  } else {
+    cp <- NULL
+    k <- 200
+    l <- 0
+    while(length(unlist(symbol_names)) - l > 0){
+      cp <- c(cp, seqHMM::colorpalette[[k]])
+      l <- l + k
+      k <- k - 1
+    }
+    cp <- cp[1:length(unlist(symbol_names))]
+    for (i in 1:n_channels) {
+      attr(obs[[i]], "cpal") <- cp[(p + 1):(p + n_symbols[[i]])]
+      p <- 1
+    }
   }
   
+  
   if (length(unlist(symbol_names)) != length(alphabet(states))) {
-    attr(states, "cpal") <- seqHMM::colorpalette[[length(alphabet(states))]]
+    if (length(alphabet(states)) <= 200) {
+      attr(states, "cpal") <- seqHMM::colorpalette[[length(alphabet(states))]]
+    } else {
+      cp <- NULL
+      k <- 200
+      p <- 0
+      while(length(alphabet(states)) - p > 0){
+        cp <- c(cp, seqHMM::colorpalette[[k]])
+        p <- p + k
+        k <- k - 1
+      }
+      attr(states, "cpal") <- cp[1:length(alphabet(states))]
+    }
   } else {
-    attr(states, "cpal") <- seqHMM::colorpalette[[length(alphabet(states)) + 1]][1:length(alphabet(states))]
+    if (length(alphabet(states)) <= 199) {
+      attr(states, "cpal") <- seqHMM::colorpalette[[length(alphabet(states)) + 1]][1:length(alphabet(states))]
+    } else {
+      cp <- NULL
+      k <- 199
+      p <- 0
+      while(length(alphabet(states)) - p > 0){
+        cp <- c(cp, seqHMM::colorpalette[[k]])
+        p <- p + k
+        k <- k - 1
+      }
+      attr(states, "cpal") <- cp[1:length(alphabet(states))]
+    }
   }
   
   if (n_channels == 1) obs <- obs[[1]]

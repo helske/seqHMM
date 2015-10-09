@@ -65,7 +65,20 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
                                      is.na(x)))]<-NA
     }
     
-    cpal <- seqHMM::colorpalette[[modelx$n_symbols]]
+    if (modelx$n_symbols <= 200) {
+      cpal <- seqHMM::colorpalette[[modelx$n_symbols]]
+    } else {
+      cp <- NULL
+      k <- 200
+      p <- 0
+      while(modelx$n_symbols - p > 0){
+        cp <- c(cp, seqHMM::colorpalette[[k]])
+        p <- p + k
+        k <- k - 1
+      }
+      cpal <- cp[1:modelx$n_symbols]
+    }
+    
     
     if(all_combinations==TRUE){
       modelx$observations<-suppressWarnings(suppressMessages(seqdef(modelx$observations, alphabet=modelx$symbol_names)))
@@ -119,8 +132,20 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
                                      x==attr(model$observations[[1]], "void") |
                                      is.na(x)))]<-NA
     }
+    if (modelx$n_symbols <= 200) {
+      cpal <- seqHMM::colorpalette[[modelx$n_symbols]]
+    } else {
+      cp <- NULL
+      k <- 200
+      p <- 0
+      while(modelx$n_symbols - p > 0){
+        cp <- c(cp, seqHMM::colorpalette[[k]])
+        p <- p + k
+        k <- k - 1
+      }
+      cpal <- cp[1:modelx$n_symbols]
+    }
     
-    cpal <- seqHMM::colorpalette[[modelx$n_symbols]]
     
     if(all_combinations==TRUE){
       modelx$observations <- suppressWarnings(suppressMessages(seqdef(modelx$observations, alphabet=modelx$symbol_names)))

@@ -19,7 +19,8 @@ probabilities for submodels of each cluster.}
 a list of such objects (one for each channel) for submodels of each cluster.
 Note that the matrices must have dimensions m x s where m is the number of
 hidden states and s is the number of unique symbols (observed states) in the
-data.}
+data. Emission probabilities should follow the ordering of the alphabet of
+observations (\code{alphabet(observations)}, returned as \code{symbol_names}).}
 
 \item{initial_probs}{A list which contains vectors of initial state
 probabilities for submodels of each cluster.}
@@ -38,7 +39,9 @@ The first column is set to zero.}
 
 \item{cluster_names}{A vector of optional names for the clusters.}
 
-\item{state_names}{A list of optional labels for the hidden states.}
+\item{state_names}{A list of optional labels for the hidden states. If \code{NULL},
+the state names are taken as row names of transition matrices. If this is also \code{NULL},
+numbered states are used.}
 
 \item{channel_names}{A vector of optional names for the channels.}
 }
@@ -162,7 +165,7 @@ biofam3c$covariates$cohort <- factor(
   biofam3c$covariates$cohort, labels=c("1909-1935", "1936-1945", "1946-1957"))
 
 # Build mixture HMM
-bmhmm <- build_mhmm(
+init_mhmm <- build_mhmm(
   observations = list(child.seq, marr.seq, left.seq),
   transition_matrix = list(trans_1, trans_1, trans_2),
   emission_matrix = list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
@@ -171,9 +174,12 @@ bmhmm <- build_mhmm(
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
   formula = ~sex + cohort, data = biofam3c$covariates,
   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
-  channel_names = c("Parenthood", "Marriage", "Left home"))
+  channel_names = c("Parenthood", "Marriage", "Residence"))
 }
 \seealso{
-\code{\link{fit_mhmm}} for fitting mixture Hidden Markov models.
+\code{\link{fit_mhmm}} for fitting mixture Hidden Markov models;
+\code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for
+reorganizing a MHMM into a list of separate hidden Markov models; and
+\code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
 }
 

@@ -67,11 +67,11 @@
 #'   
 #' @param withlegend Defines if and where the legend for the states is plotted. 
 #'   The default value \code{"auto"} (equivalent to \code{TRUE} and 
-#'   \code{right.many}) creates separate legends for each requested plot and 
-#'   sets the positions automatically. Other possible values are \code{"right"},
-#'   \code{"bottom"} and \code{"bottom.many"}, of which the first two create a 
-#'   combined legend in the selected position and the last one creates separate 
-#'   legends for each requested plot at the bottom of the graph. Value 
+#'   \code{right}) creates separate legends for each requested plot and 
+#'   positiones them on the right-hand side of the plot. Other possible values 
+#'   are \code{"bottom"},
+#'   \code{"right.combined"}, and \code{"bottom.combined"}, of which the last 
+#'   two create a combined legend in the selected position. Value 
 #'   \code{FALSE} prints no legend.
 #'   
 #' @param ncol.legend (A vector of) the number of columns for the legend(s). The
@@ -128,6 +128,7 @@
 #'   channels and/or hidden states). Either \code{"auto"} or a numerical vector 
 #'   indicating on how far away from the plots the titles are positioned. The 
 #'   default value \code{"auto"} positions all titles on line 1.
+#'   Shorter vectors are recycled.
 #'   
 #' @param cex.lab Expansion factor for setting the size of the font for the axis
 #'   labels. The default value is 1. Values lesser than 1 will reduce the size 
@@ -157,11 +158,11 @@
 #' 
 #' 
 #' # Plotting state distribution plots of observations
-#' ssplot(list(child.seq, marr.seq, left.seq), type = "d", plots = "obs")
+#' ssplot(list(child.seq, marr.seq, left.seq))
 #' 
 #' # Plotting sequence index plots of observations
 #' ssplot(
-#'   list(child.seq, marr.seq, left.seq), type = "I", plots = "obs",
+#'   list(child.seq, marr.seq, left.seq), type = "I", 
 #'   # Sorting subjects according to the beginning of the 2nd channel (marr.seq)
 #'   sortv = "from.start", sort.channel = 2, 
 #'   # Controlling the size, positions, and names for channel labels

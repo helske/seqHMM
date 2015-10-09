@@ -12,8 +12,9 @@ mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
   ncol.legend = "auto", with.missing.legend = "auto", legend.prop = 0.3,
   cex.legend = 1, hidden.states.colors = "auto",
   hidden.states.labels = "auto", xaxis = TRUE, xlab = NA, xtlab = NULL,
-  xlab.pos = 1, ylab = "auto", hidden.states.title = "Hidden states",
-  ylab.pos = "auto", cex.lab = 1, cex.axis = 1, ...)
+  xlab.pos = 1, yaxis = FALSE, ylab = "auto",
+  hidden.states.title = "Hidden states", ylab.pos = "auto", cex.lab = 1,
+  cex.axis = 1, ...)
 }
 \arguments{
 \item{x}{Mixture hidden Markov model object of class \code{mhmm}.}
@@ -76,11 +77,11 @@ mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
 
 \item{withlegend}{Defines if and where the legend for the states is plotted.
   The default value \code{"auto"} (equivalent to \code{TRUE} and
-  \code{right.many}) creates separate legends for each requested plot and
-  sets the positions automatically. Other possible values are \code{"right"},
-  \code{"bottom"} and \code{"bottom.many"}, of which the first two create a
-  combined legend in the selected position and the last one creates separate
-  legends for each requested plot at the bottom of the graph. Value
+  \code{right}) creates separate legends for each requested plot and
+  positiones them on the right-hand side of the plot. Other possible values
+  are \code{"bottom"},
+  \code{"right.combined"}, and \code{"bottom.combined"}, of which the last
+  two create a combined legend in the selected position. Value
   \code{FALSE} prints no legend.}
 
 \item{ncol.legend}{(A vector of) the number of columns for the legend(s). The
@@ -125,6 +126,8 @@ mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
 \item{xlab.pos}{Controls the position of the x axis label. The default value
   is 1. Values greater to 1 will place the label further away from the plot.}
 
+\item{yaxis}{whether or not to plot the y axis. The default is \code{FALSE}.}
+
 \item{ylab}{Labels for the channels. A vector of names for each channel
   (observations). The default value \code{"auto"} uses the names provided in
   \code{x$channel_names} if \code{x} is an \code{hmm} object; otherwise the
@@ -137,7 +140,8 @@ mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
 \item{ylab.pos}{Controls the position of the y axis labels (labels for
   channels and/or hidden states). Either \code{"auto"} or a numerical vector
   indicating on how far away from the plots the titles are positioned. The
-  default value \code{"auto"} positions all titles on line 1.}
+  default value \code{"auto"} positions all titles on line 1.
+  Shorter vectors are recycled.}
 
 \item{cex.lab}{Expansion factor for setting the size of the font for the axis
   labels. The default value is 1. Values lesser than 1 will reduce the size

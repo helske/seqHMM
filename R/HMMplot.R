@@ -239,7 +239,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
   # Plotting graph
   if(pie==TRUE){
     pie.values <- lapply(seq_len(nrow(transM)), function(i) x$emission_matrix[i,])
-    if(combine.slices>0){
+    if(combine.slices>0 && !all(unlist(pie.values)[unlist(pie.values) > 0] > combine.slices)){
       pie.colors.l <- NULL
       if(withlegend!=FALSE){
         lt <- NULL

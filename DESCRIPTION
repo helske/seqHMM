@@ -16,15 +16,19 @@ LazyData: true
 LinkingTo: Rcpp, RcppArmadillo
 Depends: R (>= 3.0.0)
 Imports:
-    Matrix,
-    nloptr,
-    stats,
-    TraMineR (>= 1.8-8),
-    Rcpp (>= 0.11.3),
+    graphics,
+    grDevices,
     grid,
     gridBase,
     igraph,
-    numDeriv
+    Matrix,
+    methods,
+    nloptr,
+    numDeriv,
+    Rcpp (>= 0.11.3),
+    stats,
+    TraMineR (>= 1.8-8),
+    utils
 Suggests: MASS, nnet, testthat
 License: GPL (>= 2)
 Encoding: UTF-8

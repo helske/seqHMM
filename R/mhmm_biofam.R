@@ -19,8 +19,12 @@
 #' marr.seq <- seqdef(biofam3c$married, start = 15)
 #' left.seq <- seqdef(biofam3c$left, start = 15)
 #' 
-#' ## Starting values for emission probabilities
+#' ## Choosing colors
+#' attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
+#' attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+#' attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 #' 
+#' ## Starting values for emission probabilities
 #' # Cluster 1
 #' alphabet(child.seq) # Checking for the order of observed states
 #' emiss_1_child <- matrix(
@@ -123,7 +127,7 @@
 #'   biofam3c$covariates$cohort, labels=c("1909-1935", "1936-1945", "1946-1957"))
 #' 
 #' # Build mixture HMM
-#' bmhmm_biofam <- build_mhmm(
+#' init_mhmm_biofam <- build_mhmm(
 #'   observations=list(child.seq, marr.seq, left.seq),
 #'   transition_matrix=list(trans_1,trans_1,trans_2),
 #'   emission_matrix=list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
@@ -137,10 +141,10 @@
 #'                      paste("State", 1:6)))
 #' 
 #' # Fitting the model
-#' mhmm_biofam <- fit_mhmm(bmhmm_biofam, global_step = FALSE)
+#' fit_biofam <- fit_mhmm(init_mhmm_biofam, global_step = FALSE)
 #' 
 #' # Trimming the model
-#' mhmm_biofam <- trim_hmm(mhmm_biofam$model, zerotol = 1e-04)
+#' mhmm_biofam <- trim_hmm(fit_biofam$model, zerotol = 1e-04)
 #' }
 #'   
 #' @seealso Examples of building and fitting MHMMs in \code{\link{build_mhmm}} and 

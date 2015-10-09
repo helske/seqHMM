@@ -29,32 +29,35 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
   arma::mat X(X_.begin(),oDims[0],q);
   arma::mat lweights = exp(X*coef).t();
   if(!lweights.is_finite()){
-    grad.fill(-std::numeric_limits<double>::max());
-    return List::create(Named("objective") = std::numeric_limits<double>::max(), Named("gradient") = wrap(grad));
+    grad.fill(-arma::math::inf());
+    return List::create(Named("objective") = arma::math::inf(), 
+                        Named("gradient") = wrap(grad));
   }
-  arma::rowvec sumweights = sum(lweights,0);
   
-  lweights.each_row() /= sumweights;
-  lweights = log(lweights); 
-  
-  arma::vec initLog = log(init); 
+  lweights.each_row() /= sum(lweights,0);
+   
   arma::mat initk(eDims[0],oDims[0]);
   for(int k = 0; k < oDims[0]; k++){    
-    initk.col(k) = initLog + reparma(lweights.col(k),numberOfStates);
+    initk.col(k) = init % reparma(lweights.col(k),numberOfStates);
   }
-  arma::mat transitionLog = log(transition); 
-  arma::cube emissionLog = log(emission);
   
   arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k
   arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k 
+  arma::mat scales(oDims[1],oDims[0]); //m,n,k
   
-  internalForwardx(transitionLog, emissionLog, initk, obs, alpha);
-  internalBackward(transitionLog, emissionLog, obs, beta);     
-  
-  arma::vec ll(oDims[0]);
-  for(int k = 0; k < oDims[0]; k++){
-    ll(k) = logSumExp(alpha.slice(k).col(oDims[1]-1));
+  internalForwardx(transition, emission, initk, obs, alpha, scales);
+  if(!alpha.is_finite()){
+    grad.fill(-arma::math::inf());
+    return List::create(Named("objective") = arma::math::inf(),
+                        Named("gradient") = wrap(grad));
   }
+  internalBackward(transition, emission, obs, beta, scales);     
+  if(!beta.is_finite()){
+    grad.fill(-arma::math::inf());
+    return List::create(Named("objective") = arma::math::inf(), 
+                        Named("gradient") = wrap(grad));
+  }
+  arma::rowvec ll = arma::sum(log(scales));
   
   int countgrad = 0;
   IntegerVector cumsumstate = cumsum(numberOfStates);
@@ -76,12 +79,11 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
           for(int k = 0; k < oDims[0]; k++){
             for(int t = 0; t < (oDims[1]-1); t++){
               for(int j = 0; j < numberOfStates(jj); j++){ 
-                double tmp = 0.0;
+                double tmp = 1.0;
                 for(int r = 0; r < oDims[2]; r++){
-                  tmp += emissionLog(cumsumstate(jj)-numberOfStates(jj)+j,obs(k,t+1,r),r);
+                  tmp *= emission(cumsumstate(jj)-numberOfStates(jj)+j,obs(k,t+1,r),r);
                 }
-                gradArow(j) += exp(alpha(cumsumstate(jj)-numberOfStates(jj)+i,t,k) + tmp + beta(cumsumstate(jj)-numberOfStates(jj)+j,t+1,k) - ll(k)); 
-              }
+                gradArow(j) += alpha(cumsumstate(jj)-numberOfStates(jj)+i,t,k) * tmp * beta(cumsumstate(jj)-numberOfStates(jj)+j,t+1,k) / scales(t+1,k);               }
               
             }
           }
@@ -107,23 +109,23 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
           for(unsigned int j = 0; j < nSymbols[r]; j++){
             for(int k = 0; k < oDims[0]; k++){
               if(obs(k,0,r) == j){
-                double tmp = 0.0;
+                double tmp = 1.0;
                 for(int r2 = 0; r2 < oDims[2]; r2++){
                   if(r2 != r){
-                    tmp += emissionLog(i,obs(k,0,r2),r2);
+                    tmp *= emission(i,obs(k,0,r2),r2);
                   }
                 }
-                gradBrow(j) += exp(initk(i,k) + tmp + beta(i,0,k) - ll(k));
+                gradBrow(j) += initk(i,k) * tmp * beta(i,0,k) / scales(0,k);
               }
               for(int t = 0; t < (oDims[1]-1); t++){ 
                 if(obs(k,t+1,r) == j){
-                  double tmp = 0.0;
+                  double tmp = 1.0;
                   for(int r2 = 0; r2 < oDims[2]; r2++){
                     if(r2 != r){
-                      tmp += emissionLog(i,obs(k,t+1,r2),r2);
+                      tmp *= emission(i,obs(k,t+1,r2),r2);
                     }
                   }
-                  gradBrow(j) += arma::accu(exp(alpha.slice(k).col(t) + tmp + transitionLog.col(i) + beta(i,t+1,k) - ll(k)));
+                  gradBrow(j) += arma::dot(alpha.slice(k).col(t),transition.col(i)) * tmp * beta(i,t+1,k) / scales(t+1,k);
                 }
               }
             }
@@ -143,11 +145,11 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
         arma::vec gradIrow(numberOfStates(i),arma::fill::zeros);  
         for(unsigned int j = 0; j < numberOfStates(i); j++){        
           for(int k = 0; k < oDims[0]; k++){ 
-            double tmp = 0.0;
+            double tmp = 1.0;
             for(int r=0; r < oDims[2]; r++){
-              tmp += emissionLog(cumsumstate(i)-numberOfStates(i)+j,obs(k,0,r),r);
+              tmp *= emission(cumsumstate(i)-numberOfStates(i)+j,obs(k,0,r),r);
             }
-            gradIrow(j) += exp(tmp + beta(cumsumstate(i)-numberOfStates(i)+j,0,k)-ll(k)+lweights(i,k));           
+            gradIrow(j) += tmp * beta(cumsumstate(i)-numberOfStates(i)+j,0,k) / scales(0,k) * lweights(i,k);           
           }
         }
         arma::mat gradI(numberOfStates(i),numberOfStates(i),arma::fill::zeros);
@@ -164,16 +166,16 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
   for(unsigned int jj = 1; jj < numberOfStates.size(); jj++){
     for(int k = 0; k < oDims[0]; k++){
       for(unsigned int j = 0; j < eDims[0]; j++){                
-        double tmp = 0.0;
+        double tmp = 1.0;
         for(int r=0; r < oDims[2]; r++){
-          tmp += emissionLog(j,obs(k,0,r),r);
+          tmp *= emission(j,obs(k,0,r),r);
         }        
         if(j>=(cumsumstate(jj)-numberOfStates(jj)) & j<cumsumstate(jj)){
           grad.subvec(countgrad+q*(jj-1),countgrad+q*jj-1) += 
-            exp(tmp+beta(j,0,k)-ll(k)+initk(j,k))*X.row(k).t()*(1.0 - exp(lweights(jj,k))); 
+            tmp * beta(j,0,k) / scales(0,k) * initk(j,k) * X.row(k).t() * (1.0 - lweights(jj,k)); 
         } else {
           grad.subvec(countgrad+q*(jj-1),countgrad+q*jj-1) -= 
-            exp(tmp+beta(j,0,k)-ll(k)+initk(j,k))*X.row(k).t()*exp(lweights(jj,k));
+            tmp * beta(j,0,k) / scales(0,k) * initk(j,k) *X.row(k).t() * lweights(jj,k);
         }
       }
     }
