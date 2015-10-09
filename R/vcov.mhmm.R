@@ -151,7 +151,7 @@ vcov.mhmm <- function(object, conditional = TRUE, ...){
     vcovm <- solve(jacobian(objectivef, initialvalues, model = model, ...))[coef_ind, coef_ind]
   }
   rownames(vcovm) <- colnames(vcovm) <- paste(
-    rep(model$cluster_names[-1], each = model$n_covariates), 
-    rownames(model$coefficients), sep=": ")
+    rep(object$cluster_names[-1], each = object$n_covariates), 
+    rownames(object$coefficients), sep=": ")
   vcovm
 }
