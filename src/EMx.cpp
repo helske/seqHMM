@@ -24,7 +24,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   arma::mat X(X_.begin(),oDims[0],q);
   arma::mat lweights = exp(X*coef).t();
   if(!lweights.is_finite()){
-    return List::create(Named("error") = "error");
+    stop("Initial values for coefficients of covariates resulted non-finite cluster probabilities.");
   }
   lweights.each_row() /= sum(lweights,0);
   

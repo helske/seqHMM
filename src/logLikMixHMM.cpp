@@ -26,7 +26,8 @@ NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissio
   arma::mat X(X_.begin(),oDims[0],q);
   arma::mat lweights = exp(X*coef).t();
   if(!lweights.is_finite()){
-    return wrap(-std::numeric_limits<double>::max());
+    warning("Coefficients of covariates resulted non-finite cluster probabilities. Returning -Inf.");
+    return wrap(-arma::math::inf());
     
   }
   lweights.each_row() /= sum(lweights,0);

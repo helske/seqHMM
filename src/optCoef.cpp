@@ -29,6 +29,9 @@ arma::mat optCoef(const arma::icube& obs, const arma::cube& emission, const arma
       Rcout<<" relative change: "<<change<<std::endl;
     }
     weights = exp(X*coef).t();
+    if(!weights.is_finite()){
+      stop("Estimation of coefficients of covariates resulted non-finite cluster probabilities during EM algorithm.");
+    }
     weights.each_row() /= sum(weights,0);
   }
   

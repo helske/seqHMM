@@ -348,8 +348,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     
     resEM <- EMx(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
       model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, em.con$maxeval, em.con$reltol,em.con$print_level)
-    if(!is.null(resEM$error))
-      stop("Initial values for coefficients of covariates resulted non-finite cluster probabilities.")
+   
     if(resEM$change< -1e-5)
       warning("EM algorithm stopped due to decreasing log-likelihood. ")
     
