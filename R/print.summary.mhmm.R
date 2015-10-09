@@ -24,7 +24,7 @@ print.summary.mhmm <- function(x, digits = 3, ...){
     }
   }
   
-  coef_se <- matrix(sqrt(diag(x$vcov)), model$n_covariates)
+  coef_se <- matrix(sqrt(diag(x$vcov)), x$model$n_covariates)
   coefs <- replicate((x$model$n_clusters - 1), 
                      matrix(NA, nrow = x$model$n_covariates, ncol = 2), simplify = FALSE)
   for(i in 1:length(coefs)){
