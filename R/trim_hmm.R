@@ -1,7 +1,7 @@
 #' Trim Small Probabilities of Hidden Markov Model
 #' 
 #' Function \code{trim_hmm} tries to set small insignificant probabilities to zero 
-#' without decreasing the likelihood significantly.
+#' without decreasing the likelihood.
 #' 
 #' @export
 #' @param model Model of class \code{hmm} or \code{mhmm} for which 
@@ -12,7 +12,6 @@
 #' @param return_loglik Return the log-likelihood of the trimmed model together with
 #'   the model object. The default is \code{FALSE}.
 #' @param zerotol Values smaller than this are trimmed to zero.
-#' @param strict Accept trimming only if the resulting log-likelihood is at least as good as the original.
 #' @param verbose Print results of trimming. Default is \code{TRUE}.
 #' @param ... Further parameters passed on to \code{fit_hmm}.
 #'   
@@ -27,7 +26,7 @@
 #' # leads to improved log-likelihood.
 #' hmm_trim <- trim_hmm(hmm_biofam, zerotol = 1e-04, maxit = 10)
 #' 
-trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, strict = FALSE, verbose = TRUE, ...){
+trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verbose = TRUE, ...){
   
   ll_original <- logLik(model)
   model_original <- model
@@ -38,8 +37,8 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, strict
       if(!(any(model$initial_probs < zerotol & model$initial_probs > 0) || 
           any(model$transition_matrix < zerotol & model$transition_matrix > 0)
         || any(model$emission_matrix < zerotol & model$emission_matrix > 0))){
-        
-        print("Nothing to trim.")
+        if(verbose)
+          print("Nothing to trim.")
         if(return_loglik){
           return(list(model=model,loglik=logLik(model)))
         } else return(model)
@@ -57,7 +56,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, strict
         warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
-      if (strict & (ll0 < ll_original)) {
+      if (ll0 < ll_original) {
         warning("Trimming resulted model with smaller log-likelihood.")
         return(model_original)
       }
@@ -90,6 +89,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, strict
       if(!(any(model$initial_probs < zerotol & model$initial_probs > 0) || 
           any(model$transition_matrix < zerotol & model$transition_matrix > 0)
         || any(sapply(model$emission_matrix,function(x) any(x < zerotol & x > 0))))){
+        if(verbose)
         print("Nothing to trim.")
         if(return_loglik){
           return(list(model=model,loglik=logLik(model)))
@@ -111,7 +111,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, strict
         warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
-      if (strict & (ll0 < ll_original)) {
+      if (ll0 < ll_original) {
         warning("Trimming resulted model with smaller log-likelihood.")
         return(model_original)
       }
@@ -148,7 +148,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, strict
       if(!(any(unlist(model$initial_probs) < zerotol & unlist(model$initial_probs) > 0) || 
           any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
         || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0))){
-        
+        if(verbose)
         print("Nothing to trim.")
         if(return_loglik){
           return(list(model=model,loglik=logLik(model)))
@@ -168,7 +168,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, strict
         warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
-      if (strict & (ll0 < ll_original)) {
+      if (ll0 < ll_original) {
         warning("Trimming resulted model with smaller log-likelihood.")
         return(model_original)
       }
@@ -202,6 +202,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, strict
       if(!(any(unlist(model$initial_probs) < zerotol & unlist(model$initial_probs) > 0) || 
           any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
         || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0))){
+        if(verbose)
         print("Nothing to trim.")
         if(return_loglik){
           return(list(model=model,loglik=logLik(model)))
@@ -225,7 +226,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, strict
         warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
-      if (strict & (ll0 < ll_original)) {
+      if (ll0 < ll_original) {
         warning("Trimming resulted model with smaller log-likelihood.")
         return(model_original)
       }     
@@ -269,9 +270,9 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, strict
     if(maxit > 0)
       print(paste(ii,"iteration(s) used."))
     
-    if(ll0 < ll_original){
-      print(paste("Log-likelihood of the trimmed model is smaller than the original log-likelihood, ll_trim-ll_orig =", signif(ll0-ll_original, 3)))
-    } else print(paste("Trimming improved log-likelihood, ll_trim-ll_orig =", signif(ll0-ll_original, 3)))
+    if(ll0 > ll_original){
+      print(paste("Trimming improved log-likelihood, ll_trim-ll_orig =", signif(ll0-ll_original, 3)))
+    }
   }
   
   

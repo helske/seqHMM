@@ -560,7 +560,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
       dimnames(model$emission_matrix[[i]][[j]]) <- dimnames(original_model$emission_matrix[[i]][[j]])
     }
   }
-  try(model <- trim_hmm(model, strict = TRUE, verbose = FALSE), silent = TRUE)
+  try(model <- trim_hmm(model, verbose = FALSE), silent = TRUE)
   list(model = model, 
     logLik = ll, em_results=resEM[5:7], global_results = globalres, local_results = localres)
   
