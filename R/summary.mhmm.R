@@ -45,11 +45,7 @@
 
 summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, ...){
   
-  ll <- logLik(object, partials = TRUE)
-  sum_logLik <- sum(ll)
-  BIC <- -2*sum_logLik + log(object$n_sequences*object$length_of_sequences)*
-    (sum(unlist(object$initial_probs)>0)+sum(unlist(object$transition_matrix)>0)+
-        sum(unlist(object$emission_matrix)>0))
+  ll <- logLik(object)
   
   fw <- forward_backward(object, forward_only = TRUE)$forward_probs[,object$length_of_sequences,]
   
@@ -77,7 +73,7 @@ summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, ...)
   
   if(!parameters){
     summary_mhmm <- list(
-      logLik = sum_logLik, BIC = BIC, most_probable_cluster = most_probable_cluster, 
+      logLik = ll, BIC = BIC(ll), most_probable_cluster = most_probable_cluster, 
       coefficients = object$coefficients, vcov = vcov(object, conditional_se, ...),
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
@@ -89,7 +85,7 @@ summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, ...)
       transition_matrix = object$transition_matrix,
       emission_matrix = object$emission_matrix,
       initial_probs = object$initial_probs,
-      logLik = sum_logLik, BIC = BIC, most_probable_cluster = most_probable_cluster, 
+      logLik = ll, BIC = BIC(ll), most_probable_cluster = most_probable_cluster, 
       coefficients = object$coefficients, vcov = vcov(object, conditional_se, ...),
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
