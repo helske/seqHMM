@@ -12,6 +12,7 @@
 #' @param return_loglik Return the log-likelihood of the trimmed model together with
 #'   the model object. The default is \code{FALSE}.
 #' @param zerotol Values smaller than this are trimmed to zero.
+#' @param strict Accept trimming only if the resulting log-likelihood is at least as good as the original.
 #' @param ... Further parameters passed on to \code{fit_hmm}.
 #'   
 #' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and fitting 
@@ -25,7 +26,7 @@
 #' # leads to improved log-likelihood.
 #' hmm_trim <- trim_hmm(hmm_biofam, zerotol = 1e-04, maxit = 10)
 #' 
-trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
+trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, strict = FALSE, ...){
   
   ll_original <- logLik(model)
   model_original <- model
@@ -34,8 +35,8 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
     
     if(model$n_channels==1){
       if(!(any(model$initial_probs < zerotol & model$initial_probs > 0) || 
-             any(model$transition_matrix < zerotol & model$transition_matrix > 0)
-           || any(model$emission_matrix < zerotol & model$emission_matrix > 0))){
+          any(model$transition_matrix < zerotol & model$transition_matrix > 0)
+        || any(model$emission_matrix < zerotol & model$emission_matrix > 0))){
         
         print("Nothing to trim.")
         if(return_loglik){
@@ -55,7 +56,10 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
         warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
-      
+      if (strict & (ll0 < ll_original)) {
+        warning("Trimming resulted model with smaller log-likelihood.")
+        return(model_original)
+      }
       if(maxit > 0){
         for(ii in 1:maxit){
           fit <- fit_hmm(model, global_step = FALSE, local_step = FALSE, ...)
@@ -67,8 +71,8 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
           } else break
           
           if(!(any(model$initial_probs < zerotol & model$initial_probs > 0) || 
-                 any(model$transition_matrix < zerotol & model$transition_matrix > 0)
-               || any(model$emission_matrix < zerotol & model$emission_matrix > 0)))
+              any(model$transition_matrix < zerotol & model$transition_matrix > 0)
+            || any(model$emission_matrix < zerotol & model$emission_matrix > 0)))
             break
           
           model$initial_probs[model$initial_probs < zerotol] <- 0
@@ -83,8 +87,8 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
       
     } else {
       if(!(any(model$initial_probs < zerotol & model$initial_probs > 0) || 
-             any(model$transition_matrix < zerotol & model$transition_matrix > 0)
-           || any(sapply(model$emission_matrix,function(x) any(x < zerotol & x > 0))))){
+          any(model$transition_matrix < zerotol & model$transition_matrix > 0)
+        || any(sapply(model$emission_matrix,function(x) any(x < zerotol & x > 0))))){
         print("Nothing to trim.")
         if(return_loglik){
           return(list(model=model,loglik=logLik(model)))
@@ -106,7 +110,10 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
         warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
-      
+      if (strict & (ll0 < ll_original)) {
+        warning("Trimming resulted model with smaller log-likelihood.")
+        return(model_original)
+      }
       if(maxit > 0){
         for(ii in 1:maxit){
           fit <- fit_hmm(model,, global_step = FALSE, local_step = FALSE, ...)
@@ -118,8 +125,8 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
           } else break
           
           if(!(any(model$initial_probs < zerotol & model$initial_probs > 0) || 
-                 any(model$transition_matrix < zerotol & model$transition_matrix > 0)
-               || any(sapply(model$emission_matrix,function(x) any(x < zerotol & x > 0)))))
+              any(model$transition_matrix < zerotol & model$transition_matrix > 0)
+            || any(sapply(model$emission_matrix,function(x) any(x < zerotol & x > 0)))))
             break
           
           model$initial_probs[model$initial_probs < zerotol] <- 0
@@ -138,15 +145,15 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
   }else if(inherits(model, "mhmm")){
     if(model$n_channels==1){
       if(!(any(unlist(model$initial_probs) < zerotol & unlist(model$initial_probs) > 0) || 
-             any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
-           || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0))){
+          any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
+        || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0))){
         
         print("Nothing to trim.")
         if(return_loglik){
           return(list(model=model,loglik=logLik(model)))
         } else return(model)
       }
-
+      
       for(m in 1:model$n_clusters){
         model$initial_probs[[m]][model$initial_probs[[m]] < zerotol] <- 0
         model$initial_probs[[m]] <- model$initial_probs[[m]]/sum(model$initial_probs[[m]])
@@ -160,7 +167,10 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
         warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
-      
+      if (strict & (ll0 < ll_original)) {
+        warning("Trimming resulted model with smaller log-likelihood.")
+        return(model_original)
+      }
       if(maxit > 0){
         for(ii in 1:maxit){
           fit <- fit_mhmm(model, global_step = FALSE, local_step = FALSE, ...)
@@ -172,8 +182,8 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
           } else break
           
           if(!(any(unlist(model$initial_probs) < zerotol & unlist(model$initial_probs) > 0) || 
-                 any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
-               || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0)))
+              any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
+            || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0)))
             break
           
           for(m in 1:model$n_clusters){
@@ -189,8 +199,8 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
       
     } else {
       if(!(any(unlist(model$initial_probs) < zerotol & unlist(model$initial_probs) > 0) || 
-             any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
-           || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0))){
+          any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
+        || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0))){
         print("Nothing to trim.")
         if(return_loglik){
           return(list(model=model,loglik=logLik(model)))
@@ -214,7 +224,10 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
         warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
-      
+      if (strict & (ll0 < ll_original)) {
+        warning("Trimming resulted model with smaller log-likelihood.")
+        return(model_original)
+      }     
       if(maxit > 0){
         for(ii in 1:maxit){
           fit <- fit_mhmm(model, global_step = FALSE, local_step = FALSE, ...)
@@ -226,8 +239,8 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, ...){
           } else break
           
           if(!(any(unlist(model$initial_probs) < zerotol & unlist(model$initial_probs) > 0) || 
-                 any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
-               || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0)))
+              any(unlist(model$transition_matrix) < zerotol & unlist(model$transition_matrix) > 0)
+            || any(unlist(model$emission_matrix) < zerotol & unlist(model$emission_matrix) > 0)))
             break
           
           for(m in 1:model$n_clusters){
