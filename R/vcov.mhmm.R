@@ -152,6 +152,6 @@ vcov.mhmm <- function(object, conditional = TRUE, ...){
   }
   rownames(vcovm) <- colnames(vcovm) <- paste(
     rep(object$cluster_names[-1], each = object$n_covariates), 
-    rownames(object$coefficients), sep=": ")
+    rownames(object$coefficients), sep = ": ")
   vcovm
 }
