@@ -13,6 +13,7 @@
 #'   the model object. The default is \code{FALSE}.
 #' @param zerotol Values smaller than this are trimmed to zero.
 #' @param strict Accept trimming only if the resulting log-likelihood is at least as good as the original.
+#' @param verbose Print results of trimming. Default is \code{TRUE}.
 #' @param ... Further parameters passed on to \code{fit_hmm}.
 #'   
 #' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and fitting 
@@ -26,7 +27,7 @@
 #' # leads to improved log-likelihood.
 #' hmm_trim <- trim_hmm(hmm_biofam, zerotol = 1e-04, maxit = 10)
 #' 
-trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, strict = FALSE, ...){
+trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, strict = FALSE, verbose = TRUE, ...){
   
   ll_original <- logLik(model)
   model_original <- model
@@ -264,13 +265,14 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, strict
   }
   
   
-  if(maxit > 0)
-    print(paste(ii,"iteration(s) used."))
-  
-  if(ll0 < ll_original){
-    print(paste("Log-likelihood of the trimmed model is smaller than the original log-likelihood, ll_trim-ll_orig =", signif(ll0-ll_original, 3)))
-  } else print(paste("Trimming improved log-likelihood, ll_trim-ll_orig =", signif(ll0-ll_original, 3)))
-  
+  if (verbose) {
+    if(maxit > 0)
+      print(paste(ii,"iteration(s) used."))
+    
+    if(ll0 < ll_original){
+      print(paste("Log-likelihood of the trimmed model is smaller than the original log-likelihood, ll_trim-ll_orig =", signif(ll0-ll_original, 3)))
+    } else print(paste("Trimming improved log-likelihood, ll_trim-ll_orig =", signif(ll0-ll_original, 3)))
+  }
   
   
   if(return_loglik){
