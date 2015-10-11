@@ -4,7 +4,8 @@
 \alias{summary.mhmm}
 \title{Summary method for mixture hidden Markov models}
 \usage{
-\method{summary}{mhmm}(object, parameters = FALSE, ...)
+\method{summary}{mhmm}(object, parameters = FALSE, conditional_se = TRUE,
+  ...)
 }
 \arguments{
 \item{object}{Mixture hidden Markov model of class \code{mhmm}.}
@@ -12,7 +13,10 @@
 \item{parameters}{Whether or not to print parameters of transition, emission, and
 initial probabilities. \code{FALSE} by default.}
 
-\item{...}{Ignored.}
+\item{conditional_se}{Return conditional standard errors of coefficients.
+See \code{\link{mcov.mhmm}} for details. \code{TRUE} by default.}
+
+\item{...}{Further arguments to \code{\link{mcov.mhmm}}.}
 }
 \value{
 \describe{

@@ -4,7 +4,8 @@
 \alias{trim_hmm}
 \title{Trim Small Probabilities of Hidden Markov Model}
 \usage{
-trim_hmm(model, maxit = 0, return_loglik = FALSE, zerotol = 1e-08, ...)
+trim_hmm(model, maxit = 0, return_loglik = FALSE, zerotol = 1e-08,
+  verbose = TRUE, ...)
 }
 \arguments{
 \item{model}{Model of class \code{hmm} or \code{mhmm} for which
@@ -19,11 +20,13 @@ the model object. The default is \code{FALSE}.}
 
 \item{zerotol}{Values smaller than this are trimmed to zero.}
 
+\item{verbose}{Print results of trimming. Default is \code{TRUE}.}
+
 \item{...}{Further parameters passed on to \code{fit_hmm}.}
 }
 \description{
 Function \code{trim_hmm} tries to set small insignificant probabilities to zero
-without decreasing the likelihood significantly.
+without decreasing the likelihood.
 }
 \examples{
 data(hmm_biofam)
