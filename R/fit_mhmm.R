@@ -340,7 +340,8 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     emissionArray[,1:model$n_symbols[i],i]<-model$emission_matrix[[i]]
   
   if(em_step){
-    em.con <- list(print_level = 0, maxeval=100, reltol=1e-8)
+    em.con <- list(print_level = 0, maxeval=100, reltol=1e-8, restarts = 0,
+      restart_transition = TRUE, restart_emission = TRUE)
     nmsC <- names(em.con)  
     em.con[(namc <- names(control_em))] <- control_em
     if (length(noNms <- namc[!namc %in% nmsC])) 
@@ -348,7 +349,37 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     
     resEM <- EMx(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
       model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, em.con$maxeval, em.con$reltol,em.con$print_level)
-   
+    
+    if (em.con$restarts > 0 & (em.con$restart_transition | em.con$restart_emission)) {
+      random_trans <- model$transition_matrix
+      if(em.con$restart_transition){
+        nz_trans <- (random_trans > 0 & random_trans < 1)
+        np_trans <- sum(nz_trans)
+      }
+      random_emiss <- emissionArray
+      if (em.con$restart_emission) {
+        nz_emiss <- (random_emiss > 0 & random_emiss < 1)
+        np_emiss <- sum(nz_emiss)
+      }
+      
+      for (i in 1:em.con$restarts) {
+        if(em.con$restart_transition){
+          random_trans[nz_trans] <- runif(np_trans)
+          random_trans <- random_trans / rowSums(random_trans)
+        }
+        if (em.con$restart_emission) {
+          random_emiss[nz_emiss] <- runif(np_emiss)
+          for(j in 1:model$n_channels) {
+            random_emiss[,1:model$n_symbols[j],j] <- random_emiss[,1:model$n_symbols[j],j] / rowSums(random_emiss[,1:model$n_symbols[j],j])
+          }
+        }
+        resEMi <- EMx(random_trans, random_emiss, model$initial_probs, obsArray, 
+          model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, em.con$maxeval, em.con$reltol,em.con$print_level)
+        if (resEMi$logLik > resEM$logLik)
+          resEM <- resEMi
+      }
+      
+    }
     if(resEM$change< -1e-5)
       warning("EM algorithm stopped due to decreasing log-likelihood. ")
     
@@ -425,7 +456,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     
     maxEMvalue<-lapply(1:model$n_channels, function(i) 
       apply(model$emission_matrix[[i]],1,max))
-
+    
     
     emissNZ<-array(0,c(model$n_states,max(model$n_symbols),model$n_channels))
     for(i in 1:model$n_channels){
@@ -472,7 +503,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
       }
       model$initial_probs <- unlist(original_model$initial_probs)
       model$coefficients[,-1] <- pars[npTM+sum(npEM)+npIPAll+1:npCoef]
-     
+      
       if(estimate){
         objectivex(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
           transNZ, emissNZ, initNZ, model$n_symbols, 
@@ -488,7 +519,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     }
     
     if(global_step){
-     
+      
       if(missing(lb)){
         lb <- c(rep(-10,length(initialvalues)-npCoef),rep(-150/apply(abs(model$X),2,max),model$n_clusters-1))
       }
@@ -533,7 +564,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
       }
       ub <- c(rep(300,length(initialvalues)-npCoef),rep(300/apply(abs(model$X),2,max),model$n_clusters-1))
       ub <- pmin(pmax(ub, 2*initialvalues),500)
-     localres<-nloptr(x0 = initialvalues, eval_f = objectivef,
+      localres<-nloptr(x0 = initialvalues, eval_f = objectivef,
         opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
       
       model <- objectivef(localres$solution,model, FALSE)
@@ -549,7 +580,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     model$observations <- model$observations[[1]]
     model$emission_matrix <- model$emission_matrix[[1]]
   }
-
+  
   model <- spread_models(model)
   attr(model, "df") <- df
   attr(model, "nobs") <- nobs
@@ -560,7 +591,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
       dimnames(model$emission_matrix[[i]][[j]]) <- dimnames(original_model$emission_matrix[[i]][[j]])
     }
   }
-  try(model <- trim_hmm(model, verbose = FALSE), silent = TRUE)
+  suppressWarnings(try(model <- trim_hmm(model, verbose = FALSE), silent = TRUE))
   list(model = model, 
     logLik = ll, em_results=resEM[5:7], global_results = globalres, local_results = localres)
   

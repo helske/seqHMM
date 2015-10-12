@@ -375,7 +375,8 @@ fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
     model$observations <- model$observations[[1]]
     model$emission_matrix <- model$emission_matrix[[1]]
   }
-  try(model <- trim_hmm(model, verbose = FALSE), silent = TRUE)
+  
+  suppressWarnings(try(model <- trim_hmm(model, verbose = FALSE), silent = TRUE))
   list(model = model, logLik = ll, 
     em_results = resEM[4:6], global_results = globalres, local_results = localres)
 }
