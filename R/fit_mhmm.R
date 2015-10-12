@@ -373,10 +373,12 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
             random_emiss[,1:model$n_symbols[j],j] <- random_emiss[,1:model$n_symbols[j],j] / rowSums(random_emiss[,1:model$n_symbols[j],j])
           }
         }
-        resEMi <- EMx(random_trans, random_emiss, model$initial_probs, obsArray, 
-          model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, em.con$maxeval, em.con$reltol,em.con$print_level)
-        if (resEMi$logLik > resEM$logLik)
+        resEMi <- try(EMx(random_trans, random_emiss, model$initial_probs, obsArray, 
+          model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, em.con$maxeval, 
+          em.con$reltol,em.con$print_level), silent = TRUE)
+        if (!inherits(resEMi, "try-error") && resEMi$logLik > resEM$logLik) {
           resEM <- resEMi
+        }
       }
       
     }
