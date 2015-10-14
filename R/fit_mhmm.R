@@ -348,7 +348,19 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
       warning("Unknown names in control_em: ", paste(noNms, collapse = ", "))
     
     resEM <- EMx(model$transition_matrix, emissionArray, model$initial_probs, obsArray, 
-      model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, em.con$maxeval, em.con$reltol,em.con$print_level)
+      model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, 
+      em.con$maxeval, em.con$reltol,em.con$print_level)
+    
+    if(resEM$error != 0){
+      err_msg <- switch(resEM$error, 
+        "1" = "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
+        "2" = "Estimation of coefficients of covariates failed due to singular Hessian.",
+        "3" = "Estimation of coefficients of covariates failed due to non-finite cluster probabilities.",
+        "4" = "Non-finite log-likelihood.")
+      if(!global_step && !local_step && em.con$restarts == 0){
+        stop(paste("EM algorithm failed:", err_msg))
+      } else warning(paste("EM algorithm failed:", err_msg))
+    }
     
     if (em.con$restarts > 0 & (em.con$restart_transition | em.con$restart_emission)) {
       random_trans <- model$transition_matrix
@@ -373,35 +385,46 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
             random_emiss[,1:model$n_symbols[j],j] <- random_emiss[,1:model$n_symbols[j],j] / rowSums(random_emiss[,1:model$n_symbols[j],j])
           }
         }
-        resEMi <- try(EMx(random_trans, random_emiss, model$initial_probs, obsArray, 
+        resEMi <- EMx(random_trans, random_emiss, model$initial_probs, obsArray, 
           model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, em.con$maxeval, 
-          em.con$reltol,em.con$print_level), silent = TRUE)
-        if (!inherits(resEMi, "try-error") && resEMi$logLik > resEM$logLik) {
-          resEM <- resEMi
+          em.con$reltol,em.con$print_level)
+        if(resEMi$error != 0){
+          err_msg <- switch(resEMi$error, 
+            "1" = "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
+            "2" = "Estimation of coefficients of covariates failed due to singular Hessian.",
+            "3" = "Estimation of coefficients of covariates failed due to non-finite cluster probabilities.",
+            "4" = "Non-finite log-likelihood.")
+          warning(paste("EM algorithm failed:", err_msg))
+        } else {
+          if (resEMi$logLik > resEM$logLik) {
+            resEM <- resEMi
+          }
         }
       }
       
     }
-    if(resEM$change< -1e-5)
-      warning("EM algorithm stopped due to decreasing log-likelihood. ")
-    
-    emissionArray <- resEM$emissionArray
-    for(i in 1:model$n_channels)
-      model$emission_matrix[[i]][]<-emissionArray[ , 1:model$n_symbols[i], i]
-    
-    if(global_step || local_step){
-      k <- 0
-      for(m in 1:model$n_clusters){
-        original_model$initial_probs[[m]] <- unname(resEM$initialProbs[(k+1):(k+model$n_states_in_clusters[m])])
-        k <- sum(model$n_states_in_clusters[1:m])
+    if(resEM$error == 0){
+      if(resEM$change< -1e-5)
+        warning("EM algorithm stopped due to decreasing log-likelihood. ")
+      
+      emissionArray <- resEM$emissionArray
+      for(i in 1:model$n_channels)
+        model$emission_matrix[[i]][]<-emissionArray[ , 1:model$n_symbols[i], i]
+      
+      if(global_step || local_step){
+        k <- 0
+        for(m in 1:model$n_clusters){
+          original_model$initial_probs[[m]] <- unname(resEM$initialProbs[(k+1):(k+model$n_states_in_clusters[m])])
+          k <- sum(model$n_states_in_clusters[1:m])
+        }
+      } else {
+        model$initial_probs <- resEM$initialProbs
       }
-    } else {
-      model$initial_probs <- resEM$initialProbs
-    }
-    
-    model$transition_matrix[]<-resEM$transitionMatrix
-    model$coefficients[]<-resEM$coefficients
-    ll <- resEM$logLik
+      
+      model$transition_matrix[]<-resEM$transitionMatrix
+      model$coefficients[]<-resEM$coefficients
+      ll <- resEM$logLik
+    } else resEM <-NULL
   } else resEM <-NULL
   
   if(global_step || local_step){

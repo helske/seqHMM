@@ -3,12 +3,10 @@ using namespace Rcpp;
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
-arma::mat optCoef(const arma::icube& obs, const arma::cube& emission, const arma::mat& initk, 
+unsigned int optCoef(arma:: mat weights, const arma::icube& obs, const arma::cube& emission, const arma::mat& initk, 
   const arma::cube& beta, const arma::mat& scales, arma::mat& coef, const arma::mat& X, 
   const IntegerVector cumsumstate, const IntegerVector numberOfStates, int trace) {
   
-  arma::mat weights = exp(X*coef).t();
-  weights.each_row() /= sum(weights,0);
   
   int p = X.n_cols;
   arma::vec tmpvec(p * (weights.n_rows - 1));
@@ -16,7 +14,10 @@ arma::mat optCoef(const arma::icube& obs, const arma::cube& emission, const arma
   int iter = 0;
   double change = 1.0;
   while((change>1e-8) & (iter<100)){
-    tmpvec = arma::solve(hCoef(weights, X), gCoef(obs, beta, scales, emission, initk, weights, X, cumsumstate, numberOfStates));
+    bool solve_ok = arma::solve(tmpvec, hCoef(weights, X), gCoef(obs, beta, scales, emission, initk, weights, X, cumsumstate, numberOfStates));
+    if(solve_ok == false) {
+      return(2);
+    }
     for(int i = 0; i < (weights.n_rows - 1); i++){
       coefnew.col(i) = coef.col(i + 1) - tmpvec.subvec(i * p, (i + 1) * p - 1);
     }
@@ -30,12 +31,12 @@ arma::mat optCoef(const arma::icube& obs, const arma::cube& emission, const arma
     }
     weights = exp(X*coef).t();
     if(!weights.is_finite()){
-      stop("Estimation of coefficients of covariates resulted non-finite cluster probabilities during EM algorithm.");
+      return(3);
     }
     weights.each_row() /= sum(weights,0);
+    
   }
-  
-  return(weights);
+  return(0);
 }
 
 

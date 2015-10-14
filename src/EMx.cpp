@@ -22,15 +22,15 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   arma::mat coef(coefs.begin(),q,coefs.ncol());
   coef.col(0).zeros();
   arma::mat X(X_.begin(),oDims[0],q);
-  arma::mat lweights = exp(X*coef).t();
-  if(!lweights.is_finite()){
-    stop("Initial values for coefficients of covariates resulted non-finite cluster probabilities.");
+  arma::mat weights = exp(X*coef).t();
+  if(!weights.is_finite()){
+    return List::create(Named("error") = 1);
   }
-  lweights.each_row() /= sum(lweights,0);
+  weights.each_row() /= sum(weights,0);
   
   arma::mat initk(eDims[0],oDims[0]);
   for(int k = 0; k < oDims[0]; k++){    
-    initk.col(k) = init % reparma(lweights.col(k),numberOfStates);
+    initk.col(k) = init % reparma(weights.col(k),numberOfStates);
   }
   
   arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k
@@ -96,8 +96,12 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
       }       
     }
     
-    lweights = optCoef(obs, emission, initk, beta, scales, coef, X, cumsumstate, numberOfStates, trace);
-    
+    if(iter > 1){
+      unsigned int error = optCoef(weights, obs, emission, initk, beta, scales, coef, X, cumsumstate, numberOfStates, trace);
+      if(error != 0) {
+        return List::create(Named("error") = error);
+      }
+    }
     if(oDims[1]>1){
       ksii.each_col() /= sum(ksii,1);
       transition = ksii;
@@ -115,7 +119,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     init = delta;
     
     for(int k = 0; k < oDims[0]; k++){    
-      initk.col(k) = init % reparma(lweights.col(k),numberOfStates);
+      initk.col(k) = init % reparma(weights.col(k),numberOfStates);
     }
     
     internalForwardx(transition, emission, initk, obs, alpha, scales);
@@ -125,7 +129,9 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     double tmp = sum(ll);
     change = (tmp - sumlogLik)/(abs(sumlogLik) + 0.1);
     sumlogLik = tmp;
-    
+    if(!arma::is_finite(sumlogLik)) {
+      return List::create(Named("error") = 4);
+    }
     if(trace>1){
       Rcout<<"iter: "<< iter;
       Rcout<<" logLik: "<< sumlogLik;
@@ -145,5 +151,5 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   return List::create(Named("coefficients") = wrap(coef), Named("initialProbs") = wrap(init), 
     Named("transitionMatrix") = wrap(transition),
     Named("emissionArray") = wrap(emission),Named("logLik") = sumlogLik,
-    Named("iterations")=iter, Named("change")=change);
+    Named("iterations")=iter, Named("change")=change, Named("error") = 0);
 }
