@@ -14,7 +14,8 @@ unsigned int optCoef(arma:: mat weights, const arma::icube& obs, const arma::cub
   int iter = 0;
   double change = 1.0;
   while((change>1e-8) & (iter<100)){
-    bool solve_ok = arma::solve(tmpvec, hCoef(weights, X), gCoef(obs, beta, scales, emission, initk, weights, X, cumsumstate, numberOfStates));
+    bool solve_ok = arma::solve(tmpvec, hCoef(weights, X), 
+      gCoef(obs, beta, scales, emission, initk, weights, X, cumsumstate, numberOfStates));
     if(solve_ok == false) {
       return(2);
     }

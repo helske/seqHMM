@@ -96,12 +96,11 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
       }       
     }
     
-    if(iter > 1){
-      unsigned int error = optCoef(weights, obs, emission, initk, beta, scales, coef, X, cumsumstate, numberOfStates, trace);
-      if(error != 0) {
-        return List::create(Named("error") = error);
-      }
+    unsigned int error = optCoef(weights, obs, emission, initk, beta, scales, coef, X, cumsumstate, numberOfStates, trace);
+    if(error != 0) {
+      return List::create(Named("error") = error);
     }
+    
     if(oDims[1]>1){
       ksii.each_col() /= sum(ksii,1);
       transition = ksii;

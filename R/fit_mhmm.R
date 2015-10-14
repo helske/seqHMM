@@ -88,8 +88,7 @@
 #'   fitting hidden Markov models; \code{\link{plot.mhmm}}
 #'   for plotting \code{mhmm} objects; and \code{\link{mssplot}} for plotting
 #'   stacked sequence plots of \code{mhmm} objects.
-#' @examples 
-#' require(TraMineR)
+#' @examples
 #' 
 #' # Single-channel
 #' 
