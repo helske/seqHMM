@@ -113,8 +113,8 @@ initialpr <- c(0.3, 0.3, 0.2, 0.2)
 
 # Building a hidden Markov model with starting values
 bhmm_mvad <- build_hmm(
-  observations = mvad.seq, transition_matrix = trans,
-  emission_matrix = emiss, initial_probs = initialpr
+  observations = mvad.seq, transition_probs = trans,
+  emission_probs = emiss, initial_probs = initialpr
 )
 
 # Fitting with the EM algorithm
@@ -160,8 +160,8 @@ initial_probs <- c(0.9, 0.07, 0.02, 0.01)
 # Building hidden Markov model with initial parameter values
 bhmm_biofam <- build_hmm(
   observations = list(child.seq, marr.seq, left.seq),
-  transition_matrix = A,
-  emission_matrix = list(B_child, B_marr, B_left),
+  transition_probs = A,
+  emission_probs = list(B_child, B_marr, B_left),
   initial_probs = initial_probs
   )
 
@@ -215,8 +215,8 @@ initial_probs2 <- c(0.3, 0.3, 0.2, 0.2)
 # Building a mixture hidden Markov model with the starting values
 bmhmm_mvad <- build_mhmm(
   observations = mvad.seq,
-  transition_matrix = list(A1, A2),
-  emission_matrix = list(B1, B2),
+  transition_probs = list(A1, A2),
+  emission_probs = list(B1, B2),
   initial_probs = list(initial_probs1, initial_probs2)
 )
 
@@ -318,8 +318,8 @@ biofam3c$covariates$cohort <- factor(
 # Build mixture HMM
 bmhmm_biofam <- build_mhmm(
   observations = list(child.seq, marr.seq, left.seq),
-  transition_matrix = list(A1,A1,A2),
-  emission_matrix = list(list(B1_child, B1_marr, B1_left),
+  transition_probs = list(A1,A1,A2),
+  emission_probs = list(list(B1_child, B1_marr, B1_left),
                         list(B2_child, B2_marr, B2_left),
                         list(B3_child, B3_marr, B3_left)),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
@@ -428,7 +428,7 @@ b2 <- matrix(c(0,1),ncol=2)
 
 a <- matrix(1)
 model <- build_mhmm(obs= seqdef(birthwt$low), low ~ age + lwt + smoke + ht, birthwt,
-  transition_matrix = list(a, a), initial_probs = list(1, 1), emission_matrix = list(b1, b2))
+  transition_probs = list(a, a), initial_probs = list(1, 1), emission_probs = list(b1, b2))
 fit <- fit_mhmm(model)
 summary(fit$model)[c("coefficients", "coef_se", "logLik")]
 summary(glm(low ~ age + lwt + smoke + ht, binomial, data = birthwt))
@@ -450,8 +450,8 @@ b1 <- matrix(c(1, 0, 0),ncol=3)
 b2 <- matrix(c(0, 1, 0),ncol=3)
 b3 <- matrix(c(0, 0, 1),ncol=3)
 model <- build_mhmm(obs= seqdef(y), ~ x1 + x2,  data.frame(X[, -1]),
-  transition_matrix = list(a, a, a),
-  initial_probs = list(1, 1, 1), emission_matrix = list(b1, b2, b3))
+  transition_probs = list(a, a, a),
+  initial_probs = list(1, 1, 1), emission_probs = list(b1, b2, b3))
 fit <- fit_mhmm(model, local_step = FALSE, global_step = FALSE)
 summary(fit$model)[c("coefficients", "coef_se", "logLik")]
 BIC(fit$model)

@@ -57,8 +57,8 @@
 #' # Building hidden Markov model with initial parameter values
 #' init_hmm_biofam <- build_hmm(
 #'   observations = list(child.seq, marr.seq, left.seq),
-#'   transition_matrix = trans,
-#'   emission_matrix = list(emiss_child, emiss_marr, emiss_left),
+#'   transition_probs = trans,
+#'   emission_probs = list(emiss_child, emiss_marr, emiss_left),
 #'   initial_probs = initial_probs,
 #'   channel_names = c("Parenthood", "Marriage", "Residence"),
 #'   state_names = paste("State", 1:4))

@@ -20,7 +20,7 @@ logLik.mhmm<-function(object, partials = FALSE, ...){
   
   if(object$n_channels == 1){
     object$observations <- list(object$observations)
-    object$emission_matrix <- list(object$emission_matrix)
+    object$emission_probs <- list(object$emission_probs)
   }
   
   
@@ -33,9 +33,9 @@ logLik.mhmm<-function(object, partials = FALSE, ...){
   
   emissionArray<-array(1,c(object$n_states,max(object$n_symbols)+1,object$n_channels))
   for(i in 1:object$n_channels)
-    emissionArray[,1:object$n_symbols[i],i]<-object$emission_matrix[[i]]
+    emissionArray[,1:object$n_symbols[i],i]<-object$emission_probs[[i]]
   
-  ll <- logLikMixHMM(object$transition_matrix, emissionArray, object$initial_probs, obsArray,
+  ll <- logLikMixHMM(object$transition_probs, emissionArray, object$initial_probs, obsArray,
     object$coefficients, object$X, object$n_states_in_clusters) 
   
   

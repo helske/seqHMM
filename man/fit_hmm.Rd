@@ -146,8 +146,8 @@ init <- c(0.9, 0.09, 0.01)
 # Building hidden Markov model with initial parameter values
 init_hmm <- build_hmm(
   observations = list(child.seq, marr.seq, left.seq),
-  transition_matrix = trans,
-  emission_matrix = list(emiss_child, emiss_marr, emiss_left),
+  transition_probs = trans,
+  emission_probs = list(emiss_child, emiss_marr, emiss_left),
   initial_probs = init)
 
 # Fitting the model with different settings

@@ -51,8 +51,8 @@ initial_probsm <- c(0.2, 0.2, 0.2, 0.2, 0.2)
 
 # Building a hidden Markov model with starting values
 init_hmm_mvad <- build_hmm(
-  observations = mvad.seq, transition_matrix = trans,
-  emission_matrix = emiss, initial_probs = initial_probsm)
+  observations = mvad.seq, transition_probs = trans,
+  emission_probs = emiss, initial_probs = initial_probsm)
 
 fit_mvad <- fit_hmm(
   init_hmm_mvad, control_global = list(maxtime = 0),

@@ -4,8 +4,8 @@
 #'
 #' @param n_sequences Number of simulations.
 #' @param initial_probs A vector of initial state probabilities.
-#' @param transition_matrix A matrix of transition probabilities.
-#' @param emission_matrix A matrix of emission probabilities or a list of such objects (one for each channel).
+#' @param transition_probs A matrix of transition probabilities.
+#' @param emission_probs A matrix of emission probabilities or a list of such objects (one for each channel).
 #' @param sequence_length Length for simulated sequences.
 #'
 #' @return A list of state sequence objects of class \code{stslist}.
@@ -18,8 +18,8 @@
 #'
 #' @examples
 #' # Parameters for a HMM
-#' emission_matrix <- matrix(c(0.5, 0.2, 0.5, 0.8), 2, 2)
-#' transition_matrix <- matrix(c(5/6, 1/6, 1/6, 5/6), 2, 2)
+#' emission_probs <- matrix(c(0.5, 0.2, 0.5, 0.8), 2, 2)
+#' transition_probs <- matrix(c(5/6, 1/6, 1/6, 5/6), 2, 2)
 #' initial_probs <- c(1, 0)
 #' 
 #' # Setting seed for simulation
@@ -28,31 +28,31 @@
 #' # Simulating sequences
 #' sim <- simulate_hmm(
 #'   n_sequences = 10, initial_probs = initial_probs, 
-#'   transition_matrix = transition_matrix, 
-#'   emission_matrix = emission_matrix, 
+#'   transition_probs = transition_probs, 
+#'   emission_probs = emission_probs, 
 #'   sequence_length = 20)
 
-simulate_hmm <- function(n_sequences, initial_probs, transition_matrix, emission_matrix, 
+simulate_hmm <- function(n_sequences, initial_probs, transition_probs, emission_probs, 
   sequence_length){
   
-  if (is.list(emission_matrix)) {
-    n_channels <- length(emission_matrix)
+  if (is.list(emission_probs)) {
+    n_channels <- length(emission_probs)
   } else {
     n_channels <- 1
-    emission_matrix <- list(emission_matrix)
+    emission_probs <- list(emission_probs)
   }
   
   n_states <- length(initial_probs)
-  if (is.null(state_names <- rownames(transition_matrix))) {
+  if (is.null(state_names <- rownames(transition_probs))) {
     state_names <- 1:n_states
   }
-  for (i in 1:n_channels) rownames(emission_matrix[[i]]) <- rownames(transition_matrix)
-  n_symbols <- sapply(emission_matrix, ncol)
-  if (is.null(colnames(emission_matrix[[1]]))) {
+  for (i in 1:n_channels) rownames(emission_probs[[i]]) <- rownames(transition_probs)
+  n_symbols <- sapply(emission_probs, ncol)
+  if (is.null(colnames(emission_probs[[1]]))) {
     symbol_names <- lapply(1:n_channels, function(i) 1:n_symbols[i])
-  } else symbol_names <- lapply(1:n_channels, function(i) colnames(emission_matrix[[i]]))
+  } else symbol_names <- lapply(1:n_channels, function(i) colnames(emission_probs[[i]]))
   
-  if (is.null(channel_names <- names(emission_matrix))) {
+  if (is.null(channel_names <- names(emission_probs))) {
     channel_names <- 1:n_channels
   }
   
@@ -63,7 +63,7 @@ simulate_hmm <- function(n_sequences, initial_probs, transition_matrix, emission
     states[i, 1] <- sample(state_names, 1, prob = initial_probs)
     for (k in 1:n_channels) {
       obs[i, 1, k] <- sample(symbol_names[[k]], 1, 
-        prob = emission_matrix[[k]][states[i, 1], ])
+        prob = emission_probs[[k]][states[i, 1], ])
     }
   }
   
@@ -71,10 +71,10 @@ simulate_hmm <- function(n_sequences, initial_probs, transition_matrix, emission
   if (sequence_length > 1) {
     for (i in 1:n_sequences) {
       for (t in 2:sequence_length) {
-        states[i, t] <- sample(state_names, 1, prob = transition_matrix[states[i, t - 1], ])
+        states[i, t] <- sample(state_names, 1, prob = transition_probs[states[i, t - 1], ])
         for (k in 1:n_channels) {
           obs[i, t, k] <- sample(symbol_names[[k]], 1, 
-            prob = emission_matrix[[k]][states[i, t], ])
+            prob = emission_probs[[k]][states[i, t], ])
         }
       }
     }

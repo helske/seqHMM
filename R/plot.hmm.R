@@ -282,7 +282,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
   
   
   # Trimming
-  transM  <- x$transition_matrix
+  transM  <- x$transition_probs
   transM[transM < trim]  <- 0
   
   # Adjacency matrix
@@ -436,7 +436,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
   
   # Plotting graph
   if (pie == TRUE) {
-    pie.values  <- lapply(seq_len(nrow(transM)), function(i) x$emission_matrix[i,])
+    pie.values  <- lapply(seq_len(nrow(transM)), function(i) x$emission_probs[i,])
     if (combine.slices > 0 && !all(unlist(pie.values)[unlist(pie.values) > 0] > combine.slices)) {
       pie.colors.l  <- NULL
       if(withlegend != FALSE){
@@ -469,7 +469,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
     }else{
       if(ncol.legend == "auto"){
         if(withlegend == "bottom" || withlegend == TRUE || withlegend == "top"){
-          ncol.legend  <- ceiling(ncol(x$emission_matrix)/4)
+          ncol.legend  <- ceiling(ncol(x$emission_probs)/4)
         }else{
           ncol.legend  <- 1
         }

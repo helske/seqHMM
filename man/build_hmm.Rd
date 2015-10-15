@@ -4,16 +4,16 @@
 \alias{build_hmm}
 \title{Build a Hidden Markov Model}
 \usage{
-build_hmm(observations, transition_matrix, emission_matrix, initial_probs,
+build_hmm(observations, transition_probs, emission_probs, initial_probs,
   state_names = NULL, channel_names = NULL)
 }
 \arguments{
 \item{observations}{TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences, or a list of such objects (one for each channel).}
 
-\item{transition_matrix}{A matrix of transition probabilities.}
+\item{transition_probs}{A matrix of transition probabilities.}
 
-\item{emission_matrix}{A matrix of emission probabilities or a list of such
+\item{emission_probs}{A matrix of emission probabilities or a list of such
 objects (one for each channel). Emission probabilities should follow the
 ordering of the alphabet of observations (\code{alphabet(observations)}, returned as \code{symbol_names}).}
 
@@ -68,8 +68,8 @@ init <- c(0.3, 0.3, 0.2, 0.2)
 
 # Building a hidden Markov model with starting values
 init_hmm_1 <- build_hmm(
-  observations = mvad.seq, transition_matrix = tr,
-  emission_matrix = emiss, initial_probs = init
+  observations = mvad.seq, transition_probs = tr,
+  emission_probs = emiss, initial_probs = init
 )
 
 #########################################
@@ -114,8 +114,8 @@ initial <- c(0.9, 0.09, 0.01)
 # Building hidden Markov model with initial parameter values
 init_hmm_2 <- build_hmm(
   observations = list(child.seq, marr.seq, left.seq),
-  transition_matrix = trans,
-  emission_matrix = list(emiss_child, emiss_marr, emiss_left),
+  transition_probs = trans,
+  emission_probs = list(emiss_child, emiss_marr, emiss_left),
   initial_probs = initial)
 }
 \seealso{

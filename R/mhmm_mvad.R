@@ -63,8 +63,8 @@
 #' # No covariates
 #' init_mhmm_mvad <- build_mhmm(
 #'   observations = mvad.seq, 
-#'   transition_matrix = list(trans_1, trans_2), 
-#'   emission_matrix = list(emiss_1, emiss_2), 
+#'   transition_probs = list(trans_1, trans_2), 
+#'   emission_probs = list(emiss_1, emiss_2), 
 #'   initial_probs = list(initial_probs_1, initial_probs_2))
 #' 
 #' # Fit the model

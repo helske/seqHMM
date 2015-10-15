@@ -14,3 +14,11 @@ NULL
 #' @export
 #' @rdname TraMineR_imports
 NULL
+#' Get or set the alphabet of a sequence object
+#' 
+#' Imported function \code{\link[TraMineR]{alphabet}} from \code{TraMineR} for convinience.
+#' 
+#' @name alphabet
+#' @export
+#' @rdname TraMineR_imports
+NULL

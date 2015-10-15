@@ -5,8 +5,8 @@
 #' @param n_sequences Number of simulations.
 #' @param initial_probs A list containing vectors of initial state probabilities 
 #' for submodels of each cluster.
-#' @param transition_matrix A list of matrices of transition probabilities for submodels of each cluster.
-#' @param emission_matrix A list which contains matrices of emission probabilities or a list of such 
+#' @param transition_probs A list of matrices of transition probabilities for submodels of each cluster.
+#' @param emission_probs A list which contains matrices of emission probabilities or a list of such 
 #' objects (one for each channel) for submodels of each cluster. Note that the matrices must have 
 #' dimensions m x s where m is the number of hidden states and s is the number of unique symbols 
 #' (observed states) in the data.
@@ -26,15 +26,15 @@
 #' for simulating hidden Markov models.
 #' @export
 #' @examples 
-#' emission_matrix_1 <- matrix(c(0.75, 0.05, 0.25, 0.95), 2, 2)
-#' emission_matrix_2 <- matrix(c(0.1, 0.8, 0.9, 0.2), 2, 2)
-#' colnames(emission_matrix_1) <- colnames(emission_matrix_2) <- c("heads", "tails")
-#' transition_matrix_1 <- matrix(c(9, 0.1, 1, 9.9)/10, 2, 2)
-#' transition_matrix_2 <- matrix(c(35, 1, 1, 35)/36, 2, 2)
-#' rownames(emission_matrix_1) <- rownames(transition_matrix_1) <- 
-#'   colnames(transition_matrix_1) <- c("coin 1", "coin 2")
-#' rownames(emission_matrix_2) <- rownames(transition_matrix_2) <- 
-#'   colnames(transition_matrix_2) <- c("coin 3", "coin 4")
+#' emission_probs_1 <- matrix(c(0.75, 0.05, 0.25, 0.95), 2, 2)
+#' emission_probs_2 <- matrix(c(0.1, 0.8, 0.9, 0.2), 2, 2)
+#' colnames(emission_probs_1) <- colnames(emission_probs_2) <- c("heads", "tails")
+#' transition_probs_1 <- matrix(c(9, 0.1, 1, 9.9)/10, 2, 2)
+#' transition_probs_2 <- matrix(c(35, 1, 1, 35)/36, 2, 2)
+#' rownames(emission_probs_1) <- rownames(transition_probs_1) <- 
+#'   colnames(transition_probs_1) <- c("coin 1", "coin 2")
+#' rownames(emission_probs_2) <- rownames(transition_probs_2) <- 
+#'   colnames(transition_probs_2) <- c("coin 3", "coin 4")
 #' initial_probs_1 <- c(1, 0)
 #' initial_probs_2 <- c(1, 0)
 #' 
@@ -50,8 +50,8 @@
 #' 
 #' sim <- simulate_mhmm(
 #'   n = n, initial_probs = list(initial_probs_1, initial_probs_2), 
-#'   transition_matrix = list(transition_matrix_1, transition_matrix_2), 
-#'   emission_matrix = list(emission_matrix_1, emission_matrix_2), 
+#'   transition_probs = list(transition_probs_1, transition_probs_2), 
+#'   emission_probs = list(emission_probs_1, emission_probs_2), 
 #'   sequence_length = 25, formula = ~covariate_1 + covariate_2,
 #'   data = dataf, coefficients = coefs)
 #' 
@@ -61,8 +61,8 @@
 #' 
 #' hmm <- build_mhmm(sim$observations, 
 #' initial_probs = list(initial_probs_1, initial_probs_2), 
-#'   transition_matrix = list(transition_matrix_1, transition_matrix_2), 
-#'   emission_matrix = list(emission_matrix_1, emission_matrix_2), 
+#'   transition_probs = list(transition_probs_1, transition_probs_2), 
+#'   emission_probs = list(emission_probs_1, emission_probs_2), 
 #'   formula = ~covariate_1 + covariate_2,
 #'   data = dataf)
 #' 
@@ -73,29 +73,29 @@
 #' ssplot(list(estimates = paths, true = sim$states), sortv = "mds.obs", 
 #'   ylab = c("estimated paths", "true (simulated)"))
 #' 
-simulate_mhmm <- function(n_sequences, initial_probs, transition_matrix, 
-  emission_matrix, sequence_length, formula, data, coefficients){
+simulate_mhmm <- function(n_sequences, initial_probs, transition_probs, 
+  emission_probs, sequence_length, formula, data, coefficients){
   
-  if (is.list(transition_matrix)){
-    n_clusters<-length(transition_matrix)
+  if (is.list(transition_probs)){
+    n_clusters<-length(transition_probs)
   } else {
-    stop("transition_matrix is not a list.")
+    stop("transition_probs is not a list.")
   }
-  if (length(emission_matrix)!=n_clusters || length(initial_probs)!=n_clusters) {
-    stop("Unequal list lengths of transition_matrix, emission_matrix and initial_probs.")
+  if (length(emission_probs)!=n_clusters || length(initial_probs)!=n_clusters) {
+    stop("Unequal list lengths of transition_probs, emission_probs and initial_probs.")
   }
-  if (is.null(cluster_names <- names(transition_matrix))) {
+  if (is.null(cluster_names <- names(transition_probs))) {
     cluster_names <- paste("Cluster", 1:n_clusters)
   }
   
-  if (is.list(emission_matrix[[1]])) {
-    n_channels <- length(emission_matrix[[1]])
+  if (is.list(emission_probs[[1]])) {
+    n_channels <- length(emission_probs[[1]])
   } else {
     n_channels <- 1
     for(i in 1:n_clusters)
-      emission_matrix[[i]] <- list(emission_matrix[[i]])
+      emission_probs[[i]] <- list(emission_probs[[i]])
   }
-  if (is.null(channel_names <- names(emission_matrix[[1]]))) {
+  if (is.null(channel_names <- names(emission_probs[[1]]))) {
     channel_names <- 1:n_channels
   }
   if (n_sequences < 2) {
@@ -135,10 +135,10 @@ simulate_mhmm <- function(n_sequences, initial_probs, transition_matrix,
   pr <- pr / rowSums(pr)
   
   
-  n_symbols <- sapply(emission_matrix[[1]], ncol)
-  if (is.null(colnames(emission_matrix[[1]][[1]]))) {
+  n_symbols <- sapply(emission_probs[[1]], ncol)
+  if (is.null(colnames(emission_probs[[1]][[1]]))) {
     symbol_names <- lapply(1:n_channels, function(i) 1:n_symbols[i])
-  } else symbol_names <- lapply(1:n_channels, function(i) colnames(emission_matrix[[1]][[i]]))
+  } else symbol_names <- lapply(1:n_channels, function(i) colnames(emission_probs[[1]][[i]]))
   
   obs <- lapply(1:n_channels, function(i) {
     suppressWarnings(suppressMessages(seqdef(matrix(NA, n_sequences, sequence_length), 
@@ -146,22 +146,22 @@ simulate_mhmm <- function(n_sequences, initial_probs, transition_matrix,
   
   names(obs) <- channel_names
   
-  n_states <- sapply(transition_matrix, nrow)
-  if (is.null(rownames(transition_matrix[[1]]))) {
+  n_states <- sapply(transition_probs, nrow)
+  if (is.null(rownames(transition_probs[[1]]))) {
     state_names <- lapply(1:n_clusters, function(i) 1:n_states[i])
-  } else state_names <- lapply(1:n_clusters, function(i) rownames(transition_matrix[[i]]))
+  } else state_names <- lapply(1:n_clusters, function(i) rownames(transition_probs[[i]]))
   v_state_names <- unlist(state_names)
   if (length(unique(v_state_names)) != length(v_state_names)) {
     for (i in 1:n_clusters) {
-      colnames(transition_matrix[[i]]) <- rownames(transition_matrix[[i]]) <- 
+      colnames(transition_probs[[i]]) <- rownames(transition_probs[[i]]) <- 
         paste(cluster_names[i], state_names[[i]], sep = ":")
     }
     v_state_names <- paste(rep(cluster_names, n_states), v_state_names, sep = ":")
   } 
   for (i in 1:n_clusters) {
     for (j in 1:n_channels) {
-      rownames(emission_matrix[[i]][[j]]) <- 
-        colnames(transition_matrix[[i]])
+      rownames(emission_probs[[i]][[j]]) <- 
+        colnames(transition_probs[[i]])
     }
   }
   
@@ -177,7 +177,7 @@ simulate_mhmm <- function(n_sequences, initial_probs, transition_matrix,
   for (i in 1:n_clusters) {
     if(sum(clusters == cluster_names[i]) > 0) {
       sim <- simulate_hmm(n_sequences = sum(clusters == cluster_names[i]), initial_probs[[i]],
-        transition_matrix[[i]], emission_matrix[[i]], sequence_length)
+        transition_probs[[i]], emission_probs[[i]], sequence_length)
       if(n_channels > 1){
         for (k in 1:n_channels) {
           obs[[k]][clusters == cluster_names[i], ] <- sim$observations[[k]]

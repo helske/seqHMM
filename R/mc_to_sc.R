@@ -33,16 +33,16 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
     B<-matrix(0,model$n_states,prod(model$n_symbols))
     
     colnames(B)<-apply(
-      expand.grid(lapply(model$emission_matrix,colnames)),                
+      expand.grid(lapply(model$emission_probs,colnames)),                
       1,paste0,collapse="/")
-    rownames(B)<-rownames(model$emission_matrix[[1]])
+    rownames(B)<-rownames(model$emission_probs[[1]])
     for(i in 1:model$n_states){
-      B[i,]<-apply(expand.grid(lapply(model$emission_matrix,function(x) x[i,])),1,prod)   
+      B[i,]<-apply(expand.grid(lapply(model$emission_probs,function(x) x[i,])),1,prod)   
     }
     B <- B[, order(colnames(B))]
     
     modelx<-model
-    modelx$emission_matrix <- B
+    modelx$emission_probs <- B
     modelx$n_symbols <- ncol(B)
     modelx$n_channels <- as.integer(1)
     modelx$symbol_names <- snames <- colnames(B)
@@ -84,9 +84,9 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
       modelx$observations<-suppressWarnings(suppressMessages(seqdef(modelx$observations, alphabet=modelx$symbol_names)))
     }else{
       modelx$observations<-suppressWarnings(suppressMessages((seqdef(modelx$observations))))
-      modelx$emission_matrix <- modelx$emission_matrix[,colnames(modelx$emission_matrix) %in% alphabet(modelx$observations)==TRUE]
-      modelx$symbol_names <- colnames(modelx$emission_matrix)
-      modelx$n_symbols <- ncol(modelx$emission_matrix)
+      modelx$emission_probs <- modelx$emission_probs[,colnames(modelx$emission_probs) %in% alphabet(modelx$observations)==TRUE]
+      modelx$symbol_names <- colnames(modelx$emission_probs)
+      modelx$n_symbols <- ncol(modelx$emission_probs)
     }
     
   # mhmm
@@ -99,15 +99,15 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
       B[[m]] <- matrix(0,model$n_states[m],prod(model$n_symbols))
       
       colnames(B[[m]])<-apply(
-        expand.grid(lapply(model$emission_matrix[[m]],colnames)),                
+        expand.grid(lapply(model$emission_probs[[m]],colnames)),                
         1,paste0,collapse="/")
-      rownames(B[[m]])<-rownames(model$emission_matrix[[m]][[1]])
+      rownames(B[[m]])<-rownames(model$emission_probs[[m]][[1]])
       for(i in 1:model$n_states[[m]]){
-        B[[m]][i,]<-apply(expand.grid(lapply(model$emission_matrix[[m]],function(x) x[i,])),1,prod)   
+        B[[m]][i,]<-apply(expand.grid(lapply(model$emission_probs[[m]],function(x) x[i,])),1,prod)   
       }
       B[[m]] <- B[[m]][, order(colnames(B[[m]]))]
 
-      modelx$emission_matrix[[m]] <- B[[m]]
+      modelx$emission_probs[[m]] <- B[[m]]
     }
     
     modelx$n_symbols <- ncol(B[[1]])
@@ -151,9 +151,9 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
       modelx$observations <- suppressWarnings(suppressMessages(seqdef(modelx$observations, alphabet=modelx$symbol_names)))
     }else{
       modelx$observations<-suppressWarnings(suppressMessages((seqdef(modelx$observations))))
-      modelx$emission_matrix <- modelx$emission_matrix[[1]][,colnames(modelx$emission_matrix[[1]]) %in% alphabet(modelx$observations)==TRUE]
-      modelx$symbol_names <- colnames(modelx$emission_matrix)
-      modelx$n_symbols <- ncol(modelx$emission_matrix)
+      modelx$emission_probs <- modelx$emission_probs[[1]][,colnames(modelx$emission_probs[[1]]) %in% alphabet(modelx$observations)==TRUE]
+      modelx$symbol_names <- colnames(modelx$emission_probs)
+      modelx$n_symbols <- ncol(modelx$emission_probs)
     }
   }
   
