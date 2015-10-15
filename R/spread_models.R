@@ -24,7 +24,6 @@ spread_models <- function(model){
       transM[[m]] <- model$transition_probs[(k+1):(k+model$n_states_in_clusters[m]),
                                             (k+1):(k+model$n_states_in_clusters[m]),drop=FALSE]
         emissM[[m]] <- model$emission_probs[(k+1):(k+model$n_states_in_clusters[m]),,drop=FALSE]
-      names(emissM[[m]]) <- model$channel_names
       init[[m]] <- unname(model$initial_probs[(k+1):(k+model$n_states_in_clusters[m])])
       k <- sum(model$n_states_in_clusters[1:m])
     }
