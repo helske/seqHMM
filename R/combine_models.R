@@ -3,28 +3,28 @@ combine_models <- function(model){
   
   n_states_in_clusters <- model$n_states
   n_states <- sum(model$n_states)
-  transition_matrix <- as.matrix(.bdiag(model$transition_matrix))
+  transition_probs <- as.matrix(.bdiag(model$transition_probs))
   state_names <- unlist(original_state_names<-model$state_names)
   if (length(unique(state_names))!= length(state_names)){
     state_names <- paste(rep(model$cluster_names, model$n_states), state_names, sep=":")
   }
-  dimnames(transition_matrix) <- replicate(2, state_names, simplify=FALSE)
+  dimnames(transition_probs) <- replicate(2, state_names, simplify=FALSE)
   
   if(model$n_channels>1){
-    emission_matrix <- lapply(1:model$n_channels, function(i){
-      x <- do.call("rbind",sapply(model$emission_matrix,"[",i))
+    emission_probs <- lapply(1:model$n_channels, function(i){
+      x <- do.call("rbind",sapply(model$emission_probs,"[",i))
       rownames(x) <- state_names
       x
     })
-    names(emission_matrix) <- model$channel_names
+    names(emission_probs) <- model$channel_names
   } else {
-    emission_matrix <- do.call("rbind",model$emission_matrix)
-    rownames(emission_matrix) <- state_names
+    emission_probs <- do.call("rbind",model$emission_probs)
+    rownames(emission_probs) <- state_names
   }
   
   model <- list(observations = model$observations,
-                transition_matrix = transition_matrix,
-                emission_matrix=emission_matrix,
+                transition_probs = transition_probs,
+                emission_probs=emission_probs,
                 initial_probs = unlist(model$initial_probs),
     coefficients = model$coefficients, X = model$X,
                 cluster_names=model$cluster_names,

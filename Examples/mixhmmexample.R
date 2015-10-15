@@ -20,7 +20,7 @@ B2 <- matrix(c(0.5,0.9,0.5,0.1),2,2)
 
 obs <- seqdef(obs)
 hmm <- build_mhmm(observations = obs, initial_probs = list(1,c(0.5,0.5)),
-  transition_matrix = list(A1,A2),
-  emission_matrix = list(B1,B2), X = matrix(onlyfair,ncol=1), beta = matrix(0:1,1,2))
+  transition_probs = list(A1,A2),
+  emission_probs = list(B1,B2), X = matrix(onlyfair,ncol=1), beta = matrix(0:1,1,2))
 
 fit <- fit_mhmm(hmm)

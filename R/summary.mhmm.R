@@ -82,8 +82,8 @@ summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, ...)
     )
   }else{
     summary_mhmm <- list(
-      transition_matrix = object$transition_matrix,
-      emission_matrix = object$emission_matrix,
+      transition_probs = object$transition_probs,
+      emission_probs = object$emission_probs,
       initial_probs = object$initial_probs,
       logLik = ll, BIC = BIC(ll), most_probable_cluster = most_probable_cluster, 
       coefficients = object$coefficients, vcov = vcov(object, conditional_se, ...),

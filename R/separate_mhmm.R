@@ -28,8 +28,8 @@ separate_mhmm <- function(model){
   
   for(i in 1:model$n_clusters){
     divmodels[[i]] <- build_hmm(observations=model$observations,
-                                transition_matrix=model$transition_matrix[[i]],
-                                emission_matrix=model$emission_matrix[[i]],
+                                transition_probs=model$transition_probs[[i]],
+                                emission_probs=model$emission_probs[[i]],
                                 initial_probs=model$initial_probs[[i]])
   }
   divmodels

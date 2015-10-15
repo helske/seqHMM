@@ -4,7 +4,7 @@
 \alias{simulate_hmm}
 \title{Simulate hidden Markov models}
 \usage{
-simulate_hmm(n_sequences, initial_probs, transition_matrix, emission_matrix,
+simulate_hmm(n_sequences, initial_probs, transition_probs, emission_probs,
   sequence_length)
 }
 \arguments{
@@ -12,9 +12,9 @@ simulate_hmm(n_sequences, initial_probs, transition_matrix, emission_matrix,
 
 \item{initial_probs}{A vector of initial state probabilities.}
 
-\item{transition_matrix}{A matrix of transition probabilities.}
+\item{transition_probs}{A matrix of transition probabilities.}
 
-\item{emission_matrix}{A matrix of emission probabilities or a list of such objects (one for each channel).}
+\item{emission_probs}{A matrix of emission probabilities or a list of such objects (one for each channel).}
 
 \item{sequence_length}{Length for simulated sequences.}
 }
@@ -26,8 +26,8 @@ Simulate sequences of observed and hidden states given parameters of a hidden Ma
 }
 \examples{
 # Parameters for a HMM
-emission_matrix <- matrix(c(0.5, 0.2, 0.5, 0.8), 2, 2)
-transition_matrix <- matrix(c(5/6, 1/6, 1/6, 5/6), 2, 2)
+emission_probs <- matrix(c(0.5, 0.2, 0.5, 0.8), 2, 2)
+transition_probs <- matrix(c(5/6, 1/6, 1/6, 5/6), 2, 2)
 initial_probs <- c(1, 0)
 
 # Setting seed for simulation
@@ -36,8 +36,8 @@ set.seed(1)
 # Simulating sequences
 sim <- simulate_hmm(
   n_sequences = 10, initial_probs = initial_probs,
-  transition_matrix = transition_matrix,
-  emission_matrix = emission_matrix,
+  transition_probs = transition_probs,
+  emission_probs = emission_probs,
   sequence_length = 20)
 }
 \seealso{

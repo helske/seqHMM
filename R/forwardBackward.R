@@ -20,7 +20,7 @@ forward_backward <- function(model, forward_only = FALSE){
   
   if(model$n_channels == 1){
     model$observations <- list(model$observations)
-    model$emission_matrix <- list(model$emission_matrix)
+    model$emission_probs <- list(model$emission_probs)
   }
   
   obsArray <- array(0,c(model$n_sequences,model$length_of_sequences,model$n_channels))
@@ -31,13 +31,13 @@ forward_backward <- function(model, forward_only = FALSE){
   storage.mode(obsArray)<-"integer"
   emissionArray <- array(1,c(model$n_states,max(model$n_symbols)+1,model$n_channels))
   for(i in 1:model$n_channels)
-    emissionArray[,1:model$n_symbols[i],i]<-model$emission_matrix[[i]]
+    emissionArray[,1:model$n_symbols[i],i]<-model$emission_probs[[i]]
   
   if (mix) {
-    out <- forwardbackwardx(model$transition_matrix, emissionArray, 
+    out <- forwardbackwardx(model$transition_probs, emissionArray, 
       model$initial_probs, obsArray, model$coefficients,model$X,model$n_states_in_clusters, forward_only)
   } else{
-    out <- forwardbackward(model$transition_matrix, emissionArray, 
+    out <- forwardbackward(model$transition_probs, emissionArray, 
       model$initial_probs, obsArray, forward_only)
   }
   

@@ -89,8 +89,8 @@ initial_probs <- c(0.9, 0.07, 0.02, 0.01)
 # Building the hidden Markov model with initial parameter values 
 bhmm <- build_hmm(
   observations = list(marr.seq, child.seq, left.seq),
-  initial_probs = initial_probs, transition_matrix = A, 
-  emission_matrix = list(B_marr, B_child, B_left),
+  initial_probs = initial_probs, transition_probs = A, 
+  emission_probs = list(B_marr, B_child, B_left),
   channel_names = c("Marriage", "Parenthood", "Left home")
 )
 
@@ -264,8 +264,8 @@ initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 # Build MHMM
 bmhmm <- build_mhmm(
   observations = list(marr.seq, child.seq, left.seq),
-  transition_matrix = list(A1, A1, A2),
-  emission_matrix = list(list(B1_marr, B1_child, B1_left), 
+  transition_probs = list(A1, A1, A2),
+  emission_probs = list(list(B1_marr, B1_child, B1_left), 
                         list(B2_marr, B2_child, B2_left),
                         list(B3_marr, B3_child, B3_left)),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),

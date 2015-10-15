@@ -132,8 +132,8 @@ biofam3c$covariates$cohort <- factor(
 # Build mixture HMM
 init_mhmm_biofam <- build_mhmm(
   observations=list(child.seq, marr.seq, left.seq),
-  transition_matrix=list(trans_1,trans_1,trans_2),
-  emission_matrix=list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
+  transition_probs=list(trans_1,trans_1,trans_2),
+  emission_probs=list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
                        list(emiss_2_child, emiss_2_marr, emiss_2_left),
                        list(emiss_3_child, emiss_3_marr, emiss_3_left)),
   initial_probs=list(initialProbs_1, initialProbs_1, initialProbs_2),

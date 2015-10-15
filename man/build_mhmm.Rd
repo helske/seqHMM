@@ -4,7 +4,7 @@
 \alias{build_mhmm}
 \title{Build a Mixture Hidden Markov Model}
 \usage{
-build_mhmm(observations, transition_matrix, emission_matrix, initial_probs,
+build_mhmm(observations, transition_probs, emission_probs, initial_probs,
   formula, data, coefficients, cluster_names = NULL, state_names = NULL,
   channel_names = NULL)
 }
@@ -12,10 +12,10 @@ build_mhmm(observations, transition_matrix, emission_matrix, initial_probs,
 \item{observations}{TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences, or a list of such objects (one for each channel).}
 
-\item{transition_matrix}{A list of matrices of transition
+\item{transition_probs}{A list of matrices of transition
 probabilities for submodels of each cluster.}
 
-\item{emission_matrix}{A list which contains matrices of emission probabilities or
+\item{emission_probs}{A list which contains matrices of emission probabilities or
 a list of such objects (one for each channel) for submodels of each cluster.
 Note that the matrices must have dimensions m x s where m is the number of
 hidden states and s is the number of unique symbols (observed states) in the
@@ -167,8 +167,8 @@ biofam3c$covariates$cohort <- factor(
 # Build mixture HMM
 init_mhmm <- build_mhmm(
   observations = list(child.seq, marr.seq, left.seq),
-  transition_matrix = list(trans_1, trans_1, trans_2),
-  emission_matrix = list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
+  transition_probs = list(trans_1, trans_1, trans_2),
+  emission_probs = list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
                         list(emiss_2_child, emiss_2_marr, emiss_2_left),
                         list(emiss_3_child, emiss_3_marr, emiss_3_left)),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),

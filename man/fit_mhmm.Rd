@@ -34,8 +34,7 @@ Default is 1e-8.} }}
   \code{\link{nloptr}} argument \code{opts}. The default values are
   \describe{
    \item{algorithm}{\code{"NLOPT_GD_MLSL_LDS"}}
-   \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)}}
-   \item{ranseed}{\code{123}}
+   \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)}}#'
    \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
    \item{maxtime}{\code{60} (maximum run time in seconds)}
 }}
@@ -104,8 +103,6 @@ The fitting function provides three estimation steps: 1) EM algorithm,
   local steps.
 }
 \examples{
-require(TraMineR)
-
 # Single-channel
 
 data(mvad)
@@ -154,14 +151,20 @@ init_2 <- c(0.3, 0.3, 0.2, 0.2)
 # Building a MHMM with the starting values
 init_mhmm_mvad <- build_mhmm(
   observations = mvad.seq,
-  transition_matrix = list(tr_1, tr_2),
-  emission_matrix = list(emiss_1, emiss_2),
+  transition_probs = list(tr_1, tr_2),
+  emission_probs = list(emiss_1, emiss_2),
   initial_probs = list(init_1, init_2))
 
 # Fitting the model with the EM algorithm
-mhmm_mvad <- fit_mhmm(
+fit_mvad <- fit_mhmm(
   init_mhmm_mvad, em_step = TRUE, global_step = FALSE, local_step = FALSE)
+fit_mvad$logLik # -20639.1
 
+# Run EM algorithm 25 times with simulated starting values
+set.seed(1)
+fit_mvad2 <- fit_mhmm(init_mhmm_mvad, em_step = TRUE, global_step = FALSE, local_step = TRUE,
+  control_em=list(restarts = 25, print_level=1))
+fit$logLik # -14651.43
 ##############################################################
 
 # Multichannel
@@ -279,8 +282,8 @@ biofam3c$covariates$cohort <- factor(
 # Build mixture HMM
 init_mhmm_bf <- build_mhmm(
   observations = list(child.seq, marr.seq, left.seq),
-  transition_matrix = list(trans_1, trans_1, trans_2),
-  emission_matrix = list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
+  transition_probs = list(trans_1, trans_1, trans_2),
+  emission_probs = list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
                         list(emiss_2_child, emiss_2_marr, emiss_2_left),
                         list(emiss_3_child, emiss_3_marr, emiss_3_left)),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),

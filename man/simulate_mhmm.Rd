@@ -4,7 +4,7 @@
 \alias{simulate_mhmm}
 \title{Simulate Mixture Hidden Markov Models}
 \usage{
-simulate_mhmm(n_sequences, initial_probs, transition_matrix, emission_matrix,
+simulate_mhmm(n_sequences, initial_probs, transition_probs, emission_probs,
   sequence_length, formula, data, coefficients)
 }
 \arguments{
@@ -13,9 +13,9 @@ simulate_mhmm(n_sequences, initial_probs, transition_matrix, emission_matrix,
 \item{initial_probs}{A list containing vectors of initial state probabilities
 for submodels of each cluster.}
 
-\item{transition_matrix}{A list of matrices of transition probabilities for submodels of each cluster.}
+\item{transition_probs}{A list of matrices of transition probabilities for submodels of each cluster.}
 
-\item{emission_matrix}{A list which contains matrices of emission probabilities or a list of such
+\item{emission_probs}{A list which contains matrices of emission probabilities or a list of such
 objects (one for each channel) for submodels of each cluster. Note that the matrices must have
 dimensions m x s where m is the number of hidden states and s is the number of unique symbols
 (observed states) in the data.}
@@ -38,15 +38,15 @@ A list of state sequence objects of class \code{stslist}.
 Simulate sequences of observed and hidden states given parameters of a mixture hidden Markov model.
 }
 \examples{
-emission_matrix_1 <- matrix(c(0.75, 0.05, 0.25, 0.95), 2, 2)
-emission_matrix_2 <- matrix(c(0.1, 0.8, 0.9, 0.2), 2, 2)
-colnames(emission_matrix_1) <- colnames(emission_matrix_2) <- c("heads", "tails")
-transition_matrix_1 <- matrix(c(9, 0.1, 1, 9.9)/10, 2, 2)
-transition_matrix_2 <- matrix(c(35, 1, 1, 35)/36, 2, 2)
-rownames(emission_matrix_1) <- rownames(transition_matrix_1) <-
-  colnames(transition_matrix_1) <- c("coin 1", "coin 2")
-rownames(emission_matrix_2) <- rownames(transition_matrix_2) <-
-  colnames(transition_matrix_2) <- c("coin 3", "coin 4")
+emission_probs_1 <- matrix(c(0.75, 0.05, 0.25, 0.95), 2, 2)
+emission_probs_2 <- matrix(c(0.1, 0.8, 0.9, 0.2), 2, 2)
+colnames(emission_probs_1) <- colnames(emission_probs_2) <- c("heads", "tails")
+transition_probs_1 <- matrix(c(9, 0.1, 1, 9.9)/10, 2, 2)
+transition_probs_2 <- matrix(c(35, 1, 1, 35)/36, 2, 2)
+rownames(emission_probs_1) <- rownames(transition_probs_1) <-
+  colnames(transition_probs_1) <- c("coin 1", "coin 2")
+rownames(emission_probs_2) <- rownames(transition_probs_2) <-
+  colnames(transition_probs_2) <- c("coin 3", "coin 4")
 initial_probs_1 <- c(1, 0)
 initial_probs_2 <- c(1, 0)
 
@@ -62,8 +62,8 @@ rownames(coefs) <- c("(Intercept)", "covariate_1", "covariate_2B")
 
 sim <- simulate_mhmm(
   n = n, initial_probs = list(initial_probs_1, initial_probs_2),
-  transition_matrix = list(transition_matrix_1, transition_matrix_2),
-  emission_matrix = list(emission_matrix_1, emission_matrix_2),
+  transition_probs = list(transition_probs_1, transition_probs_2),
+  emission_probs = list(emission_probs_1, emission_probs_2),
   sequence_length = 25, formula = ~covariate_1 + covariate_2,
   data = dataf, coefficients = coefs)
 
@@ -73,8 +73,8 @@ ssplot(
 
 hmm <- build_mhmm(sim$observations,
 initial_probs = list(initial_probs_1, initial_probs_2),
-  transition_matrix = list(transition_matrix_1, transition_matrix_2),
-  emission_matrix = list(emission_matrix_1, emission_matrix_2),
+  transition_probs = list(transition_probs_1, transition_probs_2),
+  emission_probs = list(emission_probs_1, emission_probs_2),
   formula = ~covariate_1 + covariate_2,
   data = dataf)
 

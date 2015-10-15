@@ -17,15 +17,15 @@ print.hmm <- function(x, digits = 3, ...){
   if (x$n_channels == 1) {
     print.listof(list(
       "Initial probabilities" = x$initial_probs,
-      "Transition probabilities" = x$transition_matrix, 
-      "Emission probabilities" = x$emission_matrix), digits = digits, ...)
+      "Transition probabilities" = x$transition_probs, 
+      "Emission probabilities" = x$emission_probs), digits = digits, ...)
   } else {
     print.listof(list("Initial probabilities" = x$initial_probs), digits = digits, ...)
     cat("\n")
-    print.listof(list("Transition probabilities" = x$transition_matrix), digits = digits, ...)
+    print.listof(list("Transition probabilities" = x$transition_probs), digits = digits, ...)
     cat("\n")
     cat("Emission probabilities :\n")
-    print.listof(x$emission_matrix, digits = digits, ...)
+    print.listof(x$emission_probs, digits = digits, ...)
     cat("\n")
   }
 }
