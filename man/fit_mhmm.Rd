@@ -105,7 +105,7 @@ The fitting function provides three estimation steps: 1) EM algorithm,
 \examples{
 # Single-channel
 
-data(mvad)
+data(mvad, package = "TraMineR")
 
 mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school",
                    "training")

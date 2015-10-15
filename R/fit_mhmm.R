@@ -91,7 +91,7 @@
 #' 
 #' # Single-channel
 #' 
-#' data(mvad)
+#' data(mvad, package = "TraMineR")
 #' 
 #' mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school", 
 #'                    "training")
