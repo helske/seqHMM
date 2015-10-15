@@ -569,103 +569,103 @@ ssp <- function(x, hidden.paths = NULL,
   }
   
   # Ordering sequences for sortv
-  if(type=="I" && !is.null(sortv)){
-    if(nchannels>1){
+  if (type == "I" && !is.null(sortv)) {
+    if (nchannels > 1) {
       # Multidimensional scaling on observations
-      if(length(sortv)==1 && sortv=="mds.obs"){
-        dist.obs <- suppressMessages(seqdistmc(obs, method=dist.method, 
-                                               sm="TRATE", with.missing=TRUE))
-        sortv <- cmdscale(dist.obs, k=1)
+      if (length(sortv) == 1 && sortv == "mds.obs") {
+        dist.obs <- suppressMessages(seqdistmc(obs, method = dist.method, 
+                                               sm = "TRATE", with.missing = TRUE))
+        sortv <- cmdscale(dist.obs, k = 1)
       }
       # Sorting from start or end
-      if(length(sortv)==1 && (sortv=="from.start" || sortv=="from.end")){
+      if (length(sortv) == 1 && (sortv=="from.start" || sortv=="from.end")) {
         end <- if (sortv == "from.end") {
-          if(sort.channel>0 && sort.channel<=length(obs)){
+          if (sort.channel > 0 && sort.channel <= length(obs)) {
             max(seqlength(obs[[sort.channel]]))
-          }else if(sort.channel==0){
-            if(plots=="both" || plots=="hidden.paths"){
+          } else if (sort.channel == 0) {
+            if (plots=="both" || plots=="hidden.paths") {
               max(seqlength(hidden.paths.seq))
-            }else{
+            } else {
               warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"hidden.paths\". Sequences were not sorted.")
               sortv <- NULL
             }
-          }else{
+          } else {
             warning(paste0("For data with ", length(obs), " channels, the value for sort.channel must be a non-negative integer smaller or equal to ", length(obs), ". Sequences were not sorted."))
             sortv <- NULL
           }
-        }else {
+        } else {
           1
         }
         beg <- if (sortv == "from.end") {
           1
-        }else{
-          if(sort.channel>0 && sort.channel<=length(obs)){
+        } else {
+          if (sort.channel > 0 && sort.channel <= length(obs)) {
             max(seqlength(obs[[sort.channel]]))
-          }else if(sort.channel==0){
-            if(plots=="both" || plots=="hidden.paths"){
+          } else if(sort.channel==0) {
+            if (plots=="both" || plots=="hidden.paths") {
               max(seqlength(hidden.paths.seq))
-            }else{
+            } else {
               warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"hidden.paths\". Sequences were not sorted.")
               sortv <- NULL
             }
-          }else{
+          } else {
             warning(paste0("For data with ", length(obs), " channels, the value for sort.channel must be a non-negative integer smaller or equal to ", length(obs), ". Sequences were not sorted."))
             sortv <- NULL
           }
         }
-        if(sort.channel>0 && sort.channel<=length(obs)){
+        if (sort.channel > 0 && sort.channel <= length(obs)) {
           orderv <- do.call(order, as.data.frame(obs[[sort.channel]])[, end:beg])
           arguments <- c(arguments, list(orderv=orderv))
-        }else if(sort.channel==0 && plots!="obs"){
+        } else if (sort.channel == 0 && plots != "obs") {
           orderv <- do.call(order, as.data.frame(hidden.paths.seq)[, end:beg])
           arguments <- c(arguments, list(orderv=orderv))
         }
       }
-    }else{
-      if(length(sortv)==1 && sortv=="mds.obs"){
-        dist.obs <- suppressMessages(seqdist(obs, method=dist.method, 
-                                             sm="TRATE", with.missing=TRUE))
-        sortv <- cmdscale(dist.obs, k=1)
-        #         arguments <- c(arguments, list(sortv=sortv))
-      }else if(length(sortv)==1 && (sortv=="from.start" || sortv=="from.end")){
+    # nchannels == 1
+    } else {
+      if (length(sortv) == 1 && sortv == "mds.obs") {
+        dist.obs <- suppressMessages(seqdist(obs, method = dist.method, 
+                                             sm = "TRATE", with.missing = TRUE))
+        sortv <- cmdscale(dist.obs, k = 1)
+      } else if (length(sortv) == 1 && (sortv == "from.start" || sortv == "from.end")) {
         end <- if (sortv == "from.end") {
-          if(sort.channel==1){
+          if (sort.channel == 1) {
             max(seqlength(obs))
-          }else if(sort.channel==0){
-            if(plots=="both" || plots=="hidden.paths"){
+          } else if (sort.channel == 0) {
+            if (plots=="both" || plots=="hidden.paths") {
               max(seqlength(hidden.paths.seq))
-            }else{
+            } else {
               warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"hidden.paths\". Sequences were not sorted.")
               sortv <- NULL
             }
-          }else{
+          } else {
             warning(paste0("For data with 1 channel, the value for sort.channel must be 0 (for most probable paths) or 1 (for observations). Sequences were not sorted."))
             sortv <- NULL
           }
-        }else {
+        } else {
           1
         }
         beg <- if (sortv == "from.end") {
           1
-        }else{
-          if(sort.channel==1){
+        } else {
+          if (sort.channel == 1) {
             max(seqlength(obs))
-          }else if(sort.channel==0){
-            if(plots=="both" || plots=="hidden.paths"){
+          } else if (sort.channel == 0) {
+            if (plots == "both" || plots == "hidden.paths") {
               max(seqlength(hidden.paths.seq))
-            }else{
+            } else {
               warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"hidden.paths\". Sequences were not sorted.")
               sortv <- NULL
             }
-          }else{
+          } else {
             warning(paste0("For data with 1 channel, the value for sort.channel must be 0 (for most probable paths) or 1 (for observations). Sequences were not sorted."))
             sortv <- NULL
           }
         }
-        if(sort.channel==1){
-          orderv <- do.call(order, as.data.frame(obs[[sort.channel]])[, end:beg])
-          arguments <- c(arguments, list(orderv=orderv))
-        }else if(sort.channel==0 && plots!="obs"){
+        if (sort.channel == 1) {
+          orderv <- do.call(order, as.data.frame(obs)[, end:beg])
+          arguments <- c(arguments, list(orderv = orderv))
+        } else if (sort.channel == 0 && plots != "obs") {
           orderv <- do.call(order, as.data.frame(hidden.paths.seq)[, end:beg])
           arguments <- c(arguments, list(orderv=orderv))
         }
