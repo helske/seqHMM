@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
   IntegerVector obsArray, IntegerVector nSymbols, NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates,
-  int itermax=100, double tol=1e-8, int trace=0) {  
+  int itermax=100, double tol=1e-8, int trace=0, int threads = 1) {  
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
@@ -35,10 +35,10 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   
   arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k
   arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k
-  arma::mat scales(oDims[1],oDims[0]); //m,n,k
+  arma::mat scales(oDims[1],oDims[0]); //m,n,k 
   
-  internalForwardx(transition, emission, initk, obs, alpha, scales);
-  internalBackward(transition, emission, obs, beta, scales);
+  internalForwardx(transition, emission, initk, obs, alpha, scales, threads);
+  internalBackward(transition, emission, obs, beta, scales, threads);
   
   arma::rowvec ll = arma::sum(log(scales));
   double sumlogLik = sum(ll);
@@ -121,8 +121,8 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
       initk.col(k) = init % reparma(weights.col(k),numberOfStates);
     }
     
-    internalForwardx(transition, emission, initk, obs, alpha, scales);
-    internalBackward(transition, emission, obs, beta, scales);
+    internalForwardx(transition, emission, initk, obs, alpha, scales, threads);
+    internalBackward(transition, emission, obs, beta, scales, threads);
     
     ll = sum(log(scales));
     double tmp = sum(ll);

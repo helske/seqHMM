@@ -6,7 +6,7 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 
 List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-  IntegerVector obsArray, IntegerVector nSymbols, int itermax = 100, double tol = 1e-8, int trace = 0) {  
+  IntegerVector obsArray, IntegerVector nSymbols, int itermax = 100, double tol = 1e-8, int trace = 0, int threads = 1) {  
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
@@ -20,8 +20,8 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
   arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k
   arma::mat scales(oDims[1],oDims[0]);
   
-  internalForward(transition, emission, init, obs, alpha, scales);
-  internalBackward(transition, emission, obs, beta, scales);
+  internalForward(transition, emission, init, obs, alpha, scales, threads);
+  internalBackward(transition, emission, obs, beta, scales, threads);
   arma::rowvec ll = arma::sum(log(scales));
   double sumlogLik = sum(ll);
   if(trace>0){
@@ -89,8 +89,8 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
     
     init = delta;
     
-    internalForward(transition, emission, init, obs, alpha, scales);
-    internalBackward(transition, emission, obs, beta, scales);
+    internalForward(transition, emission, init, obs, alpha, scales, threads);
+    internalBackward(transition, emission, obs, beta, scales, threads);
     
     ll = sum(log(scales));
     

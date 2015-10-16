@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 List forwardbackwardx(NumericVector transitionMatrix, NumericVector emissionArray, 
   NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, 
-  NumericMatrix X_, IntegerVector numberOfStates, bool forwardonly) {  
+  NumericMatrix X_, IntegerVector numberOfStates, bool forwardonly, int threads = 1) {  
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
@@ -31,13 +31,13 @@ List forwardbackwardx(NumericVector transitionMatrix, NumericVector emissionArra
   }
   arma::cube alpha(eDims[0],oDims[1],oDims[0]); //m,n,k
   arma::mat scales(oDims[1],oDims[0]); //m,n,k
-  internalForwardx(transition, emission, initk, obs, alpha, scales);
+  internalForwardx(transition, emission, initk, obs, alpha, scales, threads);
   
   if(forwardonly) {
     return List::create(Named("forward_probs") = wrap(alpha), Named("scaling_factors") = wrap(scales));
   } else {
     arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k
-    internalBackward(transition, emission, obs, beta, scales);
+    internalBackward(transition, emission, obs, beta, scales, threads);
     return List::create(Named("forward_probs") = wrap(alpha),
       Named("backward_probs") = wrap(beta), Named("scaling_factors") = wrap(scales));
   }

@@ -8,13 +8,13 @@ using namespace Rcpp;
 
 // For more on using Rcpp click the Help button on the editor toolbar
 // install_github( "Rcpp11/attributes" ) ; require('attributes') 
-
+// [[Rcpp::plugins(openmp)]]
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
 NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissionArray, 
   NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, 
-  NumericMatrix X_, IntegerVector numberOfStates) {  
+  NumericMatrix X_, IntegerVector numberOfStates, int threads = 1) {  
   
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
@@ -31,36 +31,35 @@ NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissio
     
   }
   lweights.each_row() /= sum(lweights,0);
-  arma::colvec init(initialProbs.begin(),eDims[0], true);
-  arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0], true);
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
+  arma::colvec init(initialProbs.begin(),eDims[0], false);
+  arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0], false);
+  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
   
-  arma::vec alpha(eDims[0]);
-  NumericVector ll(oDims[0]);  
-  double tmp;
-  arma::vec initk(eDims[0]);
   
-  for(int k = 0; k < oDims[0]; k++){    
-    initk = init % reparma(lweights.col(k),numberOfStates);
+  NumericVector ll(obs.n_rows);  
+#pragma omp parallel for num_threads(threads)
+  for(int k = 0; k < obs.n_rows; k++){    
+    arma::vec initk = init % reparma(lweights.col(k), numberOfStates);
     
-    for(int i=0; i < eDims[0]; i++){      
+    arma::vec alpha(emission.n_rows);
+    for(int i=0; i < emission.n_rows; i++){      
       alpha(i) = initk(i);
-      for(int r = 0; r < oDims[2]; r++){
+      for(int r = 0; r < obs.n_slices; r++){
         alpha(i) *= emission(i,obs(k,0,r),r);
       }
     }    
     
-    tmp = sum(alpha);
+    double tmp = sum(alpha);
     ll(k) = log(tmp);
     alpha /= tmp;
     
-    arma::vec alphatmp(eDims[0]);
+    arma::vec alphatmp(emission.n_rows);
     
-    for(int t = 1; t < oDims[1]; t++){  
-      for(int i = 0; i < eDims[0]; i++){
+    for(int t = 1; t < obs.n_cols; t++){  
+      for(int i = 0; i < emission.n_rows; i++){
         alphatmp(i) = arma::dot(transition.col(i), alpha);
-        for(int r = 0; r < oDims[2]; r++){
+        for(int r = 0; r < obs.n_slices; r++){
           alphatmp(i) *= emission(i,obs(k,t,r),r);
         }
       }
@@ -68,7 +67,6 @@ NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissio
       ll(k) += log(tmp);
       alpha = alphatmp/tmp;
     }
-  } 
-  
+  }
   return ll;
 }

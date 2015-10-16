@@ -11,7 +11,7 @@
 #' @return Log-likelihood of hidden Markov model.
 #' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building and 
 #'   fitting mixture Hidden Markov models.
-logLik.mhmm<-function(object, partials = FALSE, ...){
+logLik.mhmm<-function(object, partials = FALSE, threads = 0, ...){
   
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")
@@ -36,7 +36,7 @@ logLik.mhmm<-function(object, partials = FALSE, ...){
     emissionArray[,1:object$n_symbols[i],i]<-object$emission_probs[[i]]
   
   ll <- logLikMixHMM(object$transition_probs, emissionArray, object$initial_probs, obsArray,
-    object$coefficients, object$X, object$n_states_in_clusters) 
+    object$coefficients, object$X, object$n_states_in_clusters, threads) 
   
   
   structure(if (partials) ll else sum(ll), class = "logLik", df = df, nobs = nobs)

@@ -13,7 +13,7 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 
 NumericVector logLikHMM(NumericVector transitionMatrix, NumericVector emissionArray, 
-  NumericVector initialProbs, IntegerVector obsArray) {  
+  NumericVector initialProbs, IntegerVector obsArray, int threads = 1) {  
   
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
@@ -25,19 +25,19 @@ NumericVector logLikHMM(NumericVector transitionMatrix, NumericVector emissionAr
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
   
-  arma::vec alpha(eDims[0]);
+
   NumericVector ll(oDims[0]);  
-  double tmp;
   
+#pragma omp parallel for num_threads(threads)
   for(int k = 0; k < oDims[0]; k++){    
-    
+    arma::vec alpha(eDims[0]);
     for(int i=0; i < eDims[0]; i++){      
       alpha(i) = init(i);
       for(int r = 0; r < oDims[2]; r++){
         alpha(i) *= emission(i,obs(k,0,r),r);
       }
     } 
-    tmp = sum(alpha);
+    double tmp = sum(alpha);
     ll(k) = log(tmp);
     alpha /= tmp;
     

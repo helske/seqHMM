@@ -314,7 +314,7 @@
 #' 
 
 fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
-  control_em = list(), control_global = list(), control_local = list(), lb, ub, ...){
+  control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1, ...){
   
   if(!inherits(model, "mhmm"))
     stop("Argument model must be an object of class 'mhmm'.")
@@ -322,6 +322,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
   if(!em_step && !global_step && !local_step){
     stop("No method chosen for estimation. Choose at least one from em_step, global_step, and local_step.")
   }
+  if (threads < 1) stop ("Argument threads must be a positive integer.")
   
   df <- attr(model, "df")
   nobs <- attr(model, "nobs")
@@ -353,7 +354,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
     
     resEM <- EMx(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
       model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, 
-      em.con$maxeval, em.con$reltol,em.con$print_level)
+      em.con$maxeval, em.con$reltol,em.con$print_level, threads)
     
     if(resEM$error != 0){
       err_msg <- switch(resEM$error, 
@@ -544,7 +545,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
       if(estimate){
         objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
           transNZ, emissNZ, initNZ, model$n_symbols, 
-          model$coefficients, model$X, model$n_states_in_clusters)
+          model$coefficients, model$X, model$n_states_in_clusters, threads)
       } else {
         if(sum(npEM)>0){
           for(i in 1:model$n_channels){

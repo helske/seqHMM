@@ -6,7 +6,7 @@ using namespace Rcpp;
 
 List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
   IntegerVector obsArray, IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols,
-  NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates) { 
+  NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates, int threads = 1) { 
   
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
@@ -45,13 +45,13 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray, Num
   arma::cube beta(eDims[0],oDims[1],oDims[0]); //m,n,k 
   arma::mat scales(oDims[1],oDims[0]); //m,n,k
   
-  internalForwardx(transition, emission, initk, obs, alpha, scales);
+  internalForwardx(transition, emission, initk, obs, alpha, scales, threads);
   if(!alpha.is_finite()){
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(),
                         Named("gradient") = wrap(grad));
   }
-  internalBackward(transition, emission, obs, beta, scales);     
+  internalBackward(transition, emission, obs, beta, scales, threads);     
   if(!beta.is_finite()){
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), 

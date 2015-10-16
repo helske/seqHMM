@@ -14,7 +14,7 @@
 #' @return Matrix containing the standard errors for coefficients.
 #' @export
 #'
-vcov.mhmm <- function(object, conditional = TRUE, ...){
+vcov.mhmm <- function(object, conditional = TRUE, threads = 1,...){
   if (conditional) {
     #matrix(c(rep(0,model$n_covariates),
     #  sqrt(diag(varcoef(model$coefficients, model$X, model$n_states)))),
@@ -145,7 +145,7 @@ vcov.mhmm <- function(object, conditional = TRUE, ...){
       
       objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
         transNZ, emissNZ, initNZ, model$n_symbols, 
-        model$coefficients, model$X, model$n_states_in_clusters)$gradient
+        model$coefficients, model$X, model$n_states_in_clusters, threads)$gradient
       
     }
     vcovm <- solve(jacobian(objectivef, initialvalues, model = model, ...))[coef_ind, coef_ind]
