@@ -13,8 +13,8 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout="horizontal",
                         cex.legend=1, ncol.legend="auto", cpal="auto", ...){
   
   oldPar <- par(no.readonly=TRUE)
-  on.exit(par(oldPar))
-  on.exit(par(mfrow=c(1,1)))
+  on.exit(par(oldPar), add = TRUE)
+  on.exit(par(mfrow=c(1,1)), add = TRUE)
   
   divmodels <- separate_mhmm(x)
   
@@ -96,5 +96,5 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout="horizontal",
     }
   }
   invisible()
-  par(oldPar)
+  par(mfrow=c(1,1))
 }

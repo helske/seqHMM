@@ -4,7 +4,7 @@
 \alias{fit_hmm}
 \title{Estimate Parameters of Hidden Markov Model}
 \usage{
-fit_hmm(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
+fit_hmm(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
   control_em = list(), control_global = list(), control_local = list(),
   lb, ub, ...)
 }
@@ -16,7 +16,7 @@ The default is \code{TRUE}. Note that EM algorithm is faster than direct numeric
 but is even more prone to get stuck in a local optimum.}
 
 \item{global_step}{Logical, use global optimization via
-\code{\link{nloptr}} (possibly after the EM step). The default is \code{TRUE}.}
+\code{\link{nloptr}} (possibly after the EM step). The default is \code{FALSE}.}
 
 \item{local_step}{Logical, use local optimization via
 \code{\link{nloptr}} (possibly after the EM and/or global steps). The default is \code{TRUE}.}

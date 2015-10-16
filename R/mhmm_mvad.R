@@ -46,14 +46,14 @@
 #'   c(0.92, 0.05, 0.03,
 #'     0.01, 0.97, 0.02,
 #'     0.02, 0.04, 0.94), 
-#'   nrow=3, ncol=3, byrow=TRUE)
+#'   nrow = 3, ncol = 3, byrow = TRUE)
 #' 
 #' trans_2 <-  matrix(
 #'   c(0.93, 0.02, 0.03, 0.02,
 #'     0.01, 0.93, 0.02, 0.04,
 #'     0.01, 0.01, 0.96, 0.02,
 #'     0.01, 0.02, 0.02, 0.95), 
-#'   nrow=4, ncol=4, byrow=TRUE)
+#'   nrow = 4, ncol = 4, byrow = TRUE)
 #' 
 #' # Starting values for initial state probabilities
 #' initial_probs_1 <- c(0.73, 0.23, 0.04)
@@ -68,7 +68,7 @@
 #'   initial_probs = list(initial_probs_1, initial_probs_2))
 #' 
 #' # Fit the model
-#' fit_mvad <- fit_mhmm(init_mhmm_mvad, global_step = FALSE)
+#' fit_mvad <- fit_mhmm(init_mhmm_mvad)
 #' 
 #' # Trim the model
 #' mhmm_mvad <- trim_hmm(fit_mvad$model, zerotol = 1e-04)

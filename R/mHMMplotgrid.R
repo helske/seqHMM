@@ -15,7 +15,8 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow=NA, ncol=NA, byrow=FALSE,
   
   plot.new()
   opar <- par(no.readonly=TRUE)
-  on.exit(opar)
+  on.exit(opar, add = TRUE)
+  on.exit(graphics::layout(1), add = TRUE)
   
   divmodels <- separate_mhmm(x)
   
@@ -271,7 +272,5 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow=NA, ncol=NA, byrow=FALSE,
     }
   }
   
-  
-  # par(opar)
   graphics::layout(1)
 }

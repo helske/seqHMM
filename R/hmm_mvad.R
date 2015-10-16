@@ -50,9 +50,7 @@
 #'   observations = mvad.seq, transition_probs = trans, 
 #'   emission_probs = emiss, initial_probs = initial_probsm)
 #' 
-#' fit_mvad <- fit_hmm(
-#'   init_hmm_mvad, control_global = list(maxtime = 0),
-#'   control_local = list(maxtime = 0))
+#' fit_mvad <- fit_hmm(init_hmm_mvad)
 #'   
 #' hmm_mvad <- fit_mvad$model
 #' }
