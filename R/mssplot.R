@@ -191,7 +191,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
 
     
   oldPar <- par(no.readonly = TRUE)
-  on.exit(par(oldPar))
+  on.exit(par(oldPar), add = TRUE)
   
   oldWarn <- options("warn")
   options(warn = 1)

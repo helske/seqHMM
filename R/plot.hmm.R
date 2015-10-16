@@ -201,8 +201,8 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
   # Saving and changing marginals
   oldPar  <- par(no.readonly = TRUE)
   par(mar = c(0.5,0.5,0.5,0.5))
-  on.exit(par(oldPar))
-  on.exit(par(mfrow = c(1,1)))
+  on.exit(par(oldPar), add = TRUE)
+  on.exit(par(mfrow = c(1,1)), add = TRUE)
   
   dots  <- list(...)
   
@@ -535,6 +535,5 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
   }
   
   
-  par(oldPar)
   
 }
