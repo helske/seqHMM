@@ -96,4 +96,5 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout="horizontal",
     }
   }
   invisible()
+  par(mfrow=c(1,1))
 }

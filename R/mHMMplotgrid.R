@@ -272,5 +272,5 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow=NA, ncol=NA, byrow=FALSE,
     }
   }
   
-  
+  graphics::layout(1)
 }

@@ -534,6 +534,6 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
     
   }
   
-  
+  par(mfrow = c(1,1))
   
 }
