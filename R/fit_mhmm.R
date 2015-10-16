@@ -364,6 +364,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
       if(!global_step && !local_step && em.con$restarts == 0){
         stop(paste("EM algorithm failed:", err_msg))
       } else warning(paste("EM algorithm failed:", err_msg))
+      resEM$logLik <- -Inf
     }
     
     if (em.con$restarts > 0 & (em.con$restart_transition | em.con$restart_emission)) {
