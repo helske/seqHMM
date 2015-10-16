@@ -67,9 +67,7 @@ init_hmm_biofam <- build_hmm(
   channel_names = c("Parenthood", "Marriage", "Residence"),
   state_names = paste("State", 1:4))
 
-fit_biofam <- fit_hmm(
-   init_hmm_biofam, control_global = list(maxtime = 0),
-   control_local = list(maxtime = 0))
+fit_biofam <- fit_hmm(init_hmm_biofam)
 
 hmm_biofam <- fit_biofam$model
 }

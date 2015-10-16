@@ -4,7 +4,7 @@
 \alias{vcov.mhmm}
 \title{Variance-Covariance for Regression Coefficients of Mixture Hidden Markov Model}
 \usage{
-\method{vcov}{mhmm}(object, conditional = TRUE, ...)
+\method{vcov}{mhmm}(object, conditional = TRUE, threads = 1, ...)
 }
 \arguments{
 \item{object}{Object of class \code{mhmm}.}

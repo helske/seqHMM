@@ -4,9 +4,9 @@
 \alias{fit_mhmm}
 \title{Estimate Parameters of Mixture Hidden Markov Model}
 \usage{
-fit_mhmm(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
+fit_mhmm(model, em_step = TRUE, global_step = TRUE, local_step = TRUE,
   control_em = list(), control_global = list(), control_local = list(),
-  lb, ub, ...)
+  lb, ub, threads = 1, ...)
 }
 \arguments{
 \item{model}{Hidden Markov model of class \code{mhmm}.}
@@ -34,7 +34,7 @@ Default is 1e-8.} }}
   \code{\link{nloptr}} argument \code{opts}. The default values are
   \describe{
    \item{algorithm}{\code{"NLOPT_GD_MLSL_LDS"}}
-   \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)}}#'
+   \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)}}
    \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
    \item{maxtime}{\code{60} (maximum run time in seconds)}
 }}
@@ -159,12 +159,13 @@ init_mhmm_mvad <- build_mhmm(
 fit_mvad <- fit_mhmm(
   init_mhmm_mvad, em_step = TRUE, global_step = FALSE, local_step = FALSE)
 fit_mvad$logLik # -20639.1
-
+\dontrun{
 # Run EM algorithm 25 times with simulated starting values
 set.seed(1)
 fit_mvad2 <- fit_mhmm(init_mhmm_mvad, em_step = TRUE, global_step = FALSE, local_step = TRUE,
-  control_em=list(restarts = 25, print_level=1))
-fit$logLik # -14651.43
+  control_em=list(restarts = 25))
+fit_mvad2$logLik # -14651.43
+}
 ##############################################################
 
 # Multichannel

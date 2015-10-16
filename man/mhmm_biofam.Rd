@@ -35,7 +35,7 @@ emiss_1_child <- matrix(
     0.99, 0.01,
     0.99, 0.01,
     0.99, 0.01),
-  nrow=4, ncol=2, byrow=TRUE)
+  nrow = 4, ncol = 2, byrow = TRUE)
 
 alphabet(marr.seq)
 emiss_1_marr <- matrix(
@@ -43,7 +43,7 @@ emiss_1_marr <- matrix(
     0.01, 0.01, 0.98,
     0.01, 0.98, 0.01, # High probability for married
     0.98, 0.01, 0.01), # High probability for divorced
-  nrow=4, ncol=3, byrow=TRUE)
+  nrow = 4, ncol = 3, byrow = TRUE)
 
 alphabet(left.seq)
 emiss_1_left <- matrix(
@@ -51,7 +51,7 @@ emiss_1_left <- matrix(
     0.99, 0.01, # High probability for having left home
     0.99, 0.01,
     0.99, 0.01),
-  nrow=4, ncol=2, byrow=TRUE)
+  nrow = 4, ncol = 2, byrow = TRUE)
 
 # Cluster 2
 emiss_2_child <- matrix(
@@ -59,21 +59,21 @@ emiss_2_child <- matrix(
     0.99, 0.01,
     0.99, 0.01,
     0.01, 0.99),
-  nrow=4, ncol=2, byrow=TRUE)
+  nrow = 4, ncol = 2, byrow = TRUE)
 
 emiss_2_marr <- matrix(
   c(0.01, 0.01, 0.98, # High probability for single
     0.01, 0.01, 0.98,
     0.01, 0.98, 0.01, # High probability for married
     0.29, 0.7, 0.01),
-  nrow=4, ncol=3, byrow=TRUE)
+  nrow = 4, ncol = 3, byrow = TRUE)
 
 emiss_2_left <- matrix(
   c(0.01, 0.99, # High probability for living with parents
     0.99, 0.01,
     0.99, 0.01,
     0.99, 0.01),
-  nrow=4, ncol=2, byrow=TRUE)
+  nrow = 4, ncol = 2, byrow = TRUE)
 
 # Cluster 3
 emiss_3_child <- matrix(
@@ -83,7 +83,7 @@ emiss_3_child <- matrix(
     0.99, 0.01,
     0.01, 0.99,
     0.01, 0.99),
-  nrow=6, ncol=2, byrow=TRUE)
+  nrow = 6, ncol = 2, byrow = TRUE)
 
 emiss_3_marr <- matrix(
   c(0.01, 0.01, 0.98, # High probability for single
@@ -92,7 +92,7 @@ emiss_3_marr <- matrix(
     0.01, 0.98, 0.01,
     0.01, 0.98, 0.01, # High probability for married
     0.98, 0.01, 0.01), # High probability for divorced
-  nrow=6, ncol=3, byrow=TRUE)
+  nrow = 6, ncol = 3, byrow = TRUE)
 
 emiss_3_left <- matrix(
   c(0.01, 0.99, # High probability for living with parents
@@ -101,7 +101,7 @@ emiss_3_left <- matrix(
     0.01, 0.99,
     0.99, 0.01,
     0.99, 0.01),
-  nrow=6, ncol=2, byrow=TRUE)
+  nrow = 6, ncol = 2, byrow = TRUE)
 
 # Initial values for transition matrices
 trans_1 <- matrix(
@@ -109,7 +109,7 @@ trans_1 <- matrix(
        0, 0.90, 0.07, 0.03,
        0,    0, 0.90, 0.10,
        0,    0,    0,    1),
-  nrow=4, ncol=4, byrow=TRUE)
+  nrow = 4, ncol = 4, byrow = TRUE)
 
 trans_2 <- matrix(
   c(0.80, 0.10, 0.05,  0.03, 0.01, 0.01,
@@ -118,7 +118,7 @@ trans_2 <- matrix(
        0,    0,    0,  0.90, 0.05, 0.05,
        0,    0,    0,     0, 0.90,  0.1,
        0,    0,    0,     0,    0,    1),
-  nrow=6, ncol=6, byrow=TRUE)
+  nrow = 6, ncol = 6, byrow = TRUE)
 
 # Initial values for initial state probabilities
 initialProbs_1 <- c(0.9, 0.07, 0.02, 0.01)
@@ -131,20 +131,20 @@ biofam3c$covariates$cohort <- factor(
 
 # Build mixture HMM
 init_mhmm_biofam <- build_mhmm(
-  observations=list(child.seq, marr.seq, left.seq),
-  transition_probs=list(trans_1,trans_1,trans_2),
-  emission_probs=list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
+  observations = list(child.seq, marr.seq, left.seq),
+  transition_probs = list(trans_1,trans_1,trans_2),
+  emission_probs = list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
                        list(emiss_2_child, emiss_2_marr, emiss_2_left),
                        list(emiss_3_child, emiss_3_marr, emiss_3_left)),
-  initial_probs=list(initialProbs_1, initialProbs_1, initialProbs_2),
-  formula = ~ sex + cohort, data = biofam3c$covariates,
+  initial_probs = list(initialProbs_1, initialProbs_1, initialProbs_2),
+  formula = ~sex + cohort, data = biofam3c$covariates,
   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
   channel_names = c("Parenthood", "Marriage", "Residence"),
   state_names = list(paste("State", 1:4), paste("State", 1:4),
                      paste("State", 1:6)))
 
 # Fitting the model
-fit_biofam <- fit_mhmm(init_mhmm_biofam, global_step = FALSE)
+fit_biofam <- fit_mhmm(init_mhmm_biofam)
 
 # Trimming the model
 mhmm_biofam <- trim_hmm(fit_biofam$model, zerotol = 1e-04)
