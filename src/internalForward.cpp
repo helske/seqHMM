@@ -5,7 +5,7 @@ using namespace Rcpp;
 void internalForward(const arma::mat& transition, const arma::cube& emission, 
   const arma::vec& init, const arma::icube& obs, arma::cube& alpha, arma::mat& scales, int threads) {  
   
-#pragma omp parallel for num_threads(threads)
+#pragma omp parallel for schedule(static) num_threads(threads)
   for(unsigned int k = 0; k < obs.n_rows; k++){      
     for(unsigned int i=0; i < emission.n_rows; i++){      
       alpha(i,0,k) = init(i);

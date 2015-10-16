@@ -6,7 +6,7 @@ using namespace Rcpp;
 void internalBackward(const arma::mat& transition, const arma::cube& emission, 
   const arma::icube& obs, arma::cube& beta, const arma::mat& scales, int threads) {  
   
-#pragma omp parallel for num_threads(threads)
+#pragma omp parallel for schedule(static) num_threads(threads)
   for(int k = 0; k < obs.n_rows; k++){
     beta.slice(k).col(obs.n_cols - 1).fill(1.0);
     for(int t = obs.n_cols - 2; t >= 0; t--){  

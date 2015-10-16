@@ -61,11 +61,11 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     arma::cube gamma(eDims[0],eDims[1],eDims[2], arma::fill::zeros);
     arma::vec delta(eDims[0], arma::fill::zeros); 
     
-    
     for(int k = 0; k < oDims[0]; k++){
-      
       delta += alpha.slice(k).col(0) % beta.slice(k).col(0);
-      
+    }
+#pragma omp parallel for schedule(static) num_threads(threads)
+    for(int k = 0; k < oDims[0]; k++){
       for(int i = 0; i < eDims[0]; i++){
         for(int j = 0; j < eDims[0]; j++){
           if(transition(i,j) > 0.0){
@@ -74,6 +74,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
               for(int r = 0; r < oDims[2]; r++){
                 tmp *= emission(j,obs(k,t+1,r),r);
               }
+#pragma omp atomic
               ksii(i,j) += tmp;
             }
           }
@@ -87,7 +88,9 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
             if(emission(i, l, r) > 0.0){
               for(int t = 0; t < oDims[1]; t++){
                 if(l == (obs(k, t, r))){
-                  gamma(i,l,r) += alpha(i,t,k) * beta(i,t,k);
+                  double tmp = alpha(i,t,k) * beta(i,t,k);
+#pragma omp atomic
+                  gamma(i,l,r) += tmp;
                 }     
               }
             }
