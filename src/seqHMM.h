@@ -5,8 +5,8 @@
 #include <omp.h>
 #endif
 
-//#define ARMA_NO_DEBUG
-//#define ARMA_DONT_PRINT_ERRORS
+#define ARMA_NO_DEBUG
+#define ARMA_DONT_PRINT_ERRORS
 #include <RcppArmadillo.h>
 
 void internalForward(const arma::mat& transition, const arma::cube& emission, 
