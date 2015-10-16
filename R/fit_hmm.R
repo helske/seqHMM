@@ -12,7 +12,7 @@
 #'   The default is \code{TRUE}. Note that EM algorithm is faster than direct numerical optimization, 
 #'   but is even more prone to get stuck in a local optimum.
 #' @param global_step Logical, use global optimization via 
-#'   \code{\link{nloptr}} (possibly after the EM step). The default is \code{TRUE}.
+#'   \code{\link{nloptr}} (possibly after the EM step). The default is \code{FALSE}.
 #'@param local_step Logical, use local optimization via 
 #'   \code{\link{nloptr}} (possibly after the EM and/or global steps). The default is \code{TRUE}.
 #' @param control_em Optional list of control parameters for for EM algorithm. 
@@ -167,7 +167,7 @@
 #' hmm_5$logLik #-5403.383
 #' }
 #' 
-fit_hmm<-function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
+fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE, 
   control_em=list(), control_global=list(), 
   control_local=list(), lb, ub, ...){
   
