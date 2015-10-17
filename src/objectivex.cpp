@@ -37,7 +37,6 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray,
 
   arma::mat initk(eDims[0], oDims[0]);
 
-#pragma omp parallel for schedule(static) num_threads(threads)
   for (int k = 0; k < oDims[0]; k++) {
     initk.col(k) = init % reparma(weights.col(k), numberOfStates);
   }
@@ -64,7 +63,7 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray,
       arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ) + (numberOfStates.size() - 1) * q,
       oDims[0], arma::fill::zeros);
 
-#pragma omp parallel for schedule(static) num_threads(threads)
+#pragma omp parallel for schedule(static) num_threads(threads) default(none) shared(q, alpha, beta, scales, gradmat, nSymbols, ANZ, BNZ, INZ, oDims, eDims, numberOfStates, cumsumstate, obs, init, initk, X, weights, transition, emission)
   for (int k = 0; k < oDims[0]; k++) {
     int countgrad = 0;
     // transitionMatrix

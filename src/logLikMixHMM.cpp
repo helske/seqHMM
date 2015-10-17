@@ -36,7 +36,6 @@ NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissio
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
 
   NumericVector ll(obs.n_rows);
-#pragma omp parallel for num_threads(threads)
   for (int k = 0; k < obs.n_rows; k++) {
     arma::vec initk = init % reparma(lweights.col(k), numberOfStates);
 
