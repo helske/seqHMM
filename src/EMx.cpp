@@ -63,7 +63,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     for (int k = 0; k < oDims[0]; k++) {
       delta += alpha.slice(k).col(0) % beta.slice(k).col(0);
     }
-#pragma omp parallel for schedule(static) num_threads(threads)
+#pragma omp parallel for schedule(static) num_threads(threads) default(none) shared(eDims, oDims, transition, obs, alpha, beta, scales, emission, ksii, gamma, nSymbols)
     for (int k = 0; k < oDims[0]; k++) {
       for (int i = 0; i < eDims[0]; i++) {
         for (int j = 0; j < eDims[0]; j++) {
