@@ -1,4 +1,3 @@
-
 #include "seqHMM.h"
 using namespace Rcpp;
 
@@ -12,50 +11,49 @@ using namespace Rcpp;
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
-List viterbi(NumericVector transitionMatrix, NumericVector emissionArray, 
-NumericVector initialProbs, IntegerVector obsArray) {  
-  
+List viterbi(NumericVector transitionMatrix, NumericVector emissionArray,
+    NumericVector initialProbs, IntegerVector obsArray) {
+
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
-  
+
   arma::vec init(initialProbs.begin(), eDims[0], false);
   arma::mat transition(transitionMatrix.begin(), eDims[0], eDims[0], false);
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
-  
+
   arma::umat q(oDims[0], oDims[1]);
   arma::vec logp(oDims[0]);
-  
-  arma::mat delta(eDims[0],oDims[1]);
-  arma::umat phi(eDims[0],oDims[1]);
-  
-  
-  for(int k=0; k<oDims[0]; k++){
-    
+
+  arma::mat delta(eDims[0], oDims[1]);
+  arma::umat phi(eDims[0], oDims[1]);
+
+  for (int k = 0; k < oDims[0]; k++) {
+
     delta.col(0) = init;
-    for(int r=0; r<eDims[2]; r++){
-      delta.col(0) += emission.slice(r).col(obs(k,0,r));
-    }   
-    
+    for (int r = 0; r < eDims[2]; r++) {
+      delta.col(0) += emission.slice(r).col(obs(k, 0, r));
+    }
+
     phi.col(0).zeros();
-    
-    for(int t=1; t<oDims[1]; t++){
-      for(int j=0; j<eDims[0]; j++){
-        (delta.col(t-1)+transition.col(j)).max(phi(j,t));
-        delta(j,t) = delta(phi(j,t),t-1)+transition(phi(j,t),j);
-        for(int r=0; r<eDims[2]; r++){
-          delta(j,t) += emission(j,obs(k,t,r),r);
+
+    for (int t = 1; t < oDims[1]; t++) {
+      for (int j = 0; j < eDims[0]; j++) {
+        (delta.col(t - 1) + transition.col(j)).max(phi(j, t));
+        delta(j, t) = delta(phi(j, t), t - 1) + transition(phi(j, t), j);
+        for (int r = 0; r < eDims[2]; r++) {
+          delta(j, t) += emission(j, obs(k, t, r), r);
         }
-      }        
+      }
     }
-    
-    delta.col(oDims[1]-1).max(q(k,oDims[1]-1));
-    
-    for(int t=(oDims[1]-2); t>=0; t--){
-      q(k,t) = phi(q(k,t+1),t+1);
+
+    delta.col(oDims[1] - 1).max(q(k, oDims[1] - 1));
+
+    for (int t = (oDims[1] - 2); t >= 0; t--) {
+      q(k, t) = phi(q(k, t + 1), t + 1);
     }
-    logp(k) = delta.col(oDims[1]-1).max();
+    logp(k) = delta.col(oDims[1] - 1).max();
   }
-  
-  return List::create(Named("q") = wrap(q),Named("logp") = wrap(logp));
+
+  return List::create(Named("q") = wrap(q), Named("logp") = wrap(logp));
 }

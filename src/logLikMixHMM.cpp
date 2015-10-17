@@ -1,4 +1,3 @@
-
 #include "seqHMM.h"
 using namespace Rcpp;
 
@@ -12,60 +11,59 @@ using namespace Rcpp;
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
-NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissionArray, 
-  NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, 
-  NumericMatrix X_, IntegerVector numberOfStates, int threads = 1) {  
-  
-  
+NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissionArray,
+    NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_,
+    IntegerVector numberOfStates, int threads = 1) {
+
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
-  
+
   int q = coefs.nrow();
-  arma::mat coef(coefs.begin(),q,coefs.ncol());
+  arma::mat coef(coefs.begin(), q, coefs.ncol());
   coef.col(0).zeros();
-  arma::mat X(X_.begin(),oDims[0],q);
-  arma::mat lweights = exp(X*coef).t();
-  if(!lweights.is_finite()){
-    warning("Coefficients of covariates resulted non-finite cluster probabilities. Returning -Inf.");
+  arma::mat X(X_.begin(), oDims[0], q);
+  arma::mat lweights = exp(X * coef).t();
+  if (!lweights.is_finite()) {
+    warning(
+        "Coefficients of covariates resulted non-finite cluster probabilities. Returning -Inf.");
     return wrap(-arma::math::inf());
-    
+
   }
-  lweights.each_row() /= sum(lweights,0);
-  arma::colvec init(initialProbs.begin(),eDims[0], false);
-  arma::mat transition(transitionMatrix.begin(),eDims[0],eDims[0], false);
+  lweights.each_row() /= sum(lweights, 0);
+  arma::colvec init(initialProbs.begin(), eDims[0], false);
+  arma::mat transition(transitionMatrix.begin(), eDims[0], eDims[0], false);
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
-  
-  
-  NumericVector ll(obs.n_rows);  
+
+  NumericVector ll(obs.n_rows);
 #pragma omp parallel for num_threads(threads)
-  for(int k = 0; k < obs.n_rows; k++){    
+  for (int k = 0; k < obs.n_rows; k++) {
     arma::vec initk = init % reparma(lweights.col(k), numberOfStates);
-    
+
     arma::vec alpha(emission.n_rows);
-    for(int i=0; i < emission.n_rows; i++){      
+    for (int i = 0; i < emission.n_rows; i++) {
       alpha(i) = initk(i);
-      for(int r = 0; r < obs.n_slices; r++){
-        alpha(i) *= emission(i,obs(k,0,r),r);
+      for (int r = 0; r < obs.n_slices; r++) {
+        alpha(i) *= emission(i, obs(k, 0, r), r);
       }
-    }    
-    
+    }
+
     double tmp = sum(alpha);
     ll(k) = log(tmp);
     alpha /= tmp;
-    
+
     arma::vec alphatmp(emission.n_rows);
-    
-    for(int t = 1; t < obs.n_cols; t++){  
-      for(int i = 0; i < emission.n_rows; i++){
+
+    for (int t = 1; t < obs.n_cols; t++) {
+      for (int i = 0; i < emission.n_rows; i++) {
         alphatmp(i) = arma::dot(transition.col(i), alpha);
-        for(int r = 0; r < obs.n_slices; r++){
-          alphatmp(i) *= emission(i,obs(k,t,r),r);
+        for (int r = 0; r < obs.n_slices; r++) {
+          alphatmp(i) *= emission(i, obs(k, t, r), r);
         }
       }
       tmp = sum(alphatmp);
       ll(k) += log(tmp);
-      alpha = alphatmp/tmp;
+      alpha = alphatmp / tmp;
     }
   }
   return ll;

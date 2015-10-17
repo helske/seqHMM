@@ -3,91 +3,92 @@ using namespace Rcpp;
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
-unsigned int optCoef(arma:: mat weights, const arma::icube& obs, const arma::cube& emission, const arma::mat& initk, 
-  const arma::cube& beta, const arma::mat& scales, arma::mat& coef, const arma::mat& X, 
-  const IntegerVector cumsumstate, const IntegerVector numberOfStates, int trace) {
-  
-  
+unsigned int optCoef(arma::mat weights, const arma::icube& obs, const arma::cube& emission,
+    const arma::mat& initk, const arma::cube& beta, const arma::mat& scales, arma::mat& coef,
+    const arma::mat& X, const IntegerVector cumsumstate, const IntegerVector numberOfStates,
+    int trace) {
+
   int p = X.n_cols;
   arma::vec tmpvec(p * (weights.n_rows - 1));
-  arma::mat coefnew(coef.n_rows,coef.n_cols - 1);
+  arma::mat coefnew(coef.n_rows, coef.n_cols - 1);
   int iter = 0;
   double change = 1.0;
-  while((change>1e-8) & (iter<100)){
-    bool solve_ok = arma::solve(tmpvec, hCoef(weights, X), 
-      gCoef(obs, beta, scales, emission, initk, weights, X, cumsumstate, numberOfStates));
-    if(solve_ok == false) {
-      return(2);
+  while ((change > 1e-8) & (iter < 100)) {
+    bool solve_ok = arma::solve(tmpvec, hCoef(weights, X),
+        gCoef(obs, beta, scales, emission, initk, weights, X, cumsumstate, numberOfStates));
+    if (solve_ok == false) {
+      return (2);
     }
-    for(int i = 0; i < (weights.n_rows - 1); i++){
+    for (int i = 0; i < (weights.n_rows - 1); i++) {
       coefnew.col(i) = coef.col(i + 1) - tmpvec.subvec(i * p, (i + 1) * p - 1);
     }
-    change = arma::accu(arma::abs(coef.submat(0, 1, coef.n_rows - 1, coef.n_cols - 1) - coefnew))/coefnew.n_elem;
+    change = arma::accu(arma::abs(coef.submat(0, 1, coef.n_rows - 1, coef.n_cols - 1) - coefnew))
+        / coefnew.n_elem;
     coef.submat(0, 1, coef.n_rows - 1, coef.n_cols - 1) = coefnew;
     iter++;
-    if(trace==3){
-      Rcout<<"coefficient optimization iter: "<< iter;
-      Rcout<<" new coefficients: "<< std::endl<<coefnew<<std::endl;
-      Rcout<<" relative change: "<<change<<std::endl;
+    if (trace == 3) {
+      Rcout << "coefficient optimization iter: " << iter;
+      Rcout << " new coefficients: " << std::endl << coefnew << std::endl;
+      Rcout << " relative change: " << change << std::endl;
     }
-    weights = exp(X*coef).t();
-    if(!weights.is_finite()){
-      return(3);
+    weights = exp(X * coef).t();
+    if (!weights.is_finite()) {
+      return (3);
     }
-    weights.each_row() /= sum(weights,0);
-    
+    weights.each_row() /= sum(weights, 0);
+
   }
-  return(0);
+  return (0);
 }
 
+arma::vec gCoef(const arma::icube& obs, const arma::cube& beta, const arma::mat& scales,
+    const arma::cube& emission, const arma::mat& initk, const arma::mat& weights,
+    const arma::mat& X, const IntegerVector cumsumstate, const IntegerVector numberOfStates) {
 
-arma::vec gCoef(const arma::icube& obs, const arma::cube& beta, const arma::mat& scales, const arma::cube& emission, const arma::mat& initk,
-  const arma::mat& weights, const arma::mat& X, const IntegerVector cumsumstate, 
-  const IntegerVector numberOfStates) {
-  
   int q = X.n_cols;
-  arma::vec grad(q * (weights.n_rows - 1) ,arma::fill::zeros);
+  arma::vec grad(q * (weights.n_rows - 1), arma::fill::zeros);
   double tmp;
-  for(unsigned int jj = 1; jj < numberOfStates.size(); jj++){
-    for(int k = 0; k < obs.n_rows; k++){
-      for(unsigned int j = 0; j < emission.n_rows; j++){                
+  for (unsigned int jj = 1; jj < numberOfStates.size(); jj++) {
+    for (int k = 0; k < obs.n_rows; k++) {
+      for (unsigned int j = 0; j < emission.n_rows; j++) {
         tmp = 1.0;
-        for(int r=0; r < obs.n_slices; r++){
-          tmp *= emission(j,obs(k,0,r),r);
-        }        
-        if(j>=(cumsumstate(jj)-numberOfStates(jj)) & j<cumsumstate(jj)){
-          grad.subvec(q*(jj-1),q*jj-1) += 
-            tmp * beta(j,0,k) / scales(0,k) * initk(j,k) * X.row(k).t() * (1.0 - weights(jj,k)); 
+        for (int r = 0; r < obs.n_slices; r++) {
+          tmp *= emission(j, obs(k, 0, r), r);
+        }
+        if (j >= (cumsumstate(jj) - numberOfStates(jj)) & j < cumsumstate(jj)) {
+          grad.subvec(q * (jj - 1), q * jj - 1) += tmp * beta(j, 0, k) / scales(0, k) * initk(j, k)
+              * X.row(k).t() * (1.0 - weights(jj, k));
         } else {
-          grad.subvec(q*(jj-1),q*jj-1) -= 
-            tmp * beta(j,0,k) / scales(0,k) * initk(j,k) * X.row(k).t() * weights(jj,k);
+          grad.subvec(q * (jj - 1), q * jj - 1) -= tmp * beta(j, 0, k) / scales(0, k) * initk(j, k)
+              * X.row(k).t() * weights(jj, k);
         }
       }
     }
   }
-  
+
   return grad;
 }
 
 arma::mat hCoef(const arma::mat& weights, const arma::mat& X) {
-  
+
   int p = X.n_cols;
   arma::mat hess(p * (weights.n_rows - 1), p * (weights.n_rows - 1));
   hess.zeros();
-  for(int j = 0; j < (weights.n_rows - 1); j++){
-    for(int k = 0; k < (weights.n_rows - 1); k++){
-      for(int i = 0; i < X.n_rows; i++){
-        if(j!=k){
-          hess.submat(j*p,k*p,(j+1)*p-1,(k+1)*p-1) += X.row(i).t()*X.row(i)*weights(j+1,i)*weights(k+1,i);
-        } else{
-          hess.submat(j*p,j*p,(j+1)*p-1,(j+1)*p-1) -= X.row(i).t()*X.row(i)*weights(j+1,i)*(1.0-weights(j+1,i));
-          
+  for (int j = 0; j < (weights.n_rows - 1); j++) {
+    for (int k = 0; k < (weights.n_rows - 1); k++) {
+      for (int i = 0; i < X.n_rows; i++) {
+        if (j != k) {
+          hess.submat(j * p, k * p, (j + 1) * p - 1, (k + 1) * p - 1) += X.row(i).t() * X.row(i)
+              * weights(j + 1, i) * weights(k + 1, i);
+        } else {
+          hess.submat(j * p, j * p, (j + 1) * p - 1, (j + 1) * p - 1) -= X.row(i).t() * X.row(i)
+              * weights(j + 1, i) * (1.0 - weights(j + 1, i));
+
         }
-        
+
       }
     }
   }
   return hess;
 }
-
 
