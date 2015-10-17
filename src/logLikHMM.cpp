@@ -24,7 +24,6 @@ NumericVector logLikHMM(NumericVector transitionMatrix, NumericVector emissionAr
 
   NumericVector ll(oDims[0]);
 
-#pragma omp parallel for num_threads(threads)
   for (int k = 0; k < oDims[0]; k++) {
     arma::vec alpha(eDims[0]);
     for (int i = 0; i < eDims[0]; i++) {

@@ -36,12 +36,12 @@ hidden_paths <- function(model){
   
   if(model$n_channels == 1){
     model$observations <- list(model$observations)
-    model$emission_matrix <- list(model$emission_matrix)
+    model$emission_probs <- list(model$emission_probs)
   }
   
   
   model$initial_probs <- log(model$initial_probs)
-  model$transition_matrix <- log(model$transition_matrix)
+  model$transition_probs <- log(model$transition_probs)
   
   obsArray <- array(0,c(model$n_sequences,model$length_of_sequences,model$n_channels))
   for(i in 1:model$n_channels){
@@ -52,14 +52,14 @@ hidden_paths <- function(model){
   
   emissionArray <- array(0,c(model$n_states,max(model$n_symbols)+1,model$n_channels))
   for(i in 1:model$n_channels)
-    emissionArray[,1:model$n_symbols[i],i] <- log(model$emission_matrix[[i]])
+    emissionArray[,1:model$n_symbols[i],i] <- log(model$emission_probs[[i]])
   
   if(mix){
-    out <- viterbix(model$transition_matrix, emissionArray, 
+    out <- viterbix(model$transition_probs, emissionArray, 
       model$initial_probs, obsArray, model$coefficients, 
       model$X, model$n_states_in_clusters)
   } else{
-    out <- viterbi(model$transition_matrix, emissionArray, 
+    out <- viterbi(model$transition_probs, emissionArray, 
       model$initial_probs, obsArray)
   }
   
