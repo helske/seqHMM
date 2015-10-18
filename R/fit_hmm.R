@@ -209,13 +209,13 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
         
         nz_trans <- (random_trans > 0 & random_trans < 1)
         np_trans <- sum(nz_trans)
-          base_trans <- resEM$transitionMatrix[nz_trans]
+        base_trans <- resEM$transitionMatrix[nz_trans]
       }
       random_emiss <- emissionArray
       if (em.con$restart_emission) {
         nz_emiss <- (random_emiss > 0 & random_emiss < 1)
         np_emiss <- sum(nz_emiss)
-          base_emiss <- resEM$emissionArray[nz_emiss]
+        base_emiss <- resEM$emissionArray[nz_emiss]
       }
       
       for (i in 1:em.con$restarts) {
@@ -231,10 +231,10 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
         }
         resEMi <- EM(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
           model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
-
-          if (resEMi$logLik > resEM$logLik) {
-            resEM <- resEMi
-          }
+        
+        if (resEMi$logLik > resEM$logLik) {
+          resEM <- resEMi
+        }
         
       }
       

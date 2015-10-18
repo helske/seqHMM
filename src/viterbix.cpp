@@ -38,7 +38,7 @@ List viterbix(NumericVector transitionMatrix, NumericVector emissionArray,
   lweights.each_row() /= sum(lweights, 0);
   lweights = log(lweights);
 
-  for (int k = 0; k < obs.n_rows; k++) {
+  for (unsigned int k = 0; k < obs.n_rows; k++) {
     delta.col(0) = init + reparma(lweights.col(k), numberOfStates);
     for (unsigned int r = 0; r < emission.n_slices; r++) {
       delta.col(0) += emission.slice(r).col(obs(k, 0, r));
@@ -58,7 +58,7 @@ List viterbix(NumericVector transitionMatrix, NumericVector emissionArray,
 
     delta.col(obs.n_cols - 1).max(q(k, obs.n_cols - 1));
 
-    for (unsigned int t = (obs.n_cols - 2); t >= 0; t--) {
+    for (int t = (obs.n_cols - 2); t >= 0; t--) {
       q(k, t) = phi(q(k, t + 1), t + 1);
     }
     logp(k) = delta.col(obs.n_cols - 1).max();

@@ -8,7 +8,7 @@ void internalBackward(const arma::mat& transition, const arma::cube& emission,
 default(none) shared(beta, scales, obs, emission,transition)
   for (int k = 0; k < obs.n_rows; k++) {
     beta.slice(k).col(obs.n_cols - 1).fill(1.0);
-    for (unsigned int t = obs.n_cols - 2; t >= 0; t--) {
+    for (int t = obs.n_cols - 2; t >= 0; t--) {
       for (unsigned int i = 0; i < transition.n_rows; i++) {
         arma::vec tmpbeta = beta.slice(k).col(t + 1);
         for (unsigned int r = 0; r < obs.n_slices; r++) {
