@@ -6,7 +6,7 @@ using namespace Rcpp;
 
 List objective(NumericVector transitionMatrix, NumericVector emissionArray,
     NumericVector initialProbs, IntegerVector obsArray, IntegerVector transNZ,
-    IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols, int threads) {
+    IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols, int threads = 1) {
 
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r

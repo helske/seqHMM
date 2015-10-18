@@ -314,7 +314,7 @@
 #' }
 #' 
 
-fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
+fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE, 
   control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1, ...){
 
   
@@ -402,7 +402,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = TRUE, local_step = TRU
         }
         resEMi <- EMx(random_trans, random_emiss, model$initial_probs, obsArray, 
           model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, em.con$maxeval, 
-          em.con$reltol,em.con$print_level)
+          em.con$reltol,em.con$print_level, threads)
         if(resEMi$error != 0){
           err_msg <- switch(resEMi$error, 
             "1" = "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
