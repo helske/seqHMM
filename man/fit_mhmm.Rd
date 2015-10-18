@@ -45,7 +45,6 @@ Default is 1e-8.} }}
  \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
  \item{xtol_rel}{\code{1e-8}}
  \item{maxeval}{\code{10000} (maximum number of iterations)}
- \item{maxtime}{\code{60} (maximum run time in seconds)}
 }}
 
 \item{lb,ub}{Lower and upper bounds for parameters in Softmax parameterization.

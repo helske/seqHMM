@@ -35,10 +35,7 @@ Default is 1e-8.} }}
   \describe{
    \item{algorithm}{\code{"NLOPT_GD_MLSL_LDS"}}
    \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)}}
-   \item{ranseed}{\code{123}}
    \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
-   \item{maxtime}{\code{60} (maximum run time in seconds)}
-   \item{population}{\code{4*length(initialvalues)}} (number of starting points)
 }}
 
 \item{control_local}{Optional list of additional arguments for

@@ -38,7 +38,6 @@
 #'    \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
 #'    \item{xtol_rel}{\code{1e-8}}
 #'    \item{maxeval}{\code{10000} (maximum number of iterations)}
-#'    \item{maxtime}{\code{60} (maximum run time in seconds)}
 #'   }
 #' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param ... Additional arguments to nloptr
@@ -566,8 +565,6 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
       lb <- pmin(lb, 2*initialvalues)
       if(missing(ub)){
         ub <- c(rep(10,length(initialvalues)-npCoef),rep(150/apply(abs(model$X),2,max),model$n_clusters-1))
-        #pmin(c(rep(250,length(initialvalues)-npCoef),rep(250/apply(abs(model$X),2,max),model$n_clusters-1)),
-        #  pmax(250, 2*initialvalues))
       }
       ub <- pmin(pmax(ub, 2*initialvalues),500)
       if(is.null(control_global$maxeval)){
@@ -579,9 +576,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
       if(is.null(control_global$algorithm)){
         control_global$algorithm <- "NLOPT_GD_MLSL_LDS"
         if(is.null(control_global$local_opts)) control_global$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)
-        #if(is.null(control_global$ranseed))  control_global$ranseed <- 123
-        #if(is.null(control_global$population))  control_global$population <- 4#*length(initialvalues)
-      }
+       }
       
       globalres <- nloptr(x0 = initialvalues, eval_f = objectivef, lb = lb, ub = ub,
         opts = control_global, model = model, estimate = TRUE, ...)
@@ -594,9 +589,6 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
     if(local_step){
       if(is.null(control_local$maxeval)){
         control_local$maxeval <- 10000
-      }
-      if(is.null(control_local$maxtime)){
-        control_local$maxtime <- 60
       }
       if(is.null(control_local$algorithm)){
         control_local$algorithm <- "NLOPT_LD_LBFGS"

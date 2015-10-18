@@ -28,10 +28,7 @@
 #'   \describe{
 #'    \item{algorithm}{\code{"NLOPT_GD_MLSL_LDS"}}
 #'    \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)}}
-#'    \item{ranseed}{\code{123}}
 #'    \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
-#'    \item{maxtime}{\code{60} (maximum run time in seconds)}
-#'    \item{population}{\code{4*length(initialvalues)}} (number of starting points) 
 #'}
 #' @param lb,ub Lower and upper bounds for parameters in Softmax parameterization. 
 #' Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)]. 
@@ -375,9 +372,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
       }
       if(is.null(control_global$algorithm)){
         control_global$algorithm <- "NLOPT_GD_MLSL_LDS"
-        control_global$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)
-        control_global$ranseed <- 123
-        control_global$population <- 4*length(initialvalues)
+        if(is.null(control_global$local_opts)) control_global$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)
       }
       
       globalres <- nloptr(x0 = initialvalues, eval_f = objectivef, lb = lb, ub = ub,
@@ -390,9 +385,6 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
     if(local_step){
       if(is.null(control_local$maxeval)){
         control_local$maxeval <- 10000
-      }
-      if(is.null(control_local$maxtime)){
-        control_local$maxtime <- 60
       }
       if(is.null(control_local$algorithm)){
         control_local$algorithm <- "NLOPT_LD_LBFGS"
