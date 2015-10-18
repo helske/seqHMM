@@ -40,12 +40,12 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
     arma::cube gamma(emission.n_rows, emission.n_cols, emission.n_slices, arma::fill::zeros);
     arma::vec delta(emission.n_rows, arma::fill::zeros);
 
-    for (int k = 0; k < obs.n_rows; k++) {
+    for (unsigned int k = 0; k < obs.n_rows; k++) {
       delta += alpha.slice(k).col(0) % beta.slice(k).col(0);
     }
 
 #pragma omp parallel for if(obs.n_rows>=threads) schedule(static) num_threads(threads) \
-    default(none) shared(eDims, oDims, transition, obs, alpha, beta, scales, \
+    default(none) shared(transition, obs, alpha, beta, scales, \
       emission, ksii, gamma, nSymbols)
     for (int k = 0; k < obs.n_rows; k++) {
       for (unsigned int i = 0; i < emission.n_rows; i++) {

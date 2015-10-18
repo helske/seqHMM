@@ -48,14 +48,14 @@ arma::vec gCoef(const arma::icube& obs, const arma::cube& beta, const arma::mat&
   int q = X.n_cols;
   arma::vec grad(q * (weights.n_rows - 1), arma::fill::zeros);
   double tmp;
-  for (unsigned int jj = 1; jj < numberOfStates.size(); jj++) {
-    for (int k = 0; k < obs.n_rows; k++) {
-      for (unsigned int j = 0; j < emission.n_rows; j++) {
+  for (int jj = 1; jj < numberOfStates.size(); jj++) {
+    for (unsigned int k = 0; k < obs.n_rows; k++) {
+      for (int j = 0; j < emission.n_rows; j++) {
         tmp = 1.0;
         for (unsigned int r = 0; r < obs.n_slices; r++) {
           tmp *= emission(j, obs(k, 0, r), r);
         }
-        if (j >= (cumsumstate(jj) - numberOfStates(jj)) & j < cumsumstate(jj)) {
+        if ((j >= (cumsumstate(jj) - numberOfStates(jj))) & (j < cumsumstate(jj))) {
           grad.subvec(q * (jj - 1), q * jj - 1) += tmp * beta(j, 0, k) / scales(0, k) * initk(j, k)
               * X.row(k).t() * (1.0 - weights(jj, k));
         } else {
@@ -75,7 +75,7 @@ arma::mat hCoef(const arma::mat& weights, const arma::mat& X) {
   arma::mat hess(p * (weights.n_rows - 1), p * (weights.n_rows - 1));
   hess.zeros();
   for (unsigned int j = 0; j < (weights.n_rows - 1); j++) {
-    for (int k = 0; k < (weights.n_rows - 1); k++) {
+    for (unsigned int k = 0; k < (weights.n_rows - 1); k++) {
       for (unsigned int i = 0; i < X.n_rows; i++) {
         if (j != k) {
           hess.submat(j * p, k * p, (j + 1) * p - 1, (k + 1) * p - 1) += X.row(i).t() * X.row(i)

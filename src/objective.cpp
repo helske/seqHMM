@@ -86,10 +86,10 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
           gradB.eye();
           gradB.each_row() -= emission.slice(r).row(i).subvec(0, nSymbols[r] - 1);
           gradB.each_col() %= emission.slice(r).row(i).subvec(0, nSymbols[r] - 1).t();
-          for (unsigned int j = 0; j < nSymbols[r]; j++) {
+          for (int j = 0; j < nSymbols[r]; j++) {
             if (obs(k, 0, r) == j) {
               double tmp = 1.0;
-              for (int r2 = 0; r2 < obs.n_slices; r2++) {
+              for (unsigned int r2 = 0; r2 < obs.n_slices; r2++) {
                 if (r2 != r) {
                   tmp *= emission(i, obs(k, 0, r2), r2);
                 }
@@ -99,7 +99,7 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
             for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
               if (obs(k, t + 1, r) == j) {
                 double tmp = 1.0;
-                for (int r2 = 0; r2 < obs.n_slices; r2++) {
+                for (unsigned int r2 = 0; r2 < obs.n_slices; r2++) {
                   if (r2 != r) {
                     tmp *= emission(i, obs(k, t + 1, r2), r2);
                   }

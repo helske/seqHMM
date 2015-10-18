@@ -38,7 +38,7 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray,
 
   arma::mat initk(emission.n_rows, obs.n_rows);
 
-  for (int k = 0; k < obs.n_rows; k++) {
+  for (unsigned int k = 0; k < obs.n_rows; k++) {
     initk.col(k) = init % reparma(weights.col(k), numberOfStates);
   }
 
@@ -66,15 +66,15 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray,
 
 #pragma omp parallel for if(obs.n_rows >= threads) schedule(static) num_threads(threads) \
 default(none) shared(q, alpha, beta, scales, gradmat, nSymbols, ANZ, BNZ, INZ, \
-  oDims, eDims, numberOfStates, cumsumstate, obs, init, initk, X, weights, transition, emission)
+  numberOfStates, cumsumstate, obs, init, initk, X, weights, transition, emission)
   for (int k = 0; k < obs.n_rows; k++) {
     int countgrad = 0;
     // transitionMatrix
     if (arma::accu(ANZ) > 0) {
-      for (unsigned int jj = 0; jj < numberOfStates.size(); jj++) {
+      for (int jj = 0; jj < numberOfStates.size(); jj++) {
         arma::vec gradArow(numberOfStates(jj));
         arma::mat gradA(numberOfStates(jj), numberOfStates(jj));
-        for (unsigned int i = 0; i < numberOfStates(jj); i++) {
+        for (int i = 0; i < numberOfStates(jj); i++) {
           arma::uvec ind = arma::find(
               ANZ.row(cumsumstate(jj) - numberOfStates(jj) + i).subvec(
                   cumsumstate(jj) - numberOfStates(jj), cumsumstate(jj) - 1));
@@ -87,7 +87,7 @@ default(none) shared(q, alpha, beta, scales, gradmat, nSymbols, ANZ, BNZ, INZ, \
             gradA.each_col() %= transition.row(cumsumstate(jj) - numberOfStates(jj) + i).subvec(
                 cumsumstate(jj) - numberOfStates(jj), cumsumstate(jj) - 1).t();
 
-            for (unsigned int j = 0; j < numberOfStates(jj); j++) {
+            for (int j = 0; j < numberOfStates(jj); j++) {
               for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
                 double tmp = 1.0;
                 for (unsigned int r = 0; r < obs.n_slices; r++) {
@@ -118,10 +118,10 @@ default(none) shared(q, alpha, beta, scales, gradmat, nSymbols, ANZ, BNZ, INZ, \
             gradB.eye();
             gradB.each_row() -= emission.slice(r).row(i).subvec(0, nSymbols[r] - 1);
             gradB.each_col() %= emission.slice(r).row(i).subvec(0, nSymbols[r] - 1).t();
-            for (unsigned int j = 0; j < nSymbols[r]; j++) {
+            for (int j = 0; j < nSymbols[r]; j++) {
               if (obs(k, 0, r) == j) {
                 double tmp = 1.0;
-                for (int r2 = 0; r2 < obs.n_slices; r2++) {
+                for (unsigned int r2 = 0; r2 < obs.n_slices; r2++) {
                   if (r2 != r) {
                     tmp *= emission(i, obs(k, 0, r2), r2);
                   }
@@ -131,7 +131,7 @@ default(none) shared(q, alpha, beta, scales, gradmat, nSymbols, ANZ, BNZ, INZ, \
               for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
                 if (obs(k, t + 1, r) == j) {
                   double tmp = 1.0;
-                  for (int r2 = 0; r2 < obs.n_slices; r2++) {
+                  for (unsigned int r2 = 0; r2 < obs.n_slices; r2++) {
                     if (r2 != r) {
                       tmp *= emission(i, obs(k, t + 1, r2), r2);
                     }
@@ -151,12 +151,12 @@ default(none) shared(q, alpha, beta, scales, gradmat, nSymbols, ANZ, BNZ, INZ, \
       }
     }
     if (arma::accu(INZ) > 0) {
-      for (unsigned int i = 0; i < numberOfStates.size(); i++) {
+      for (int i = 0; i < numberOfStates.size(); i++) {
         arma::uvec ind = arma::find(
             INZ.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1));
         if (ind.n_elem > 0) {
           arma::vec gradIrow(numberOfStates(i), arma::fill::zeros);
-          for (unsigned int j = 0; j < numberOfStates(i); j++) {
+          for (int j = 0; j < numberOfStates(i); j++) {
             double tmp = 1.0;
             for (unsigned int r = 0; r < obs.n_slices; r++) {
               tmp *= emission(cumsumstate(i) - numberOfStates(i) + j, obs(k, 0, r), r);
@@ -176,13 +176,13 @@ default(none) shared(q, alpha, beta, scales, gradmat, nSymbols, ANZ, BNZ, INZ, \
         }
       }
     }
-    for (unsigned int jj = 1; jj < numberOfStates.size(); jj++) {
-      for (unsigned int j = 0; j < emission.n_rows; j++) {
+    for (int jj = 1; jj < numberOfStates.size(); jj++) {
+      for (int j = 0; j < emission.n_rows; j++) {
         double tmp = 1.0;
         for (unsigned int r = 0; r < obs.n_slices; r++) {
           tmp *= emission(j, obs(k, 0, r), r);
         }
-        if (j >= (cumsumstate(jj) - numberOfStates(jj)) & j < cumsumstate(jj)) {
+        if ((j >= (cumsumstate(jj) - numberOfStates(jj))) & (j < cumsumstate(jj))) {
           gradmat.col(k).subvec(countgrad + q * (jj - 1), countgrad + q * jj - 1) += tmp
               * beta(j, 0, k) / scales(0, k) * initk(j, k) * X.row(k).t() * (1.0 - weights(jj, k));
         } else {

@@ -28,7 +28,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   weights.each_row() /= sum(weights, 0);
 
   arma::mat initk(emission.n_rows, obs.n_rows);
-  for (int k = 0; k < obs.n_rows; k++) {
+  for (unsigned int k = 0; k < obs.n_rows; k++) {
     initk.col(k) = init % reparma(weights.col(k), numberOfStates);
   }
 
@@ -60,11 +60,11 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     arma::cube gamma(emission.n_rows, emission.n_cols, emission.n_slices, arma::fill::zeros);
     arma::vec delta(emission.n_rows, arma::fill::zeros);
 
-    for (int k = 0; k < obs.n_rows; k++) {
+    for (unsigned int k = 0; k < obs.n_rows; k++) {
       delta += alpha.slice(k).col(0) % beta.slice(k).col(0);
     }
 #pragma omp parallel for if(obs.n_rows >= threads) schedule(static) num_threads(threads) \
-    default(none) shared(eDims, oDims, transition, obs, alpha, beta, scales, \
+    default(none) shared(transition, obs, alpha, beta, scales, \
       emission, ksii, gamma, nSymbols)
     for (int k = 0; k < obs.n_rows; k++) {
       for (unsigned int i = 0; i < emission.n_rows; i++) {
@@ -116,13 +116,13 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
       emission.slice(r).cols(0, nSymbols(r) - 1) = gamma.slice(r).cols(0, nSymbols(r) - 1);
     }
 
-    for (unsigned int i = 0; i < numberOfStates.size(); i++) {
+    for (int i = 0; i < numberOfStates.size(); i++) {
       delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1) /= arma::as_scalar(
           arma::accu(delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1)));
     }
     init = delta;
 
-    for (int k = 0; k < obs.n_rows; k++) {
+    for (unsigned int k = 0; k < obs.n_rows; k++) {
       initk.col(k) = init % reparma(weights.col(k), numberOfStates);
     }
 
