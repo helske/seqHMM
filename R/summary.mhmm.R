@@ -10,7 +10,7 @@
 #' initial probabilities. \code{FALSE} by default.
 #' @param conditional_se Return conditional standard errors of coefficients. 
 #' See \code{\link{vcov.mhmm}} for details. \code{TRUE} by default.
-#' @param ... Further arguments to \code{\link{mcov.mhmm}}.
+#' @param ... Further arguments to \code{\link{vcov.mhmm}}.
 #' 
 #' @details The \code{summary.mhmm} function computes features from a mixture hidden Markov
 #' model and stores them as a list. A \code{print} method prints summaries of these:
