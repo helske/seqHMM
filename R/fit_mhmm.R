@@ -40,6 +40,7 @@
 #'    \item{maxeval}{\code{10000} (maximum number of iterations)}
 #'    \item{maxtime}{\code{60} (maximum run time in seconds)}
 #'   }
+#' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param ... Additional arguments to nloptr
 #' @details The fitting function provides three estimation steps: 1) EM algorithm, 
 #'   2) global optimization, and 3) local optimization. The user can call for one method 

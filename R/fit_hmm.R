@@ -44,6 +44,7 @@
 #'    \item{maxeval}{\code{10000} (maximum number of iterations)}
 #'    \item{maxtime}{\code{60} (maximum run time in seconds)}
 #'   }
+#' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param ... Additional arguments to nloptr
 #' @return List with components \item{model}{Estimated model. } 
 #'   \item{logLik}{Log-likelihood of the estimated model. } 

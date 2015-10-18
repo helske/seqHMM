@@ -51,6 +51,8 @@ Default is 1e-8.} }}
 \item{lb,ub}{Lower and upper bounds for parameters in Softmax parameterization.
 Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)]. Lower bound is used only in global optimization.}
 
+\item{threads}{Number of threads to use in parallel computing. Default is 1.}
+
 \item{...}{Additional arguments to nloptr}
 }
 \value{
