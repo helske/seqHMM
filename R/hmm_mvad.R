@@ -49,8 +49,10 @@
 #' init_hmm_mvad <- build_hmm(
 #'   observations = mvad.seq, transition_probs = trans, 
 #'   emission_probs = emiss, initial_probs = initial_probsm)
-#' 
-#' fit_mvad <- fit_hmm(init_hmm_mvad)
+#'
+#' set.seed(321)
+#' fit_mvad <- fit_mhmm(init_mhmm_mvad, global = FALSE, 
+#'   control_em = list(restarts = 25))
 #'   
 #' hmm_mvad <- fit_mvad$model
 #' }

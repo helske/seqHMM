@@ -5,21 +5,21 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 
 List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-    IntegerVector obsArray, IntegerVector nSymbols, int itermax = 100, double tol = 1e-8,
-    int trace = 0, int threads = 1) {
-
+  IntegerVector obsArray, IntegerVector nSymbols, int itermax = 100, double tol = 1e-8,
+  int trace = 0, int threads = 1) {
+  
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
-
+  
   arma::vec init(initialProbs.begin(), eDims[0], true);
   arma::mat transition(transitionMatrix.begin(), eDims[0], eDims[0], true);
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
-
+  
   arma::cube alpha(eDims[0], oDims[1], oDims[0]); //m,n,k
   arma::cube beta(eDims[0], oDims[1], oDims[0]); //m,n,k
   arma::mat scales(oDims[1], oDims[0]);
-
+  
   internalForward(transition, emission, init, obs, alpha, scales, threads);
   internalBackward(transition, emission, obs, beta, scales, threads);
   arma::rowvec ll = arma::sum(log(scales));
@@ -32,18 +32,20 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
   //  
   double change = tol + 1.0;
   int iter = 0;
-
+  
   while ((change > tol) & (iter < itermax)) {
     iter++;
-
+    
     arma::mat ksii(eDims[0], eDims[0], arma::fill::zeros);
     arma::cube gamma(eDims[0], eDims[1], eDims[2], arma::fill::zeros);
     arma::vec delta(eDims[0], arma::fill::zeros);
-
+    
     for (int k = 0; k < oDims[0]; k++) {
-
       delta += alpha.slice(k).col(0) % beta.slice(k).col(0);
-
+    }
+    
+#pragma omp parallel for schedule(static) num_threads(threads) default(none) shared(eDims, oDims, transition, obs, alpha, beta, scales, emission, ksii, gamma, nSymbols)
+    for (int k = 0; k < oDims[0]; k++) {
       for (int i = 0; i < eDims[0]; i++) {
         for (int j = 0; j < eDims[0]; j++) {
           if (transition(i, j) > 0.0) {
@@ -52,19 +54,21 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
               for (int r = 0; r < oDims[2]; r++) {
                 tmp *= emission(j, obs(k, t + 1, r), r);
               }
+#pragma omp atomic
               ksii(i, j) += tmp;
             }
-
+            
           }
         }
       }
-
+      
       for (int r = 0; r < eDims[2]; r++) {
         for (int i = 0; i < eDims[0]; i++) {
           for (int l = 0; l < nSymbols[r]; l++) {
             if (emission(i, l, r) > 0.0) {
               for (int t = 0; t < oDims[1]; t++) {
                 if (l == (obs(k, t, r))) {
+#pragma omp atomic
                   gamma(i, l, r) += alpha(i, t, k) * beta(i, t, k);
                 }
               }
@@ -72,7 +76,7 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
           }
         }
       }
-
+      
     }
     if (oDims[1] > 1) {
       ksii.each_col() /= sum(ksii, 1);
@@ -80,19 +84,19 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
     }
     for (int r = 0; r < eDims[2]; r++) {
       gamma.slice(r).cols(0, nSymbols(r) - 1).each_col() /= sum(
-          gamma.slice(r).cols(0, nSymbols(r) - 1), 1);
+        gamma.slice(r).cols(0, nSymbols(r) - 1), 1);
       emission.slice(r).cols(0, nSymbols(r) - 1) = gamma.slice(r).cols(0, nSymbols(r) - 1);
     }
-
+    
     delta /= arma::as_scalar(arma::accu(delta));
-
+    
     init = delta;
-
+    
     internalForward(transition, emission, init, obs, alpha, scales, threads);
     internalBackward(transition, emission, obs, beta, scales, threads);
-
+    
     ll = sum(log(scales));
-
+    
     double tmp = sum(ll);
     change = (tmp - sumlogLik) / (abs(sumlogLik) + 0.1);
     sumlogLik = tmp;
@@ -101,12 +105,12 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
       Rcout << " logLik: " << sumlogLik;
       Rcout << " relative change: " << change << std::endl;
     }
-
+    
   }
   if (trace > 0) {
     if (iter == itermax) {
       Rcpp::Rcout << "EM algorithm stopped after reaching the maximum number of " << iter
-          << " iterations." << std::endl;
+                  << " iterations." << std::endl;
     } else {
       Rcpp::Rcout << "EM algorithm stopped after reaching the relative change of " << change;
       Rcpp::Rcout << " after " << iter << " iterations." << std::endl;
@@ -114,6 +118,6 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
     Rcpp::Rcout << "Final log-likelihood: " << sumlogLik << std::endl;
   }
   return List::create(Named("initialProbs") = wrap(init),
-      Named("transitionMatrix") = wrap(transition), Named("emissionArray") = wrap(emission),
-      Named("logLik") = sumlogLik, Named("iterations") = iter, Named("change") = change);
+    Named("transitionMatrix") = wrap(transition), Named("emissionArray") = wrap(emission),
+    Named("logLik") = sumlogLik, Named("iterations") = iter, Named("change") = change);
 }
