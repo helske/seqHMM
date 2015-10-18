@@ -14,7 +14,7 @@
 initial probabilities. \code{FALSE} by default.}
 
 \item{conditional_se}{Return conditional standard errors of coefficients.
-See \code{\link{mcov.mhmm}} for details. \code{TRUE} by default.}
+See \code{\link{vcov.mhmm}} for details. \code{TRUE} by default.}
 
 \item{...}{Further arguments to \code{\link{mcov.mhmm}}.}
 }

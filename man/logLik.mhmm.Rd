@@ -12,6 +12,8 @@
 \item{partials}{Return a vector containing the individual contributions of each sequence to the total log-likelihood.
 Default is FALSE, which returns the sum of all log-likelihood components.}
 
+\item{threads}{Number of threads to use in parallel computing. Default is 1.}
+
 \item{...}{Ignored.}
 }
 \value{

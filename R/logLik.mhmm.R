@@ -7,6 +7,7 @@
 #' @param object Hidden Markov model of class \code{mhmm}.
 #' @param partials Return a vector containing the individual contributions of each sequence to the total log-likelihood. 
 #' Default is FALSE, which returns the sum of all log-likelihood components.
+#' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param ... Ignored.
 #' @return Log-likelihood of hidden Markov model.
 #' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building and 

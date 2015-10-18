@@ -18,6 +18,8 @@ the full Hessian of the coefficients and the model parameters corresponding to n
 Note that computing the non-conditional standard errors can be slow for large models as
 the jacobian of analytical gradients is computed using finitite difference approximation.}
 
+\item{threads}{Number of threads to use in parallel computing. Default is 1.}
+
 \item{...}{Additional arguments to function \code{jacobian} of \code{numDeriv} package.}
 }
 \value{

@@ -11,16 +11,18 @@
 #' Note that computing the non-conditional standard errors can be slow for large models as 
 #' the jacobian of analytical gradients is computed using finitite difference approximation.
 #' @param ... Additional arguments to function \code{jacobian} of \code{numDeriv} package.
+#' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @return Matrix containing the standard errors for coefficients.
 #' @export
 #'
-vcov.mhmm <- function(object, conditional = TRUE, threads = 1,...){
+vcov.mhmm <- function(object, conditional = TRUE, threads = 1, ...){
   if (conditional) {
     #matrix(c(rep(0,model$n_covariates),
     #  sqrt(diag(varcoef(model$coefficients, model$X, model$n_states)))),
     #  nrow = model$n_covariates, ncol = model$n_clusters)
     vcovm <- varcoef(object$coefficients, object$X, object$n_states)
   } else {
+    if (threads < 1) stop ("Argument threads must be a positive integer.")
     # copied from fit_mhmm
     # 
     original_model <- object
