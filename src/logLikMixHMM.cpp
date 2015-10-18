@@ -18,31 +18,35 @@ NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissio
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
 
+  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
+  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
+  arma::vec init(initialProbs.begin(), emission.n_rows, false);
+  arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, false);
+  
   int q = coefs.nrow();
   arma::mat coef(coefs.begin(), q, coefs.ncol());
   coef.col(0).zeros();
-  arma::mat X(X_.begin(), oDims[0], q);
-  arma::mat lweights = exp(X * coef).t();
-  if (!lweights.is_finite()) {
+  arma::mat X(X_.begin(), obs.n_rows, q);
+  arma::mat weights = exp(X * coef).t();
+  if (!weights.is_finite()) {
     warning(
         "Coefficients of covariates resulted non-finite cluster probabilities. Returning -Inf.");
     return wrap(-arma::math::inf());
 
   }
-  lweights.each_row() /= sum(lweights, 0);
-  arma::colvec init(initialProbs.begin(), eDims[0], false);
-  arma::mat transition(transitionMatrix.begin(), eDims[0], eDims[0], false);
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
-  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
-
+  weights.each_row() /= sum(weights, 0);
+  
   NumericVector ll(obs.n_rows);
+
+#pragma omp parallel for if(obs.n_rows >= threads) schedule(static) num_threads(threads) \
+  default(none) shared(ll, obs, weights, init, emission, transition, numberOfStates)
   for (int k = 0; k < obs.n_rows; k++) {
-    arma::vec initk = init % reparma(lweights.col(k), numberOfStates);
+    arma::vec initk = init % reparma(weights.col(k), numberOfStates);
 
     arma::vec alpha(emission.n_rows);
-    for (int i = 0; i < emission.n_rows; i++) {
+    for (unsigned int i = 0; i < emission.n_rows; i++) {
       alpha(i) = initk(i);
-      for (int r = 0; r < obs.n_slices; r++) {
+      for (unsigned int r = 0; r < obs.n_slices; r++) {
         alpha(i) *= emission(i, obs(k, 0, r), r);
       }
     }
@@ -53,10 +57,10 @@ NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissio
 
     arma::vec alphatmp(emission.n_rows);
 
-    for (int t = 1; t < obs.n_cols; t++) {
-      for (int i = 0; i < emission.n_rows; i++) {
+    for (unsigned int t = 1; t < obs.n_cols; t++) {
+      for (unsigned int i = 0; i < emission.n_rows; i++) {
         alphatmp(i) = arma::dot(transition.col(i), alpha);
-        for (int r = 0; r < obs.n_slices; r++) {
+        for (unsigned int r = 0; r < obs.n_slices; r++) {
           alphatmp(i) *= emission(i, obs(k, t, r), r);
         }
       }

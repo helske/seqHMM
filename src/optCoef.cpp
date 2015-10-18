@@ -19,7 +19,7 @@ unsigned int optCoef(arma::mat weights, const arma::icube& obs, const arma::cube
     if (solve_ok == false) {
       return (2);
     }
-    for (int i = 0; i < (weights.n_rows - 1); i++) {
+    for (unsigned int i = 0; i < (weights.n_rows - 1); i++) {
       coefnew.col(i) = coef.col(i + 1) - tmpvec.subvec(i * p, (i + 1) * p - 1);
     }
     change = arma::accu(arma::abs(coef.submat(0, 1, coef.n_rows - 1, coef.n_cols - 1) - coefnew))
@@ -52,7 +52,7 @@ arma::vec gCoef(const arma::icube& obs, const arma::cube& beta, const arma::mat&
     for (int k = 0; k < obs.n_rows; k++) {
       for (unsigned int j = 0; j < emission.n_rows; j++) {
         tmp = 1.0;
-        for (int r = 0; r < obs.n_slices; r++) {
+        for (unsigned int r = 0; r < obs.n_slices; r++) {
           tmp *= emission(j, obs(k, 0, r), r);
         }
         if (j >= (cumsumstate(jj) - numberOfStates(jj)) & j < cumsumstate(jj)) {
@@ -74,9 +74,9 @@ arma::mat hCoef(const arma::mat& weights, const arma::mat& X) {
   int p = X.n_cols;
   arma::mat hess(p * (weights.n_rows - 1), p * (weights.n_rows - 1));
   hess.zeros();
-  for (int j = 0; j < (weights.n_rows - 1); j++) {
+  for (unsigned int j = 0; j < (weights.n_rows - 1); j++) {
     for (int k = 0; k < (weights.n_rows - 1); k++) {
-      for (int i = 0; i < X.n_rows; i++) {
+      for (unsigned int i = 0; i < X.n_rows; i++) {
         if (j != k) {
           hess.submat(j * p, k * p, (j + 1) * p - 1, (k + 1) * p - 1) += X.row(i).t() * X.row(i)
               * weights(j + 1, i) * weights(k + 1, i);

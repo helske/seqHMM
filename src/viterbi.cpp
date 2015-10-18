@@ -17,42 +17,42 @@ List viterbi(NumericVector transitionMatrix, NumericVector emissionArray,
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
 
-  arma::vec init(initialProbs.begin(), eDims[0], false);
-  arma::mat transition(transitionMatrix.begin(), eDims[0], eDims[0], false);
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
+  arma::vec init(initialProbs.begin(), emission.n_rows, false);
+  arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, false);
 
-  arma::umat q(oDims[0], oDims[1]);
-  arma::vec logp(oDims[0]);
+  arma::umat q(obs.n_rows, obs.n_cols);
+  arma::vec logp(obs.n_rows);
 
-  arma::mat delta(eDims[0], oDims[1]);
-  arma::umat phi(eDims[0], oDims[1]);
+  arma::mat delta(emission.n_rows, obs.n_cols);
+  arma::umat phi(emission.n_rows, obs.n_cols);
 
-  for (int k = 0; k < oDims[0]; k++) {
+  for (int k = 0; k < obs.n_rows; k++) {
 
     delta.col(0) = init;
-    for (int r = 0; r < eDims[2]; r++) {
+    for (unsigned int r = 0; r < emission.n_slices; r++) {
       delta.col(0) += emission.slice(r).col(obs(k, 0, r));
     }
 
     phi.col(0).zeros();
 
-    for (int t = 1; t < oDims[1]; t++) {
-      for (int j = 0; j < eDims[0]; j++) {
+    for (unsigned int t = 1; t < obs.n_cols; t++) {
+      for (unsigned int j = 0; j < emission.n_rows; j++) {
         (delta.col(t - 1) + transition.col(j)).max(phi(j, t));
         delta(j, t) = delta(phi(j, t), t - 1) + transition(phi(j, t), j);
-        for (int r = 0; r < eDims[2]; r++) {
+        for (unsigned int r = 0; r < emission.n_slices; r++) {
           delta(j, t) += emission(j, obs(k, t, r), r);
         }
       }
     }
 
-    delta.col(oDims[1] - 1).max(q(k, oDims[1] - 1));
+    delta.col(obs.n_cols - 1).max(q(k, obs.n_cols - 1));
 
-    for (int t = (oDims[1] - 2); t >= 0; t--) {
+    for (unsigned int t = (obs.n_cols - 2); t >= 0; t--) {
       q(k, t) = phi(q(k, t + 1), t + 1);
     }
-    logp(k) = delta.col(oDims[1] - 1).max();
+    logp(k) = delta.col(obs.n_cols - 1).max();
   }
 
   return List::create(Named("q") = wrap(q), Named("logp") = wrap(logp));

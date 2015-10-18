@@ -17,18 +17,20 @@ NumericVector logLikHMM(NumericVector transitionMatrix, NumericVector emissionAr
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
 
-  arma::colvec init(initialProbs.begin(), eDims[0], false);
-  arma::mat transition(transitionMatrix.begin(), eDims[0], eDims[0], false);
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
+  arma::vec init(initialProbs.begin(), emission.n_rows, false);
+  arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, false);
 
-  NumericVector ll(oDims[0]);
+  NumericVector ll(obs.n_rows);
 
-  for (int k = 0; k < oDims[0]; k++) {
-    arma::vec alpha(eDims[0]);
-    for (int i = 0; i < eDims[0]; i++) {
+#pragma omp parallel for if(obs.n_rows >= threads) schedule(static) num_threads(threads) \
+  default(none) shared(ll, obs, init, emission, transition)
+  for (int k = 0; k < obs.n_rows; k++) {
+    arma::vec alpha(emission.n_rows);
+    for (unsigned int i = 0; i < emission.n_rows; i++) {
       alpha(i) = init(i);
-      for (int r = 0; r < oDims[2]; r++) {
+      for (unsigned int r = 0; r < obs.n_slices; r++) {
         alpha(i) *= emission(i, obs(k, 0, r), r);
       }
     }
@@ -36,12 +38,12 @@ NumericVector logLikHMM(NumericVector transitionMatrix, NumericVector emissionAr
     ll(k) = log(tmp);
     alpha /= tmp;
 
-    arma::vec alphatmp(eDims[0]);
+    arma::vec alphatmp(emission.n_rows);
 
-    for (int t = 1; t < oDims[1]; t++) {
-      for (int i = 0; i < eDims[0]; i++) {
+    for (unsigned int t = 1; t < obs.n_cols; t++) {
+      for (unsigned int i = 0; i < emission.n_rows; i++) {
         alphatmp(i) = arma::dot(transition.col(i), alpha);
-        for (int r = 0; r < oDims[2]; r++) {
+        for (unsigned int r = 0; r < obs.n_slices; r++) {
           alphatmp(i) *= emission(i, obs(k, t, r), r);
         }
       }
