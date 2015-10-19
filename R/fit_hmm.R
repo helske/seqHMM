@@ -204,28 +204,35 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
       model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
     
     if (em.con$restarts > 0 & (em.con$restart_transition | em.con$restart_emission)) {
-      random_trans <- model$transition_probs
-      if(em.con$restart_transition){
-        
+      random_emiss <- resEM$emissionArray
+      random_emiss[(random_emiss < 1e-4) & (emissionArray >= 1e-4)] <- 1e-4
+      for (j in 1:model$n_channels) {
+        random_emiss[,1:model$n_symbols[j],j] <- random_emiss[,1:model$n_symbols[j],j] / rowSums(random_emiss[,1:model$n_symbols[j],j])
+      }
+      random_trans <- resEM$transitionMatrix
+      random_trans[(random_trans < 1e-4) & (model$transition_probs >= 1e-4)] <- 1e-4
+      random_trans <- random_trans / rowSums(random_trans)
+      
+      
+      if (em.con$restart_transition) {
         nz_trans <- (random_trans > 0 & random_trans < 1)
         np_trans <- sum(nz_trans)
-        base_trans <- resEM$transitionMatrix[nz_trans]
+        base_trans <- random_trans[nz_trans]
       }
-      random_emiss <- emissionArray
       if (em.con$restart_emission) {
         nz_emiss <- (random_emiss > 0 & random_emiss < 1)
         np_emiss <- sum(nz_emiss)
-        base_emiss <- resEM$emissionArray[nz_emiss]
+        base_emiss <- random_emiss[nz_emiss]
       }
       
       for (i in 1:em.con$restarts) {
-        if(em.con$restart_transition){
+        if (em.con$restart_transition) {
           random_trans[nz_trans] <- abs(base_trans + rnorm(np_trans, sd = em.con$sd_restart))
           random_trans <- random_trans / rowSums(random_trans)
         }
         if (em.con$restart_emission) {
           random_emiss[nz_emiss] <- abs(base_emiss + rnorm(np_emiss, sd = em.con$sd_restart))
-          for(j in 1:model$n_channels) {
+          for (j in 1:model$n_channels) {
             random_emiss[,1:model$n_symbols[j],j] <- random_emiss[,1:model$n_symbols[j],j] / rowSums(random_emiss[,1:model$n_symbols[j],j])
           }
         }

@@ -8,6 +8,7 @@ void internalForwardx(const arma::mat& transition, const arma::cube& emission,
 #pragma omp parallel for if(obs.n_rows >= threads) schedule(static) num_threads(threads) \
 default(none) shared(alpha, scales, obs, init, emission, transition)
   for (int k = 0; k < obs.n_rows; k++) {
+    
     for (unsigned int i = 0; i < emission.n_rows; i++) {
       alpha(i, 0, k) = init(i, k);
       for (unsigned int r = 0; r < obs.n_slices; r++) {

@@ -56,7 +56,6 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray,
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
-  arma::rowvec ll = arma::sum(log(scales));
 
   IntegerVector cumsumstate = cumsum(numberOfStates);
 
@@ -193,6 +192,6 @@ default(none) shared(q, alpha, beta, scales, gradmat, nSymbols, ANZ, BNZ, INZ, \
 
     }
   }
-  grad = sum(gradmat, 1);
-  return List::create(Named("objective") = -sum(ll), Named("gradient") = wrap(-grad));
+  return List::create(Named("objective") = -arma::accu(log(scales)), 
+    Named("gradient") = wrap(-sum(gradmat, 1)));
 }

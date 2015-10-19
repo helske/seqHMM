@@ -20,7 +20,7 @@ void internalBackward(const arma::mat& transition, const arma::cube& emission,
   const arma::icube& obs, arma::cube& beta, const arma::mat& scales, int threads);
 
 
-unsigned int optCoef(arma::mat weights, const arma::icube& obs, const arma::cube& emission, const arma::mat& initk, 
+unsigned int optCoef(arma::mat& weights, const arma::icube& obs, const arma::cube& emission, const arma::mat& initk, 
   const arma::cube& beta, const arma::mat& scales, arma::mat& coef, const arma::mat& X, 
   const Rcpp::IntegerVector cumsumstate, const Rcpp::IntegerVector numberOfStates, int trace);
 

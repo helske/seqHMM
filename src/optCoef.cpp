@@ -3,7 +3,7 @@ using namespace Rcpp;
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
-unsigned int optCoef(arma::mat weights, const arma::icube& obs, const arma::cube& emission,
+unsigned int optCoef(arma::mat& weights, const arma::icube& obs, const arma::cube& emission,
   const arma::mat& initk, const arma::cube& beta, const arma::mat& scales, arma::mat& coef,
   const arma::mat& X, const IntegerVector cumsumstate, const IntegerVector numberOfStates,
   int trace) {
@@ -13,7 +13,7 @@ unsigned int optCoef(arma::mat weights, const arma::icube& obs, const arma::cube
   arma::mat coefnew(coef.n_rows, coef.n_cols - 1);
   int iter = 0;
   double change = 1.0;
-  while ((change > 1e-8) & (iter < 100)) {
+  while ((change > 1e-10) & (iter < 100)) {
     bool solve_ok = arma::solve(tmpvec, hCoef(weights, X),
       gCoef(obs, beta, scales, emission, initk, weights, X, cumsumstate, numberOfStates));
     if (solve_ok == false) {
@@ -48,8 +48,9 @@ arma::vec gCoef(const arma::icube& obs, const arma::cube& beta, const arma::mat&
   int q = X.n_cols;
   arma::vec grad(q * (weights.n_rows - 1), arma::fill::zeros);
   double tmp;
-  for (int jj = 1; jj < numberOfStates.size(); jj++) {
-    for (unsigned int k = 0; k < obs.n_rows; k++) {
+  
+  for (unsigned int k = 0; k < obs.n_rows; k++) {
+    for (int jj = 1; jj < numberOfStates.size(); jj++) {
       for (int j = 0; j < emission.n_rows; j++) {
         tmp = 1.0;
         for (unsigned int r = 0; r < obs.n_slices; r++) {

@@ -24,9 +24,9 @@ NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissio
   arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, false);
   
   int q = coefs.nrow();
-  arma::mat coef(coefs.begin(), q, coefs.ncol());
+  arma::mat coef(coefs.begin(), q, coefs.ncol(), false);
   coef.col(0).zeros();
-  arma::mat X(X_.begin(), obs.n_rows, q);
+  arma::mat X(X_.begin(), obs.n_rows, q, false);
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
     warning(

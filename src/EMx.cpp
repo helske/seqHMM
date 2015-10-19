@@ -20,7 +20,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   int q = coefs.nrow();
   arma::mat coef(coefs.begin(), q, coefs.ncol());
   coef.col(0).zeros();
-  arma::mat X(X_.begin(), obs.n_rows, q);
+  arma::mat X(X_.begin(), obs.n_rows, q, false);
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
     return List::create(Named("error") = 1);
@@ -39,8 +39,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   internalForwardx(transition, emission, initk, obs, alpha, scales, threads);
   internalBackward(transition, emission, obs, beta, scales, threads);
 
-  arma::rowvec ll = arma::sum(log(scales));
-  double sumlogLik = sum(ll);
+  double sumlogLik = arma::accu(log(scales));
 
   if (trace > 0) {
     Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
@@ -129,8 +128,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     internalForwardx(transition, emission, initk, obs, alpha, scales, threads);
     internalBackward(transition, emission, obs, beta, scales, threads);
 
-    ll = sum(log(scales));
-    double tmp = sum(ll);
+    double tmp = arma::accu(log(scales));
     change = (tmp - sumlogLik) / (abs(sumlogLik) + 0.1);
     sumlogLik = tmp;
     if (!arma::is_finite(sumlogLik)) {
