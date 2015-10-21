@@ -105,13 +105,15 @@ gridplot(
 
 ### Fitting hidden Markov models
 
-When fitting Hidden Markov models (HMMs), initial values for model parameters are first given to the `build_hmm` function. After that, the model is fitted with the `fit_hmm` function. The fitting function provides three estimation steps: 1) EM algorithm, 2) global optimization, and 3) local optimization. By default, all steps are performed. The results from a former step are used as starting values in a latter.
+When fitting Hidden Markov models (HMMs), initial values for model parameters are first given to the `build_hmm` function. After that, the model is fitted with the `fit_hmm` function. The fitting function provides three estimation steps: 1) EM algorithm, 2) global optimization, and 3) local optimization. By default, only steps 1 and 3 are performed. The results from a former step are used as starting values in a latter.
 
-By default the `fit_hmm` function uses the multilevel single-linkage method (MLSL) with the LDS modification for global optimization. The MLSL method draws random starting points and performs a local optimization (LBFGS by default) from each. In order to reduce the computation time spent on non-global optima, the convergence tolerance of the local optimizer is set relatively large. At step 3, a local optimization (again LBFGS by default) is run with a lower tolerance to find the optimum with high precision.
+In order to reduce the risk of being trapped in a poor local maximum, a large number of initial values should be tested. If global step is chosen, by default the `fit_hmm` function uses the multilevel single-linkage method (MLSL) with the LDS modification. The MLSL draws multiple random starting values and performs local optimization (L-BFGS by default) from each starting point. The LDS modification uses low-discrepancy sequences instead of random numbers as starting points and should improve convergence rate.
 
-There are some theoretical guarantees that the MLSL method used as the default optimizer in step 2 shoud ﬁnd all local optima in a ﬁnite number of local optimizations. Of course, it might not always succeed in a reasonable time. The EM algorithm can help in finding good boundaries for the search, especially with good starting values, but in some cases it can mislead. A good strategy is to try a couple of different fitting options with different combinations of the methods: e.g. all steps, only global and local steps, and a few evaluations of EM followed by global and local optimization.
+In order to reduce computation time spent on non-global optima, the convergence tolerance of the local optimizer is set relatively large. At step 3, a local optimization (again L-BFGS by default) is run with a lower tolerance to find the optimum with high precision.
 
-By default, the estimation time is limited to 60 seconds in steps 2 and 3, so it is advisable to change the default settings for the final analysis. 
+There are some theoretical guarantees that the MLSL method shoud ﬁnd all local optima in a ﬁnite number of local optimizations. Of course, it might not always succeed in a reasonable time. The EM algorithm can help in finding good boundaries for the search, especially with good starting values, but in some cases it can mislead. A good strategy is to try a couple of different fitting options with different combinations of the methods: e.g. all steps, only global and local steps, and a few evaluations of EM followed by global and local optimization.
+
+It is also possible to run EM algorithm with multiple random starting values. This is done by setting the value \texttt{restarts} in the \texttt{control_em} argument. Although not done by default, this method seems to perform very well as EM algorithm is relatively fast compared to direct numerical estimation.
 
 ```
 # Initial values for emission matrices
@@ -154,25 +156,36 @@ bhmm <- build_hmm(
   emission_probs = list(emiss_marr, emiss_child, emiss_left),
   channel_names = c("Marriage", "Parenthood", "Residence"))
 
-# Fitting the HMM in 3 estimation steps:
+# Fitting the HMM in two estimation steps:
 # step 1) EM algorithm
-# step 2) global optimization (default: MLSL_LDS with LBFGS as local optimizer)
 # step 3) local optimization (default: LBFGS) for "final polishing"
-# Note: by default, estimation time limited to 60 seconds in steps 2 and 3
 hmm <- fit_hmm(bhmm)
 hmm$logLik
 # -16854.16
 
-# Only EM
-hmm2 <- fit_hmm(bhmm, global_step = FALSE, local_step = FALSE)
+# EM + 50 restarts with random starting values for emission probabilities
+hmm2 <- fit_hmm(
+  bhmm, control_em = list(restarts = 50, restart_transition = FALSE, 
+                          restart_emission = TRUE))
 hmm2$logLik
 # -16854.16
 
-# Only global optimization (3000 iterations, unlimited time)
-hmm3 <- fit_hmm(bhmm, em_step = FALSE, local_step = FALSE,
-control_global = list(maxeval = 3000, maxtime = 0))
+# Using all three steps:
+# step 1) EM algorithm
+# step 2) global optimization (default: MLSL_LDS with LBFGS as local optimizer)
+# step 3) local optimization (default: LBFGS) for "final polishing"
+# Note: By default, estimation time limited to 60 seconds in step 2.
+# Setting 3000 evaluations with unlimited time
+hmm3 <- fit_hmm(bhmm, global = TRUE, control_global = list(maxeval = 3000, maxtime = 0))
 hmm3$logLik
+# -16854.16
+
+# Only global optimization (3000 iterations, unlimited time)
+hmm4 <- fit_hmm(bhmm, em_step = FALSE, global_step = TRUE, local_step = FALSE,
+                control_global = list(maxeval = 3000, maxtime = 0))
+hmm4$logLik
 # -16856.78
+
 
 ```
 
@@ -456,15 +469,16 @@ The classification table shows the mean probabilities of belonging to each clust
 
 ```
 summ_mhmm <- summary(mhmm$model)
+
 names(summ_mhmm)
-#  [1] "logLik"                          "BIC"                            
-#  [3] "most_probable_cluster"           "coefficients"                   
-#  [5] "coef_se"                         "prior_cluster_probabilities"    
-#  [7] "posterior_cluster_probabilities" "classification_table"           
-#  [9] "digits"                          "model" 
+# [1] "logLik"                          "BIC"                            
+# [3] "most_probable_cluster"           "coefficients"                   
+# [5] "vcov"                            "prior_cluster_probabilities"    
+# [7] "posterior_cluster_probabilities" "classification_table"           
+# [9] "model" 
+
 summ_mhmm
 # Covariate effects :
-# 
 # Cluster 1 is the reference.
 # 
 # Cluster 2 :
@@ -485,36 +499,24 @@ summ_mhmm
 # sexwoman:cohort1936-1945     0.212       0.387
 # sexwoman:cohort1946-1957    -0.122       0.356
 # 
-# 
-# Log-likelihood :
-# 
-# -12712.65
-# 
-# 
-# BIC :
-# 
-# 26711.6
+# Log-likelihood: -12712.65   BIC: 26524.88 
 # 
 # Means of prior cluster probabilities :
-# 
 # Cluster 1 Cluster 2 Cluster 3 
-#     0.191     0.622     0.187
-#
+#     0.191     0.622     0.187 
 # 
 # Most probable clusters :
-# 
 #             Cluster 1  Cluster 2  Cluster 3
 # count             310       1364        326
 # proportion      0.155      0.682      0.163
-# 
 # 
 # Classification table :
 # Mean cluster probabilities (in columns) by the most probable cluster (rows)
 # 
 #           Cluster 1 Cluster 2 Cluster 3
-# Cluster 1     0.839     0.161     0.000
-# Cluster 2     0.085     0.863     0.052
-# Cluster 3     0.017     0.050     0.933
+# Cluster 1    0.8391    0.1606  0.000274
+# Cluster 2    0.0848    0.8634  0.051819
+# Cluster 3    0.0169    0.0499  0.933151
 ```
 
 ### Plotting MHMMs
