@@ -10,6 +10,8 @@
 #' initial probabilities. \code{FALSE} by default.
 #' @param conditional_se Return conditional standard errors of coefficients. 
 #' See \code{\link{vcov.mhmm}} for details. \code{TRUE} by default.
+#' @param log_space Make computations using log-space instead of scaling for greater 
+#' numerical stability at cost of computational costs. Default is \code{FALSE}.
 #' @param ... Further arguments to \code{\link{vcov.mhmm}}.
 #' 
 #' @details The \code{summary.mhmm} function computes features from a mixture hidden Markov
@@ -43,26 +45,34 @@
 #' @seealso \code{\link{fit_mhmm}} for building and fitting mixture hidden Markov models.
 #'   
 
-summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, ...){
+summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, log_space = FALSE, ...){
   
-  ll <- logLik(object)
-  
-  fw <- forward_backward(object, forward_only = TRUE)$forward_probs[,object$length_of_sequences,]
+  partial_ll <- logLik(object, partials = TRUE, log_space = log_space)
+  ll <- sum(partial_ll)
+  fw <- forward_backward(object, forward_only = TRUE, log_space = log_space)$forward_probs[,object$length_of_sequences,]
   
   pr <- exp(object$X%*%object$coefficients)
   prior_cluster_probabilities <- pr/rowSums(pr)
-
-
+  
+  
   posterior_cluster_probabilities <- prior_cluster_probabilities
   p <- 0
-  for(i in 1:object$n_clusters){
-    posterior_cluster_probabilities[,i] <- colSums(fw[(p+1):(p+object$n_states[i]), , drop = FALSE])
-    p <- p + object$n_states[i]
+  if(!log_space){
+    for(i in 1:object$n_clusters){
+      posterior_cluster_probabilities[,i] <- colSums(fw[(p+1):(p+object$n_states[i]), , drop = FALSE])
+      p <- p + object$n_states[i]
+    }
+  } else {
+    for(i in 1:object$n_clusters){
+      posterior_cluster_probabilities[,i] <- colSums(exp(fw[(p+1):(p+object$n_states[i]), , drop = FALSE] - 
+          rep(ll, each = object$n_states[i])))
+      p <- p + object$n_states[i]
+    }
   }
   most_probable_cluster <- factor(apply(posterior_cluster_probabilities, 1, which.max), 
     levels = 1:object$n_clusters, labels = object$cluster_names)
   
-
+  
   clProbs <- matrix(NA, nrow = object$n_clusters, ncol = object$n_clusters)
   rownames(clProbs) <- colnames(clProbs) <- object$cluster_names
   for(i in 1:object$n_clusters){
@@ -74,7 +84,7 @@ summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, ...)
   if(!parameters){
     summary_mhmm <- list(
       logLik = ll, BIC = BIC(ll), most_probable_cluster = most_probable_cluster, 
-      coefficients = object$coefficients, vcov = vcov(object, conditional_se, ...),
+      coefficients = object$coefficients, vcov = vcov(object, conditional_se, log_space = log_space, ...),
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
       classification_table = clProbs,
@@ -86,7 +96,7 @@ summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, ...)
       emission_probs = object$emission_probs,
       initial_probs = object$initial_probs,
       logLik = ll, BIC = BIC(ll), most_probable_cluster = most_probable_cluster, 
-      coefficients = object$coefficients, vcov = vcov(object, conditional_se, ...),
+      coefficients = object$coefficients, vcov = vcov(object, conditional_se, log_space = log_space, ...),
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
       classification_table = clProbs,

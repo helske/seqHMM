@@ -12,10 +12,12 @@
 #' the jacobian of analytical gradients is computed using finitite difference approximation.
 #' @param ... Additional arguments to function \code{jacobian} of \code{numDeriv} package.
 #' @param threads Number of threads to use in parallel computing. Default is 1.
+#' @param log_space Make computations using log-space instead of scaling for greater 
+#' numerical stability at cost of computational costs. Default is \code{FALSE}.
 #' @return Matrix containing the standard errors for coefficients.
 #' @export
 #'
-vcov.mhmm <- function(object, conditional = TRUE, threads = 1, ...){
+vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = FALSE, ...){
   if (conditional) {
     #matrix(c(rep(0,model$n_covariates),
     #  sqrt(diag(varcoef(model$coefficients, model$X, model$n_states)))),
@@ -144,11 +146,15 @@ vcov.mhmm <- function(object, conditional = TRUE, threads = 1, ...){
       model$initial_probs <- unlist(original_model$initial_probs)
       model$coefficients[,-1] <- pars[coef_ind]
       
-      
+      if (!log_space) {
       objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
         transNZ, emissNZ, initNZ, model$n_symbols, 
         model$coefficients, model$X, model$n_states_in_clusters, threads)$gradient
-      
+      } else {
+        log_objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
+          transNZ, emissNZ, initNZ, model$n_symbols, 
+          model$coefficients, model$X, model$n_states_in_clusters, threads)$gradient
+      }
     }
     vcovm <- solve(jacobian(objectivef, initialvalues, model = model, ...))[coef_ind, coef_ind]
   }

@@ -40,6 +40,8 @@
 #'    \item{maxeval}{\code{10000} (maximum number of iterations)}
 #'   }
 #' @param threads Number of threads to use in parallel computing. Default is 1.
+#' @param log Make computations using log-space instead of scaling for greater 
+#' numerical stability at cost of computational costs. Default is \code{FALSE}.
 #' @param ... Additional arguments to nloptr
 #' @details The fitting function provides three estimation steps: 1) EM algorithm, 
 #'   2) global optimization, and 3) local optimization. The user can call for one method 
@@ -314,7 +316,7 @@
 #' 
 
 fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE, 
-  control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1, ...){
+  control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1, log_space = FALSE, ...){
 
   
   if(!inherits(model, "mhmm"))
@@ -353,9 +355,16 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
     if (length(noNms <- namc[!namc %in% nmsC])) 
       warning("Unknown names in control_em: ", paste(noNms, collapse = ", "))
     
-    resEM <- EMx(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
-      model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, 
-      em.con$maxeval, em.con$reltol,em.con$print_level, threads)
+    if (!log_space) {
+      resEM <- EMx(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
+        model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, 
+        em.con$maxeval, em.con$reltol,em.con$print_level, threads)
+    } else {
+      resEM <- log_EMx(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
+        model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, 
+        em.con$maxeval, em.con$reltol,em.con$print_level, threads)
+    }
+
     
     if(resEM$error != 0){
       err_msg <- switch(resEM$error, 
@@ -406,9 +415,15 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
             random_emiss[,1:model$n_symbols[j],j] <- random_emiss[,1:model$n_symbols[j],j] / rowSums(random_emiss[,1:model$n_symbols[j],j])
           }
         }
+        if (!log_space) {
         resEMi <- EMx(random_trans, random_emiss, model$initial_probs, obsArray, 
           model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, em.con$maxeval, 
           em.con$reltol,em.con$print_level, threads)
+        } else {
+          resEMi <- log_EMx(random_trans, random_emiss, model$initial_probs, obsArray, 
+            model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, em.con$maxeval, 
+            em.con$reltol,em.con$print_level, threads) 
+        }
         if (resEMi$error != 0) {
           err_msg <- switch(resEMi$error, 
             "1" = "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
@@ -551,9 +566,16 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
       model$coefficients[,-1] <- pars[npTM+sum(npEM)+npIPAll+1:npCoef]
       
       if(estimate){
-        objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
-          transNZ, emissNZ, initNZ, model$n_symbols, 
-          model$coefficients, model$X, model$n_states_in_clusters, threads)
+        if (!log_space) {
+          objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
+            transNZ, emissNZ, initNZ, model$n_symbols, 
+            model$coefficients, model$X, model$n_states_in_clusters, threads)
+        } else {
+          log_objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
+            transNZ, emissNZ, initNZ, model$n_symbols, 
+            model$coefficients, model$X, model$n_states_in_clusters, threads)
+        }
+
       } else {
         if(sum(npEM)>0){
           for(i in 1:model$n_channels){

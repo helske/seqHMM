@@ -35,14 +35,13 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
-  arma::rowvec ll = arma::sum(log(scales));
 
   arma::mat gradmat(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ), obs.n_rows,
       arma::fill::zeros);
 
 #pragma omp parallel for if(obs.n_rows >= threads) schedule(static) num_threads(threads) \
   default(none) shared(alpha, beta, scales, gradmat, nSymbols, ANZ, BNZ, INZ, \
-    oDims, eDims, obs, init, transition, emission)
+    obs, init, transition, emission)
   for (int k = 0; k < obs.n_rows; k++) {
     int countgrad = 0;
 
@@ -142,5 +141,5 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
     }
   }
   grad = sum(gradmat, 1);
-  return List::create(Named("objective") = -sum(ll), Named("gradient") = wrap(-grad));
+  return List::create(Named("objective") = -arma::accu(log(scales)), Named("gradient") = wrap(-grad));
 }

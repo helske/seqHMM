@@ -8,11 +8,13 @@
 #' @param partials Return a vector containing the individual contributions of each sequence to the total log-likelihood. 
 #' Default is FALSE, which returns the sum of all log-likelihood components.
 #' @param threads Number of threads to use in parallel computing. Default is 1.
+#' @param log_space Make computations using log-space instead of scaling for greater 
+#' numerical stability at cost of computational costs. Default is \code{FALSE}.
 #' @param ... Ignored.
 #' @return Log-likelihood of hidden Markov model.
 #' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building and 
 #'   fitting mixture Hidden Markov models.
-logLik.mhmm<-function(object, partials = FALSE, threads = 1, ...){
+logLik.mhmm<-function(object, partials = FALSE, threads = 1, log_space = FALSE, ...){
   
   if (threads < 1) stop ("Argument threads must be a positive integer.")
   
@@ -38,8 +40,14 @@ logLik.mhmm<-function(object, partials = FALSE, threads = 1, ...){
   for(i in 1:object$n_channels)
     emissionArray[,1:object$n_symbols[i],i]<-object$emission_probs[[i]]
   
-  ll <- logLikMixHMM(object$transition_probs, emissionArray, object$initial_probs, obsArray,
-    object$coefficients, object$X, object$n_states_in_clusters, threads) 
+  if (!log_space) {
+    ll <- logLikMixHMM(object$transition_probs, emissionArray, object$initial_probs, obsArray,
+      object$coefficients, object$X, object$n_states_in_clusters, threads) 
+  } else {
+    ll <- log_logLikMixHMM(object$transition_probs, emissionArray, object$initial_probs, obsArray,
+      object$coefficients, object$X, object$n_states_in_clusters, threads) 
+  }
+
   
   
   structure(if (partials) ll else sum(ll), class = "logLik", df = df, nobs = nobs)

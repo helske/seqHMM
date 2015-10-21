@@ -42,6 +42,8 @@
 #'    \item{maxtime}{\code{60} (maximum run time in seconds)}
 #'   }
 #' @param threads Number of threads to use in parallel computing. Default is 1.
+#' @param log_space Make computations using log-space instead of scaling for greater 
+#' numerical stability at cost of computational costs. Default is \code{FALSE}.
 #' @param ... Additional arguments to nloptr
 #' @return List with components \item{model}{Estimated model. } 
 #'   \item{logLik}{Log-likelihood of the estimated model. } 
@@ -167,7 +169,7 @@
 #' 
 fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE, 
   control_em=list(), control_global=list(), 
-  control_local=list(), lb, ub, threads = 1, ...){
+  control_local=list(), lb, ub, threads = 1, log_space = FALSE, ...){
   
   if(!inherits(model, "hmm"))
     stop("Argument model must be an object of class 'hmm'.")
@@ -199,9 +201,13 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
     emissionArray<-array(1,c(model$n_states,max(model$n_symbols)+1,model$n_channels))
     for(i in 1:model$n_channels)
       emissionArray[,1:model$n_symbols[i],i]<-model$emission_probs[[i]]
-    
+    if (!log_space) {
     resEM<-EM(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
       model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
+    } else {
+      resEM <- log_EM(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
+        model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
+    }
     
     if (em.con$restarts > 0 & (em.con$restart_transition | em.con$restart_emission)) {
       random_emiss <- resEM$emissionArray
@@ -236,8 +242,13 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
             random_emiss[,1:model$n_symbols[j],j] <- random_emiss[,1:model$n_symbols[j],j] / rowSums(random_emiss[,1:model$n_symbols[j],j])
           }
         }
-        resEMi <- EM(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
-          model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
+        if (!log_space) {
+          resEMi <- EM(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
+            model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
+        } else {
+          resEMi <- log_EM(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
+            model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
+          }
         
         if (resEMi$logLik > resEM$logLik) {
           resEM <- resEMi
@@ -323,7 +334,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
     for(i in 1:model$n_channels)
       emissionArray[,1:model$n_symbols[i],i]<-model$emission_probs[[i]]          
     
-    objectivef<-function(pars, model, estimate = TRUE){
+    objectivef<-function(pars, model, estimate = TRUE, log_space = log_space){
       
       if(any(!is.finite(exp(pars))) && estimate)
         return(.Machine$double.xmax^075)
@@ -348,8 +359,13 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
         model$initial_probs[]<-model$initial_probs/sum(model$initial_probs)
       } 
       if(estimate){
-        objective(model$transition_probs, emissionArray, model$initial_probs, obsArray,
-          transNZ, emissNZ, initNZ, model$n_symbols, threads)
+        if (!log_space) {
+          objective(model$transition_probs, emissionArray, model$initial_probs, obsArray,
+            transNZ, emissNZ, initNZ, model$n_symbols, threads)
+        } else {
+          log_objective(model$transition_probs, emissionArray, model$initial_probs, obsArray,
+            transNZ, emissNZ, initNZ, model$n_symbols, threads)
+        }
       } else {
         if(sum(npEM)>0){
           for(i in 1:model$n_channels){
@@ -383,7 +399,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
       }
       
       globalres <- nloptr(x0 = initialvalues, eval_f = objectivef, lb = lb, ub = ub,
-        opts = control_global, model = model, estimate = TRUE, ...)
+        opts = control_global, model = model, estimate = TRUE,  log_space = log_space, ...)
       initialvalues <- globalres$solution
       model <- objectivef(globalres$solution, model, FALSE)
       ll <- -globalres$objective
@@ -401,7 +417,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
       ub <- pmin(pmax(ub, 2*initialvalues),500)
       localres<-nloptr(x0 = initialvalues, 
         eval_f = objectivef,
-        opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
+        opts = control_local, model = model, estimate = TRUE, log_space = log_space, ub = ub, ...)
       model <- objectivef(localres$solution,model, FALSE)
       ll <- -localres$objective
     } else localres <- NULL

@@ -5,14 +5,13 @@
 #' @export 
 #' @param model Hidden Markov model of class \code{hmm}.
 #' @param forward_only If \code{TRUE}, only forward probabilities are computed. Default is \code{FALSE}.
+#' @param log_space Compute forward and backward probabilities in logarithmic scale instead of scaling. 
 #' @return List with components 
 #'   \item{forward_probs}{Scaled forward probabilities, i.e. probability of state given observations up to that time point. } 
-#'   \item{logLik}{Log-likelihood of the estimated model. } 
-#'   \item{em_results}{Results after the EM step. } 
-#'   \item{global_results}{Results after the global step. }
-#'   \item{local_results}{Results after the local step. }In case of multiple observations,
-#' these are computed independently for each sequence.
-forward_backward <- function(model, forward_only = FALSE){
+#'   \item{backward_probs}{Scaled backward probabilities. } 
+#'   \item{scaling_factors}{Sum of non-scaled forward probabilities at each time point. Only computed if \code{log = FALSE}.} 
+#'   In case of multiple observations, these are computed independently for each sequence.
+forward_backward <- function(model, forward_only = FALSE, log_space = FALSE){
   if(inherits(model,"mhmm")){
     mix <- TRUE
     model <- combine_models(model)
@@ -34,11 +33,21 @@ forward_backward <- function(model, forward_only = FALSE){
     emissionArray[,1:model$n_symbols[i],i]<-model$emission_probs[[i]]
   
   if (mix) {
-    out <- forwardbackwardx(model$transition_probs, emissionArray, 
-      model$initial_probs, obsArray, model$coefficients,model$X,model$n_states_in_clusters, forward_only)
+    if (!log_space) {
+      out <- forwardbackwardx(model$transition_probs, emissionArray, 
+        model$initial_probs, obsArray, model$coefficients,model$X,model$n_states_in_clusters, forward_only)
+    } else {
+      out <- log_forwardbackwardx(model$transition_probs, emissionArray, 
+        model$initial_probs, obsArray, model$coefficients,model$X,model$n_states_in_clusters, forward_only)
+    }
   } else{
-    out <- forwardbackward(model$transition_probs, emissionArray, 
-      model$initial_probs, obsArray, forward_only)
+    if (!log_space) {
+      out <- forwardbackward(model$transition_probs, emissionArray, 
+        model$initial_probs, obsArray, forward_only)
+    } else {
+      out <- log_forwardbackward(model$transition_probs, emissionArray, 
+        model$initial_probs, obsArray, forward_only)
+    }
   }
   
   if (is.null(time_names <- colnames(model$observations[[1]]))) {
@@ -51,7 +60,9 @@ forward_backward <- function(model, forward_only = FALSE){
   
   dimnames(out$forward_probs) <- list("state" = model$state_names, 
     "time" = time_names, "sequence" = sequence_names)
-  dimnames(out$scaling_factors) <- list("time" = time_names, "sequence" = sequence_names)
+  if (!log_space) {
+    dimnames(out$scaling_factors) <- list("time" = time_names, "sequence" = sequence_names)
+  }
   if (!forward_only) {
     dimnames(out$backward_probs) <- list("state" = model$state_names, 
       "time" = time_names, "sequence" = sequence_names)

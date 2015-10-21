@@ -82,8 +82,8 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
       }
 
       for (unsigned int r = 0; r < emission.n_slices; r++) {
+        for (int l = 0; l < nSymbols[r]; l++) {
         for (unsigned int i = 0; i < emission.n_rows; i++) {
-          for (int l = 0; l < nSymbols[r]; l++) {
             if (emission(i, l, r) > 0.0) {
               for (unsigned int t = 0; t < obs.n_cols; t++) {
                 if (l == (obs(k, t, r))) {
