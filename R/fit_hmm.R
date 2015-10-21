@@ -296,7 +296,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
       maxEM <- lapply(model$emission_probs,function(i) max.col(i,ties.method="first"))
       paramEM<-lapply(1:model$n_channels,function(i) {
         x<-rbind(emissNZ[[i]],c(1,maxEM[[i]]))
-        x[!(duplicated(x)|duplicated(x,fromLast=TRUE))][2]
+        x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),2]
       })
       npEM<-sapply(paramEM, length)
     }
