@@ -499,21 +499,13 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
       x[order(x[,1]),]
     })
     
-    if(model$n_states > 1){
       maxEM <- lapply(model$emission_probs,function(i) cbind(1:model$n_states,max.col(i,ties.method="first")))
       paramEM<-lapply(1:model$n_channels,function(i) {
         x<-rbind(emissNZ[[i]],maxEM[[i]])
         x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
       })
       npEM<-sapply(paramEM,nrow)
-    } else {
-      maxEM <- lapply(model$emission_probs,function(i) max.col(i,ties.method="first"))
-      paramEM<-lapply(1:model$n_channels,function(i) {
-        x<-rbind(emissNZ[[i]],c(1,maxEM[[i]]))
-        x[!(duplicated(x)|duplicated(x,fromLast=TRUE))][2]
-      })
-      npEM<-length(unlist(paramEM))
-    }
+    
     
     maxEMvalue<-lapply(1:model$n_channels, function(i) 
       apply(model$emission_probs[[i]],1,max))
