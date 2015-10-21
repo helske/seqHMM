@@ -150,8 +150,8 @@ initial_probs <- c(0.9, 0.07, 0.02, 0.01)
 # Building the hidden Markov model with initial parameter values 
 bhmm <- build_hmm(
   observations = list(marr.seq, child.seq, left.seq),
-  initial_probs = initial_probs, transition_matrix = trans, 
-  emission_matrix = list(emiss_marr, emiss_child, emiss_left),
+  initial_probs = initial_probs, transition_probs = trans, 
+  emission_probs = list(emiss_marr, emiss_child, emiss_left),
   channel_names = c("Marriage", "Parenthood", "Residence"))
 
 # Fitting the HMM in 3 estimation steps:
@@ -259,7 +259,7 @@ trimmed_hmm <- trim_hmm(hmm$model, maxit = 100, zerotol = 1e-03)
 # "Trimming improved log-likelihood, ll_trim-ll_orig = 4.28e-05"
 
 # Transition probabilities of the original HMM
-hmm$model$emission_matrix
+hmm$model$emission_probs
 # $Marriage
 #            symbol_names
 # state_names     divorced      married       single
@@ -435,8 +435,8 @@ biofam3c$covariates$cohort <- factor(
 # Build MHMM
 bmhmm <- build_mhmm(
   observations = list(marr.seq, child.seq, left.seq),
-  transition_matrix = list(trans_1, trans_1, trans_2),
-  emission_matrix = list(list(emiss_1_marr, emiss_1_child, emiss_1_left), 
+  transition_probs = list(trans_1, trans_1, trans_2),
+  emission_probs = list(list(emiss_1_marr, emiss_1_child, emiss_1_left), 
                         list(emiss_2_marr, emiss_2_child, emiss_2_left),
                         list(emiss_3_marr, emiss_3_child, emiss_3_left)),
   initial_probs = list(initial_probs_1, initial_probs_1, initial_probs_2),
