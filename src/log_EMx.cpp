@@ -130,8 +130,11 @@ List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray, Numeri
       emission.slice(r).cols(0, nSymbols(r) - 1) = log(gamma.slice(r).cols(0, nSymbols(r) - 1));
     }
     
-    delta /= arma::as_scalar(arma::accu(delta));
-    
+    for (int i = 0; i < numberOfStates.size(); i++) {
+      delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1) /= arma::as_scalar(
+        arma::accu(delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1)));
+    }
+
     init = log(delta);
     
     for (unsigned int k = 0; k < obs.n_rows; k++) {
