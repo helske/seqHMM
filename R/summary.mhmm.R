@@ -48,7 +48,8 @@
 summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, log_space = FALSE, ...){
   
   partial_ll <- logLik(object, partials = TRUE, log_space = log_space)
-  ll <- sum(partial_ll)
+  ll <- structure(sum(partial_ll), class = "logLik", df = attr(object, "df"), nobs = attr(object, "nobs"))
+  
   fw <- forward_backward(object, forward_only = TRUE, log_space = log_space)$forward_probs[,object$length_of_sequences,]
   
   pr <- exp(object$X%*%object$coefficients)
