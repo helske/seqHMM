@@ -50,15 +50,7 @@ List log_objectivex(NumericVector transitionMatrix, NumericVector emissionArray,
   
   log_internalForwardx(transitionLog, emissionLog, initk, obs, alpha, threads);
   
-  if (!alpha.is_finite()) {
-    grad.fill(-arma::math::inf());
-    return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
-  }
   log_internalBackward(transitionLog, emissionLog, obs, beta, threads); 
-  if (!beta.is_finite()) {
-    grad.fill(-arma::math::inf());
-    return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
-  }
   
   arma::vec ll(obs.n_rows);
   for(int k = 0; k < obs.n_rows; k++){
