@@ -6,7 +6,7 @@
 Paths for Mixture Hidden Markov Models}
 \usage{
 mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
-  plots = "both", type = "d", sortv = NULL, sort.channel = 1,
+  plots = "obs", type = "d", sortv = NULL, sort.channel = 1,
   dist.method = "OM", with.missing = FALSE, title = NA, title.n = TRUE,
   cex.title = 1, title.pos = 1, withlegend = "auto",
   ncol.legend = "auto", with.missing.legend = "auto", legend.prop = 0.3,
@@ -25,9 +25,9 @@ mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
 
 \item{hidden.paths}{Most probable paths of hidden states, i.e. output from \code{\link{hidden_paths}} function.}
 
-\item{plots}{What to plot. One of \code{"obs"} for observations, \code{"hidden.paths"}
-  for most probable paths, or \code{"both"} for observations
-  and most probable paths (the default).}
+\item{plots}{What to plot. One of \code{"obs"} for observations (the default),
+  \code{"hidden.paths"} for most probable paths of hidden states,
+  or \code{"both"} for observations and hidden paths together.}
 
 \item{type}{The type of the plot. Available types are \code{"I"} for index
   plots and \code{"d"} for state distribution plots (the default). See

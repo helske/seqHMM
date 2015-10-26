@@ -15,8 +15,8 @@
 #'   \code{x} is a hmm object or if \code{type=="obs"}.
 #'   
 #' @param plots What to plot. One of \code{"obs"} for observations (the default), 
-#'   \code{"hidden.paths"} for most probable paths, or \code{"both"} for observations 
-#'   and most probable paths.
+#'   \code{"hidden.paths"} for most probable paths of hidden states, 
+#'   or \code{"both"} for observations and hidden paths together.
 #'   
 #' @param type The type of the plot. Available types are \code{"I"} for index 
 #'   plots and \code{"d"} for state distribution plots (the default). See 
