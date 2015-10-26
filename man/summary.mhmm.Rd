@@ -5,7 +5,7 @@
 \title{Summary method for mixture hidden Markov models}
 \usage{
 \method{summary}{mhmm}(object, parameters = FALSE, conditional_se = TRUE,
-  ...)
+  log_space = FALSE, ...)
 }
 \arguments{
 \item{object}{Mixture hidden Markov model of class \code{mhmm}.}
@@ -15,6 +15,9 @@ initial probabilities. \code{FALSE} by default.}
 
 \item{conditional_se}{Return conditional standard errors of coefficients.
 See \code{\link{vcov.mhmm}} for details. \code{TRUE} by default.}
+
+\item{log_space}{Make computations using log-space instead of scaling for greater
+numerical stability at cost of computational costs. Default is \code{FALSE}.}
 
 \item{...}{Further arguments to \code{\link{vcov.mhmm}}.}
 }

@@ -4,7 +4,8 @@
 \alias{vcov.mhmm}
 \title{Variance-Covariance for Regression Coefficients of Mixture Hidden Markov Model}
 \usage{
-\method{vcov}{mhmm}(object, conditional = TRUE, threads = 1, ...)
+\method{vcov}{mhmm}(object, conditional = TRUE, threads = 1,
+  log_space = FALSE, ...)
 }
 \arguments{
 \item{object}{Object of class \code{mhmm}.}
@@ -19,6 +20,9 @@ Note that computing the non-conditional standard errors can be slow for large mo
 the jacobian of analytical gradients is computed using finitite difference approximation.}
 
 \item{threads}{Number of threads to use in parallel computing. Default is 1.}
+
+\item{log_space}{Make computations using log-space instead of scaling for greater
+numerical stability at cost of computational costs. Default is \code{FALSE}.}
 
 \item{...}{Additional arguments to function \code{jacobian} of \code{numDeriv} package.}
 }

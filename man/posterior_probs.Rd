@@ -4,10 +4,12 @@
 \alias{posterior_probs}
 \title{Posterior Probabilities for Hidden Markov Model}
 \usage{
-posterior_probs(model)
+posterior_probs(model, log_space = FALSE)
 }
 \arguments{
 \item{model}{A (mixture) hidden Markov model of class \code{hmm} or \code{mhmm}.}
+
+\item{log_space}{Compute posterior probabilities in logarithmic scale.}
 }
 \value{
 Posterior probabilities. In case of multiple observations,

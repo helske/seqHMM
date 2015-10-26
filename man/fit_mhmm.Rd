@@ -6,7 +6,7 @@
 \usage{
 fit_mhmm(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
   control_em = list(), control_global = list(), control_local = list(),
-  lb, ub, threads = 1, ...)
+  lb, ub, threads = 1, log_space = FALSE, ...)
 }
 \arguments{
 \item{model}{Hidden Markov model of class \code{mhmm}.}
@@ -53,6 +53,9 @@ Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)]. Lower
 \item{threads}{Number of threads to use in parallel computing. Default is 1.}
 
 \item{...}{Additional arguments to nloptr}
+
+\item{log}{Make computations using log-space instead of scaling for greater
+numerical stability at cost of computational costs. Default is \code{FALSE}.}
 }
 \value{
 List with components \item{model}{Estimated model. }

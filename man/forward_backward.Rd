@@ -4,21 +4,21 @@
 \alias{forward_backward}
 \title{Forward and Backward Probabilities for Hidden Markov Model}
 \usage{
-forward_backward(model, forward_only = FALSE)
+forward_backward(model, forward_only = FALSE, log_space = FALSE)
 }
 \arguments{
 \item{model}{Hidden Markov model of class \code{hmm}.}
 
 \item{forward_only}{If \code{TRUE}, only forward probabilities are computed. Default is \code{FALSE}.}
+
+\item{log_space}{Compute forward and backward probabilities in logarithmic scale instead of scaling.}
 }
 \value{
 List with components
   \item{forward_probs}{Scaled forward probabilities, i.e. probability of state given observations up to that time point. }
-  \item{logLik}{Log-likelihood of the estimated model. }
-  \item{em_results}{Results after the EM step. }
-  \item{global_results}{Results after the global step. }
-  \item{local_results}{Results after the local step. }In case of multiple observations,
-these are computed independently for each sequence.
+  \item{backward_probs}{Scaled backward probabilities. }
+  \item{scaling_factors}{Sum of non-scaled forward probabilities at each time point. Only computed if \code{log = FALSE}.}
+  In case of multiple observations, these are computed independently for each sequence.
 }
 \description{
 Function \code{forward_backward} computes the scaled forward and backward probabilities of hidden Markov models.
