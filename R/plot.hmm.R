@@ -88,9 +88,9 @@
 #'   vector of length \code{x$n_symbols} is given, i.e. requires a color 
 #'   specified for all (combinations of) observed states even if they are not 
 #'   plotted (if the probability is less than combine.slices).
+#' @param main Overall title for the plot. Omitted by default.
 #' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as 
-#'   \code{vertex.color}, \code{vertex.label.cex}, \code{edge.lty}, 
-#'   \code{margin}, or \code{main}.
+#'   \code{vertex.color}, \code{vertex.label.cex}, or \code{edge.lty}.
 #'   
 #' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and 
 #'   fitting Hidden Markov models, \code{\link{mc_to_sc}} for transforming 
@@ -195,14 +195,20 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
                       combine.slices = 0.05, combined.slice.color = "white", 
                       combined.slice.label = "others",
                       withlegend = "bottom", ltext = NULL, legend.prop = 0.5, 
-                      cex.legend = 1, ncol.legend = "auto", cpal = "auto", ...){
+                      cex.legend = 1, ncol.legend = "auto", cpal = "auto", 
+                      main = NULL, ...){
   
   
   # Saving and changing marginals
   oldPar  <- par(no.readonly = TRUE)
-  par(mar = c(0.5,0.5,0.5,0.5))
+  
+  if (is.null(main)) {
+    par(mar = c(0.5, 0.5, 0.5, 0.5))
+  } else {
+    par(mai = c(0, 0, 1, 0))
+  }
   on.exit(par(oldPar), add = TRUE)
-  on.exit(par(mfrow = c(1,1)), add = TRUE)
+  on.exit(par(mfrow = c(1, 1)), add = TRUE)
   
   dots  <- list(...)
   
@@ -476,7 +482,8 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
       }
     }
     
-    if(!is.matrix(layout) && !is.function(layout) && (layout == "horizontal" || layout == "vertical")){
+    if (!is.matrix(layout) && !is.function(layout) && 
+        (layout == "horizontal" || layout == "vertical")) {
       do.call(plot.igraph2, c(list(g1, layout = glayout, 
                                    vertex.shape = "pie", vertex.pie = pie.values,
                                    vertex.pie.color = list(pie.colors),
@@ -488,8 +495,9 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
                                    edge.label = edge.label, 
                                    edge.label.family = edge.label.family, 
                                    edge.arrow.size = edge.arrow.size,
-                                   xlim = xlim, ylim = ylim, rescale = rescale), dots))
-    }else{
+                                   xlim = xlim, ylim = ylim, rescale = rescale,
+                                   main = main), dots))
+    } else {
       do.call(plot.igraph2, c(list(g1, layout = glayout, 
                                    vertex.shape = "pie", vertex.pie = pie.values,
                                    vertex.pie.color = list(pie.colors),
@@ -500,9 +508,10 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
                                    edge.curved = edge.curved, edge.width = edge.width, 
                                    edge.label = edge.label, 
                                    edge.label.family = edge.label.family,
-                                   edge.arrow.size = edge.arrow.size), dots))
+                                   edge.arrow.size = edge.arrow.size,
+                                   main = main), dots))
     }
-  }else{
+  } else {
     if(!is.matrix(layout) && !is.function(layout) && (layout == "horizontal" || layout == "vertical")){
       do.call(plot.igraph2, c(list(g1, layout = glayout, 
                                    vertex.size = vertex.size, 
@@ -512,8 +521,9 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
                                    edge.curved = edge.curved, edge.width = edge.width, 
                                    edge.label = edge.label, 
                                    edge.label.family = edge.label.family, 
-                                   xlim = xlim, ylim = ylim, rescale = rescale), dots))
-    }else{
+                                   xlim = xlim, ylim = ylim, rescale = rescale,
+                                   main = main), dots))
+    } else {
       do.call(plot.igraph2, c(list(g1, layout = glayout, 
                                    vertex.size = vertex.size, 
                                    vertex.label = vertex.label, vertex.label.dist = vertex.label.dist, 
@@ -521,7 +531,8 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
                                    vertex.label.family = vertex.label.family,
                                    edge.curved = edge.curved, edge.width = edge.width, 
                                    edge.label = edge.label, 
-                                   edge.label.family = edge.label.family), dots))
+                                   edge.label.family = edge.label.family,
+                                   main = main), dots))
     }
   }  
   

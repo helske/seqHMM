@@ -107,9 +107,10 @@
 #'   vector of length \code{x$n_symbols} is given, i.e. requires a color 
 #'   specified for all (combinations of) observed states even if they are not 
 #'   plotted (if the probability is less than combine.slices).
+#' @param main Optional main titles for plots. The default \code{"auto"} uses 
+#' \code{cluster_names} as titles, \code{NULL} prints no titles.
 #' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as 
-#'   \code{vertex.color}, \code{vertex.label.cex}, \code{edge.lty}, 
-#'   \code{margin}, or \code{main}.
+#'   \code{vertex.color}, \code{vertex.label.cex}, or \code{edge.lty}.
 #'   
 #' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building and 
 #'   fitting mixture hidden Markov models; \code{\link{plot.igraph}} for plotting 
@@ -161,7 +162,7 @@ plot.mhmm <- function(x, interactive = TRUE,
                             combined.slice.label = "others",
                             withlegend = "bottom", legend.pos = "center", ltext = NULL, 
                             legend.prop = 0.5, cex.legend = 1, ncol.legend = "auto", 
-                            cpal = "auto", ...){
+                            cpal = "auto", main = "auto", ...){
   
   if(interactive){
     do.call(mHMMplotint, c(list(x = x, ask = ask, which.plots = which.plots, layout = layout, pie = pie, 
@@ -177,7 +178,8 @@ plot.mhmm <- function(x, interactive = TRUE,
                                 combine.slices = combine.slices, combined.slice.color = combined.slice.color, 
                                 combined.slice.label = combined.slice.label,
                                 withlegend = withlegend, ltext = ltext, legend.prop = legend.prop, 
-                                cex.legend = cex.legend, ncol.legend = ncol.legend, cpal = cpal), list(...)))
+                                cex.legend = cex.legend, ncol.legend = ncol.legend, cpal = cpal,
+                                main = main), list(...)))
   }else{
     do.call(mHMMplotgrid, c(list(x = x, which.plots =  which.plots, nrow = nrow, ncol = ncol, 
                                  byrow = byrow,
@@ -196,7 +198,8 @@ plot.mhmm <- function(x, interactive = TRUE,
                                  combined.slice.label = combined.slice.label,
                                  withlegend = withlegend, legend.pos = legend.pos, ltext = ltext, 
                                  legend.prop = legend.prop, 
-                                 cex.legend = cex.legend, ncol.legend = ncol.legend, cpal = cpal), list(...)))
+                                 cex.legend = cex.legend, ncol.legend = ncol.legend, cpal = cpal,
+                                 main = main), list(...)))
   }
   
 }

@@ -13,7 +13,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
                     combined.slice.label="others",
                     withlegend="bottom", ltext=NULL, legend.prop=0.5, 
                     cex.legend=1, ncol.legend="auto", cpal="auto", 
-                    legend.pos="center", ...){
+                    legend.pos="center", main = "auto", ...){
   
   
   dots <- list(...)
@@ -292,7 +292,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
                          edge.label=edge.label, 
                          edge.label.family=edge.label.family, 
                          edge.arrow.size=edge.arrow.size,
-                         xlim=xlim, ylim=ylim, rescale=rescale), dots))
+                         xlim=xlim, ylim=ylim, rescale=rescale, main = main), dots))
       }else{
         plotcall <- call("plot.igraph2", g1, layout=glayout, 
                          vertex.shape="pie", vertex.pie=pie.values,
@@ -305,7 +305,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
                          edge.label=edge.label, 
                          edge.label.family=edge.label.family, 
                          edge.arrow.size=edge.arrow.size,
-                         xlim=xlim, ylim=ylim, rescale=rescale)
+                         xlim=xlim, ylim=ylim, rescale=rescale, main = main)
       }
     }else{
       if(length(dots)>0){
@@ -319,7 +319,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
                          edge.curved=edge.curved, edge.width=edge.width, 
                          edge.label=edge.label, 
                          edge.label.family=edge.label.family,
-                         edge.arrow.size=edge.arrow.size), dots))
+                         edge.arrow.size=edge.arrow.size, main = main), dots))
       }else{
         plotcall <- call("plot.igraph2", g1, layout=glayout, 
                          vertex.shape="pie", vertex.pie=pie.values,
@@ -331,7 +331,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
                          edge.curved=edge.curved, edge.width=edge.width, 
                          edge.label=edge.label, 
                          edge.label.family=edge.label.family,
-                         edge.arrow.size=edge.arrow.size)
+                         edge.arrow.size=edge.arrow.size, main = main)
       }
     }
   }else{
@@ -346,7 +346,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
                          edge.curved=edge.curved, edge.width=edge.width, 
                          edge.label=edge.label, 
                          edge.label.family=edge.label.family, 
-                         xlim=xlim, ylim=ylim, rescale=rescale), dots))
+                         xlim=xlim, ylim=ylim, rescale=rescale, main = main), dots))
       }else{
         plotcall <- call("plot.igraph2", g1, layout=glayout, 
                          vertex.size=vertex.size, 
@@ -356,7 +356,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
                          edge.curved=edge.curved, edge.width=edge.width, 
                          edge.label=edge.label, 
                          edge.label.family=edge.label.family, 
-                         xlim=xlim, ylim=ylim, rescale=rescale)
+                         xlim=xlim, ylim=ylim, rescale=rescale, main = main)
       }
     }else{
       if(length(dots)>0){
@@ -367,7 +367,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
                          vertex.label.family=vertex.label.family,
                          edge.curved=edge.curved, edge.width=edge.width, 
                          edge.label=edge.label, 
-                         edge.label.family=edge.label.family), dots))
+                         edge.label.family=edge.label.family, main = main), dots))
       }else{
         plotcall <- call("plot.igraph2", g1, layout=glayout, 
                          vertex.size=vertex.size, 
@@ -376,7 +376,7 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
                          vertex.label.family=vertex.label.family,
                          edge.curved=edge.curved, edge.width=edge.width, 
                          edge.label=edge.label, 
-                         edge.label.family=edge.label.family)
+                         edge.label.family=edge.label.family, main = main)
       }
     }
   }  

@@ -16,7 +16,8 @@
   combine.slices = 0.05, combined.slice.color = "white",
   combined.slice.label = "others", withlegend = "bottom",
   legend.pos = "center", ltext = NULL, legend.prop = 0.5,
-  cex.legend = 1, ncol.legend = "auto", cpal = "auto", ...)
+  cex.legend = 1, ncol.legend = "auto", cpal = "auto", main = "auto",
+  ...)
 }
 \arguments{
 \item{x}{A hidden Markov model object of class mhmm created with
@@ -152,9 +153,11 @@ vector of length \code{x$n_symbols} is given, i.e. requires a color
 specified for all (combinations of) observed states even if they are not
 plotted (if the probability is less than combine.slices).}
 
+\item{main}{Optional main titles for plots. The default \code{"auto"} uses
+\code{cluster_names} as titles, \code{NULL} prints no titles.}
+
 \item{...}{Other parameters passed on to \code{\link{plot.igraph}} such as
-  \code{vertex.color}, \code{vertex.label.cex}, \code{edge.lty},
-  \code{margin}, or \code{main}.}
+  \code{vertex.color}, \code{vertex.label.cex}, or \code{edge.lty}.}
 }
 \description{
 Function \code{plot.mhmm} plots a directed graph of the parameters of each model

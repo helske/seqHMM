@@ -11,12 +11,22 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow=NA, ncol=NA, byrow=FALSE,
                          combine.slices=0.05, combined.slice.color="white", 
                          combined.slice.label="others",
                          withlegend="bottom", legend.pos="center", ltext=NULL, legend.prop=0.5, 
-                         cex.legend=1, ncol.legend="auto", cpal="auto", ...){
+                         cex.legend=1, ncol.legend="auto", cpal="auto", 
+                         main = "auto", ...){
   
   plot.new()
   opar <- par(no.readonly=TRUE)
   on.exit(opar, add = TRUE)
   on.exit(graphics::layout(1), add = TRUE)
+  
+  if (!is.null(main)) {
+    if (length(main) == 1 && main == "auto") {
+      main <- x$cluster_names
+    } else if (length(main) != length(x$cluster_names)) {
+      warning("The length of the vector provided for the main argument does not match the length of x$cluster_names. Using cluster_names instead.")
+      main <- x$cluster_names
+    }
+  }
   
   divmodels <- separate_mhmm(x)
   
@@ -256,7 +266,8 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow=NA, ncol=NA, byrow=FALSE,
     HMMcalls[[p]] <- do.call(HMMplot,args=list(divmodels[[p]], ncol.legend=ncolleg, 
                                                legend.pos=legend.pos, 
                                                cex.legend=cex.legend, 
-                                               withlegend=withlegend, ...))
+                                               withlegend=withlegend, 
+                                               main = main[p], ...))
   }
   
 

@@ -13,7 +13,7 @@
   label.max.length = 6, trim = 1e-15, combine.slices = 0.05,
   combined.slice.color = "white", combined.slice.label = "others",
   withlegend = "bottom", ltext = NULL, legend.prop = 0.5,
-  cex.legend = 1, ncol.legend = "auto", cpal = "auto", ...)
+  cex.legend = 1, ncol.legend = "auto", cpal = "auto", main = NULL, ...)
 }
 \arguments{
 \item{x}{A hidden Markov model object of class hmm created with
@@ -126,9 +126,10 @@ vector of length \code{x$n_symbols} is given, i.e. requires a color
 specified for all (combinations of) observed states even if they are not
 plotted (if the probability is less than combine.slices).}
 
+\item{main}{Overall title for the plot. Omitted by default.}
+
 \item{...}{Other parameters passed on to \code{\link{plot.igraph}} such as
-  \code{vertex.color}, \code{vertex.label.cex}, \code{edge.lty},
-  \code{margin}, or \code{main}.}
+  \code{vertex.color}, \code{vertex.label.cex}, or \code{edge.lty}.}
 }
 \description{
 Function \code{plot.hmm} plots a directed graph with pie charts of
