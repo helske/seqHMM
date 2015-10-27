@@ -22,7 +22,7 @@ NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissio
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
   arma::vec init(initialProbs.begin(), emission.n_rows, false);
   arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, false);
-  
+
   int q = coefs.nrow();
   arma::mat coef(coefs.begin(), q, coefs.ncol(), false);
   coef.col(0).zeros();
@@ -35,7 +35,7 @@ NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissio
 
   }
   weights.each_row() /= sum(weights, 0);
-  
+
   NumericVector ll(obs.n_rows);
 
 #pragma omp parallel for if(obs.n_rows >= threads) schedule(static) num_threads(threads) \
