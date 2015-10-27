@@ -1,6 +1,6 @@
 #' Build a Hidden Markov Model
 #' 
-#' Function build_hmm constructs an object of class \code{hmm}.
+#' Function \code{build_hmm} constructs a hidden Markov model object of class \code{hmm}.
 #' @export
 #' @useDynLib seqHMM
 #' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing 
@@ -105,8 +105,8 @@
 #' 
 #' @seealso \code{\link{fit_hmm}} for fitting Hidden Markov models.
 
-build_hmm<-function(observations,transition_probs,emission_probs,initial_probs,
-  state_names=NULL, channel_names=NULL){
+build_hmm <- function(observations, transition_probs, emission_probs, initial_probs,
+  state_names = NULL, channel_names = NULL){
   
   if (!is.matrix(transition_probs)) {
     stop(paste("Object provided for transition_probs is not a matrix."))

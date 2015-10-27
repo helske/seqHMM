@@ -32,8 +32,8 @@ left side omitted.}
 in the model. If not found in data, the variables are taken from
 \code{environment(formula)}.}
 
-\item{coefficients}{An optional k x l matrix of regression coefficients for time-constant
-covariates for mixture probabilities, where l is the number of clusters and k
+\item{coefficients}{An optional $k x l$ matrix of regression coefficients for time-constant
+covariates for mixture probabilities, where $l$ is the number of clusters and $k$
 is the number of covariates. A logit-link is used for mixture probabilities.
 The first column is set to zero.}
 
@@ -49,7 +49,7 @@ numbered states are used.}
 Object of class \code{mhmm}.
 }
 \description{
-Function build_mhmm constructs a mixture of hidden Markov models.
+Function \code{build_mhmm} constructs a mixture hidden Markov model object of class \code{mhmm}.
 }
 \examples{
 require(TraMineR)
