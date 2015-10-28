@@ -141,5 +141,6 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
     }
   }
   grad = sum(gradmat, 1);
-  return List::create(Named("objective") = -arma::accu(log(scales)), Named("gradient") = wrap(-grad));
+  return List::create(Named("objective") = -arma::accu(log(scales)),
+      Named("gradient") = wrap(-grad));
 }

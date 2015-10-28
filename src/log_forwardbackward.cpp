@@ -18,7 +18,7 @@ List log_forwardbackward(NumericVector transitionMatrix, NumericVector emissionA
   init = log(init);
   transition = log(transition);
   emission = log(emission);
-  
+
   arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
 
   log_internalForward(transition, emission, init, obs, alpha, threads);

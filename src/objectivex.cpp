@@ -32,7 +32,7 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray,
   if (!weights.is_finite()) {
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad),
-                        Named("error") = 1);
+        Named("error") = 1);
   }
 
   weights.each_row() /= sum(weights, 0);
@@ -56,7 +56,7 @@ List objectivex(NumericVector transitionMatrix, NumericVector emissionArray,
   if (!beta.is_finite()) {
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad),
-                        Named("error") = 2);
+        Named("error") = 2);
   }
 
   IntegerVector cumsumstate = cumsum(numberOfStates);
@@ -194,6 +194,6 @@ default(none) shared(q, alpha, beta, scales, gradmat, nSymbols, ANZ, BNZ, INZ, \
 
     }
   }
-  return List::create(Named("objective") = -arma::accu(log(scales)), 
-    Named("gradient") = wrap(-sum(gradmat, 1)),Named("error") = 0);
+  return List::create(Named("objective") = -arma::accu(log(scales)),
+      Named("gradient") = wrap(-sum(gradmat, 1)), Named("error") = 0);
 }

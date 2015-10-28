@@ -21,8 +21,14 @@
 #'   \item{print_level}{Level of printing. Possible values are 0 
 #'   (prints nothing), 1 (prints information at start and end of algorithm), and
 #'   2 (prints at every iteration).} 
-#'   \item{reltol}{Relative tolerance for convergence defined as \eqn{(sumLogLikNew - sumLogLikOld)/(abs(sumLogLikOld)+0.1)}. 
-#'   Default is 1e-8.} }
+#'   \item{reltol}{Relative tolerance for convergence defined as \eqn{(logLik_new - logLik_old)/(abs(logLik_old)+0.1)}. 
+#'   Default is 1e-8.}
+#'   \item{restarts}{Number of restarts of EM algorithm using random initial values. Default is 0. }
+#'   \item{restart_transition}{Logical, should the initial transition 
+#'   probabilities be varied. Default is \code{TRUE}. }
+#'   \item{restart_emission}{Logical, should the initial emission 
+#'   probabilities be varied. Default is \code{TRUE}. }
+#'   \item{sd_restart}{Standard deviation for \code{rnorm} used in restarting. Default is 0.25.} }
 #' @param control_global Optional list of additional arguments for 
 #'   \code{\link{nloptr}} argument \code{opts}. The default values are
 #'   \describe{
@@ -39,7 +45,6 @@
 #'    \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
 #'    \item{xtol_rel}{\code{1e-8}}
 #'    \item{maxeval}{\code{10000} (maximum number of iterations)}
-#'    \item{maxtime}{\code{60} (maximum run time in seconds)}
 #'   }
 #' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater 
@@ -61,15 +66,20 @@
 #'   above-mentioned order. The results from a former step are used as starting values 
 #'   in a latter.
 #' 
-#'   By default the \code{fit_hmm} function starts with the EM algorithm,
-#'   uses the multilevel single-linkage method (MLSL) with the LDS modification 
-#'   for global optimization (\code{NLOPT_GD_MLSL_LDS} as \code{algorithm} in 
-#'   \code{control_global}), and finishes with LBFGS as the local optimizer. 
+#'   By default the \code{fit_hmm} function starts with the EM algorithm, 
+#'   and finishes with LBFGS as the local optimizer.
+#'   
+#'   It is possible to rerun EM algorithm automatically using random starting 
+#'   values based on the first run of EM. Number of restarts is defined by
+#'   argument \code{restarts} in \code{control_em}. As EM algorithm is relatively fast, this method 
+#'   might be preferred option compared to proper global optimization strategy of step 2.
+#'   
+#'   Default global optimization method (triggered via \code{global_step = TRUE} is 
+#'   the multilevel single-linkage method (MLSL) with the LDS modification (\code{NLOPT_GD_MLSL_LDS} as 
+#'   \code{algorithm} in \code{control_global}), with LBFGS as the local optimizer. 
 #'   The MLSL method draws random starting points and performs a local optimization 
 #'   from each. The LDS modification uses low-discrepancy sequences instead of 
 #'   pseudo-random numbers as starting points and should improve the convergence rate. 
-#'   By default, \code{fit_hmm} uses the BFGS algorithm as the local optimizer in the 
-#'   MLSL (\code{NLOPT_LD_LBFGS} as \code{local_opts} in \code{control_global}). 
 #'   In order to reduce the computation time spent on non-global optima, the 
 #'   convergence tolerance of the local optimizer is set relatively large. At step 3, 
 #'   a local optimization (LBFGS by default) is run with a lower tolerance to find the 
@@ -84,8 +94,8 @@
 #'   e.g. all steps, only global and local steps, and a few evaluations of EM followed by 
 #'   global and local optimization.
 #'   
-#'   By default, the estimation time is limited to 60 seconds in steps 2 and 3, so it is 
-#'   advisable to change the default settings for the final analysis. 
+#'   By default, the estimation time is limited to 60 seconds in global optimization step, so it is 
+#'   advisable to change the default settings for the proper global optimization. 
 #'   
 #'   Any method available in the \code{nloptr} function can be used for the global and 
 #'   local steps.

@@ -1,6 +1,6 @@
 #' Build a Mixture Hidden Markov Model
 #' 
-#' Function build_mhmm constructs a mixture of hidden Markov models.
+#' Function \code{build_mhmm} constructs a mixture hidden Markov model object of class \code{mhmm}.
 #' 
 #' @export
 #' @useDynLib seqHMM
@@ -21,8 +21,8 @@
 #' @param data An optional data frame, list or environment containing the variables 
 #' in the model. If not found in data, the variables are taken from 
 #' \code{environment(formula)}.
-#' @param coefficients An optional k x l matrix of regression coefficients for time-constant 
-#'   covariates for mixture probabilities, where l is the number of clusters and k
+#' @param coefficients An optional $k x l$ matrix of regression coefficients for time-constant 
+#'   covariates for mixture probabilities, where $l$ is the number of clusters and $k$
 #'   is the number of covariates. A logit-link is used for mixture probabilities.
 #'   The first column is set to zero.
 #' @param cluster_names A vector of optional names for the clusters.

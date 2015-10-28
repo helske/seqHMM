@@ -22,11 +22,11 @@ List log_forwardbackwardx(NumericVector transitionMatrix, NumericVector emission
   arma::mat X(X_.begin(), obs.n_rows, q);
   arma::mat weights = exp(X * coef).t();
   weights.each_row() /= arma::sum(weights, 0);
-  weights = log(weights);   
-  transition = log(transition); 
-  emission = log(emission); 
-  init = log(init); 
-  
+  weights = log(weights);
+  transition = log(transition);
+  emission = log(emission);
+  init = log(init);
+
   arma::mat initk(emission.n_rows, obs.n_rows);
   for (unsigned int k = 0; k < obs.n_rows; k++) {
     initk.col(k) = init + reparma(weights.col(k), numberOfStates);

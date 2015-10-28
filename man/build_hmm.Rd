@@ -43,7 +43,7 @@ Object of class \code{hmm} with following elements:
 }
 }
 \description{
-Function build_hmm constructs an object of class \code{hmm}.
+Function \code{build_hmm} constructs a hidden Markov model object of class \code{hmm}.
 }
 \examples{
 require(TraMineR)
