@@ -30,7 +30,26 @@
 #' the state names are taken as row names of transition matrices. If this is also \code{NULL}, 
 #' numbered states are used.
 #' @param channel_names A vector of optional names for the channels.
-#' @return Object of class \code{mhmm}.
+#' @return Object of class \code{mhmm} with following elements:
+#' \describe{
+#'    \item{\code{observations}}{State sequence object or a list of such containing the data.}
+#'    \item{\code{transition_probs}}{A matrix of transition probabilities.}
+#'    \item{\code{emission_probs}}{A matrix or a list of matrices of emission probabilities.}
+#'    \item{\code{initial_probs}}{A vector of initial probabilities.}
+#'    \item{\code{coefficients}}{A matrix of parameter coefficients for covariates (covariates in rows, clusters in columns).}
+#'    \item{\code{X}}{Covariate values for each subject.}
+#'    \item{\code{cluster_names}}{Names for clusters.}
+#'    \item{\code{state_names}}{Names for hidden states.}
+#'    \item{\code{symbol_names}}{Names for observed states.}
+#'    \item{\code{channel_names}}{Names for channels of sequence data}
+#'    \item{\code{length_of_sequences}}{(Maximum) length of sequences.}
+#'    \item{\code{n_sequences}}{Number of sequences.}
+#'    \item{\code{n_symbols}}{Number of observed states (in each channel).}
+#'    \item{\code{n_states}}{Number of hidden states.}
+#'    \item{\code{n_channels}}{Number of channels.}
+#'    \item{\code{n_covariates}}{Number of covariates.}
+#'    \item{\code{n_clusters}}{Number of clusters.}
+#'}
 #' @seealso \code{\link{fit_mhmm}} for fitting mixture Hidden Markov models; 
 #' \code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for 
 #' reorganizing a MHMM into a list of separate hidden Markov models; and
