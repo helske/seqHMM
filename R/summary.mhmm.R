@@ -68,7 +68,7 @@ summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, log_
     for (j in 1:object$n_sequences) {
       p <- 0
     for (i in 1:object$n_clusters) {
-        posterior_cluster_probabilities[j,i] <- exp(logSumExp(fw[(p+1):(p+object$n_states[i]), j]) - partial_ll[i])
+        posterior_cluster_probabilities[j,i] <- exp(logSumExp(fw[(p+1):(p+object$n_states[i]), j]) - partial_ll[j])
         p <- p + object$n_states[i]
       }
 

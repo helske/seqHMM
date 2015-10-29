@@ -23,5 +23,6 @@ double logSumExp(const arma::vec& x) {
       cumsum += EXPL(x(i) - maxv);
     }
   }
+  
   return maxv + log1p(cumsum);
 }
