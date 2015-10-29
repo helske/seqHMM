@@ -9,13 +9,14 @@ default(none) shared(beta, scales, obs, emission,transition)
   for (int k = 0; k < obs.n_rows; k++) {
     beta.slice(k).col(obs.n_cols - 1).fill(1.0);
     for (int t = obs.n_cols - 2; t >= 0; t--) {
-      for (unsigned int i = 0; i < transition.n_rows; i++) {
+     // for (unsigned int i = 0; i < transition.n_rows; i++) {
         arma::vec tmpbeta = beta.slice(k).col(t + 1);
         for (unsigned int r = 0; r < obs.n_slices; r++) {
           tmpbeta %= emission.slice(r).col(obs(k, t + 1, r));
         }
-        beta(i, t, k) = arma::as_scalar(transition.row(i) * tmpbeta) / scales(t + 1, k);
-      }
+        beta.slice(k).col(t) =  transition * tmpbeta / scales(t + 1, k);
+      //  beta(i, t, k) = arma::dot(transition.row(i), tmpbeta) / scales(t + 1, k);
+     // }
     }
   }
 }

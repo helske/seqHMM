@@ -16,7 +16,7 @@ default(none) shared(alpha, scales, obs, init, emission, transition)
     scales(0, k) = sum(alpha.slice(k).col(0));
     alpha.slice(k).col(0) /= scales(0, k);
     for (unsigned int t = 1; t < obs.n_cols; t++) {
-      alpha.slice(k).col(t) = transition * alpha.slice(k).col(t - 1);
+      alpha.slice(k).col(t) = transition.t() * alpha.slice(k).col(t - 1);
       for (unsigned int r = 0; r < obs.n_slices; r++) {
         alpha.slice(k).col(t) %= emission.slice(r).col(obs(k, t, r));
       }
