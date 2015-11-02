@@ -7,7 +7,7 @@
 #' to direct numerical maximization.
 #' 
 #' @export 
-#' @param model Hidden Markov model of class \code{hmm}.
+#' @param model Hidden Markov model.
 #' @param em_step Logical, use EM algorithm at the start of parameter estimation.
 #'   The default is \code{TRUE}. Note that EM algorithm is faster than direct numerical optimization, 
 #'   but is even more prone to get stuck in a local optimum.
@@ -48,7 +48,7 @@
 #'   }
 #' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater 
-#' numerical stability at cost of computational costs. Default is \code{FALSE}.
+#' numerical stability at cost of decreased computational performance Default is \code{TRUE}.
 #' @param ... Additional arguments to nloptr
 #' @return List with components \item{model}{Estimated model. } 
 #'   \item{logLik}{Log-likelihood of the estimated model. } 
@@ -179,7 +179,7 @@
 #' 
 fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE, 
   control_em=list(), control_global=list(), 
-  control_local=list(), lb, ub, threads = 1, log_space = FALSE, ...){
+  control_local=list(), lb, ub, threads = 1, log_space = TRUE, ...){
   
   if(!inherits(model, "hmm"))
     stop("Argument model must be an object of class 'hmm'.")
