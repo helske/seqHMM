@@ -9,12 +9,12 @@
 #' Default is FALSE, which returns the sum of all log-likelihood components.
 #' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater 
-#' numerical stability at cost of computational costs. Default is \code{FALSE}.
+#' numerical stability at cost of decreased computational performance Default is \code{TRUE}.
 #' @param ... Ignored.
 #' @return Log-likelihood of hidden Markov model.
 #' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and 
 #'   fitting Hidden Markov models.
-logLik.hmm<-function(object, partials = FALSE, threads = 1, log_space = FALSE, ...){
+logLik.hmm<-function(object, partials = FALSE, threads = 1, log_space = TRUE, ...){
   
   if (threads < 1) stop ("Argument threads must be a positive integer.")
   

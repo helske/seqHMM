@@ -5,10 +5,11 @@
 #'
 #' @export 
 #' @param model A (mixture) hidden Markov model of class \code{hmm} or \code{mhmm}.
-#' @param log_space Compute posterior probabilities in logarithmic scale. 
+#' @param log_space Compute posterior probabilities in logarithmic scale. Default is \code{TRUE}.
 #' @return Posterior probabilities. In case of multiple observations,
 #' these are computed independently for each sequence.
-posterior_probs <- function(model, log_space = FALSE){
+#' 
+posterior_probs <- function(model, log_space = TRUE){
   fb <- forward_backward(model, log_space = log_space)
   if (!log_space) {
   fb$forward_probs * fb$backward_probs

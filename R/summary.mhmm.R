@@ -11,7 +11,7 @@
 #' @param conditional_se Return conditional standard errors of coefficients. 
 #' See \code{\link{vcov.mhmm}} for details. \code{TRUE} by default.
 #' @param log_space Make computations using log-space instead of scaling for greater 
-#' numerical stability at cost of computational costs. Default is \code{FALSE}.
+#' numerical stability at cost of decreased computational performance Default is \code{TRUE}.
 #' @param ... Further arguments to \code{\link{vcov.mhmm}}.
 #' 
 #' @details The \code{summary.mhmm} function computes features from a mixture hidden Markov
@@ -45,7 +45,7 @@
 #' @seealso \code{\link{fit_mhmm}} for building and fitting mixture hidden Markov models.
 #'   
 
-summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, log_space = FALSE, ...){
+summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, log_space = TRUE, ...){
   
   partial_ll <- logLik(object, partials = TRUE, log_space = log_space)
   ll <- structure(sum(partial_ll), class = "logLik", df = attr(object, "df"), nobs = attr(object, "nobs"))
