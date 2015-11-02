@@ -4,12 +4,8 @@
 \alias{alphabet}
 \alias{seqdef}
 \alias{seqstatf}
-\title{Create a state sequence object}
+\title{Imported functions from \code{TraMineR} for convinience.}
 \description{
-Imported function \code{\link[TraMineR]{seqdef}} from \code{TraMineR} for convinience.
-
-Imported function \code{\link[TraMineR]{seqstatf}} from \code{TraMineR} for convinience.
-
-Imported function \code{\link[TraMineR]{alphabet}} from \code{TraMineR} for convinience.
+Imported functions from \code{TraMineR} for convinience.
 }
 
