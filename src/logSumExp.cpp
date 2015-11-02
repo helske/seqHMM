@@ -12,7 +12,7 @@ using namespace Rcpp;
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 double logSumExp(const arma::vec& x) {
-  unsigned int maxi;
+  unsigned int maxi = 0;
   LDOUBLE maxv = x.max(maxi);
   if (!(maxv > -arma::math::inf())) {
     return -arma::math::inf();
@@ -23,5 +23,6 @@ double logSumExp(const arma::vec& x) {
       cumsum += EXPL(x(i) - maxv);
     }
   }
+  
   return maxv + log1p(cumsum);
 }

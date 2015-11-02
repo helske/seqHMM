@@ -27,29 +27,25 @@ NumericVector logLikHMM(NumericVector transitionMatrix, NumericVector emissionAr
 #pragma omp parallel for if(obs.n_rows >= threads) schedule(static) num_threads(threads) \
   default(none) shared(ll, obs, init, emission, transition)
   for (int k = 0; k < obs.n_rows; k++) {
-    arma::vec alpha(emission.n_rows);
-    for (unsigned int i = 0; i < emission.n_rows; i++) {
-      alpha(i) = init(i);
-      for (unsigned int r = 0; r < obs.n_slices; r++) {
-        alpha(i) *= emission(i, obs(k, 0, r), r);
-      }
+    arma::vec alpha = init;
+    
+    for (unsigned int r = 0; r < obs.n_slices; r++) {
+      alpha %= emission.slice(r).col(obs(k, 0, r));
     }
+    
     double tmp = sum(alpha);
     ll(k) = log(tmp);
     alpha /= tmp;
-
-    arma::vec alphatmp(emission.n_rows);
-
+    
     for (unsigned int t = 1; t < obs.n_cols; t++) {
-      for (unsigned int i = 0; i < emission.n_rows; i++) {
-        alphatmp(i) = arma::dot(transition.col(i), alpha);
-        for (unsigned int r = 0; r < obs.n_slices; r++) {
-          alphatmp(i) *= emission(i, obs(k, t, r), r);
-        }
+      alpha = transition.t() * alpha;
+      for (unsigned int r = 0; r < obs.n_slices; r++) {
+        alpha %= emission.slice(r).col(obs(k, t, r));
       }
-      tmp = sum(alphatmp);
+      
+      tmp = sum(alpha);
       ll(k) += log(tmp);
-      alpha = alphatmp / tmp;
+      alpha /= tmp;
     }
   }
 

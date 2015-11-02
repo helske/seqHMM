@@ -28,8 +28,6 @@ List log_EM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
 
   arma::vec ll(obs.n_rows);
 
-  double neginf = -arma::math::inf();
-
   for (int k = 0; k < oDims[0]; k++) {
     ll(k) = logSumExp(alpha.slice(k).col(oDims[1] - 1));
   }
@@ -56,9 +54,9 @@ List log_EM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
     }
 
 #pragma omp parallel for if(obs.n_rows>=threads) schedule(static) num_threads(threads) \
-    default(none) shared(transition, obs, alpha, beta, ll,                         \
+    default(none) shared(transition, obs, alpha, beta, ll,    oDims,                   \
       emission, ksii, gamma, nSymbols)
-    for (int k = 0; k < obs.n_rows; k++) {
+    for (int k = 0; k < oDims[0]; k++) {
       if (obs.n_cols > 1) {
         for (unsigned int j = 0; j < emission.n_rows; j++) {
           for (unsigned int i = 0; i < emission.n_rows; i++) {

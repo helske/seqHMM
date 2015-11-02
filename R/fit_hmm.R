@@ -253,10 +253,10 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
           }
         }
         if (!log_space) {
-          resEMi <- EM(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
+          resEMi <- EM(random_trans, random_emiss, model$initial_probs, obsArray, 
             model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
         } else {
-          resEMi <- log_EM(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
+          resEMi <- log_EM(random_trans, random_emiss, model$initial_probs, obsArray, 
             model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
           }
         
