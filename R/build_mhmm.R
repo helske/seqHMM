@@ -293,6 +293,9 @@ build_mhmm <-
       symbol_names<-lapply(observations,alphabet)
       n_symbols<-sapply(symbol_names,length)
       for (i in 1:n_clusters) {
+        if (length(initial_probs) != n_states){
+          stop(paste("Length of initial_probs of cluster", i, "is not equal to the number of states."))
+        }
         if (any(lapply(emission_probs[[i]],nrow)!=n_states[i])) {
           stop(paste("Number of rows in emission_probs of cluster", i, "is not equal to the number of states."))
         }

@@ -129,20 +129,22 @@ build_hmm <- function(observations, transition_probs, emission_probs, initial_pr
     stop(paste("Object provided for initial_probs is not a vector."))
   }
   
-  if (!isTRUE(all.equal(sum(initial_probs), 1, check.attributes=FALSE))){
-    stop(paste("Initial state probabilities do not sum to one."))
-  }
-  
   if(dim(transition_probs)[1]!=dim(transition_probs)[2])
     stop("Transition_probs must be a square matrix.")
   n_states <- nrow(transition_probs)
+  
+  if (length(initial_probs) != n_states){
+    stop(paste("Length of initial_probs is not equal to the number of states."))
+  }
   
   if (is.null(state_names)) {
     if (is.null(state_names <- rownames(transition_probs))) {
       state_names <- as.character(1:n_states)
     }
   } else {
-    if (length(state_names) != n_states) stop("Length of state_names is not equal to the number of hidden states.")
+    if (length(state_names) != n_states) {
+      stop("Length of state_names is not equal to the number of hidden states.")
+    }
   }
   
   if(!isTRUE(all.equal(rowSums(transition_probs),rep(1,dim(transition_probs)[1]),check.attributes=FALSE)))
