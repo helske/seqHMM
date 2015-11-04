@@ -168,7 +168,7 @@ build_mhmm <-
     if (is.list(transition_probs)){
       n_clusters<-length(transition_probs)
     }else{
-      stop("transition_probs is not a list.")
+      stop("Transition_probs is not a list.")
     }
     if(length(emission_probs)!=n_clusters || length(initial_probs)!=n_clusters)
       stop("Unequal list lengths of transition_probs, emission_probs and initial_probs.")
@@ -219,7 +219,7 @@ build_mhmm <-
         stop(paste("Row sums of the transition probabilities in cluster", i, "do not sum to one."))
       }      
       if (!isTRUE(all.equal(sum(initial_probs[[i]]), 1, check.attributes=FALSE))){
-        stop(paste("Initial probabilities in cluster", i, "do not sum to one."))
+        stop(paste("Initial state probabilities in cluster", i, "do not sum to one."))
       }
     }
     

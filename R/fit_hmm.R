@@ -344,7 +344,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
     for(i in 1:model$n_channels)
       emissionArray[,1:model$n_symbols[i],i]<-model$emission_probs[[i]]          
     
-    objectivef<-function(pars, model, estimate = TRUE, log_space = log_space){
+    objectivef<-function(pars, model, estimate = TRUE){
       
       if(any(!is.finite(exp(pars))) && estimate)
         return(.Machine$double.xmax^075)
@@ -409,7 +409,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
       }
       
       globalres <- nloptr(x0 = initialvalues, eval_f = objectivef, lb = lb, ub = ub,
-        opts = control_global, model = model, estimate = TRUE,  log_space = log_space, ...)
+        opts = control_global, model = model, estimate = TRUE,  ...)
       initialvalues <- globalres$solution
       model <- objectivef(globalres$solution, model, FALSE)
       ll <- -globalres$objective
@@ -427,7 +427,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
       ub <- pmin(pmax(ub, 2*initialvalues),500)
       localres<-nloptr(x0 = initialvalues, 
         eval_f = objectivef,
-        opts = control_local, model = model, estimate = TRUE, log_space = log_space, ub = ub, ...)
+        opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
       model <- objectivef(localres$solution,model, FALSE)
       ll <- -localres$objective
     } else localres <- NULL

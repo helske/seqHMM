@@ -115,8 +115,12 @@ build_hmm <- function(observations, transition_probs, emission_probs, initial_pr
     stop(paste("Object provided for initial_probs is not a vector."))
   }
   
+  if (!isTRUE(all.equal(sum(initial_probs), 1, check.attributes=FALSE))){
+    stop(paste("Initial state probabilities do not sum to one."))
+  }
+  
   if(dim(transition_probs)[1]!=dim(transition_probs)[2])
-    stop("transition_probs must be a square matrix.")
+    stop("Transition_probs must be a square matrix.")
   n_states <- nrow(transition_probs)
   
   if (is.null(state_names)) {
