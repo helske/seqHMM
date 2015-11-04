@@ -250,7 +250,7 @@ ssp <- function(x, hidden.paths = NULL,
                                           "bottom", "bottom.combined"))
   }
   if(type=="I" && !is.numeric(sortv) && !is.null(sortv) && (sortv %in% c("from.start", "from.end", "mds.obs", "mds.hidden"))==FALSE){
-    warning("Argument sortv only accepts values \"from.start\", \"from.end\", \"mds.hidden\" or a numerical vector (one value for each sequence).")
+    warning("Argument sortv only accepts values \"from.start\", \"from.end\", \"mds.obs\", \"mds.hidden\" or a numerical vector (one value for each subject).")
     sortv <- NULL
   }
   if(!is.numeric(ncol.legend) && ncol.legend!="auto"){
@@ -501,13 +501,13 @@ ssp <- function(x, hidden.paths = NULL,
         hidden.states.labels <- paste("State", alphabet(hidden.paths))
       }
     }
-    if(nchannels>1){
+    if (nchannels > 1) {
       hidden.paths.seq <- suppressWarnings(suppressMessages(seqdef(hidden.paths, 
                                                                    missing.color=attr(obs[[1]],"missing.color"),
                                                                    labels=hidden.states.labels,
                                                                    start=attr(obs[[1]],"start"),
                                                                    xtstep=attr(obs[[1]],"xtstep"))))
-    }else{
+    } else {
       hidden.paths.seq <- suppressWarnings(suppressMessages(seqdef(hidden.paths, 
                                                                    missing.color=attr(obs,"missing.color"),
                                                                    labels=hidden.states.labels,
@@ -559,8 +559,8 @@ ssp <- function(x, hidden.paths = NULL,
     }
     arguments <- c(arguments, list(hidden.paths.seq=hidden.paths.seq))
     # Sorting sequences according to multidimensional scaling score of hidden.paths
-    if(!is.null(sortv)){
-      if(length(sortv)==1 && sortv=="mds.hidden"){
+    if (!is.null(sortv)) {
+      if (length(sortv) == 1 && sortv == "mds.hidden") {
         dist.hidden.paths <- suppressMessages(seqdist(hidden.paths.seq, method=dist.method, 
                                                       sm="TRATE", with.missing=TRUE))
         sortv <- cmdscale(dist.hidden.paths, k=1)
@@ -583,10 +583,11 @@ ssp <- function(x, hidden.paths = NULL,
           if (sort.channel > 0 && sort.channel <= length(obs)) {
             max(seqlength(obs[[sort.channel]]))
           } else if (sort.channel == 0) {
-            if (plots=="both" || plots=="hidden.paths") {
+            if (plots == "both" || plots == "hidden.paths" || 
+                (plots == "obs" && !is.null(hidden.paths))) {
               max(seqlength(hidden.paths.seq))
             } else {
-              warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"hidden.paths\". Sequences were not sorted.")
+              warning("Hidden paths are missing. Sequences were not sorted.")
               sortv <- NULL
             }
           } else {
@@ -601,11 +602,12 @@ ssp <- function(x, hidden.paths = NULL,
         } else {
           if (sort.channel > 0 && sort.channel <= length(obs)) {
             max(seqlength(obs[[sort.channel]]))
-          } else if(sort.channel==0) {
-            if (plots=="both" || plots=="hidden.paths") {
+          } else if (sort.channel == 0) {
+            if (plots == "both" || plots == "hidden.paths" || 
+                (plots == "obs" && !is.null(hidden.paths))) {
               max(seqlength(hidden.paths.seq))
             } else {
-              warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"hidden.paths\". Sequences were not sorted.")
+              warning("Hidden paths are missing. Sequences were not sorted.")
               sortv <- NULL
             }
           } else {
@@ -632,10 +634,11 @@ ssp <- function(x, hidden.paths = NULL,
           if (sort.channel == 1) {
             max(seqlength(obs))
           } else if (sort.channel == 0) {
-            if (plots=="both" || plots=="hidden.paths") {
+            if (plots == "both" || plots == "hidden.paths" || 
+                (plots == "obs" && !is.null(hidden.paths))) {
               max(seqlength(hidden.paths.seq))
             } else {
-              warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"hidden.paths\". Sequences were not sorted.")
+              warning("Hidden paths are missing. Sequences were not sorted.")
               sortv <- NULL
             }
           } else {
@@ -651,10 +654,11 @@ ssp <- function(x, hidden.paths = NULL,
           if (sort.channel == 1) {
             max(seqlength(obs))
           } else if (sort.channel == 0) {
-            if (plots == "both" || plots == "hidden.paths") {
+            if (plots == "both" || plots == "hidden.paths" || 
+                (plots == "obs" && !is.null(hidden.paths))) {
               max(seqlength(hidden.paths.seq))
             } else {
-              warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"hidden.paths\". Sequences were not sorted.")
+              warning("Hidden paths are missing. Sequences were not sorted.")
               sortv <- NULL
             }
           } else {
@@ -675,16 +679,16 @@ ssp <- function(x, hidden.paths = NULL,
   
   
   # Plotting observations
-  if(plots=="obs" && xaxis==TRUE){
+  if (plots == "obs" && xaxis == TRUE) {
     plotxaxis <- TRUE
-  }else{
+  } else {
     plotxaxis <- FALSE
   }  
   arguments <- c(arguments, list(plotxaxis=plotxaxis))
-  if(plots=="both" || plots=="obs"){ 
-    if(type=="I"){ 
-      if(length(sortv)==1 && sortv=="mds.hidden" && plots=="obs" && is.null(hidden.paths)){
-        warning("Most probable paths are only computed automatically for argument plots=\"both\" or plots=\"hidden.paths\". Sequences were not sorted.")
+  if (plots == "both" || plots == "obs") { 
+    if (type == "I") { 
+      if (length(sortv) == 1 && sortv == "mds.hidden" && plots == "obs" && is.null(hidden.paths)) {
+        warning("Hidden paths are missing. Sequences were not sorted.")
         sortv <- NULL
       }
     }

@@ -14,7 +14,21 @@
 #' the state names are taken from the row names of the transition matrix. If this is 
 #' also \code{NULL}, numbered states are used.
 #' @param channel_names A vector of optional names for the channels.
-#' @return Object of class \code{hmm}.
+#' @return Object of class \code{hmm} with following elements:
+#' \describe{
+#'    \item{\code{observations}}{State sequence object or a list of such containing the data.}
+#'    \item{\code{transition_probs}}{A matrix of transition probabilities.}
+#'    \item{\code{emission_probs}}{A matrix or a list of matrices of emission probabilities.}
+#'    \item{\code{initial_probs}}{A vector of initial probabilities.}
+#'    \item{\code{state_names}}{Names for hidden states.}
+#'    \item{\code{symbol_names}}{Names for observed states.}
+#'    \item{\code{channel_names}}{Names for channels of sequence data}
+#'    \item{\code{length_of_sequences}}{(Maximum) length of sequences.}
+#'    \item{\code{n_sequences}}{Number of sequences.}
+#'    \item{\code{n_symbols}}{Number of observed states (in each channel).}
+#'    \item{\code{n_states}}{Number of hidden states.}
+#'    \item{\code{n_channels}}{Number of channels.}
+#'}
 #' 
 #' @examples 
 #' require(TraMineR)
