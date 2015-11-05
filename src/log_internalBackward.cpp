@@ -22,14 +22,14 @@ void log_internalBackward(const arma::mat& transition, const arma::cube& emissio
 }
 
 void log_internalBackward_single(const arma::mat& transition, const arma::cube& emission,
-  const arma::imat& obs, arma::mat& beta) {
-  beta.col(obs.n_rows - 1).zeros();
-  for (int t = obs.n_rows - 2; t >= 0; t--) {
+  const arma::icube& obs, arma::mat& beta, int k) {
+  beta.col(obs.n_cols - 1).zeros();
+  for (int t = obs.n_cols - 2; t >= 0; t--) {
     arma::vec tmpbeta(transition.n_rows);
     for (int i = 0; i < transition.n_rows; i++) {
       tmpbeta = beta.col(t + 1) + transition.row(i).t();
-      for (int r = 0; r < obs.n_cols; r++) {
-        tmpbeta += emission.slice(r).col(obs(t + 1, r));
+      for (int r = 0; r < obs.n_slices; r++) {
+        tmpbeta += emission.slice(r).col(obs(k, t + 1, r));
       }
       beta(i, t) = logSumExp(tmpbeta);
     }

@@ -59,8 +59,8 @@ arma::vec llk(obs.n_rows);
     arma::mat beta(emission.n_rows, obs.n_cols); //m,n,k
     arma::vec initk = initLog + reparma(weights.col(k), numberOfStates);
     
-    log_internalForwardx_single(transitionLog, emissionLog, initk, obs(arma::span(k),arma::span::all,arma::span::all), alpha);
-    log_internalBackward_single(transitionLog, emissionLog, obs(arma::span(k),arma::span::all,arma::span::all), beta);
+    log_internalForwardx_single(transitionLog, emissionLog, initk, obs, alpha, k);
+    log_internalBackward_single(transitionLog, emissionLog, obs, beta, k);
     
     double ll = logSumExp(alpha.col(obs.n_cols - 1));
     llk(k) = ll;

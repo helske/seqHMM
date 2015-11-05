@@ -51,9 +51,9 @@ arma::vec log_gCoef(const arma::icube& obs, const arma::cube& beta, const arma::
   const Rcpp::IntegerVector numberOfStates);
 
 void log_internalBackward_single(const arma::mat& transition, const arma::cube& emission,
-  const arma::imat& obs, arma::mat& beta);
+  const arma::icube& obs, arma::mat& beta, int k);
 
 void log_internalForwardx_single(const arma::mat& transition, const arma::cube& emission,
-  const arma::vec& init, const arma::imat& obs, arma::mat& alpha); 
+  const arma::vec& init, const arma::icube& obs, arma::mat& alpha, int k); 
 
 #endif
