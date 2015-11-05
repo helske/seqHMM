@@ -72,9 +72,9 @@
 #' attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
 #' attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 #' 
-#' Starting values for emission probabilities
+#' ## Starting values for emission probabilities
 #' 
-#' Cluster 1
+#' # Cluster 1
 #' B1_marr <- matrix(
 #'   c(0.8, 0.1, 0.1, # High probability for single
 #'     0.8, 0.1, 0.1,
