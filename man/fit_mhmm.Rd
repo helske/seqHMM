@@ -177,7 +177,7 @@ init_mhmm_mvad <- build_mhmm(
 # Fitting the model with the EM algorithm
 fit_mvad <- fit_mhmm(
   init_mhmm_mvad, local_step = FALSE)
-fit_mvad$logLik # -20639.1
+fit_mvad$logLik # -20615.65
 \dontrun{
 # Run EM algorithm 25 times with simulated starting values
 set.seed(321)
