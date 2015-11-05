@@ -47,10 +47,10 @@
 #' 
 #' # Starting values for the emission matrix
 #' emiss <- matrix(NA, nrow = 4, ncol = 6)
-#' emiss[1,] <- seqstatf(mvad.seq[, 1:12])[, 2] + 0.1
-#' emiss[2,] <- seqstatf(mvad.seq[, 13:24])[, 2] + 0.1
-#' emiss[3,] <- seqstatf(mvad.seq[, 25:48])[, 2] + 0.1
-#' emiss[4,] <- seqstatf(mvad.seq[, 49:70])[, 2] + 0.1
+#' emiss[1,] <- seqstatf(mvad.seq[, 1:12])[, 2] + 1
+#' emiss[2,] <- seqstatf(mvad.seq[, 13:24])[, 2] + 1
+#' emiss[3,] <- seqstatf(mvad.seq[, 25:48])[, 2] + 1
+#' emiss[4,] <- seqstatf(mvad.seq[, 49:70])[, 2] + 1
 #' emiss <- emiss / rowSums(emiss)
 #' 
 #' # Starting values for the transition matrix
@@ -66,7 +66,7 @@
 #' init <- c(0.3, 0.3, 0.2, 0.2)
 #' 
 #' # Building a hidden Markov model with starting values
-#' init_hmm_1 <- build_hmm(
+#' init_hmm_mvad <- build_hmm(
 #'   observations = mvad.seq, transition_probs = tr, 
 #'   emission_probs = emiss, initial_probs = init
 #' )
@@ -76,30 +76,42 @@
 #' 
 #' # Multichannel data
 #' 
+#' # Three-state three-channel hidden Markov model
+#' # See ?hmm_biofam for five-state version
+#' 
 #' data(biofam3c)
 #' 
 #' # Building sequence objects
-#' child.seq <- seqdef(biofam3c$children)
-#' marr.seq <- seqdef(biofam3c$married)
-#' left.seq <- seqdef(biofam3c$left)
+#' marr.seq <- seqdef(biofam3c$married, start = 15, 
+#'   alphabet = c("single", "married", "divorced"))
+#' child.seq <- seqdef(biofam3c$children, start = 15, 
+#'   alphabet = c("childless", "children"))
+#' left.seq <- seqdef(biofam3c$left, start = 15, 
+#'   alphabet = c("with parents", "left home"))
+#' 
+#' # Define colors
+#' attr(marr.seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
+#' attr(child.seq, "cpal") <- c("darkseagreen1", "coral3")
+#' attr(left.seq, "cpal") <- c("lightblue", "red3")
 #' 
 #' # Starting values for emission matrices
-#' emiss_child <- matrix(NA, nrow = 3, ncol = 2)
-#' emiss_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 0.1
-#' emiss_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 0.1
-#' emiss_child[3,] <- seqstatf(child.seq[, 11:15])[, 2] + 0.1
-#' emiss_child <- emiss_child / rowSums(emiss_child)
 #' 
 #' emiss_marr <- matrix(NA, nrow = 3, ncol = 3)
-#' emiss_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 0.1
-#' emiss_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 0.1
-#' emiss_marr[3,] <- seqstatf(marr.seq[, 11:15])[, 2] + 0.1
+#' emiss_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 1
+#' emiss_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 1
+#' emiss_marr[3,] <- seqstatf(marr.seq[, 11:16])[, 2] + 1
 #' emiss_marr <- emiss_marr / rowSums(emiss_marr)
 #' 
+#' emiss_child <- matrix(NA, nrow = 3, ncol = 2)
+#' emiss_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 1
+#' emiss_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 1
+#' emiss_child[3,] <- seqstatf(child.seq[, 11:16])[, 2] + 1
+#' emiss_child <- emiss_child / rowSums(emiss_child)
+#' 
 #' emiss_left <- matrix(NA, nrow = 3, ncol = 2)
-#' emiss_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 0.1
-#' emiss_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 0.1
-#' emiss_left[3,] <- seqstatf(left.seq[, 11:15])[, 2] + 0.1
+#' emiss_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 1
+#' emiss_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 1
+#' emiss_left[3,] <- seqstatf(left.seq[, 11:16])[, 2] + 1
 #' emiss_left <- emiss_left / rowSums(emiss_left)
 #' 
 #' # Starting values for transition matrix
@@ -108,14 +120,14 @@
 #'                 0,    0,    1), nrow = 3, ncol = 3, byrow = TRUE)
 #' 
 #' # Starting values for initial state probabilities
-#' initial <- c(0.9, 0.09, 0.01)
+#' inits <- c(0.9, 0.09, 0.01)
 #' 
 #' # Building hidden Markov model with initial parameter values
-#' init_hmm_2 <- build_hmm(
-#'   observations = list(child.seq, marr.seq, left.seq), 
+#' init_hmm_bf <- build_hmm(
+#'   observations = list(marr.seq, child.seq, left.seq), 
 #'   transition_probs = trans,
-#'   emission_probs = list(emiss_child, emiss_marr, emiss_left), 
-#'   initial_probs = initial)
+#'   emission_probs = list(emiss_marr, emiss_child, emiss_left), 
+#'   initial_probs = inits)
 #' 
 #' @seealso \code{\link{fit_hmm}} for fitting Hidden Markov models.
 

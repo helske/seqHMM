@@ -5,7 +5,7 @@
 \title{Variance-Covariance for Regression Coefficients of Mixture Hidden Markov Model}
 \usage{
 \method{vcov}{mhmm}(object, conditional = TRUE, threads = 1,
-  log_space = FALSE, ...)
+  log_space = TRUE, ...)
 }
 \arguments{
 \item{object}{Object of class \code{mhmm}.}
@@ -22,7 +22,7 @@ the jacobian of analytical gradients is computed using finitite difference appro
 \item{threads}{Number of threads to use in parallel computing. Default is 1.}
 
 \item{log_space}{Make computations using log-space instead of scaling for greater
-numerical stability at cost of computational costs. Default is \code{FALSE}.}
+numerical stability at cost of decreased computational performance Default is \code{TRUE}.}
 
 \item{...}{Additional arguments to function \code{jacobian} of \code{numDeriv} package.}
 }

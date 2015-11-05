@@ -6,10 +6,10 @@
 \usage{
 fit_mhmm(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
   control_em = list(), control_global = list(), control_local = list(),
-  lb, ub, threads = 1, log_space = FALSE, ...)
+  lb, ub, threads = 1, log_space = TRUE, ...)
 }
 \arguments{
-\item{model}{Hidden Markov model of class \code{hmm}.}
+\item{model}{Hidden Markov model.}
 
 \item{em_step}{Logical, use EM algorithm at the start of parameter estimation.
 The default is \code{TRUE}. Note that EM algorithm is faster than direct numerical optimization,
@@ -63,7 +63,7 @@ Used only in the global optimization step.}
 \item{threads}{Number of threads to use in parallel computing. Default is 1.}
 
 \item{log_space}{Make computations using log-space instead of scaling for greater
-numerical stability at cost of computational costs. Default is \code{FALSE}.}
+numerical stability at cost of decreased computational performance Default is \code{TRUE}.}
 
 \item{...}{Additional arguments to nloptr}
 }
@@ -188,108 +188,115 @@ fit_mvad2$logLik # -14651.43
 
 # Multichannel
 
+require(TraMineR)
 data(biofam3c)
 
-# Building sequence objects
-child.seq <- seqdef(biofam3c$children)
-marr.seq <- seqdef(biofam3c$married)
-left.seq <- seqdef(biofam3c$left)
+## Building sequence objects
+marr.seq <- seqdef(biofam3c$married, start = 15,
+  alphabet = c("single", "married", "divorced"))
+child.seq <- seqdef(biofam3c$children, start = 15,
+  alphabet = c("childless", "children"))
+left.seq <- seqdef(biofam3c$left, start = 15,
+  alphabet = c("with parents", "left home"))
+
+## Choosing colors
+attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
+attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 ## Starting values for emission probabilities
-
 # Cluster 1
-alphabet(child.seq) # Checking for the order of observed states
-emiss_1_child <- matrix(
-  c(0.99, 0.01, # High probability for childless
-    0.99, 0.01,
-    0.99, 0.01,
-    0.99, 0.01),
-  nrow = 4, ncol = 2, byrow = TRUE)
-
-alphabet(marr.seq)
-emiss_1_marr <- matrix(
-  c(0.01, 0.01, 0.98, # High probability for single
-    0.01, 0.01, 0.98,
-    0.01, 0.98, 0.01, # High probability for married
-    0.98, 0.01, 0.01), # High probability for divorced
+B1_marr <- matrix(
+  c(0.8, 0.1, 0.1, # High probability for single
+    0.8, 0.1, 0.1,
+    0.3, 0.6, 0.1, # High probability for married
+    0.3, 0.3, 0.4), # High probability for divorced
   nrow = 4, ncol = 3, byrow = TRUE)
 
-alphabet(left.seq)
-emiss_1_left <- matrix(
-  c(0.01, 0.99, # High probability for living with parents
-    0.99, 0.01, # High probability for having left home
-    0.99, 0.01,
-    0.99, 0.01),
+B1_child <- matrix(
+  c(0.9, 0.1, # High probability for childless
+    0.9, 0.1,
+    0.9, 0.1,
+    0.9, 0.1),
+  nrow = 4, ncol = 2, byrow = TRUE)
+
+B1_left <- matrix(
+  c(0.9, 0.1, # High probability for living with parents
+    0.1, 0.9, # High probability for having left home
+    0.1, 0.9,
+    0.1, 0.9),
   nrow = 4, ncol = 2, byrow = TRUE)
 
 # Cluster 2
-emiss_2_child <- matrix(
-  c(0.99, 0.01, # High probability for childless
-    0.99, 0.01,
-    0.99, 0.01,
-    0.01, 0.99),
-  nrow = 4, ncol = 2, byrow = TRUE)
 
-emiss_2_marr <- matrix(
-  c(0.01, 0.01, 0.98, # High probability for single
-    0.01, 0.01, 0.98,
-    0.01, 0.98, 0.01, # High probability for married
-    0.29, 0.7, 0.01),
+B2_marr <- matrix(
+  c(0.8, 0.1, 0.1, # High probability for single
+    0.8, 0.1, 0.1,
+    0.1, 0.8, 0.1, # High probability for married
+    0.7, 0.2, 0.1),
   nrow = 4, ncol = 3, byrow = TRUE)
 
-emiss_2_left <- matrix(
-  c(0.01, 0.99, # High probability for living with parents
-    0.99, 0.01,
-    0.99, 0.01,
-    0.99, 0.01),
+B2_child <- matrix(
+  c(0.9, 0.1, # High probability for childless
+    0.9, 0.1,
+    0.9, 0.1,
+    0.1, 0.9),
+  nrow = 4, ncol = 2, byrow = TRUE)
+
+B2_left <- matrix(
+  c(0.9, 0.1, # High probability for living with parents
+    0.1, 0.9,
+    0.1, 0.9,
+    0.1, 0.9),
   nrow = 4, ncol = 2, byrow = TRUE)
 
 # Cluster 3
-emiss_3_child <- matrix(
-  c(0.99, 0.01, # High probability for childless
-    0.99, 0.01,
-    0.01, 0.99,
-    0.99, 0.01,
-    0.01, 0.99,
-    0.01, 0.99),
-  nrow = 6, ncol = 2, byrow = TRUE)
-
-emiss_3_marr <- matrix(
-  c(0.01, 0.01, 0.98, # High probability for single
-    0.01, 0.01, 0.98,
-    0.01, 0.01, 0.98,
-    0.01, 0.98, 0.01,
-    0.01, 0.98, 0.01, # High probability for married
-    0.98, 0.01, 0.01), # High probability for divorced
+B3_marr <- matrix(
+  c(0.8, 0.1, 0.1, # High probability for single
+    0.8, 0.1, 0.1,
+    0.8, 0.1, 0.1,
+    0.1, 0.8, 0.1, # High probability for married
+    0.3, 0.4, 0.3,
+    0.1, 0.1, 0.8), # High probability for divorced
   nrow = 6, ncol = 3, byrow = TRUE)
 
-emiss_3_left <- matrix(
-  c(0.01, 0.99, # High probability for living with parents
-    0.99, 0.01,
-    0.50, 0.50,
-    0.01, 0.99,
-    0.99, 0.01,
-    0.99, 0.01),
+B3_child <- matrix(
+  c(0.9, 0.1, # High probability for childless
+    0.9, 0.1,
+    0.5, 0.5,
+    0.5, 0.5,
+    0.5, 0.5,
+    0.1, 0.9),
   nrow = 6, ncol = 2, byrow = TRUE)
 
-# Initial values for transition matrices
-trans_1 <- matrix(
-  c(0.80,   0.16, 0.03, 0.01,
-       0,   0.90, 0.07, 0.03,
-       0,      0, 0.90, 0.10,
-       0,      0,    0,    1),
+
+B3_left <- matrix(
+  c(0.9, 0.1, # High probability for living with parents
+    0.1, 0.9,
+    0.5, 0.5,
+    0.5, 0.5,
+    0.1, 0.9,
+    0.1, 0.9),
+  nrow = 6, ncol = 2, byrow = TRUE)
+
+# Starting values for transition matrices
+A1 <- matrix(
+  c(0.80, 0.16, 0.03, 0.01,
+    0,    0.90, 0.07, 0.03,
+    0,    0,    0.90, 0.10,
+    0,    0,    0,       1),
   nrow = 4, ncol = 4, byrow = TRUE)
 
-trans_2 <- matrix(
-  c(0.80, 0.10, 0.05,  0.03, 0.01, 0.01,
-       0, 0.70, 0.10,  0.10, 0.05, 0.05,
-       0,    0, 0.85,  0.01, 0.10, 0.04,
-       0,    0,    0,  0.90, 0.05, 0.05,
-       0,    0,    0,     0, 0.90, 0.10,
-       0,    0,    0,     0,    0,    1),
+A2 <- matrix(
+  c(0.80, 0.10, 0.05, 0.03, 0.01, 0.01,
+    0,    0.70, 0.10, 0.10, 0.05, 0.05,
+    0,    0,    0.85, 0.01, 0.10, 0.04,
+    0,    0,    0,    0.90, 0.05, 0.05,
+    0,    0,    0,    0,    0.90, 0.10,
+    0,    0,    0,    0,    0,       1),
   nrow = 6, ncol = 6, byrow = TRUE)
 
-# Initial values for initial state probabilities
+# Starting values for initial state probabilities
 initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
 initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 
@@ -300,49 +307,38 @@ biofam3c$covariates$cohort <- factor(
 
 # Build mixture HMM
 init_mhmm_bf <- build_mhmm(
-  observations = list(child.seq, marr.seq, left.seq),
-  transition_probs = list(trans_1, trans_1, trans_2),
-  emission_probs = list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
-                        list(emiss_2_child, emiss_2_marr, emiss_2_left),
-                        list(emiss_3_child, emiss_3_marr, emiss_3_left)),
+  observations = list(marr.seq, child.seq, left.seq),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
+  transition_probs = list(A1, A1, A2),
+  emission_probs = list(list(B1_marr, B1_child, B1_left),
+    list(B2_marr, B2_child, B2_left),
+    list(B3_marr, B3_child, B3_left)),
   formula = ~sex + cohort, data = biofam3c$covariates,
   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
-  channel_names = c("Parenthood", "Marriage", "Left home"))
+  channel_names = c("Marriage", "Parenthood", "Residence"),
+  state_names = list(paste("State", 1:4), paste("State", 1:4),
+                     paste("State", 1:6)))
 
 # Fitting the model with different settings
 
 # Only EM with default values
-mhmm_1 <- fit_mhmm(
-  init_mhmm_bf, em_step = TRUE, global_step = FALSE, local_step = FALSE)
-mhmm_1$logLik # -3081.383
+mhmm_1 <- fit_mhmm(init_mhmm_bf, local_step = FALSE)
+mhmm_1$logLik # -12713.08
 
 \dontrun{
 # EM with LBFGS
-mhmm_2 <- fit_mhmm(
-  init_mhmm_bf, em_step = TRUE, global_step = FALSE, local_step = TRUE)
-mhmm_2$logLik # -3081.383
+mhmm_2 <- fit_mhmm(init_mhmm_bf)
+mhmm_2$logLik # -12713.08
 
 # Only LBFGS
-mhmm_3 <- fit_mhmm(
-  init_mhmm_bf, em_step = FALSE, global_step = FALSE, local_step = TRUE,
-  control_local = list(maxeval = 5000, maxtime = 0))
-mhmm_3$logLik # -3087.499373
+mhmm_3 <- fit_mhmm(init_mhmm_bf, em_step = FALSE)
+mhmm_3$logLik # -12966.51
 
-# Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
-mhmm_4 <- fit_mhmm(
-  init_mhmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE,
-  control_global = list(maxeval = 5000, maxtime = 0))
-mhmm_4$logLik # -3150.796
-
-# As previously, but now we use ten iterations from EM algorithm for
-# defining initial values and boundaries
-# Note smaller maxeval for global optimization
-mhmm_5 <- fit_mhmm(
-  init_mhmm_bf, em_step = TRUE, global_step = TRUE, local_step = TRUE,
-  control_em = list(maxeval = 10), control_global = list(maxeval = 1000, maxtime = 0),
-  control_local = list(maxeval = 500, maxtime = 0))
-mhmm_5$logLik #-3081.383
+# Use EM with multiple restarts
+set.seed(123)
+mhmm_5 <- fit_mhmm(init_mhmm_bf,
+  control_em = list(restarts = 5, restart_transition = FALSE))
+mhmm_5$logLik # -12713.1
 }
 }
 \seealso{

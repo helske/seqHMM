@@ -6,6 +6,7 @@
 \alias{seqstatf}
 \title{Imported functions from \code{TraMineR} for convinience.}
 \description{
-Imported functions from \code{TraMineR} for convinience.
+For details, see corresponding help pages of \code{\link[TraMineR]{seqstatf}},
+\code{\link[TraMineR]{alphabet}} and \code{\link[TraMineR]{seqdef}}.
 }
 
