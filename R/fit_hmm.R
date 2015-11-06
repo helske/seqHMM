@@ -100,81 +100,98 @@
 #'   Any method available in the \code{nloptr} function can be used for the global and 
 #'   local steps.
 #' @examples 
+#' 
+#' # Three-state three-channel hidden Markov model
+#' # See ?hmm_biofam for five-state version
+#' 
 #' data(biofam3c)
 #' 
 #' # Building sequence objects
-#' child.seq <- seqdef(biofam3c$children)
-#' marr.seq <- seqdef(biofam3c$married)
-#' left.seq <- seqdef(biofam3c$left)
+#' marr.seq <- seqdef(biofam3c$married, start = 15, 
+#'   alphabet = c("single", "married", "divorced"))
+#' child.seq <- seqdef(biofam3c$children, start = 15, 
+#'   alphabet = c("childless", "children"))
+#' left.seq <- seqdef(biofam3c$left, start = 15, 
+#'   alphabet = c("with parents", "left home"))
+#' 
+#' # Define colors
+#' attr(marr.seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
+#' attr(child.seq, "cpal") <- c("darkseagreen1", "coral3")
+#' attr(left.seq, "cpal") <- c("lightblue", "red3")
 #' 
 #' # Starting values for emission matrices
-#' emiss_child <- matrix(NA, nrow = 3, ncol = 2)
-#' emiss_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 0.1
-#' emiss_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 0.1
-#' emiss_child[3,] <- seqstatf(child.seq[, 11:15])[, 2] + 0.1
-#' emiss_child <- emiss_child / rowSums(emiss_child)
 #' 
 #' emiss_marr <- matrix(NA, nrow = 3, ncol = 3)
-#' emiss_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 0.1
-#' emiss_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 0.1
-#' emiss_marr[3,] <- seqstatf(marr.seq[, 11:15])[, 2] + 0.1
+#' emiss_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 1
+#' emiss_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 1
+#' emiss_marr[3,] <- seqstatf(marr.seq[, 11:16])[, 2] + 1
 #' emiss_marr <- emiss_marr / rowSums(emiss_marr)
 #' 
+#' emiss_child <- matrix(NA, nrow = 3, ncol = 2)
+#' emiss_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 1
+#' emiss_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 1
+#' emiss_child[3,] <- seqstatf(child.seq[, 11:16])[, 2] + 1
+#' emiss_child <- emiss_child / rowSums(emiss_child)
+#' 
 #' emiss_left <- matrix(NA, nrow = 3, ncol = 2)
-#' emiss_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 0.1
-#' emiss_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 0.1
-#' emiss_left[3,] <- seqstatf(left.seq[, 11:15])[, 2] + 0.1
+#' emiss_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 1
+#' emiss_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 1
+#' emiss_left[3,] <- seqstatf(left.seq[, 11:16])[, 2] + 1
 #' emiss_left <- emiss_left / rowSums(emiss_left)
 #' 
 #' # Starting values for transition matrix
-#' trans <- matrix(
-#'   c(0.90, 0.07, 0.03,
-#'        0, 0.90, 0.10,
-#'        0,    0,    1), 
-#'   nrow = 3, ncol = 3, byrow = TRUE)
+#' trans <- matrix(c(0.9, 0.07, 0.03,
+#'                 0,  0.9,  0.1,
+#'                 0,    0,    1), nrow = 3, ncol = 3, byrow = TRUE)
 #' 
 #' # Starting values for initial state probabilities
-#' init <- c(0.9, 0.09, 0.01)
+#' inits <- c(0.9, 0.09, 0.01)
 #' 
 #' # Building hidden Markov model with initial parameter values
-#' init_hmm <- build_hmm(
-#'   observations = list(child.seq, marr.seq, left.seq), 
+#' init_hmm_bf <- build_hmm(
+#'   observations = list(marr.seq, child.seq, left.seq), 
 #'   transition_probs = trans,
-#'   emission_probs = list(emiss_child, emiss_marr, emiss_left), 
-#'   initial_probs = init)
+#'   emission_probs = list(emiss_marr, emiss_child, emiss_left), 
+#'   initial_probs = inits)
 #' 
-#' # Fitting the model with different settings
+#' # Fitting the model with different optimization schemes
 #' 
 #' # Only EM with default values
 #' hmm_1 <- fit_hmm(
-#'   init_hmm, em_step = TRUE, global_step = FALSE, local_step = FALSE)
-#' hmm_1$logLik #-5507.003
+#'   init_hmm_bf, local_step = FALSE)
+#' hmm_1$logLik # -24179.1
 #' 
 #' \dontrun{
 #' 
 #' # EM with LBFGS
-#' hmm_2 <- fit_hmm(
-#'   init_hmm, em_step = TRUE, global_step = FALSE, local_step = TRUE)
-#' hmm_2$logLik # -5507.003
+#' hmm_2 <- fit_hmm(init_hmm_bf)
+#' hmm_2$logLik # -23017.97
 #' 
 #' # Only LBFGS
-#' hmm_3 <- fit_hmm(
-#'   init_hmm, em_step = FALSE, global_step = FALSE, local_step = TRUE)
-#' hmm_3$logLik #-5493.271
+#' hmm_3 <- fit_hmm(init_hmm_bf, em_step = FALSE, local_step = TRUE)
+#' hmm_3$logLik # -22267.75
 #' 
 #' # Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
+#' # This can be slow, use parallel computing by adjusting threads argument
+#' # (threads = 1 for portability issues)
 #' hmm_4 <- fit_hmm(
-#'   init_hmm, em_step = FALSE, global_step = TRUE, local_step = TRUE, 
-#'   control_global = list(maxeval = 3000, maxtime = 0))
-#' hmm_4$logLik #-5403.383
+#'   init_hmm_bf, em_step = FALSE, global_step = TRUE, 
+#'   control_global = list(maxeval = 5000, maxtime = 0), threads = 8)
+#' hmm_4$logLik # -21675.4
 #' 
-#' # As previously, but now we use five iterations from EM algorithm for 
-#' # defining initial values and boundaries
-#' # Note smaller maxeval for global optimization
-#' hmm_5 <- fit_hmm(
-#'   init_hmm, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
-#'   control_em = list(maxeval = 5), control_global = list(maxeval = 750, maxtime = 0))
-#' hmm_5$logLik #-5403.383
+#' # EM with restarts, much faster than MLSL
+#' set.seed(123)
+#' hmm_5 <- fit_hmm(init_hmm_bf, control_em = list(restarts = 5, print_level = 1), threads = 1)
+#' hmm_5$logLik # -21675.4
+#' 
+#' #' # Global optimization via STOGO with LBFGS as local optimizer and final polisher
+#' # This can be slow, use parallel computing by adjusting threads argument
+#' # (threads = 1 for portability issues)
+#' set.seed(123)
+#' hmm_6 <- fit_hmm(
+#'    init_hmm_bf, em_step = FALSE, global_step = TRUE,
+#' control_global = list(algorithm = "NLOPT_GD_STOGO", maxeval = 2500, maxtime = 0), threads = 8)
+#' hmm_6$logLik # -21675.4
 #' }
 #' 
 fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE, 
@@ -344,7 +361,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
     for(i in 1:model$n_channels)
       emissionArray[,1:model$n_symbols[i],i]<-model$emission_probs[[i]]          
     
-    objectivef<-function(pars, model, estimate = TRUE, log_space = log_space){
+    objectivef<-function(pars, model, estimate = TRUE){
       
       if(any(!is.finite(exp(pars))) && estimate)
         return(.Machine$double.xmax^075)
@@ -390,13 +407,13 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
     if(global_step){
       
       if(missing(lb)){
-        lb <- -10
+        lb <- -50
       }
       if(missing(ub)){
-        ub <- 10
+        ub <- 50
       }
       lb <- pmin(lb, 2*initialvalues)
-      ub <- pmin(pmax(ub, 2*initialvalues),500)
+      ub <- pmin(pmax(ub, 2*initialvalues), 500)
       if(is.null(control_global$maxeval)){
         control_global$maxeval <- 10000
       }
@@ -409,7 +426,7 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
       }
       
       globalres <- nloptr(x0 = initialvalues, eval_f = objectivef, lb = lb, ub = ub,
-        opts = control_global, model = model, estimate = TRUE,  log_space = log_space, ...)
+        opts = control_global, model = model, estimate = TRUE,  ...)
       initialvalues <- globalres$solution
       model <- objectivef(globalres$solution, model, FALSE)
       ll <- -globalres$objective
@@ -423,11 +440,10 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
         control_local$algorithm <- "NLOPT_LD_LBFGS"
         control_local$xtol_rel <- 1e-8
       }
-      ub <- rep(300,length(initialvalues))
-      ub <- pmin(pmax(ub, 2*initialvalues),500)
+      ub <- pmin(pmax(300, 2*initialvalues), 500)
       localres<-nloptr(x0 = initialvalues, 
         eval_f = objectivef,
-        opts = control_local, model = model, estimate = TRUE, log_space = log_space, ub = ub, ...)
+        opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
       model <- objectivef(localres$solution,model, FALSE)
       ll <- -localres$objective
     } else localres <- NULL

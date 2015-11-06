@@ -63,172 +63,187 @@
 #' 
 #' # Single-channel
 #' 
-#' data(mvad, package = "TraMineR")
+#' require(TraMineR)
+#' data(mvad)
 #' 
-#' mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school", 
-#'                    "training")
-#' mvad.labels <- c("employment", "further education", "higher education", 
-#'                  "joblessness", "school", "training")
+#' mvad.alphabet <- c(
+#'   "employment", "FE", "HE", "joblessness", "school", "training")
+#' mvad.labels <- c(
+#'   "employment", "further education", "higher education",
+#'   "joblessness", "school", "training")
 #' mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-#' mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes, 
-#'                    labels = mvad.labels, xtstep = 6)
-#'                    
-#' # Starting values for emission matrices
+#' mvad.seq <- seqdef(
+#'   mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes,
+#'   labels = mvad.labels, xtstep = 6)
+#' 
+#' attr(mvad.seq, "cpal") <- colorpalette[[6]]
+#' 
+#' # Starting values for the emission matrices
 #' emiss_1 <- matrix(
-#' c(0.26, 0.39, 0.01, 0.06, 0.04, 0.24,
-#'   0.58, 0.12, 0.09, 0.10, 0.01, 0.10,
-#'   0.73, 0.02, 0.09, 0.13, 0.01, 0.02), 
-#' nrow = 3, ncol = 6, byrow = TRUE)
+#'   c(0.01, 0.17, 0.01, 0.01, 0.05, 0.75,
+#'     0.95, 0.01, 0.01, 0.01, 0.01, 0.01,
+#'     0.01, 0.01, 0.01, 0.95, 0.01, 0.01),
+#'   nrow = 3, ncol = 6, byrow = TRUE)
 #' 
 #' emiss_2 <- matrix(
-#' c(0.01, 0.02, 0.01, 0.01, 0.94, 0.01,
-#'   0.05, 0.06, 0.15, 0.01, 0.72, 0.01,
-#'   0.19, 0.13, 0.60, 0.01, 0.05, 0.02,
-#'   0.32, 0.03, 0.60, 0.03, 0.01, 0.01), 
-#' nrow = 4, ncol = 6, byrow = TRUE)
+#'   c(0.01, 0.01, 0.01, 0.01, 0.95, 0.01,
+#'     0.01, 0.84, 0.01, 0.09, 0.01, 0.04,
+#'     0.01, 0.01, 0.95, 0.01, 0.01, 0.01,
+#'     0.95, 0.01, 0.01, 0.01, 0.01, 0.01),
+#'   nrow = 4, ncol = 6, byrow = TRUE)
 #' 
-#' # Starting values for transition matrices
+#' # Starting values for the transition matrix
 #' 
-#' tr_1 <-  matrix(
-#'   c(0.80, 0.10, 0.10,
-#'     0.10, 0.80, 0.10,
-#'     0.10, 0.10, 0.80), 
-#'   nrow=3, ncol=3, byrow=TRUE)
+#' trans_1 <-  matrix(
+#'   c(0.92, 0.05, 0.03,
+#'     0.01, 0.97, 0.02,
+#'     0.02, 0.04, 0.94),
+#'   nrow = 3, ncol = 3, byrow = TRUE)
 #' 
-#' tr_2 <-  matrix(
-#'   c(0.80, 0.10, 0.05, 0.05,
-#'     0.05, 0.80, 0.10, 0.05,
-#'     0.05, 0.05, 0.80, 0.10,
-#'     0.05, 0.05, 0.10, 0.80), 
-#'   nrow=4, ncol=4, byrow=TRUE)
+#' trans_2 <-  matrix(
+#'   c(0.93, 0.02, 0.03, 0.02,
+#'     0.01, 0.93, 0.02, 0.04,
+#'     0.01, 0.01, 0.96, 0.02,
+#'     0.01, 0.02, 0.02, 0.95),
+#'   nrow = 4, ncol = 4, byrow = TRUE)
 #' 
 #' # Starting values for initial state probabilities
-#' init_1 <- c(0.4, 0.3, 0.3)
-#' init_2 <- c(0.3, 0.3, 0.2, 0.2)
+#' initial_probs_1 <- c(0.73, 0.23, 0.04)
+#' initial_probs_2 <- c(0.4, 0.05, 0.5, 0.05)
 #' 
-#' # Building a MHMM with the starting values
+#' # Building a hidden Markov model with starting values
+#' # No covariates
 #' init_mhmm_mvad <- build_mhmm(
-#'   observations = mvad.seq, 
-#'   transition_probs = list(tr_1, tr_2), 
-#'   emission_probs = list(emiss_1, emiss_2), 
-#'   initial_probs = list(init_1, init_2))                   
+#'   observations = mvad.seq,
+#'   transition_probs = list(trans_1, trans_2),
+#'   emission_probs = list(emiss_1, emiss_2),
+#'   initial_probs = list(initial_probs_1, initial_probs_2))
+#' 
 #' 
 #' # Fitting the model with the EM algorithm
 #' fit_mvad <- fit_mhmm(
 #'   init_mhmm_mvad, local_step = FALSE)
-#' fit_mvad$logLik # -20639.1
+#' fit_mvad$logLik # -14960.03
 #' \dontrun{
 #' # Run EM algorithm 25 times with simulated starting values
 #' set.seed(321)
-#' fit_mvad2 <- fit_mhmm(init_mhmm_mvad, control_em=list(restarts = 25))
-#' fit_mvad2$logLik # -14651.43
+#' fit_mvad2 <- fit_mhmm(init_mhmm_mvad, control_em = list(restarts = 25))
+#' fit_mvad2$logLik # -14533.7
 #' }
+#' 
 #' ##############################################################
 #' 
 #' # Multichannel
 #' 
+#' require(TraMineR)
 #' data(biofam3c)
 #' 
-#' # Building sequence objects
-#' child.seq <- seqdef(biofam3c$children)
-#' marr.seq <- seqdef(biofam3c$married)
-#' left.seq <- seqdef(biofam3c$left)
+#' ## Building sequence objects
+#' marr.seq <- seqdef(biofam3c$married, start = 15,
+#'   alphabet = c("single", "married", "divorced"))
+#' child.seq <- seqdef(biofam3c$children, start = 15,
+#'   alphabet = c("childless", "children"))
+#' left.seq <- seqdef(biofam3c$left, start = 15,
+#'   alphabet = c("with parents", "left home"))
+#' 
+#' ## Choosing colors
+#' attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+#' attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
+#' attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 #' 
 #' ## Starting values for emission probabilities
-#' 
 #' # Cluster 1
-#' alphabet(child.seq) # Checking for the order of observed states
-#' emiss_1_child <- matrix(
-#'   c(0.99, 0.01, # High probability for childless
-#'     0.99, 0.01,
-#'     0.99, 0.01,
-#'     0.99, 0.01), 
+#' B1_marr <- matrix(
+#'   c(0.8, 0.1, 0.1, # High probability for single
+#'     0.8, 0.1, 0.1,
+#'     0.3, 0.6, 0.1, # High probability for married
+#'     0.3, 0.3, 0.4), # High probability for divorced
+#'   nrow = 4, ncol = 3, byrow = TRUE)
+#' 
+#' B1_child <- matrix(
+#'   c(0.9, 0.1, # High probability for childless
+#'     0.9, 0.1,
+#'     0.9, 0.1,
+#'     0.9, 0.1),
 #'   nrow = 4, ncol = 2, byrow = TRUE)
 #' 
-#' alphabet(marr.seq)                      
-#' emiss_1_marr <- matrix(
-#'   c(0.01, 0.01, 0.98, # High probability for single
-#'     0.01, 0.01, 0.98,
-#'     0.01, 0.98, 0.01, # High probability for married
-#'     0.98, 0.01, 0.01), # High probability for divorced
-#'   nrow = 4, ncol = 3, byrow = TRUE)                   
-#' 
-#' alphabet(left.seq)
-#' emiss_1_left <- matrix(
-#'   c(0.01, 0.99, # High probability for living with parents
-#'     0.99, 0.01, # High probability for having left home
-#'     0.99, 0.01,
-#'     0.99, 0.01), 
+#' B1_left <- matrix(
+#'   c(0.9, 0.1, # High probability for living with parents
+#'     0.1, 0.9, # High probability for having left home
+#'     0.1, 0.9,
+#'     0.1, 0.9),
 #'   nrow = 4, ncol = 2, byrow = TRUE)
 #' 
 #' # Cluster 2
-#' emiss_2_child <- matrix(
-#'   c(0.99, 0.01, # High probability for childless
-#'     0.99, 0.01,
-#'     0.99, 0.01,
-#'     0.01, 0.99), 
-#'   nrow = 4, ncol = 2, byrow = TRUE)
-#'                      
-#' emiss_2_marr <- matrix(
-#'   c(0.01, 0.01, 0.98, # High probability for single
-#'     0.01, 0.01, 0.98,
-#'     0.01, 0.98, 0.01, # High probability for married
-#'     0.29, 0.7, 0.01),
-#'   nrow = 4, ncol = 3, byrow = TRUE)                   
 #' 
-#' emiss_2_left <- matrix(
-#'   c(0.01, 0.99, # High probability for living with parents
-#'     0.99, 0.01,
-#'     0.99, 0.01,
-#'     0.99, 0.01), 
-#'   nrow = 4, ncol = 2, byrow = TRUE) 
+#' B2_marr <- matrix(
+#'   c(0.8, 0.1, 0.1, # High probability for single
+#'     0.8, 0.1, 0.1,
+#'     0.1, 0.8, 0.1, # High probability for married
+#'     0.7, 0.2, 0.1),
+#'   nrow = 4, ncol = 3, byrow = TRUE)
+#' 
+#' B2_child <- matrix(
+#'   c(0.9, 0.1, # High probability for childless
+#'     0.9, 0.1,
+#'     0.9, 0.1,
+#'     0.1, 0.9),
+#'   nrow = 4, ncol = 2, byrow = TRUE)
+#' 
+#' B2_left <- matrix(
+#'   c(0.9, 0.1, # High probability for living with parents
+#'     0.1, 0.9,
+#'     0.1, 0.9,
+#'     0.1, 0.9),
+#'   nrow = 4, ncol = 2, byrow = TRUE)
 #' 
 #' # Cluster 3
-#' emiss_3_child <- matrix(
-#'   c(0.99, 0.01, # High probability for childless
-#'     0.99, 0.01,
-#'     0.01, 0.99,
-#'     0.99, 0.01,
-#'     0.01, 0.99,
-#'     0.01, 0.99), 
+#' B3_marr <- matrix(
+#'   c(0.8, 0.1, 0.1, # High probability for single
+#'     0.8, 0.1, 0.1,
+#'     0.8, 0.1, 0.1,
+#'     0.1, 0.8, 0.1, # High probability for married
+#'     0.3, 0.4, 0.3,
+#'     0.1, 0.1, 0.8), # High probability for divorced
+#'   nrow = 6, ncol = 3, byrow = TRUE)
+#' 
+#' B3_child <- matrix(
+#'   c(0.9, 0.1, # High probability for childless
+#'     0.9, 0.1,
+#'     0.5, 0.5,
+#'     0.5, 0.5,
+#'     0.5, 0.5,
+#'     0.1, 0.9),
 #'   nrow = 6, ncol = 2, byrow = TRUE)
 #' 
-#' emiss_3_marr <- matrix(
-#'   c(0.01, 0.01, 0.98, # High probability for single
-#'     0.01, 0.01, 0.98,
-#'     0.01, 0.01, 0.98,
-#'     0.01, 0.98, 0.01,
-#'     0.01, 0.98, 0.01, # High probability for married
-#'     0.98, 0.01, 0.01), # High probability for divorced
-#'   nrow = 6, ncol = 3, byrow = TRUE)                   
 #' 
-#' emiss_3_left <- matrix(
-#'   c(0.01, 0.99, # High probability for living with parents
-#'     0.99, 0.01,
-#'     0.50, 0.50,
-#'     0.01, 0.99,
-#'     0.99, 0.01,
-#'     0.99, 0.01), 
-#'   nrow = 6, ncol = 2, byrow = TRUE) 
+#' B3_left <- matrix(
+#'   c(0.9, 0.1, # High probability for living with parents
+#'     0.1, 0.9,
+#'     0.5, 0.5,
+#'     0.5, 0.5,
+#'     0.1, 0.9,
+#'     0.1, 0.9),
+#'   nrow = 6, ncol = 2, byrow = TRUE)
 #' 
-#' # Initial values for transition matrices
-#' trans_1 <- matrix(
-#'   c(0.80,   0.16, 0.03, 0.01,
-#'        0,   0.90, 0.07, 0.03, 
-#'        0,      0, 0.90, 0.10, 
-#'        0,      0,    0,    1), 
+#' # Starting values for transition matrices
+#' A1 <- matrix(
+#'   c(0.80, 0.16, 0.03, 0.01,
+#'     0,    0.90, 0.07, 0.03,
+#'     0,    0,    0.90, 0.10,
+#'     0,    0,    0,       1),
 #'   nrow = 4, ncol = 4, byrow = TRUE)
 #' 
-#' trans_2 <- matrix(
-#'   c(0.80, 0.10, 0.05,  0.03, 0.01, 0.01,
-#'        0, 0.70, 0.10,  0.10, 0.05, 0.05,
-#'        0,    0, 0.85,  0.01, 0.10, 0.04,
-#'        0,    0,    0,  0.90, 0.05, 0.05,
-#'        0,    0,    0,     0, 0.90, 0.10,
-#'        0,    0,    0,     0,    0,    1), 
+#' A2 <- matrix(
+#'   c(0.80, 0.10, 0.05, 0.03, 0.01, 0.01,
+#'     0,    0.70, 0.10, 0.10, 0.05, 0.05,
+#'     0,    0,    0.85, 0.01, 0.10, 0.04,
+#'     0,    0,    0,    0.90, 0.05, 0.05,
+#'     0,    0,    0,    0,    0.90, 0.10,
+#'     0,    0,    0,    0,    0,       1),
 #'   nrow = 6, ncol = 6, byrow = TRUE)
 #' 
-#' # Initial values for initial state probabilities 
+#' # Starting values for initial state probabilities
 #' initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
 #' initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 #' 
@@ -239,49 +254,38 @@
 #' 
 #' # Build mixture HMM
 #' init_mhmm_bf <- build_mhmm(
-#'   observations = list(child.seq, marr.seq, left.seq),
-#'   transition_probs = list(trans_1, trans_1, trans_2),
-#'   emission_probs = list(list(emiss_1_child, emiss_1_marr, emiss_1_left),
-#'                         list(emiss_2_child, emiss_2_marr, emiss_2_left), 
-#'                         list(emiss_3_child, emiss_3_marr, emiss_3_left)),
+#'   observations = list(marr.seq, child.seq, left.seq),
 #'   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
+#'   transition_probs = list(A1, A1, A2),
+#'   emission_probs = list(list(B1_marr, B1_child, B1_left),
+#'     list(B2_marr, B2_child, B2_left),
+#'     list(B3_marr, B3_child, B3_left)),
 #'   formula = ~sex + cohort, data = biofam3c$covariates,
 #'   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
-#'   channel_names = c("Parenthood", "Marriage", "Left home"))
-#' 
+#'   channel_names = c("Marriage", "Parenthood", "Residence"),
+#'   state_names = list(paste("State", 1:4), paste("State", 1:4), 
+#'                      paste("State", 1:6)))
+#'                      
 #' # Fitting the model with different settings
 #' 
 #' # Only EM with default values
-#' mhmm_1 <- fit_mhmm(
-#'   init_mhmm_bf, em_step = TRUE, global_step = FALSE, local_step = FALSE)
-#' mhmm_1$logLik # -3081.383
+#' mhmm_1 <- fit_mhmm(init_mhmm_bf, local_step = FALSE)
+#' mhmm_1$logLik # -12713.08
 #' 
 #' \dontrun{
 #' # EM with LBFGS
-#' mhmm_2 <- fit_mhmm(
-#'   init_mhmm_bf, em_step = TRUE, global_step = FALSE, local_step = TRUE)
-#' mhmm_2$logLik # -3081.383
+#' mhmm_2 <- fit_mhmm(init_mhmm_bf)
+#' mhmm_2$logLik # -12713.08
 #' 
 #' # Only LBFGS
-#' mhmm_3 <- fit_mhmm(
-#'   init_mhmm_bf, em_step = FALSE, global_step = FALSE, local_step = TRUE,
-#'   control_local = list(maxeval = 5000, maxtime = 0))
-#' mhmm_3$logLik # -3087.499373
+#' mhmm_3 <- fit_mhmm(init_mhmm_bf, em_step = FALSE)
+#' mhmm_3$logLik # -12966.51
 #' 
-#' # Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
-#' mhmm_4 <- fit_mhmm(
-#'   init_mhmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE, 
-#'   control_global = list(maxeval = 5000, maxtime = 0))
-#' mhmm_4$logLik # -3150.796
-#' 
-#' # As previously, but now we use ten iterations from EM algorithm for 
-#' # defining initial values and boundaries
-#' # Note smaller maxeval for global optimization
-#' mhmm_5 <- fit_mhmm(
-#'   init_mhmm_bf, em_step = TRUE, global_step = TRUE, local_step = TRUE, 
-#'   control_em = list(maxeval = 10), control_global = list(maxeval = 1000, maxtime = 0),
-#'   control_local = list(maxeval = 500, maxtime = 0))
-#' mhmm_5$logLik #-3081.383
+#' # Use EM with multiple restarts
+#' set.seed(123)
+#' mhmm_5 <- fit_mhmm(init_mhmm_bf,
+#'   control_em = list(restarts = 5, restart_transition = FALSE))
+#' mhmm_5$logLik # -12713.1
 #' }
 #' 
 
@@ -552,11 +556,13 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
     if(global_step){
       
       if(missing(lb)){
-        lb <- c(rep(-10,length(initialvalues)-npCoef),rep(-150/apply(abs(model$X),2,max),model$n_clusters-1))
+        lb <- c(rep(-50, length(initialvalues) - npCoef), 
+          rep(-150 / apply(abs(model$X), 2, max), model$n_clusters - 1))
       }
       lb <- pmin(lb, 2*initialvalues)
       if(missing(ub)){
-        ub <- c(rep(10,length(initialvalues)-npCoef),rep(150/apply(abs(model$X),2,max),model$n_clusters-1))
+        ub <- c(rep(50, length(initialvalues) - npCoef), 
+          rep(150 / apply(abs(model$X), 2, max), model$n_clusters - 1))
       }
       ub <- pmin(pmax(ub, 2*initialvalues),500)
       if(is.null(control_global$maxeval)){
@@ -586,8 +592,9 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
         control_local$algorithm <- "NLOPT_LD_LBFGS"
         if(is.null(control_local$xtol_rel)) control_local$xtol_rel <- 1e-8
       }
-      ub <- c(rep(300,length(initialvalues)-npCoef),rep(300/apply(abs(model$X),2,max),model$n_clusters-1))
-      ub <- pmin(pmax(ub, 2*initialvalues),500)
+      ub <- c(rep(300, length(initialvalues) - npCoef), rep(300 / apply(abs(model$X), 2, max), 
+        model$n_clusters - 1))
+      ub <- pmin(pmax(ub, 2*initialvalues), 500)
       localres<-nloptr(x0 = initialvalues, eval_f = objectivef,
         opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
       

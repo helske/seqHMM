@@ -7,7 +7,7 @@
 \format{A hidden Markov model of class \code{hmm};
 a left-to-right model with four hidden states.}
 \description{
-A hidden Markov model (HMM) fitted for the \code{\link[TraMineR]{biofam}} data.
+A five-state hidden Markov model (HMM) fitted for the \code{\link[TraMineR]{biofam}} data.
 }
 \details{
 The model is loaded by calling \code{data(hmm_biofam)}. It was created with the
@@ -16,59 +16,62 @@ following code:
 data(biofam3c)
 
 # Building sequence objects
-child.seq <- seqdef(biofam3c$children, start = 15)
-marr.seq <- seqdef(biofam3c$married, start = 15)
-left.seq <- seqdef(biofam3c$left, start = 15)
+marr.seq <- seqdef(biofam3c$married, start = 15,
+  alphabet = c("single", "married", "divorced")))
+child.seq <- seqdef(biofam3c$children, start = 15,
+  alphabet = c("childless", "children")))
+left.seq <- seqdef(biofam3c$left, start = 15,
+  alphabet = c("with parents", "left home")))
 
 ## Choosing colors
-attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
 attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
 attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
+
+init <- c(0.9, 0.05, 0.02, 0.02, 0.01)
+
+# Starting values for transition matrix
+trans <- matrix(
+  c(0.8, 0.10, 0.05, 0.03, 0.02,
+    0,    0.9, 0.05, 0.03, 0.02,
+    0,      0,  0.9, 0.07, 0.03,
+    0,      0,    0,  0.9,  0.1,
+    0,      0,    0,    0,    1),
+  nrow = 5, ncol = 5, byrow = TRUE)
 
 # Starting values for emission matrices
-emiss_marr <- matrix(NA, nrow=4, ncol=3)
-emiss_marr[1,] <- seqstatf(marr.seq[, 1:4])[, 2] + 0.1
-emiss_marr[2,] <- seqstatf(marr.seq[, 5:8])[, 2] + 0.1
-emiss_marr[3,] <- seqstatf(marr.seq[, 9:12])[, 2] + 0.1
-emiss_marr[4,] <- seqstatf(marr.seq[, 13:16])[, 2] + 0.1
-emiss_marr <- emiss_marr / rowSums(emiss_marr)
+emiss_marr <- matrix(
+  c(0.9, 0.05, 0.05, # High probability for single
+    0.9, 0.05, 0.05,
+    0.05, 0.9, 0.05, # High probability for married
+    0.05, 0.9, 0.05,
+    0.3, 0.3, 0.4), # mixed group
+  nrow = 5, ncol = 3, byrow = TRUE)
 
-emiss_child <- matrix(NA, nrow=4, ncol=2)
-emiss_child[1,] <- seqstatf(child.seq[, 1:4])[, 2] + 0.1
-emiss_child[2,] <- seqstatf(child.seq[, 5:8])[, 2] + 0.1
-emiss_child[3,] <- seqstatf(child.seq[, 9:12])[, 2] + 0.1
-emiss_child[4,] <- seqstatf(child.seq[, 13:16])[, 2] + 0.1
-emiss_child <- emiss_child / rowSums(emiss_child)
+emiss_child <- matrix(
+  c(0.9, 0.1, # High probability for childless
+    0.9, 0.1,
+    0.1, 0.9,
+    0.1, 0.9,
+    0.5, 0.5),
+  nrow = 5, ncol = 2, byrow = TRUE)
 
-emiss_left <- matrix(NA, nrow=4, ncol=2)
-emiss_left[1,] <- seqstatf(left.seq[, 1:4])[, 2] + 0.1
-emiss_left[2,] <- seqstatf(left.seq[, 5:8])[, 2] + 0.1
-emiss_left[3,] <- seqstatf(left.seq[, 9:12])[, 2] + 0.1
-emiss_left[4,] <- seqstatf(left.seq[, 13:16])[, 2] + 0.1
-emiss_left <- emiss_left / rowSums(emiss_left)
+emiss_left <- matrix(
+  c(0.9, 0.1, # High probability for living with parents
+    0.1, 0.9,
+    0.1, 0.9,
+    0.1, 0.9,
+    0.5, 0.5),
+  nrow = 5, ncol = 2, byrow = TRUE)
 
-# Initial values for transition matrix
-trans <- matrix(
-  c(0.9, 0.06, 0.03, 0.01,
-      0,    0.9, 0.07, 0.03,
-      0,      0,  0.9,  0.1,
-      0,      0,    0,    1),
-  nrow = 4, ncol = 4, byrow = TRUE)
+initmod <- build_hmm(
+  observations = list(marr.seq, child.seq, left.seq),
+  initial_probs = init, transition_probs = trans,
+  emission_probs = list(emiss_marr, emiss_child,
+    emiss_left),
+  channel_names = c("Marriage", "Parenthood", "Residence"))
 
-# Initial values for initial state probabilities
-initial_probs <- c(0.9, 0.07, 0.02, 0.01)
-
-# Building hidden Markov model with initial parameter values
-init_hmm_biofam <- build_hmm(
-  observations = list(child.seq, marr.seq, left.seq),
-  transition_probs = trans,
-  emission_probs = list(emiss_child, emiss_marr, emiss_left),
-  initial_probs = initial_probs,
-  channel_names = c("Parenthood", "Marriage", "Residence"),
-  state_names = paste("State", 1:4))
-
-fit_biofam <- fit_hmm(init_hmm_biofam)
-
+fit_biofam <- fit_hmm(initmod)
 hmm_biofam <- fit_biofam$model
 }
 }

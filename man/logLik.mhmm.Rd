@@ -5,7 +5,7 @@
 \title{Log-likelihood of the Mixture Hidden Markov Model}
 \usage{
 \method{logLik}{mhmm}(object, partials = FALSE, threads = 1,
-  log_space = FALSE, ...)
+  log_space = TRUE, ...)
 }
 \arguments{
 \item{object}{Hidden Markov model of class \code{mhmm}.}
@@ -16,7 +16,7 @@ Default is FALSE, which returns the sum of all log-likelihood components.}
 \item{threads}{Number of threads to use in parallel computing. Default is 1.}
 
 \item{log_space}{Make computations using log-space instead of scaling for greater
-numerical stability at cost of computational costs. Default is \code{FALSE}.}
+numerical stability at cost of decreased computational performance Default is \code{TRUE}.}
 
 \item{...}{Ignored.}
 }

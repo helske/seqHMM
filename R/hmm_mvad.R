@@ -9,52 +9,71 @@
 #' The model is loaded by calling \code{data(hmm_mvad)}. It was created with the 
 #' following code:
 #' \preformatted{
+#' # Single-channel
+#' 
 #' require(TraMineR)
 #' data(mvad)
 #' 
 #' mvad.alphabet <- c(
 #'   "employment", "FE", "HE", "joblessness", "school", "training")
 #' mvad.labels <- c(
-#'   "employment", "further education", "higher education", 
+#'   "employment", "further education", "higher education",
 #'   "joblessness", "school", "training")
 #' mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
 #' mvad.seq <- seqdef(
-#'   mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes, 
+#'   mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes,
 #'   labels = mvad.labels, xtstep = 6)
-#'   
+#' 
 #' attr(mvad.seq, "cpal") <- colorpalette[[6]]
 #' 
-#' # Starting values for the emission matrix
-#' emiss <- matrix(
-#'   c(0.1, 0.1, 0.1, 0.1, 0.5, 0.1, # SC
-#'     0.1, 0.5, 0.1, 0.1, 0.1, 0.1, # FE
-#'     0.1, 0.1, 0.1, 0.3, 0.1, 0.3, # JL, TR
-#'     0.1, 0.1, 0.5, 0.1, 0.1, 0.1, # HE
-#'     0.5, 0.1, 0.1, 0.1, 0.1, 0.1),# EM 
-#'   nrow = 5, ncol = 6, byrow = TRUE)
+#' # Starting values for the emission matrices
+#' emiss_1 <- matrix(
+#'   c(0.01, 0.17, 0.01, 0.01, 0.05, 0.75,
+#'     0.95, 0.01, 0.01, 0.01, 0.01, 0.01,
+#'     0.01, 0.01, 0.01, 0.95, 0.01, 0.01),
+#'   nrow = 3, ncol = 6, byrow = TRUE)
+#' 
+#' emiss_2 <- matrix(
+#'   c(0.01, 0.01, 0.01, 0.01, 0.95, 0.01,
+#'     0.01, 0.84, 0.01, 0.09, 0.01, 0.04,
+#'     0.01, 0.01, 0.95, 0.01, 0.01, 0.01,
+#'     0.95, 0.01, 0.01, 0.01, 0.01, 0.01),
+#'   nrow = 4, ncol = 6, byrow = TRUE)
 #' 
 #' # Starting values for the transition matrix
-#' trans <-  matrix(
-#'   c(0.80, 0.05, 0.05, 0.05, 0.05,
-#'     0.05, 0.05, 0.80, 0.05, 0.05,
-#'     0.05, 0.05, 0.80, 0.05, 0.05,
-#'     0.05, 0.05, 0.05, 0.80, 0.05,
-#'     0.05, 0.05, 0.05, 0.05, 0.80), 
-#'   nrow=5, ncol=5, byrow=TRUE)
+#' 
+#' trans_1 <-  matrix(
+#'   c(0.92, 0.05, 0.03,
+#'     0.01, 0.97, 0.02,
+#'     0.02, 0.04, 0.94),
+#'   nrow = 3, ncol = 3, byrow = TRUE)
+#' 
+#' trans_2 <-  matrix(
+#'   c(0.93, 0.02, 0.03, 0.02,
+#'     0.01, 0.93, 0.02, 0.04,
+#'     0.01, 0.01, 0.96, 0.02,
+#'     0.01, 0.02, 0.02, 0.95),
+#'   nrow = 4, ncol = 4, byrow = TRUE)
 #' 
 #' # Starting values for initial state probabilities
-#' initial_probsm <- c(0.2, 0.2, 0.2, 0.2, 0.2)
+#' initial_probs_1 <- c(0.73, 0.23, 0.04)
+#' initial_probs_2 <- c(0.4, 0.05, 0.5, 0.05)
 #' 
 #' # Building a hidden Markov model with starting values
-#' init_hmm_mvad <- build_hmm(
-#'   observations = mvad.seq, transition_probs = trans, 
-#'   emission_probs = emiss, initial_probs = initial_probsm)
-#'
+#' # No covariates
+#' init_mhmm_mvad <- build_mhmm(
+#'   observations = mvad.seq,
+#'   transition_probs = list(trans_1, trans_2),
+#'   emission_probs = list(emiss_1, emiss_2),
+#'   initial_probs = list(initial_probs_1, initial_probs_2))
+#' 
+#' 
+#' # Run EM algorithm 25 times with simulated starting values
 #' set.seed(321)
-#' fit_mvad <- fit_mhmm(init_mhmm_mvad, global = FALSE, 
-#'   control_em = list(restarts = 25))
-#'   
-#' hmm_mvad <- fit_mvad$model
+#' fit_mvad <- fit_mhmm(init_mhmm_mvad, control_em = list(restarts = 25))
+#' fit_mvad$logLik # -14533.7
+#' 
+#' hmm_mvad <- trim_hmm(fit_mvad$model, zerotol = 1e-4)
 #' }
 #'   
 #' @seealso Examples of building and fitting HMMs in \code{\link{build_hmm}} and 
