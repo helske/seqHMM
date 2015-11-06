@@ -129,7 +129,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     internalBackward(transition, emission, obs, beta, scales, threads);
 
     double tmp = arma::accu(log(scales));
-    change = (tmp - sumlogLik) / (abs(sumlogLik) + 0.1);
+    change = (tmp - sumlogLik) / (std::abs(sumlogLik) + 0.1);
     sumlogLik = tmp;
     if (!arma::is_finite(sumlogLik)) {
       return List::create(Named("error") = 4);

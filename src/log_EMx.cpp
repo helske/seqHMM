@@ -146,7 +146,7 @@ List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray,
     }
 
     double tmp = sum(ll);
-    change = (tmp - sumlogLik) / (abs(sumlogLik) + 0.1);
+    change = (tmp - sumlogLik) / (std::abs(sumlogLik) + 0.1);
     sumlogLik = tmp;
     if (!arma::is_finite(sumlogLik)) {
       return List::create(Named("error") = 4);
