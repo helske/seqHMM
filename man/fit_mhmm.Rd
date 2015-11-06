@@ -124,66 +124,74 @@ The fitting function provides three estimation steps: 1) EM algorithm,
 \examples{
 # Single-channel
 
-data(mvad, package = "TraMineR")
+require(TraMineR)
+data(mvad)
 
-mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school",
-                   "training")
-mvad.labels <- c("employment", "further education", "higher education",
-                 "joblessness", "school", "training")
+mvad.alphabet <- c(
+  "employment", "FE", "HE", "joblessness", "school", "training")
+mvad.labels <- c(
+  "employment", "further education", "higher education",
+  "joblessness", "school", "training")
 mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes,
-                   labels = mvad.labels, xtstep = 6)
+mvad.seq <- seqdef(
+  mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes,
+  labels = mvad.labels, xtstep = 6)
 
-# Starting values for emission matrices
+attr(mvad.seq, "cpal") <- colorpalette[[6]]
+
+# Starting values for the emission matrices
 emiss_1 <- matrix(
-c(0.26, 0.39, 0.01, 0.06, 0.04, 0.24,
-  0.58, 0.12, 0.09, 0.10, 0.01, 0.10,
-  0.73, 0.02, 0.09, 0.13, 0.01, 0.02),
-nrow = 3, ncol = 6, byrow = TRUE)
+  c(0.01, 0.17, 0.01, 0.01, 0.05, 0.75,
+    0.95, 0.01, 0.01, 0.01, 0.01, 0.01,
+    0.01, 0.01, 0.01, 0.95, 0.01, 0.01),
+  nrow = 3, ncol = 6, byrow = TRUE)
 
 emiss_2 <- matrix(
-c(0.01, 0.02, 0.01, 0.01, 0.94, 0.01,
-  0.05, 0.06, 0.15, 0.01, 0.72, 0.01,
-  0.19, 0.13, 0.60, 0.01, 0.05, 0.02,
-  0.32, 0.03, 0.60, 0.03, 0.01, 0.01),
-nrow = 4, ncol = 6, byrow = TRUE)
+  c(0.01, 0.01, 0.01, 0.01, 0.95, 0.01,
+    0.01, 0.84, 0.01, 0.09, 0.01, 0.04,
+    0.01, 0.01, 0.95, 0.01, 0.01, 0.01,
+    0.95, 0.01, 0.01, 0.01, 0.01, 0.01),
+  nrow = 4, ncol = 6, byrow = TRUE)
 
-# Starting values for transition matrices
+# Starting values for the transition matrix
 
-tr_1 <-  matrix(
-  c(0.80, 0.10, 0.10,
-    0.10, 0.80, 0.10,
-    0.10, 0.10, 0.80),
-  nrow=3, ncol=3, byrow=TRUE)
+trans_1 <-  matrix(
+  c(0.92, 0.05, 0.03,
+    0.01, 0.97, 0.02,
+    0.02, 0.04, 0.94),
+  nrow = 3, ncol = 3, byrow = TRUE)
 
-tr_2 <-  matrix(
-  c(0.80, 0.10, 0.05, 0.05,
-    0.05, 0.80, 0.10, 0.05,
-    0.05, 0.05, 0.80, 0.10,
-    0.05, 0.05, 0.10, 0.80),
-  nrow=4, ncol=4, byrow=TRUE)
+trans_2 <-  matrix(
+  c(0.93, 0.02, 0.03, 0.02,
+    0.01, 0.93, 0.02, 0.04,
+    0.01, 0.01, 0.96, 0.02,
+    0.01, 0.02, 0.02, 0.95),
+  nrow = 4, ncol = 4, byrow = TRUE)
 
 # Starting values for initial state probabilities
-init_1 <- c(0.4, 0.3, 0.3)
-init_2 <- c(0.3, 0.3, 0.2, 0.2)
+initial_probs_1 <- c(0.73, 0.23, 0.04)
+initial_probs_2 <- c(0.4, 0.05, 0.5, 0.05)
 
-# Building a MHMM with the starting values
+# Building a hidden Markov model with starting values
+# No covariates
 init_mhmm_mvad <- build_mhmm(
   observations = mvad.seq,
-  transition_probs = list(tr_1, tr_2),
+  transition_probs = list(trans_1, trans_2),
   emission_probs = list(emiss_1, emiss_2),
-  initial_probs = list(init_1, init_2))
+  initial_probs = list(initial_probs_1, initial_probs_2))
+
 
 # Fitting the model with the EM algorithm
 fit_mvad <- fit_mhmm(
   init_mhmm_mvad, local_step = FALSE)
-fit_mvad$logLik # -20615.65
+fit_mvad$logLik # -14960.03
 \dontrun{
 # Run EM algorithm 25 times with simulated starting values
 set.seed(321)
-fit_mvad2 <- fit_mhmm(init_mhmm_mvad, control_em=list(restarts = 25))
-fit_mvad2$logLik # -14651.43
+fit_mvad2 <- fit_mhmm(init_mhmm_mvad, control_em = list(restarts = 25))
+fit_mvad2$logLik # -14533.7
 }
+
 ##############################################################
 
 # Multichannel
