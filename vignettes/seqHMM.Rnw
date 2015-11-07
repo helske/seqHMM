@@ -147,9 +147,8 @@ attr(left.seq, "cpal") <- c("lightblue", "red3")
 
 First we plot annual state distributions with the \texttt{ssplot}\index{ssplot@\texttt{ssplot}} function (ssp for Stacked Sequence Plot). The \texttt{ssplot} function accepts two types of sequence plots available in the \texttt{seqplot} function from \texttt{TraMineR}: argument \texttt{type = "d"} gives state distributions and \texttt{type = "I"} shows sequence index plots. If the list objects are given a name, those are printed as labels; otherwise the number of the channel is plotted as a label. Another option is to use the \texttt{ylab} argument to change the labels. The number of sequences is automatically printed unless either the \texttt{title} or the \texttt{title.n} argument is set to \texttt{FALSE}. Figure \ref{fig:plotd} shows the default plot for three-channel data.
 
-<<plotd, fig.width=5, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', fig.align='center', cache=TRUE, fig.cap = "State distribution plots for multichannel data drawn with the \\texttt{ssplot} function.">>=
-ssplot(
-  list("Marriage" = marr.seq, "Parenthood" = child.seq,
+<<plotd, fig.width=5, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', fig.align='center', cache=TRUE, fig.cap = 'State distribution plots for multichannel data drawn with the \\texttt{ssplot} function.', fig.scap = 'State distribution plots for multichannel data drawn with the \\texttt{ssplot} function.'>>=
+ssplot(list("Marriage" = marr.seq, "Parenthood" = child.seq,
        "Residence" = left.seq))
 
 @
