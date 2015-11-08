@@ -5,3 +5,4 @@
 ^\.travis\.yml$
 ^README.md$
 ^Examples$
+vignettes/seqHMM.pdf
