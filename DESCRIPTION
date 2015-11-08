@@ -29,7 +29,7 @@ Imports:
     stats,
     TraMineR (>= 1.8-8),
     utils
-Suggests: MASS, nnet
+Suggests: MASS, nnet, knitr
 License: GPL (>= 2)
 Encoding: UTF-8
 BugReports: https://github.com/helske/seqHMM/issues

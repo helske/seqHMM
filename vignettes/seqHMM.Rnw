@@ -69,6 +69,7 @@ The seqHMM package is currently available in Github:
   \url{https://github.com/helske/seqHMM}.
 It can be easily installed in R via the \texttt{devtools} package by writing the following lines in R.
 <<setup2, include=FALSE, cache=FALSE>>=
+library(knitr)
 opts_chunk$set(concordance=TRUE, tidy=FALSE)
 @
 <<installation, eval=FALSE>>=
