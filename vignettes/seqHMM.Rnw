@@ -155,7 +155,7 @@ ssplot(list("Marriage" = marr.seq, "Parenthood" = child.seq,
 
 Another option is to define function arguments with the \texttt{ssp} function\index{ssp@\texttt{ssp}} and then use previously saved arguments for plotting with a simple \texttt{plot}\index{plot.ssp@\texttt{plot.ssp}} method. In figure \ref{fig:plotI} sequences are sorted according to the beginning of the marriage sequence (the first channel). Legends are omitted from the plot. The \texttt{ylab.pos} defines the positions of the channel labels.
 
-<<plotI, fig.width=3.5, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', fig.align='center', cache=TRUE, fig.cap = "Sequence index plots for multichannel data defined with the \\texttt{ssp} function and plotted with the \\texttt{plot} method.">>=
+<<plotI, fig.width=3.5, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', fig.align='center', cache=TRUE, fig.cap = 'Sequence index plots for multichannel data defined with the \\texttt{ssp} function and plotted with the \\texttt{plot} method.'>>=
 ssp2 <- ssp(
   list(marr.seq, child.seq, left.seq),
   type = "I",title = "Sequence index plots",
@@ -172,7 +172,7 @@ We can also plot several \texttt{ssp}\index{ssp@\texttt{ssp}} objects together. 
 
 We start by defining the first plot, state distributions for women. We remove borders from the bars, and omit legends and the number of sequences from the title. The other plots are easy to define with the \texttt{update} function -- the user only needs to type the arguments that are different to the first call.
 
-<<gridplotfm2, fig.width=7, fig.height=8, dev.args=list(pointsize=10), fig.keep='last', fig.align='center', cache=TRUE, fig.cap = "Plotting several \\texttt{ssp} plots in a grid with the \\texttt{gridplot} function.">>=
+<<gridplotfm2, fig.width=7, fig.height=8, dev.args=list(pointsize=10), fig.keep='last', fig.align='center', cache=TRUE, fig.cap = 'Plotting several \\texttt{ssp} plots in a grid with the \\texttt{gridplot} function.'>>=
 # Preparing plots for women's state distributions
 ssp_f_d <- ssp(
   x = list(marr.seq[biofam$sex == "woman",],
@@ -209,7 +209,7 @@ gridplot(
 
 The \texttt{gridplot} function is able to create legends automatically using the states given in the first \texttt{ssp} object. If the objects contain different data with different states, legends can be included in the \texttt{ssp} objects and omitted from the \texttt{gridplot}. Figure \ref{fig:gridplot2} illustrates such plot using both the original \texttt{biofam} data and the three-channel version.
 
-<<gridplot2, fig.width=7, fig.height=3, dev.args=list(pointsize=10), fig.align='center', fig.keep='last', cache = TRUE, fig.cap = "Two different sequence data sets drawn with the \\texttt{gridplot} function.">>=
+<<gridplot2, fig.width=7, fig.height=3, dev.args=list(pointsize=10), fig.align='center', fig.keep='last', cache = TRUE, fig.cap = 'Two different sequence data sets drawn with the \\texttt{gridplot} function.'>>=
 ssp_d <- ssp(
   biofam.seq, border = NA, title.n = FALSE,
   title = "State distributions (original states)",
@@ -233,7 +233,7 @@ The \texttt{mc\_to\_sc\_data}\index{MCtoSCdata@\texttt{mc\_to\_sc\_data}} functi
 
 Also single-channel data can be plotted with the \texttt{ssplot}\index{ssplot@\texttt{ssplot}} and  \texttt{gridplot}\index{gridplot@\texttt{gridplot}} functions. Figure \ref{fig:MCtSCdata} illustrates the state distributions. We give more space for the legend to fit the labels, and set new labels for the x axis.
 
-<<MCtSCdata, fig.width=7, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', fig.align='center', cache=TRUE, fig.cap= "Three-channel \\texttt{biofam3c} data converted to single-channel data.">>=
+<<MCtSCdata, fig.width=7, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', fig.align='center', cache=TRUE, fig.cap= 'Three-channel \\texttt{biofam3c} data converted to single-channel data.'>>=
 sc_data <- mc_to_sc_data(list(marr.seq, child.seq, left.seq))
 
 ssplot(
@@ -496,13 +496,13 @@ sc_hmm <- mc_to_sc(mc_fit$model)
 
 When the function is fitted, the \texttt{hmm} object can be easily plotted as a directed graph with the \texttt{plot}\index{plot.hmm@\texttt{plot.hmm}} method. By default, each hidden state is represented as a pie chart with the (combinations of) emitted states as slices. States with emission probability less than 0.05 are combined into one category, unless the user specifies otherwise. By default, the initial state probabilities are given below the vertices, and the widths of the edges giving the transition probabilities vary according to the parameter values. If the \texttt{hmm} object has multiple channels, the \texttt{mc\_to\_sc}\index{MCtoSC@\texttt{mc\_to\_sc}} function is automatically used to convert the multichannel model into a single channel model during plotting. Figure \ref{fig:plotHMM1} illustrates a default plot for the four-state model fitted earlier.
 
-<<plotHMM1, fig.width=7, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', cache=TRUE, fig.cap = "Plotting HMM as a directed graph with the \\texttt{plot} method.">>=
+<<plotHMM1, fig.width=7, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', cache=TRUE, fig.cap = 'Plotting HMM as a directed graph with the \\texttt{plot} method.'>>=
 plot(mc_fit$model)
 @
 
 The \texttt{hmm} plots can be modified in various ways such as changing sizes and positions of vertices, thickness and curvature of edges, colors and fonts of labels, and position and contents of the legend. The \texttt{igraph} package \citep{Csardi2006} is used for plotting directed graphs, so most arguments of the \texttt{plot.igraph} function work in \texttt{plot.hmm} as well. In Figure \ref{fig:plotHMM2} we draw bigger vertices, modify the legend, change curvatures of edges, and give a new label for the combined slice.
 
-<<plotHMM2, fig.width=7, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', cache=TRUE, fig.cap = "Another version of the same model as in Figure \\ref{fig:plotHMM1}.">>=
+<<plotHMM2, fig.width=7, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', cache=TRUE, fig.cap = 'Another version of the same model as in Figure \\ref{fig:plotHMM1}.'>>=
 plot(
   mc_fit$model, vertex.size = 50, ncol.legend = 2, legend.prop = 0.4,
   edge.curved = c(0, 0.7, -0.6, 0, 0.7, 0),
@@ -513,7 +513,7 @@ By default, the vertices are plotted vertically aligned but that can be changed 
 
 In Figure \ref{fig:plotHMM3} we change the positions of the vertex labels (initial probabilities), call for straight and thinner edges with smaller arrows, modify the legend, ask to plot all emitted states, and change colors.
 
-<<plotHMM3, fig.width=7, fig.height=5, dev.args=list(pointsize=10), fig.keep='last', cache=TRUE, fig.cap = "Another version of the same model as in Figure \\ref{fig:plotHMM1}.">>=
+<<plotHMM3, fig.width=7, fig.height=5, dev.args=list(pointsize=10), fig.keep='last', cache=TRUE, fig.cap = 'Another version of the same model as in Figure \\ref{fig:plotHMM1}.'>>=
 plot(
   mc_fit$model,
   layout = matrix(c(1,3,3,5,
@@ -527,7 +527,7 @@ plot(
 
 A color must be provided for all (combinations of) observed states present in the data, whether or not shown in the graph. The \texttt{seqHMM} package uses the \texttt{colorpalette}\index{colorpalette@\texttt{colorpalette}} data for defining the colors in the plots. It is a list of 60 ready-made color palettes with 1--60 distinct colors and is automatically loaded with the package and available for use. See also the \texttt{RColorBrewer} package for more color palettes with distinct colors. The \texttt{plot\_colors}\index{plotcolors@\texttt{plot\_colors}} function is provided fot easy visualization of color palettes.
 
-<<plotColors, fig.width=5.5, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', cache=FALSE, fig.cap = "Plotting colorpalettes can be handy when choosing colors for states.">>=
+<<plotColors, fig.width=5.5, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', cache=FALSE, fig.cap = 'Plotting colorpalettes can be handy when choosing colors for states.'>>=
 plot_colors(
   colorpalette[[8]],
   labels = c("parent", "left", "married", "left+marr", "child",
@@ -536,7 +536,7 @@ plot_colors(
 
 The \texttt{ssplot}\index{ssplot@\texttt{ssplot}} function also accepts an object of class \texttt{hmm}. It can be used for plotting observations and/or most probable paths of hidden states or their state distributions. The function automatically computes the most probable paths of hidden states with the \texttt{hidden\_paths}\index{hiddenPaths@\texttt{hidden\_paths}} function, if the user does not provide them. Here the sequences are sorted according to multidimensional scaling scores that are computed from optimal matching dissimilarities for hidden state sequences. Any dissimilarity method available in \texttt{TraMineR} can be used instead of the default (see the documentation of the \texttt{seqdef} function for more information).
 
-<<seqmppplot, fig.width=7, fig.height=5.5, dev.args=list(pointsize=10), fig.keep='last', cache=TRUE, fig.cap = "Using the \\texttt{ssplot} function to draw observations and the most probable hidden state paths given the model.">>=
+<<seqmppplot, fig.width=7, fig.height=5.5, dev.args=list(pointsize=10), fig.keep='last', cache=TRUE, fig.cap = 'Using the \\texttt{ssplot} function to draw observations and the most probable hidden state paths given the model.'>>=
 ssplot(
   mc_fit$model, plots = "both", type = "I", sortv = "mds.hidden",
   xtlab = 15:30, xlab = "Age", title = "Observed and hidden state sequences")
