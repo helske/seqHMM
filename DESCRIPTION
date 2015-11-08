@@ -32,3 +32,5 @@ Imports:
 Suggests: MASS, nnet
 License: GPL (>= 2)
 Encoding: UTF-8
+BugReports: https://github.com/helske/seqHMM/issues
+VignetteBuilder: knitr
