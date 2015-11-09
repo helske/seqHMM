@@ -68,9 +68,9 @@ We start by showing how the package is installed and then prepare the example da
 The seqHMM package is currently available in Github:
   \url{https://github.com/helske/seqHMM}.
 It can be easily installed in R via the \texttt{devtools} package by writing the following lines in R.
-<<setup2, include=FALSE, cache=FALSE>>=
+<<'setup2', include=FALSE, cache=FALSE>>=
 library(knitr)
-opts_chunk$set(concordance=TRUE, tidy=FALSE)
+opts_chunk$set(concordance = TRUE, tidy = FALSE)
 @
 <<installation, eval=FALSE>>=
 install.packages("devtools")
@@ -79,7 +79,7 @@ install_github("helske/seqHMM")
 @
 After the installation (only needed the first time) the package is loaded with the \texttt{library} function.
 
-<<seqHMM>>=
+<<'seqHMM'>>=
 library(seqHMM)
 @
 
@@ -108,7 +108,7 @@ We use two versions of the same data; one with the original single-channel seque
 
 We start by showing a glimpse of the original sequence data (in columns 10--25) and then create a state sequence object. We set the start at age 15 and give labels to states.
 
-<<sc_data, message=FALSE, cache=TRUE>>=
+<<'sc_data', message=FALSE, cache=TRUE>>=
 library(TraMineR)
 data(biofam)
 
@@ -123,7 +123,7 @@ biofam.seq <- seqdef(
 \subsection{Multichannel data}
 For showing a more complex example with multichannel sequence data, we provide an R file which creates three separate sequences from the \texttt{biofam} data. The \texttt{biofam3c} object includes a list with three sequence data sets and a data frame with covariates. Note that the divorced state in the original data does not give information on children on residence, so the those are determined according to the preceeding states.
 
-<<data, message=FALSE, cache=TRUE>>=
+<<'data', message=FALSE, cache=TRUE>>=
 data(biofam3c)
 
 marr.seq <- seqdef(biofam3c$married, start = 15,
@@ -138,7 +138,7 @@ left.seq <- seqdef(biofam3c$left, start = 15,
 
 The \texttt{TraMineR} package provides several plotting options for simple single-channel sequence data with the \texttt{seqplot} function, but there are no easy options for plotting multichannel data. In \texttt{seqHMM}, such data can be plotted in several ways. We start by choosing colors for the observed states in each channel.
 
-<<definecolors, cache=TRUE>>=
+<<'definecolors', cache=TRUE>>=
 attr(marr.seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
 attr(child.seq, "cpal") <- c("darkseagreen1", "coral3")
 attr(left.seq, "cpal") <- c("lightblue", "red3")
@@ -148,15 +148,14 @@ attr(left.seq, "cpal") <- c("lightblue", "red3")
 
 First we plot annual state distributions with the \texttt{ssplot}\index{ssplot@\texttt{ssplot}} function (ssp for Stacked Sequence Plot). The \texttt{ssplot} function accepts two types of sequence plots available in the \texttt{seqplot} function from \texttt{TraMineR}: argument \texttt{type = "d"} gives state distributions and \texttt{type = "I"} shows sequence index plots. If the list objects are given a name, those are printed as labels; otherwise the number of the channel is plotted as a label. Another option is to use the \texttt{ylab} argument to change the labels. The number of sequences is automatically printed unless either the \texttt{title} or the \texttt{title.n} argument is set to \texttt{FALSE}. Figure \ref{fig:plotd} shows the default plot for three-channel data.
 
-<<plotd, fig.width=5, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', fig.align='center', cache=TRUE, fig.cap = 'State distribution plots for multichannel data drawn with the \\texttt{ssplot} function.', fig.scap = 'State distribution plots for multichannel data drawn with the \\texttt{ssplot} function.'>>=
+<<'plotd', fig.width=5, fig.height=3, fig.keep='last', fig.align='center', cache=TRUE, fig.cap='State distribution plots for multichannel data drawn with the \\texttt{ssplot} function.'>>=
 ssplot(list("Marriage" = marr.seq, "Parenthood" = child.seq,
        "Residence" = left.seq))
-
 @
 
 Another option is to define function arguments with the \texttt{ssp} function\index{ssp@\texttt{ssp}} and then use previously saved arguments for plotting with a simple \texttt{plot}\index{plot.ssp@\texttt{plot.ssp}} method. In figure \ref{fig:plotI} sequences are sorted according to the beginning of the marriage sequence (the first channel). Legends are omitted from the plot. The \texttt{ylab.pos} defines the positions of the channel labels.
 
-<<plotI, fig.width=3.5, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', fig.align='center', cache=TRUE, fig.cap = 'Sequence index plots for multichannel data defined with the \\texttt{ssp} function and plotted with the \\texttt{plot} method.'>>=
+<<'plotI', fig.width=3.5, fig.height=3, fig.keep='last', fig.align='center', cache=TRUE, fig.cap='Sequence index plots for multichannel data defined with the \\texttt{ssp} function and plotted with the \\texttt{plot} method.'>>=
 ssp2 <- ssp(
   list(marr.seq, child.seq, left.seq),
   type = "I",title = "Sequence index plots",
@@ -164,7 +163,6 @@ ssp2 <- ssp(
   withlegend = FALSE, ylab.pos = c(1, 1.5, 1),
   ylab = c("Marriage", "Parenthood", "Residence"))
 plot(ssp2)
-
 @
 
 \subsection{Plotting sequence data in a grid}
@@ -173,7 +171,7 @@ We can also plot several \texttt{ssp}\index{ssp@\texttt{ssp}} objects together. 
 
 We start by defining the first plot, state distributions for women. We remove borders from the bars, and omit legends and the number of sequences from the title. The other plots are easy to define with the \texttt{update} function -- the user only needs to type the arguments that are different to the first call.
 
-<<gridplotfm2, fig.width=7, fig.height=8, dev.args=list(pointsize=10), fig.keep='last', fig.align='center', cache=TRUE, fig.cap = 'Plotting several \\texttt{ssp} plots in a grid with the \\texttt{gridplot} function.'>>=
+<<'gridplotfm2', fig.width=7, fig.height=8, fig.keep='last', fig.align='center', cache=TRUE, fig.cap='Plotting several \\texttt{ssp} plots in a grid with the \\texttt{gridplot} function.'>>=
 # Preparing plots for women's state distributions
 ssp_f_d <- ssp(
   x = list(marr.seq[biofam$sex == "woman",],
@@ -210,7 +208,7 @@ gridplot(
 
 The \texttt{gridplot} function is able to create legends automatically using the states given in the first \texttt{ssp} object. If the objects contain different data with different states, legends can be included in the \texttt{ssp} objects and omitted from the \texttt{gridplot}. Figure \ref{fig:gridplot2} illustrates such plot using both the original \texttt{biofam} data and the three-channel version.
 
-<<gridplot2, fig.width=7, fig.height=3, dev.args=list(pointsize=10), fig.align='center', fig.keep='last', cache = TRUE, fig.cap = 'Two different sequence data sets drawn with the \\texttt{gridplot} function.'>>=
+<<'gridplot2', fig.width=7, fig.height=3, fig.align='center', fig.keep='last', cache = TRUE, fig.cap='Two different sequence data sets drawn with the \\texttt{gridplot} function.'>>=
 ssp_d <- ssp(
   biofam.seq, border = NA, title.n = FALSE,
   title = "State distributions (original states)",
@@ -234,7 +232,7 @@ The \texttt{mc\_to\_sc\_data}\index{MCtoSCdata@\texttt{mc\_to\_sc\_data}} functi
 
 Also single-channel data can be plotted with the \texttt{ssplot}\index{ssplot@\texttt{ssplot}} and  \texttt{gridplot}\index{gridplot@\texttt{gridplot}} functions. Figure \ref{fig:MCtSCdata} illustrates the state distributions. We give more space for the legend to fit the labels, and set new labels for the x axis.
 
-<<MCtSCdata, fig.width=7, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', fig.align='center', cache=TRUE, fig.cap= 'Three-channel \\texttt{biofam3c} data converted to single-channel data.'>>=
+<<'MCtSCdata', fig.width=7, fig.height=3, fig.keep='last', fig.align='center', cache=TRUE, fig.cap= 'Three-channel \\texttt{biofam3c} data converted to single-channel data.'>>=
 sc_data <- mc_to_sc_data(list(marr.seq, child.seq, left.seq))
 
 ssplot(
@@ -290,7 +288,7 @@ We start by showing how HMMs are fitted for the simple single-channel data and t
 
 Our goal here is to fit a model where hidden states describe a more general life stage, during which individuals are more likely to be in certain observable states. We expect that the life stages are somehow related to age, so constructing starting values from observed state frequences by age group seems like an option worth a try. We fit a model with four hidden state using age groups 15--18, 19--23, 24--27, and 28--30. Amount of 0.1 is added to each value in case of zero-frequencies in some categories (at this point we do not want to fix any parameters to zero) and each row is divided with its sum so that the row sums equal to 1.
 
-<<sc_initialvalues, cache=TRUE>>=
+<<'sc_initialvalues', cache=TRUE>>=
 # Starting values for the emission matrix
 sc_emiss <- matrix(NA, nrow = 4, ncol = 8)
 sc_emiss[1,] <- seqstatf(biofam.seq[, 1:4])[, 2] + 0.1
@@ -312,7 +310,7 @@ sc_inits <- c(0.9, 0.07, 0.02, 0.01)
 @
 The model is initialized with the \texttt{build\_hmm}\index{buildHMM@\texttt{build\_hmm}} function. It checks that the data and matrices are of the right form and creates an object of class \texttt{hmm}.
 
-<<sc_buildHMM, cache=TRUE>>=
+<<'sc_buildHMM', cache=TRUE>>=
 # Building a hidden Markov model with starting values
 sc_model <- build_hmm(
   observations = biofam.seq, transition_probs = sc_trans,
@@ -320,7 +318,7 @@ sc_model <- build_hmm(
 @
 The \texttt{hmm} object can then be fitted with the \texttt{fit\_hmm}\index{fitHMM@\texttt{fit\_hmm}} function. The fitting function provides three estimation steps: 1) EM algorithm, 2) global optimization, and 3) local optimization. Any combination of these steps can be chosen but their order cannot be modified. The results from a former step are used as starting values in a latter.
 
-<<sc_fitHMM, cache=TRUE>>=
+<<'sc_fitHMM', cache=TRUE>>=
 sc_fit <- fit_hmm(sc_model)
 @
 
@@ -339,7 +337,7 @@ Most of the functions relating to model estimation and state inference support p
 
 The \texttt{fit\_hmm}\index{fitHMM@\texttt{fit\_hmm}} function returns the model, the log-likelihood, and estimation results from each step.
 
-<<sc_print_fitHMM, cache=TRUE>>=
+<<'sc_print_fitHMM', cache=TRUE>>=
 sc_fit$model
 @
 
@@ -347,7 +345,7 @@ sc_fit$model
 
 A HMM for multichannel data is fitted in a similar way using the same \texttt{build\_hmm}\index{buildHMM@\texttt{build\_hmm}} and \texttt{fit\_hmm}\index{fitHMM@\texttt{fit\_hmm}} functions. Now we build a model for three-channel data with four hidden states. One emission matrix (with hidden states as rows and observed states as columns) is required for each channel, i.e. 4x3 matrix for marriages and 4x2 matrices for the other two. Also here the initial values are constructed from using the observed state frequences at different age categories (see the example of fitting HMM for single-channel data). Now we use an upper triangular matrix in the transition matrix indicating a left-to-right model where transitions back to previous states are not allowed. This seems like a valid option from a life-course prespective. Also, in the previous single-channel model of the same data the transition matrix was estimated almost upper triangular.
 
-<<mcHMM, cache=TRUE>>=
+<<'mcHMM', cache=TRUE>>=
 # Initial values for initial state probabilities
 mc_inits <- c(0.90, 0.07, 0.02, 0.01)
 
@@ -398,27 +396,27 @@ mc_fit <- fit_hmm(mc_hmm)
 
 Log-likelihood is stored in the result from \texttt{fit\_hmm}\index{fitHMM@\texttt{fit\_hmm}}, but also the \texttt{logLik}\index{logLik@\texttt{logLik}} function computes it. Models with the same number of parameters can be compared using log-likelihood: the bigger the value, the better the model.
 
-<<loglik, cache=TRUE>>=
+<<'loglik', cache=TRUE>>=
 mc_fit$logLik
 logLik(mc_fit$model)
 @
 
 Next we fit a couple of models with different estimation procedures and compare the results using log-likelihood. We first note that for this model the EM algorithm converges to optimum so the local optimization step is not necessary (the difference between the log-likelihoods is neglibigle, -5.7e-5):
 
-<<em_and_local, cache=TRUE>>=
+<<'em_and_local', cache=TRUE>>=
 mc_fit$em_results$logLik
 -mc_fit$local_results$objective
 @
 
 Using only gradient-based optimization without the initial EM step produces substantially poorer fit:
-<<fitHMM_local, cache=TRUE>>=
+<<'fitHMM_local', cache=TRUE>>=
 mc_hmm_local <- fit_hmm(mc_hmm, em_step = FALSE)
 mc_hmm_local$logLik
 @
 
 Next we will test the performance of the MLSL optimization by setting \texttt{global = TRUE}. Final polishing is done with the L-BFGS. The default estimation time is set to 60 seconds in global step, but usually it is advisable to run it longer. Depending on the performance of the computer, the optimizer may also be able to perform more or less evaluations in the given time limit. Setting \texttt{maxtime = 0} omits the time limit and performs the number of evaluations given for \texttt{maxeval}. The more complex the model, the more time the optimizer needs to throughly search the parameter space.
 
-<<fitHMM_global, cache=TRUE>>=
+<<'fitHMM_global', cache=TRUE>>=
 mc_hmm_global <- fit_hmm(mc_hmm, em_step = FALSE, global = TRUE,
   control_global = list(maxtime = 0, maxeval = 1000))
 mc_hmm_global$logLik
@@ -428,7 +426,7 @@ In this case the starting values are good enough so that the EM algorithm finds 
 
 Automatic restarts of the EM algorithm are called by setting the value \texttt{restarts} in the \texttt{control\_em} argument. By default, both transition and emission probabilities are modified by adding a random numbers from a normal distribution with a mean of 0 and a standard error defined by \texttt{sd\_restart} (0.25 by default). Rows of matrices are then scaled to sum to one. Here randomizing is only useful for a check-up since the original EM already finds the optimum.
 
-<<fitHMM_repEM, cache=TRUE>>=
+<<'fitHMM_repEM', cache=TRUE>>=
 set.seed(123)
 mc_hmm_restarts <- fit_hmm(mc_hmm,
   control_em = list(restarts = 100, restart_transition = FALSE))
@@ -439,12 +437,12 @@ mc_hmm_restarts$logLik
 
 The \texttt{BIC}\index{BIC@\texttt{BIC}} function gives the value of the Bayesian information criterion (BIC).
 
-<<BIC, cache=TRUE>>=
+<<'BIC', cache=TRUE>>=
 BIC(mc_fit$model)
 @
 BIC can be used to compare models with a different number of parameters, e.g. for choosing the best number of hidden states. We fit a model with three hidden states and compare the results to the four-state model.
 
-<<mcHMM_3states, cache=TRUE>>=
+<<'mcHMM_3states', cache=TRUE>>=
 mc_inits_3s <- c(0.90, 0.07, 0.03)
 
 mc_A_3s <- matrix(
@@ -488,7 +486,7 @@ BIC for the four-state model is 33967.66, which is less than 45410.52, BIC for t
 
 The \texttt{mc\_to\_sc}\index{MCtoSC@\texttt{mc\_to\_sc}} function converts multichannel models to single-channel representations. It combines observed states and multiplies emission parameters across channels. Instead of three emission matrices of size $4\times 3$, $4\times 2$, and $4\times 2$ we now have one emission matrix of size $4\times 10$, since there are 10 state combinations in the new data.
 
-<<MCtoSC, cache=TRUE>>=
+<<'MCtoSC', cache=TRUE>>=
 sc_hmm <- mc_to_sc(mc_fit$model)
 @
 
@@ -497,13 +495,13 @@ sc_hmm <- mc_to_sc(mc_fit$model)
 
 When the function is fitted, the \texttt{hmm} object can be easily plotted as a directed graph with the \texttt{plot}\index{plot.hmm@\texttt{plot.hmm}} method. By default, each hidden state is represented as a pie chart with the (combinations of) emitted states as slices. States with emission probability less than 0.05 are combined into one category, unless the user specifies otherwise. By default, the initial state probabilities are given below the vertices, and the widths of the edges giving the transition probabilities vary according to the parameter values. If the \texttt{hmm} object has multiple channels, the \texttt{mc\_to\_sc}\index{MCtoSC@\texttt{mc\_to\_sc}} function is automatically used to convert the multichannel model into a single channel model during plotting. Figure \ref{fig:plotHMM1} illustrates a default plot for the four-state model fitted earlier.
 
-<<plotHMM1, fig.width=7, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', cache=TRUE, fig.cap = 'Plotting HMM as a directed graph with the \\texttt{plot} method.'>>=
+<<'plotHMM1', fig.width=7, fig.height=3, fig.keep='last', cache=TRUE, fig.cap='Plotting HMM as a directed graph with the \\texttt{plot} method.'>>=
 plot(mc_fit$model)
 @
 
 The \texttt{hmm} plots can be modified in various ways such as changing sizes and positions of vertices, thickness and curvature of edges, colors and fonts of labels, and position and contents of the legend. The \texttt{igraph} package \citep{Csardi2006} is used for plotting directed graphs, so most arguments of the \texttt{plot.igraph} function work in \texttt{plot.hmm} as well. In Figure \ref{fig:plotHMM2} we draw bigger vertices, modify the legend, change curvatures of edges, and give a new label for the combined slice.
 
-<<plotHMM2, fig.width=7, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', cache=TRUE, fig.cap = 'Another version of the same model as in Figure \\ref{fig:plotHMM1}.'>>=
+<<'plotHMM2', fig.width=7, fig.height=3, fig.keep='last', cache=TRUE, fig.cap='Another version of the same model as in Figure \\ref{fig:plotHMM1}.'>>=
 plot(
   mc_fit$model, vertex.size = 50, ncol.legend = 2, legend.prop = 0.4,
   edge.curved = c(0, 0.7, -0.6, 0, 0.7, 0),
@@ -514,7 +512,7 @@ By default, the vertices are plotted vertically aligned but that can be changed 
 
 In Figure \ref{fig:plotHMM3} we change the positions of the vertex labels (initial probabilities), call for straight and thinner edges with smaller arrows, modify the legend, ask to plot all emitted states, and change colors.
 
-<<plotHMM3, fig.width=7, fig.height=5, dev.args=list(pointsize=10), fig.keep='last', cache=TRUE, fig.cap = 'Another version of the same model as in Figure \\ref{fig:plotHMM1}.'>>=
+<<'plotHMM3', fig.width=7, fig.height=5, fig.keep='last', cache=TRUE, fig.cap='Another version of the same model as in Figure \\ref{fig:plotHMM1}.'>>=
 plot(
   mc_fit$model,
   layout = matrix(c(1,3,3,5,
@@ -528,7 +526,7 @@ plot(
 
 A color must be provided for all (combinations of) observed states present in the data, whether or not shown in the graph. The \texttt{seqHMM} package uses the \texttt{colorpalette}\index{colorpalette@\texttt{colorpalette}} data for defining the colors in the plots. It is a list of 60 ready-made color palettes with 1--60 distinct colors and is automatically loaded with the package and available for use. See also the \texttt{RColorBrewer} package for more color palettes with distinct colors. The \texttt{plot\_colors}\index{plotcolors@\texttt{plot\_colors}} function is provided fot easy visualization of color palettes.
 
-<<plotColors, fig.width=5.5, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', cache=FALSE, fig.cap = 'Plotting colorpalettes can be handy when choosing colors for states.'>>=
+<<'plotColors', fig.width=5.5, fig.height=3, fig.keep='last', cache=FALSE, fig.cap='Plotting colorpalettes can be handy when choosing colors for states.'>>=
 plot_colors(
   colorpalette[[8]],
   labels = c("parent", "left", "married", "left+marr", "child",
@@ -537,7 +535,7 @@ plot_colors(
 
 The \texttt{ssplot}\index{ssplot@\texttt{ssplot}} function also accepts an object of class \texttt{hmm}. It can be used for plotting observations and/or most probable paths of hidden states or their state distributions. The function automatically computes the most probable paths of hidden states with the \texttt{hidden\_paths}\index{hiddenPaths@\texttt{hidden\_paths}} function, if the user does not provide them. Here the sequences are sorted according to multidimensional scaling scores that are computed from optimal matching dissimilarities for hidden state sequences. Any dissimilarity method available in \texttt{TraMineR} can be used instead of the default (see the documentation of the \texttt{seqdef} function for more information).
 
-<<seqmppplot, fig.width=7, fig.height=5.5, dev.args=list(pointsize=10), fig.keep='last', cache=TRUE, fig.cap = 'Using the \\texttt{ssplot} function to draw observations and the most probable hidden state paths given the model.'>>=
+<<'seqmppplot', fig.width=7, fig.height=5.5, fig.keep='last', cache=TRUE, fig.cap='Using the \\texttt{ssplot} function to draw observations and the most probable hidden state paths given the model.'>>=
 ssplot(
   mc_fit$model, plots = "both", type = "I", sortv = "mds.hidden",
   xtlab = 15:30, xlab = "Age", title = "Observed and hidden state sequences")
@@ -578,7 +576,7 @@ MHMMs are fitted in a similar way to HMMs using the \texttt{build\_mhmm}\index{b
 
 Even though missing observations can be handled in sequences, the covariates must be completely observed for each subject. Subjects with missing covariates are easily dropped from the data set with the \texttt{complete.cases} function.
 
-<<covariates, cache=TRUE>>=
+<<'covariates', cache=TRUE>>=
 # Starting values for initial state probabilities
 initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
 initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
@@ -704,7 +702,7 @@ The \texttt{summary}\index{summaryMHMM@\texttt{summary.mhmm}} method computes su
 
 There are two types of standard errors which can be computed for regression coefficients. The conditional standard errors can be computed using analytical formulas for Hessian, but these do not take account the estimation uncertainty regarding the other model parameters. For unconditional standard errors which take account of possible correlation between the estimates of $\beta$ and other model parameters, the Hessian is computed using finite difference approximation of the jacobian of the analytical gradients. Naturally, the latter option is computationally more demanding, but it should still be a preferred option in final analysis as it gives more realistic results.
 
-<<parameters, cache=TRUE>>=
+<<'parameters', cache=TRUE>>=
 summary(fit_mhmm$model, conditional_se = FALSE)
 
 @
@@ -718,7 +716,7 @@ It is possible to convert a \texttt{mhmm} object into a list of separate \texttt
 
 Also MHMMs are plotted with the \texttt{plot}\index{plot.mhmm@\texttt{plot.mhmm}} method. The user can choose between an interactive mode (\texttt{interactive=TRUE}), where the model for each cluster is plotted separately, and a combined plot with all models in one plot. The clusters are determined according to the \texttt{posterior\_probs}\index{posteriorProbs@\texttt{posterior\_probs}} function, which is called automatically. Clusters with no subjects get removed from the plot, and the function gives a warning. With the \texttt{which.plots} argument the user can choose which clusters to plot.
 
-<<MHMMplot, fig.width=5.5, fig.height=7, dev.args=list(pointsize=10), fig.keep='last', cache=TRUE>>=
+<<'MHMMplot', fig.width=5.5, fig.height=7, fig.keep='last', cache=TRUE>>=
 plot(
   fit_mhmm$model, interactive = FALSE, which.plots = 2:3, nrow = 2,
   legend.prop = 0.35, cex.legend = 1.5, edge.label.cex = 1.5,
@@ -727,7 +725,7 @@ plot(
 
 The equivalent to the \texttt{ssplot} function for MHMMs is called \texttt{mssplot}\index{mssplot@\texttt{mssplot}}. It plots stacked sequence plots separately for each (chosen) cluster. If the user asks to plot more than one cluster, the function is interactive by default. If \texttt{ask = TRUE}, the cluster plots are chosen one by one by selecting their numbers from the menu; otherwise they are plotted in the order they appear in the \texttt{mhmm} object.
 
-<<MHMMssplot, fig.width=5.5, fig.height=5, dev.args=list(pointsize=10), fig.keep='last', cache=TRUE>>=
+<<'MHMMssplot', fig.width=5.5, fig.height=5, fig.keep='last', cache=TRUE>>=
 mssplot(fit_mhmm$model, plots = "both", ask = FALSE, which.plots = 1)
 
 @
