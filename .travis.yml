@@ -3,7 +3,7 @@ sudo: required
 
 warnings_are_errors: false
 
-r_build_args: "--resave-data --no-build-vignettes"
+r_build_args: "--resave-data"
 
 r_check_args: "--as-cran --no-manual"
 
