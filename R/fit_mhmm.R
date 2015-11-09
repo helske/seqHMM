@@ -63,8 +63,7 @@
 #' 
 #' # Single-channel
 #' 
-#' require(TraMineR)
-#' data(mvad)
+#' data(mvad, package = "TraMineR")
 #' 
 #' mvad.alphabet <- c(
 #'   "employment", "FE", "HE", "joblessness", "school", "training")
@@ -121,9 +120,9 @@
 #' 
 #' 
 #' # Fitting the model with the EM algorithm
-#' fit_mvad <- fit_mhmm(
-#'   init_mhmm_mvad, local_step = FALSE)
+#' fit_mvad <- fit_mhmm(init_mhmm_mvad, local_step = FALSE, log_space = FALSE)
 #' fit_mvad$logLik # -14960.03
+#' 
 #' \dontrun{
 #' # Run EM algorithm 25 times with simulated starting values
 #' set.seed(321)
@@ -135,7 +134,6 @@
 #' 
 #' # Multichannel
 #' 
-#' require(TraMineR)
 #' data(biofam3c)
 #' 
 #' ## Building sequence objects
@@ -265,14 +263,14 @@
 #'   channel_names = c("Marriage", "Parenthood", "Residence"),
 #'   state_names = list(paste("State", 1:4), paste("State", 1:4), 
 #'                      paste("State", 1:6)))
-#'                      
+#'  
+#' \dontrun{                    
 #' # Fitting the model with different settings
 #' 
 #' # Only EM with default values
 #' mhmm_1 <- fit_mhmm(init_mhmm_bf, local_step = FALSE)
 #' mhmm_1$logLik # -12713.08
 #' 
-#' \dontrun{
 #' # EM with LBFGS
 #' mhmm_2 <- fit_mhmm(init_mhmm_bf)
 #' mhmm_2$logLik # -12713.08
