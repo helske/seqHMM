@@ -1,0 +1,8 @@
+%\VignetteIndexEntry{Using the \texttt{seqHMM} package for mixture hidden Markov models}
+%\VignetteEngine{R.rsp::asis}
+%\VignetteKeyword{multichannel sequences}
+%\VignetteKeyword{categorical time series}
+%\VignetteKeyword{visualizing sequence data}
+%\VignetteKeyword{latent Markov models}
+%\VignetteKeyword{latent class models}
+%\VignetteKeyword{visualizing models}

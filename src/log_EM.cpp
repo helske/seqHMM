@@ -117,7 +117,7 @@ List log_EM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
     }
 
     double tmp = sum(ll);
-    change = (tmp - sumlogLik) / (abs(sumlogLik) + 0.1);
+    change = (tmp - sumlogLik) / (std::abs(sumlogLik) + 0.1);
     sumlogLik = tmp;
 
     if (trace > 1) {

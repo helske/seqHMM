@@ -4,4 +4,5 @@
 ^.*\.project
 ^\.travis\.yml$
 ^README.md$
-^Examples$
+Examples
+manual
