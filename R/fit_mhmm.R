@@ -289,7 +289,7 @@
 
 fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE, 
   control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1, 
-  log_space = TRUE, ...){
+  log_space = FALSE, ...){
 
   
   if(!inherits(model, "mhmm"))

@@ -196,7 +196,7 @@
 #' 
 fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE, 
   control_em=list(), control_global=list(), 
-  control_local=list(), lb, ub, threads = 1, log_space = TRUE, ...){
+  control_local=list(), lb, ub, threads = 1, log_space = FALSE, ...){
   
   if(!inherits(model, "hmm"))
     stop("Argument model must be an object of class 'hmm'.")

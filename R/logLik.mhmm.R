@@ -14,7 +14,7 @@
 #' @return Log-likelihood of hidden Markov model.
 #' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building and 
 #'   fitting mixture Hidden Markov models.
-logLik.mhmm<-function(object, partials = FALSE, threads = 1, log_space = TRUE, ...){
+logLik.mhmm<-function(object, partials = FALSE, threads = 1, log_space = FALSE, ...){
   
   if (threads < 1) stop ("Argument threads must be a positive integer.")
   

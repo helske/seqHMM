@@ -24,4 +24,7 @@ default(none) shared(alpha, scales, obs, init, emission, transition)
       alpha.slice(k).col(t) /= scales(t, k);
     }
   }
+  if (scales.min() < 1e-150) {
+    Rcpp::warning("Some of the scaling factors are smaller than 1e-150, results are numerically unstable.");
+  }
 }

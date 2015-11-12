@@ -13,11 +13,11 @@
 #' @param ... Additional arguments to function \code{jacobian} of \code{numDeriv} package.
 #' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater 
-#' numerical stability at cost of decreased computational performance Default is \code{TRUE}.
+#' numerical stability at cost of decreased computational performance Default is \code{FALSE}.
 #' @return Matrix containing the standard errors for coefficients.
 #' @export
 #'
-vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = TRUE, ...){
+vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = FALSE, ...){
   if (conditional) {
     #matrix(c(rep(0,model$n_covariates),
     #  sqrt(diag(varcoef(model$coefficients, model$X, model$n_states)))),
