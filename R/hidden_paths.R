@@ -27,7 +27,6 @@
 
 hidden_paths <- function(model){
   
-  ll <- logLik(model, partials = TRUE)
   if(inherits(model,"mhmm")){
     model <- combine_models(model)
     mix <- TRUE
