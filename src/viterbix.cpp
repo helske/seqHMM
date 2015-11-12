@@ -26,8 +26,6 @@ List viterbix(NumericVector transitionMatrix, NumericVector emissionArray,
   arma::umat q(obs.n_rows, obs.n_cols);
   arma::vec logp(obs.n_rows);
 
-  arma::mat delta(emission.n_rows, obs.n_cols);
-  arma::umat phi(emission.n_rows, obs.n_cols);
 
   int qn = coefs.nrow();
   arma::mat coef(coefs.begin(), qn, numberOfStates.size());
@@ -39,6 +37,9 @@ List viterbix(NumericVector transitionMatrix, NumericVector emissionArray,
   lweights = log(lweights);
 
   for (unsigned int k = 0; k < obs.n_rows; k++) {
+    arma::mat delta(emission.n_rows, obs.n_cols);
+    arma::umat phi(emission.n_rows, obs.n_cols);
+    
     delta.col(0) = init + reparma(lweights.col(k), numberOfStates);
     for (unsigned int r = 0; r < emission.n_slices; r++) {
       delta.col(0) += emission.slice(r).col(obs(k, 0, r));

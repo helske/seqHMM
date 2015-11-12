@@ -67,15 +67,15 @@ summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, log_
   } else {
     for (j in 1:object$n_sequences) {
       p <- 0
-    for (i in 1:object$n_clusters) {
+      for (i in 1:object$n_clusters) {
         posterior_cluster_probabilities[j,i] <- exp(logSumExp(fw[(p+1):(p+object$n_states[i]), j]) - partial_ll[j])
         p <- p + object$n_states[i]
       }
-
+      
     }
   }
   most_probable_cluster <- factor(apply(posterior_cluster_probabilities, 1, which.max), 
-    levels = 1:object$n_clusters, labels = object$cluster_names)
+                                  levels = 1:object$n_clusters, labels = object$cluster_names)
   
   
   clProbs <- matrix(NA, nrow = object$n_clusters, ncol = object$n_clusters)
