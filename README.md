@@ -156,17 +156,15 @@ bhmm <- build_hmm(
   emission_probs = list(emiss_marr, emiss_child, emiss_left),
   channel_names = c("Marriage", "Parenthood", "Residence"))
 
-# Fitting the HMM in two estimation steps:
+# Fitting the HMM:
 # step 1) EM algorithm
-# step 3) local optimization (default: LBFGS) for "final polishing"
 hmm <- fit_hmm(bhmm)
 hmm$logLik
 # -16854.16
 
 # EM + 50 restarts with random starting values for emission probabilities
-hmm2 <- fit_hmm(
-  bhmm, control_em = list(restarts = 50, restart_transition = FALSE, 
-                          restart_emission = TRUE))
+hmm2 <- fit_hmm(bhmm, 
+  control_em = list(restart = list(times = 50, transition = FALSE, emission = TRUE))
 hmm2$logLik
 # -16854.16
 
@@ -176,7 +174,7 @@ hmm2$logLik
 # step 3) local optimization (default: LBFGS) for "final polishing"
 # Note: By default, estimation time limited to 60 seconds in step 2.
 # Setting 3000 evaluations with unlimited time
-hmm3 <- fit_hmm(bhmm, global = TRUE, control_global = list(maxeval = 3000, maxtime = 0))
+hmm3 <- fit_hmm(bhmm, global_step = TRUE, local_step = TRUE, control_global = list(maxeval = 3000, maxtime = 0))
 hmm3$logLik
 # -16854.16
 
@@ -465,7 +463,7 @@ mhmm <- fit_mhmm(bmhmm)
 
 The `summary` method computes summaries of the MHMM, e.g. standard errors for covariates and prior and posterior probabilities for subjects. A `print` method shows some summaries of these: estimates and standard errors for covariates, log-likelihood and BIC, information on most probable clusters and prior and posterior probabilities. Parameter estimates for transitions, emissions, and initial probabilities are omitted by default. 
 
-The classification table shows the mean probabilities of belonging to each cluster by the most probable cluster. The most probable cluster is determined by the posterior probabilities (or the most probable hidden state paths given by the `hidden_paths` function). A good model shoud have high proportions in the diagonal. Here, for individuals assigned to cluster 1, the average probability for cluster 1 is 0.84, 0.16 for cluster 2, and close to 0 for cluster 3. The highest probability for the assigned cluster is 0.93 for cluster 3.
+The classification table shows the mean probabilities of belonging to each cluster by the most probable cluster. The most probable cluster is determined by the posterior probabilities. A good model shoud have high proportions in the diagonal. Here, for individuals assigned to cluster 1, the average probability for cluster 1 is 0.84, 0.16 for cluster 2, and close to 0 for cluster 3. The highest probability for the assigned cluster is 0.93 for cluster 3.
 
 ```
 summ_mhmm <- summary(mhmm$model)
