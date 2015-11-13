@@ -118,67 +118,12 @@ bhmm_mvad <- build_hmm(
 )
 
 # Fitting with the EM algorithm
-hmm_mvad <- fit_hmm(
-  bhmm_mvad, em_step = TRUE,
-  global_step = FALSE, local_step = FALSE
-  )
+hmm_mvad <- fit_hmm(bhmm_mvad)
 
 
 ##### Multichannel biofam3c data #####
 
-# Starting values for emission matrices
-B_marr <- matrix(NA, nrow=4, ncol=3)
-B_marr[1,] <- seqstatf(marr.seq[, 1:4])[, 2] + 0.1
-B_marr[2,] <- seqstatf(marr.seq[, 5:8])[, 2] + 0.1
-B_marr[3,] <- seqstatf(marr.seq[, 9:12])[, 2] + 0.1
-B_marr[4,] <- seqstatf(marr.seq[, 13:16])[, 2] + 0.1
-B_marr <- B_marr / rowSums(B_marr)
-
-B_child <- matrix(NA, nrow=4, ncol=2)
-B_child[1,] <- seqstatf(child.seq[, 1:4])[, 2] + 0.1
-B_child[2,] <- seqstatf(child.seq[, 5:8])[, 2] + 0.1
-B_child[3,] <- seqstatf(child.seq[, 9:12])[, 2] + 0.1
-B_child[4,] <- seqstatf(child.seq[, 13:16])[, 2] + 0.1
-B_child <- B_child / rowSums(B_child)
-
-B_left <- matrix(NA, nrow=4, ncol=2)
-B_left[1,] <- seqstatf(left.seq[, 1:4])[, 2] + 0.1
-B_left[2,] <- seqstatf(left.seq[, 5:8])[, 2] + 0.1
-B_left[3,] <- seqstatf(left.seq[, 9:12])[, 2] + 0.1
-B_left[4,] <- seqstatf(left.seq[, 13:16])[, 2] + 0.1
-B_left <- B_left / rowSums(B_left)
-
-# Initial values for transition matrix
-A <- matrix(c(0.9, 0.06, 0.03, 0.01,
-              0,    0.9, 0.07, 0.03,
-              0,      0,  0.9,  0.1,
-              0,      0,    0,    1), nrow = 4, ncol = 4, byrow = TRUE)
-
-# Initial values for initial state probabilities
-initial_probs <- c(0.9, 0.07, 0.02, 0.01)
-
-# Building hidden Markov model with initial parameter values
-bhmm_biofam <- build_hmm(
-  observations = list(child.seq, marr.seq, left.seq),
-  transition_probs = A,
-  emission_probs = list(B_child, B_marr, B_left),
-  initial_probs = initial_probs
-  )
-
-# Fitting with default steps:
-# Step 1) EM algorithm
-# Step 2) Global optimization via MLSL_LDS with LBFGS as local optimizer;
-#         3000 evaluations, unlimited time
-# Step 3) Local optimization with LBFGS algorithm for "final polishing";
-#         3000 evaluations, unlimited time
-# Note: estimation time is limited to 60 seconds by default
-
-hmm_biofam <- fit_hmm(
-  bhmm_biofam,
-  control_global = list(maxeval = 3000, maxtime = 0),
-  control_local = list(maxeval = 3000, maxtime = 0)
-  )
-
+# see ?fit_hmm
 
 
 ###############################################################
@@ -221,9 +166,7 @@ bmhmm_mvad <- build_mhmm(
 )
 
 # Fitting a MHMM with the EM algorithm
-mhmm_mvad <- fit_mhmm(
-  bmhmm_mvad, em_step = TRUE, global_step = FALSE, local_step = FALSE
-  )
+mhmm_mvad <- fit_mhmm(bmhmm_mvad)
 
 
 ##### Multichannel biofam3c data #####
@@ -329,22 +272,7 @@ bmhmm_biofam <- build_mhmm(
   )
 
 # Fitting the model with the EM algorithm
-mhmm_biofam <- fit_mhmm(
-  bmhmm_biofam, em_step = TRUE, global_step = FALSE, local_step = FALSE
-  )
-
-# Fitting with default steps
-# Step 1) EM algorithm
-# Step 2) Global optimization via MLSL_LDS with LBFGS as local optimizer;
-#         3000 evaluations, unlimited time
-# Step 3) Local optimization with LBFGS algorithm for "final polishing";
-#         3000 evaluations, unlimited time
-# Note: estimation time limited to 60 seconds by default
-
-mhmm_biofam <- fit_mhmm(
-  control_em = list(maxeval = 10), control_global = list(maxeval = 3000, maxtime = 0),
-  control_local = list(maxeval = 3000, maxtime = 0)
-  )
+mhmm_biofam <- fit_mhmm(bmhmm_biofam)
 
 
 ###############################################################
