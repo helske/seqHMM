@@ -70,7 +70,7 @@
 #' 
 #' # Run EM algorithm 25 times with simulated starting values
 #' set.seed(321)
-#' fit_mvad <- fit_mhmm(init_mhmm_mvad, control_em = list(restarts = 25))
+#' fit_mvad <- fit_mhmm(init_mhmm_mvad, control_em = list(restart = list(times = 25)))
 #' fit_mvad$logLik # -14533.7
 #' 
 #' hmm_mvad <- trim_hmm(fit_mvad$model, zerotol = 1e-4)

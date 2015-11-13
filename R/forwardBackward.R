@@ -7,12 +7,13 @@
 #' @param model Hidden Markov model of class \code{hmm}.
 #' @param forward_only If \code{TRUE}, only forward probabilities are computed. Default is \code{FALSE}.
 #' @param log_space Compute forward and backward probabilities in logarithmic scale instead of scaling.  Default is \code{FALSE}
+#' @param threads Number of threads used in parallel computing. Default is 1.
 #' @return List with components 
 #'   \item{forward_probs}{Scaled forward probabilities, i.e. probability of state given observations up to that time point. } 
 #'   \item{backward_probs}{Scaled backward probabilities. } 
 #'   \item{scaling_factors}{Sum of non-scaled forward probabilities at each time point. Only computed if \code{log_space = FALSE}.} 
 #'   In case of multiple observations, these are computed independently for each sequence.
-forward_backward <- function(model, forward_only = FALSE, log_space = FALSE){
+forward_backward <- function(model, forward_only = FALSE, log_space = FALSE, threads = 1){
   if(inherits(model,"mhmm")){
     mix <- TRUE
     model <- combine_models(model)
@@ -36,18 +37,18 @@ forward_backward <- function(model, forward_only = FALSE, log_space = FALSE){
   if (mix) {
     if (!log_space) {
       out <- forwardbackwardx(model$transition_probs, emissionArray, 
-        model$initial_probs, obsArray, model$coefficients,model$X,model$n_states_in_clusters, forward_only)
+        model$initial_probs, obsArray, model$coefficients,model$X,model$n_states_in_clusters, forward_only, threads)
     } else {
       out <- log_forwardbackwardx(model$transition_probs, emissionArray, 
-        model$initial_probs, obsArray, model$coefficients,model$X,model$n_states_in_clusters, forward_only)
+        model$initial_probs, obsArray, model$coefficients,model$X,model$n_states_in_clusters, forward_only, threads)
     }
   } else{
     if (!log_space) {
       out <- forwardbackward(model$transition_probs, emissionArray, 
-        model$initial_probs, obsArray, forward_only)
+        model$initial_probs, obsArray, forward_only, threads)
     } else {
       out <- log_forwardbackward(model$transition_probs, emissionArray, 
-        model$initial_probs, obsArray, forward_only)
+        model$initial_probs, obsArray, forward_only, threads)
     }
   }
   
