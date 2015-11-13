@@ -1,7 +1,4 @@
 #include "seqHMM.h"
-using namespace Rcpp;
-
-// [[Rcpp::depends(RcppArmadillo)]]
 
 unsigned int optCoef(arma::mat& weights, const arma::icube& obs, const arma::cube& emission,
     const arma::mat& initk, const arma::cube& beta, const arma::mat& scales, arma::mat& coef,

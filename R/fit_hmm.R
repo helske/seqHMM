@@ -14,21 +14,27 @@
 #' @param global_step Logical, use global optimization via 
 #'   \code{\link{nloptr}} (possibly after the EM step). The default is \code{FALSE}.
 #'@param local_step Logical, use local optimization via 
-#'   \code{\link{nloptr}} (possibly after the EM and/or global steps). The default is \code{TRUE}.
+#'   \code{\link{nloptr}} (possibly after the EM and/or global steps). The default is \code{FALSE}.
 #' @param control_em Optional list of control parameters for for EM algorithm. 
 #'   Possible arguments are \describe{ 
-#'   \item{maxeval}{Maximum number of iterations, default is 100.} 
+#'   \item{maxeval}{Maximum number of iterations, default is 1000.} 
 #'   \item{print_level}{Level of printing. Possible values are 0 
 #'   (prints nothing), 1 (prints information at start and end of algorithm), and
 #'   2 (prints at every iteration).} 
 #'   \item{reltol}{Relative tolerance for convergence defined as \eqn{(logLik_new - logLik_old)/(abs(logLik_old)+0.1)}. 
-#'   Default is 1e-8.}
-#'   \item{restarts}{Number of restarts of EM algorithm using random initial values. Default is 0. }
-#'   \item{restart_transition}{Logical, should the initial transition 
-#'   probabilities be varied. Default is \code{TRUE}. }
-#'   \item{restart_emission}{Logical, should the initial emission 
-#'   probabilities be varied. Default is \code{TRUE}. }
-#'   \item{sd_restart}{Standard deviation for \code{rnorm} used in restarting. Default is 0.25.} }
+#'   Default is 1e-12.}
+#'   \item{restart}{Optional list containing options for possible EM restarts with following components:
+#'   \describe{
+#'   \item{times}{Number of restarts of EM algorithm using random initial values. Default is 0 i.e. no restarts. }
+#'   \item{transition}{Logical, should the initial transition probabilities be varied. Default is \code{TRUE}. }
+#'   \item{emission}{Logical, should the initial emission probabilities be varied. Default is \code{TRUE}. }
+#'   \item{sd}{Standard deviation for \code{rnorm} used in randomizing. Default is 0.25.}
+#'   \item{maxeval}{Maximum number of iterations, default is 100.} 
+#'   \item{print_level}{Level of printing in restarted EM steps. Defaults to \code{control_em$print_level}. } 
+#'   \item{reltol}{Relative tolerance for convergence in restarted EM steps. Default is 1e-8.}
+#'   }
+#'   }
+#'   }
 #' @param control_global Optional list of additional arguments for 
 #'   \code{\link{nloptr}} argument \code{opts}. The default values are
 #'   \describe{
@@ -48,7 +54,7 @@
 #'   }
 #' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater 
-#' numerical stability at cost of decreased computational performance Default is \code{TRUE}.
+#' numerical stability at cost of decreased computational performance. Default is \code{FALSE}.
 #' @param ... Additional arguments to nloptr
 #' @return List with components \item{model}{Estimated model. } 
 #'   \item{logLik}{Log-likelihood of the estimated model. } 
@@ -157,46 +163,49 @@
 #' # Fitting the model with different optimization schemes
 #' 
 #' # Only EM with default values
-#' hmm_1 <- fit_hmm(
-#'   init_hmm_bf, local_step = FALSE)
+#' hmm_1 <- fit_hmm(init_hmm_bf)
 #' hmm_1$logLik # -24179.1
 #' 
 #' \dontrun{
 #' 
-#' # EM with LBFGS
-#' hmm_2 <- fit_hmm(init_hmm_bf)
-#' hmm_2$logLik # -23017.97
-#' 
 #' # Only LBFGS
-#' hmm_3 <- fit_hmm(init_hmm_bf, em_step = FALSE, local_step = TRUE)
-#' hmm_3$logLik # -22267.75
+#' hmm_2 <- fit_hmm(init_hmm_bf, em_step = FALSE, local_step = TRUE)
+#' hmm_2$logLik # -22267.75
 #' 
 #' # Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
 #' # This can be slow, use parallel computing by adjusting threads argument
-#' # (threads = 1 for portability issues)
-#' hmm_4 <- fit_hmm(
-#'   init_hmm_bf, em_step = FALSE, global_step = TRUE, 
-#'   control_global = list(maxeval = 5000, maxtime = 0), threads = 8)
-#' hmm_4$logLik # -21675.4
+#' # (here threads = 1 for portability issues)
+#' hmm_3 <- fit_hmm(
+#'   init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE,
+#'   control_global = list(maxeval = 5000, maxtime = 0), threads = 1)
+#' hmm_3$logLik # -22267.75
 #' 
 #' # EM with restarts, much faster than MLSL
 #' set.seed(123)
-#' hmm_5 <- fit_hmm(init_hmm_bf, control_em = list(restarts = 5, print_level = 1), threads = 1)
-#' hmm_5$logLik # -21675.4
+#' hmm_4 <- fit_hmm(init_hmm_bf, control_em = list(restarts = 5, print_level = 1), threads = 1)
+#' hmm_4$logLik # -21675.4
 #' 
 #' #' # Global optimization via STOGO with LBFGS as local optimizer and final polisher
 #' # This can be slow, use parallel computing by adjusting threads argument
-#' # (threads = 1 for portability issues)
+#' # (here threads = 1 for portability issues)
 #' set.seed(123)
-#' hmm_6 <- fit_hmm(
-#'    init_hmm_bf, em_step = FALSE, global_step = TRUE,
-#' control_global = list(algorithm = "NLOPT_GD_STOGO", maxeval = 2500, maxtime = 0), threads = 8)
-#' hmm_6$logLik # -21675.4
+#' hmm_5 <- fit_hmm(
+#'    init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE,
+#' control_global = list(algorithm = "NLOPT_GD_STOGO", maxeval = 2500, maxtime = 0), threads = 1)
+#' hmm_5$logLik # -22131.76
+#' 
+#' # Using log_space results better optimum (same is also true for MLSL example above):
+#' #' set.seed(123)
+#' hmm_5b <- fit_hmm(
+#'    init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE, log_space = TRUE,
+#' control_global = list(algorithm = "NLOPT_GD_STOGO", maxeval = 2500, maxtime = 0), threads = 1)
+#' hmm_5b$logLik # -21675.4
+
 #' }
 #' 
-fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE, 
-  control_em=list(), control_global=list(), 
-  control_local=list(), lb, ub, threads = 1, log_space = FALSE, ...){
+fit_hmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = FALSE, 
+  control_em=list(), control_global=list(), control_local=list(), lb, ub, 
+  threads = 1, log_space = FALSE, ...){
   
   if(!inherits(model, "hmm"))
     stop("Argument model must be an object of class 'hmm'.")
@@ -217,9 +226,8 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
     obsArray[,,i][obsArray[,,i]>model$n_symbols[i]]<-model$n_symbols[i]
   }
   
-  if(em_step){
-    em.con <- list(print_level = 0, maxeval = 100, reltol = 1e-8, restarts = 0,
-      restart_transition = TRUE, restart_emission = TRUE, sd_restart = 0.25)
+  if (em_step) {
+    em.con <- list(print_level = 0, maxeval = 1000, reltol = 1e-12, restart = NULL)
     nmsC <- names(em.con)  
     em.con[(namc <- names(control_em))] <- control_em
     if (length(noNms <- namc[!namc %in% nmsC])) 
@@ -229,14 +237,25 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
     for(i in 1:model$n_channels)
       emissionArray[,1:model$n_symbols[i],i]<-model$emission_probs[[i]]
     if (!log_space) {
-    resEM<-EM(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
-      model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
+      resEM<-EM(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
+        model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
     } else {
       resEM <- log_EM(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
         model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
     }
     
-    if (em.con$restarts > 0 & (em.con$restart_transition | em.con$restart_emission)) {
+    if (!is.null(em.con$restart)) {
+      restart.con <- list(times = 0, print_level = em.con$print_level, maxeval = 100, reltol = 1e-8,
+        transition = TRUE, emission = TRUE, sd = 0.25)
+      nmsC <- names(restart.con)  
+      restart.con[(namc <- names(control_em$restart))] <- control_em$restart
+      if (length(noNms <- namc[!namc %in% nmsC])) 
+        warning("Unknown names in control_em$restart: ", paste(noNms, collapse = ", "))
+    }
+    
+    
+    if (!is.null(em.con$restart) && restart.con$times > 0 && 
+        (restart.con$transition | restart.con$emission)) {
       random_emiss <- resEM$emissionArray
       random_emiss[(random_emiss < 1e-4) & (emissionArray >= 1e-4)] <- 1e-4
       for (j in 1:model$n_channels) {
@@ -247,54 +266,62 @@ fit_hmm<-function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
       random_trans <- random_trans / rowSums(random_trans)
       
       
-      if (em.con$restart_transition) {
+      if (restart.con$transition) {
         nz_trans <- (random_trans > 0 & random_trans < 1)
         np_trans <- sum(nz_trans)
         base_trans <- random_trans[nz_trans]
       }
-      if (em.con$restart_emission) {
+      if (restart.con$emission) {
         nz_emiss <- (random_emiss > 0 & random_emiss < 1)
         np_emiss <- sum(nz_emiss)
         base_emiss <- random_emiss[nz_emiss]
       }
       
-      for (i in 1:em.con$restarts) {
-        if (em.con$restart_transition) {
-          random_trans[nz_trans] <- abs(base_trans + rnorm(np_trans, sd = em.con$sd_restart))
+      for (i in 1:restart.con$times) {
+        if (restart.con$transition) {
+          random_trans[nz_trans] <- abs(base_trans + rnorm(np_trans, sd = restart.con$sd))
           random_trans <- random_trans / rowSums(random_trans)
         }
-        if (em.con$restart_emission) {
-          random_emiss[nz_emiss] <- abs(base_emiss + rnorm(np_emiss, sd = em.con$sd_restart))
+        if (restart.con$emission) {
+          random_emiss[nz_emiss] <- abs(base_emiss + rnorm(np_emiss, sd = restart.con$sd))
           for (j in 1:model$n_channels) {
             random_emiss[,1:model$n_symbols[j],j] <- random_emiss[,1:model$n_symbols[j],j] / rowSums(random_emiss[,1:model$n_symbols[j],j])
           }
         }
         if (!log_space) {
           resEMi <- EM(random_trans, random_emiss, model$initial_probs, obsArray, 
-            model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
+            model$n_symbols, restart.con$maxeval, restart.con$reltol,em.con$print_level, threads)
         } else {
           resEMi <- log_EM(random_trans, random_emiss, model$initial_probs, obsArray, 
-            model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
-          }
+            model$n_symbols, restart.con$maxeval, restart.con$reltol,em.con$print_level, threads)
+        }
         
         if (resEMi$logLik > resEM$logLik) {
           resEM <- resEMi
         }
         
       }
-      
+      if (em.con$reltol < restart.con$reltol) {
+        if (!log_space) {
+          resEM <- EM(resEM$transitionMatrix, resEM$emissionArray, resEM$initialProbs, obsArray, 
+            model$n_symbols, restart.con$maxeval, restart.con$reltol,em.con$print_level, threads)
+        } else {
+          resEM <- log_EM(resEM$transitionMatrix, resEM$emissionArray, resEM$initialProbs, obsArray, 
+            model$n_symbols, restart.con$maxeval, restart.con$reltol,em.con$print_level, threads)
+        }
+      }
     }
     
-    if(resEM$change< -1e-5)
+    if (resEM$change < -1e-5)
       warning("EM algorithm stopped due to the decreasing log-likelihood. ")
     
     
-    for(i in 1:model$n_channels)
-      model$emission_probs[[i]][]<-resEM$emissionArray[ , 1:model$n_symbols[i], i]                                     
+    for (i in 1:model$n_channels)
+      model$emission_probs[[i]][] <- resEM$emissionArray[ , 1:model$n_symbols[i], i]                                     
     
     
-    model$initial_probs[]<-resEM$initialProbs
-    model$transition_probs[]<-resEM$transitionMatrix
+    model$initial_probs[] <- resEM$initialProbs
+    model$transition_probs[] <- resEM$transitionMatrix
     ll <- resEM$logLik
   } else resEM <-NULL
   

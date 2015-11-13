@@ -5,7 +5,7 @@
 \title{Log-likelihood of the Mixture Hidden Markov Model}
 \usage{
 \method{logLik}{mhmm}(object, partials = FALSE, threads = 1,
-  log_space = TRUE, ...)
+  log_space = FALSE, ...)
 }
 \arguments{
 \item{object}{Hidden Markov model of class \code{mhmm}.}

@@ -1,13 +1,10 @@
 #include "seqHMM.h"
-using namespace Rcpp;
-
-// [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
 List log_objectivex(NumericVector transitionMatrix, NumericVector emissionArray,
     NumericVector initialProbs, IntegerVector obsArray, IntegerVector transNZ,
     IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols, NumericMatrix coefs,
-    NumericMatrix X_, IntegerVector numberOfStates, int threads = 1) {
+    NumericMatrix X_, IntegerVector numberOfStates, int threads) {
 
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
@@ -41,29 +38,41 @@ List log_objectivex(NumericVector transitionMatrix, NumericVector emissionArray,
   arma::mat transitionLog = log(transition);
   arma::cube emissionLog = log(emission);
 
+  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
+  arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
+
+  
+
+  arma::mat initk(emission.n_rows, obs.n_rows);
+  for (unsigned int k = 0; k < obs.n_rows; k++) {
+    initk.col(k) = init + reparma(weights.col(k), numberOfStates);
+  }
+  
+  log_internalForwardx(transitionLog, emissionLog, initk, obs, alpha, threads);
+  log_internalBackward(transitionLog, emissionLog, obs, beta, threads);
+  
+  arma::vec ll(obs.n_rows);
+  for (unsigned int k = 0; k < obs.n_rows; k++) {
+    ll(k) = logSumExp(alpha.slice(k).col(obs.n_cols - 1));
+  }
+  
   IntegerVector cumsumstate = cumsum(numberOfStates);
 
   arma::mat gradmat(
       arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ) + (numberOfStates.size() - 1) * q,
       obs.n_rows, arma::fill::zeros);
-  
-arma::vec llk(obs.n_rows);
+
 
 #pragma omp parallel for if(obs.n_rows >= threads) schedule(static) num_threads(threads) \
-  default(none) shared(q, gradmat, nSymbols, ANZ, BNZ, INZ, llk,        \
+  default(none) shared(q, gradmat, nSymbols, ANZ, BNZ, INZ, ll,        \
     numberOfStates, cumsumstate, obs, init, X, weights, transition, emission, \
-    initLog, transitionLog, emissionLog)
+    initLog, transitionLog, emissionLog, initk, alpha, beta)
   for (int k = 0; k < obs.n_rows; k++) {
     int countgrad = 0;
-    arma::mat alpha(emission.n_rows, obs.n_cols); //m,n,k
-    arma::mat beta(emission.n_rows, obs.n_cols); //m,n,k
-    arma::vec initk = initLog + reparma(weights.col(k), numberOfStates);
+
     
-    log_internalForwardx_single(transitionLog, emissionLog, initk, obs, alpha, k);
-    log_internalBackward_single(transitionLog, emissionLog, obs, beta, k);
-    
-    double ll = logSumExp(alpha.col(obs.n_cols - 1));
-    llk(k) = ll;
+
+
     // transitionMatrix
     if (arma::accu(ANZ) > 0) {
       for (int jj = 0; jj < numberOfStates.size(); jj++) {
@@ -89,8 +98,8 @@ arma::vec llk(obs.n_rows);
                   tmp += emissionLog(cumsumstate(jj) - numberOfStates(jj) + j, obs(k, t + 1, r), r);
                 }
                 gradArow(j) += exp(
-                    alpha(cumsumstate(jj) - numberOfStates(jj) + i, t) + tmp
-                        + beta(cumsumstate(jj) - numberOfStates(jj) + j, t + 1) - ll);
+                    alpha(cumsumstate(jj) - numberOfStates(jj) + i, t, k) + tmp
+                        + beta(cumsumstate(jj) - numberOfStates(jj) + j, t + 1, k) - ll(k));
 
               }
 
@@ -123,7 +132,7 @@ arma::vec llk(obs.n_rows);
                     tmp += emissionLog(i, obs(k, 0, r2), r2);
                   }
                 }
-                gradBrow(j) += exp(initk(i) + tmp + beta(i, 0) - ll);
+                gradBrow(j) += exp(initk(i, k) + tmp + beta(i, 0, k) - ll(k));
               }
               for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
                 if (obs(k, t + 1, r) == j) {
@@ -135,7 +144,7 @@ arma::vec llk(obs.n_rows);
                   }
                   gradBrow(j) += arma::accu(
                       exp(
-                          alpha.col(t) + tmp + transitionLog.col(i) + beta(i, t + 1) - ll));
+                          alpha.slice(k).col(t) + tmp + transitionLog.col(i) + beta(i, t + 1, k) - ll(k)));
                 }
               }
 
@@ -160,7 +169,7 @@ arma::vec llk(obs.n_rows);
               tmp += emissionLog(cumsumstate(i) - numberOfStates(i) + j, obs(k, 0, r), r);
             }
             gradIrow(j) += exp(
-                tmp + beta(cumsumstate(i) - numberOfStates(i) + j, 0) - ll + weights(i, k));
+                tmp + beta(cumsumstate(i) - numberOfStates(i) + j, 0, k) - ll(k) + weights(i, k));
 
           }
           arma::mat gradI(numberOfStates(i), numberOfStates(i), arma::fill::zeros);
@@ -182,15 +191,15 @@ arma::vec llk(obs.n_rows);
         }
         if ((j >= (cumsumstate(jj) - numberOfStates(jj))) & (j < cumsumstate(jj))) {
           gradmat.col(k).subvec(countgrad + q * (jj - 1), countgrad + q * jj - 1) += exp(
-              tmp + beta(j, 0) - ll + initk(j)) * X.row(k).t()
+              tmp + beta(j, 0, k) - ll(k) + initk(j, k)) * X.row(k).t()
               * (1.0 - exp(weights(jj, k)));
         } else {
           gradmat.col(k).subvec(countgrad + q * (jj - 1), countgrad + q * jj - 1) -= exp(
-              tmp + beta(j, 0) - ll + initk(j)) * X.row(k).t() * exp(weights(jj, k));
+              tmp + beta(j, 0, k) - ll(k) + initk(j, k)) * X.row(k).t() * exp(weights(jj, k));
         }
       }
 
     }
   }
-  return List::create(Named("objective") = -sum(llk), Named("gradient") = wrap(-sum(gradmat, 1)));
+  return List::create(Named("objective") = -sum(ll), Named("gradient") = wrap(-sum(gradmat, 1)));
 }

@@ -1,12 +1,9 @@
 #include "seqHMM.h"
-using namespace Rcpp;
-
-// [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
 List log_forwardbackwardx(NumericVector transitionMatrix, NumericVector emissionArray,
     NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_,
-    IntegerVector numberOfStates, bool forwardonly, int threads = 1) {
+    IntegerVector numberOfStates, bool forwardonly, int threads) {
 
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r

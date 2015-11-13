@@ -1,5 +1,4 @@
 #include "seqHMM.h"
-using namespace Rcpp;
 
 void internalBackward(const arma::mat& transition, const arma::cube& emission,
     const arma::icube& obs, arma::cube& beta, const arma::mat& scales, int threads) {

@@ -1,5 +1,4 @@
 #include "seqHMM.h"
-using namespace Rcpp;
 
 void log_internalForward(const arma::mat& transition, const arma::cube& emission,
   const arma::vec& init, const arma::icube& obs, arma::cube& alpha, int threads) {
