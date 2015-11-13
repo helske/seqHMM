@@ -120,7 +120,7 @@
 #' 
 #' 
 #' # Fitting the model with the EM algorithm
-#' fit_mvad <- fit_mhmm(init_mhmm_mvad)
+#' fit_mvad <- fit_mhmm(init_mhmm_mvad, control_em = list(reltol = 1e-8))
 #' fit_mvad$logLik # -14960.03
 #' 
 #' \dontrun{
