@@ -4,7 +4,7 @@
 \alias{fit_mhmm}
 \title{Estimate Parameters of Mixture Hidden Markov Model}
 \usage{
-fit_mhmm(model, em_step = TRUE, global_step = FALSE, local_step = TRUE,
+fit_mhmm(model, em_step = TRUE, global_step = FALSE, local_step = FALSE,
   control_em = list(), control_global = list(), control_local = list(),
   lb, ub, threads = 1, log_space = FALSE, ...)
 }
@@ -19,22 +19,28 @@ but is even more prone to get stuck in a local optimum.}
 \code{\link{nloptr}} (possibly after the EM step). The default is \code{FALSE}.}
 
 \item{local_step}{Logical, use local optimization via
-\code{\link{nloptr}} (possibly after the EM and/or global steps). The default is \code{TRUE}.}
+\code{\link{nloptr}} (possibly after the EM and/or global steps). The default is \code{FALSE}.}
 
 \item{control_em}{Optional list of control parameters for for EM algorithm.
 Possible arguments are \describe{
-\item{maxeval}{Maximum number of iterations, default is 100.}
+\item{maxeval}{Maximum number of iterations, default is 1000.}
 \item{print_level}{Level of printing. Possible values are 0
 (prints nothing), 1 (prints information at start and end of algorithm), and
 2 (prints at every iteration).}
 \item{reltol}{Relative tolerance for convergence defined as \eqn{(logLik_new - logLik_old)/(abs(logLik_old)+0.1)}.
-Default is 1e-8.}
-\item{restarts}{Number of restarts of EM algorithm using random initial values. Default is 0. }
-\item{restart_transition}{Logical, should the initial transition
-probabilities be varied. Default is \code{TRUE}. }
-\item{restart_emission}{Logical, should the initial emission
-probabilities be varied. Default is \code{TRUE}. }
-\item{sd_restart}{Standard deviation for \code{rnorm} used in restarting. Default is 0.25.} }}
+Default is 1e-12.}
+\item{restart}{Optional list containing options for possible EM restarts with following components:
+\describe{
+\item{times}{Number of restarts of EM algorithm using random initial values. Default is 0 i.e. no restarts. }
+\item{transition}{Logical, should the initial transition probabilities be varied. Default is \code{TRUE}. }
+\item{emission}{Logical, should the initial emission probabilities be varied. Default is \code{TRUE}. }
+\item{sd}{Standard deviation for \code{rnorm} used in randomizing. Default is 0.25.}
+\item{maxeval}{Maximum number of iterations, default is 100.}
+\item{print_level}{Level of printing in restarted EM steps. Defaults to \code{control_em$print_level}. }
+\item{reltol}{Relative tolerance for convergence in restarted EM steps. Default is 1e-8.}
+}
+}
+}}
 
 \item{control_global}{Optional list of additional arguments for
   \code{\link{nloptr}} argument \code{opts}. The default values are
@@ -63,7 +69,7 @@ Used only in the global optimization step.}
 \item{threads}{Number of threads to use in parallel computing. Default is 1.}
 
 \item{log_space}{Make computations using log-space instead of scaling for greater
-numerical stability at cost of decreased computational performance Default is \code{TRUE}.}
+numerical stability at cost of decreased computational performance. Default is \code{FALSE}.}
 
 \item{...}{Additional arguments to nloptr}
 }
@@ -181,13 +187,13 @@ init_mhmm_mvad <- build_mhmm(
 
 
 # Fitting the model with the EM algorithm
-fit_mvad <- fit_mhmm(init_mhmm_mvad, local_step = FALSE, log_space = FALSE)
+fit_mvad <- fit_mhmm(init_mhmm_mvad, control_em = list(reltol = 1e-8))
 fit_mvad$logLik # -14960.03
 
 \dontrun{
 # Run EM algorithm 25 times with simulated starting values
 set.seed(321)
-fit_mvad2 <- fit_mhmm(init_mhmm_mvad, control_em = list(restarts = 25))
+fit_mvad2 <- fit_mhmm(init_mhmm_mvad, control_em = list(restart = list(times = 25)))
 fit_mvad2$logLik # -14533.7
 }
 
@@ -329,22 +335,17 @@ init_mhmm_bf <- build_mhmm(
 # Fitting the model with different settings
 
 # Only EM with default values
-mhmm_1 <- fit_mhmm(init_mhmm_bf, local_step = FALSE)
+mhmm_1 <- fit_mhmm(init_mhmm_bf)
 mhmm_1$logLik # -12713.08
 
-# EM with LBFGS
-mhmm_2 <- fit_mhmm(init_mhmm_bf)
-mhmm_2$logLik # -12713.08
-
 # Only LBFGS
-mhmm_3 <- fit_mhmm(init_mhmm_bf, em_step = FALSE)
-mhmm_3$logLik # -12966.51
+mhmm_2 <- fit_mhmm(init_mhmm_bf, em_step = FALSE, local_step = TRUE)
+mhmm_2$logLik # -12966.51
 
 # Use EM with multiple restarts
 set.seed(123)
-mhmm_5 <- fit_mhmm(init_mhmm_bf,
-  control_em = list(restarts = 5, restart_transition = FALSE))
-mhmm_5$logLik # -12713.1
+mhmm_3 <- fit_mhmm(init_mhmm_bf, control_em = list(restart = list(times = 5, transition = FALSE)))
+mhmm_3$logLik # -12713.1
 }
 }
 \seealso{

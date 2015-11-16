@@ -1,5 +1,4 @@
 #include "seqHMM.h"
-using namespace Rcpp;
 
 #ifdef HAVE_LONG_DOUBLE
 #  define LDOUBLE long double
@@ -9,7 +8,6 @@ using namespace Rcpp;
 #  define EXPL exp
 #endif
 
-// [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 double logSumExp(const arma::vec& x) {
   unsigned int maxi = 0;

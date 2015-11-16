@@ -4,7 +4,8 @@
 \alias{forward_backward}
 \title{Forward and Backward Probabilities for Hidden Markov Model}
 \usage{
-forward_backward(model, forward_only = FALSE, log_space = FALSE)
+forward_backward(model, forward_only = FALSE, log_space = FALSE,
+  threads = 1)
 }
 \arguments{
 \item{model}{Hidden Markov model of class \code{hmm}.}
@@ -12,6 +13,8 @@ forward_backward(model, forward_only = FALSE, log_space = FALSE)
 \item{forward_only}{If \code{TRUE}, only forward probabilities are computed. Default is \code{FALSE}.}
 
 \item{log_space}{Compute forward and backward probabilities in logarithmic scale instead of scaling.  Default is \code{FALSE}}
+
+\item{threads}{Number of threads used in parallel computing. Default is 1.}
 }
 \value{
 List with components

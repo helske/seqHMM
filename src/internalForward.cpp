@@ -1,6 +1,4 @@
 #include "seqHMM.h"
-using namespace Rcpp;
-
 void internalForward(const arma::mat& transition, const arma::cube& emission, const arma::vec& init,
   const arma::icube& obs, arma::cube& alpha, arma::mat& scales, int threads) {
   
@@ -21,5 +19,8 @@ void internalForward(const arma::mat& transition, const arma::cube& emission, co
         scales(t, k) = sum(alpha.slice(k).col(t));
         alpha.slice(k).col(t) /= scales(t, k);
       }
+    }
+    if (scales.min() < 1e-100) {
+      Rcpp::warning("Some of the scaling factors are smaller than 1e-100, results can be numerically unstable.");
     }
 }

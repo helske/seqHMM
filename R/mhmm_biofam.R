@@ -142,11 +142,7 @@
 #'                      paste("State", 1:6)))
 #' 
 #' # Fitting the model
-#' fit_biofam <- fit_mhmm(init_mhmm_biofam)
-#' 
-#' # use conditional_se = FALSE for more accurate standard errors 
-#' # (these are considerebly slower to compute)
-#' summary(fit_biofam$model)
+#' mhmm_biofam <- fit_mhmm(init_mhmm_biofam)
 #' }
 #'   
 #' @seealso Examples of building and fitting MHMMs in \code{\link{build_mhmm}} and 
@@ -159,7 +155,9 @@
 #' @examples
 #' data(mhmm_biofam)
 #' 
-#' summary(mhmm_biofam)
+#' # use conditional_se = FALSE for more accurate standard errors 
+#' # (these are considerebly slower to compute)
+#' summary(mhmm_biofam$model)
 #' 
 #' \dontrun{
 #' # Plotting the model for each cluster (change with Enter)

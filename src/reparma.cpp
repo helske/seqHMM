@@ -1,7 +1,6 @@
 #include <algorithm>
 #include "seqHMM.h"
-using namespace Rcpp;
-// [[Rcpp::depends(RcppArmadillo)]]
+
 arma::vec reparma(arma::vec x, IntegerVector y) {
   int n = y.size();
   arma::vec res(sum(y));

@@ -120,13 +120,13 @@
 #' 
 #' 
 #' # Fitting the model with the EM algorithm
-#' fit_mvad <- fit_mhmm(init_mhmm_mvad, local_step = FALSE, log_space = FALSE)
+#' fit_mvad <- fit_mhmm(init_mhmm_mvad, control_em = list(reltol = 1e-8))
 #' fit_mvad$logLik # -14960.03
 #' 
 #' \dontrun{
 #' # Run EM algorithm 25 times with simulated starting values
 #' set.seed(321)
-#' fit_mvad2 <- fit_mhmm(init_mhmm_mvad, control_em = list(restarts = 25))
+#' fit_mvad2 <- fit_mhmm(init_mhmm_mvad, control_em = list(restart = list(times = 25)))
 #' fit_mvad2$logLik # -14533.7
 #' }
 #' 
@@ -268,29 +268,24 @@
 #' # Fitting the model with different settings
 #' 
 #' # Only EM with default values
-#' mhmm_1 <- fit_mhmm(init_mhmm_bf, local_step = FALSE)
+#' mhmm_1 <- fit_mhmm(init_mhmm_bf)
 #' mhmm_1$logLik # -12713.08
 #' 
-#' # EM with LBFGS
-#' mhmm_2 <- fit_mhmm(init_mhmm_bf)
-#' mhmm_2$logLik # -12713.08
-#' 
 #' # Only LBFGS
-#' mhmm_3 <- fit_mhmm(init_mhmm_bf, em_step = FALSE)
-#' mhmm_3$logLik # -12966.51
+#' mhmm_2 <- fit_mhmm(init_mhmm_bf, em_step = FALSE, local_step = TRUE)
+#' mhmm_2$logLik # -12966.51
 #' 
 #' # Use EM with multiple restarts
 #' set.seed(123)
-#' mhmm_5 <- fit_mhmm(init_mhmm_bf,
-#'   control_em = list(restarts = 5, restart_transition = FALSE))
-#' mhmm_5$logLik # -12713.1
+#' mhmm_3 <- fit_mhmm(init_mhmm_bf, control_em = list(restart = list(times = 5, transition = FALSE)))
+#' mhmm_3$logLik # -12713.1
 #' }
 #' 
 
-fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TRUE, 
+fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = FALSE, 
   control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1, 
   log_space = FALSE, ...){
-
+  
   
   if(!inherits(model, "mhmm"))
     stop("Argument model must be an object of class 'mhmm'.")
@@ -320,9 +315,8 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
   for(i in 1:model$n_channels)
     emissionArray[,1:model$n_symbols[i],i]<-model$emission_probs[[i]]
   
-  if(em_step){
-    em.con <- list(print_level = 0, maxeval=100, reltol=1e-8, restarts = 0,
-      restart_transition = TRUE, restart_emission = TRUE, sd_restart = 0.25)
+  if (em_step) {
+    em.con <- list(print_level = 0, maxeval = 1000, reltol = 1e-12, restart = NULL)
     nmsC <- names(em.con)  
     em.con[(namc <- names(control_em))] <- control_em
     if (length(noNms <- namc[!namc %in% nmsC])) 
@@ -337,7 +331,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
         model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, 
         em.con$maxeval, em.con$reltol,em.con$print_level, threads)
     }
-
+    
     
     if(resEM$error != 0){
       err_msg <- switch(resEM$error, 
@@ -345,13 +339,24 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
         "2" = "Estimation of coefficients of covariates failed due to singular Hessian.",
         "3" = "Estimation of coefficients of covariates failed due to non-finite cluster probabilities.",
         "4" = "Non-finite log-likelihood.")
-      if(!global_step && !local_step && em.con$restarts == 0){
+      if (!global_step && !local_step && em.con$restarts == 0) {
         stop(paste("EM algorithm failed:", err_msg))
       } else warning(paste("EM algorithm failed:", err_msg))
       resEM$logLik <- -Inf
     }
     
-    if (em.con$restarts > 0 & (em.con$restart_transition | em.con$restart_emission)) {
+    if (!is.null(em.con$restart)) {
+      restart.con <- list(times = 0, print_level = em.con$print_level, maxeval = 100, reltol = 1e-8,
+        transition = TRUE, emission = TRUE, sd = 0.25)
+      nmsC <- names(restart.con)  
+      restart.con[(namc <- names(control_em$restart))] <- control_em$restart
+      if (length(noNms <- namc[!namc %in% nmsC])) 
+        warning("Unknown names in control_em$restart: ", paste(noNms, collapse = ", "))
+    }
+    
+    
+    if (!is.null(em.con$restart) && restart.con$times > 0 && 
+        (restart.con$transition | restart.con$emission)) {
       if (resEM$error == 0) {
         random_emiss <- resEM$emissionArray
         random_emiss[(random_emiss < 1e-4) & (emissionArray >= 1e-4)] <- 1e-4
@@ -366,36 +371,36 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
         random_trans <- model$transition_probs
       }
       
-      if (em.con$restart_transition) {
+      if (restart.con$transition) {
         nz_trans <- (random_trans > 0 & random_trans < 1)
         np_trans <- sum(nz_trans)
         base_trans <- random_trans[nz_trans]
       }
-      if (em.con$restart_emission) {
+      if (restart.con$emission) {
         nz_emiss <- (random_emiss > 0 & random_emiss < 1)
         np_emiss <- sum(nz_emiss)
         base_emiss <- random_emiss[nz_emiss]
       }
       
-      for (i in 1:em.con$restarts) {
-        if (em.con$restart_transition) {
-          random_trans[nz_trans] <- abs(base_trans + rnorm(np_trans, sd = em.con$sd_restart))
+      for (i in 1:restart.con$times) {
+        if (restart.con$transition) {
+          random_trans[nz_trans] <- abs(base_trans + rnorm(np_trans, sd = restart.con$sd))
           random_trans <- random_trans / rowSums(random_trans)
         }
-        if (em.con$restart_emission) {
-          random_emiss[nz_emiss] <- abs(base_emiss + rnorm(np_emiss, sd = em.con$sd_restart))
+        if (restart.con$emission) {
+          random_emiss[nz_emiss] <- abs(base_emiss + rnorm(np_emiss, sd = restart.con$sd))
           for (j in 1:model$n_channels) {
             random_emiss[,1:model$n_symbols[j],j] <- random_emiss[,1:model$n_symbols[j],j] / rowSums(random_emiss[,1:model$n_symbols[j],j])
           }
         }
         if (!log_space) {
-        resEMi <- EMx(random_trans, random_emiss, model$initial_probs, obsArray, 
-          model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, em.con$maxeval, 
-          em.con$reltol,em.con$print_level, threads)
+          resEMi <- EMx(random_trans, random_emiss, model$initial_probs, obsArray, 
+            model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, restart.con$maxeval, 
+            restart.con$reltol,restart.con$print_level, threads)
         } else {
           resEMi <- log_EMx(random_trans, random_emiss, model$initial_probs, obsArray, 
-            model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, em.con$maxeval, 
-            em.con$reltol,em.con$print_level, threads) 
+            model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, restart.con$maxeval, 
+            restart.con$reltol,restart.con$print_level, threads) 
         }
         if (resEMi$error != 0) {
           err_msg <- switch(resEMi$error, 
@@ -410,8 +415,19 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
           }
         }
       }
-      
+      if (em.con$reltol < restart.con$reltol) {
+        if (!log_space) {
+          resEM <- EMx(resEM$transitionMatrix, resEM$emissionArray, resEM$initialProbs, obsArray, 
+            model$n_symbols, resEM$coef, model$X, model$n_states_in_clusters, em.con$maxeval, 
+            em.con$reltol,em.con$print_level, threads)
+        } else {
+          resEM <- log_EMx(resEM$transitionMatrix, resEM$emissionArray, resEM$initialProbs, obsArray, 
+            model$n_symbols, resEM$coef, model$X, model$n_states_in_clusters, em.con$maxeval, 
+            em.con$reltol,em.con$print_level, threads)
+        }
+      }
     }
+    
     if (resEM$error == 0) {
       if (resEM$change < -1e-5)
         warning("EM algorithm stopped due to decreasing log-likelihood. ")
@@ -472,12 +488,12 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
       x[order(x[,1]),]
     })
     
-      maxEM <- lapply(model$emission_probs,function(i) cbind(1:model$n_states,max.col(i,ties.method="first")))
-      paramEM<-lapply(1:model$n_channels,function(i) {
-        x<-rbind(emissNZ[[i]],maxEM[[i]])
-        x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
-      })
-      npEM<-sapply(paramEM,nrow)
+    maxEM <- lapply(model$emission_probs,function(i) cbind(1:model$n_states,max.col(i,ties.method="first")))
+    paramEM<-lapply(1:model$n_channels,function(i) {
+      x<-rbind(emissNZ[[i]],maxEM[[i]])
+      x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
+    })
+    npEM<-sapply(paramEM,nrow)
     
     
     maxEMvalue<-lapply(1:model$n_channels, function(i) 
@@ -540,18 +556,18 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
             transNZ, emissNZ, initNZ, model$n_symbols, 
             model$coefficients, model$X, model$n_states_in_clusters, threads)
         }
-
+        
       } else {
-        if(sum(npEM)>0){
-          for(i in 1:model$n_channels){
-            model$emission_probs[[i]][]<-emissionArray[,1:model$n_symbols[i],i]
+        if (sum(npEM) > 0) {
+          for (i in 1:model$n_channels) {
+            model$emission_probs[[i]][] <- emissionArray[, 1:model$n_symbols[i], i]
           }
         }
         model
       }
     }
     
-    if(global_step){
+    if (global_step) {
       
       if(missing(lb)){
         lb <- c(rep(-50, length(initialvalues) - npCoef), 
@@ -572,7 +588,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
       if(is.null(control_global$algorithm)){
         control_global$algorithm <- "NLOPT_GD_MLSL_LDS"
         if(is.null(control_global$local_opts)) control_global$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)
-       }
+      }
       
       globalres <- nloptr(x0 = initialvalues, eval_f = objectivef, lb = lb, ub = ub,
         opts = control_global, model = model, estimate = TRUE, ...)
@@ -605,7 +621,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = TR
     
   } else globalres <- localres <- NULL
   
-  if(model$n_channels == 1){
+  if (model$n_channels == 1) {
     model$observations <- model$observations[[1]]
     model$emission_probs <- model$emission_probs[[1]]
   }

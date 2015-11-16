@@ -1,12 +1,10 @@
 #include "seqHMM.h"
-using namespace Rcpp;
 
-// [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
 List objective(NumericVector transitionMatrix, NumericVector emissionArray,
     NumericVector initialProbs, IntegerVector obsArray, IntegerVector transNZ,
-    IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols, int threads = 1) {
+    IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols, int threads) {
 
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r

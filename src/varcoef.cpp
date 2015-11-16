@@ -1,7 +1,5 @@
 #include "seqHMM.h"
-using namespace Rcpp;
 
-// [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
 
 NumericMatrix varcoef(NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates) {
