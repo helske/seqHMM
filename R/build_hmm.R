@@ -22,7 +22,7 @@
 #'    \item{\code{initial_probs}}{A vector of initial probabilities.}
 #'    \item{\code{state_names}}{Names for hidden states.}
 #'    \item{\code{symbol_names}}{Names for observed states.}
-#'    \item{\code{channel_names}}{Names for channels of sequence data}
+#'    \item{\code{channel_names}}{Names for channels of sequence data.}
 #'    \item{\code{length_of_sequences}}{(Maximum) length of sequences.}
 #'    \item{\code{n_sequences}}{Number of sequences.}
 #'    \item{\code{n_symbols}}{Number of observed states (in each channel).}
