@@ -58,7 +58,9 @@
 #' @param ... Additional arguments to nloptr
 #' @return List with components \item{model}{Estimated model. }
 #'   \item{logLik}{Log-likelihood of the estimated model. }
-#'   \item{em_results}{Results after the EM step. }
+#'   \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations 
+#'   (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
+#'   number of estimated models with the best likelihood (\code{n_best_logLiks}). }
 #'   \item{global_results}{Results after the global step. }
 #'   \item{local_results}{Results after the local step. }
 #' @seealso \code{\link{build_hmm}} for building Hidden Markov models before
@@ -276,7 +278,8 @@ fit_hmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = FAL
         np_emiss <- sum(nz_emiss)
         base_emiss <- random_emiss[nz_emiss]
       }
-
+      
+      counter <- 1
       for (i in 1:restart.con$times) {
         if (restart.con$transition) {
           random_trans[nz_trans] <- abs(base_trans + rnorm(np_trans, sd = restart.con$sd))
@@ -296,8 +299,11 @@ fit_hmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = FAL
             model$n_symbols, restart.con$maxeval, restart.con$reltol,restart.con$print_level, threads)
         }
 
-        if (resEMi$logLik > resEM$logLik) {
+        if (!is.na(resEMi$logLik) && isTRUE(all.equal(resEMi$logLik, resEM$logLik))) {
+          counter <- counter + 1
+        } else if (!is.na(resEMi$logLik) && resEMi$logLik > resEM$logLik) {
           resEM <- resEMi
+          counter <- 1
         }
 
       }
@@ -319,7 +325,7 @@ fit_hmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = FAL
     for (i in 1:model$n_channels)
       model$emission_probs[[i]][] <- resEM$emissionArray[ , 1:model$n_symbols[i], i]
 
-
+    resEM$n_best_logLiks <- counter
     model$initial_probs[] <- resEM$initialProbs
     model$transition_probs[] <- resEM$transitionMatrix
     ll <- resEM$logLik
@@ -485,5 +491,5 @@ fit_hmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = FAL
 
   suppressWarnings(try(model <- trim_hmm(model, verbose = FALSE), silent = TRUE))
   list(model = model, logLik = ll,
-    em_results = resEM[4:6], global_results = globalres, local_results = localres)
+    em_results = resEM[c("logLik", "iterations", "change", "n_best_logLiks")], global_results = globalres, local_results = localres)
 }

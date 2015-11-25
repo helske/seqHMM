@@ -76,7 +76,9 @@ numerical stability at cost of decreased computational performance. Default is \
 \value{
 List with components \item{model}{Estimated model. }
   \item{logLik}{Log-likelihood of the estimated model. }
-  \item{em_results}{Results after the EM step. }
+  \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
+  (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
+  number of estimated models with the best likelihood (\code{n_best_logLiks}). }
   \item{global_results}{Results after the global step. }
   \item{local_results}{Results after the local step. }
 }
