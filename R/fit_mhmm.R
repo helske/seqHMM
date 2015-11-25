@@ -636,6 +636,7 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = FA
   model <- spread_models(model)
   attr(model, "df") <- df
   attr(model, "nobs") <- nobs
+  attr(model, "type") <- attr(original_model, "type")
   
   for(i in 1:model$n_clusters){
     dimnames(model$transition_probs[[i]]) <- dimnames(original_model$transition_probs[[i]])

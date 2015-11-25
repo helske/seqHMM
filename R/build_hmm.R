@@ -22,7 +22,7 @@
 #'    \item{\code{initial_probs}}{A vector of initial probabilities.}
 #'    \item{\code{state_names}}{Names for hidden states.}
 #'    \item{\code{symbol_names}}{Names for observed states.}
-#'    \item{\code{channel_names}}{Names for channels of sequence data}
+#'    \item{\code{channel_names}}{Names for channels of sequence data.}
 #'    \item{\code{length_of_sequences}}{(Maximum) length of sequences.}
 #'    \item{\code{n_sequences}}{Number of sequences.}
 #'    \item{\code{n_symbols}}{Number of observed states (in each channel).}
@@ -151,7 +151,7 @@ build_hmm <- function(observations, transition_probs, emission_probs, initial_pr
   
   if (is.null(state_names)) {
     if (is.null(state_names <- rownames(transition_probs))) {
-      state_names <- as.character(1:n_states)
+      state_names <- paste("State", 1:n_states)
     }
   } else {
     if (length(state_names) != n_states) {
@@ -198,10 +198,12 @@ build_hmm <- function(observations, transition_probs, emission_probs, initial_pr
       stop("Emission probabilities in emission_probs do not sum to one.")
     
     if(is.null(channel_names)){
-      channel_names<-as.character(1:n_channels)
+      if(is.null(channel_names <- names(observations))){
+        channel_names <- paste("Channel", 1:n_channels)
+      }
     }else if(length(channel_names)!=n_channels){
       warning("The length of argument channel_names does not match the number of channels. Names were not used.")
-      channel_names<-as.character(1:n_channels)
+      channel_names<-paste("Channel", 1:n_channels)
     }
     for(i in 1:n_channels)
       dimnames(emission_probs[[i]])<-list(state_names=state_names,symbol_names=symbol_names[[i]])
@@ -251,7 +253,8 @@ build_hmm <- function(observations, transition_probs, emission_probs, initial_pr
     n_channels=n_channels), class = "hmm", 
     nobs = nobs,
     df = sum(initial_probs > 0) - 1 + sum(transition_probs > 0) - n_states + 
-      sum(unlist(emission_probs) > 0) - n_states * n_channels)
+      sum(unlist(emission_probs) > 0) - n_states * n_channels,
+    type = "hmm")
   
   model
 }

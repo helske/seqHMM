@@ -207,7 +207,6 @@ build_mhmm <-
       cluster_names <- paste("Cluster", 1:n_clusters)
     }
     
-    model <- vector("list", length = n_clusters)
     
     for(i in 1:n_clusters){
       if (!is.matrix(transition_probs[[i]])) {
@@ -229,7 +228,7 @@ build_mhmm <-
       state_names <- vector("list", n_clusters)
       for(m in 1:n_clusters){
         if (is.null(state_names[[m]] <- rownames(transition_probs[[m]]))) {
-          state_names[[m]] <- as.character(1:n_states[m])
+          state_names[[m]] <-  paste("State", 1:n_states[m])
         }
       }
     } else {
@@ -293,7 +292,6 @@ build_mhmm <-
         stop("Number of channels defined by emission_probs differs from one defined by observations.")
       }
       
-      
       n_sequences<-nrow(observations[[1]])
       length_of_sequences<-ncol(observations[[1]])
       
@@ -316,10 +314,12 @@ build_mhmm <-
           stop(paste("Emission probabilities in emission_probs of cluster", i, "do not sum to one."))
         }
         if (is.null(channel_names)) {
-          channel_names<-as.character(1:n_channels)
+          if(is.null(channel_names <- names(observations))){
+            channel_names <- paste("Channel", 1:n_channels)
+          }
         } else if (length(channel_names)!=n_channels) {
           warning("The length of argument channel_names does not match the number of channels. Names were not used.")
-          channel_names<-as.character(1:n_channels)
+          channel_names<-paste("Channel", 1:n_channels)
         }
         for (j in 1:n_channels) {
           dimnames(emission_probs[[i]][[j]])<-list(state_names=state_names[[i]],symbol_names=symbol_names[[j]])
@@ -400,6 +400,7 @@ build_mhmm <-
                             n_covariates=n_covariates, formula = formula), class = "mhmm", 
                        nobs = nobs,
                        df = sum(unlist(initial_probs) > 0) - n_clusters + sum(unlist(transition_probs) > 0) - sum(n_states) + 
-                         sum(unlist(emission_probs) > 0) - sum(n_states) * n_channels + n_covariates * (n_clusters - 1))
+                         sum(unlist(emission_probs) > 0) - sum(n_states) * n_channels + n_covariates * (n_clusters - 1),
+      type = "mhmm")
     model
   }

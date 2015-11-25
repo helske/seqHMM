@@ -56,7 +56,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verbos
         warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
-      if (ll0 < ll_original) {
+      if (!isTRUE(all.equal(ll0,ll_original)) && ll0 < ll_original) {
         warning("Trimming resulted model with smaller log-likelihood; returning the original model. ")
         return(model_original)
       }
@@ -111,13 +111,13 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verbos
         warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
-      if (ll0 < ll_original) {
+      if (!isTRUE(all.equal(ll0,ll_original)) && ll0 < ll_original)  {
         warning("Trimming resulted model with smaller log-likelihood.")
         return(model_original)
       }
       if(maxit > 0){
         for(ii in 1:maxit){
-          fit <- fit_hmm(model,, global_step = FALSE, local_step = FALSE, ...)
+          fit <- fit_hmm(model, global_step = FALSE, local_step = FALSE, ...)
           ll <- fit$logLik
           
           if(ll > ll0){
@@ -168,7 +168,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verbos
         warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
-      if (ll0 < ll_original) {
+      if (!isTRUE(all.equal(ll0,ll_original)) && ll0 < ll_original) {
         warning("Trimming resulted model with smaller log-likelihood.")
         return(model_original)
       }
@@ -226,7 +226,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verbos
         warning("Trimming resulted in non-finite log-likelihood; returning the original model. Try changing the zerotol parameter.")
         return(model_original)
       }
-      if (ll0 < ll_original) {
+      if (!isTRUE(all.equal(ll0,ll_original)) && ll0 < ll_original) {
         warning("Trimming resulted model with smaller log-likelihood.")
         return(model_original)
       }     
