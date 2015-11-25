@@ -704,7 +704,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     # Largest transition probabilities (for each row)
     x <- which(model$transition_probs>0,arr.ind=TRUE)  
     transNZ <- x[order(x[,1]),]
-    maxTM< - cbind(1:model$n_states, max.col(model$transition_probs, ties.method = "first"))
+    maxTM <- cbind(1:model$n_states, max.col(model$transition_probs, ties.method = "first"))
     maxTMvalue <- apply(model$transition_probs,1,max)
     paramTM <- rbind(transNZ,maxTM)
     paramTM <- paramTM[!(duplicated(paramTM) | duplicated(paramTM, fromLast = TRUE)), , drop = FALSE]
