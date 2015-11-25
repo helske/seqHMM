@@ -314,7 +314,9 @@ build_mhmm <-
           stop(paste("Emission probabilities in emission_probs of cluster", i, "do not sum to one."))
         }
         if (is.null(channel_names)) {
-          channel_names<-paste("Channel", 1:n_channels)
+          if(is.null(channel_names <- names(observations))){
+            channel_names <- paste("Channel", 1:n_channels)
+          }
         } else if (length(channel_names)!=n_channels) {
           warning("The length of argument channel_names does not match the number of channels. Names were not used.")
           channel_names<-paste("Channel", 1:n_channels)

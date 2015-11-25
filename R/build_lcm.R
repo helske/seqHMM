@@ -50,136 +50,30 @@
 #' 
 #' @examples
 #' 
-#' data(biofam3c)
+#' # Modified example from
+#' # http://sas-and-r.blogspot.fi/2011/01/example-821-latent-class-analysis.html
+#' # data: http://www.math.smith.edu/r/datasets.php
+#' # 
+#' data(help_data)
+#' observations <- with(help_data, list(seqdef(homeless, alphabet = c("not homeless", "homeless")),
+#'   seqdef(cesd), seqdef(satreat), seqdef(linkstatus)))
 #' 
-#' ## Building sequence objects
-#' marr.seq <- seqdef(biofam3c$married, start = 15,
-#'   alphabet = c("single", "married", "divorced"))
-#' child.seq <- seqdef(biofam3c$children, start = 15,
-#'   alphabet = c("childless", "children"))
-#' left.seq <- seqdef(biofam3c$left, start = 15,
-#'   alphabet = c("with parents", "left home"))
+#' names(observations) <- c("Homeless", "CESD score", "Substance abuse treatment", "Primary care")
+#' #number of states is equal to number of classes
+#' set.seed(1)
+#' emiss <- simulate_emission_probs(n_states = 3, n_symbols = rep(2,4))
 #' 
-#' ## Choosing colors
-#' attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-#' attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
-#' attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+#' lcm <- build_lcm(observations, emission_probs = emiss)
+#' # run EM algorithm 1 + 10 times
+#' # by default the EM algorithm is limited to 1000 iterations in initial step,
+#' # and 100 iterations in restarts, with another 1000 iteration polishing for the best model
+#' # EM algorithm gets slow near the optimimum, so instead of increasing the iteration limit
+#' # we polish the result with gradient based optimization (local_step = TRUE)
+#' fit_lcm2 <- fit_mhmm(lcm, local_step = TRUE,
+#'   control_em = list(restart = list(times = 10, print_level = 1)))
 #' 
-#' ## Starting values for emission probabilities
-#' 
-#' # Cluster 1
-#' B1_marr <- matrix(
-#'   c(0.8, 0.1, 0.1, # High probability for single
-#'     0.8, 0.1, 0.1,
-#'     0.3, 0.6, 0.1, # High probability for married
-#'     0.3, 0.3, 0.4), # High probability for divorced
-#'   nrow = 4, ncol = 3, byrow = TRUE)
-#' 
-#' B1_child <- matrix(
-#'   c(0.9, 0.1, # High probability for childless
-#'     0.9, 0.1,
-#'     0.9, 0.1,
-#'     0.9, 0.1),
-#'   nrow = 4, ncol = 2, byrow = TRUE)
-#' 
-#' B1_left <- matrix(
-#'   c(0.9, 0.1, # High probability for living with parents
-#'     0.1, 0.9, # High probability for having left home
-#'     0.1, 0.9,
-#'     0.1, 0.9),
-#'   nrow = 4, ncol = 2, byrow = TRUE)
-#' 
-#' # Cluster 2
-#' 
-#' B2_marr <- matrix(
-#'   c(0.8, 0.1, 0.1, # High probability for single
-#'     0.8, 0.1, 0.1,
-#'     0.1, 0.8, 0.1, # High probability for married
-#'     0.7, 0.2, 0.1),
-#'   nrow = 4, ncol = 3, byrow = TRUE)
-#' 
-#' B2_child <- matrix(
-#'   c(0.9, 0.1, # High probability for childless
-#'     0.9, 0.1,
-#'     0.9, 0.1,
-#'     0.1, 0.9),
-#'   nrow = 4, ncol = 2, byrow = TRUE)
-#' 
-#' B2_left <- matrix(
-#'   c(0.9, 0.1, # High probability for living with parents
-#'     0.1, 0.9,
-#'     0.1, 0.9,
-#'     0.1, 0.9),
-#'   nrow = 4, ncol = 2, byrow = TRUE)
-#' 
-#' # Cluster 3
-#' B3_marr <- matrix(
-#'   c(0.8, 0.1, 0.1, # High probability for single
-#'     0.8, 0.1, 0.1,
-#'     0.8, 0.1, 0.1,
-#'     0.1, 0.8, 0.1, # High probability for married
-#'     0.3, 0.4, 0.3,
-#'     0.1, 0.1, 0.8), # High probability for divorced
-#'   nrow = 6, ncol = 3, byrow = TRUE)
-#' 
-#' B3_child <- matrix(
-#'   c(0.9, 0.1, # High probability for childless
-#'     0.9, 0.1,
-#'     0.5, 0.5,
-#'     0.5, 0.5,
-#'     0.5, 0.5,
-#'     0.1, 0.9),
-#'   nrow = 6, ncol = 2, byrow = TRUE)
-#' 
-#' 
-#' B3_left <- matrix(
-#'   c(0.9, 0.1, # High probability for living with parents
-#'     0.1, 0.9,
-#'     0.5, 0.5,
-#'     0.5, 0.5,
-#'     0.1, 0.9,
-#'     0.1, 0.9),
-#'   nrow = 6, ncol = 2, byrow = TRUE)
-#' 
-#' # Starting values for transition matrices
-#' A1 <- matrix(
-#'   c(0.80, 0.16, 0.03, 0.01,
-#'     0,    0.90, 0.07, 0.03,
-#'     0,    0,    0.90, 0.10,
-#'     0,    0,    0,       1),
-#'   nrow = 4, ncol = 4, byrow = TRUE)
-#' 
-#' A2 <- matrix(
-#'   c(0.80, 0.10, 0.05, 0.03, 0.01, 0.01,
-#'     0,    0.70, 0.10, 0.10, 0.05, 0.05,
-#'     0,    0,    0.85, 0.01, 0.10, 0.04,
-#'     0,    0,    0,    0.90, 0.05, 0.05,
-#'     0,    0,    0,    0,    0.90, 0.10,
-#'     0,    0,    0,    0,    0,       1),
-#'   nrow = 6, ncol = 6, byrow = TRUE)
-#' 
-#' # Starting values for initial state probabilities
-#' initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
-#' initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
-#' 
-#' # Birth cohort
-#' biofam3c$covariates$cohort <- cut(biofam3c$covariates$birthyr, c(1908, 1935, 1945, 1957))
-#' biofam3c$covariates$cohort <- factor(
-#'   biofam3c$covariates$cohort, labels=c("1909-1935", "1936-1945", "1946-1957"))
-#' 
-#' # Build mixture HMM
-#' init_mhmm_bf <- build_mhmm(
-#'   observations = list(marr.seq, child.seq, left.seq),
-#'   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
-#'   transition_probs = list(A1, A1, A2),
-#'   emission_probs = list(list(B1_marr, B1_child, B1_left),
-#'     list(B2_marr, B2_child, B2_left),
-#'     list(B3_marr, B3_child, B3_left)),
-#'   formula = ~sex + cohort, data = biofam3c$covariates,
-#'   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
-#'   channel_names = c("Marriage", "Parenthood", "Residence"),
-#'   state_names = list(paste("State", 1:4), paste("State", 1:4), 
-#'                      paste("State", 1:6)))
+#' fit_lcm$model
+#' summary(fit_lcm$model)
 #' 
 build_lcm <- 
   function(observations, emission_probs, 
@@ -247,7 +141,9 @@ build_lcm <-
           stop(paste("Emission probabilities in emission_probs of cluster", i, "do not sum to one."))
         }
         if (is.null(channel_names)) {
-          channel_names<- paste("Channel", 1:n_channels)
+          if(is.null(channel_names <- names(observations))){
+            channel_names <- paste("Channel", 1:n_channels)
+          }
         } else if (length(channel_names)!=n_channels) {
           warning("The length of argument channel_names does not match the number of channels. Names were not used.")
           channel_names<- paste("Channel", 1:n_channels)
