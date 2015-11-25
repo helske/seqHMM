@@ -5,7 +5,7 @@
 \title{Build a Mixture Markov Model}
 \usage{
 build_mmm(observations, transition_probs, initial_probs, formula, data,
-  coefficients, cluster_names = NULL, state_names = NULL)
+  coefficients, cluster_names = NULL)
 }
 \arguments{
 \item{observations}{TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing

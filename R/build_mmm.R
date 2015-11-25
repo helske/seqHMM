@@ -47,7 +47,7 @@
 #' 
 build_mmm <- 
   function(observations,transition_probs,initial_probs, 
-           formula, data, coefficients, cluster_names=NULL, state_names=NULL){
+           formula, data, coefficients, cluster_names = NULL){
     
     # Single channel but observations is a list
     if (is.list(observations) && !inherits(observations, "stslist") && length(observations)==1) {

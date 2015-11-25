@@ -51,31 +51,7 @@
 #' 
 #' @examples
 #' 
-#' # Modified example from
-#' # http://sas-and-r.blogspot.fi/2011/01/example-821-latent-class-analysis.html
-#' # data: http://www.math.smith.edu/r/datasets.php
-#' # 
-#' data(help_data)
-#' observations <- with(help_data, list(seqdef(homeless, alphabet = c("not homeless", "homeless")),
-#'   seqdef(cesd), seqdef(satreat), seqdef(linkstatus)))
-#' 
-#' names(observations) <- c("Homeless", "CESD score", "Substance abuse treatment", "Primary care")
-#' #number of states is equal to number of classes
-#' set.seed(1)
-#' emiss <- simulate_emission_probs(n_states = 3, n_symbols = rep(2,4))
-#' 
-#' lcm <- build_lcm(observations, emission_probs = emiss)
-#' # run EM algorithm 1 + 10 times
-#' # by default the EM algorithm is limited to 1000 iterations in initial step,
-#' # and 100 iterations in restarts, with another 1000 iteration polishing for the best model
-#' # EM algorithm gets slow near the optimimum, so instead of increasing the iteration limit
-#' # we polish the result with gradient based optimization (local_step = TRUE)
-#' fit_lcm <- fit_model(lcm, local_step = TRUE,
-#'   control_em = list(restart = list(times = 10, print_level = 1)))
-#' 
-#' fit_lcm$model
-#' summary(fit_lcm$model)
-#' 
+
 build_lcm <- 
   function(observations, emission_probs, 
     formula, data, coefficients, cluster_names= NULL, channel_names = NULL){
