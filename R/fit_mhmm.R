@@ -49,7 +49,9 @@
 #'   local steps.
 #' @return List with components \item{model}{Estimated model. } 
 #'   \item{logLik}{Log-likelihood of the estimated model. } 
-#'   \item{em_results}{Results after the EM step. } 
+#'   \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations 
+#'   (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
+#'   number of estimated models with the best likelihood (\code{n_best_logLiks}). } 
 #'   \item{global_results}{Results after the global step. }
 #'   \item{local_results}{Results after the local step. }
 #' @seealso \code{\link{build_mhmm}} for building MHMMs; \code{\link{summary.mhmm}}
@@ -382,6 +384,8 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = FA
         base_emiss <- random_emiss[nz_emiss]
       }
       
+      
+      counter <- 1
       for (i in 1:restart.con$times) {
         if (restart.con$transition) {
           random_trans[nz_trans] <- abs(base_trans + rnorm(np_trans, sd = restart.con$sd))
@@ -410,8 +414,11 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = FA
             "4" = "Non-finite log-likelihood.")
           warning(paste("EM algorithm failed:", err_msg))
         } else {
-          if (resEMi$logLik > resEM$logLik) {
+          if (!is.na(resEMi$logLik) && isTRUE(all.equal(resEMi$logLik, resEM$logLik))) {
+            counter <- counter + 1
+          } else if (!is.na(resEMi$logLik) && resEMi$logLik > resEM$logLik) {
             resEM <- resEMi
+            counter <- 1
           }
         }
       }
@@ -639,6 +646,6 @@ fit_mhmm <- function(model, em_step = TRUE, global_step = FALSE, local_step = FA
   }
   suppressWarnings(try(model <- trim_hmm(model, verbose = FALSE), silent = TRUE))
   list(model = model, 
-    logLik = ll, em_results=resEM[5:7], global_results = globalres, local_results = localres)
+    logLik = ll, em_results=resEM[c("logLik", "iterations", "change", "n_best_logLiks")], global_results = globalres, local_results = localres)
   
 }
