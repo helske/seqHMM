@@ -25,7 +25,6 @@
 #' # Testing if changing parameter values smaller than 1e-04 to zero 
 #' # leads to improved log-likelihood.
 #' hmm_trim <- trim_model(hmm_biofam, zerotol = 1e-04, maxit = 10)
-#' 
 trim_model <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verbose = TRUE, ...){
   
   ll_original <- logLik(model)

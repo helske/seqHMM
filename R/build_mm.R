@@ -1,5 +1,5 @@
 #' Build a Markov Model
-#' 
+#'
 #' Function \code{build_mm} is a shortcut for constructing a Markov model as an restricted case of \code{hmm} object.
 #' @export
 #' @useDynLib seqHMM

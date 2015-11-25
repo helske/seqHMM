@@ -51,7 +51,6 @@
 #' 
 #' @examples
 #' 
-
 build_lcm <- 
   function(observations, emission_probs, 
     formula, data, coefficients, cluster_names= NULL, channel_names = NULL){
