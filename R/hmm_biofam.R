@@ -13,11 +13,11 @@
 #' 
 #' # Building sequence objects
 #' marr.seq <- seqdef(biofam3c$married, start = 15,
-#'   alphabet = c("single", "married", "divorced")))
+#'   alphabet = c("single", "married", "divorced"))
 #' child.seq <- seqdef(biofam3c$children, start = 15,
-#'   alphabet = c("childless", "children")))
+#'   alphabet = c("childless", "children"))
 #' left.seq <- seqdef(biofam3c$left, start = 15,
-#'   alphabet = c("with parents", "left home")))
+#'   alphabet = c("with parents", "left home"))
 #' 
 #' ## Choosing colors
 #' attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")

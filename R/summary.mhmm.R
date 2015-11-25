@@ -92,9 +92,7 @@ summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, log_
       coefficients = object$coefficients, vcov = vcov(object, conditional_se, log_space = log_space, ...),
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
-      classification_table = clProbs,
-      model = object
-    )
+      classification_table = clProbs)
   }else{
     summary_mhmm <- list(
       transition_probs = object$transition_probs,
@@ -104,9 +102,7 @@ summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, log_
       coefficients = object$coefficients, vcov = vcov(object, conditional_se, log_space = log_space, ...),
       prior_cluster_probabilities = prior_cluster_probabilities, 
       posterior_cluster_probabilities = posterior_cluster_probabilities,
-      classification_table = clProbs,
-      model = object
-    )
+      classification_table = clProbs)
   }
   class(summary_mhmm) <- "summary.mhmm"
   summary_mhmm
