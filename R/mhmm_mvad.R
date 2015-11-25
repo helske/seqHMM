@@ -11,20 +11,17 @@
 #' The model is loaded by calling \code{data(mhmm_mvad)}. It was created with the 
 #' following code:
 #' \preformatted{
-#' require(TraMineR)
-#' data(mvad)
+#' data("mvad", package = "TraMineR")
 #' 
-#' mvad.alphabet <- c(
-#'   "employment", "FE", "HE", "joblessness", "school", "training")
-#' mvad.labels <- c(
-#'   "employment", "further education", "higher education", 
+#' mvad_alphabet <- 
+#'   c("employment", "FE", "HE", "joblessness", "school", "training")
+#' mvad_labels <- c("employment", "further education", "higher education",
 #'   "joblessness", "school", "training")
-#' mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-#' mvad.seq <- seqdef(
-#'   mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes, 
-#'   labels = mvad.labels, xtstep = 6)
-#'
-#' attr(mvad.seq, "cpal") <- colorpalette[[6]]
+#' mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
+#' mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet, 
+#'   states = mvad_scodes, labels = mvad_labels, xtstep = 6)
+#' 
+#' attr(mvad_seq, "cpal") <- colorpalette[[6]]
 #' 
 #' # Starting values for the emission matrices
 #' emiss_1 <- matrix(
@@ -68,7 +65,8 @@
 #'   initial_probs = list(initial_probs_1, initial_probs_2))
 #' 
 #' # Fit the model
-#' fit_mvad <- fit_mhmm(init_mhmm_mvad)
+#' set.seed(123)
+#' fit_mvad <- fit_mhmm(init_mhmm_mvad, control_em = list(restarts = 10))
 #' 
 #' # Trim the model
 #' mhmm_mvad <- trim_hmm(fit_mvad$model, zerotol = 1e-04)
