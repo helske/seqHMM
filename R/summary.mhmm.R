@@ -30,7 +30,7 @@
 #'    \item{classification_table}{Cluster probabilities (columns) by the most probable cluster (rows)}
 #'   }
 #'   
-#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building and 
+#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_model}} for building and 
 #'   fitting mixture hidden Markov models; and 
 #'   \code{\link{mhmm_biofam}} for information on the model used in examples.
 #'  
@@ -42,7 +42,6 @@
 #' # Model summary
 #' summary(mhmm_biofam)
 #'   
-#' @seealso \code{\link{fit_mhmm}} for building and fitting mixture hidden Markov models.
 #'   
 
 summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, log_space = FALSE, ...){

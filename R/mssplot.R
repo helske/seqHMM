@@ -146,10 +146,6 @@
 #' @param ... Other arguments to be passed to \code{\link{seqplot}} to produce 
 #'   the appropriate plot method.
 #'   
-#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building and 
-#'   fitting mixture hidden Markov models; and 
-#'   \code{\link{mhmm_biofam}} for information on the model used in examples.
-#'   
 #' @examples 
 #' # Loading mixture hidden Markov model (mhmm object)
 #' # of the biofam data
@@ -164,7 +160,7 @@
 #' }
 #' 
 #'   
-#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building and 
+#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_model}} for building and 
 #'   fitting mixture hidden Markov models, \code{\link{hidden_paths}} for 
 #'   computing the most probable paths (Viterbi paths) of hidden states, and
 #'   \code{\link{plot.mhmm}} for plotting \code{mhmm} objects as directed graphs.

@@ -6,7 +6,7 @@
 #' 
 #' @export
 #' @param x A hidden Markov model object of class hmm created with 
-#'   \code{\link{build_hmm}} and \code{\link{fit_hmm}}. Multichannel 
+#'   \code{\link{build_hmm}} and \code{\link{fit_model}}. Multichannel 
 #'   hmm objects are automatically transformed to single channel objects. 
 #'   See function \code{\link{mc_to_sc}} for more information on the 
 #'   transformation.
@@ -92,7 +92,7 @@
 #' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as 
 #'   \code{vertex.color}, \code{vertex.label.cex}, or \code{edge.lty}.
 #'   
-#' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and 
+#' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building and 
 #'   fitting Hidden Markov models, \code{\link{mc_to_sc}} for transforming 
 #'   multistate hmm objects to single channel objects,
 #'   \code{\link{hmm_biofam}} and \code{\link{hmm_mvad}} for information on the models 

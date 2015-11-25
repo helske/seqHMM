@@ -1,4 +1,4 @@
-<<<<<<< HEAD:manual/seqHMM.Rnw
+
 %%
 %%
 %%
@@ -325,17 +325,17 @@ sc_model <- build_hmm(
   observations = biofam.seq, transition_probs = sc_trans,
   emission_probs = sc_emiss, initial_probs = sc_inits)
 @
-The \texttt{hmm} object can then be fitted with the \texttt{fit\_hmm}\index{fitHMM@\texttt{fit\_hmm}} function. The fitting function provides three estimation steps: 1) EM algorithm, 2) global optimization, and 3) local optimization. Any combination of these steps can be chosen but their order cannot be modified. The results from a former step are used as starting values in a latter.
+The \texttt{hmm} object can then be fitted with the \texttt{fit\_model}\index{fitHMM@\texttt{fit\_model}} function. The fitting function provides three estimation steps: 1) EM algorithm, 2) global optimization, and 3) local optimization. Any combination of these steps can be chosen but their order cannot be modified. The results from a former step are used as starting values in a latter.
 
 <<'sc_fitHMM', cache=TRUE>>=
-sc_fit <- fit_hmm(sc_model)
+sc_fit <- fit_model(sc_model)
 @
 
-By default, the \texttt{fit\_hmm} function starts with a maximum of 100 iterations of the EM step, skips the global step, and finishes with the L-BFGS algorithm as a local estimator. For direct numerical estimation (steps 2 and 3), any optimization method available in the \texttt{nloptr} package \citep{nloptr, nlopt} can be chosen.
+By default, the \texttt{fit\_model}function starts with a maximum of 100 iterations of the EM step, skips the global step, and finishes with the L-BFGS algorithm as a local estimator. For direct numerical estimation (steps 2 and 3), any optimization method available in the \texttt{nloptr} package \citep{nloptr, nlopt} can be chosen.
 
 If the global step is chosen, by default it uses the multilevel single-linkage method (MLSL) \citep{Kan1987I, Kan1987II}. It draws multiple random starting values and performs local optimization from each starting point. The LDS modification uses low-discrepancy sequences instead of random numbers as starting points and should improve the convergence rate \citep{Kucherenko2005}.
 
-There are some theoretical guarantees that the MLSL method shoud find all local optima in a finite number of local optimizations. Of course, it might not always succeed in a reasonable time. Also, it requires setting boundaries for the parameter space, which is not always straightforward. In \texttt{seqHMM} the transition, emission, and initial probabilities are estimated using unconstrained reparameterization using softmax function (a generalization of the logistic function), but good boundaries are essential for efficient use of the MLSL algorithm. If the boundaries are too strict, the global optimum cannot be found; if too wide, the probability of finding the global optimum is decreased. The \texttt{fit\_hmm}\index{fitHMM@\texttt{fit\_hmm}} function uses starting values or results from the preciding estimation step to adjust the boundaries. The EM algorithm can help in setting good boundaries, but in some cases it can also lead to worse results. For finding the best solution, it is advisable to try a couple of different settings; e.g. only EM, EM followed by MLSL, a couple of EM iterations followed by MLSL, and only MLSL.
+There are some theoretical guarantees that the MLSL method shoud find all local optima in a finite number of local optimizations. Of course, it might not always succeed in a reasonable time. Also, it requires setting boundaries for the parameter space, which is not always straightforward. In \texttt{seqHMM} the transition, emission, and initial probabilities are estimated using unconstrained reparameterization using softmax function (a generalization of the logistic function), but good boundaries are essential for efficient use of the MLSL algorithm. If the boundaries are too strict, the global optimum cannot be found; if too wide, the probability of finding the global optimum is decreased. The \texttt{fit\_model}\index{fitHMM@\texttt{fit\_model}} function uses starting values or results from the preciding estimation step to adjust the boundaries. The EM algorithm can help in setting good boundaries, but in some cases it can also lead to worse results. For finding the best solution, it is advisable to try a couple of different settings; e.g. only EM, EM followed by MLSL, a couple of EM iterations followed by MLSL, and only MLSL.
 
 It is also possible to automatically run the EM algorithm multiple times by randomizing starting values. By default, both transition and emission probabilities are modified by adding a random value from the $N(0, 0.25)$ distribution. Although not done by default, this method seems to perform very well as the EM algorithm is relatively fast compared to direct numerical estimation.
 
@@ -344,7 +344,7 @@ For parameter estimation, well known forward--backward recursions are used. As t
 Most of the functions relating to model estimation and state inference support parallel computation via OpenMP interface. The user can choose the number of parallel threads (e.g. the number of cores) to use for the specific task. By default, no parallelization is done.
 
 
-The \texttt{fit\_hmm}\index{fitHMM@\texttt{fit\_hmm}} function returns the model, the log-likelihood, and estimation results from each step.
+The \texttt{fit\_model}\index{fitHMM@\texttt{fit\_model}} function returns the model, the log-likelihood, and estimation results from each step.
 
 <<'sc_print_fitHMM', cache=TRUE>>=
 sc_fit$model
@@ -352,7 +352,7 @@ sc_fit$model
 
 \subsection{HMMs for multichannel data}
 
-A HMM for multichannel data is fitted in a similar way using the same \texttt{build\_hmm}\index{buildHMM@\texttt{build\_hmm}} and \texttt{fit\_hmm}\index{fitHMM@\texttt{fit\_hmm}} functions. Now we build a model for three-channel data with four hidden states. One emission matrix (with hidden states as rows and observed states as columns) is required for each channel, i.e. 4x3 matrix for marriages and 4x2 matrices for the other two. Also here the initial values are constructed from using the observed state frequences at different age categories (see the example of fitting HMM for single-channel data). Now we use an upper triangular matrix in the transition matrix indicating a left-to-right model where transitions back to previous states are not allowed. This seems like a valid option from a life-course prespective. Also, in the previous single-channel model of the same data the transition matrix was estimated almost upper triangular.
+A HMM for multichannel data is fitted in a similar way using the same \texttt{build\_hmm}\index{buildHMM@\texttt{build\_hmm}} and \texttt{fit\_model}\index{fitHMM@\texttt{fit\_model}} functions. Now we build a model for three-channel data with four hidden states. One emission matrix (with hidden states as rows and observed states as columns) is required for each channel, i.e. 4x3 matrix for marriages and 4x2 matrices for the other two. Also here the initial values are constructed from using the observed state frequences at different age categories (see the example of fitting HMM for single-channel data). Now we use an upper triangular matrix in the transition matrix indicating a left-to-right model where transitions back to previous states are not allowed. This seems like a valid option from a life-course prespective. Also, in the previous single-channel model of the same data the transition matrix was estimated almost upper triangular.
 
 <<'mcHMM', cache=TRUE>>=
 # Initial values for initial state probabilities
@@ -396,14 +396,14 @@ mc_hmm <- build_hmm(
   channel_names = c("Marriage", "Parenthood", "Residence"))
 
 # Fit HMM
-mc_fit <- fit_hmm(mc_hmm)
+mc_fit <- fit_model(mc_hmm)
 @
 
 \subsection{Evaluating and comparing HMMs}
 
 \subsubsection{Log-likelihood}
 
-Log-likelihood is stored in the result from \texttt{fit\_hmm}\index{fitHMM@\texttt{fit\_hmm}}, but also the \texttt{logLik}\index{logLik@\texttt{logLik}} function computes it. Models with the same number of parameters can be compared using log-likelihood: the bigger the value, the better the model.
+Log-likelihood is stored in the result from \texttt{fit\_model}\index{fitHMM@\texttt{fit\_model}}, but also the \texttt{logLik}\index{logLik@\texttt{logLik}} function computes it. Models with the same number of parameters can be compared using log-likelihood: the bigger the value, the better the model.
 
 <<'loglik', cache=TRUE>>=
 mc_fit$logLik
@@ -419,14 +419,14 @@ mc_fit$em_results$logLik
 
 Using only gradient-based optimization without the initial EM step produces substantially poorer fit:
 <<'fitHMM_local', cache=TRUE>>=
-mc_hmm_local <- fit_hmm(mc_hmm, em_step = FALSE)
+mc_hmm_local <- fit_model(mc_hmm, em_step = FALSE)
 mc_hmm_local$logLik
 @
 
 Next we will test the performance of the MLSL optimization by setting \texttt{global = TRUE}. Final polishing is done with the L-BFGS. The default estimation time is set to 60 seconds in global step, but usually it is advisable to run it longer. Depending on the performance of the computer, the optimizer may also be able to perform more or less evaluations in the given time limit. Setting \texttt{maxtime = 0} omits the time limit and performs the number of evaluations given for \texttt{maxeval}. The more complex the model, the more time the optimizer needs to throughly search the parameter space.
 
 <<'fitHMM_global', cache=TRUE>>=
-mc_hmm_global <- fit_hmm(mc_hmm, em_step = FALSE, global = TRUE,
+mc_hmm_global <- fit_model(mc_hmm, em_step = FALSE, global = TRUE,
   control_global = list(maxtime = 0, maxeval = 1000))
 mc_hmm_global$logLik
 @
@@ -437,7 +437,7 @@ Automatic restarts of the EM algorithm are called by setting the value \texttt{r
 
 <<'fitHMM_repEM', cache=TRUE>>=
 set.seed(123)
-mc_hmm_restarts <- fit_hmm(mc_hmm,
+mc_hmm_restarts <- fit_model(mc_hmm,
   control_em = list(restarts = 100, restart_transition = FALSE))
 mc_hmm_restarts$logLik
 @
@@ -484,7 +484,7 @@ mc_hmm_3s <- build_hmm(
   emission_probs = list(mc_B_marr_3s, mc_B_child_3s, mc_B_left_3s),
   channel_names = c("Marriage", "Parenthood", "Residence"))
 
-mc_fit_3s <- fit_hmm(mc_hmm_3s)
+mc_fit_3s <- fit_model(mc_hmm_3s)
 
 mc_fit_3s$logLik
 BIC(mc_fit_3s$model)
@@ -581,7 +581,7 @@ P(M^k|\textbf{y}_i, \textbf{x}_i) &= \frac{P(\textbf{y}_i | M^k, \textbf{x}_i) P
 \end{equation}
 where $L^i$ is the likelihood of the complete MHMM for individual $i$, and $L_k^i$ is the likelihood of cluster $k$ for individual $i$. These are straightforwardly computed from forward probabilities. Posterior cluster probabilities can be used e.g. for computing classification tables.
 
-MHMMs are fitted in a similar way to HMMs using the \texttt{build\_mhmm}\index{buildmhmm@\texttt{build\_mhmm}} and \texttt{fit\_mhmm}\index{fitmhmm@\texttt{fit\_mhmm}} functions. Functions such as \texttt{logLik}\index{logLik@\texttt{logLik}}, \texttt{BIC}\index{BIC@\texttt{BIC}}, \texttt{trim\_hmm}\index{trimHMM@\texttt{trim\_hmm}}, and \texttt{mc\_to\_sc}\index{MCtoSC@\texttt{mc\_to\_sc}} work for \texttt{mhmm} objects as well.
+MHMMs are fitted in a similar way to HMMs using the \texttt{build\_mhmm}\index{buildmhmm@\texttt{build\_mhmm}} and \texttt{fit\_model}\index{fitmhmm@\texttt{fit\_model}} functions. Functions such as \texttt{logLik}\index{logLik@\texttt{logLik}}, \texttt{BIC}\index{BIC@\texttt{BIC}}, \texttt{trim\_model}\index{trimHMM@\texttt{trim\_model}}, and \texttt{mc\_to\_sc}\index{MCtoSC@\texttt{mc\_to\_sc}} work for \texttt{mhmm} objects as well.
 
 Even though missing observations can be handled in sequences, the covariates must be completely observed for each subject. Subjects with missing covariates are easily dropped from the data set with the \texttt{complete.cases} function.
 
@@ -703,7 +703,7 @@ init_mhmm <- build_mhmm(
   channel_names = c("Marriage", "Parenthood", "Residence"))
 
 set.seed(456)
-fit_mhmm <- fit_mhmm(
+fit_model <- fit_model(
   init_mhmm, control_em = list(restarts = 50, restart_transition = FALSE))
 @
 
@@ -712,7 +712,7 @@ The \texttt{summary}\index{summaryMHMM@\texttt{summary.mhmm}} method computes su
 There are two types of standard errors which can be computed for regression coefficients. The conditional standard errors can be computed using analytical formulas for Hessian, but these do not take account the estimation uncertainty regarding the other model parameters. For unconditional standard errors which take account of possible correlation between the estimates of $\beta$ and other model parameters, the Hessian is computed using finite difference approximation of the jacobian of the analytical gradients. Naturally, the latter option is computationally more demanding, but it should still be a preferred option in final analysis as it gives more realistic results.
 
 <<'parameters', cache=TRUE>>=
-summary(fit_mhmm$model, conditional_se = FALSE)
+summary(fit_model$model, conditional_se = FALSE)
 
 @
 
@@ -727,7 +727,7 @@ Also MHMMs are plotted with the \texttt{plot}\index{plot.mhmm@\texttt{plot.mhmm}
 
 <<'MHMMplot', fig.width=5.5, fig.height=7, fig.keep='last', cache=TRUE>>=
 plot(
-  fit_mhmm$model, interactive = FALSE, which.plots = 2:3, nrow = 2,
+  fit_model$model, interactive = FALSE, which.plots = 2:3, nrow = 2,
   legend.prop = 0.35, cex.legend = 1.5, edge.label.cex = 1.5,
   ncol.legend = 2)
 @
@@ -735,7 +735,7 @@ plot(
 The equivalent to the \texttt{ssplot} function for MHMMs is called \texttt{mssplot}\index{mssplot@\texttt{mssplot}}. It plots stacked sequence plots separately for each (chosen) cluster. If the user asks to plot more than one cluster, the function is interactive by default. If \texttt{ask = TRUE}, the cluster plots are chosen one by one by selecting their numbers from the menu; otherwise they are plotted in the order they appear in the \texttt{mhmm} object.
 
 <<'MHMMssplot', fig.width=5.5, fig.height=5, fig.keep='last', cache=TRUE>>=
-mssplot(fit_mhmm$model, plots = "both", ask = FALSE, which.plots = 1)
+mssplot(fit_model$model, plots = "both", ask = FALSE, which.plots = 1)
 
 @
 

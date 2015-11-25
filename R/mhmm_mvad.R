@@ -66,14 +66,14 @@
 #' 
 #' # Fit the model
 #' set.seed(123)
-#' fit_mvad <- fit_mhmm(init_mhmm_mvad, control_em = list(restarts = 10))
+#' fit_mvad <- fit_model(init_mhmm_mvad, control_em = list(restarts = 10))
 #' 
 #' # Trim the model
-#' mhmm_mvad <- trim_hmm(fit_mvad$model, zerotol = 1e-04)
+#' mhmm_mvad <- trim_model(fit_mvad$model, zerotol = 1e-04)
 #' }
 #'   
 #' @seealso Examples of building and fitting MHMMs in \code{\link{build_mhmm}} and 
-#' \code{\link{fit_mhmm}}; and \code{\link[TraMineR]{mvad}} for more information on the data.
+#' \code{\link{fit_model}}; and \code{\link[TraMineR]{mvad}} for more information on the data.
 #' 
 #' @docType data
 #' @keywords datasets

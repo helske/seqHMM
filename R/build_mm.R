@@ -44,7 +44,7 @@
 #'   transition_probs = matrix(1,6,6)/6, 
 #'   initial_probs = rep(1/6, 6))
 #' 
-#' @seealso \code{\link{fit_hmm}} for fitting (hidden) Markov models.
+#' @seealso \code{\link{fit_model}} for estimating model parameters.
 
 build_mm <- function(observations, transition_probs, initial_probs){
   

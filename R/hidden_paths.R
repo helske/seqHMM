@@ -17,9 +17,7 @@
 #' # Computing the most probable paths of hidden states
 #' mpp <- hidden_paths(hmm_biofam)
 #'   
-#' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and 
-#'   fitting Hidden Markov models; \code{\link{build_mhmm}} and 
-#'   \code{\link{fit_mhmm}} for building and fitting mixture hidden Markov models; 
+#' @seealso
 #'   \code{\link{hmm_biofam}} for information on the model used in the example;
 #'   and \code{\link{seqIplot}}, \code{\link{ssplot}}, or \code{\link{mssplot}}
 #'   for plotting the most probable paths of hidden states.

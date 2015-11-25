@@ -1,6 +1,6 @@
 #' Trim Small Probabilities of Hidden Markov Model
 #' 
-#' Function \code{trim_hmm} tries to set small insignificant probabilities to zero 
+#' Function \code{trim_model} tries to set small insignificant probabilities to zero 
 #' without decreasing the likelihood.
 #' 
 #' @export
@@ -13,9 +13,9 @@
 #'   the model object. The default is \code{FALSE}.
 #' @param zerotol Values smaller than this are trimmed to zero.
 #' @param verbose Print results of trimming. Default is \code{TRUE}.
-#' @param ... Further parameters passed on to \code{fit_hmm}.
+#' @param ... Further parameters passed on to \code{fit_model}.
 #'   
-#' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and fitting 
+#' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building and fitting 
 #' hidden Markov models; and \code{\link{hmm_biofam}} for information on the model used 
 #' in the example.
 #'   
@@ -24,9 +24,9 @@
 #' 
 #' # Testing if changing parameter values smaller than 1e-04 to zero 
 #' # leads to improved log-likelihood.
-#' hmm_trim <- trim_hmm(hmm_biofam, zerotol = 1e-04, maxit = 10)
+#' hmm_trim <- trim_model(hmm_biofam, zerotol = 1e-04, maxit = 10)
 #' 
-trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verbose = TRUE, ...){
+trim_model <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verbose = TRUE, ...){
   
   ll_original <- logLik(model)
   model_original <- model
@@ -62,7 +62,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verbos
       }
       if(maxit > 0){
         for(ii in 1:maxit){
-          fit <- fit_hmm(model, global_step = FALSE, local_step = FALSE, ...)
+          fit <- fit_model(model, ...)
           ll <- fit$logLik
           
           if(ll > ll0){
@@ -117,7 +117,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verbos
       }
       if(maxit > 0){
         for(ii in 1:maxit){
-          fit <- fit_hmm(model, global_step = FALSE, local_step = FALSE, ...)
+          fit <- fit_model(model, ...)
           ll <- fit$logLik
           
           if(ll > ll0){
@@ -174,7 +174,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verbos
       }
       if(maxit > 0){
         for(ii in 1:maxit){
-          fit <- fit_mhmm(model, global_step = FALSE, local_step = FALSE, ...)
+          fit <- fit_model(model, ...)
           ll <- fit$logLik
           
           if(ll > ll0){
@@ -232,7 +232,7 @@ trim_hmm <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verbos
       }     
       if(maxit > 0){
         for(ii in 1:maxit){
-          fit <- fit_mhmm(model, global_step = FALSE, local_step = FALSE, ...)
+          fit <- fit_model(model, ...)
           ll <- fit$logLik
           
           if(ll > ll0){

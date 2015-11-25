@@ -142,11 +142,11 @@
 #'                      paste("State", 1:6)))
 #' 
 #' # Fitting the model
-#' mhmm_biofam <- fit_mhmm(init_mhmm_biofam)
+#' mhmm_biofam <- fit_model(init_mhmm_biofam)
 #' }
 #'   
 #' @seealso Examples of building and fitting MHMMs in \code{\link{build_mhmm}} and 
-#' \code{\link{fit_mhmm}}; and \code{\link[TraMineR]{biofam}} for the original data and
+#' \code{\link{fit_model}}; and \code{\link[TraMineR]{biofam}} for the original data and
 #' \code{\link{biofam3c}} for the three-channel version used in this model.
 #' 
 #' @docType data

@@ -127,12 +127,12 @@
 #' )
 #' 
 #' # Fitting with the EM algorithm
-#' hmm_mvad <- fit_hmm(bhmm_mvad)
+#' hmm_mvad <- fit_model(bhmm_mvad)
 #'   
 #'   
 #' ##### Multichannel biofam3c data #####
 #' 
-#' # see ?fit_hmm
+#' # see ?fit_model
 #' 
 #' 
 #' ###############################################################
@@ -175,7 +175,7 @@
 #' )
 #' 
 #' # Fitting a MHMM with the EM algorithm
-#' mhmm_mvad <- fit_mhmm(bmhmm_mvad)
+#' mhmm_mvad <- fit_model(bmhmm_mvad)
 #'   
 #'   
 #' ##### Multichannel biofam3c data #####
@@ -281,7 +281,7 @@
 #'   )
 #' 
 #' # Fitting the model with the EM algorithm
-#' mhmm_biofam <- fit_mhmm(bmhmm_biofam)
+#' mhmm_biofam <- fit_model(bmhmm_biofam)
 #' 
 #' 
 #' ###############################################################
@@ -304,8 +304,8 @@
 #' ##### Trimming (mixture) hidden Markov models #####
 #' # i.e. setting small (< zerotol) parameter values to zero
 #' 
-#' trhmm_biofam <- trim_hmm(hmm_biofam, zerotol = 1e-04)
-#' trmhmm_biofam <- trim_hmm(mhmm_biofam, zerotol = 1e-03)
+#' trhmm_biofam <- trim_model(hmm_biofam, zerotol = 1e-04)
+#' trmhmm_biofam <- trim_model(mhmm_biofam, zerotol = 1e-03)
 #' 
 #' 
 #' ##### Converting multichannel models to single-channel models #####
@@ -366,7 +366,7 @@
 #' a <- matrix(1)
 #' model <- build_mhmm(obs= seqdef(birthwt$low), low ~ age + lwt + smoke + ht, birthwt,
 #'   transition_probs = list(a, a), initial_probs = list(1, 1), emission_probs = list(b1, b2))
-#' fit <- fit_mhmm(model)
+#' fit <- fit_model(model)
 #' summary(fit$model)[c("coefficients", "coef_se", "logLik")]
 #' summary(glm(low ~ age + lwt + smoke + ht, binomial, data = birthwt))
 #' 
@@ -390,7 +390,7 @@
 #' model <- build_mhmm(obs= seqdef(y), ~ x1 + x2,  data.frame(X[, -1]),
 #'   transition_probs = list(a, a, a), 
 #'   initial_probs = list(1, 1, 1), emission_probs = list(b1, b2, b3))
-#' fit <- fit_mhmm(model, local_step = FALSE, global_step = FALSE)
+#' fit <- fit_model(model, local_step = FALSE, global_step = FALSE)
 #' summary(fit$model)[c("coefficients", "coef_se", "logLik")]
 #' BIC(fit$model)
 #' multinom(y ~ x1 + x2, data = data.frame(X[,-1]))

@@ -19,7 +19,7 @@
 #'
 #' sc <- mc_to_sc(hmm_biofam)
 #'
-#' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and
+#' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building and
 #'   fitting Hidden Markov models; and \code{\link{hmm_biofam}} for information on
 #'   the model used in the example;.
 

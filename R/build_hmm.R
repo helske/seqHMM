@@ -129,7 +129,7 @@
 #'   emission_probs = list(emiss_marr, emiss_child, emiss_left), 
 #'   initial_probs = inits)
 #' 
-#' @seealso \code{\link{fit_hmm}} for fitting Hidden Markov models.
+#' @seealso \code{\link{fit_model}} for estimating model parameters.
 
 build_hmm <- function(observations, transition_probs, emission_probs, initial_probs,
   state_names = NULL, channel_names = NULL){

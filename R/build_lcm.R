@@ -1,6 +1,7 @@
 #' Build a Latent Class Model
 #' 
-#' Function \code{build_lcm} is a shortcut for constructing a latent class model as an restricted case of \code{mhmm} object.
+#' Function \code{build_lcm} is a shortcut for constructing a latent class model 
+#' as an restricted case of mixture hidden Markov model.
 #' 
 #' @export
 #' @useDynLib seqHMM
@@ -43,7 +44,7 @@
 #'    \item{\code{n_covariates}}{Number of covariates.}
 #'    \item{\code{n_clusters}}{Number of clusters.}
 #'}
-#' @seealso \code{\link{fit_mhmm}} for fitting mixture Hidden Markov models; 
+#' @seealso \code{\link{fit_model}} for estimating model parameters; 
 #' \code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for 
 #' reorganizing a MHMM into a list of separate hidden Markov models; and
 #' \code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
@@ -69,7 +70,7 @@
 #' # and 100 iterations in restarts, with another 1000 iteration polishing for the best model
 #' # EM algorithm gets slow near the optimimum, so instead of increasing the iteration limit
 #' # we polish the result with gradient based optimization (local_step = TRUE)
-#' fit_lcm2 <- fit_mhmm(lcm, local_step = TRUE,
+#' fit_lcm <- fit_model(lcm, local_step = TRUE,
 #'   control_em = list(restart = list(times = 10, print_level = 1)))
 #' 
 #' fit_lcm$model
@@ -80,7 +81,7 @@ build_lcm <-
     formula, data, coefficients, cluster_names= NULL, channel_names = NULL){
     
     
-
+    
     if (is.list(emission_probs)) {
       n_channels <- length(emission_probs)
       n_clusters <- nrow(emission_probs[[1]])
@@ -102,11 +103,7 @@ build_lcm <-
     
     # States
     n_states <- rep(1, n_clusters)
-    
-    
     initial_probs <- replicate(n_clusters, 1, simplify = FALSE)
-    
-    
     
     # Single channel but observations is a list
     if (is.list(observations) && !inherits(observations, "stslist") && length(observations)==1) {
@@ -152,10 +149,10 @@ build_lcm <-
           dimnames(emission_probs[[i]][[j]])<-list(state_names=state_names[[i]],symbol_names=symbol_names[[j]])
         }
         names(emission_probs[[i]])<-channel_names
-        names(initial_probs[[i]]) <- state_names[[i]]
+        
       }
     } else {
-      n_channels <- 1
+      
       if (is.null(channel_names)) {
         channel_names <- "Observations"
       }      
@@ -164,13 +161,17 @@ build_lcm <-
       symbol_names<-alphabet(observations)
       n_symbols<-length(symbol_names)
       
+      emission_probs_list <- vector("list", n_clusters)
+      for (i in 1:n_clusters) {
+        emission_probs_list[[i]] <- emission_probs[i, , drop = FALSE]
+      }
+      emission_probs <- emission_probs_list
+      
       for(i in 1:n_clusters){
-        if(n_states[i]!=dim(emission_probs[[i]])[1])
-          stop("Number of rows in emission_probs is not equal to the number of states.")
-        if(n_symbols!=dim(emission_probs[[i]])[2])
-          stop("Number of columns in emission_probs is not equal to the number of symbols.")
+        if(n_symbols!=ncol(emission_probs[[i]]))
+          stop(paste("Number of columns in emission_probs of cluster", i, "is not equal to the number of symbols."))
         if(!isTRUE(all.equal(rep(1,n_states[i]),rowSums(emission_probs[[i]]),check.attributes=FALSE)))
-          stop("Emission probabilities in emission_probs do not sum to one.")
+          stop(paste("Emission probabilities in emission_probs of cluster", i, "do not sum to one."))
         dimnames(emission_probs[[i]])<-list(state_names=state_names[[i]],symbol_names=symbol_names)
         names(initial_probs[[i]]) <- state_names[[i]]
       }
@@ -207,8 +208,13 @@ build_lcm <-
     colnames(coefficients) <- cluster_names
     
     transition_probs <- replicate(n_clusters, matrix(1), simplify = FALSE)
-    
     names(transition_probs) <- names(emission_probs) <- names(initial_probs) <- cluster_names
+    
+    for (i in 1:n_clusters) {
+      names(initial_probs[[i]]) <- rownames(transition_probs[[i]]) <- 
+        colnames(transition_probs[[i]]) <- state_names[[i]]
+    }
+    
     if(n_channels > 1){
       nobs <- sum(sapply(observations, function(x) sum(!(x == attr(observations[[1]], "nr") |
           x == attr(observations[[1]], "void") |

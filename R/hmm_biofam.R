@@ -67,12 +67,12 @@
 #'     emiss_left),
 #'   channel_names = c("Marriage", "Parenthood", "Residence"))
 #' 
-#' fit_biofam <- fit_hmm(initmod)
+#' fit_biofam <- fit_model(initmod)
 #' hmm_biofam <- fit_biofam$model
 #' }
 #' 
 #' @seealso Examples of building and fitting HMMs in \code{\link{build_hmm}} and 
-#' \code{\link{fit_hmm}}; and \code{\link[TraMineR]{biofam}} for the original data and
+#' \code{\link{fit_model}}; and \code{\link[TraMineR]{biofam}} for the original data and
 #' \code{\link{biofam3c}} for the three-channel version used in this model.
 #' 
 #' @docType data

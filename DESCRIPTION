@@ -14,7 +14,8 @@ Description: Package seqHMM is designed for inference of hidden Markov models
     are written in C++.
 LazyData: true
 LinkingTo: Rcpp, RcppArmadillo
-Depends: R (>= 3.0.0)
+Depends:
+    R (>= 3.0.0)
 Imports:
     graphics,
     grDevices,
@@ -29,8 +30,12 @@ Imports:
     stats,
     TraMineR (>= 1.8-8),
     utils
-Suggests: MASS, nnet, R.rsp
+Suggests:
+    MASS,
+    nnet,
+    R.rsp
 License: GPL (>= 2)
 Encoding: UTF-8
 BugReports: https://github.com/helske/seqHMM/issues
 VignetteBuilder: R.rsp
+RoxygenNote: 5.0.1

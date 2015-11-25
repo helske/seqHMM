@@ -10,8 +10,8 @@
 #' 
 #' @return List with components of class \code{hmm}.
 #' 
-#' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} 
-#' for building and fitting HMMs; and \code{\link{mhmm_biofam}} for
+#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_model}} 
+#' for building and fitting MHMMs; and \code{\link{mhmm_biofam}} for
 #' more information on the model used in examples.
 #' 
 #' @examples

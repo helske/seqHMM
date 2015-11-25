@@ -19,7 +19,7 @@
 #' covariates. A logit-link is used for mixture probabilities. The first column is set to zero.
 #' 
 #' @return A list of state sequence objects of class \code{stslist}.
-#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building 
+#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_model}} for building 
 #' and fitting mixture hidden Markov models; \code{\link{ssplot}} for plotting 
 #' multiple sequence data sets; \code{\link{seqdef}} for more
 #' information on state sequence objects; and \code{\link{simulate_hmm}}
@@ -66,7 +66,7 @@
 #'   formula = ~covariate_1 + covariate_2,
 #'   data = dataf)
 #' 
-#' fit <- fit_mhmm(hmm, local = FALSE, global = FALSE)
+#' fit <- fit_model(hmm, local = FALSE, global = FALSE)
 #' 
 #' paths <- hidden_paths(fit$model)
 #' 

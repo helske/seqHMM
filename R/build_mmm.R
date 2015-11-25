@@ -40,7 +40,7 @@
 #'    \item{\code{n_covariates}}{Number of covariates.}
 #'    \item{\code{n_clusters}}{Number of clusters.}
 #'}
-#' @seealso \code{\link{fit_mhmm}} for fitting mixture Hidden Markov models; 
+#' @seealso \code{\link{fit_model}} for estimating model parameters; 
 #' \code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for 
 #' reorganizing a MHMM into a list of separate hidden Markov models; and
 #' \code{\link{plot.mhmm}} for plotting \code{mhmm} objects.

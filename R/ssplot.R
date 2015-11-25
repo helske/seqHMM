@@ -209,7 +209,7 @@
 #'   }
 #' @seealso \code{\link{ssp}} for creating \code{ssp} objects and \code{\link{plot.ssp}}
 #' and \code{\link{gridplot}} for plotting these; 
-#' \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and 
+#' \code{\link{build_hmm}} and \code{\link{fit_model}} for building and 
 #' fitting hidden Markov models; \code{\link{hidden_paths}} for 
 #' computing the most probable paths of hidden states; and \code{\link{biofam3c}}
 #' \code{\link{hmm_biofam}} for information on the data and model used in the example.

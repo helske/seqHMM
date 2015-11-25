@@ -6,7 +6,7 @@
 #' @export
 #' 
 #' @param x A hidden Markov model object of class mhmm created with 
-#'   \code{\link{build_mhmm}} and \code{\link{fit_mhmm}}. Multichannel 
+#'   \code{\link{build_mhmm}} and \code{\link{fit_model}}. Multichannel 
 #'   mhmm objects are automatically transformed to single channel objects. 
 #'   See function \code{\link{mc_to_sc}} for more information on the 
 #'   transformation.
@@ -112,7 +112,7 @@
 #' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as 
 #'   \code{vertex.color}, \code{vertex.label.cex}, or \code{edge.lty}.
 #'   
-#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_mhmm}} for building and 
+#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_model}} for building and 
 #'   fitting mixture hidden Markov models; \code{\link{plot.igraph}} for plotting 
 #'   directed graphs; and \code{\link{mhmm_biofam}} and \code{\link{mhmm_mvad}} for
 #'   the models used in examples.

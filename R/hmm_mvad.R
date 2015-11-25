@@ -48,11 +48,11 @@
 #'   transition_probs = trans, emission_probs = emiss, 
 #'   initial_probs = initial_probs)
 #'   
-#' hmm_mvad <- fit_hmm(init_hmm_mvad)$model
+#' hmm_mvad <- fit_model(init_hmm_mvad)$model
 #' }
 #'
 #' @seealso Examples of building and fitting HMMs in \code{\link{build_hmm}} and 
-#' \code{\link{fit_hmm}}; and \code{\link[TraMineR]{mvad}} for more information on the data.
+#' \code{\link{fit_model}}; and \code{\link[TraMineR]{mvad}} for more information on the data.
 #' 
 #' @docType data
 #' @keywords datasets

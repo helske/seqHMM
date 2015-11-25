@@ -9,7 +9,7 @@
 #' @param sequence_length Length for simulated sequences.
 #'
 #' @return A list of state sequence objects of class \code{stslist}.
-#' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building 
+#' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building 
 #' and fitting hidden Markov models; \code{\link{ssplot}} for plotting 
 #' multiple sequence data sets; \code{\link{seqdef}} for more
 #' information on state sequence objects; and \code{\link{simulate_mhmm}}

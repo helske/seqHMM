@@ -8,10 +8,8 @@
 #' @param x Hidden Markov model of class \code{hmm} or \code{mhmm}.
 #' @param digits Minimum number of significant digits to print.
 #' @param ... Further arguments to \code{print.default}.
-#' @seealso \code{\link{build_hmm}} and \code{\link{fit_hmm}} for building and 
-#'   fitting hidden Markov models and \code{\link{build_mhmm}} and 
-#'   \code{\link{fit_mhmm}} for building and 
-#'   fitting mixture hidden Markov models.
+#' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building and 
+#'   fitting hidden Markov models.
 print.hmm <- function(x, digits = 3, ...){
   
   
