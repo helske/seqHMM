@@ -11,12 +11,13 @@
 #'   See function \code{\link{mc_to_sc}} for more information on the 
 #'   transformation.
 #' @param layout specifies the layout of the vertices (nodes). Accepts a 
-#'   numerical matrix, a layout function, or either of \code{"horizontal"} (the 
+#'   numerical matrix, a \code{\link[igraph]{layout}} function (without quotation marks), 
+#'   or either of \code{"horizontal"} (the 
 #'   default) and \code{"vertical"}. Options \code{"horizontal"} and 
 #'   \code{"vertical"} position vertices at the same horizontal or vertical 
-#'   line. A two-column matrix can be used to give the x and y coordinates of 
-#'   the vertices, or alternatively an igraph \code{\link[igraph]{layout}} 
-#'   function can be called.
+#'   line. A two-column numerical matrix is used to give x and y coordinates of 
+#'   the vertices. The \code{\link[igraph]{layout}} functions available in the igraph 
+#'   package offer other automatic layouts for graphs.
 #' @param pie Are vertices plotted as pie charts of emission probabilities? 
 #'   Defaulting to TRUE.
 #' @param vertex.size The size of the vertex, given as a scalar or numerical 
@@ -224,8 +225,10 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
     }
   }
   
-  if(!is.matrix(layout) && !is.function(layout)){
-    layout  <- match.arg(layout, c("horizontal", "vertical"))
+  if (!is.matrix(layout) && !is.function(layout)) {
+    if (!(layout %in% c("horizontal", "vertical"))) {
+      stop("Argument layout only accepts numerical matrices, igraph layout functions, or strings \"horizontal\" and \"vertical\".")
+    }
   }
   
   if(!is.numeric(vertex.label.pos)){
@@ -295,13 +298,13 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
   # Adjacency matrix
   edges  <- transM
   edges[edges > 0]  <- 1
-  if(loops == FALSE){
+  if(!loops){
     diag(edges)  <- 0
   }
   
   # Vector of non-zero transition probabilities
   transitions  <- transM
-  if(loops == FALSE){
+  if(!loops && length(transitions) > 1){
     diag(transitions)  <- 0
   }
   transitions  <- t(transitions)[t(transitions) > 0]
@@ -321,6 +324,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
       edge.label  <- edge.label[1:length(transitions)]
     }
   }
+  
   
   # Edge widths
   if(is.character(edge.width)){

@@ -30,7 +30,9 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
   }
   
   if(!is.matrix(layout) && !is.function(layout)){
-    layout <- match.arg(layout, c("horizontal", "vertical"))
+    if (!(layout %in% c("horizontal", "vertical"))) {
+      stop("Argument layout only accepts numerical matrices, igraph layout functions, or strings \"horizontal\" and \"vertical\".")
+    }
   }
   
   if(!is.numeric(vertex.label.pos)){
@@ -100,14 +102,14 @@ HMMplot <- function(x, layout="horizontal", pie=TRUE,
   # Adjacency matrix
   edges <- transM
   edges[edges>0] <- 1
-  if(loops==FALSE){
+  if(!loops){
     diag(edges) <- 0
   }
   
   # Vector of non-zero transition probabilities
   transitions <- transM
-  if(loops==FALSE){
-    diag(transitions) <- 0
+  if(!loops && length(transitions) > 1){
+    diag(transitions)  <- 0
   }
   transitions <- t(transitions)[t(transitions)>0]
   
