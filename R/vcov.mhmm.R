@@ -18,10 +18,8 @@
 #' @export
 #'
 vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = FALSE, ...){
+  
   if (conditional) {
-    #matrix(c(rep(0,model$n_covariates),
-    #  sqrt(diag(varcoef(model$coefficients, model$X, model$n_states)))),
-    #  nrow = model$n_covariates, ncol = model$n_clusters)
     vcovm <- varcoef(object$coefficients, object$X, object$n_states)
   } else {
     if (threads < 1) stop ("Argument threads must be a positive integer.")

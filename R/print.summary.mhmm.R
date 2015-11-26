@@ -23,8 +23,8 @@ print.summary.mhmm <- function(x, digits = 3, ...){
   coefs <- replicate((ncol(x$coefficients) - 1), 
                      matrix(NA, nrow = nrow(x$coefficients), ncol = 2), simplify = FALSE)
   for(i in 1:length(coefs)){
-    coefs[[i]][, 1] <- signif(x$coefficients[, i + 1], digits = digits, ...)
-    coefs[[i]][, 2] <- signif(coef_se[, i], digits = digits, ...)
+    coefs[[i]][, 1] <- x$coefficients[, i + 1]
+    coefs[[i]][, 2] <- coef_se[, i]
     rownames(coefs[[i]]) <- rownames(x$coefficients)
     colnames(coefs[[i]]) <- c("Estimate", "Std. error")
   }
@@ -32,7 +32,7 @@ print.summary.mhmm <- function(x, digits = 3, ...){
   names(coefs) <- cluster_names[-1]
   cat("Covariate effects :\n")
   cat(cluster_names[1], "is the reference.\n\n")
-  print.listof(coefs, print.gap = 2, digits = digits, ...)
+  print.listof(coefs, print.gap = 2, digits = digits, quote = FALSE, ...)
   
   cat("Log-likelihood:", x$logLik, "  BIC:", x$BIC, "\n\n")
   

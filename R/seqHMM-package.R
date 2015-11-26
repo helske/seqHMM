@@ -6,10 +6,12 @@
 #' multiple interdependent sequences (channels). External covariates can be added to 
 #' explain cluster membership in MHMMs. The package provides functions for evaluating 
 #' and comparing models, as well as functions for easy plotting of multichannel sequences 
-#' and hidden Markov models.
+#' and hidden Markov models. Common restricted versions of (M)HMMs are also supported,
+#' namely (mixture) Markov models and latent class models.
 #' 
 #' Maximum likelihood estimation via EM algorithm and direct numerical maximization 
-#' with analytical gradients is supported. All main algorithms are written in C++.
+#' with analytical gradients is supported. All main algorithms are written in C++. 
+#' Parallel computation is implemented via OpenMP.
 #' 
 #' @docType package
 #' @name seqHMM
@@ -29,12 +31,10 @@
 #' @examples 
 #' 
 #' \dontrun{
-#' require(TraMineR)
 #' 
 #' # Loading mvad and biofam3c data
-#' data(mvad) 
-#' data(biofam3c)
-#' 
+#' data("mvad", package = "TraMineR") 
+#' data("biofam3c") 
 #' 
 #' ###############################################################
 #' 
@@ -43,22 +43,22 @@
 #' ##### Plotting multichannel data #####
 #' 
 #' # Creating sequence objects (data: biofam3c)
-#' child.seq <- seqdef(biofam3c$children, start = 15)
-#' marr.seq <- seqdef(biofam3c$married, start = 15)
-#' left.seq <- seqdef(biofam3c$left, start = 15)
+#' child_seq <- seqdef(biofam3c$children, start = 15)
+#' marr_seq <- seqdef(biofam3c$married, start = 15)
+#' left_seq <- seqdef(biofam3c$left, start = 15)
 #' 
 #' ## Choosing colors
-#' attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
-#' attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-#' attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+#' attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
+#' attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+#' attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 #' 
 #' # Plotting state distribution plots of observations
-#' ssplot(list(child.seq, marr.seq, left.seq), type = "d", plots = "obs")
+#' ssplot(list(child_seq, marr_seq, left_seq), type = "d", plots = "obs")
 #' 
 #' # Plotting sequence index plots of observations
 #' ssplot(
-#'   list(child.seq, marr.seq, left.seq), type = "I", plots = "obs",
-#'   # Sorting subjects according to the beginning of the 2nd channel (marr.seq)
+#'   list(child_seq, marr_seq, left_seq), type = "I", plots = "obs",
+#'   # Sorting subjects according to the beginning of the 2nd channel (marr_seq)
 #'   sortv = "from.start", sort.channel = 2, 
 #'   # Controlling the size, positions, and names for channel labels
 #'   ylab.pos = c(1, 2, 1), cex.lab = 1, ylab = c("Children", "Married", "Left home"), 
@@ -70,20 +70,20 @@
 #' 
 #' # Creating sequence data (data: mvad)
 #' 
-#' mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school", 
+#' mvad_alphabet <- c("employment", "FE", "HE", "joblessness", "school", 
 #' "training")
-#' mvad.labels <- c("employment", "further education", "higher education", 
+#' mvad_labels <- c("employment", "further education", "higher education", 
 #'                  "joblessness", "school", "training")
-#' mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-#' mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes, 
-#'                    labels = mvad.labels, xtstep = 6)
+#' mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
+#' mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet, states = mvad_scodes, 
+#'                    labels = mvad_labels, xtstep = 6)
 #' 
 #' # Defining plots for gridplot                   
 #' ssp_m <- ssp(
-#'   mvad.seq[mvad$male == "yes",], type = "d", withlegend = FALSE,
+#'   mvad_seq[mvad$male == "yes",], type = "d", withlegend = FALSE,
 #'   title = "Men", ylab = NA, border = NA
 #'   )
-#' ssp_f <- update(ssp_m, x = mvad.seq[mvad$male == "no",], title = "Women")
+#' ssp_f <- update(ssp_m, x = mvad_seq[mvad$male == "no",], title = "Women")
 #' 
 #' # Plotting ssp_m and ssp_f in a grid
 #' gridplot(list(ssp_m, ssp_f), ncol = 2, ncol.legend = 2)
@@ -91,7 +91,7 @@
 #' 
 #' ##### Converting multichannel to single-channel data #####
 #' 
-#' sc_biofam <- mc_to_sc_data(list(marr.seq, child.seq, left.seq))
+#' sc_biofam <- mc_to_sc_data(list(marr_seq, child_seq, left_seq))
 #' 
 #' ssplot(sc_biofam, type = "d", legend.prop = 0.5, ylab = "Proportion")
 #' 
@@ -104,10 +104,10 @@
 #'
 #' # Starting values for the emission matrix
 #' emiss <- matrix(NA, nrow = 4, ncol = 6)
-#' emiss[1,] <- seqstatf(mvad.seq[, 1:12])[, 2] + 0.1
-#' emiss[2,] <- seqstatf(mvad.seq[, 13:24])[, 2] + 0.1
-#' emiss[3,] <- seqstatf(mvad.seq[, 25:48])[, 2] + 0.1
-#' emiss[4,] <- seqstatf(mvad.seq[, 49:70])[, 2] + 0.1
+#' emiss[1,] <- seqstatf(mvad_seq[, 1:12])[, 2] + 0.1
+#' emiss[2,] <- seqstatf(mvad_seq[, 13:24])[, 2] + 0.1
+#' emiss[3,] <- seqstatf(mvad_seq[, 25:48])[, 2] + 0.1
+#' emiss[4,] <- seqstatf(mvad_seq[, 49:70])[, 2] + 0.1
 #' emiss <- emiss / rowSums(emiss)
 #' 
 #' # Starting values for the transition matrix
@@ -122,18 +122,17 @@
 #' 
 #' # Building a hidden Markov model with starting values
 #' bhmm_mvad <- build_hmm(
-#'   observations = mvad.seq, transition_probs = trans, 
+#'   observations = mvad_seq, transition_probs = trans, 
 #'   emission_probs = emiss, initial_probs = initialpr
 #' )
 #' 
 #' # Fitting with the EM algorithm
-#' hmm_mvad <- fit_model(bhmm_mvad)
+#' fit_mvad <- fit_model(bhmm_mvad)
 #'   
 #'   
 #' ##### Multichannel biofam3c data #####
 #' 
-#' # see ?fit_model
-#' 
+#' # see ?fit_model 
 #' 
 #' ###############################################################
 #' 
@@ -144,38 +143,40 @@
 #' # Starting values for emission matrices
 #' B1 <- matrix(c(0.26, 0.39, 0.01, 0.06, 0.04, 0.24,
 #'                0.58, 0.12, 0.09, 0.10, 0.01, 0.10,
-#'                0.73, 0.02, 0.09, 0.13, 0.01, 0.02), nrow = 3, ncol = 6, byrow = TRUE)
+#'                0.73, 0.02, 0.09, 0.13, 0.01, 0.02), 
+#'              nrow = 3, ncol = 6, byrow = TRUE)
 #' 
 #' B2 <- matrix(c(0.01, 0.02, 0.01, 0.01, 0.94, 0.01,
 #'                0.05, 0.06, 0.15, 0.01, 0.72, 0.01,
 #'                0.19, 0.13, 0.60, 0.01, 0.05, 0.02,
-#'                0.32, 0.03, 0.60, 0.03, 0.01, 0.01), nrow = 4, ncol = 6, byrow = TRUE)
+#'                0.32, 0.03, 0.60, 0.03, 0.01, 0.01), 
+#'              nrow = 4, ncol = 6, byrow = TRUE)
 #' 
 #' # Starting values for transition matrices
 #' 
 #' A1 <-  matrix(c(0.80, 0.10, 0.10,
 #'                 0.10, 0.80, 0.10,
-#'                 0.10, 0.10, 0.80), nrow=3, ncol=3, byrow=TRUE)
+#'                 0.10, 0.10, 0.80), 
+#'               nrow = 3, ncol = 3, byrow = TRUE)
 #' 
 #' A2 <-  matrix(c(0.80, 0.10, 0.05, 0.05,
 #'                 0.05, 0.80, 0.10, 0.05,
 #'                 0.05, 0.05, 0.80, 0.10,
-#'                 0.05, 0.05, 0.10, 0.80), nrow=4, ncol=4, byrow=TRUE)
+#'                 0.05, 0.05, 0.10, 0.80), 
+#'               nrow = 4, ncol = 4, byrow = TRUE)
 #' 
 #' # Starting values for initial state probabilities
 #' initial_probs1 <- c(0.4, 0.3, 0.3)
 #' initial_probs2 <- c(0.3, 0.3, 0.2, 0.2)
 #' 
 #' # Building a mixture hidden Markov model with the starting values
-#' bmhmm_mvad <- build_mhmm(
-#'   observations = mvad.seq, 
+#' bmhmm_mvad <- build_mhmm(observations = mvad_seq, 
 #'   transition_probs = list(A1, A2), 
 #'   emission_probs = list(B1, B2), 
-#'   initial_probs = list(initial_probs1, initial_probs2)
-#' )
+#'   initial_probs = list(initial_probs1, initial_probs2))
 #' 
 #' # Fitting a MHMM with the EM algorithm
-#' mhmm_mvad <- fit_model(bmhmm_mvad)
+#' fit_mvad <- fit_model(bmhmm_mvad)
 #'   
 #'   
 #' ##### Multichannel biofam3c data #####
@@ -183,20 +184,20 @@
 #' # Starting values for emission probabilities
 #' 
 #' # Cluster 1
-#' alphabet(child.seq) # Checking for the order of observed states
+#' alphabet(child_seq) # Checking for the order of observed states
 #' B1_child <- matrix(c(0.99, 0.01, # High probability for childless
 #'                      0.99, 0.01,
 #'                      0.99, 0.01,
 #'                      0.99, 0.01), nrow = 4, ncol = 2, byrow = TRUE)
 #' 
-#' alphabet(marr.seq)                      
+#' alphabet(marr_seq)                      
 #' B1_marr <- matrix(c(0.01, 0.01, 0.98, # High probability for single
 #'                     0.01, 0.01, 0.98,
 #'                     0.01, 0.98, 0.01, # High probability for married
 #'                     0.98, 0.01, 0.01), # High probability for divorced
 #'                     nrow = 4, ncol = 3, byrow = TRUE)                   
 #' 
-#' alphabet(left.seq)
+#' alphabet(left_seq)
 #' B1_left <- matrix(c(0.01, 0.99, # High probability for living with parents
 #'                     0.99, 0.01, # High probability for having left home
 #'                     0.99, 0.01,
@@ -269,7 +270,7 @@
 #' 
 #' # Build mixture HMM
 #' bmhmm_biofam <- build_mhmm(
-#'   observations = list(child.seq, marr.seq, left.seq),
+#'   observations = list(child_seq, marr_seq, left_seq),
 #'   transition_probs = list(A1,A1,A2),
 #'   emission_probs = list(list(B1_child, B1_marr, B1_left),
 #'                         list(B2_child, B2_marr, B2_left), 
@@ -281,7 +282,7 @@
 #'   )
 #' 
 #' # Fitting the model with the EM algorithm
-#' mhmm_biofam <- fit_model(bmhmm_biofam)
+#' fit_biofam <- fit_model(bmhmm_biofam)
 #' 
 #' 
 #' ###############################################################
@@ -367,10 +368,10 @@
 #' model <- build_mhmm(obs= seqdef(birthwt$low), low ~ age + lwt + smoke + ht, birthwt,
 #'   transition_probs = list(a, a), initial_probs = list(1, 1), emission_probs = list(b1, b2))
 #' fit <- fit_model(model)
-#' summary(fit$model)[c("coefficients", "coef_se", "logLik")]
+#' summary(fit$model)
 #' summary(glm(low ~ age + lwt + smoke + ht, binomial, data = birthwt))
 #' 
-# multinomial regression
+#' # Multinomial regression
 #' 
 #' require("nnet")
 #' 
