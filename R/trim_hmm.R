@@ -111,7 +111,7 @@ trim_model <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verb
         return(model_original)
       }
       if (!isTRUE(all.equal(ll0,ll_original)) && ll0 < ll_original)  {
-        warning("Trimming resulted model with smaller log-likelihood.")
+        warning("Trimming resulted model with smaller log-likelihood; returning the original model. ")
         return(model_original)
       }
       if(maxit > 0){

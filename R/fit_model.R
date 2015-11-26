@@ -164,75 +164,59 @@
 #'   stacked sequence plots of \code{hmm} and \code{mhmm} objects.
 #' @examples
 #' 
-#' # Single-channel
+#' # Hidden Markov model
+#' data("mvad", package = "TraMineR")
 #' 
-#' data(mvad, package = "TraMineR")
-#' 
-#' mvad.alphabet <- c(
-#'   "employment", "FE", "HE", "joblessness", "school", "training")
-#' mvad.labels <- c(
-#'   "employment", "further education", "higher education",
+#' mvad_alphabet <- 
+#'   c("employment", "FE", "HE", "joblessness", "school", "training")
+#' mvad_labels <- c("employment", "further education", "higher education",
 #'   "joblessness", "school", "training")
-#' mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-#' mvad.seq <- seqdef(
-#'   mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes,
-#'   labels = mvad.labels, xtstep = 6)
+#' mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
+#' mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet, 
+#'   states = mvad_scodes, labels = mvad_labels, xtstep = 6)
 #' 
-#' attr(mvad.seq, "cpal") <- colorpalette[[6]]
+#' attr(mvad_seq, "cpal") <- colorpalette[[6]]
 #' 
-#' # Starting values for the emission matrices
-#' emiss_1 <- matrix(
-#'   c(0.01, 0.17, 0.01, 0.01, 0.05, 0.75,
-#'     0.95, 0.01, 0.01, 0.01, 0.01, 0.01,
-#'     0.01, 0.01, 0.01, 0.95, 0.01, 0.01),
-#'   nrow = 3, ncol = 6, byrow = TRUE)
-#' 
-#' emiss_2 <- matrix(
-#'   c(0.01, 0.01, 0.01, 0.01, 0.95, 0.01,
-#'     0.01, 0.84, 0.01, 0.09, 0.01, 0.04,
-#'     0.01, 0.01, 0.95, 0.01, 0.01, 0.01,
-#'     0.95, 0.01, 0.01, 0.01, 0.01, 0.01),
-#'   nrow = 4, ncol = 6, byrow = TRUE)
+#' # Starting values for the emission matrix
+#' emiss <- matrix(
+#'   c(0.1, 0.1, 0.1, 0.1, 0.5, 0.1, # SC
+#'     0.1, 0.5, 0.1, 0.1, 0.1, 0.1, # FE
+#'     0.1, 0.1, 0.1, 0.3, 0.1, 0.3, # JL, TR
+#'     0.1, 0.1, 0.5, 0.1, 0.1, 0.1, # HE
+#'     0.5, 0.1, 0.1, 0.1, 0.1, 0.1),# EM 
+#'   nrow = 5, ncol = 6, byrow = TRUE)
 #' 
 #' # Starting values for the transition matrix
-#' 
-#' trans_1 <-  matrix(
-#'   c(0.92, 0.05, 0.03,
-#'     0.01, 0.97, 0.02,
-#'     0.02, 0.04, 0.94),
-#'   nrow = 3, ncol = 3, byrow = TRUE)
-#' 
-#' trans_2 <-  matrix(
-#'   c(0.93, 0.02, 0.03, 0.02,
-#'     0.01, 0.93, 0.02, 0.04,
-#'     0.01, 0.01, 0.96, 0.02,
-#'     0.01, 0.02, 0.02, 0.95),
-#'   nrow = 4, ncol = 4, byrow = TRUE)
+#' trans <-  matrix(
+#'   c(0.80, 0.05, 0.05, 0.05, 0.05,
+#'     0.05, 0.05, 0.80, 0.05, 0.05,
+#'     0.05, 0.05, 0.80, 0.05, 0.05,
+#'     0.05, 0.05, 0.05, 0.80, 0.05,
+#'     0.05, 0.05, 0.05, 0.05, 0.80), 
+#'   nrow=5, ncol=5, byrow=TRUE)
 #' 
 #' # Starting values for initial state probabilities
-#' initial_probs_1 <- c(0.73, 0.23, 0.04)
-#' initial_probs_2 <- c(0.4, 0.05, 0.5, 0.05)
+#' initial_probs <- c(0.2, 0.2, 0.2, 0.2, 0.2)
 #' 
-#' # Building a hidden Markov model with starting values
-#' # No covariates
-#' init_mhmm_mvad <- build_mhmm(
-#'   observations = mvad.seq,
-#'   transition_probs = list(trans_1, trans_2),
-#'   emission_probs = list(emiss_1, emiss_2),
-#'   initial_probs = list(initial_probs_1, initial_probs_2))
+#' # Building a hidden Markov model
+#' init_hmm_mvad <- build_hmm(observations = mvad_seq, 
+#'   transition_probs = trans, emission_probs = emiss, 
+#'   initial_probs = initial_probs)
+#'   
+#' hmm_mvad <- fit_model(init_hmm_mvad)$model
 #' 
+#' # Markov model
 #' 
-#' # Fitting the model with the EM algorithm
-#' fit_mvad <- fit_model(init_mhmm_mvad, control_em = list(reltol = 1e-8))
-#' fit_mvad$logLik # -14960.03
+#' init_mm_mvad <- build_mm(observations = mvad_seq, 
+#'   transition_probs = simulate_transition_probs(6), 
+#'   initial_probs = rep(1/6,6))
 #' 
-#' \dontrun{
-#' # Run EM algorithm 25 times with simulated starting values
-#' set.seed(321)
-#' fit_mvad2 <- fit_model(init_mhmm_mvad, control_em = list(restart = list(times = 25)))
-#' fit_mvad2$logLik # -14533.7
-#' }
+#' mm_mvad <- fit_model(init_mm_mvad)$model
 #' 
+#' logLik(hmm_mvad)
+#' logLik(mm_mvad)
+#' plot(mm_mvad, layout = layout_in_circle, edge.curved = FALSE, 
+#'   edge.arrow.size = 0.5, edge.width = 1)
 #' ##############################################################
 #' 
 #' #' # Three-state three-channel hidden Markov model
@@ -573,7 +557,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     counter <- 1
     if (!is.null(em.con$restart) && restart.con$times > 0 && 
         (restart.con$transition | restart.con$emission)) {
-      if (resEM$error == 0) {
+      if (!mhmm || resEM$error == 0) {
         random_emiss <- resEM$emissionArray
         random_emiss[(random_emiss < 1e-4) & (emissionArray >= 1e-4)] <- 1e-4
         for (j in 1:model$n_channels) {
@@ -628,28 +612,26 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
             resEMi <- log_EM(random_trans, random_emiss, model$initial_probs, obsArray,
               model$n_symbols, restart.con$maxeval, restart.con$reltol,restart.con$print_level, threads)
           }
-          
         }
         
         
-      } 
-      
-      if (mhmm && resEMi$error != 0) {
-        err_msg <- switch(resEMi$error, 
-          "1" = "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
-          "2" = "Estimation of coefficients of covariates failed due to singular Hessian.",
-          "3" = "Estimation of coefficients of covariates failed due to non-finite cluster probabilities.",
-          "4" = "Non-finite log-likelihood.")
-        warning(paste("EM algorithm failed:", err_msg))
-      } else {
-        if (is.finite(resEMi$logLik) && isTRUE(all.equal(resEMi$logLik, resEM$logLik))) {
-          counter <- counter + 1
-        } else if (is.finite(resEMi$logLik) && resEMi$logLik > resEM$logLik) {
-          resEM <- resEMi
-          counter <- 1
+        
+        if (mhmm && resEMi$error != 0) {
+          err_msg <- switch(resEMi$error, 
+            "1" = "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
+            "2" = "Estimation of coefficients of covariates failed due to singular Hessian.",
+            "3" = "Estimation of coefficients of covariates failed due to non-finite cluster probabilities.",
+            "4" = "Non-finite log-likelihood.")
+          warning(paste("EM algorithm failed:", err_msg))
+        } else {
+          if (is.finite(resEMi$logLik) && isTRUE(all.equal(resEMi$logLik, resEM$logLik))) {
+            counter <- counter + 1
+          } else if (is.finite(resEMi$logLik) && resEMi$logLik > resEM$logLik) {
+            resEM <- resEMi
+            counter <- 1
+          }
         }
       }
-      
       if (em.con$reltol < restart.con$reltol) {
         if (!log_space) {
           if (mhmm) {

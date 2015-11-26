@@ -109,7 +109,8 @@
 #' 
 #' # Plotting HMM
 #' plot(hmm_mvad)
-#' 
+#' plot(hmm_mvad, layout = layout_in_circle, edge.curved = FALSE, 
+#'   edge.arrow.size = 0.5, edge.width = 1)
 #' \dontrun{
 #' 
 #' # Multichannel data

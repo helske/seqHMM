@@ -14,6 +14,10 @@
 #'   \item{scaling_factors}{Sum of non-scaled forward probabilities at each time point. Only computed if \code{log_space = FALSE}.} 
 #'   In case of multiple observations, these are computed independently for each sequence.
 forward_backward <- function(model, forward_only = FALSE, log_space = FALSE, threads = 1){
+  
+  if(!inherits(model, c("hmm", "mhmm")))
+    stop("Argument model must be an object of class 'hmm' or 'mhmm.")
+  
   if(inherits(model,"mhmm")){
     mix <- TRUE
     model <- combine_models(model)

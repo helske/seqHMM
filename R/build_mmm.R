@@ -1,6 +1,7 @@
 #' Build a Mixture Markov Model
 #' 
-#' Function \code{build_mmm} is a shortcut for constructing a mixture Markov model as an restricted case of \code{mhmm} object.
+#' Function \code{build_mmm} is a shortcut for constructing a mixture Markov 
+#' model as an restricted case of \code{mhmm} object.
 #' 
 #' @export
 #' @useDynLib seqHMM

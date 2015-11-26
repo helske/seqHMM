@@ -25,14 +25,14 @@
 #' 
 #' # Starting values for the emission matrices
 #' emiss_1 <- matrix(
-#'   c(0.01, 0.17, 0.01, 0.01, 0.05, 0.75,
+#'   c(0.01, 0.01, 0.01, 0.01, 0.01, 0.95,
 #'     0.95, 0.01, 0.01, 0.01, 0.01, 0.01,
 #'     0.01, 0.01, 0.01, 0.95, 0.01, 0.01), 
 #'   nrow = 3, ncol = 6, byrow = TRUE)
 #' 
 #' emiss_2 <- matrix(
-#'   c(0.01, 0.01, 0.01, 0.01, 0.95, 0.01,
-#'     0.01, 0.84, 0.01, 0.09, 0.01, 0.04,
+#'   c(0.01, 0.01, 0.01, 0.06, 0.90, 0.01,
+#'     0.01, 0.95, 0.01, 0.01, 0.01, 0.01,
 #'     0.01, 0.01, 0.95, 0.01, 0.01, 0.01,
 #'     0.95, 0.01, 0.01, 0.01, 0.01, 0.01), 
 #'   nrow = 4, ncol = 6, byrow = TRUE)
@@ -40,36 +40,32 @@
 #' # Starting values for the transition matrix
 #' 
 #' trans_1 <-  matrix(
-#'   c(0.92, 0.05, 0.03,
-#'     0.01, 0.97, 0.02,
-#'     0.02, 0.04, 0.94), 
+#'   c(0.95, 0.03, 0.02,
+#'     0.01, 0.98, 0.01,
+#'     0.01, 0.01, 0.98), 
 #'   nrow = 3, ncol = 3, byrow = TRUE)
 #' 
 #' trans_2 <-  matrix(
-#'   c(0.93, 0.02, 0.03, 0.02,
-#'     0.01, 0.93, 0.02, 0.04,
-#'     0.01, 0.01, 0.96, 0.02,
-#'     0.01, 0.02, 0.02, 0.95), 
+#'   c(0.97, 0.01, 0.01, 0.01,
+#'     0.01, 0.97, 0.01, 0.01,
+#'     0.01, 0.01, 0.97, 0.01,
+#'     0.01, 0.01, 0.01, 0.97), 
 #'   nrow = 4, ncol = 4, byrow = TRUE)
 #' 
 #' # Starting values for initial state probabilities
-#' initial_probs_1 <- c(0.73, 0.23, 0.04)
-#' initial_probs_2 <- c(0.4, 0.05, 0.5, 0.05)
+#' initial_probs_1 <- c(0.5, 0.25, 0.25)
+#' initial_probs_2 <- c(0.4, 0.4, 0.1, 0.1)
 #' 
 #' # Building a hidden Markov model with starting values
-#' # No covariates
-#' init_mhmm_mvad <- build_mhmm(
-#'   observations = mvad.seq, 
+#' init_mhmm_mvad <- build_mhmm(observations = mvad_seq, 
 #'   transition_probs = list(trans_1, trans_2), 
 #'   emission_probs = list(emiss_1, emiss_2), 
 #'   initial_probs = list(initial_probs_1, initial_probs_2))
 #' 
 #' # Fit the model
 #' set.seed(123)
-#' fit_mvad <- fit_model(init_mhmm_mvad, control_em = list(restarts = 10))
+#' mhmm_mvad <- fit_model(init_mhmm_mvad, control_em = list(restart = list(times = 10)))$model
 #' 
-#' # Trim the model
-#' mhmm_mvad <- trim_model(fit_mvad$model, zerotol = 1e-04)
 #' }
 #'   
 #' @seealso Examples of building and fitting MHMMs in \code{\link{build_mhmm}} and 

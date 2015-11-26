@@ -12,37 +12,38 @@
 #' \describe{
 #'    \item{\code{observations}}{State sequence object or a list of such containing the data.}
 #'    \item{\code{transition_probs}}{A matrix of transition probabilities.}
-#'    \item{\code{emission_probs}}{Identity matrix.}
+#'    \item{\code{emission_probs}}{A matrix or a list of matrices of emission probabilities.}
 #'    \item{\code{initial_probs}}{A vector of initial probabilities.}
-#'    \item{\code{state_names}}{Names for states.}
-#'    \item{\code{symbol_names}}{Names for states.}
-#'    \item{\code{channel_names}}{NULL}
+#'    \item{\code{state_names}}{Names for hidden states.}
+#'    \item{\code{symbol_names}}{Names for observed states.}
+#'    \item{\code{channel_names}}{Names for channels of sequence data.}
 #'    \item{\code{length_of_sequences}}{(Maximum) length of sequences.}
 #'    \item{\code{n_sequences}}{Number of sequences.}
-#'    \item{\code{n_symbols}}{Number of states.}
-#'    \item{\code{n_states}}{Number of states.}
-#'    \item{\code{n_channels}}{1.}
+#'    \item{\code{n_symbols}}{Number of observed states (in each channel).}
+#'    \item{\code{n_states}}{Number of hidden states.}
+#'    \item{\code{n_channels}}{Number of channels.}
 #'}
 #' 
 #' @examples 
-#' require(TraMineR)
 #' 
-#'
-#' data(mvad)
+#' data("mvad", package = "TraMineR")
 #' 
-#' mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school", 
-#'                    "training")
-#' mvad.labels <- c("employment", "further education", "higher education", 
-#'                  "joblessness", "school", "training")
-#' mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-#' mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes, 
-#'                    labels = mvad.labels, xtstep = 6)
+#' mvad_alphabet <- 
+#'   c("employment", "FE", "HE", "joblessness", "school", "training")
+#' mvad_labels <- c("employment", "further education", "higher education",
+#'   "joblessness", "school", "training")
+#' mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
+#' mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet, 
+#'   states = mvad_scodes, labels = mvad_labels, xtstep = 6)
 #' 
-
-#' # Building a Markov model with starting values
-#' init_mm_mvad <- build_mm(observations = mvad.seq, 
-#'   transition_probs = matrix(1,6,6)/6, 
-#'   initial_probs = rep(1/6, 6))
+#' attr(mvad_seq, "cpal") <- colorpalette[[6]]
+#' 
+#' 
+#' init_mm_mvad <- build_mm(observations = mvad_seq, 
+#'   transition_probs = simulate_transition_probs(6), 
+#'   initial_probs = rep(1/6,6))
+#' 
+#' mm_mvad <- fit_model(init_mm_mvad)
 #' 
 #' @seealso \code{\link{fit_model}} for estimating model parameters.
 

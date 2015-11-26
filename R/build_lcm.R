@@ -8,7 +8,7 @@
 #' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
 #'   the sequences, or a list of such objects (one for each channel).
 #' @param emission_probs A matrix containing emission probabilities for each class by rows, 
-#' or in case of multichannel data a list of such matrices. 
+#'   or in case of multichannel data a list of such matrices. 
 #'   Note that the matrices must have dimensions k x s where k is the number of 
 #'   latent classes and s is the number of unique symbols (observed states) in the 
 #'   data. Emission probabilities should follow the ordering of the alphabet of 
@@ -50,6 +50,17 @@
 #' \code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
 #' 
 #' @examples
+#' 
+#' # simulate observations from two classes
+#' set.seed(123)
+#' obs <- seqdef(rbind(
+#'   matrix(sample(letters[1:3], 5000, TRUE, prob = c(0.1, 0.6, 0.3)), 500, 10),
+#'   matrix(sample(letters[1:3], 2000, TRUE, prob = c(0.4, 0.4, 0.2)), 200, 10)))
+#' 
+#' model <- build_lcm(obs, simulate_emission_probs(2, 3))
+#' fit <- fit_model(model)
+#' # how many of the observations were correctly classified:
+#' sum(summary(fit$model)$most_probable_cluster == rep(c("Class 2", "Class 1"), times = c(500, 200)))
 #' 
 build_lcm <- 
   function(observations, emission_probs, 

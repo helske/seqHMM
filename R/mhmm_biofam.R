@@ -14,17 +14,17 @@
 #' data(biofam3c)
 #' 
 #' ## Building sequence objects
-#' marr.seq <- seqdef(biofam3c$married, start = 15,
+#' marr_seq <- seqdef(biofam3c$married, start = 15,
 #'   alphabet = c("single", "married", "divorced"))
-#' child.seq <- seqdef(biofam3c$children, start = 15,
+#' child_seq <- seqdef(biofam3c$children, start = 15,
 #'   alphabet = c("childless", "children"))
-#' left.seq <- seqdef(biofam3c$left, start = 15,
+#' left_seq <- seqdef(biofam3c$left, start = 15,
 #'   alphabet = c("with parents", "left home"))
 #' 
 #' ## Choosing colors
-#' attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-#' attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
-#' attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+#' attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+#' attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
+#' attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 #' 
 #' Starting values for emission probabilities
 #' Cluster 1
@@ -129,20 +129,20 @@
 #' 
 #' # Build mixture HMM
 #' init_mhmm_biofam <- build_mhmm(
-#'   observations = list(marr.seq, child.seq, left.seq),
+#'   observations = list(marr_seq, child_seq, left_seq),
 #'   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
 #'   transition_probs = list(A1, A1, A2),
 #'   emission_probs = list(list(B1_marr, B1_child, B1_left),
 #'     list(B2_marr, B2_child, B2_left),
 #'     list(B3_marr, B3_child, B3_left)),
-#'   formula = ~sex + cohort, data = biofam3c$covariates,
+#'   formula = ~ sex + cohort, data = biofam3c$covariates,
 #'   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
 #'   channel_names = c("Marriage", "Parenthood", "Residence"),
 #'   state_names = list(paste("State", 1:4), paste("State", 1:4), 
 #'                      paste("State", 1:6)))
 #' 
 #' # Fitting the model
-#' mhmm_biofam <- fit_model(init_mhmm_biofam)
+#' mhmm_biofam <- fit_model(init_mhmm_biofam)$model
 #' }
 #'   
 #' @seealso Examples of building and fitting MHMMs in \code{\link{build_mhmm}} and 

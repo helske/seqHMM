@@ -25,6 +25,10 @@
 
 hidden_paths <- function(model){
   
+  if(!inherits(model, c("hmm", "mhmm")))
+    stop("Argument model must be an object of class 'hmm' or 'mhmm.")
+    
+    
   if(inherits(model,"mhmm")){
     model <- combine_models(model)
     mix <- TRUE
