@@ -11,7 +11,7 @@
 #'   See function \code{\link{mc_to_sc}} for more information on the 
 #'   transformation.
 #' @param layout specifies the layout of the vertices (nodes). Accepts a 
-#'   numerical matrix, a \code{\link[igraph]{layout}} function, 
+#'   numerical matrix, a \code{\link[igraph]{layout}} function (without quotation marks), 
 #'   or either of \code{"horizontal"} (the 
 #'   default) and \code{"vertical"}. Options \code{"horizontal"} and 
 #'   \code{"vertical"} position vertices at the same horizontal or vertical 
@@ -224,8 +224,10 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
     }
   }
   
-  if(!is.matrix(layout) && !is.function(layout)){
-    layout  <- match.arg(layout, c("horizontal", "vertical"))
+  if (!is.matrix(layout) && !is.function(layout)) {
+    if (!(layout %in% c("horizontal", "vertical"))) {
+      stop("Argument layout only accepts numerical matrices, igraph layout functions, or strings \"horizontal\" and \"vertical\".")
+    }
   }
   
   if(!is.numeric(vertex.label.pos)){
