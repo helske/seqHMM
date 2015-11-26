@@ -23,12 +23,13 @@ See function \code{\link{mc_to_sc}} for more information on the
 transformation.}
 
 \item{layout}{specifies the layout of the vertices (nodes). Accepts a
-numerical matrix, a layout function, or either of \code{"horizontal"} (the
+numerical matrix, a \code{\link[igraph]{layout}} function (without quotation marks),
+or either of \code{"horizontal"} (the
 default) and \code{"vertical"}. Options \code{"horizontal"} and
 \code{"vertical"} position vertices at the same horizontal or vertical
-line. A two-column matrix can be used to give the x and y coordinates of
-the vertices, or alternatively an igraph \code{\link[igraph]{layout}}
-function can be called.}
+line. A two-column numerical matrix is used to give x and y coordinates of
+the vertices. The \code{\link[igraph]{layout}} functions available in the igraph
+package offer other automatic layouts for graphs.}
 
 \item{pie}{Are vertices plotted as pie charts of emission probabilities?
 Defaulting to TRUE.}
@@ -145,9 +146,11 @@ data(hmm_mvad)
 
 # Plotting HMM
 plot(hmm_mvad)
+\dontrun{
+
+require(igraph)
 plot(hmm_mvad, layout = layout_in_circle, edge.curved = FALSE,
   edge.arrow.size = 0.5, edge.width = 1)
-\dontrun{
 
 # Multichannel data
 

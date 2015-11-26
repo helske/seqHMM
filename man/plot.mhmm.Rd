@@ -45,13 +45,14 @@ value is \code{"auto"} for even row heights. Takes a vector of values from
   value is \code{"auto"} for even column widths. Takes a vector of values
   from 0 to 1, with values summing to 1. Ignored if \code{interactive = TRUE}.}
 
-\item{layout}{specifies the layout of the vertices (nodes). Accepts a
-numerical matrix, a layout function, or either of \code{"horizontal"} (the
+\item{layout}{layout specifies the layout of the vertices (nodes). Accepts a
+numerical matrix, a \code{\link[igraph]{layout}} function (without quotation marks),
+or either of \code{"horizontal"} (the
 default) and \code{"vertical"}. Options \code{"horizontal"} and
 \code{"vertical"} position vertices at the same horizontal or vertical
-line. A two-column matrix can be used to give the x and y coordinates of
-the vertices, or alternatively an igraph \code{\link[igraph]{layout}}
-function can be called.}
+line. A two-column numerical matrix is used to give x and y coordinates of
+the vertices. The \code{\link[igraph]{layout}} functions available in the igraph
+package offer other automatic layouts for graphs.}
 
 \item{pie}{Are vertices plotted as pie charts of emission probabilities?
 Defaulting to TRUE.}
