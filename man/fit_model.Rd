@@ -187,8 +187,12 @@ mm_mvad <- fit_model(init_mm_mvad)$model
 
 logLik(hmm_mvad)
 logLik(mm_mvad)
+
+require("igraph") #for layout_in_circle
+
 plot(mm_mvad, layout = layout_in_circle, edge.curved = FALSE,
   edge.arrow.size = 0.5, edge.width = 1)
+
 ##############################################################
 
 #' # Three-state three-channel hidden Markov model
