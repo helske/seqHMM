@@ -5,7 +5,7 @@
 #' @export
 #' @param data A list of state sequence objects created with the \code{\link{seqdef}} function.
 #' @param combine_missing Controls whether combined states of observations are
-#'   coded missing (NA) if some of the channels include missing information.
+#'   coded missing (\code{NA}) if some of the channels include missing information.
 #'   Defaults to \code{TRUE}.
 #' @param all_combinations Controls whether all possible combinations of
 #'   observed states are included in the single channel representation or only
@@ -13,32 +13,9 @@
 #'   only actual observations are included.
 #'
 #' @examples
-#' require(TraMineR)
 #'
-#' data(biofam)
-#' biofam <- biofam[1:500,]
-#'
-#' # Building one channel per type of event left, children or married
-#' bf <- as.matrix(biofam[, 10:25])
-#' children <-  bf == 4 | bf == 5 | bf == 6
-#' married <- bf == 2 | bf == 3 | bf == 6
-#' left <- bf == 1 | bf == 3 | bf == 5 | bf == 6
-#'
-#' children[children == TRUE] <- "Children"
-#' children[children == FALSE] <- "Childless"
-#'
-#' married[married == TRUE] <- "Married"
-#' married[married == FALSE] <- "Single"
-#'
-#' left[left == TRUE] <- "Left home"
-#' left[left == FALSE] <- "With parents"
-#'
-#' # Building sequence objects
-#' child.seq <- seqdef(children)
-#' marr.seq <- seqdef(married)
-#' left.seq <- seqdef(left)
-#'
-#' scdata <- mc_to_sc_data(list(child.seq, marr.seq, left.seq))
+#' ssplot(hmm_biofam$observations)
+#' ssplot(mc_to_sc_data(hmm_biofam$observations))
 #'
 #' @seealso \code{\link{seqdef}} for creating state sequence objects.
 

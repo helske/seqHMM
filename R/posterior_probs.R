@@ -1,7 +1,7 @@
-#' Posterior Probabilities for Hidden Markov Model
+#' Posterior Probabilities for (Mixture) Hidden Markov Model
 #'
 #' Function \code{posterior_probs} computes the posterior probabilities of hidden states of
-#' a hidden Markov model.
+#' a (mixture) hidden Markov model.
 #'
 #' @export 
 #' @param model A (mixture) hidden Markov model of class \code{hmm} or \code{mhmm}.
@@ -15,7 +15,8 @@ posterior_probs <- function(model, log_space = FALSE){
   fb$forward_probs * fb$backward_probs
   } else {
     ll <- logLik(model, partials = TRUE, log_space = TRUE)
-    fb$forward_probs + fb$backward_probs - array(rep(ll, each = 
-        sum(model$n_states)*model$length_of_sequences), c(sum(model$n_states), model$length_of_sequences, model$n_sequences))
+    fb$forward_probs + fb$backward_probs - 
+      array(rep(ll, each = sum(model$n_states)*model$length_of_sequences), 
+        c(sum(model$n_states), model$length_of_sequences, model$n_sequences))
   }
 }

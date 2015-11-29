@@ -6,17 +6,18 @@
 #' @export
 #' @param object Hidden Markov model of class \code{mhmm}.
 #' @param partials Return a vector containing the individual contributions of each sequence to the total log-likelihood. 
-#' Default is FALSE, which returns the sum of all log-likelihood components.
+#' Default is \code{FALSE}, which returns the sum of all log-likelihood components.
 #' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater 
-#' numerical stability at cost of decreased computational performance Default is \code{TRUE}.
+#' numerical stability at cost of decreased computational performance. Default is \code{TRUE}.
 #' @param ... Ignored.
-#' @return Log-likelihood of hidden Markov model.
+#' @return Log-likelihood of hidden Markov model. This is an object of class 
+#' \code{logLik} with attributes \code{nobs} and \code{df} inherited from the model object.
 #' @seealso \code{\link{build_mhmm}} and \code{\link{fit_model}} for building and 
 #'   fitting mixture Hidden Markov models.
-logLik.mhmm<-function(object, partials = FALSE, threads = 1, log_space = FALSE, ...){
+logLik.mhmm<-  function(object, partials = FALSE, threads = 1, log_space = FALSE, ...){
   
-  if (threads < 1) stop ("Argument threads must be a positive integer.")
+  if (threads < 1) stop("Argument threads must be a positive integer.")
   
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")

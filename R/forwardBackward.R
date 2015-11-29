@@ -2,7 +2,6 @@
 #'
 #' Function \code{forward_backward} computes the scaled forward and backward probabilities of hidden Markov models.
 #'
-#'
 #' @export 
 #' @param model Hidden Markov model of class \code{hmm}.
 #' @param forward_only If \code{TRUE}, only forward probabilities are computed. Default is \code{FALSE}.

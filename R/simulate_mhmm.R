@@ -1,6 +1,7 @@
 #' Simulate Mixture Hidden Markov Models
 #' 
-#' Simulate sequences of observed and hidden states given parameters of a mixture hidden Markov model.
+#' Simulate sequences of observed and hidden states given parameters of a mixture 
+#' hidden Markov model.
 #'
 #' @param n_sequences Number of simulations.
 #' @param initial_probs A list containing vectors of initial state probabilities 
@@ -55,23 +56,23 @@
 #'   sequence_length = 25, formula = ~covariate_1 + covariate_2,
 #'   data = dataf, coefficients = coefs)
 #' 
-#' ssplot(
-#'   sim$observations, hidden.paths = sim$states, plots = "both", 
-#'   sortv = "mds.hidden")
+#' ssplot(sim$observations, hidden.paths = sim$states, plots = "both", 
+#'   sortv = "mds.hidden", type = "I")
 #' 
 #' hmm <- build_mhmm(sim$observations, 
-#' initial_probs = list(initial_probs_1, initial_probs_2), 
+#'   initial_probs = list(initial_probs_1, initial_probs_2), 
 #'   transition_probs = list(transition_probs_1, transition_probs_2), 
 #'   emission_probs = list(emission_probs_1, emission_probs_2), 
 #'   formula = ~covariate_1 + covariate_2,
 #'   data = dataf)
 #' 
-#' fit <- fit_model(hmm, local = FALSE, global = FALSE)
-#' 
+#' fit <- fit_model(hmm)
+#' fit$model
+#'
 #' paths <- hidden_paths(fit$model)
 #' 
 #' ssplot(list(estimates = paths, true = sim$states), sortv = "mds.obs", 
-#'   ylab = c("estimated paths", "true (simulated)"))
+#'   ylab = c("estimated paths", "true (simulated)"), type = "I")
 #' 
 simulate_mhmm <- function(n_sequences, initial_probs, transition_probs, 
   emission_probs, sequence_length, formula, data, coefficients){
@@ -232,7 +233,7 @@ simulate_mhmm <- function(n_sequences, initial_probs, transition_probs,
       cp <- NULL
       k <- 199
       p <- 0
-      while(length(alphabet(states)) - p > 0){
+      while (length(alphabet(states)) - p > 0) {
         cp <- c(cp, seqHMM::colorpalette[[k]])
         p <- p + k
         k <- k - 1

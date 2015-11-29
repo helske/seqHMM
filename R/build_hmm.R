@@ -1,6 +1,14 @@
 #' Build a Hidden Markov Model
 #' 
 #' Function \code{build_hmm} constructs a hidden Markov model object of class \code{hmm}.
+#' 
+#' Returned model contains some attributes such as \code{nobs} and \code{df} 
+#' which define the number of observations in the  model and number of estimable 
+#' model parameters, which are used in computing BIC. 
+#' When computing \code{nobs} for multichannel model, each observed value in 
+#' single channel amounts to $1/C$ observation, i.e. fully observed 
+#' time point for single sequences amounts to one observation. For degrees of 
+#' freedom \code{df}, zero probabilities of initial model are defined as structural zeroes.
 #' @export
 #' @useDynLib seqHMM
 #' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing 
