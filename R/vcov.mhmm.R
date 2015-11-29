@@ -1,20 +1,24 @@
-#' Variance-Covariance for Regression Coefficients of Mixture Hidden Markov Model
+#' Variance-Covariance Matrix for Regression Coefficients of Mixture Hidden Markov Model
 #'
-#' @importFrom numDeriv jacobian
-#' @param object Object of class \code{mhmm}.
-#' @param conditional If \code{TRUE} (default), compute standard errors using 
+#' The conditional standard errors are computed using 
 #' analytical formulas by assuming that the coefficient estimates are not correlated with 
 #' other model parameter estimates (or if other parameters are assumed to be fixed). 
-#' This often underestimates the true standard errors, but is substantially faster approach for preliminary analysis.
-#' If \code{FALSE}, the standard errors are based on the numerical approximation of 
-#' the full Hessian of the coefficients and the model parameters corresponding to nonzero probabilities.
-#' Note that computing the non-conditional standard errors can be slow for large models as 
-#' the jacobian of analytical gradients is computed using finitite difference approximation.
-#' @param ... Additional arguments to function \code{jacobian} of \code{numDeriv} package.
+#' This often underestimates the true standard errors, but is substantially 
+#' faster approach for preliminary analysis. The non-conditional standard errors 
+#' are based on the numerical approximation of the full Hessian of the coefficients 
+#' and the model parameters corresponding to nonzero probabilities. 
+#' Computing the non-conditional standard errors can be slow for large models as 
+#' the jacobian of analytical gradients is computed using finite difference approximation.
+#' 
+#' @importFrom numDeriv jacobian
+#' @param object Object of class \code{mhmm}.
+#' @param conditional If \code{TRUE} (default), the standard errors are 
+#' computed conditional on other model parameters. See details.
 #' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater 
-#' numerical stability at cost of decreased computational performance Default is \code{FALSE}.
-#' @return Matrix containing the standard errors for coefficients.
+#' numerical stability at cost of decreased computational performance. Default is \code{FALSE}.
+#' @param ... Additional arguments to function \code{jacobian} of \code{numDeriv} package.
+#' @return Matrix containing the variance-covariance matrix of coefficients.
 #' @export
 #'
 vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = FALSE, ...){
@@ -145,9 +149,9 @@ vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = FALSE
       model$coefficients[,-1] <- pars[coef_ind]
       
       if (!log_space) {
-      objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
-        transNZ, emissNZ, initNZ, model$n_symbols, 
-        model$coefficients, model$X, model$n_states_in_clusters, threads)$gradient
+        objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
+          transNZ, emissNZ, initNZ, model$n_symbols, 
+          model$coefficients, model$X, model$n_states_in_clusters, threads)$gradient
       } else {
         log_objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
           transNZ, emissNZ, initNZ, model$n_symbols, 
