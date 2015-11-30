@@ -105,9 +105,9 @@
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #' @param cpal Optional color palette for the (combinations of) observed states.
 #'   The default value \code{"auto"} uses automatic color palette. Otherwise a 
-#'   vector of length \code{x$n_symbols} is given, i.e. requires a color 
+#'   vector of length \code{x$n_symbols} is given, i.e. a color must be
 #'   specified for all (combinations of) observed states even if they are not 
-#'   plotted (if the probability is less than combine.slices).
+#'   plotted (if the probability is less than \code{combine.slices}).
 #' @param main Optional main titles for plots. The default \code{"auto"} uses 
 #' \code{cluster_names} as titles, \code{NULL} prints no titles.
 #' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as 
