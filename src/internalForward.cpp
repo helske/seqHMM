@@ -20,7 +20,7 @@ void internalForward(const arma::mat& transition, const arma::cube& emission, co
         alpha.slice(k).col(t) /= scales(t, k);
       }
     }
-    if (scales.min() < 1e-100) {
-      Rcpp::warning("Some of the scaling factors are smaller than 1e-100, results can be numerically unstable.");
+    if (scales.min() < 1e-150) {
+      Rcpp::warning("Some of the scaling factors are smaller than 1e-150, results can be numerically unstable.");
     }
 }
