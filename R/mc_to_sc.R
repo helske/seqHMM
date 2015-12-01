@@ -53,7 +53,7 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
     modelx$emission_probs <- B
     modelx$n_symbols <- ncol(B)
     modelx$n_channels <- as.integer(1)
-    modelx$symbol_names <- snames <- colnames(B)
+    modelx$symbol_names <- colnames(B)
     modelx$channel_names <- "Observations"
     
     modelx$observations<-model$observations[[1]]
@@ -122,8 +122,8 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
     
     modelx$n_symbols <- ncol(B[[1]])
     modelx$n_channels <- as.integer(1)
-    modelx$symbol_names <- snames <- colnames(B[[1]])
-    
+    modelx$symbol_names <- colnames(B[[1]])
+
     modelx$channel_names <- "Observations"
     
     modelx$observations <- model$observations[[1]]
@@ -142,23 +142,23 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
             x==attr(model$observations[[1]], "void") |
             is.na(x)))]<-NA
     }
-    if (modelx$n_symbols <= 200) {
-      cpal <- seqHMM::colorpalette[[modelx$n_symbols]]
-    } else {
-      cp <- NULL
-      k <- 200
-      p <- 0
-      while(modelx$n_symbols - p > 0){
-        cp <- c(cp, seqHMM::colorpalette[[k]])
-        p <- p + k
-        k <- k - 1
-      }
-      cpal <- cp[1:modelx$n_symbols]
-    }
-    
-    
+
+
     if (all_combinations == TRUE) {
       modelx$observations <- suppressWarnings(suppressMessages(seqdef(modelx$observations, alphabet=modelx$symbol_names)))
+      if (modelx$n_symbols <= 200) {
+        cpal <- seqHMM::colorpalette[[length(modelx$symbol_names)]]
+      } else {
+        cp <- NULL
+        k <- 200
+        p <- 0
+        while(length(modelx$symbol_names) - p > 0){
+          cp <- c(cp, seqHMM::colorpalette[[k]])
+          p <- p + k
+          k <- k - 1
+        }
+        cpal <- cp[1:length(modelx$symbol_names)]
+      }
     } else {
       modelx$observations <- suppressWarnings(suppressMessages((seqdef(modelx$observations))))
       for (m in 1:model$n_clusters){
@@ -167,6 +167,19 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
       }
       modelx$symbol_names <- colnames(modelx$emission_probs[[1]])
       modelx$n_symbols <- ncol(modelx$emission_probs[[1]])
+      if (modelx$n_symbols <= 200) {
+        cpal <- seqHMM::colorpalette[[modelx$n_symbols]]
+      } else {
+        cp <- NULL
+        k <- 200
+        p <- 0
+        while(modelx$n_symbols - p > 0){
+          cp <- c(cp, seqHMM::colorpalette[[k]])
+          p <- p + k
+          k <- k - 1
+        }
+        cpal <- cp[1:modelx$n_symbols]
+      }
     }
   }
   
@@ -176,7 +189,7 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
   attr(modelx$observations, "void") <- attr(model$observations[[1]], "void")
   attr(modelx$observations, "missing") <- attr(model$observations[[1]], "missing")
   attr(modelx$observations, "start") <- attr(model$observations[[1]], "start")
-  attr(modelx$observations, "cpal") <- cpal[snames %in% modelx$symbol_names]
+  
   
   attr(modelx$observations, "nobs") <-
     sum(!(modelx$observations == attr(modelx$observations, "nr") |

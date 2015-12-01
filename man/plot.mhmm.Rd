@@ -26,28 +26,24 @@ mhmm objects are automatically transformed to single channel objects.
 See function \code{\link{mc_to_sc}} for more information on the
 transformation.}
 
-\item{interactive}{Whether to plot each cluster in succession or in a grid.
-Defaults to \code{TRUE}, i.e. clusters are plotted one after another.}
+\item{interactive}{Whether to plot each cluster in succession or in a grid. Defaults to TRUE, i.e. clusters are plotted one after another.}
 
-\item{ask}{If true and \code{which.plots} is NULL, \code{plot.mhmm} operates
-in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}.
-Ignored if \code{interactive == FALSE}.}
+\item{ask}{If true and \code{which.plots} is NULL, \code{plot.mhmm} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}. Ignored if \code{interactive = FALSE}.}
 
-\item{which.plots}{The number(s) of the requested cluster(s) as an integer vector.
-The default \code{NULL} produces all plots. Ignored if \code{interactive == FALSE}.}
+\item{which.plots}{The number(s) of the requested cluster(s) as an integer vector. The default \code{NULL} produces all plots. Ignored if \code{interactive = FALSE}.}
 
 \item{nrow,ncol}{Optional arguments to arrange plots in a grid. Ignored if \code{interactive = TRUE}.}
 
 \item{byrow}{Controls the order of plotting in a grid. Defaults to \code{FALSE}, i.e. plots
-are arranged columnwise. Ignored if \code{interactive == TRUE}.}
+are arranged columnwise. Ignored if \code{interactive = TRUE}.}
 
 \item{row.prop}{Sets the proportions of the row heights of the grid. The default
 value is \code{"auto"} for even row heights. Takes a vector of values from
-0 to 1, with values summing to 1. Ignored if \code{interactive == TRUE}.}
+0 to 1, with values summing to 1. Ignored if \code{interactive = TRUE}.}
 
 \item{col.prop}{Sets the proportion of the column heights of the grid. The default
   value is \code{"auto"} for even column widths. Takes a vector of values
-  from 0 to 1, with values summing to 1. Ignored if \code{interactive == TRUE}.}
+  from 0 to 1, with values summing to 1. Ignored if \code{interactive = TRUE}.}
 
 \item{layout}{layout specifies the layout of the vertices (nodes). Accepts a
 numerical matrix, a \code{\link[igraph]{layout}} function (without quotation marks),
@@ -154,9 +150,9 @@ default \code{"auto"} creates one column for each legend.}
 
 \item{cpal}{Optional color palette for the (combinations of) observed states.
 The default value \code{"auto"} uses automatic color palette. Otherwise a
-vector of length \code{x$n_symbols} is given, i.e. requires a color
+vector of length \code{x$n_symbols} is given, i.e. a color must be
 specified for all (combinations of) observed states even if they are not
-plotted (if the probability is less than combine.slices).}
+plotted (if the probability is less than \code{combine.slices}).}
 
 \item{main}{Optional main titles for plots. The default \code{"auto"} uses
 \code{cluster_names} as titles, \code{NULL} prints no titles.}
@@ -182,10 +178,12 @@ plot(mhmm_biofam)
 
 # Choosing the cluster (one at a time)
 plot(mhmm_biofam, ask = TRUE)
+}
 
 # Loading MHMM of the mvad data
 data(mhmm_mvad)
 
+\dontrun{
 # Plotting models in the same graph
 # Note: plotting window must be high enough!
 plot(mhmm_mvad, interactive = FALSE, nrow = 2, legend.prop = 0.3)
