@@ -2,10 +2,10 @@
 
 spread_models <- function(model){
 
-  stnames <-unlist(model$original_state_names)
+  stnames <- unlist(model$original_state_names)
   rownames(model$transition_probs) <- colnames(model$transition_probs) <- stnames
 
-  if(model$n_channels==1){
+  if(model$n_channels == 1) {
     rownames(model$emission_probs) <- stnames
   }else{
     for(j in 1:model$n_channels){
@@ -19,7 +19,7 @@ spread_models <- function(model){
   emissM <- vector("list", model$n_clusters)
   init <- vector("list", model$n_clusters)
   k <- 0
-  if(model$n_channels==1){
+  if(model$n_channels == 1){
     for(m in 1:model$n_clusters){
       transM[[m]] <- model$transition_probs[(k+1):(k+model$n_states_in_clusters[m]),
                                             (k+1):(k+model$n_states_in_clusters[m]),drop=FALSE]
@@ -35,7 +35,7 @@ spread_models <- function(model){
         emissM[[m]][[j]] <- model$emission_probs[[j]][(k+1):(k+model$n_states_in_clusters[m]),,drop=FALSE]
       }
       names(emissM[[m]]) <- model$channel_names
-      init[[m]] <- unname(model$initial_probs[(k+1):(k+model$n_states_in_clusters[m])])
+      init[[m]] <- unname(model$initial_probs[(k + 1):(k + model$n_states_in_clusters[m])])
       k <- sum(model$n_states_in_clusters[1:m])
     }
   }
@@ -48,8 +48,8 @@ spread_models <- function(model){
   model$initial_probs <- init
   model$state_names <- model$original_state_names
   model$n_states <- model$n_states_in_clusters
-  model$original_state_names<-model$n_states_in_clusters<-NULL
-  for(m in 1:model$n_clusters){
+  model$original_state_names <- model$n_states_in_clusters <- NULL
+  for (m in 1:model$n_clusters) {
     names(model$initial_probs[[m]]) <- model$state_names[[m]]
   }
   class(model) <- "mhmm"

@@ -2,32 +2,35 @@
 #' 
 #' Function \code{summary.mhmm} gives a summary of a mixture hidden Markov model.
 #'   
-#' 
 #' @export
 #' @method summary mhmm 
 #' @param object Mixture hidden Markov model of class \code{mhmm}.
-#' @param parameters Whether or not to print parameters of transition, emission, and 
+#' @param parameters Whether or not to return transition, emission, and 
 #' initial probabilities. \code{FALSE} by default.
 #' @param conditional_se Return conditional standard errors of coefficients. 
 #' See \code{\link{vcov.mhmm}} for details. \code{TRUE} by default.
 #' @param log_space Make computations using log-space instead of scaling for greater 
-#' numerical stability at cost of decreased computational performance Default is \code{FALSE}.
+#' numerical stability at cost of decreased computational performance. Default is \code{FALSE}.
 #' @param ... Further arguments to \code{\link{vcov.mhmm}}.
 #' 
 #' @details The \code{summary.mhmm} function computes features from a mixture hidden Markov
 #' model and stores them as a list. A \code{print} method prints summaries of these:
 #' log-likelihood and BIC, coefficients and standard errors of covariates, means of prior 
 #' cluster probabilities, and information on most probable clusters.
-#' 
+#'
 #' @return \describe{
-#'    \item{logLik}{Log-likelihood}
-#'    \item{BIC}{Bayesian information criterion}
-#'    \item{coefficients}{Coefficients of covariates}
-#'    \item{coef_se}{Standard errors for coefficients}
-#'    \item{most_probable_cluster}{The most probable cluster according to posterior probabilities}
-#'    \item{prior_cluster_probabilities}{Cluster probabilities (mixing proportions) given by the covariates}
-#'    \item{posterior_cluster_probabilities}{Posterior class membership probabilities}
-#'    \item{classification_table}{Cluster probabilities (columns) by the most probable cluster (rows)}
+#'    \item{transition_probs}{Transition probabilities. Only returned if \code{parameters == TRUE}.}
+#'    \item{emission_probs}{Emission probabilities. Only returned if \code{parameters == TRUE}.}
+#'    \item{initial_probs}{Initial state probabilities. Only returned if \code{parameters == TRUE}.}
+#'    \item{logLik}{Log-likelihood.}
+#'    \item{BIC}{Bayesian information criterion.}
+#'    \item{most_probable_cluster}{The most probable cluster according to posterior probabilities.}
+#'    \item{coefficients}{Coefficients of covariates.}
+#'    \item{vcov}{Variance-covariance matrix of coefficients.}
+#'    \item{prior_cluster_probabilities}{Prior cluster probabilities 
+#'    (mixing proportions) given the covariates.}
+#'    \item{posterior_cluster_probabilities}{Posterior cluster membership probabilities.}
+#'    \item{classification_table}{Cluster probabilities (columns) by the most probable cluster (rows).}
 #'   }
 #'   
 #' @seealso \code{\link{build_mhmm}} and \code{\link{fit_model}} for building and 
@@ -44,7 +47,8 @@
 #'   
 #'   
 
-summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, log_space = FALSE, ...){
+summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, 
+  log_space = FALSE, ...){
   
   partial_ll <- logLik(object, partials = TRUE, log_space = log_space)
   ll <- structure(sum(partial_ll), class = "logLik", df = attr(object, "df"), nobs = attr(object, "nobs"))
@@ -74,7 +78,7 @@ summary.mhmm <- function(object, parameters = FALSE, conditional_se = TRUE, log_
     }
   }
   most_probable_cluster <- factor(apply(posterior_cluster_probabilities, 1, which.max), 
-                                  levels = 1:object$n_clusters, labels = object$cluster_names)
+    levels = 1:object$n_clusters, labels = object$cluster_names)
   
   
   clProbs <- matrix(NA, nrow = object$n_clusters, ncol = object$n_clusters)

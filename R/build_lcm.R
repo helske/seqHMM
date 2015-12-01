@@ -62,6 +62,33 @@
 #' # how many of the observations were correctly classified:
 #' sum(summary(fit$model)$most_probable_cluster == rep(c("Class 2", "Class 1"), times = c(500, 200)))
 #' 
+#' #' # Binomial regression
+#'
+#' require("MASS")
+#' data("birthwt")
+#' 
+#' model <- build_lcm(seqdef(birthwt$low), diag(2), ~ age + lwt + smoke + ht, birthwt)
+#' fit <- fit_model(model)
+#' summary(fit$model)
+#' summary(glm(low ~ age + lwt + smoke + ht, binomial, data = birthwt))
+#' 
+#' # Multinomial regression
+#' 
+#' require("nnet")
+#' 
+#' set.seed(123)
+#' n <- 100
+#' X <- cbind(1, x1 = runif(n, 0, 1), x2 =  runif(n, 0, 1))
+#' coefs <- cbind(0,c(-2, 5, -2), c(0, -2, 2))
+#' pr <- exp(X %*% coefs)  + rnorm(n*3)
+#' pr <- pr/rowSums(pr)
+#' y <- apply(pr, 1, which.max)
+#' table(y)
+#' 
+#' model <- build_lcm(seqdef(y), diag(3), ~ x1 + x2,  data.frame(X[, -1]))
+#' fit <- fit_model(model)
+#' summary(fit$model)
+#' summary(multinom(y ~ x1 + x2, data = data.frame(X[,-1])))
 build_lcm <- 
   function(observations, emission_probs, 
     formula, data, coefficients, cluster_names= NULL, channel_names = NULL){
@@ -220,8 +247,8 @@ build_lcm <-
       n_channels=n_channels,
       n_covariates=n_covariates, formula = formula), class = "mhmm", 
       nobs = nobs,
-      df = sum(unlist(initial_probs) > 0) - n_clusters + 
-        sum(unlist(emission_probs) > 0) - sum(n_states) * n_channels + n_covariates * (n_clusters - 1),
+      df = sum(unlist(emission_probs) > 0) - sum(n_states) * n_channels + 
+        n_covariates * (n_clusters - 1),
       type = "lcm")
     model
   }

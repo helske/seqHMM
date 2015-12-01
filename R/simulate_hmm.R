@@ -31,7 +31,8 @@
 #'   transition_probs = transition_probs, 
 #'   emission_probs = emission_probs, 
 #'   sequence_length = 20)
-
+#'   
+#' ssplot(sim, sortv = "mds.obs", type = "I")
 simulate_hmm <- function(n_sequences, initial_probs, transition_probs, emission_probs, 
   sequence_length){
   

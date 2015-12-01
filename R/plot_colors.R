@@ -1,8 +1,7 @@
 #' Plot colorpalettes
 #' 
-#' Function \code{plot_colors} plots colors and their labels for easy visualization of a colorpalette.
-#' , or if omitted, their 
-#' given names (as defined by the user)
+#' Function \code{plot_colors} plots colors and their labels for easy 
+#' visualization of a colorpalette.
 #' 
 #' @export
 #' 
@@ -22,8 +21,6 @@
 #' plot_colors(c("yellow", "orange", "red", "purple", "blue", "green"))
 #' 
 #' plot_colors(rainbow(15))
-
-
 plot_colors <- function(x, labels = NULL) {
   
   if (!all(isColor(x))) {

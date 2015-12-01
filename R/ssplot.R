@@ -1,9 +1,9 @@
 #' Stacked Plots of Multichannel Sequences and/or Most Probable 
 #' Paths from Hidden Markov Models
 #' 
-#' Function \code{ssplot} plots stacked sequence plots of sequence object created with the \code{\link{seqdef}} function or observations and/or most probable paths of \code{hmm} objects.
-#' 
-#' 
+#' Function \code{ssplot} plots stacked sequence plots of sequence object 
+#' created with the \code{\link{seqdef}} function or observations and/or most 
+#' probable paths of \code{hmm} objects.
 #' 
 #' @export
 #' 
@@ -13,7 +13,7 @@
 #'   
 #'   
 #' @param hidden.paths Output from \code{\link{hidden_paths}} function. Optional, if 
-#'   \code{x} is a hmm object or if \code{type=="obs"}.
+#'   \code{x} is a hmm object or if \code{type == "obs"}.
 #'   
 #' @param plots What to plot. One of \code{"obs"} for observations (the default), 
 #'   \code{"hidden.paths"} for most probable paths of hidden states, 
@@ -25,8 +25,8 @@
 #'   
 #' @param sortv A sorting variable or a sort method (one of \code{"from.start"},
 #'   \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.hidden"}) for 
-#'   \code{type=="I"}. The value \code{"mds.hidden"} is only available for 
-#'   \code{which="both"} and \code{which="hidden.paths"}. Options \code{"mds.obs"} and 
+#'   \code{type == "I"}. The value \code{"mds.hidden"} is only available for 
+#'   \code{which == "both"} and \code{which == "hidden.paths"}. Options \code{"mds.obs"} and 
 #'   \code{"mds.hidden"} automatically arrange the sequences according to the 
 #'   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the 
 #'   observed or hidden states path data from \code{\link{hidden_paths}}. 
@@ -40,19 +40,20 @@
 #'   channel).
 #'   
 #' @param dist.method The metric to be used for computing the distances of the 
-#'   sequences if multidimensional scaling is used for sorting. One of "OM" 
-#'   (optimal Matching, the default), "LCP" (longest common prefix), "RLCP" 
-#'   (reversed LCP, i.e. longest common suffix), "LCS" (longest common 
-#'   subsequence), "HAM" (Hamming distance), "DHD" (dynamic Hamming distance). 
+#'   sequences if multidimensional scaling is used for sorting. One of \code{"OM"}
+#'   (optimal Matching, the default), \code{"LCP"} (longest common prefix), 
+#'   \code{"RLCP"}
+#'   (reversed LCP, i.e. longest common suffix), \code{"LCS"} (longest common 
+#'   subsequence), \code{"HAM"} (Hamming distance), \code{"DHD"} (dynamic Hamming distance). 
 #'   Transition rates are used for defining substitution costs if needed. See
 #'   \code{\link{seqdef}} for more information on the metrics.
 #'   
 #' @param with.missing Controls whether missing states are included in state 
-#'   distribution plots (\code{type="d"}). The default is \code{FALSE}.
+#'   distribution plots (\code{type == "d"}). The default is \code{FALSE}.
 #'   
 #' @param title Title for the graphic. The default is \code{NA}: if 
-#'   \code{title.n=TRUE}, only the number of subjects is plotted. \code{FALSE} 
-#'   prints no title, even when \code{title.n=TRUE}.
+#'   \code{title.n == TRUE}, only the number of subjects is plotted. \code{FALSE} 
+#'   prints no title, even when \code{title.n == TRUE}.
 #'   
 #' @param title.n Controls whether the number of subjects is printed in the 
 #'   title of the plot. The default is \code{TRUE}: n is plotted if \code{title}
@@ -79,9 +80,9 @@
 #'   
 #' @param with.missing.legend If set to \code{"auto"} (the default), a legend 
 #'   for the missing state is added automatically if one or more of the 
-#'   sequences in the data/channel contains missing states and \code{type="I"}. 
-#'   If \code{type="d"} missing states are omitted from the legends unless 
-#'   \code{with.missing=TRUE}. With the value \code{TRUE} a 
+#'   sequences in the data/channel contains missing states and \code{type == "I"}. 
+#'   If \code{type == "d"} missing states are omitted from the legends unless 
+#'   \code{with.missing == TRUE}. With the value \code{TRUE} a 
 #'   legend for the missing state is added in any case; equivalently 
 #'   \code{FALSE} omits the legend for the missing state.
 #'   

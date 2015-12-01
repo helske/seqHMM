@@ -1,4 +1,3 @@
-
 #' Plot hidden Markov models
 #' 
 #' Function \code{plot.hmm} plots a directed graph with pie charts of 

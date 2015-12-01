@@ -7,7 +7,7 @@
 #' @param model Model of class \code{hmm} or \code{mhmm} for which 
 #'   trimming is performed.
 #' @param maxit Number of iterations. After zeroing small values, the model is 
-#'   refitted, and this is repeated until there is nothing to trim or maxit 
+#'   refitted, and this is repeated until there is nothing to trim or \code{maxit} 
 #'   iterations are done.
 #' @param return_loglik Return the log-likelihood of the trimmed model together with
 #'   the model object. The default is \code{FALSE}.
@@ -89,7 +89,7 @@ trim_model <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verb
           any(model$transition_probs < zerotol & model$transition_probs > 0)
         || any(sapply(model$emission_probs,function(x) any(x < zerotol & x > 0))))){
         if(verbose)
-        print("Nothing to trim.")
+          print("Nothing to trim.")
         if(return_loglik){
           return(list(model=model,loglik=logLik(model)))
         } else return(model)
@@ -148,7 +148,7 @@ trim_model <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verb
           any(unlist(model$transition_probs) < zerotol & unlist(model$transition_probs) > 0)
         || any(unlist(model$emission_probs) < zerotol & unlist(model$emission_probs) > 0))){
         if(verbose)
-        print("Nothing to trim.")
+          print("Nothing to trim.")
         if(return_loglik){
           return(list(model=model,loglik=logLik(model)))
         } else return(model)
@@ -202,7 +202,7 @@ trim_model <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verb
           any(unlist(model$transition_probs) < zerotol & unlist(model$transition_probs) > 0)
         || any(unlist(model$emission_probs) < zerotol & unlist(model$emission_probs) > 0))){
         if(verbose)
-        print("Nothing to trim.")
+          print("Nothing to trim.")
         if(return_loglik){
           return(list(model=model,loglik=logLik(model)))
         } else return(model)
