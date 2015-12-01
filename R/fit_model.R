@@ -682,7 +682,10 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       model$transition_probs[]<-resEM$transitionMatrix
       model$coefficients[]<-resEM$coefficients
       ll <- resEM$logLik
-    } else resEM <- NULL
+    } else {
+      resEM <- NULL
+      ll <- -Inf
+    }
   } else resEM <- NULL
   
   if(global_step || local_step){
