@@ -1,4 +1,4 @@
-#' Plot colorpalettes
+#' Plot Colorpalettes
 #' 
 #' Function \code{plot_colors} plots colors and their labels for easy 
 #' visualization of a colorpalette.

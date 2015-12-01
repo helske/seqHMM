@@ -1,8 +1,11 @@
-#' Variance-Covariance Matrix for Regression Coefficients of Mixture Hidden Markov Model
+#' Variance-Covariance Matrix for Coefficients of Covariates of Mixture Hidden Markov Model
 #'
-#' The conditional standard errors are computed using 
+#' Returns the asymptotic covariances matrix of maximum likelihood estimates of
+#' the coefficients corresponding to the explanatory variables of the model.
+#' 
+#' @details The conditional standard errors are computed using 
 #' analytical formulas by assuming that the coefficient estimates are not correlated with 
-#' other model parameter estimates (or if other parameters are assumed to be fixed). 
+#' other model parameter estimates (or that the other parameters are assumed to be fixed). 
 #' This often underestimates the true standard errors, but is substantially 
 #' faster approach for preliminary analysis. The non-conditional standard errors 
 #' are based on the numerical approximation of the full Hessian of the coefficients 
