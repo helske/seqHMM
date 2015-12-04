@@ -565,7 +565,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         random_emiss <- resEM$emissionArray
         random_emiss[(random_emiss < 1e-4) & (emissionArray >= 1e-4)] <- 1e-4
         for (j in 1:model$n_channels) {
-          random_emiss[,1:model$n_symbols[j],j] <- random_emiss[,1:model$n_symbols[j],j] / rowSums(random_emiss[,1:model$n_symbols[j],j])
+          random_emiss[,1:model$n_symbols[j],j] <- 
+            random_emiss[,1:model$n_symbols[j],j] / rowSums(random_emiss[,1:model$n_symbols[j],j])
         }
         random_trans <- resEM$transitionMatrix
         random_trans[(random_trans < 1e-4) & (model$transition_probs >= 1e-4)] <- 1e-4
@@ -595,7 +596,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         if (restart.con$emission) {
           random_emiss[nz_emiss] <- abs(base_emiss + rnorm(np_emiss, sd = restart.con$sd))
           for (j in 1:model$n_channels) {
-            random_emiss[,1:model$n_symbols[j],j] <- random_emiss[,1:model$n_symbols[j],j] / rowSums(random_emiss[,1:model$n_symbols[j],j])
+            random_emiss[,1:model$n_symbols[j],j] <- 
+              random_emiss[,1:model$n_symbols[j],j] / rowSums(random_emiss[,1:model$n_symbols[j],j])
           }
         }
         if (!log_space) {
@@ -708,7 +710,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     })
     
     if(model$n_states > 1){
-      maxEM <- lapply(model$emission_probs,function(i) cbind(1:model$n_states,max.col(i,ties.method="first")))
+      maxEM <- lapply(model$emission_probs, function(i) cbind(1:model$n_states,max.col(i, ties.method = "first")))
       paramEM<-lapply(1:model$n_channels,function(i) {
         x<-rbind(emissNZ[[i]],maxEM[[i]])
         x[!(duplicated(x)|duplicated(x,fromLast=TRUE)),,drop = FALSE]
@@ -801,7 +803,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
           original_model$initial_probs[[m]][maxIP[[m]]] <- maxIPvalue[[m]] # Not needed?
           original_model$initial_probs[[m]][paramIP[[m]]] <- exp(pars[npTM+sum(npEM)+c(0,cumsum(npIP))[m]+
               1:npIP[m]])
-          original_model$initial_probs[[m]][] <- original_model$initial_probs[[m]]/sum(original_model$initial_probs[[m]])
+          original_model$initial_probs[[m]][] <- 
+            original_model$initial_probs[[m]]/sum(original_model$initial_probs[[m]])
         }
       }
       model$initial_probs <- unlist(original_model$initial_probs)
@@ -896,7 +899,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       }
       if(is.null(control_global$algorithm)){
         control_global$algorithm <- "NLOPT_GD_MLSL_LDS"
-        if(is.null(control_global$local_opts)) control_global$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)
+        if(is.null(control_global$local_opts)) 
+          control_global$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)
       }
       
       if (mhmm) {
