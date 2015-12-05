@@ -48,37 +48,37 @@ BEGIN_RCPP
 END_RCPP
 }
 // forwardbackward
-List forwardbackward(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, bool forwardonly, int threads);
-RcppExport SEXP seqHMM_forwardbackward(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP forwardonlySEXP, SEXP threadsSEXP) {
+List forwardbackward(const arma::mat& transition, NumericVector emissionArray, const arma::vec& init, IntegerVector obsArray, bool forwardonly, int threads);
+RcppExport SEXP seqHMM_forwardbackward(SEXP transitionSEXP, SEXP emissionArraySEXP, SEXP initSEXP, SEXP obsArraySEXP, SEXP forwardonlySEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type transition(transitionSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type init(initSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP);
     Rcpp::traits::input_parameter< bool >::type forwardonly(forwardonlySEXP);
     Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    __result = Rcpp::wrap(forwardbackward(transitionMatrix, emissionArray, initialProbs, obsArray, forwardonly, threads));
+    __result = Rcpp::wrap(forwardbackward(transition, emissionArray, init, obsArray, forwardonly, threads));
     return __result;
 END_RCPP
 }
 // forwardbackwardx
-List forwardbackwardx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_, IntegerVector numberOfStates, bool forwardonly, int threads);
-RcppExport SEXP seqHMM_forwardbackwardx(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP coefsSEXP, SEXP X_SEXP, SEXP numberOfStatesSEXP, SEXP forwardonlySEXP, SEXP threadsSEXP) {
+List forwardbackwardx(const arma::mat& transition, NumericVector emissionArray, const arma::vec& init, IntegerVector obsArray, NumericMatrix coefs, const arma::mat& X, IntegerVector numberOfStates, bool forwardonly, int threads);
+RcppExport SEXP seqHMM_forwardbackwardx(SEXP transitionSEXP, SEXP emissionArraySEXP, SEXP initSEXP, SEXP obsArraySEXP, SEXP coefsSEXP, SEXP XSEXP, SEXP numberOfStatesSEXP, SEXP forwardonlySEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type transition(transitionSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type init(initSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type coefs(coefsSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type X_(X_SEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type numberOfStates(numberOfStatesSEXP);
     Rcpp::traits::input_parameter< bool >::type forwardonly(forwardonlySEXP);
     Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    __result = Rcpp::wrap(forwardbackwardx(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates, forwardonly, threads));
+    __result = Rcpp::wrap(forwardbackwardx(transition, emissionArray, init, obsArray, coefs, X, numberOfStates, forwardonly, threads));
     return __result;
 END_RCPP
 }

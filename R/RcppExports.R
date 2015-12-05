@@ -9,12 +9,12 @@ EMx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbol
     .Call('seqHMM_EMx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, coefs, X_, numberOfStates, itermax, tol, trace, threads)
 }
 
-forwardbackward <- function(transitionMatrix, emissionArray, initialProbs, obsArray, forwardonly, threads) {
-    .Call('seqHMM_forwardbackward', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, forwardonly, threads)
+forwardbackward <- function(transition, emissionArray, init, obsArray, forwardonly, threads) {
+    .Call('seqHMM_forwardbackward', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, forwardonly, threads)
 }
 
-forwardbackwardx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates, forwardonly, threads) {
-    .Call('seqHMM_forwardbackwardx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates, forwardonly, threads)
+forwardbackwardx <- function(transition, emissionArray, init, obsArray, coefs, X, numberOfStates, forwardonly, threads) {
+    .Call('seqHMM_forwardbackwardx', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, coefs, X, numberOfStates, forwardonly, threads)
 }
 
 log_EM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol, trace, threads) {
