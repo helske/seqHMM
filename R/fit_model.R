@@ -496,12 +496,14 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     model$emission_probs <- list(model$emission_probs)
   }
   
-  obsArray<-array(0, c(model$n_sequences, model$length_of_sequences, 
+  obsArray <- array(0, c(model$n_sequences, model$length_of_sequences, 
     model$n_channels))
-  for(i in 1:model$n_channels){
-    obsArray[,,i]<-data.matrix(model$observations[[i]])-1
-    obsArray[,,i][obsArray[,,i]>model$n_symbols[i]] <- model$n_symbols[i]
+  for(i in 1:model$n_channels) {
+    obsArray[,,i] <- data.matrix(model$observations[[i]])-1
+    obsArray[,,i][obsArray[,,i] > model$n_symbols[i]] <- model$n_symbols[i]
   } 
+  obsArray <- aperm(obsArray)
+  
   emissionArray<-array(1,c(model$n_states,max(model$n_symbols)+1,model$n_channels))
   for(i in 1:model$n_channels)
     emissionArray[,1:model$n_symbols[i],i]<-model$emission_probs[[i]]

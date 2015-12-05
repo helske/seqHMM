@@ -11,8 +11,8 @@ List forwardbackward(const arma::mat& transition, NumericVector emissionArray,
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
 
-  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
-  arma::mat scales(obs.n_cols, obs.n_rows); //n,k
+  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
+  arma::mat scales(obs.n_cols, obs.n_slices); //n,k
 
   internalForward(transition, emission, init, obs, alpha, scales, threads);
 
@@ -20,7 +20,7 @@ List forwardbackward(const arma::mat& transition, NumericVector emissionArray,
     return List::create(Named("forward_probs") = wrap(alpha),
         Named("scaling_factors") = wrap(scales));
   } else {
-    arma::cube beta(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
+    arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
     internalBackward(transition, emission, obs, beta, scales, threads);
     return List::create(Named("forward_probs") = wrap(alpha), Named("backward_probs") = wrap(beta),
         Named("scaling_factors") = wrap(scales));

@@ -2,7 +2,7 @@
 // [[Rcpp::export]]
 
 List log_forwardbackwardx(NumericVector transitionMatrix, NumericVector emissionArray,
-    NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_,
+    NumericVector initialProbs, IntegerVector obsArray, const arma::mat& coef, const arma::mat& X,
     IntegerVector numberOfStates, bool forwardonly, int threads) {
 
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
@@ -13,10 +13,6 @@ List log_forwardbackwardx(NumericVector transitionMatrix, NumericVector emission
   arma::vec init(initialProbs.begin(), emission.n_rows, true);
   arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, true);
 
-  int q = coefs.nrow();
-  arma::mat coef(coefs.begin(), q, coefs.ncol());
-  coef.col(0).zeros();
-  arma::mat X(X_.begin(), obs.n_rows, q);
   arma::mat weights = exp(X * coef).t();
   weights.each_row() /= arma::sum(weights, 0);
   weights = log(weights);
@@ -24,17 +20,17 @@ List log_forwardbackwardx(NumericVector transitionMatrix, NumericVector emission
   emission = log(emission);
   init = log(init);
 
-  arma::mat initk(emission.n_rows, obs.n_rows);
-  for (unsigned int k = 0; k < obs.n_rows; k++) {
+  arma::mat initk(emission.n_rows, obs.n_slices);
+  for (unsigned int k = 0; k < obs.n_slices; k++) {
     initk.col(k) = init + reparma(weights.col(k), numberOfStates);
   }
-  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
+  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
   log_internalForwardx(transition, emission, initk, obs, alpha, threads);
 
   if (forwardonly) {
     return List::create(Named("forward_probs") = wrap(alpha));
   } else {
-    arma::cube beta(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
+    arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
     log_internalBackward(transition, emission, obs, beta, threads);
     return List::create(Named("forward_probs") = wrap(alpha), Named("backward_probs") = wrap(beta));
   }

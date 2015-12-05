@@ -50,11 +50,11 @@ arma::vec log_gCoef(const arma::icube& obs, const arma::cube& beta, const arma::
   arma::vec grad(q * (weights.n_rows - 1), arma::fill::zeros);
   double tmp;
   for (unsigned int jj = 1; jj < numberOfStates.size(); jj++) {
-    for (int k = 0; k < obs.n_rows; k++) {
+    for (int k = 0; k < obs.n_slices; k++) {
       for (unsigned int j = 0; j < emission.n_rows; j++) {
         tmp = 0.0;
-        for (int r = 0; r < obs.n_slices; r++) {
-          tmp += emission(j, obs(k, 0, r), r);
+        for (int r = 0; r < obs.n_rows; r++) {
+          tmp += emission(j, obs(r, 0, k), r);
         }
         if ((j >= (cumsumstate(jj) - numberOfStates(jj))) & (j < cumsumstate(jj))) {
           grad.subvec(q * (jj - 1), q * jj - 1) += exp(tmp + beta(j, 0, k) - ll(k) + initk(j, k))

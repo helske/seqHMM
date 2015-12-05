@@ -27,7 +27,7 @@
 vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = FALSE, ...){
   
   if (conditional) {
-    vcovm <- varcoef(object$coefficients, object$X, object$n_states)
+    vcovm <- varcoef(object$coefficients, object$X)
   } else {
     if (threads < 1) stop ("Argument threads must be a positive integer.")
     # copied from fit_model

@@ -2,8 +2,8 @@
 
 // [[Rcpp::export]]
 
-NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissionArray,
-  NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_,
+NumericVector logLikMixHMM(const arma::mat& transition, NumericVector emissionArray,
+  const arma::vec& init, IntegerVector obsArray, const arma::mat& coef, const arma::mat& X,
   IntegerVector numberOfStates, int threads) {
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
@@ -11,13 +11,8 @@ NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissio
   
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
-  arma::vec init(initialProbs.begin(), emission.n_rows, false);
-  arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, false);
   
-  int q = coefs.nrow();
-  arma::mat coef(coefs.begin(), q, coefs.ncol(), false);
-  coef.col(0).zeros();
-  arma::mat X(X_.begin(), obs.n_rows, q, false);
+  unsigned int q = coef.n_rows;
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
     warning(
@@ -27,15 +22,15 @@ NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissio
   }
   weights.each_row() /= sum(weights, 0);
   
-  NumericVector ll(obs.n_rows);
+  NumericVector ll(obs.n_slices);
   
-#pragma omp parallel for if(obs.n_rows >= threads) schedule(static) num_threads(threads) \
+#pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(ll, obs, weights, init, emission, transition, numberOfStates)
-    for (int k = 0; k < obs.n_rows; k++) {
+    for (int k = 0; k < obs.n_slices; k++) {
       arma::vec alpha = init % reparma(weights.col(k), numberOfStates);
       
-      for (unsigned int r = 0; r < obs.n_slices; r++) {
-        alpha %= emission.slice(r).col(obs(k, 0, r));
+      for (unsigned int r = 0; r < obs.n_rows; r++) {
+        alpha %= emission.slice(r).col(obs(r, 0, k));
       }
       
       double tmp = sum(alpha);
@@ -44,8 +39,8 @@ NumericVector logLikMixHMM(NumericVector transitionMatrix, NumericVector emissio
       
       for (unsigned int t = 1; t < obs.n_cols; t++) {
         alpha = transition.t() * alpha;
-        for (unsigned int r = 0; r < obs.n_slices; r++) {
-          alpha %= emission.slice(r).col(obs(k, t, r));
+        for (unsigned int r = 0; r < obs.n_rows; r++) {
+          alpha %= emission.slice(r).col(obs(r, t, k));
         }
         
         tmp = sum(alpha);

@@ -2,7 +2,7 @@
 // [[Rcpp::export]]
 
 NumericVector log_logLikMixHMM(NumericVector transitionMatrix, NumericVector emissionArray,
-  NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_,
+  NumericVector initialProbs, IntegerVector obsArray, const arma::mat& coef, const arma::mat& X,
   IntegerVector numberOfStates, int threads) {
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
@@ -13,10 +13,6 @@ NumericVector log_logLikMixHMM(NumericVector transitionMatrix, NumericVector emi
   arma::vec init(initialProbs.begin(), emission.n_rows, true);
   arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, true);
   
-  int q = coefs.nrow();
-  arma::mat coef(coefs.begin(), q, coefs.ncol(), false);
-  coef.col(0).zeros();
-  arma::mat X(X_.begin(), obs.n_rows, q, false);
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
     warning(
@@ -31,21 +27,21 @@ NumericVector log_logLikMixHMM(NumericVector transitionMatrix, NumericVector emi
   emission = log(emission);
   init = log(init);
   
-  NumericVector ll(obs.n_rows);
+  NumericVector ll(obs.n_slices);
   
-#pragma omp parallel for if(obs.n_rows >= threads) schedule(static) num_threads(threads) \
+#pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(ll, obs, weights, init, emission, transition, numberOfStates)
-    for (int k = 0; k < obs.n_rows; k++) {
+    for (int k = 0; k < obs.n_slices; k++) {
       arma::vec alpha = init + reparma(weights.col(k), numberOfStates);
-      for (int r = 0; r < obs.n_slices; r++) {
-        alpha += emission.slice(r).col(obs(k, 0, r));
+      for (int r = 0; r < obs.n_rows; r++) {
+        alpha += emission.slice(r).col(obs(r, 0, k));
       }
       arma::vec alphatmp(emission.n_rows);
       for (int t = 1; t < obs.n_cols; t++) {
         for (int i = 0; i < emission.n_rows; i++) {
           alphatmp(i) = logSumExp(alpha + transition.col(i));
-          for (int r = 0; r < obs.n_slices; r++) {
-            alphatmp(i) += emission(i, obs(k, t, r), r);
+          for (int r = 0; r < obs.n_rows; r++) {
+            alphatmp(i) += emission(i, obs(r, t, k), r);
           }
         }
         alpha = alphatmp;
