@@ -3,7 +3,7 @@
 // [[Rcpp::export]]
 
 List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-    IntegerVector obsArray, IntegerVector nSymbols, NumericMatrix coefs, NumericMatrix X_,
+    IntegerVector obsArray, IntegerVector nSymbols, NumericMatrix coefs, const arma::mat& X,
     IntegerVector numberOfStates, int itermax, double tol, int trace, int threads) {
 
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
@@ -14,24 +14,22 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   arma::vec init(initialProbs.begin(), emission.n_rows, true);
   arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, true);
 
-  int q = coefs.nrow();
-  arma::mat coef(coefs.begin(), q, coefs.ncol());
+  arma::mat coef(coefs.begin(), coefs.nrow(), coefs.ncol());
   coef.col(0).zeros();
-  arma::mat X(X_.begin(), obs.n_rows, q, false);
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
     return List::create(Named("error") = 1);
   }
   weights.each_row() /= sum(weights, 0);
 
-  arma::mat initk(emission.n_rows, obs.n_rows);
-  for (unsigned int k = 0; k < obs.n_rows; k++) {
+  arma::mat initk(emission.n_rows, obs.n_slices);
+  for (unsigned int k = 0; k < obs.n_slices; k++) {
     initk.col(k) = init % reparma(weights.col(k), numberOfStates);
   }
 
-  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
-  arma::cube beta(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
-  arma::mat scales(obs.n_cols, obs.n_rows); //m,n,k
+  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
+  arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
+  arma::mat scales(obs.n_cols, obs.n_slices); //m,n,k
 
   internalForwardx(transition, emission, initk, obs, alpha, scales, threads);
   internalBackward(transition, emission, obs, beta, scales, threads);
@@ -56,20 +54,20 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     arma::cube gamma(emission.n_rows, emission.n_cols, emission.n_slices, arma::fill::zeros);
     arma::vec delta(emission.n_rows, arma::fill::zeros);
 
-    for (unsigned int k = 0; k < obs.n_rows; k++) {
+    for (unsigned int k = 0; k < obs.n_slices; k++) {
       delta += alpha.slice(k).col(0) % beta.slice(k).col(0);
     }
-#pragma omp parallel for if(obs.n_rows >= threads) schedule(static) num_threads(threads) \
+#pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
     default(none) shared(transition, obs, alpha, beta, scales, \
       emission, ksii, gamma, nSymbols)
-    for (int k = 0; k < obs.n_rows; k++) {
+    for (int k = 0; k < obs.n_slices; k++) {
       for (unsigned int i = 0; i < emission.n_rows; i++) {
         for (unsigned int j = 0; j < emission.n_rows; j++) {
           if (transition(i, j) > 0.0) {
             for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
               double tmp = alpha(i, t, k) * transition(i, j) * beta(j, t + 1, k) / scales(t + 1, k);
-              for (unsigned int r = 0; r < obs.n_slices; r++) {
-                tmp *= emission(j, obs(k, t + 1, r), r);
+              for (unsigned int r = 0; r < obs.n_rows; r++) {
+                tmp *= emission(j, obs(r, t + 1, k), r);
               }
 #pragma omp atomic
               ksii(i, j) += tmp;
@@ -83,7 +81,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
           for (unsigned int i = 0; i < emission.n_rows; i++) {
             if (emission(i, l, r) > 0.0) {
               for (unsigned int t = 0; t < obs.n_cols; t++) {
-                if (l == (obs(k, t, r))) {
+                if (l == (obs(r, t, k))) {
                   double tmp = alpha(i, t, k) * beta(i, t, k);
 #pragma omp atomic
                   gamma(i, l, r) += tmp;
@@ -118,7 +116,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     }
     init = delta;
 
-    for (unsigned int k = 0; k < obs.n_rows; k++) {
+    for (unsigned int k = 0; k < obs.n_slices; k++) {
       initk.col(k) = init % reparma(weights.col(k), numberOfStates);
     }
 

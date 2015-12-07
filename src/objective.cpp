@@ -19,9 +19,9 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
 
   arma::vec grad(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ), arma::fill::zeros);
 
-  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
-  arma::cube beta(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
-  arma::mat scales(obs.n_cols, obs.n_rows); //m,n,k
+  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
+  arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
+  arma::mat scales(obs.n_cols, obs.n_slices); //m,n,k
 
   internalForward(transition, emission, init, obs, alpha, scales, threads);
   if (!alpha.is_finite()) {
@@ -34,13 +34,13 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
 
-  arma::mat gradmat(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ), obs.n_rows,
+  arma::mat gradmat(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ), obs.n_slices,
       arma::fill::zeros);
 
-#pragma omp parallel for if(obs.n_rows >= threads) schedule(static) num_threads(threads) \
+#pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(alpha, beta, scales, gradmat, nSymbols, ANZ, BNZ, INZ, \
     obs, init, transition, emission)
-  for (int k = 0; k < obs.n_rows; k++) {
+  for (int k = 0; k < obs.n_slices; k++) {
     int countgrad = 0;
 
     // transitionMatrix
@@ -59,8 +59,8 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
         for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
           for (unsigned int j = 0; j < emission.n_rows; j++) {
             double tmp = 1.0;
-            for (unsigned int r = 0; r < obs.n_slices; r++) {
-              tmp *= emission(j, obs(k, t + 1, r), r);
+            for (unsigned int r = 0; r < obs.n_rows; r++) {
+              tmp *= emission(j, obs(r, t + 1, k), r);
             }
             gradArow(j) += alpha(i, t, k) * tmp * beta(j, t + 1, k) / scales(t + 1, k);
           }
@@ -73,7 +73,7 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
       }
     }
     // emissionMatrix
-    for (unsigned int r = 0; r < obs.n_slices; r++) {
+    for (unsigned int r = 0; r < obs.n_rows; r++) {
       arma::vec gradBrow(nSymbols[r]);
       arma::mat gradB(nSymbols[r], nSymbols[r]);
       for (unsigned int i = 0; i < emission.n_rows; i++) {
@@ -84,21 +84,21 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
           gradB.each_row() -= emission.slice(r).row(i).subvec(0, nSymbols[r] - 1);
           gradB.each_col() %= emission.slice(r).row(i).subvec(0, nSymbols[r] - 1).t();
           for (int j = 0; j < nSymbols[r]; j++) {
-            if (obs(k, 0, r) == j) {
+            if (obs(r, 0, k) == j) {
               double tmp = 1.0;
-              for (unsigned int r2 = 0; r2 < obs.n_slices; r2++) {
+              for (unsigned int r2 = 0; r2 < obs.n_rows; r2++) {
                 if (r2 != r) {
-                  tmp *= emission(i, obs(k, 0, r2), r2);
+                  tmp *= emission(i, obs(r2, 0, k), r2);
                 }
               }
               gradBrow(j) += init(i) * tmp * beta(i, 0, k) / scales(0, k);
             }
             for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
-              if (obs(k, t + 1, r) == j) {
+              if (obs(r, t + 1, k) == j) {
                 double tmp = 1.0;
-                for (unsigned int r2 = 0; r2 < obs.n_slices; r2++) {
+                for (unsigned int r2 = 0; r2 < obs.n_rows; r2++) {
                   if (r2 != r) {
-                    tmp *= emission(i, obs(k, t + 1, r2), r2);
+                    tmp *= emission(i, obs(r2, t + 1, k), r2);
                   }
                 }
                 gradBrow(j) += arma::dot(alpha.slice(k).col(t), transition.col(i)) * tmp
@@ -127,8 +127,8 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
       gradI.each_col() %= init;
       for (unsigned int j = 0; j < emission.n_rows; j++) {
         double tmp = 1.0;
-        for (unsigned int r = 0; r < obs.n_slices; r++) {
-          tmp *= emission(j, obs(k, 0, r), r);
+        for (unsigned int r = 0; r < obs.n_rows; r++) {
+          tmp *= emission(j, obs(r, 0, k), r);
         }
         gradIrow(j) += tmp * beta(j, 0, k) / scales(0, k);
       }

@@ -2,28 +2,26 @@
 
 // [[Rcpp::export]]
 
-List viterbi(NumericVector transitionMatrix, NumericVector emissionArray,
-    NumericVector initialProbs, IntegerVector obsArray) {
+List viterbi(const arma::mat& transition, NumericVector emissionArray,
+  const arma::vec& init, IntegerVector obsArray) {
 
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
 
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
-  arma::vec init(initialProbs.begin(), emission.n_rows, false);
-  arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, false);
 
-  arma::umat q(obs.n_rows, obs.n_cols);
-  arma::vec logp(obs.n_rows);
+  arma::umat q(obs.n_slices, obs.n_cols);
+  arma::vec logp(obs.n_slices);
 
   arma::mat delta(emission.n_rows, obs.n_cols);
   arma::umat phi(emission.n_rows, obs.n_cols);
 
-  for (unsigned int k = 0; k < obs.n_rows; k++) {
+  for (unsigned int k = 0; k < obs.n_slices; k++) {
 
     delta.col(0) = init;
     for (unsigned int r = 0; r < emission.n_slices; r++) {
-      delta.col(0) += emission.slice(r).col(obs(k, 0, r));
+      delta.col(0) += emission.slice(r).col(obs(r, 0, k));
     }
 
     phi.col(0).zeros();
@@ -33,7 +31,7 @@ List viterbi(NumericVector transitionMatrix, NumericVector emissionArray,
         (delta.col(t - 1) + transition.col(j)).max(phi(j, t));
         delta(j, t) = delta(phi(j, t), t - 1) + transition(phi(j, t), j);
         for (unsigned int r = 0; r < emission.n_slices; r++) {
-          delta(j, t) += emission(j, obs(k, t, r), r);
+          delta(j, t) += emission(j, obs(r, t, k), r);
         }
       }
     }

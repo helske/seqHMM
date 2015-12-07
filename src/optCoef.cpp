@@ -46,12 +46,12 @@ arma::vec gCoef(const arma::icube& obs, const arma::cube& beta, const arma::mat&
   arma::vec grad(q * (weights.n_rows - 1), arma::fill::zeros);
   double tmp;
 
-  for (unsigned int k = 0; k < obs.n_rows; k++) {
+  for (unsigned int k = 0; k < obs.n_slices; k++) {
     for (int jj = 1; jj < numberOfStates.size(); jj++) {
       for (int j = 0; j < emission.n_rows; j++) {
         tmp = 1.0;
-        for (unsigned int r = 0; r < obs.n_slices; r++) {
-          tmp *= emission(j, obs(k, 0, r), r);
+        for (unsigned int r = 0; r < obs.n_rows; r++) {
+          tmp *= emission(j, obs(r, 0, k), r);
         }
         if ((j >= (cumsumstate(jj) - numberOfStates(jj))) & (j < cumsumstate(jj))) {
           grad.subvec(q * (jj - 1), q * jj - 1) += tmp * beta(j, 0, k) / scales(0, k) * initk(j, k)

@@ -13,9 +13,9 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
   arma::vec init(initialProbs.begin(), emission.n_rows, true);
   arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, true);
 
-  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
-  arma::cube beta(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
-  arma::mat scales(obs.n_cols, obs.n_rows);
+  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
+  arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
+  arma::mat scales(obs.n_cols, obs.n_slices);
 
   internalForward(transition, emission, init, obs, alpha, scales, threads);
   internalBackward(transition, emission, obs, beta, scales, threads);
@@ -37,14 +37,14 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
     arma::cube gamma(emission.n_rows, emission.n_cols, emission.n_slices, arma::fill::zeros);
     arma::vec delta(emission.n_rows, arma::fill::zeros);
 
-    for (unsigned int k = 0; k < obs.n_rows; k++) {
+    for (unsigned int k = 0; k < obs.n_slices; k++) {
       delta += alpha.slice(k).col(0) % beta.slice(k).col(0);
     }
 
-#pragma omp parallel for if(obs.n_rows>=threads) schedule(static) num_threads(threads) \
+#pragma omp parallel for if(obs.n_slices>=threads) schedule(static) num_threads(threads) \
     default(none) shared(transition, obs, alpha, beta, scales,                         \
       emission, ksii, gamma, nSymbols)
-    for (int k = 0; k < obs.n_rows; k++) {
+    for (int k = 0; k < obs.n_slices; k++) {
       if (obs.n_cols > 1) {
         for (unsigned int j = 0; j < emission.n_rows; j++) {
           for (unsigned int i = 0; i < emission.n_rows; i++) {
@@ -52,8 +52,8 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
               for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
                 double tmp = alpha(i, t, k) * transition(i, j) * beta(j, t + 1, k)
                     / scales(t + 1, k);
-                for (unsigned int r = 0; r < obs.n_slices; r++) {
-                  tmp *= emission(j, obs(k, t + 1, r), r);
+                for (unsigned int r = 0; r < obs.n_rows; r++) {
+                  tmp *= emission(j, obs(r, t + 1, k), r);
                 }
 #pragma omp atomic
                 ksii(i, j) += tmp;
@@ -69,7 +69,7 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
           for (unsigned int i = 0; i < emission.n_rows; i++) {
             if (emission(i, l, r) > 0.0) {
               for (unsigned int t = 0; t < obs.n_cols; t++) {
-                if (l == (obs(k, t, r))) {
+                if (l == (obs(r, t, k))) {
 #pragma omp atomic
                   gamma(i, l, r) += alpha(i, t, k) * beta(i, t, k);
                 }

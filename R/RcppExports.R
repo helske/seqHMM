@@ -5,56 +5,56 @@ EM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols
     .Call('seqHMM_EM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol, trace, threads)
 }
 
-EMx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, coefs, X_, numberOfStates, itermax, tol, trace, threads) {
-    .Call('seqHMM_EMx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, coefs, X_, numberOfStates, itermax, tol, trace, threads)
+EMx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, coefs, X, numberOfStates, itermax, tol, trace, threads) {
+    .Call('seqHMM_EMx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, coefs, X, numberOfStates, itermax, tol, trace, threads)
 }
 
-forwardbackward <- function(transitionMatrix, emissionArray, initialProbs, obsArray, forwardonly, threads) {
-    .Call('seqHMM_forwardbackward', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, forwardonly, threads)
+forwardbackward <- function(transition, emissionArray, init, obsArray, forwardonly, threads) {
+    .Call('seqHMM_forwardbackward', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, forwardonly, threads)
 }
 
-forwardbackwardx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates, forwardonly, threads) {
-    .Call('seqHMM_forwardbackwardx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates, forwardonly, threads)
+forwardbackwardx <- function(transition, emissionArray, init, obsArray, coef, X, numberOfStates, forwardonly, threads) {
+    .Call('seqHMM_forwardbackwardx', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, coef, X, numberOfStates, forwardonly, threads)
 }
 
 log_EM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol, trace, threads) {
     .Call('seqHMM_log_EM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol, trace, threads)
 }
 
-log_EMx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, coefs, X_, numberOfStates, itermax, tol, trace, threads) {
-    .Call('seqHMM_log_EMx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, coefs, X_, numberOfStates, itermax, tol, trace, threads)
+log_EMx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, coefs, X, numberOfStates, itermax, tol, trace, threads) {
+    .Call('seqHMM_log_EMx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, coefs, X, numberOfStates, itermax, tol, trace, threads)
 }
 
 log_forwardbackward <- function(transitionMatrix, emissionArray, initialProbs, obsArray, forwardonly, threads) {
     .Call('seqHMM_log_forwardbackward', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, forwardonly, threads)
 }
 
-log_forwardbackwardx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates, forwardonly, threads) {
-    .Call('seqHMM_log_forwardbackwardx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates, forwardonly, threads)
+log_forwardbackwardx <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coef, X, numberOfStates, forwardonly, threads) {
+    .Call('seqHMM_log_forwardbackwardx', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coef, X, numberOfStates, forwardonly, threads)
 }
 
 log_logLikHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, threads) {
     .Call('seqHMM_log_logLikHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, threads)
 }
 
-log_logLikMixHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates, threads) {
-    .Call('seqHMM_log_logLikMixHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates, threads)
+log_logLikMixHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coef, X, numberOfStates, threads) {
+    .Call('seqHMM_log_logLikMixHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coef, X, numberOfStates, threads)
 }
 
 log_objective <- function(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, threads) {
     .Call('seqHMM_log_objective', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, threads)
 }
 
-log_objectivex <- function(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coefs, X_, numberOfStates, threads) {
-    .Call('seqHMM_log_objectivex', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coefs, X_, numberOfStates, threads)
+log_objectivex <- function(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coefs, X, numberOfStates, threads) {
+    .Call('seqHMM_log_objectivex', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coefs, X, numberOfStates, threads)
 }
 
-logLikHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, threads) {
-    .Call('seqHMM_logLikHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, threads)
+logLikHMM <- function(transition, emissionArray, init, obsArray, threads) {
+    .Call('seqHMM_logLikHMM', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, threads)
 }
 
-logLikMixHMM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates, threads) {
-    .Call('seqHMM_logLikMixHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates, threads)
+logLikMixHMM <- function(transition, emissionArray, init, obsArray, coef, X, numberOfStates, threads) {
+    .Call('seqHMM_logLikMixHMM', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, coef, X, numberOfStates, threads)
 }
 
 logSumExp <- function(x) {
@@ -65,19 +65,19 @@ objective <- function(transitionMatrix, emissionArray, initialProbs, obsArray, t
     .Call('seqHMM_objective', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, threads)
 }
 
-objectivex <- function(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coefs, X_, numberOfStates, threads) {
-    .Call('seqHMM_objectivex', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coefs, X_, numberOfStates, threads)
+objectivex <- function(transition, emissionArray, init, obsArray, ANZ, emissNZ, INZ, nSymbols, coef, X, numberOfStates, threads) {
+    .Call('seqHMM_objectivex', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, ANZ, emissNZ, INZ, nSymbols, coef, X, numberOfStates, threads)
 }
 
-varcoef <- function(coefs, X_, numberOfStates) {
-    .Call('seqHMM_varcoef', PACKAGE = 'seqHMM', coefs, X_, numberOfStates)
+varcoef <- function(coef, X) {
+    .Call('seqHMM_varcoef', PACKAGE = 'seqHMM', coef, X)
 }
 
-viterbi <- function(transitionMatrix, emissionArray, initialProbs, obsArray) {
-    .Call('seqHMM_viterbi', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray)
+viterbi <- function(transition, emissionArray, init, obsArray) {
+    .Call('seqHMM_viterbi', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray)
 }
 
-viterbix <- function(transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates) {
-    .Call('seqHMM_viterbix', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coefs, X_, numberOfStates)
+viterbix <- function(transition, emissionArray, init, obsArray, coef, X, numberOfStates) {
+    .Call('seqHMM_viterbix', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, coef, X, numberOfStates)
 }
 

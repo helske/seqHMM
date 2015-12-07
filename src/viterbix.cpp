@@ -2,8 +2,8 @@
 
 // [[Rcpp::export]]
 
-List viterbix(NumericVector transitionMatrix, NumericVector emissionArray,
-    NumericVector initialProbs, IntegerVector obsArray, NumericMatrix coefs, NumericMatrix X_,
+List viterbix(const arma::mat& transition, NumericVector emissionArray,
+    const arma::vec& init, IntegerVector obsArray, const arma::mat& coef, const arma::mat& X,
     IntegerVector numberOfStates) {
 
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
@@ -11,29 +11,22 @@ List viterbix(NumericVector transitionMatrix, NumericVector emissionArray,
 
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
-  arma::vec init(initialProbs.begin(), emission.n_rows, false);
-  arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, false);
 
-  arma::umat q(obs.n_rows, obs.n_cols);
-  arma::vec logp(obs.n_rows);
+  arma::umat q(obs.n_slices, obs.n_cols);
+  arma::vec logp(obs.n_slices);
 
-
-  int qn = coefs.nrow();
-  arma::mat coef(coefs.begin(), qn, numberOfStates.size());
-  coef.col(0).zeros();
-  arma::mat X(X_.begin(), obs.n_rows, qn);
 
   arma::mat lweights = exp(X * coef).t();
   lweights.each_row() /= sum(lweights, 0);
   lweights = log(lweights);
 
-  for (unsigned int k = 0; k < obs.n_rows; k++) {
+  for (unsigned int k = 0; k < obs.n_slices; k++) {
     arma::mat delta(emission.n_rows, obs.n_cols);
     arma::umat phi(emission.n_rows, obs.n_cols);
     
     delta.col(0) = init + reparma(lweights.col(k), numberOfStates);
     for (unsigned int r = 0; r < emission.n_slices; r++) {
-      delta.col(0) += emission.slice(r).col(obs(k, 0, r));
+      delta.col(0) += emission.slice(r).col(obs(r, 0, k));
     }
 
     phi.col(0).zeros();
@@ -43,7 +36,7 @@ List viterbix(NumericVector transitionMatrix, NumericVector emissionArray,
         (delta.col(t - 1) + transition.col(j)).max(phi(j, t));
         delta(j, t) = delta(phi(j, t), t - 1) + transition(phi(j, t), j);
         for (unsigned int r = 0; r < emission.n_slices; r++) {
-          delta(j, t) += emission(j, obs(k, t, r), r);
+          delta(j, t) += emission(j, obs(r, t, k), r);
         }
       }
     }

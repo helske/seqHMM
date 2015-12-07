@@ -19,9 +19,9 @@
 #' cluster probabilities, and information on most probable clusters.
 #'
 #' @return \describe{
-#'    \item{transition_probs}{Transition probabilities. Only returned if \code{parameters == TRUE}.}
-#'    \item{emission_probs}{Emission probabilities. Only returned if \code{parameters == TRUE}.}
-#'    \item{initial_probs}{Initial state probabilities. Only returned if \code{parameters == TRUE}.}
+#'    \item{transition_probs}{Transition probabilities. Only returned if \code{parameters = TRUE}.}
+#'    \item{emission_probs}{Emission probabilities. Only returned if \code{parameters = TRUE}.}
+#'    \item{initial_probs}{Initial state probabilities. Only returned if \code{parameters = TRUE}.}
 #'    \item{logLik}{Log-likelihood.}
 #'    \item{BIC}{Bayesian information criterion.}
 #'    \item{most_probable_cluster}{The most probable cluster according to posterior probabilities.}

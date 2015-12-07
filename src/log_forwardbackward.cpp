@@ -16,14 +16,14 @@ List log_forwardbackward(NumericVector transitionMatrix, NumericVector emissionA
   transition = log(transition);
   emission = log(emission);
 
-  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
+  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
 
   log_internalForward(transition, emission, init, obs, alpha, threads);
 
   if (forwardonly) {
     return List::create(Named("forward_probs") = wrap(alpha));
   } else {
-    arma::cube beta(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
+    arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
     log_internalBackward(transition, emission, obs, beta, threads);
     return List::create(Named("forward_probs") = wrap(alpha), Named("backward_probs") = wrap(beta));
   }

@@ -4,9 +4,9 @@
 \alias{alphabet}
 \alias{seqdef}
 \alias{seqstatf}
-\title{Imported functions from \code{TraMineR} for convinience.}
+\title{Imported Functions from \code{TraMineR}}
 \description{
-For details, see corresponding help pages of \code{\link[TraMineR]{seqstatf}},
+Imported functions for convinience. For details, see corresponding help pages of \code{\link[TraMineR]{seqstatf}},
 \code{\link[TraMineR]{alphabet}} and \code{\link[TraMineR]{seqdef}}.
 }
 

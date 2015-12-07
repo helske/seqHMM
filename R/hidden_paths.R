@@ -49,7 +49,7 @@ hidden_paths <- function(model){
     obsArray[,,i] <- data.matrix(model$observations[[i]])-1
     obsArray[,,i][obsArray[,,i]>model$n_symbols[i]] <- model$n_symbols[i]
   }       
-  storage.mode(obsArray) <- "integer"
+  obsArray <- aperm(obsArray)
   
   emissionArray <- array(0,c(model$n_states,max(model$n_symbols)+1,model$n_channels))
   for(i in 1:model$n_channels)

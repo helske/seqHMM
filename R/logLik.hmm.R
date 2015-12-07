@@ -30,7 +30,7 @@ logLik.hmm <- function(object, partials = FALSE, threads = 1, log_space = FALSE,
     obsArray[,,i]<-data.matrix(object$observations[[i]])-1
     obsArray[,,i][obsArray[,,i]>object$n_symbols[i]]<-object$n_symbols[i]
   }       
-  storage.mode(obsArray)<-"integer"
+  obsArray <- aperm(obsArray)
   
   emissionArray<-array(1,c(object$n_states,max(object$n_symbols)+1,object$n_channels))
   for(i in 1:object$n_channels)

@@ -2,7 +2,7 @@
 #' (covariates ignored)
 #' 
 #' The \code{separate_mhmm} function reorganizes the parameters of a \code{mhmm} object 
-#' into a list where each element is an object of class \code{hmm} consisting of the 
+#' into a list where each list component is an object of class \code{hmm} consisting of the 
 #' parameters of the corresponding cluster.
 #' 
 #' @export

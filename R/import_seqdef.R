@@ -1,6 +1,6 @@
-#' Imported functions from \code{TraMineR} for convinience.
+#' Imported Functions from \code{TraMineR}
 #'  
-#' For details, see corresponding help pages of \code{\link[TraMineR]{seqstatf}},
+#' Imported functions for convinience. For details, see corresponding help pages of \code{\link[TraMineR]{seqstatf}},
 #' \code{\link[TraMineR]{alphabet}} and \code{\link[TraMineR]{seqdef}}.
 #' 
 #' @name seqdef

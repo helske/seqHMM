@@ -16,16 +16,18 @@ List log_EM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
   emission = log(emission);
   init = log(init);
 
-  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
-  arma::cube beta(emission.n_rows, obs.n_cols, obs.n_rows); //m,n,k
+  arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
+  arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
 
   log_internalForward(transition, emission, init, obs, alpha, threads);
   log_internalBackward(transition, emission, obs, beta, threads);
 
-  arma::vec ll(obs.n_rows);
+  arma::vec ll(obs.n_slices);
 
-  for (int k = 0; k < oDims[0]; k++) {
-    ll(k) = logSumExp(alpha.slice(k).col(oDims[1] - 1));
+#pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
+  default(none) shared(obs, alpha, ll)
+  for (int k = 0; k < obs.n_slices; k++) {
+    ll(k) = logSumExp(alpha.slice(k).col(obs.n_cols - 1));
   }
 
   double sumlogLik = sum(ll);
@@ -45,14 +47,14 @@ List log_EM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
     arma::cube gamma(emission.n_rows, emission.n_cols, emission.n_slices, arma::fill::zeros);
     arma::vec delta(emission.n_rows, arma::fill::zeros);
 
-    for (unsigned int k = 0; k < obs.n_rows; k++) {
+    for (unsigned int k = 0; k < obs.n_slices; k++) {
       delta += exp(alpha.slice(k).col(0) + beta.slice(k).col(0) - ll(k));
     }
 
-#pragma omp parallel for if(obs.n_rows>=threads) schedule(static) num_threads(threads) \
-    default(none) shared(transition, obs, alpha, beta, ll,    oDims,                   \
+#pragma omp parallel for if(obs.n_slices>=threads) schedule(static) num_threads(threads) \
+    default(none) shared(transition, obs, alpha, beta, ll,                  \
       emission, ksii, gamma, nSymbols)
-    for (int k = 0; k < oDims[0]; k++) {
+    for (int k = 0; k < obs.n_slices; k++) {
       if (obs.n_cols > 1) {
         for (unsigned int j = 0; j < emission.n_rows; j++) {
           for (unsigned int i = 0; i < emission.n_rows; i++) {
@@ -60,8 +62,8 @@ List log_EM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
               arma::vec tmpnm1(obs.n_cols - 1);
               for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
                 tmpnm1(t) = alpha(i, t, k) + transition(i, j) + beta(j, t + 1, k);
-                for (unsigned int r = 0; r < obs.n_slices; r++) {
-                  tmpnm1(t) += emission(j, obs(k, t + 1, r), r);
+                for (unsigned int r = 0; r < obs.n_rows; r++) {
+                  tmpnm1(t) += emission(j, obs(r, t + 1, k), r);
                 }
               }
 #pragma omp atomic
@@ -77,7 +79,7 @@ List log_EM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
             if (emission(i, l, r) > -arma::math::inf()) {
               arma::vec tmpn(obs.n_cols);
               for (unsigned int t = 0; t < obs.n_cols; t++) {
-                if (l == (obs(k, t, r))) {
+                if (l == (obs(r, t, k))) {
                   tmpn(t) = alpha(i, t, k) + beta(i, t, k);
                 } else
                   tmpn(t) = -arma::math::inf();
@@ -107,8 +109,10 @@ List log_EM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
 
     log_internalForward(transition, emission, init, obs, alpha, threads);
     log_internalBackward(transition, emission, obs, beta, threads);
-
-    for (int k = 0; k < oDims[0]; k++) {
+    
+#pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
+    default(none) shared(obs, alpha, ll)
+    for (int k = 0; k < obs.n_slices; k++) {
       ll(k) = logSumExp(alpha.slice(k).col(obs.n_cols - 1));
     }
 
