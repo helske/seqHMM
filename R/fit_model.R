@@ -672,10 +672,10 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       for (i in 1:model$n_channels)
         model$emission_probs[[i]][] <- emissionArray[ , 1:model$n_symbols[i], i]
       
-      if(global_step || local_step){
+      if (mhmm && (global_step || local_step)) {
         k <- 0
-        for(m in 1:model$n_clusters){
-          original_model$initial_probs[[m]] <- unname(resEM$initialProbs[(k+1):(k+model$n_states_in_clusters[m])])
+        for (m in 1:model$n_clusters) {
+          original_model$initial_probs[[m]] <- unname(resEM$initialProbs[(k + 1):(k + model$n_states_in_clusters[m])])
           k <- sum(model$n_states_in_clusters[1:m])
         }
       } else {
@@ -926,7 +926,9 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       }
       if(is.null(control_local$algorithm)){
         control_local$algorithm <- "NLOPT_LD_LBFGS"
-        if(is.null(control_local$xtol_rel)) control_local$xtol_rel <- 1e-8
+      }
+      if (is.null(control_local$xtol_rel)) {
+        control_local$xtol_rel <- 1e-8
       }
       
       if (mhmm) {
