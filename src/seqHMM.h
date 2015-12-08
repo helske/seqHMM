@@ -15,8 +15,11 @@ using namespace Rcpp;
 
 arma::vec reparma(arma::vec x, Rcpp::IntegerVector y);
 
-void internalForwardx(const arma::mat& transition, const arma::cube& emission,
+void internalForwardx(const arma::sp_mat& transition_t, const arma::cube& emission,
   const arma::mat& init, const arma::icube& obs, arma::cube& alpha, arma::mat& scales, int threads);
+void internalBackwardx(const arma::sp_mat& transition, const arma::cube& emission, 
+  const arma::icube& obs, arma::cube& beta, const arma::mat& scales, int threads);
+
 void internalForward(const arma::mat& transition, const arma::cube& emission, 
   const arma::vec& init, const arma::icube& obs, arma::cube& alpha, arma::mat& scales, int threads);
 void internalBackward(const arma::mat& transition, const arma::cube& emission, 

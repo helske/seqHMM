@@ -21,14 +21,16 @@ List forwardbackwardx(const arma::mat& transition, NumericVector emissionArray,
   }
   arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
   arma::mat scales(obs.n_cols, obs.n_slices); //m,n,k
-  internalForwardx(transition, emission, initk, obs, alpha, scales, threads);
   
+  arma::sp_mat sp_trans(transition);
+  internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
+
   if (forwardonly) {
     return List::create(Named("forward_probs") = wrap(alpha),
       Named("scaling_factors") = wrap(scales));
   } else {
     arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
-    internalBackward(transition, emission, obs, beta, scales, threads);
+    internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
     return List::create(Named("forward_probs") = wrap(alpha), Named("backward_probs") = wrap(beta),
       Named("scaling_factors") = wrap(scales));
   }

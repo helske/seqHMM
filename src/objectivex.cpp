@@ -37,12 +37,14 @@ List objectivex(const arma::mat& transition, NumericVector emissionArray,
   arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
   arma::mat scales(obs.n_cols, obs.n_slices); //m,n,k
 
-  internalForwardx(transition, emission, initk, obs, alpha, scales, threads);
+  arma::sp_mat sp_trans(transition);
+  internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
   if (!alpha.is_finite()) {
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
-  internalBackward(transition, emission, obs, beta, scales, threads);
+ 
+  internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
   if (!beta.is_finite()) {
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad),
