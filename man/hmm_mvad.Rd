@@ -10,8 +10,7 @@ unrestricted model with six hidden states.}
 A hidden Markov model (MMM) fitted for the \code{\link[TraMineR]{mvad}} data.
 }
 \details{
-The model is loaded by calling \code{data(hmm_mvad)}. It was created with the
-following code:
+Model was created with the following code:
 \preformatted{
 
 data("mvad", package = "TraMineR")

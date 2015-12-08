@@ -470,8 +470,8 @@
 #' 
 
 fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = FALSE, 
-  control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1, 
-  log_space = FALSE, ...){
+                      control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1, 
+                      log_space = FALSE, ...){
   
   
   if(!inherits(model, c("hmm", "mhmm")))
@@ -497,7 +497,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
   }
   
   obsArray <- array(0, c(model$n_sequences, model$length_of_sequences, 
-    model$n_channels))
+                         model$n_channels))
   for(i in 1:model$n_channels) {
     obsArray[,,i] <- data.matrix(model$observations[[i]])-1
     obsArray[,,i][obsArray[,,i] > model$n_symbols[i]] <- model$n_symbols[i]
@@ -519,30 +519,30 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     if (!log_space) {
       if (mhmm) {
         resEM <- EMx(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
-          model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, 
-          em.con$maxeval, em.con$reltol,em.con$print_level, threads)
+                     model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, 
+                     em.con$maxeval, em.con$reltol,em.con$print_level, threads)
       } else {
         resEM<-EM(model$transition_probs, emissionArray, model$initial_probs, obsArray,
-          model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
+                  model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
       }
     } else {
       if (mhmm) {
         resEM <- log_EMx(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
-          model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, 
-          em.con$maxeval, em.con$reltol,em.con$print_level, threads)
+                         model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, 
+                         em.con$maxeval, em.con$reltol,em.con$print_level, threads)
       } else {
         resEM <- log_EM(model$transition_probs, emissionArray, model$initial_probs, obsArray,
-          model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
+                        model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
       }
     }
     
     
     if(mhmm && resEM$error != 0){
       err_msg <- switch(resEM$error, 
-        "1" = "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
-        "2" = "Estimation of coefficients of covariates failed due to singular Hessian.",
-        "3" = "Estimation of coefficients of covariates failed due to non-finite cluster probabilities.",
-        "4" = "Non-finite log-likelihood.")
+                        "1" = "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
+                        "2" = "Estimation of coefficients of covariates failed due to singular Hessian.",
+                        "3" = "Estimation of coefficients of covariates failed due to non-finite cluster probabilities.",
+                        "4" = "Non-finite log-likelihood.")
       if (!global_step && !local_step && 
           (is.null(control_em$restart$times) || control_em$restart$times == 0)) {
         stop(paste("EM algorithm failed:", err_msg))
@@ -553,7 +553,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     
     if (!is.null(em.con$restart)) {
       restart.con <- list(times = 0, print_level = em.con$print_level, maxeval = 100, reltol = 1e-8,
-        transition = TRUE, emission = TRUE, sd = 0.25)
+                          transition = TRUE, emission = TRUE, sd = 0.25)
       nmsC <- names(restart.con)  
       restart.con[(namc <- names(control_em$restart))] <- control_em$restart
       if (length(noNms <- namc[!namc %in% nmsC])) 
@@ -605,38 +605,41 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         if (!log_space) {
           if (mhmm) {
             resEMi <- EMx(random_trans, random_emiss, model$initial_probs, obsArray, 
-              model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, restart.con$maxeval, 
-              restart.con$reltol,restart.con$print_level, threads)
+                          model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, restart.con$maxeval, 
+                          restart.con$reltol,restart.con$print_level, threads)
           } else {
             resEMi <- EM(random_trans, random_emiss, model$initial_probs, obsArray,
-              model$n_symbols, restart.con$maxeval, restart.con$reltol,restart.con$print_level, threads)
+                         model$n_symbols, restart.con$maxeval, restart.con$reltol,restart.con$print_level, threads)
           }
         } else {
           if (mhmm) {
             resEMi <- log_EMx(random_trans, random_emiss, model$initial_probs, obsArray, 
-              model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, restart.con$maxeval, 
-              restart.con$reltol,restart.con$print_level, threads) 
+                              model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, restart.con$maxeval, 
+                              restart.con$reltol,restart.con$print_level, threads) 
           } else {
             resEMi <- log_EM(random_trans, random_emiss, model$initial_probs, obsArray,
-              model$n_symbols, restart.con$maxeval, restart.con$reltol,restart.con$print_level, threads)
+                             model$n_symbols, restart.con$maxeval, restart.con$reltol,restart.con$print_level, threads)
           }
         }
         
-        
+        resEMi$logLik
         
         if (mhmm && resEMi$error != 0) {
           err_msg <- switch(resEMi$error, 
-            "1" = "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
-            "2" = "Estimation of coefficients of covariates failed due to singular Hessian.",
-            "3" = "Estimation of coefficients of covariates failed due to non-finite cluster probabilities.",
-            "4" = "Non-finite log-likelihood.")
+                            "1" = "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
+                            "2" = "Estimation of coefficients of covariates failed due to singular Hessian.",
+                            "3" = "Estimation of coefficients of covariates failed due to non-finite cluster probabilities.",
+                            "4" = "Non-finite log-likelihood.")
           warning(paste("EM algorithm failed:", err_msg))
         } else {
-          if (is.finite(resEMi$logLik) && isTRUE(all.equal(resEMi$logLik, resEM$logLik))) {
-            counter <- counter + 1
-          } else if (is.finite(resEMi$logLik) && resEMi$logLik > resEM$logLik) {
+          eq_good <- isTRUE(all.equal.numeric(resEMi$logLik, resEM$logLik, 
+                                   tolerance = restart.con$reltol))
+          counter <- counter + eq_good
+          if (is.finite(resEMi$logLik) && resEMi$logLik > resEM$logLik) {
             resEM <- resEMi
-            counter <- 1
+            if(!eq_good) {
+              counter <- 1
+            }
           }
         }
       }
@@ -644,21 +647,21 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         if (!log_space) {
           if (mhmm) {
             resEM <- EMx(resEM$transitionMatrix, resEM$emissionArray, resEM$initialProbs, obsArray, 
-              model$n_symbols, resEM$coef, model$X, model$n_states_in_clusters, em.con$maxeval, 
-              em.con$reltol,em.con$print_level, threads)
+                         model$n_symbols, resEM$coef, model$X, model$n_states_in_clusters, em.con$maxeval, 
+                         em.con$reltol,em.con$print_level, threads)
           } else {
             resEM <- EM(resEM$transitionMatrix, resEM$emissionArray, resEM$initialProbs, obsArray,
-              model$n_symbols, restart.con$maxeval, restart.con$reltol,em.con$print_level, threads)
+                        model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
           }
           
         } else {
           if (mhmm) {
             resEM <- log_EMx(resEM$transitionMatrix, resEM$emissionArray, resEM$initialProbs, obsArray, 
-              model$n_symbols, resEM$coef, model$X, model$n_states_in_clusters, em.con$maxeval, 
-              em.con$reltol,em.con$print_level, threads)
+                             model$n_symbols, resEM$coef, model$X, model$n_states_in_clusters, em.con$maxeval, 
+                             em.con$reltol,em.con$print_level, threads)
           } else {
             resEM <- log_EM(resEM$transitionMatrix, resEM$emissionArray, resEM$initialProbs, obsArray,
-              model$n_symbols, restart.con$maxeval, restart.con$reltol, em.con$print_level, threads)
+                            model$n_symbols, em.con$maxeval, em.con$reltol, em.con$print_level, threads)
           }
         }
       }
@@ -675,11 +678,11 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       if (mhmm && (global_step || local_step)) {
         k <- 0
         for (m in 1:model$n_clusters) {
-          original_model$initial_probs[[m]] <- unname(resEM$initialProbs[(k + 1):(k + model$n_states_in_clusters[m])])
+          original_model$initial_probs[[m]][] <- resEM$initialProbs[(k + 1):(k + model$n_states_in_clusters[m])]
           k <- sum(model$n_states_in_clusters[1:m])
         }
       } else {
-        model$initial_probs <- resEM$initialProbs
+        model$initial_probs[] <- resEM$initialProbs
       }
       
       resEM$n_optimum <- counter
@@ -758,11 +761,11 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       initialvalues<-c(if((npTM+sum(npEM)+npIPAll)>0) log(c(
         if(npTM>0) model$transition_probs[paramTM],
         if(sum(npEM)>0) unlist(sapply(1:model$n_channels,
-          function(x) model$emission_probs[[x]][paramEM[[x]]])),
+                                      function(x) model$emission_probs[[x]][paramEM[[x]]])),
         if(npIPAll>0) unlist(sapply(1:original_model$n_clusters,function(m)
           if(npIP[m]>0) original_model$initial_probs[[m]][paramIP[[m]]]))
       )),
-        model$coefficients[,-1]
+      model$coefficients[,-1]
       )
       
     } else {
@@ -777,7 +780,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       initialvalues<-c(if((npTM+sum(npEM)+npIP)>0) log(c(
         if(npTM>0) model$transition_probs[paramTM],
         if(sum(npEM)>0) unlist(sapply(1:model$n_channels,
-          function(x) model$emission_probs[[x]][paramEM[[x]]])),
+                                      function(x) model$emission_probs[[x]][paramEM[[x]]])),
         if(npIP>0) model$initial_probs[paramIP]))
       )
     }
@@ -804,7 +807,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         if(npIP[m]>0){
           original_model$initial_probs[[m]][maxIP[[m]]] <- maxIPvalue[[m]] # Not needed?
           original_model$initial_probs[[m]][paramIP[[m]]] <- exp(pars[npTM+sum(npEM)+c(0,cumsum(npIP))[m]+
-              1:npIP[m]])
+                                                                        1:npIP[m]])
           original_model$initial_probs[[m]][] <- 
             original_model$initial_probs[[m]]/sum(original_model$initial_probs[[m]])
         }
@@ -815,12 +818,12 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       if(estimate){
         if (!log_space) {
           objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
-            transNZ, emissNZ, initNZ, model$n_symbols, 
-            model$coefficients, model$X, model$n_states_in_clusters, threads)
+                     transNZ, emissNZ, initNZ, model$n_symbols, 
+                     model$coefficients, model$X, model$n_states_in_clusters, threads)
         } else {
           log_objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray, 
-            transNZ, emissNZ, initNZ, model$n_symbols, 
-            model$coefficients, model$X, model$n_states_in_clusters, threads)
+                         transNZ, emissNZ, initNZ, model$n_symbols, 
+                         model$coefficients, model$X, model$n_states_in_clusters, threads)
         }
         
       } else {
@@ -860,10 +863,10 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       if(estimate){
         if (!log_space) {
           objective(model$transition_probs, emissionArray, model$initial_probs, obsArray,
-            transNZ, emissNZ, initNZ, model$n_symbols, threads)
+                    transNZ, emissNZ, initNZ, model$n_symbols, threads)
         } else {
           log_objective(model$transition_probs, emissionArray, model$initial_probs, obsArray,
-            transNZ, emissNZ, initNZ, model$n_symbols, threads)
+                        transNZ, emissNZ, initNZ, model$n_symbols, threads)
         }
       } else {
         if(sum(npEM)>0){
@@ -880,7 +883,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       if(missing(lb)){
         if (mhmm) {
           lb <- c(rep(-50, length(initialvalues) - npCoef), 
-            rep(-150 / apply(abs(model$X), 2, max), model$n_clusters - 1))
+                  rep(-150 / apply(abs(model$X), 2, max), model$n_clusters - 1))
         } else lb <- -50
         
       }
@@ -888,7 +891,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       if(missing(ub)){
         if (mhmm) {
           ub <- c(rep(50, length(initialvalues) - npCoef), 
-            rep(150 / apply(abs(model$X), 2, max), model$n_clusters - 1))
+                  rep(150 / apply(abs(model$X), 2, max), model$n_clusters - 1))
         } else ub <- 50
       }
       ub <- pmin(pmax(ub, 2*initialvalues),500)
@@ -907,11 +910,11 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       
       if (mhmm) {
         globalres <- nloptr(x0 = initialvalues, eval_f = objectivef_mhmm, lb = lb, ub = ub,
-          opts = control_global, model = model, estimate = TRUE, ...)
+                            opts = control_global, model = model, estimate = TRUE, ...)
         model <- objectivef_mhmm(globalres$solution, model, FALSE)
       } else {
         globalres <- nloptr(x0 = initialvalues, eval_f = objectivef_hmm, lb = lb, ub = ub,
-          opts = control_global, model = model, estimate = TRUE,  ...)
+                            opts = control_global, model = model, estimate = TRUE,  ...)
         model <- objectivef_hmm(globalres$solution, model, FALSE)
       }
       
@@ -933,17 +936,17 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       
       if (mhmm) {
         ub <- c(rep(300, length(initialvalues) - npCoef), rep(300 / apply(abs(model$X), 2, max), 
-          model$n_clusters - 1))
+                                                              model$n_clusters - 1))
         ub <- pmin(pmax(ub, 2*initialvalues), 500)
         localres<-nloptr(x0 = initialvalues, eval_f = objectivef_mhmm,
-          opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
+                         opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
         model <- objectivef_mhmm(localres$solution, model, FALSE)
         
       } else {
         ub <- pmin(pmax(300, 2*initialvalues), 500)
         localres <- nloptr(x0 = initialvalues,
-          eval_f = objectivef_hmm,
-          opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
+                           eval_f = objectivef_hmm,
+                           opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
         model <- objectivef_hmm(localres$solution, model, FALSE)
       }
       
@@ -977,7 +980,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
   
   suppressWarnings(try(model <- trim_model(model, verbose = FALSE), silent = TRUE))
   list(model = model, 
-    logLik = ll, em_results = resEM[c("logLik", "iterations", "change", "n_optimum")], 
-    global_results = globalres, local_results = localres, call = match.call())
+       logLik = ll, em_results = resEM[c("logLik", "iterations", "change", "n_optimum")], 
+       global_results = globalres, local_results = localres, call = match.call())
   
 }

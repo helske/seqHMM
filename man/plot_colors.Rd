@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_colors.R
 \name{plot_colors}
 \alias{plot_colors}
-\title{Plot colorpalettes}
+\title{Plot Colorpalettes}
 \usage{
 plot_colors(x, labels = NULL)
 }
