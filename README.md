@@ -102,9 +102,9 @@ gridplot(
 
 ### Fitting hidden Markov models
 
-When fitting Hidden Markov models (HMMs), initial values for model parameters are first given to the `build_hmm` function. After that, the model is fitted with the `fit_hmm` function. The fitting function provides three estimation steps: 1) EM algorithm, 2) global optimization, and 3) local optimization. By default, only steps 1 and 3 are performed. The results from a former step are used as starting values in a latter.
+When fitting Hidden Markov models (HMMs), initial values for model parameters are first given to the `build_hmm` function. After that, the model is fitted with the `fit_model` function. The fitting function provides three estimation steps: 1) EM algorithm, 2) global optimization, and 3) local optimization. By default, only the EM step is performed. The results from a former step are used as starting values in a latter.
 
-In order to reduce the risk of being trapped in a poor local maximum, a large number of initial values should be tested. If global step is chosen, by default the `fit_hmm` function uses the multilevel single-linkage method (MLSL) with the LDS modification. The MLSL draws multiple random starting values and performs local optimization (L-BFGS by default) from each starting point. The LDS modification uses low-discrepancy sequences instead of random numbers as starting points and should improve convergence rate.
+In order to reduce the risk of being trapped in a poor local maximum, a large number of initial values should be tested. If global step is chosen, by default the `fit_model` function uses the multilevel single-linkage method (MLSL) with the LDS modification. The MLSL draws multiple random starting values and performs local optimization (L-BFGS by default) from each starting point. The LDS modification uses low-discrepancy sequences instead of random numbers as starting points and should improve convergence rate.
 
 In order to reduce computation time spent on non-global optima, the convergence tolerance of the local optimizer is set relatively large. At step 3, a local optimization (again L-BFGS by default) is run with a lower tolerance to find the optimum with high precision.
 
@@ -155,12 +155,12 @@ bhmm <- build_hmm(
 
 # Fitting the HMM:
 # step 1) EM algorithm
-hmm <- fit_hmm(bhmm)
+hmm <- fit_model(bhmm)
 hmm$logLik
 # -16854.16
 
 # EM + 50 restarts with random starting values for emission probabilities
-hmm2 <- fit_hmm(bhmm, 
+hmm2 <- fit_model(bhmm, 
   control_em = list(restart = list(times = 50, transition = FALSE, emission = TRUE))
 hmm2$logLik
 # -16854.16
@@ -171,12 +171,12 @@ hmm2$logLik
 # step 3) local optimization (default: LBFGS) for "final polishing"
 # Note: By default, estimation time limited to 60 seconds in step 2.
 # Setting 3000 evaluations with unlimited time
-hmm3 <- fit_hmm(bhmm, global_step = TRUE, local_step = TRUE, control_global = list(maxeval = 3000, maxtime = 0))
+hmm3 <- fit_model(bhmm, global_step = TRUE, local_step = TRUE, control_global = list(maxeval = 3000, maxtime = 0))
 hmm3$logLik
 # -16854.16
 
 # Only global optimization (3000 iterations, unlimited time)
-hmm4 <- fit_hmm(bhmm, em_step = FALSE, global_step = TRUE, local_step = FALSE,
+hmm4 <- fit_model(bhmm, em_step = FALSE, global_step = TRUE, local_step = FALSE,
                 control_global = list(maxeval = 3000, maxtime = 0))
 hmm4$logLik
 # -16856.78
@@ -262,7 +262,7 @@ BIC(hmm$model)
 The `trim_hmm` function can be used to trim models by setting small probabilities to zero. Here the trimmed model led to model with slightly improved likelihood, so probabilities less than 0.001 could be set to zero.
 
 ```
-trimmed_hmm <- trim_hmm(hmm$model, maxit = 100, zerotol = 1e-03)
+trimmed_hmm <- trim_model(hmm$model, maxit = 100, zerotol = 1e-03)
 # "1 iteration(s) used."
 # "Trimming improved log-likelihood, ll_trim-ll_orig = 4.28e-05"
 
@@ -333,7 +333,7 @@ ssplot(sc_hmm, plots = "both", type = "I", sortv = "from.end", sort.channel = 0,
 
 ### Mixture hidden Markov models
 
-A mixture hidden Markov model (MHMM) is, by definition, a mixture of HMMs that are fitted together. These are fitted and plotted with similar functions to ones presented before. Starting values are given as a list consisting of the parameter values for each cluster. The `build_mhmm` function checks that the model is properly constructed before fitting with the `fit_mhmm`function.
+A mixture hidden Markov model (MHMM) is, by definition, a mixture of HMMs that are fitted together. These are fitted and plotted with similar functions to ones presented before. Starting values are given as a list consisting of the parameter values for each cluster. The `build_mhmm` function checks that the model is properly constructed before estimating parameters with the `fit_model` function.
 ```
 # Starting values for emission probabilities
 
@@ -441,7 +441,7 @@ biofam3c$covariates$cohort <- factor(
   )
 
 # Build MHMM
-bmhmm <- build_mhmm(
+init_mhmm <- build_mhmm(
   observations = list(marr.seq, child.seq, left.seq),
   transition_probs = list(trans_1, trans_1, trans_2),
   emission_probs = list(list(emiss_1_marr, emiss_1_child, emiss_1_left), 
@@ -453,7 +453,7 @@ bmhmm <- build_mhmm(
   channel_names = c("Marriage", "Parenthood", "Left home")
   )
 
-mhmm <- fit_mhmm(bmhmm)
+mhmm_fit <- fit_model(init_mhmm)
 ```
 
 ### Summary of MHMM
@@ -463,7 +463,7 @@ The `summary` method computes summaries of the MHMM, e.g. standard errors for co
 The classification table shows the mean probabilities of belonging to each cluster by the most probable cluster. The most probable cluster is determined by the posterior probabilities. A good model shoud have high proportions in the diagonal. Here, for individuals assigned to cluster 1, the average probability for cluster 1 is 0.84, 0.16 for cluster 2, and close to 0 for cluster 3. The highest probability for the assigned cluster is 0.93 for cluster 3.
 
 ```
-summ_mhmm <- summary(mhmm$model)
+summ_mhmm <- summary(mhmm_fit$model)
 
 names(summ_mhmm)
 # [1] "logLik"                          "BIC"                            
@@ -516,11 +516,11 @@ summ_mhmm
 
 ### Plotting MHMMs
 
-Also MHMMs are plotted with the `plot` function. The user can choose between an interactive mode (`interactive=TRUE`), where the model for each cluster is plotted separately, and a combined plot with all models at once.
+Also MHMMs are plotted with the `plot` function. The user can choose between an interactive mode (`interactive = TRUE`), where the model for each cluster is plotted separately, and a combined plot with all models at once.
 ```
 # Plot mixture hidden Markov model
 # Interactive plot, one cluster at a time
-plot(mhmm$model, interactive = TRUE)
+plot(mhmm_fit$model, interactive = TRUE)
 ```
 ![mixHMM1](https://github.com/helske/seqHMM/blob/master/Examples/mixHMM1.png)
 ![mixHMM2](https://github.com/helske/seqHMM/blob/master/Examples/mixHMM2.png)
@@ -531,7 +531,7 @@ plot(mhmm$model, interactive = TRUE)
 # Plotting observed sequences and most probable hidden states
 # Interactive plot, one cluster at a time
 mssplot(
-  mhmm$model, plots = "both", type = "I", sortv = "from.end", sort.channel = 1, 
+  mhmm_fit$model, plots = "both", type = "I", sortv = "from.end", sort.channel = 1, 
   xtlab = 15:30, xlab = "Age")
 
 ```
@@ -540,14 +540,6 @@ mssplot(
 ![mssplot3](https://github.com/helske/seqHMM/blob/master/Examples/mssplot3.png)
 
 
-
-
-Coming later
----------------------------------------------------------------------------------------
-
-<ul>
- <li>Markov models</li>
-</ul> 
 
 
 
