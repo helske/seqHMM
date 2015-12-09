@@ -633,7 +633,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
           warning(paste("EM algorithm failed:", err_msg))
         } else {
           eq_good <- isTRUE(all.equal.numeric(resEMi$logLik, resEM$logLik, 
-                                   tolerance = restart.con$reltol))
+                                   tolerance = 1e-4))
           counter <- counter + eq_good
           if (is.finite(resEMi$logLik) && resEMi$logLik > resEM$logLik) {
             resEM <- resEMi
