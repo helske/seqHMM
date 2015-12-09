@@ -3,7 +3,8 @@
 
 List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray,
     NumericVector initialProbs, IntegerVector obsArray, IntegerVector nSymbols, NumericMatrix coefs,
-    const arma::mat& X, IntegerVector numberOfStates, int itermax, double tol, int trace, int threads) {
+    const arma::mat& X, const arma::ivec& numberOfStates, int itermax, double tol, int trace, int threads) {
+
 
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
@@ -55,7 +56,7 @@ List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray,
   //  
   double change = tol + 1.0;
   int iter = 0;
-  IntegerVector cumsumstate = cumsum(numberOfStates);
+  arma::ivec cumsumstate = cumsum(numberOfStates);
 
   while ((change > tol) & (iter < itermax)) {
     iter++;
@@ -124,7 +125,7 @@ List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray,
       emission.slice(r).cols(0, nSymbols(r) - 1) = log(gamma.slice(r).cols(0, nSymbols(r) - 1));
     }
 
-    for (int i = 0; i < numberOfStates.size(); i++) {
+    for (int i = 0; i < numberOfStates.n_elem; i++) {
       delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1) /= arma::as_scalar(
           arma::accu(delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1)));
     }
@@ -165,6 +166,7 @@ List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray,
     }
     Rcpp::Rcout << "Final log-likelihood: " << sumlogLik << std::endl;
   }
+
   return List::create(Named("coefficients") = wrap(coef), Named("initialProbs") = wrap(exp(init)),
       Named("transitionMatrix") = wrap(exp(transition)),
       Named("emissionArray") = wrap(exp(emission)), Named("logLik") = sumlogLik,

@@ -4,7 +4,7 @@
 
 List objective(NumericVector transitionMatrix, NumericVector emissionArray,
     NumericVector initialProbs, IntegerVector obsArray, IntegerVector transNZ,
-    IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols, int threads) {
+    IntegerVector emissNZ, IntegerVector initNZ, const arma::ivec& nSymbols, int threads) {
 
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
@@ -74,16 +74,16 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
     }
     // emissionMatrix
     for (unsigned int r = 0; r < obs.n_rows; r++) {
-      arma::vec gradBrow(nSymbols[r]);
-      arma::mat gradB(nSymbols[r], nSymbols[r]);
+      arma::vec gradBrow(nSymbols(r));
+      arma::mat gradB(nSymbols(r), nSymbols(r));
       for (unsigned int i = 0; i < emission.n_rows; i++) {
         arma::uvec ind = arma::find(BNZ.slice(r).row(i));
         if (ind.n_elem > 0) {
           gradBrow.zeros();
           gradB.eye();
-          gradB.each_row() -= emission.slice(r).row(i).subvec(0, nSymbols[r] - 1);
-          gradB.each_col() %= emission.slice(r).row(i).subvec(0, nSymbols[r] - 1).t();
-          for (int j = 0; j < nSymbols[r]; j++) {
+          gradB.each_row() -= emission.slice(r).row(i).subvec(0, nSymbols(r) - 1);
+          gradB.each_col() %= emission.slice(r).row(i).subvec(0, nSymbols(r) - 1).t();
+          for (int j = 0; j < nSymbols(r); j++) {
             if (obs(r, 0, k) == j) {
               double tmp = 1.0;
               for (unsigned int r2 = 0; r2 < obs.n_rows; r2++) {

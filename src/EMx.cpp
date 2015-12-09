@@ -3,8 +3,8 @@
 // [[Rcpp::export]]
 
 List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-  IntegerVector obsArray, IntegerVector nSymbols, NumericMatrix coefs, const arma::mat& X,
-  IntegerVector numberOfStates, int itermax, double tol, int trace, int threads) {
+         IntegerVector obsArray, const arma::ivec& nSymbols, NumericMatrix coefs, const arma::mat& X,
+         const arma::ivec& numberOfStates, int itermax, double tol, int trace, int threads) {
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
@@ -46,7 +46,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   double change = tol + 1.0;
   int iter = 0;
   
-  IntegerVector cumsumstate = cumsum(numberOfStates);
+  arma::ivec cumsumstate = arma::cumsum(numberOfStates);
   
   while ((change > tol) & (iter < itermax)) {
     iter++;
@@ -58,9 +58,9 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     for (unsigned int k = 0; k < obs.n_slices; k++) {
       delta += alpha.slice(k).col(0) % beta.slice(k).col(0);
     }
+    
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
-    default(none) shared(transition, obs, alpha, beta, scales,                             \
-      emission, ksii, gamma, nSymbols)
+    default(none) shared(transition, obs, alpha, beta, scales, emission, ksii, gamma, nSymbols)
       for (int k = 0; k < obs.n_slices; k++) {
         for (unsigned int i = 0; i < emission.n_rows; i++) {
           for (unsigned int j = 0; j < emission.n_rows; j++) {
@@ -77,7 +77,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
           }
         }
         for (unsigned int r = 0; r < emission.n_slices; r++) {
-          for (int l = 0; l < nSymbols[r]; l++) {
+          for (int l = 0; l < nSymbols(r); l++) {
             for (unsigned int i = 0; i < emission.n_rows; i++) {
               if (emission(i, l, r) > 0.0) {
                 for (unsigned int t = 0; t < obs.n_cols; t++) {
@@ -94,7 +94,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
       }
       
       unsigned int error = optCoef(weights, obs, emission, initk, beta, scales, coef, X, cumsumstate,
-        numberOfStates, trace);
+                                   numberOfStates, trace);
     if (error != 0) {
       return List::create(Named("error") = error);
     }
@@ -110,7 +110,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
       emission.slice(r).cols(0, nSymbols(r) - 1) = gamma.slice(r).cols(0, nSymbols(r) - 1);
     }
     
-    for (int i = 0; i < numberOfStates.size(); i++) {
+    for (int i = 0; i < numberOfStates.n_elem; i++) {
       delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1) /= arma::as_scalar(
         arma::accu(delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1)));
     }
@@ -120,7 +120,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
       initk.col(k) = init % reparma(weights.col(k), numberOfStates);
     }
     
-
+    
     arma::sp_mat sp_trans(transition);
     internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
     internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
@@ -149,7 +149,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     Rcpp::Rcout << "Final log-likelihood: " << sumlogLik << std::endl;
   }
   return List::create(Named("coefficients") = wrap(coef), Named("initialProbs") = wrap(init),
-    Named("transitionMatrix") = wrap(transition), Named("emissionArray") = wrap(emission),
-    Named("logLik") = sumlogLik, Named("iterations") = iter, Named("change") = change,
-      Named("error") = 0);
+                      Named("transitionMatrix") = wrap(transition), Named("emissionArray") = wrap(emission),
+                      Named("logLik") = sumlogLik, Named("iterations") = iter, Named("change") = change,
+                            Named("error") = 0);
 }

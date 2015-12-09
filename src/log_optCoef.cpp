@@ -2,7 +2,7 @@
 
 unsigned int log_optCoef(arma::mat& weights, const arma::icube& obs, const arma::cube& emission,
     const arma::mat& initk, const arma::cube& beta, const arma::vec& ll, arma::mat& coef,
-    const arma::mat& X, const IntegerVector cumsumstate, const IntegerVector numberOfStates,
+    const arma::mat& X, const arma::ivec& cumsumstate, const arma::ivec& numberOfStates,
     int trace) {
 
   weights = exp(X * coef).t();
@@ -44,12 +44,12 @@ unsigned int log_optCoef(arma::mat& weights, const arma::icube& obs, const arma:
 
 arma::vec log_gCoef(const arma::icube& obs, const arma::cube& beta, const arma::cube& emission,
     const arma::mat& initk, const arma::mat& weights, const arma::vec& ll, const arma::mat& X,
-    const IntegerVector cumsumstate, const IntegerVector numberOfStates) {
+    const arma::ivec& cumsumstate, const arma::ivec& numberOfStates) {
 
   int q = X.n_cols;
   arma::vec grad(q * (weights.n_rows - 1), arma::fill::zeros);
   double tmp;
-  for (unsigned int jj = 1; jj < numberOfStates.size(); jj++) {
+  for (unsigned int jj = 1; jj < numberOfStates.n_elem; jj++) {
     for (int k = 0; k < obs.n_slices; k++) {
       for (unsigned int j = 0; j < emission.n_rows; j++) {
         tmp = 0.0;
