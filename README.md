@@ -3,11 +3,13 @@
 seqHMM: Hidden Markov Models for Life Sequences and Other Multivariate, Multichannel Categorical Time Series
 ====================================================================================================
 
-The `seqHMM` package is designed for fitting hidden (or latent) Markov models (HMMs) and mixture hidden Markov models (MHMMs) for social sequence data and other categorical time series. The package supports models for one or multiple subjects with one or multiple interdependent sequences (channels). External covariates can be added to explain cluster membership in MHMMs. The package provides functions for evaluating and comparing models, as well as functions for easy plotting of multichannel sequences and hidden Markov models.
+The `seqHMM` package is designed for fitting hidden (or latent) Markov models (HMMs) and mixture hidden Markov models (MHMMs) for social sequence data and other categorical time series. Also some more restricted versions of these type of models are now available: Markov models, mixture Markov models, and latent class models. 
+
+The package supports models for one or multiple subjects with one or multiple interdependent sequences (channels). External covariates can be added to explain cluster membership in MHMMs. The package provides functions for evaluating and comparing models, as well as functions for easy plotting of multichannel sequences and hidden Markov models.
 
 Maximum likelihood estimation via EM algorithm and direct numerical maximization with analytical gradients is supported. All main algorithms are written in C++.
 
-Package is still under development and should be available at CRAN in 2015.
+The package is still under development but should be available at CRAN by the end of 2015.
 
 We would be happy to hear feedback! If you have any questions, comments, or wishes, please contact Satu Helske or Jouni Helske, firstname.lastname@jyu.fi. You can also add a new issue here in GitHub.
 
