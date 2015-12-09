@@ -100,9 +100,15 @@ gridplot(
 ```
 ![gridplot](https://github.com/helske/seqHMM/blob/master/Examples/gridplot.png)
 
+### Building models
+
+A model is first constructed using an appropriate build function. There are several such functions available: `build_hmm` for hidden Markov models, `build_mhmm` for mixture hidden Markov models, `build_mm` for Markov models, `build_mmm` for mixture Markov models, and `build_lcm` for latent class models.
+
+Build functions check that the data and matrices are of the right form and create an object of class `hmm` (for HMMs and MMs) or `mhmm` (for MHMMs, MMMs, and LCMs). For the latter, covariates can be omitted or added with the usual `formula` argument using symbolic formulas familiar from e.g. the `lm` function. Even though missing observations are allowed in sequence data, covariates must be completely observed.
+
 ### Fitting hidden Markov models
 
-When fitting Hidden Markov models (HMMs), initial values for model parameters are first given to the `build_hmm` function. After that, the model is fitted with the `fit_model` function. The fitting function provides three estimation steps: 1) EM algorithm, 2) global optimization, and 3) local optimization. By default, only the EM step is performed. The results from a former step are used as starting values in a latter.
+When fitting Hidden Markov models (HMMs), starting values for initial, transition, and emission probabilities are given in the `build_hmm` function. After that, parameters are estimated with the `fit_model` function. The fitting function provides three estimation steps: 1) EM algorithm, 2) global optimization, and 3) local optimization. By default, only the EM step is performed. The results from a former step are used as starting values in a latter.
 
 In order to reduce the risk of being trapped in a poor local maximum, a large number of initial values should be tested. If global step is chosen, by default the `fit_model` function uses the multilevel single-linkage method (MLSL) with the LDS modification. The MLSL draws multiple random starting values and performs local optimization (L-BFGS by default) from each starting point. The LDS modification uses low-discrepancy sequences instead of random numbers as starting points and should improve convergence rate.
 
@@ -110,7 +116,7 @@ In order to reduce computation time spent on non-global optima, the convergence 
 
 There are some theoretical guarantees that the MLSL method shoud ﬁnd all local optima in a ﬁnite number of local optimizations. Of course, it might not always succeed in a reasonable time. The EM algorithm can help in finding good boundaries for the search, especially with good starting values, but in some cases it can mislead. A good strategy is to try a couple of different fitting options with different combinations of the methods: e.g. all steps, only global and local steps, and a few evaluations of EM followed by global and local optimization.
 
-It is also possible to run EM algorithm with multiple random starting values. This is done by setting the value \texttt{restarts} in the \texttt{control_em} argument. Although not done by default, this method seems to perform very well as EM algorithm is relatively fast compared to direct numerical estimation.
+It is also possible to run the EM algorithm several times with random starting values. This is done by setting the value `restarts` in the `control_em` argument. Although not done by default, this method seems to perform very well as EM algorithm is relatively fast compared to direct numerical estimation.
 
 ```
 # Initial values for emission matrices
