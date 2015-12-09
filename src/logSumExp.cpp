@@ -17,7 +17,7 @@ double logSumExp(const arma::vec& x) {
   }
   LDOUBLE cumsum = 0.0;
   for (unsigned int i = 0; i < x.n_elem; i++) {
-    if (i != maxi) {
+    if ((i != maxi) & (x(i) > -arma::math::inf())) {
       cumsum += EXPL(x(i) - maxv);
     }
   }
