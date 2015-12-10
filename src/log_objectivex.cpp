@@ -4,8 +4,8 @@
 List log_objectivex(NumericVector transitionMatrix, NumericVector emissionArray,
     NumericVector initialProbs, IntegerVector obsArray, IntegerVector transNZ,
     IntegerVector emissNZ, IntegerVector initNZ, const arma::ivec& nSymbols, const arma::mat& coef,
-    const arma::mat& X, const arma::ivec& numberOfStates, int threads) {
-  
+    const arma::mat& X, const arma::ivec& numberOfStates, int threads, bool verbose) {
+
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
 
@@ -23,6 +23,9 @@ List log_objectivex(NumericVector transitionMatrix, NumericVector emissionArray,
       arma::fill::zeros);
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
+    if(verbose){
+      Rcpp::warning("Prior cluster probabilities contain non-finite values.");
+    }
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
@@ -37,21 +40,21 @@ List log_objectivex(NumericVector transitionMatrix, NumericVector emissionArray,
   arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
   arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
 
-  
+
 
   arma::mat initk(emission.n_rows, obs.n_slices);
   for (unsigned int k = 0; k < obs.n_slices; k++) {
     initk.col(k) = initLog + reparma(weights.col(k), numberOfStates);
   }
-  
+
   log_internalForwardx(transitionLog, emissionLog, initk, obs, alpha, threads);
   log_internalBackward(transitionLog, emissionLog, obs, beta, threads);
-  
+
   arma::vec ll(obs.n_slices);
   for (unsigned int k = 0; k < obs.n_slices; k++) {
     ll(k) = logSumExp(alpha.slice(k).col(obs.n_cols - 1));
   }
-  
+
   arma::ivec cumsumstate = arma::cumsum(numberOfStates);
 
   arma::mat gradmat(
