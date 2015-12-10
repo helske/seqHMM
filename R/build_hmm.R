@@ -192,6 +192,13 @@ build_hmm <- function(observations, transition_probs, emission_probs, initial_pr
       }
     }
     
+    if (length(unique(sapply(observations, nrow))) > 1) {
+      stop("The number of subjects (rows) is not the same in all channels.")
+    }
+    if (length(unique(sapply(observations, ncol))) > 1) {
+      stop("The length of the sequences (number of columns) is not the same in all channels.")
+    }
+    
     n_sequences<-nrow(observations[[1]])
     length_of_sequences<-ncol(observations[[1]])
     

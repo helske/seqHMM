@@ -1,16 +1,16 @@
-ssplotM <- function(x, hidden.paths=NULL, 
-                   plots="obs", type="d", 
-                   sortv=NULL, sort.channel=1, dist.method="OM",
-                   with.missing=FALSE,
-                   title=NA, title.n=TRUE, cex.title=1, title.pos=1,
-                   withlegend="auto", ncol.legend="auto", 
-                   with.missing.legend="auto",                         
-                   legend.prop=0.3, cex.legend=1,
-                   hidden.states.colors="auto", hidden.states.labels="auto",
-                   xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
-                   yaxis = FALSE, ylab="auto", hidden.states.title="Hidden states", 
-                   ylab.pos="auto", 
-                   cex.lab=1, cex.axis=1, ...){
+ssplotM <- function(x, hidden.paths, 
+                   plots, type, 
+                   sortv, sort.channel, dist.method,
+                   with.missing,
+                   title, title.n, cex.title, title.pos,
+                   withlegend, ncol.legend, 
+                   with.missing.legend,                         
+                   legend.prop, cex.legend,
+                   hidden.states.colors, hidden.states.labels,
+                   xaxis, xlab, xtlab, xlab.pos,
+                   yaxis, ylab, hidden.states.title, 
+                   ylab.pos, 
+                   cex.lab, cex.axis, ...){
   # plot.new()
   grid.newpage()
   arguments <- as.list(match.call())[-1]

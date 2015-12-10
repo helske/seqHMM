@@ -49,6 +49,10 @@
 
 build_mm <- function(observations, transition_probs, initial_probs){
   
+  if(!inherits(observations, "stslist")){
+    stop("The build_mm function can only be used for single-channel sequence data (as an stslist object). Use the mc_to_sc_data function to convert multiple stslist into single-channel state sequences.")
+  }
+  
   n_sequences<-nrow(observations)
   length_of_sequences<-ncol(observations)
   state_names<-alphabet(observations)
