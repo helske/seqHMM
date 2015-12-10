@@ -192,7 +192,7 @@
 #' # Computing the most probable paths of hidden states
 #' hidden.paths <- hidden_paths(hmm_biofam)
 #' hidden.paths.seq <- seqdef(
-#'   hidden.paths, labels=paste("Hidden state", 1:4)
+#'   hidden.paths, labels = paste("Hidden state", 1:4)
 #'   )
 #' 
 #' # Plotting observations and hidden state paths
@@ -216,24 +216,24 @@
 #' \code{\link{hmm_biofam}} for information on the data and model used in the example.
 
 
-ssplot <- function(x, hidden.paths=NULL,
-                plots="obs", type="d", 
-                sortv=NULL, sort.channel=1, dist.method="OM",
-                with.missing=FALSE,
-                title=NA, title.n=TRUE, cex.title=1, title.pos=1,
-                withlegend="auto", ncol.legend="auto", 
-                with.missing.legend="auto",                         
-                legend.prop=0.3, cex.legend=1,
-                hidden.states.colors="auto", hidden.states.labels="auto",
-                xaxis=TRUE, xlab=NA, xtlab=NULL, xlab.pos=1,
-                ylab="auto", hidden.states.title="Hidden states", 
-                ylab.pos="auto", 
-                cex.lab=1, cex.axis=1, ...){
+ssplot <- function(x, hidden.paths = NULL,
+                plots = "obs", type = "d", 
+                sortv = NULL, sort.channel = 1, dist.method = "OM",
+                with.missing = FALSE,
+                title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
+                withlegend = "auto", ncol.legend = "auto", 
+                with.missing.legend = "auto",                         
+                legend.prop = 0.3, cex.legend = 1,
+                hidden.states.colors = "auto", hidden.states.labels = "auto",
+                xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
+                ylab = "auto", hidden.states.title = "Hidden states", 
+                ylab.pos = "auto", 
+                cex.lab = 1, cex.axis = 1, ...){
   
-  sspargs <- do.call(ssp,args=as.list(match.call())[-1])
+  sspargs <- do.call(ssp,args = as.list(match.call())[-1])
   plot.new()  
   grid.newpage()
   savepar <- par(no.readonly = TRUE)
   on.exit(savepar, add = TRUE)
-  do.call(SSPlotter,args=sspargs)
+  do.call(SSPlotter,args = sspargs)
 }

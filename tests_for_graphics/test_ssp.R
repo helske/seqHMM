@@ -28,12 +28,16 @@ ssplot(hmm_biofam$observations, withlegend = "bottom")
 ssplot(hmm_biofam, withlegend = "bottom")
 
 ### right.combined
+# Single-channel stslist
+ssplot(hmm_biofam$observations[[1]], withlegend = "right.combined")
 # Multiple stslists
 ssplot(hmm_biofam$observations, withlegend = "right.combined")
 # HMM
 ssplot(hmm_biofam, withlegend = "right.combined")
 
 ### bottom.combined
+# Single-channel stslist
+ssplot(hmm_biofam$observations[[1]], withlegend = "right.combined")
 # Multiple stslists
 ssplot(hmm_biofam$observations, withlegend = "bottom.combined")
 # HMM
