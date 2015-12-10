@@ -33,6 +33,14 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   
   arma::sp_mat sp_trans(transition);
   internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
+  if(!scales.is_finite()) {
+    Rcpp::warning("Scaling factors contain non-finite values.");
+    return List::create(Named("error") = -10);
+  }
+  double min_sf = scales.min();
+  if (min_sf < 1e-150) {
+    Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable.", min_sf);
+  }
   internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
   
   double sumlogLik = arma::accu(log(scales));
@@ -123,6 +131,14 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     
     arma::sp_mat sp_trans(transition);
     internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
+    if(!scales.is_finite()) {
+      Rcpp::warning("Scaling factors contain non-finite values.");
+      return List::create(Named("error") = -10);
+    }
+    double min_sf = scales.min();
+    if (min_sf < 1e-150) {
+      Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable.", min_sf);
+    }
     internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
     
     double tmp = arma::accu(log(scales));

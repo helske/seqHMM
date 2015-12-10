@@ -18,6 +18,15 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
   arma::mat scales(obs.n_cols, obs.n_slices);
 
   internalForward(transition, emission, init, obs, alpha, scales, threads);
+  if(!scales.is_finite()) {
+    Rcpp::warning("Scaling factors contain non-finite values.");
+    return List::create(Named("error") = -10);
+  }
+  double min_sf = scales.min();
+  if (min_sf < 1e-150) {
+    Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable.", min_sf);
+  }
+  
   internalBackward(transition, emission, obs, beta, scales, threads);
   arma::rowvec ll = arma::sum(log(scales));
   double sumlogLik = sum(ll);
@@ -95,6 +104,14 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
     init = delta;
 
     internalForward(transition, emission, init, obs, alpha, scales, threads);
+    if(!scales.is_finite()) {
+      Rcpp::warning("Scaling factors contain non-finite values.");
+      return List::create(Named("error") = -10);
+    }
+    double min_sf = scales.min();
+    if (min_sf < 1e-150) {
+      Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable.", min_sf);
+    }
     internalBackward(transition, emission, obs, beta, scales, threads);
 
     ll = sum(log(scales));
@@ -121,5 +138,5 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
   }
   return List::create(Named("initialProbs") = wrap(init),
       Named("transitionMatrix") = wrap(transition), Named("emissionArray") = wrap(emission),
-      Named("logLik") = sumlogLik, Named("iterations") = iter, Named("change") = change);
+      Named("logLik") = sumlogLik, Named("iterations") = iter, Named("change") = change, Named("error") = 0);
 }

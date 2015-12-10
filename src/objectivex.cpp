@@ -21,9 +21,9 @@ List objectivex(const arma::mat& transition, NumericVector emissionArray,
       arma::fill::zeros);
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
+    Rcpp::warning("Prior cluster probabilities contain non-finite values.");
     grad.fill(-arma::math::inf());
-    return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad),
-                        Named("error") = 1);
+    return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
   
   weights.each_row() /= sum(weights, 0);
@@ -40,16 +40,21 @@ List objectivex(const arma::mat& transition, NumericVector emissionArray,
   
   arma::sp_mat sp_trans(transition);
   internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
-  if (!alpha.is_finite()) {
+  if (!scales.is_finite()) {
+    Rcpp::warning("Scaling factors contain non-finite values.");
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
   
   internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
   if (!beta.is_finite()) {
+    Rcpp::warning("Backward probabilities contain non-finite values.");
     grad.fill(-arma::math::inf());
-    return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad),
-                        Named("error") = 2);
+    return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
+  }
+  double min_sf = scales.min();
+  if (min_sf < 1e-150) {
+    Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable.", min_sf);
   }
   
   arma::ivec cumsumstate = arma::cumsum(numberOfStates);
@@ -197,5 +202,5 @@ List objectivex(const arma::mat& transition, NumericVector emissionArray,
       }
     }
     return List::create(Named("objective") = -arma::accu(log(scales)),
-                        Named("gradient") = wrap(-sum(gradmat, 1)), Named("error") = 0);
+                        Named("gradient") = wrap(-sum(gradmat, 1)));
 }

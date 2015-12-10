@@ -20,9 +20,6 @@ void internalForward(const arma::mat& transition, const arma::cube& emission, co
         alpha.slice(k).col(t) /= scales(t, k);
       }
     }
-    if (scales.min() < 1e-150) {
-      Rcpp::warning("Some of the scaling factors are smaller than 1e-150, results can be numerically unstable.");
-    }
 }
 
 void internalForwardx(const arma::sp_mat& transition_t, const arma::cube& emission,
@@ -48,8 +45,5 @@ void internalForwardx(const arma::sp_mat& transition_t, const arma::cube& emissi
         scales(t, k) = sum(alpha.slice(k).col(t));
         alpha.slice(k).col(t) /= scales(t, k);
       }
-    }
-    if (scales.min() < 1e-150) {
-      Rcpp::warning("Some of the scaling factors are smaller than 1e-150, results can be numerically unstable.");
     }
 }

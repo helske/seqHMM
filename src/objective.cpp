@@ -24,14 +24,21 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
   arma::mat scales(obs.n_cols, obs.n_slices); //m,n,k
 
   internalForward(transition, emission, init, obs, alpha, scales, threads);
-  if (!alpha.is_finite()) {
+  if (!scales.is_finite()) {
+    Rcpp::warning("Scaling factors contain non-finite values.");
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
+  
   internalBackward(transition, emission, obs, beta, scales, threads);
   if (!beta.is_finite()) {
+    Rcpp::warning("Backward probabilities contain non-finite values.");
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
+  }
+  double min_sf = scales.min();
+  if (min_sf < 1e-150) {
+    Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable.", min_sf);
   }
 
   arma::mat gradmat(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ), obs.n_slices,
