@@ -19,7 +19,14 @@
 #'
 #' @seealso \code{\link{seqdef}} for creating state sequence objects.
 
-mc_to_sc_data <- function(data, combine_missing=TRUE, all_combinations=FALSE){
+mc_to_sc_data <- function(data, combine_missing = TRUE, all_combinations = FALSE){
+  
+  if (length(unique(sapply(data, nrow))) > 1) {
+    stop("The number of subjects (rows) is not the same in all channels.")
+  }
+  if (length(unique(sapply(data, ncol))) > 1) {
+    stop("The length of the sequences (number of columns) is not the same in all channels.")
+  }
 
   alph <- apply(expand.grid(lapply(data,alphabet)), 1, paste0, collapse = "/")
 

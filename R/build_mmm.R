@@ -50,9 +50,8 @@ build_mmm <-
   function(observations,transition_probs,initial_probs, 
            formula, data, coefficients, cluster_names = NULL){
     
-    # Single channel but observations is a list
-    if (is.list(observations) && !inherits(observations, "stslist") && length(observations)==1) {
-      observations <- observations[[1]]
+    if(!inherits(observations, "stslist")){
+      stop("The build_mmm function can only be used for single-channel sequence data (as an stslist object). Use the mc_to_sc_data function to convert multiple stslist into single-channel state sequences.")
     }
     
     n_sequences<-nrow(observations)
