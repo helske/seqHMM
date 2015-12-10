@@ -327,6 +327,7 @@ ssp <- function(x, hidden.paths = NULL,
       }
     }
     obs <- x
+    nchannels <- length(obs)
     if (length(ylab) > 1 || (!is.na(ylab) && ylab != FALSE)) {
       if (length(ylab) == 1 && ylab == "auto") {
         if (!is.null(names(obs))) {
@@ -393,7 +394,7 @@ ssp <- function(x, hidden.paths = NULL,
     ylab.pos <- ylab.pos + 0.5
   }
   
-  # Space for viewports
+  # Space for viewports (for each element of the plot)
   if ((is.na(title) && title.n == FALSE) || (!is.na(title) && title == FALSE)) {
     title.pos <- 0
   }
@@ -423,90 +424,76 @@ ssp <- function(x, hidden.paths = NULL,
                     ylab.space = ylab.space, xaxis.space = xaxis.space, xt.space = xt.space)
   
   # Columns for legends
-  if (plots=="both") {
-    if (length(ncol.legend) == 1 && ncol.legend == "auto") {
-      ncol.legend <- switch(withlegend, 
-                            right.combined = 1, 
-                            bottom.combined = nplots,
-                            rep(1, nplots))
-    } else if ((withlegend == "right") && length(ncol.legend) != nplots) {
-      ncol.legend <- rep(ncol.legend, length.out = nplots)
-    } else if((withlegend == "right.combined" || withlegend == "bottom.combined") && 
-              length(ncol.legend) > 1) {
-      ncol.legend <- ncol.legend[1]
-    }
-  } else if (plots == "obs") {
-    if(length(ncol.legend)==1 && ncol.legend=="auto"){
-      if(withlegend==TRUE || withlegend=="auto" || withlegend=="right" ||
-         withlegend=="bottom"){
-        ncol.legend <- rep(1, nchannels)
-      }else if(withlegend=="right.combined"){
-        ncol.legend <- 1
-      }else if(withlegend=="bottom.combined"){
-        ncol.legend <- nchannels
-      }
-    }else if((withlegend==TRUE || withlegend=="auto") && length(ncol.legend)>nchannels){
-      ncol.legend <- ncol.legend[1:nchannels]
-    }else if((withlegend==TRUE || withlegend=="auto") && length(ncol.legend)<nchannels){
-      ncol.legend <- rep(ncol.legend, length.out = nchannels)
-      ncol.legend <- ncol.legend
-    }else if((withlegend=="right.combined" || withlegend=="bottom.combined") && 
-             length(ncol.legend)>1){
-      ncol.legend <- ncol.legend[1]
-    }
-  }else if(plots=="hidden.paths"){
-    if(length(ncol.legend)==1 && ncol.legend=="auto"){
-      ncol.legend <- 1
-    }else if((withlegend==TRUE || withlegend=="auto" || 
-              withlegend=="right.combined" || withlegend=="bottom.combined") 
-             && length(ncol.legend)>1){
-      ncol.legend <- ncol.legend[1]
-    }
-  }  
+  if (length(ncol.legend) == 1 && ncol.legend == "auto") {
+    ncol.legend <- switch(withlegend, 
+                          right.combined = 1, 
+                          bottom.combined = nplots,
+                          rep(1, nplots))
+  } else if ((withlegend == "right" || withlegend == "bottom") && 
+             length(ncol.legend) != nplots) {
+    ncol.legend <- rep(ncol.legend, length.out = nplots)
+  } else if ((withlegend == "right.combined" || withlegend == "bottom.combined") &&
+             length(ncol.legend) > 1) {
+    ncol.legend <- ncol.legend[1]
+  }
   
-  # Most probable paths
-  if(plots=="both" || plots=="hidden.paths" || (plots=="obs" && !is.null(hidden.paths))){
-    if(!is.null(hidden.paths)){
-      if(!is.null(hidden.states.labels) && length(hidden.states.labels)==1 && hidden.states.labels=="auto"){
+  
+  # Most probable paths of hidden states
+  if (plots == "both" || plots == "hidden.paths" || (plots == "obs" && !is.null(hidden.paths)) ||
+      (plots == "obs" && is.null(hidden.paths) && inherits(x, "hmm") && sort.channel == 0)) {
+    # Hidden paths provided
+    if (!is.null(hidden.paths)) {
+      # Automatic labels for hidden states
+      if (!is.null(hidden.states.labels) && length(hidden.states.labels) == 1 && 
+          hidden.states.labels == "auto") {
         hidden.states.labels <- attr(hidden.paths, "labels")
-      }else if(length(hidden.states.labels)==1 && is.null(hidden.states.labels)){
+      # No labels for hidden states
+      } else if (length(hidden.states.labels) == 1 && is.null(hidden.states.labels)) {
         hidden.states.labels <- rep("", length(alphabet(hidden.paths)))
-      }else if(!is.null(hidden.states.labels) && length(hidden.states.labels)!=length(alphabet(hidden.paths))){
+      # Length of hidden.states.labels does not match their number -> use automatic labels
+      } else if (!is.null(hidden.states.labels) && 
+                 length(hidden.states.labels) != length(alphabet(hidden.paths))) {
         warning("The number of labels for hidden states does not match the number of hidden states. Given labels were not used.")
         hidden.states.labels <- attr(hidden.paths, "labels")
       }
     }
-    # Computing hidden.paths
-    if(is.null(hidden.paths)){
+    # Hidden paths not provided (compute)
+    if (is.null(hidden.paths)) {
       hidden.paths <- suppressMessages(hidden_paths(x))
-      if(length(hidden.states.labels)==1 && is.null(hidden.states.labels)){
+      # No labels
+      if (length(hidden.states.labels) == 1 && is.null(hidden.states.labels)) {
         hidden.states.labels <- rep("", length(alphabet(hidden.paths)))
       }
-      if(length(hidden.states.labels)==1 && hidden.states.labels=="auto"){
+      # Automatic labels
+      if (length(hidden.states.labels) == 1 && hidden.states.labels == "auto") {
         hidden.states.labels <- alphabet(hidden.paths)
-      }else if(!is.null(hidden.states.labels) && length(hidden.states.labels)!=length(alphabet(hidden.paths))){
+      # Wrong length of for labels -> use automatic labels
+      } else if(!is.null(hidden.states.labels) && 
+                length(hidden.states.labels) != length(alphabet(hidden.paths))) {
         warning("The number of labels for hidden states does not match the number of hidden states. Labels were not used.")
         hidden.states.labels <- alphabet(hidden.paths)
       }
     }
     if (nchannels > 1) {
-      hidden.paths.seq <- suppressWarnings(suppressMessages(seqdef(hidden.paths, 
-                                                                   missing.color=attr(obs[[1]],"missing.color"),
-                                                                   labels=hidden.states.labels,
-                                                                   start=attr(obs[[1]],"start"),
-                                                                   xtstep=attr(obs[[1]],"xtstep"))))
+      hidden.paths.seq <- suppressWarnings(
+        suppressMessages(seqdef(hidden.paths, missing.color = attr(obs[[1]], "missing.color"),
+                                labels = hidden.states.labels, start = attr(obs[[1]], "start"),
+                                xtstep = attr(obs[[1]], "xtstep"))))
     } else {
-      hidden.paths.seq <- suppressWarnings(suppressMessages(seqdef(hidden.paths, 
-                                                                   missing.color=attr(obs,"missing.color"),
-                                                                   labels=hidden.states.labels,
-                                                                   start=attr(obs,"start"),
-                                                                   xtstep=attr(obs,"xtstep"))))
+      hidden.paths.seq <- suppressWarnings(
+        suppressMessages(seqdef(hidden.paths, missing.color = attr(obs, "missing.color"),
+                                labels = hidden.states.labels, start = attr(obs, "start"),
+                                xtstep = attr(obs, "xtstep"))))
     }
     # Color palette for hidden.paths
-    if(length(hidden.states.colors)==1 && hidden.states.colors=="auto" && length(hidden.paths)>1){
+    # Automatic color palette
+    if (length(hidden.states.colors) == 1 && hidden.states.colors == "auto" && 
+        length(hidden.paths) > 1) {
+      # No color palette defined
       if (is.null(attr(hidden.paths, "cpal"))) {
         if (length(alphabet(hidden.paths.seq)) <= 200) {
           attr(hidden.paths.seq, "cpal") <- seqHMM::colorpalette[[length(alphabet(hidden.paths.seq))]]
+        # In case of a very large number of hidden states
         } else {
           cp <- NULL
           k <- 200
@@ -518,46 +505,33 @@ ssp <- function(x, hidden.paths = NULL,
           }
           attr(hidden.paths.seq, "cpal") <- cp[1:length(alphabet(hidden.paths.seq))]
         }
-      }else{
+      # Use pre-defined color palette
+      } else {
         attr(hidden.paths.seq, "cpal") <- attr(hidden.paths, "cpal")
       }
-    }else if(!is.null(hidden.states.labels) && length(hidden.states.labels)==1 && hidden.states.colors=="auto" && length(hidden.paths)==1 && is.null(hidden.paths)){
-      if (length(alphabet(hidden.paths.seq)) <= 200) {
-        attr(hidden.paths.seq, "cpal") <- seqHMM::colorpalette[[length(alphabet(hidden.paths.seq))]]
-      } else {
-        cp <- NULL
-        k <- 200
-        p <- 0
-        while(length(alphabet(hidden.paths.seq)) - p > 0){
-          cp <- c(cp, seqHMM::colorpalette[[k]])
-          p <- p + k
-          k <- k - 1
-        }
-        attr(hidden.paths.seq, "cpal") <- cp[1:length(alphabet(hidden.paths.seq))]
-      }
-    }else if(all(isColor(hidden.states.colors))){
-      if(length(hidden.states.colors)!=length(alphabet(hidden.paths.seq))){
+    # Check for the validity of the color palette 
+    } else if (all(isColor(hidden.states.colors))) {
+      if(length(hidden.states.colors) != length(alphabet(hidden.paths.seq))) {
         warning(paste0("Number of colors assigned to hidden.states.colors does not match the number of hidden states. \n
                        There are ", length(alphabet(hidden.paths.seq)), 
                        " hidden states but ", length(hidden.states.colors), " color(s)."))
       }
       attr(hidden.paths.seq, "cpal") <- rep(hidden.states.colors, length(alphabet(hidden.paths.seq)))[1:length(alphabet(hidden.paths.seq))]
-    }else{
-      stop(paste("Please provide a vector of colors for argument hidden.states.colors or use value \"auto\" to automatically determine gray scale colors."))
+    } else {
+      stop(paste("Please provide a vector of colors for argument hidden.states.colors or use value \"auto\" to automatically determine a color palette."))
     }
-    arguments <- c(arguments, list(hidden.paths.seq=hidden.paths.seq))
-    # Sorting sequences according to multidimensional scaling score of hidden.paths
-    if (!is.null(sortv)) {
-      if (length(sortv) == 1 && sortv == "mds.hidden") {
-        dist.hidden.paths <- suppressMessages(seqdist(hidden.paths.seq, method=dist.method, 
-                                                      sm="TRATE", with.missing=TRUE))
-        sortv <- cmdscale(dist.hidden.paths, k=1)
-      }
+    arguments <- c(arguments, list(hidden.paths.seq = hidden.paths.seq))
+    # Sort sequences according to multidimensional scaling score of hidden.paths
+    if (!is.null(sortv) && length(sortv) == 1 && sortv == "mds.hidden") {
+      dist.hidden.paths <- suppressMessages(seqdist(hidden.paths.seq, method = dist.method, 
+                                                    sm = "TRATE", with.missing = TRUE))
+      sortv <- cmdscale(dist.hidden.paths, k = 1)
     } 
   }
   
-  # Ordering sequences for sortv
+  # Order sequences for sortv
   if (type == "I" && !is.null(sortv)) {
+    # Multichannel data
     if (nchannels > 1) {
       # Multidimensional scaling on observations
       if (length(sortv) == 1 && sortv == "mds.obs") {
@@ -566,21 +540,22 @@ ssp <- function(x, hidden.paths = NULL,
         sortv <- cmdscale(dist.obs, k = 1)
       }
       # Sorting from start or end
-      if (length(sortv) == 1 && (sortv=="from.start" || sortv=="from.end")) {
+      if (length(sortv) == 1 && (sortv == "from.start" || sortv == "from.end")) {
         end <- if (sortv == "from.end") {
+          # Sorting according to observations
           if (sort.channel > 0 && sort.channel <= length(obs)) {
             max(seqlength(obs[[sort.channel]]))
+          # Sorting according to hidden paths
           } else if (sort.channel == 0) {
             if (plots == "both" || plots == "hidden.paths" || 
                 (plots == "obs" && !is.null(hidden.paths))) {
               max(seqlength(hidden.paths.seq))
             } else {
-              warning("Hidden paths are missing. Sequences were not sorted.")
-              sortv <- NULL
+              stop("Sorting according to hidden paths is not possible since they were not provided.")
             }
+          # False channel number for sorting
           } else {
-            warning(paste0("For data with ", length(obs), " channels, the value for sort.channel must be a non-negative integer smaller or equal to ", length(obs), ". Sequences were not sorted."))
-            sortv <- NULL
+            stop(paste0("For data with ", length(obs), " channels, the value for sort.channel must be a non-negative integer smaller or equal to ", length(obs)))
           }
         } else {
           1
@@ -595,23 +570,22 @@ ssp <- function(x, hidden.paths = NULL,
                 (plots == "obs" && !is.null(hidden.paths))) {
               max(seqlength(hidden.paths.seq))
             } else {
-              warning("Hidden paths are missing. Sequences were not sorted.")
-              sortv <- NULL
+              stop("Sorting according to hidden paths is not possible since they were not provided.")
             }
           } else {
-            warning(paste0("For data with ", length(obs), " channels, the value for sort.channel must be a non-negative integer smaller or equal to ", length(obs), ". Sequences were not sorted."))
-            sortv <- NULL
+            stop(paste0("For data with ", length(obs), " channels, the value for sort.channel must be a non-negative integer smaller or equal to ", length(obs)))
           }
         }
+        # Order from end to beginning
         if (sort.channel > 0 && sort.channel <= length(obs)) {
           orderv <- do.call(order, as.data.frame(obs[[sort.channel]])[, end:beg])
-          arguments <- c(arguments, list(orderv=orderv))
-        } else if (sort.channel == 0 && plots != "obs") {
+          arguments <- c(arguments, list(orderv = orderv))
+        } else if (sort.channel == 0) {
           orderv <- do.call(order, as.data.frame(hidden.paths.seq)[, end:beg])
-          arguments <- c(arguments, list(orderv=orderv))
+          arguments <- c(arguments, list(orderv = orderv))
         }
       }
-      # nchannels == 1
+    # Single-channel data (nchannels == 1)
     } else {
       if (length(sortv) == 1 && sortv == "mds.obs") {
         dist.obs <- suppressMessages(seqdist(obs, method = dist.method, 
@@ -626,12 +600,10 @@ ssp <- function(x, hidden.paths = NULL,
                 (plots == "obs" && !is.null(hidden.paths))) {
               max(seqlength(hidden.paths.seq))
             } else {
-              warning("Hidden paths are missing. Sequences were not sorted.")
-              sortv <- NULL
+              stop("Sorting according to hidden paths is not possible since they were not provided.")
             }
           } else {
-            warning(paste0("For data with 1 channel, the value for sort.channel must be 0 (for most probable paths) or 1 (for observations). Sequences were not sorted."))
-            sortv <- NULL
+            stop(paste0("For single-channel data, the value for sort.channel must be 0 (for most probable paths) or 1 (for observations)."))
           }
         } else {
           1
@@ -646,76 +618,69 @@ ssp <- function(x, hidden.paths = NULL,
                 (plots == "obs" && !is.null(hidden.paths))) {
               max(seqlength(hidden.paths.seq))
             } else {
-              warning("Hidden paths are missing. Sequences were not sorted.")
-              sortv <- NULL
+              stop("Sorting according to hidden paths is not possible since they were not provided.")
             }
           } else {
-            warning(paste0("For data with 1 channel, the value for sort.channel must be 0 (for most probable paths) or 1 (for observations). Sequences were not sorted."))
-            sortv <- NULL
+            stop(paste0("For data with 1 channel, the value for sort.channel must be 0 (for most probable paths) or 1 (for observations)."))
           }
         }
         if (sort.channel == 1) {
           orderv <- do.call(order, as.data.frame(obs)[, end:beg])
           arguments <- c(arguments, list(orderv = orderv))
-        } else if (sort.channel == 0 && plots != "obs") {
+        } else if (sort.channel == 0) {
           orderv <- do.call(order, as.data.frame(hidden.paths.seq)[, end:beg])
-          arguments <- c(arguments, list(orderv=orderv))
+          arguments <- c(arguments, list(orderv = orderv))
         }
       }
     }
   }
+  # sortv = "mds.hidden" but hidden paths missing
+  if (type == "I" || plots == "both" || plots == "obs") { 
+    if (length(sortv) == 1 && sortv == "mds.hidden" && plots == "obs" && is.null(hidden.paths)) {
+      stop("Sorting according to hidden paths is not possible since they were not provided.")
+    }
+  }
   
-  
-  # Plotting observations
+  # Plot x-axis?
   if (plots == "obs" && xaxis == TRUE) {
     plotxaxis <- TRUE
   } else {
     plotxaxis <- FALSE
-  }  
-  arguments <- c(arguments, list(plotxaxis=plotxaxis))
-  if (plots == "both" || plots == "obs") { 
-    if (type == "I") { 
-      if (length(sortv) == 1 && sortv == "mds.hidden" && plots == "obs" && is.null(hidden.paths)) {
-        warning("Hidden paths are missing. Sequences were not sorted.")
-        sortv <- NULL
-      }
-    }
+  }
+
+  
+  # Missing states in legends?
+  if (type == "d" && with.missing == FALSE && with.missing.legend != FALSE && 
+      with.missing.legend != TRUE && with.missing.legend == "auto") {
+    with.missing.legend <- FALSE
   }
   
-  # Legends
-  if(type=="d"){
-    if(with.missing==FALSE && with.missing.legend!=FALSE && with.missing.legend!=TRUE &&
-       with.missing.legend=="auto"){
-      with.missing.legend <- FALSE
-    }
-  }
-  
-  if(length(list(...))==0){
-    arguments <- c(arguments, list(hidden.paths=hidden.paths, plots=plots, type=type, 
-                                   sortv=sortv, sort.channel=sort.channel, 
-                                   with.missing=with.missing,
-                                   title=title, title.n=title.n, cex.title=cex.title, title.pos=title.pos,
-                                   withlegend=withlegend, ncol.legend=ncol.legend, 
-                                   with.missing.legend=with.missing.legend,                         
-                                   legend.prop=legend.prop, cex.legend=cex.legend,
-                                   hidden.states.colors=hidden.states.colors, hidden.states.labels=hidden.states.labels,
-                                   xaxis=xaxis, xlab=xlab, xtlab=xtlab, xlab.pos=xlab.pos,
-                                   yaxis=yaxis, ylab=ylab, hidden.states.title=hidden.states.title, 
-                                   ylab.pos=ylab.pos, 
-                                   cex.lab=cex.lab, cex.axis=cex.axis, call=match.call()))
-  }else{
-    arguments <- c(arguments, list(hidden.paths=hidden.paths, plots=plots, type=type, 
-                                   sortv=sortv, sort.channel=sort.channel, 
-                                   with.missing=with.missing,
-                                   title=title, title.n=title.n, cex.title=cex.title, title.pos=title.pos,
-                                   withlegend=withlegend, ncol.legend=ncol.legend, 
-                                   with.missing.legend=with.missing.legend,                         
-                                   legend.prop=legend.prop, cex.legend=cex.legend,
-                                   hidden.states.colors=hidden.states.colors, hidden.states.labels=hidden.states.labels,
-                                   xaxis=xaxis, xlab=xlab, xtlab=xtlab, xlab.pos=xlab.pos,
-                                   yaxis=yaxis, ylab=ylab, hidden.states.title=hidden.states.title, 
-                                   ylab.pos=ylab.pos, 
-                                   cex.lab=cex.lab, cex.axis=cex.axis, call=match.call()),
+  if (length(list(...)) == 0) {
+    arguments <- c(arguments, list(hidden.paths = hidden.paths, plots = plots, type = type, 
+                                   sortv = sortv, sort.channel = sort.channel, plotxaxis = plotxaxis,
+                                   with.missing = with.missing,
+                                   title = title, title.n = title.n, cex.title = cex.title, title.pos = title.pos,
+                                   withlegend = withlegend, ncol.legend = ncol.legend, 
+                                   with.missing.legend = with.missing.legend,                         
+                                   legend.prop = legend.prop, cex.legend = cex.legend,
+                                   hidden.states.colors = hidden.states.colors, hidden.states.labels = hidden.states.labels,
+                                   xaxis = xaxis, xlab = xlab, xtlab = xtlab, xlab.pos = xlab.pos,
+                                   yaxis = yaxis, ylab = ylab, hidden.states.title = hidden.states.title, 
+                                   ylab.pos = ylab.pos, 
+                                   cex.lab = cex.lab, cex.axis = cex.axis, call = match.call()))
+  } else {
+    arguments <- c(arguments, list(hidden.paths = hidden.paths, plots = plots, type = type, 
+                                   sortv = sortv, sort.channel = sort.channel, plotxaxis = plotxaxis,
+                                   with.missing = with.missing,
+                                   title = title, title.n = title.n, cex.title = cex.title, title.pos = title.pos,
+                                   withlegend = withlegend, ncol.legend = ncol.legend, 
+                                   with.missing.legend = with.missing.legend,                         
+                                   legend.prop = legend.prop, cex.legend = cex.legend,
+                                   hidden.states.colors = hidden.states.colors, hidden.states.labels = hidden.states.labels,
+                                   xaxis = xaxis, xlab = xlab, xtlab = xtlab, xlab.pos = xlab.pos,
+                                   yaxis = yaxis, ylab = ylab, hidden.states.title = hidden.states.title, 
+                                   ylab.pos = ylab.pos, 
+                                   cex.lab = cex.lab, cex.axis = cex.axis, call = match.call()),
                    list(...))    
   }
   
