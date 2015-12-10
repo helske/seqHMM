@@ -480,7 +480,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
   if(!em_step && !global_step && !local_step){
     stop("No method chosen for estimation. Choose at least one from em_step, global_step, and local_step.")
   }
-  if (threads < 1) stop ("Argument threads must be a positive integer.")
+  if (threads < 1) stop("Argument threads must be a positive integer.")
   
   mhmm <- inherits(model, c("mhmm"))
   
@@ -537,8 +537,9 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     }
     
     
-    if(mhmm && resEM$error != 0){
+    if(resEM$error != 0){
       err_msg <- switch(resEM$error, 
+                        "-10" = "Scaling factors contain non-finite values.",
                         "1" = "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
                         "2" = "Estimation of coefficients of covariates failed due to singular Hessian.",
                         "3" = "Estimation of coefficients of covariates failed due to non-finite cluster probabilities.",
@@ -624,8 +625,9 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         
         resEMi$logLik
         
-        if (mhmm && resEMi$error != 0) {
+        if (resEMi$error != 0) {
           err_msg <- switch(resEMi$error, 
+                            "-10" = "Scaling factors contain non-finite values.",
                             "1" = "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
                             "2" = "Estimation of coefficients of covariates failed due to singular Hessian.",
                             "3" = "Estimation of coefficients of covariates failed due to non-finite cluster probabilities.",
@@ -667,7 +669,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       }
     }
     
-    if (!mhmm || resEM$error == 0) {
+    if (resEM$error == 0) {
       if (resEM$change < -em.con$reltol)
         warning("EM algorithm stopped due to decreasing log-likelihood. ")
       
@@ -786,9 +788,10 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     }
     
     
-    objectivef_mhmm<-function(pars,model, estimate = TRUE){      
+    objectivef_mhmm<-function(pars, model, estimate = TRUE){      
       
-      
+      if(any(!is.finite(exp(pars))) && estimate)
+        return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
       if(npTM>0){
         model$transition_probs[maxTM]<-maxTMvalue     
         model$transition_probs[paramTM]<-exp(pars[1:npTM])
@@ -839,7 +842,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     objectivef_hmm <- function(pars, model, estimate = TRUE){
       
       if(any(!is.finite(exp(pars))) && estimate)
-        return(.Machine$double.xmax^075)
+        return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
       if(npTM>0){
         model$transition_probs[maxTM]<-maxTMvalue
         model$transition_probs[paramTM]<-exp(pars[1:npTM])
@@ -905,7 +908,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       if(is.null(control_global$algorithm)){
         control_global$algorithm <- "NLOPT_GD_MLSL_LDS"
         if(is.null(control_global$local_opts)) 
-          control_global$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)
+          control_global$local_opts <- list(algorithm = "NLOPT_LD_LBFGS", 
+                                            ftol_rel = 1e-8, xtol_rel = 1e-4)
       }
       
       if (mhmm) {
@@ -923,33 +927,31 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       
     } else globalres <- NULL
     
-    if(local_step){
-      if(is.null(control_local$maxeval)){
+    if (local_step) {
+      if( is.null(control_local$maxeval)) {
         control_local$maxeval <- 10000
       }
-      if(is.null(control_local$algorithm)){
+      if (is.null(control_local$algorithm)) {
         control_local$algorithm <- "NLOPT_LD_LBFGS"
       }
       if (is.null(control_local$xtol_rel)) {
         control_local$xtol_rel <- 1e-8
       }
+      if (is.null(control_local$ftol_rel)) {
+        control_local$ftol_rel <- 1e-10
+      }
+
       
       if (mhmm) {
-        ub <- c(rep(300, length(initialvalues) - npCoef), rep(300 / apply(abs(model$X), 2, max), 
-                                                              model$n_clusters - 1))
-        ub <- pmin(pmax(ub, 2*initialvalues), 500)
-        localres<-nloptr(x0 = initialvalues, eval_f = objectivef_mhmm,
-                         opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
+        localres <- nloptr(x0 = initialvalues, eval_f = objectivef_mhmm,
+                         opts = control_local, model = model, estimate = TRUE, ...)
         model <- objectivef_mhmm(localres$solution, model, FALSE)
         
       } else {
-        ub <- pmin(pmax(300, 2*initialvalues), 500)
-        localres <- nloptr(x0 = initialvalues,
-                           eval_f = objectivef_hmm,
-                           opts = control_local, model = model, estimate = TRUE, ub = ub, ...)
+        localres <- nloptr(x0 = initialvalues, eval_f = objectivef_hmm,
+                           opts = control_local, model = model, estimate = TRUE, ...)
         model <- objectivef_hmm(localres$solution, model, FALSE)
       }
-      
       ll <- -localres$objective
     } else localres <- NULL
     
