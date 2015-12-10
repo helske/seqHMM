@@ -41,7 +41,7 @@ List log_objectivex(NumericVector transitionMatrix, NumericVector emissionArray,
 
   arma::mat initk(emission.n_rows, obs.n_slices);
   for (unsigned int k = 0; k < obs.n_slices; k++) {
-    initk.col(k) = init + reparma(weights.col(k), numberOfStates);
+    initk.col(k) = initLog + reparma(weights.col(k), numberOfStates);
   }
   
   log_internalForwardx(transitionLog, emissionLog, initk, obs, alpha, threads);
