@@ -36,7 +36,7 @@ plot.ssp <- function(x, ...) {
   plot.new()  
   grid.newpage()
   savepar <- par(no.readonly = TRUE)
-  do.call(SSPlotter,args=x)
+  do.call(SSPlotter,args = x)
   par(savepar)
 }
 
