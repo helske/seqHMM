@@ -1,5 +1,4 @@
 #include "seqHMM.h"
-
 void log_internalForwardx(const arma::mat& transition, const arma::cube& emission,
   const arma::mat& init, const arma::icube& obs, arma::cube& alpha, int threads) {
   

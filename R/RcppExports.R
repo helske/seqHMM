@@ -45,8 +45,8 @@ log_objective <- function(transitionMatrix, emissionArray, initialProbs, obsArra
     .Call('seqHMM_log_objective', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, threads)
 }
 
-log_objectivex <- function(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coefs, X, numberOfStates, threads) {
-    .Call('seqHMM_log_objectivex', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coefs, X, numberOfStates, threads)
+log_objectivex <- function(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coef, X, numberOfStates, threads) {
+    .Call('seqHMM_log_objectivex', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coef, X, numberOfStates, threads)
 }
 
 logLikHMM <- function(transition, emissionArray, init, obsArray, threads) {

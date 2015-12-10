@@ -4,7 +4,7 @@
 
 List forwardbackwardx(const arma::mat& transition, NumericVector emissionArray,
   const arma::vec& init, IntegerVector obsArray, const arma::mat& coef, const arma::mat& X,
-  IntegerVector numberOfStates, bool forwardonly, int threads) {
+  const arma::ivec& numberOfStates, bool forwardonly, int threads) {
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //r,n,k

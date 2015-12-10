@@ -3,7 +3,7 @@
 // [[Rcpp::export]]
 
 List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-    IntegerVector obsArray, IntegerVector nSymbols, int itermax, double tol, int trace, int threads) {
+    IntegerVector obsArray, const arma::ivec& nSymbols, int itermax, double tol, int trace, int threads) {
 
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
@@ -65,7 +65,7 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
       }
 
       for (unsigned int r = 0; r < emission.n_slices; r++) {
-        for (int l = 0; l < nSymbols[r]; l++) {
+        for (int l = 0; l < nSymbols(r); l++) {
           for (unsigned int i = 0; i < emission.n_rows; i++) {
             if (emission(i, l, r) > 0.0) {
               for (unsigned int t = 0; t < obs.n_cols; t++) {

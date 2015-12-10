@@ -3,7 +3,7 @@
 
 NumericVector log_logLikMixHMM(NumericVector transitionMatrix, NumericVector emissionArray,
   NumericVector initialProbs, IntegerVector obsArray, const arma::mat& coef, const arma::mat& X,
-  IntegerVector numberOfStates, int threads) {
+  const arma::ivec& numberOfStates, int threads) {
   
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
