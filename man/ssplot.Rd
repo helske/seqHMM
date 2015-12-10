@@ -204,7 +204,7 @@ ssplot(
 # Computing the most probable paths of hidden states
 hidden.paths <- hidden_paths(hmm_biofam)
 hidden.paths.seq <- seqdef(
-  hidden.paths, labels=paste("Hidden state", 1:4)
+  hidden.paths, labels = paste("Hidden state", 1:4)
   )
 
 # Plotting observations and hidden state paths
