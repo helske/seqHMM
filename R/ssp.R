@@ -7,28 +7,28 @@
 #' 
 #' 
 #' @export
-#' @param x Either hidden Markov model object of class \code{hmm} or a 
-#'   sequence object created with the \code{\link{seqdef}} function or a list of
-#'   sequence objects.
+#' @param x Either a hidden Markov model object of class \code{hmm} or a state
+#'   sequence object of class \code{stslist} (created with the \code{\link[TraMineR]{seqdef}})
+#'   function) or a list of state sequence objects.
 #'
 #' @param hidden.paths Output from \code{\link{hidden_paths}} function. Optional, if 
-#'   \code{x} is a hmm object or if \code{type=="obs"}.
+#'   \code{x} is a \code{hmm} object or if \code{type = "obs"}.
 #'   
 #' @param plots What to plot. One of \code{"obs"} for observations (the default), 
 #'   \code{"hidden.paths"} for most probable paths of hidden states, 
 #'   or \code{"both"} for observations and hidden paths together.
 #'   
-#' @param type The type of the plot. Available types are \code{"I"} for index 
+#' @param type The type of the plot. Available types are \code{"I"} for sequence index 
 #'   plots and \code{"d"} for state distribution plots (the default). See 
 #'   \code{\link{seqplot}} for details.
 #'   
 #' @param sortv A sorting variable or a sort method (one of \code{"from.start"},
-#'   \code{"from.end"}, \code{"mds.obs"}, or \code{"mds."}) for 
-#'   \code{type=="I"}. The value \code{"mds.hidden"} is only available for 
-#'   \code{which="both"} and \code{which="hidden.paths"}. Options \code{"mds.obs"} and 
+#'   \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.hidden"}) for 
+#'   \code{type = "I"}. The value \code{"mds.hidden"} is only available when
+#'   \code{which = "both"} and \code{which = "hidden.paths"}. Options \code{"mds.obs"} and 
 #'   \code{"mds.hidden"} automatically arrange the sequences according to the 
 #'   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the 
-#'   observed or hidden states path data from \code{\link{hidden_paths}}. 
+#'   observed data or hidden states paths. 
 #'   MDS scores are computed from distances/dissimilarities using a metric 
 #'   defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for 
 #'   more details on \code{"from.start"} and \code{"from.end"}.
@@ -40,18 +40,18 @@
 #'   
 #' @param dist.method The metric to be used for computing the distances of the 
 #'   sequences if multidimensional scaling is used for sorting. One of "OM" 
-#'   (optimal Matching, the default), "LCP" (longest common prefix), "RLCP" 
+#'   (optimal matching, the default), "LCP" (longest common prefix), "RLCP" 
 #'   (reversed LCP, i.e. longest common suffix), "LCS" (longest common 
-#'   subsequence), "HAM" (Hamming distance), "DHD" (dynamic Hamming distance). 
+#'   subsequence), "HAM" (Hamming distance), and "DHD" (dynamic Hamming distance). 
 #'   Transition rates are used for defining substitution costs if needed. See
 #'   \code{\link{seqdef}} for more information on the metrics.
 #'   
 #' @param with.missing Controls whether missing states are included in state 
-#'   distribution plots (\code{type="d"}). The default is \code{FALSE}.
+#'   distribution plots (\code{type = "d"}). The default is \code{FALSE}.
 #'   
-#' @param title Title for the graphic. The default is \code{NA}: if 
-#'   \code{title.n=TRUE}, only the number of subjects is plotted. \code{FALSE} 
-#'   prints no title, even when \code{title.n=TRUE}.
+#' @param title Main title for the graphic. The default is \code{NA}: if 
+#'   \code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE} 
+#'   prints no title, even when \code{title.n = TRUE}.
 #'   
 #' @param title.n Controls whether the number of subjects is printed in the 
 #'   title of the plot. The default is \code{TRUE}: n is plotted if \code{title}
@@ -66,21 +66,20 @@
 #'   
 #' @param withlegend Defines if and where the legend for the states is plotted. 
 #'   The default value \code{"auto"} (equivalent to \code{TRUE} and 
-#'   \code{right}) creates separate legends for each requested plot and 
+#'   \code{"right"}) creates separate legends for each requested plot and 
 #'   positiones them on the right-hand side of the plot. Other possible values 
 #'   are \code{"bottom"},
 #'   \code{"right.combined"}, and \code{"bottom.combined"}, of which the last 
-#'   two create a combined legend in the selected position. Value 
-#'   \code{FALSE} prints no legend.
+#'   two create a combined legend in the selected position. \code{FALSE} prints no legend.
 #'   
 #' @param ncol.legend (A vector of) the number of columns for the legend(s). The
 #'   default \code{"auto"} creates one column for each legend.
 #'   
 #' @param with.missing.legend If set to \code{"auto"} (the default), a legend 
 #'   for the missing state is added automatically if one or more of the 
-#'   sequences in the data/channel contains missing states and \code{type="I"}. 
-#'   If \code{type="d"} missing states are omitted from the legends unless 
-#'   \code{with.missing=TRUE}. With the value \code{TRUE} a 
+#'   sequences in the data/channel contains missing states and \code{type = "I"}. 
+#'   If \code{type = "d"} missing states are omitted from the legends unless 
+#'   \code{with.missing = TRUE}. With the value \code{TRUE} a 
 #'   legend for the missing state is added in any case; equivalently 
 #'   \code{FALSE} omits the legend for the missing state.
 #'   
@@ -93,13 +92,13 @@
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #'   
 #' @param hidden.states.colors A vector of colors assigned to hidden states. The default 
-#'   value \code{"auto"} uses the colors assigned to the stslist object created 
-#'   with \code{seqdef} if \code{hidden.paths} is given; otherwise otherwise colors from 
+#'   value \code{"auto"} uses the colors assigned to the \code{stslist} object (created 
+#'   with \code{\link[TraMineR]{seqdef}}) if \code{hidden.paths} is given; otherwise colors from 
 #'   \code{\link{colorpalette}} are automatically used. 
 #'   
 #' @param hidden.states.labels Labels for the hidden states. The default value 
 #'   \code{"auto"} uses the names provided in \code{x$state_names} if \code{x} is
-#'   an hmm object; otherwise the number of the hidden state.
+#'   an \code{hmm} object; otherwise the number of the hidden state.
 #'   
 #' @param xaxis Controls whether an x-axis is plotted below the plot at the 
 #'   bottom. The default value is \code{TRUE}.
@@ -109,14 +108,15 @@
 #'   
 #' @param xtlab Optional labels for the x-axis tick labels.  If unspecified, the
 #'   column names of the \code{seqdata} sequence object are used (see 
-#'   \code{\link{seqdef}}).
+#'   \code{\link[TraMineR]{seqdef}}).
 #'   
-#' @param xlab.pos Controls the position of the x axis label. The default value 
-#'   is 1. Values greater to 1 will place the label further away from the plot.
+#' @param xlab.pos Controls the position of the x-axis label. The default value 
+#'   is 1. Values greater than 1 will place the label further away from the plot.
 #'   
-#' @param yaxis whether or not to plot the y axis. The default is \code{FALSE}.
+#' @param yaxis Controls whether or not to plot the y-axis. The default is \code{FALSE}.
 #' 
-#' @param ylab Labels for the channels. A vector of names for each channel 
+#' @param ylab Labels for the channels shown as labels for y-axes. 
+#'   A vector of names for each channel 
 #'   (observations). The default value \code{"auto"} uses the names provided in 
 #'   \code{x$channel_names} if \code{x} is an \code{hmm} object; otherwise the 
 #'   names of the list in \code{x} if given, or the
@@ -127,7 +127,7 @@
 #'   
 #' @param ylab.pos Controls the position of the y axis labels (labels for 
 #'   channels and/or hidden states). Either \code{"auto"} or a numerical vector 
-#'   indicating on how far away from the plots the titles are positioned. The 
+#'   indicating how far away from the plots the titles are positioned. The 
 #'   default value \code{"auto"} positions all titles on line 1.
 #'   Shorter vectors are recycled.
 #'   
@@ -135,11 +135,11 @@
 #'   labels. The default value is 1. Values lesser than 1 will reduce the size 
 #'   of the font, values greater than 1 will increase the size.
 #'   
-#' @param cex.axis Expansion factor for setting the size of the font for the 
-#'   axis. The default value is 1. Values lesser than 1 will reduce the size of 
+#' @param cex.axis Expansion factor for setting the size of the font for the x-axis 
+#'   tick labels. The default value is 1. Values lesser than 1 will reduce the size of 
 #'   the font, values greater than 1 will increase the size.
 #'   
-#' @param ... Other arguments to be passed to \code{\link{seqplot}} to produce 
+#' @param ... Other arguments to be passed to \code{\link[TraMineR]{seqplot}} to produce 
 #'   the appropriate plot method.
 #'   
 #' @examples 
@@ -236,68 +236,87 @@ ssp <- function(x, hidden.paths = NULL,
   
   arguments <- list()
   
-  if(!inherits(x,"hmm") && (plots=="both" || plots=="hidden.paths") && is.null(hidden.paths)){
+  # Check the type of the plot
+  plots <- match.arg(plots, c("both", "obs", "hidden.paths"))
+  
+  # Hidden paths available?
+  if (!inherits(x, "hmm") && (plots != "obs") && is.null(hidden.paths)) {
     stop(paste("For plotting the most probable paths, you need to add the argument hidden.paths or give an object of class hmm to x."))
   }
   
-  if(!is.null(hidden.paths) && !inherits(hidden.paths,"stslist")){
+  # hidden.paths must be given as stslist
+  if (!is.null(hidden.paths) && !inherits(hidden.paths, "stslist")) {
     stop(paste("Object for argument hidden.paths is not a state sequence object. Use seqdef to create one."))
   }
   
-  plots <- match.arg(plots, c("both", "obs", "hidden.paths"))
-  if(withlegend!=FALSE && withlegend!=TRUE){
-    withlegend <- match.arg(withlegend, c("auto", "right", "right.combined",
-                                          "bottom", "bottom.combined"))
+  # Checking withlegend
+  choices <- c(TRUE, FALSE, "auto", "right", "right.combined",
+               "bottom", "bottom.combined")
+  ind <- pmatch(withlegend, choices)
+  if (is.na(ind)) {
+    stop("Argument withlegend must be one of TRUE, FALSE, \"auto\", \"right\", \"right.combined\", \"bottom\", \"bottom.combined\"")
   }
-  if(type=="I" && !is.numeric(sortv) && !is.null(sortv) && (sortv %in% c("from.start", "from.end", "mds.obs", "mds.hidden"))==FALSE){
-    warning("Argument sortv only accepts values \"from.start\", \"from.end\", \"mds.obs\", \"mds.hidden\" or a numerical vector (one value for each subject).")
-    sortv <- NULL
+  withlegend <- choices[ind]
+  if (withlegend %in% c(TRUE, "auto")){
+    withlegend <- "right"
   }
-  if(!is.numeric(ncol.legend) && ncol.legend!="auto"){
+  
+  
+  type <- match.arg(type, c("I", "d"))
+  
+  if (type == "I" && !is.numeric(sortv) && !is.null(sortv)) {
+    choices <- c("from.start", "from.end", "mds.obs", "mds.hidden")
+    ind <- pmatch(sortv, choices)
+    if (is.na(ind)) {
+      stop("Argument sortv only accepts values \"from.start\", \"from.end\", \"mds.obs\", \"mds.hidden\" or a numerical vector (one value for each subject).")
+    }
+    sortv <- choices[ind]
+  }
+  
+  if (!is.numeric(ncol.legend) && ncol.legend != "auto") {
     warning("Argument ncol.legend only accepts values \"auto\" or a numerical vector.")
     ncol.legend <- "auto"
   }
-  if(!is.numeric(ylab.pos) && ylab.pos!="auto"){
+  
+  if (!is.numeric(ylab.pos) && ylab.pos != "auto") {
     warning("Argument ylab.pos only accepts values \"auto\" or a numerical vector.")
     ylab.pos <- "auto"
   }
-  if(type!="I" && type!="d"){
-    stop("Argument \"type\" should be one of \"I\" or \"d\".")
-  }
-  if(legend.prop<0 || legend.prop>1){
+  
+  if (legend.prop < 0 || legend.prop > 1) {
     warning("Argument legend.prop only accepts values between 0 and 1. Proportion was set to 0.3.")
     legend.prop <- 0.3
   }
   
   dist.method <- match.arg(dist.method, c("OM", "LCP", "RLCP", "LCS", "HAM", "DHD"))
   
-  if (inherits(x,"hmm")) {
+  # Channel names and labels
+  # HMM objects
+  if (inherits(x, "hmm")) {
     obs <- x$observations
-    channel_names <- x$channel_names
+    nchannels <- x$n_channels
     if (length(ylab) > 1 || (!is.na(ylab) && ylab != FALSE)) {
       if (plots != "hidden.paths") {
-        if (length(ylab)==1 && ylab=="auto") {
+        if (length(ylab) == 1 && ylab == "auto") {
           ylab <- x$channel_names
         } else {
           ylab <- rep(ylab, length.out = x$n_channels)
-          channel_names <- ylab
         }
       } else {
-        if(!is.null(ylab) && (length(ylab)==1 && ylab != "auto") && hidden.states.title == "Hidden states"){
+        if(!is.null(ylab) && (length(ylab) == 1 && ylab != "auto") && hidden.states.title == "Hidden states"){
           warning("Argument ylab only modifies channel titles (observations). Did you mean to change hidden.states.title?")
         }
       }
     }
-    # Single channel stslist
+    # Single-channel stslist
   } else if(inherits(x, "stslist")) {
     obs <- x
-    channel_names <- "Observations"
+    nchannels <- 1
     if (length(ylab) > 1 || (!is.na(ylab) && ylab != FALSE)) {
       if (length(ylab) == 1 && ylab == "auto") {
         ylab <- "Observations"
       } else if(length(ylab) > 1) {
         ylab <- ylab[1]
-        channel_names <- ylab
       }
     }
     # List of stslists
@@ -308,146 +327,115 @@ ssp <- function(x, hidden.paths = NULL,
       }
     }
     obs <- x
-    if (!is.null(names(x))) {
-      channel_names <- names(x)
-    } else {
-      channel_names <- 1:length(obs)
-    }
     if (length(ylab) > 1 || (!is.na(ylab) && ylab != FALSE)) {
-      if (length(ylab)==1 && ylab=="auto") {
-        ylab <- channel_names
+      if (length(ylab) == 1 && ylab == "auto") {
+        if (!is.null(names(obs))) {
+          ylab <- names(obs)
+        } else {
+          ylab <- 1:length(obs)
+        }
       } else {
         ylab <- rep(ylab, length.out = length(obs))
-        channel_names <- ylab
       }
     }
   }  
   
-  # Number of channels
-  nchannels <- length(channel_names)
-  
   # Check the number of sequences
-  ncheck <- NULL
-  if(plots=="both" || plots=="obs"){
-    if(nchannels>1){
-      for(i in 1:nchannels){
-        ncheck[i] <- dim(obs[[i]])[1]
-      }
-    }else{
-      ncheck[1] <- dim(obs)[1]
+  if (!inherits(x, "hmm") && nchannels > 1){
+    if (length(unique(sapply(obs, nrow))) > 1) {
+      warning("The number of subjects (rows) is not the same in all channels.")
+    }
+    if (length(unique(sapply(obs, ncol))) > 1) {
+      warning("The length of the sequences (number of columns) is not the same in all channels.")
     }
   }
-  if((plots=="both" || plots=="hidden.paths") && !is.null(hidden.paths)){
-    ncheck[(length(ncheck)+1)] <- dim(hidden.paths)[1]
-  }
-  if(length(unique(ncheck))>1){
-    warning("The number of sequences is not the same in all channels.")
+  if ((plots == "both" || plots == "hidden.paths") && !is.null(hidden.paths)) {
+    if (nchannels == 1) {
+      if (nrow(hidden.paths) != nrow(obs)) {
+        warning("The number of subjects (rows) is not the same in observations and hidden paths.")
+      }
+      if (ncol(hidden.paths) != ncol(obs)) {
+        warning("The length of the sequences (number of columns) is not the same in observations and hidden paths.")
+      }
+    } else {
+      if (nrow(hidden.paths) != nrow(obs[[1]])) {
+        warning("The number of subjects (rows) is not the same in observations and hidden paths.")
+      }
+      if (ncol(hidden.paths) != ncol(obs[[1]])) {
+        warning("The length of the sequences (number of columns) is not the same in observations and hidden paths.")
+      }
+    }
   }
   
-  legend.c.prop <- 0
-  legend.r.prop <- 0
-  
-  if(withlegend==TRUE || withlegend=="auto" || withlegend=="right"
-     || withlegend=="right.combined"){
+  # Legend proportions
+  legend.c.prop <- legend.r.prop <- 0
+  if (withlegend == "right" || withlegend == "right.combined") {
     legend.c.prop <- legend.prop
-  }else if(withlegend=="bottom" || withlegend=="bottom.combined"){
+  } else if (withlegend == "bottom" || withlegend == "bottom.combined") {
     legend.r.prop <- legend.prop
   }
   
   # Number of plots and positions of y labels
-  if (plots=="both") {
-    nplots <- nchannels+1 
-    if (is.character(ylab.pos)) {
-      if (ylab.pos=="auto") {
-        ylab.pos <- rep(1, (nchannels + 1) )
-      } else {
-        stop(paste("Argument ylab.pos only accepts the value \"auto\" or a numeric vector."))
-      }
-    }else if (length(ylab.pos) != (nchannels+1) ){
-      ylab.pos <- rep(ylab.pos, length.out = (nchannels+1))
+  nplots <- switch(plots, 
+                   both = nchannels + 1,
+                   obs = nchannels,
+                   hidden.paths = 1)
+  if (!is.numeric(ylab.pos)) {
+    if (ylab.pos == "auto") {
+      ylab.pos <- rep(1, nplots)
+    } else {
+      stop(paste("Argument ylab.pos only accepts the value \"auto\" or a numeric vector."))
     }
-  }else if (plots == "obs") {
-    nplots <- nchannels
-    if (is.character(ylab.pos)) {
-      if (ylab.pos == "auto") {
-        ylab.pos <- rep(1, nchannels)
-      } else {
-        stop(paste("Argument ylab.pos only accepts the value \"auto\" or a numeric vector."))
-      }
-    } else if (length(ylab.pos) != nchannels) {
-      ylab.pos <- rep(ylab.pos, length.out = nchannels)
-    }
-  } else if (plots == "hidden.paths") {
-    nplots <- 1
-    if (is.character(ylab.pos)) {
-      if (ylab.pos == "auto") {
-        ylab.pos <- 1
-      } else {
-        stop(paste("Argument ylab.pos only accepts the value \"auto\" or a numeric vector."))
-      }
-    } else if (length(ylab.pos) > 1) {
-      ylab.pos <- ylab.pos[1]
-    }
+  } else {
+    ylab.pos <- rep(ylab.pos, length.out = nplots)
   }
-  
   if (type == "I" && ylab != FALSE && !is.na(ylab)) {
     ylab.pos <- ylab.pos + 0.5
   }
   
   # Space for viewports
-  if((is.na(title) && title.n==FALSE) || (!is.na(title) && title==FALSE)){
+  if ((is.na(title) && title.n == FALSE) || (!is.na(title) && title == FALSE)) {
     title.pos <- 0
   }
-  if(length(ylab)==1 && (ylab==FALSE || is.na(ylab))){
+  if (length(ylab) == 1 && (is.na(ylab) || ylab == FALSE)) {
     ylab.space <- 0
-  }else if(!is.na(ylab.pos) && ylab.pos!=FALSE && max(ylab.pos)<(-1)){
-    ylab.space <- -1
-  }else{
-    ylab.space <- max(ylab.pos)*cex.lab
+  } else if (max(ylab.pos) < -1) {
+    ylab.space <- 0
+  } else {
+    ylab.space <- max(ylab.pos) * cex.lab
   }
   if (yaxis) {
-    if(type == "d") {
-      ylab.space <- ylab.space + 2.5
-      ylab.pos <- ylab.pos + 2.5
-    } else {
-      ylab.space <- ylab.space + 1.5
-      ylab.pos <- ylab.pos + 1.5
-    }
+    ylab.space <- ylab.space + 1.5 + (type == "d")
+    ylab.pos <- ylab.pos + 1.5 + (type == "d")
   }
-  if(is.na(xlab) || xlab==FALSE){
+  if (is.na(xlab) || xlab == FALSE) {
     xlab.pos <- 0
   }
   xaxis.space <- ifelse(xaxis, 1, 0)
-  if(length(xtlab)==1 && (is.null(xtlab) || is.na(xtlab) || xtlab==FALSE)){
+  if (length(xtlab) == 1 && (is.null(xtlab) || is.na(xtlab) || xtlab == FALSE)) {
     xt.space <- 0
-  }else{
+  } else {
     xt.space <- 1
   }
   
-  arguments <- list(obs=obs, nchannels=nchannels, channel_names=channel_names, nplots=nplots, 
-                    legend.c.prop=legend.c.prop, legend.r.prop=legend.r.prop,
-                    ylab.space=ylab.space, xaxis.space=xaxis.space, xt.space=xt.space)
+  arguments <- list(obs = obs, nchannels = nchannels, nplots = nplots, 
+                    legend.c.prop = legend.c.prop, legend.r.prop = legend.r.prop,
+                    ylab.space = ylab.space, xaxis.space = xaxis.space, xt.space = xt.space)
   
   # Columns for legends
-  if(plots=="both"){
-    if(length(ncol.legend)==1 && ncol.legend=="auto"){
-      if(withlegend==TRUE || withlegend=="auto" || withlegend=="right" ||
-         withlegend=="bottom"){
-        ncol.legend <- rep(1, (nchannels+1))
-      }else if(withlegend=="right.combined"){
-        ncol.legend <- 1
-      }else if(withlegend=="bottom.combined"){
-        ncol.legend <- nchannels+1
-      }
-    }else if((withlegend==TRUE || withlegend=="auto") && length(ncol.legend)>(nchannels+1)){
-      ncol.legend <- ncol.legend[1:(nchannels + 1)]
-    }else if((withlegend==TRUE || withlegend=="auto") && length(ncol.legend)<(nchannels+1)){
-      ncol.legend <- rep(ncol.legend, length.out = (nchannels + 1))
-    }else if((withlegend=="right.combined" || withlegend=="bottom.combined") && 
-             length(ncol.legend)>1){
+  if (plots=="both") {
+    if (length(ncol.legend) == 1 && ncol.legend == "auto") {
+      ncol.legend <- switch(withlegend, 
+                            right.combined = 1, 
+                            bottom.combined = nplots,
+                            rep(1, nplots))
+    } else if ((withlegend == "right") && length(ncol.legend) != nplots) {
+      ncol.legend <- rep(ncol.legend, length.out = nplots)
+    } else if((withlegend == "right.combined" || withlegend == "bottom.combined") && 
+              length(ncol.legend) > 1) {
       ncol.legend <- ncol.legend[1]
     }
-  }else if(plots=="obs"){
+  } else if (plots == "obs") {
     if(length(ncol.legend)==1 && ncol.legend=="auto"){
       if(withlegend==TRUE || withlegend=="auto" || withlegend=="right" ||
          withlegend=="bottom"){
@@ -495,10 +483,10 @@ ssp <- function(x, hidden.paths = NULL,
         hidden.states.labels <- rep("", length(alphabet(hidden.paths)))
       }
       if(length(hidden.states.labels)==1 && hidden.states.labels=="auto"){
-        hidden.states.labels <- paste("State", alphabet(hidden.paths))
+        hidden.states.labels <- alphabet(hidden.paths)
       }else if(!is.null(hidden.states.labels) && length(hidden.states.labels)!=length(alphabet(hidden.paths))){
         warning("The number of labels for hidden states does not match the number of hidden states. Labels were not used.")
-        hidden.states.labels <- paste("State", alphabet(hidden.paths))
+        hidden.states.labels <- alphabet(hidden.paths)
       }
     }
     if (nchannels > 1) {
@@ -623,7 +611,7 @@ ssp <- function(x, hidden.paths = NULL,
           arguments <- c(arguments, list(orderv=orderv))
         }
       }
-    # nchannels == 1
+      # nchannels == 1
     } else {
       if (length(sortv) == 1 && sortv == "mds.obs") {
         dist.obs <- suppressMessages(seqdist(obs, method = dist.method, 

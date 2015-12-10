@@ -1,4 +1,4 @@
-SSPlotter <- function(obs, nchannels, channel_names, nplots, 
+SSPlotter <- function(obs, nchannels, nplots, 
   legend.c.prop, legend.r.prop, ylab.space, xaxis.space, xt.space,
   hidden.paths.seq = NULL, orderv = NULL, plotxaxis,
   hidden.paths = NULL, plots = "both", type = "d", sortv=NULL, sort.channel=1, 
