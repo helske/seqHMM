@@ -3,7 +3,7 @@
 %%
 %%
 %% This is the Rnw file which is used to build the static seqHMM vignette
-%% 
+%%
 %%
 %%
 %%
@@ -408,6 +408,7 @@ Log-likelihood is stored in the result from \texttt{fit\_model}\index{fitHMM@\te
 <<'loglik', cache=TRUE>>=
 mc_fit$logLik
 logLik(mc_fit$model)
+
 @
 
 Next we fit a couple of models with different estimation procedures and compare the results using log-likelihood. We first note that for this model the EM algorithm converges to optimum so the local optimization step is not necessary (the difference between the log-likelihoods is neglibigle, -2.8e-9):
@@ -415,25 +416,28 @@ Next we fit a couple of models with different estimation procedures and compare 
 <<'em_and_local', cache=TRUE>>=
 mc_fit$em_results$logLik
 -mc_fit$local_results$objective
+
 @
 
 Using only gradient-based optimization without the initial EM step produces slightly poorer fit:
 <<'fitHMM_local', cache=TRUE>>=
 mc_fit_local <- fit_model(mc_hmm, em_step = FALSE, local = TRUE)
 mc_fit_local$logLik
+
 @
 
 Next we will test the performance of the MLSL optimization by setting \texttt{global = TRUE}. Final polishing is done with the L-BFGS. The default estimation time is set to 60 seconds in global step, but usually it is advisable to run it longer. Depending on the performance of the computer, the optimizer may also be able to perform more or less evaluations in the given time limit. Setting \texttt{maxtime = 0} omits the time limit and performs the number of evaluations given for \texttt{maxeval}. The more complex the model, the more time the optimizer needs to throughly search the parameter space. Here we use parallel computing with 4 threads in order to speed up the computations.
 
 <<'fitHMM_global', cache=TRUE>>=
-mc_fit_global <- fit_model(mc_hmm, em_step = FALSE, global = TRUE, local = TRUE, threads = 4,
+mc_fit_global <- fit_model(mc_hmm, em_step = FALSE,
+  global = TRUE, local = TRUE, threads = 4,
   control_global = list(maxtime = 0, maxeval = 10000))
 
 -mc_fit_global$global_results$objective
 -mc_fit_global$local_results$objective
 @
 
-In this case, even when using 10000 iterations the global optimization still does not find the same optimum as the EM algorithm. Note that in order to minimize the time spend on suboptimal regions of parameter space, by default the global optimization step uses larger relative tolerances in internal local optimization phases than the subsequent local optimization step. Also MLSL does not use the initial values at start of the optimization (except in setting the boundaries of parameter space), so it can miss the optimum found by local optimization only. 
+In this case, even when using 10000 iterations the global optimization still does not find the same optimum as the EM algorithm. Note that in order to minimize the time spend on suboptimal regions of parameter space, by default the global optimization step uses larger relative tolerances in internal local optimization phases than the subsequent local optimization step. Also MLSL does not use the initial values at start of the optimization (except in setting the boundaries of parameter space), so it can miss the optimum found by local optimization only.
 
 Automatic restarts of the EM algorithm are called by setting the argument \texttt{restart} in the \texttt{control\_em} argument. By default, both transition and emission probabilities are modified by adding a random numbers from a normal distribution with a mean of 0 and a standard error defined by \texttt{sd} (0.25 by default). Rows of matrices are then scaled to sum to one. Here randomizing is only useful for a check-up since the original EM already seems find the global optimum.
 
@@ -705,20 +709,21 @@ init_mhmm <- build_mhmm(
   channel_names = c("Marriage", "Parenthood", "Residence"))
 
 set.seed(456)
-fit_model <- fit_model(
-  init_mhmm, control_em = list(restart = list(times = 50, transition = FALSE)))
+fit_mhmm <- fit_model(
+  init_mhmm, threads = 4, control_em =
+    list(restart = list(times = 50, transition = FALSE)))
 @
 
 The \texttt{summary}\index{summaryMHMM@\texttt{summary.mhmm}} method computes summaries of the MHMM, e.g. standard errors for covariates and prior and posterior probabilities for subjects. A \texttt{print}\index{printSummaryMHMM@\texttt{print.summary.mhmm}} method shows some summaries of these: estimates and standard errors for covariates, log-likelihood and BIC, and information on most probable clusters and prior probabilities. Parameter estimates for transitions, emissions, and initial probabilities are omitted by default.
 
-There are two types of standard errors which can be computed for regression coefficients. The conditional standard errors can be computed using analytical formulas for Hessian, but these do not take account the estimation uncertainty regarding the other model parameters. For unconditional standard errors which take account of possible correlation between the estimates of $\beta$ and other model parameters, the Hessian is computed using finite difference approximation of the jacobian of the analytical gradients. Naturally, the latter option is computationally more demanding, but it should still be a preferred option in final analysis as it gives more realistic results.
+There are two types of standard errors which can be computed for regression coefficients. The conditional standard errors can be computed using analytical formulas for Hessian, but these do not take account the estimation uncertainty regarding the other model parameters. For unconditional standard errors which take account of possible correlation between the estimates of $\beta$ and other model parameters, the Hessian is computed using finite difference approximation of the Jacobian of the analytical gradients. Naturally, the latter option is computationally more demanding, but it should still be a preferred option in final analysis as it gives more realistic results.
 
 <<'parameters', cache=TRUE>>=
-summary(fit_model$model, conditional_se = FALSE)
+summary(fit_mhmm$model, conditional_se = FALSE)
 
 @
 
-The classification table shows the mean probabilities of belonging to each cluster by the most probable cluster. The most probable cluster is determined by the posterior cluster probabilities. A good model shoud have high proportions in the diagonal. Here, for individuals assigned to cluster 1, the average probability for cluster 1 is 0.85, 0.15 for cluster 2, and close to 0 for cluster 3. The highest probability for the assigned cluster is 0.93 for cluster 3.
+The classification table shows the mean probabilities of belonging to each cluster by the most probable cluster. The most probable cluster is determined by the posterior cluster probabilities. A good model shoud have high proportions in the diagonal. Here, for individuals assigned to cluster 1, the average probability for cluster 1 is 0.84, 0.16 for cluster 2, and close to 0 for cluster 3. The highest probability for the assigned cluster is 0.93 for cluster 3.
 
 It is possible to convert a \texttt{mhmm} object into a list of separate \texttt{hmm} objects with the \texttt{separate\_mhmm}\index{sepMixHMM@\texttt{separate\_mhmm}} function. These can then be plotted with functions designed for \texttt{hmm} class objects, e.g. \texttt{ssp}\index{ssp@\texttt{ssp}} and \texttt{gridplot}\index{gridplot@\texttt{gridplot}}. However, usually an easier option is to use plotting functions and methods designed for \texttt{mhmm} objects.
 
@@ -729,7 +734,7 @@ Also MHMMs are plotted with the \texttt{plot}\index{plot.mhmm@\texttt{plot.mhmm}
 
 <<'MHMMplot', fig.width=5.5, fig.height=7, fig.keep='last', cache=TRUE>>=
 plot(
-  fit_model$model, interactive = FALSE, which.plots = 2:3, nrow = 2,
+  fit_mhmm$model, interactive = FALSE, which.plots = 2:3, nrow = 2,
   legend.prop = 0.35, cex.legend = 1.5, edge.label.cex = 1.5,
   ncol.legend = 2)
 @
@@ -737,7 +742,7 @@ plot(
 The equivalent to the \texttt{ssplot} function for MHMMs is called \texttt{mssplot}\index{mssplot@\texttt{mssplot}}. It plots stacked sequence plots separately for each (chosen) cluster. If the user asks to plot more than one cluster, the function is interactive by default. If \texttt{ask = TRUE}, the cluster plots are chosen one by one by selecting their numbers from the menu; otherwise they are plotted in the order they appear in the \texttt{mhmm} object.
 
 <<'MHMMssplot', fig.width=5.5, fig.height=5, fig.keep='last', cache=TRUE>>=
-mssplot(fit_model$model, plots = "both", ask = FALSE, which.plots = 1)
+mssplot(fit_mhmm$model, plots = "both", ask = FALSE, which.plots = 1)
 
 @
 

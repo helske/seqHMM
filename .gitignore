@@ -17,3 +17,15 @@ src-x64
 *.Rproj.user
 .Rproj.user
 .settings
+manual/cache/
+manual/figure/
+manual/seqHMM.idx
+manual/seqHMM.ilg
+manual/seqHMM.ind
+manual/seqHMM.tex
+manual/seqHMM.toc
+manual/seqHMM-concordance.tex
+manual/seqHMM.log
+manual/seqHMM.synctex.gz
+
+
