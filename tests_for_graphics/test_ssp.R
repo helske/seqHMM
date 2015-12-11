@@ -1,3 +1,5 @@
+################## Testing ssp ######################
+
 library(seqHMM)
 
 ### Default settings
