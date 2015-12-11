@@ -10,12 +10,12 @@ gridplot(x, nrow = NA, ncol = NA, byrow = FALSE, withlegend = "auto",
   col.prop = "auto", cex.legend = 1)
 }
 \arguments{
-\item{x}{A list of \code{ssp} objects.}
+\item{x}{A list of \code{\link{ssp}} objects.}
 
 \item{nrow,ncol}{Optional arguments to arrange plots.}
 
 \item{byrow}{Controls the order of plotting. Defaults to \code{FALSE}, i.e. plots
-  are arranged columnwise.}
+  are arranged column-wise.}
 
 \item{withlegend}{Defines if and how the legends for the states are plotted.
   The default value \code{"auto"} (equivalent to \code{TRUE} and
@@ -42,7 +42,7 @@ gridplot(x, nrow = NA, ncol = NA, byrow = FALSE, withlegend = "auto",
 
 \item{with.missing.legend}{If set to \code{"auto"} (the default), a legend
   for the missing state is added automatically if one or more of the
-  sequences in data contains missing states. With the value \code{TRUE} a
+  sequences in data contain missing states. With the value \code{TRUE} a
   legend for the missing state is added in any case; equivalently
   \code{FALSE} omits the legend for the missing state.}
 
@@ -86,12 +86,11 @@ ssp_f <- ssp(
   ylab = c("Children", "Married", "Left home"))
 
 # Preparing plot for state distribution plots of observations for men
-ssp_m <- ssp(
-  list(child.seq[biofam3c$covariates$sex == "man",],
+# (Updating the previous plot, only arguments that change values)
+ssp_m <- update(ssp_f, title = "Men",
+  x = list(child.seq[biofam3c$covariates$sex == "man",],
        marr.seq[biofam3c$covariates$sex == "man",],
-       left.seq[biofam3c$covariates$sex == "man",]),
-  type = "d", plots = "obs", title = "Men",
-  ylab = c("Children", "Married", "Left home"))
+       left.seq[biofam3c$covariates$sex == "man",]))
 
 # Plotting state distribution plots of observations for women and men in two columns
 gridplot(list(ssp_f, ssp_m), ncol = 2, withlegend = FALSE)
@@ -107,7 +106,7 @@ ssp_f2 <- ssp(
 
 # The same plot with sequences instead of state distributions
 ssp_f3 <- update(
-  ssp_f2, type = "I", sortv="mds.obs", title = "Sequences for women")
+  ssp_f2, type = "I", sortv = "mds.obs", title = "Sequences for women")
 
 # State distributions with men's data
 ssp_m2 <- update(
@@ -118,17 +117,17 @@ ssp_m2 <- update(
 
 # Men's sequences
 ssp_m3 <- update(
-  ssp_m2, type = "I", sortv="mds.obs", title = "Sequences for women")
+  ssp_m2, type = "I", sortv = "mds.obs", title = "Sequences for men")
 
 # Plotting state distributions and index plots of observations
-# for women and men in two columns
+# for women and men in two columns (+ one column for legends)
 gridplot(
-  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol=3, byrow=TRUE,
-  withlegend="combined", legend.pos="right", col.prop=c(0.35, 0.35, 0.3))
+  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 3, byrow = TRUE,
+  withlegend = "combined", legend.pos = "right", col.prop = c(0.35, 0.35, 0.3))
 
-# The same with different positioning
+# The same with different positioning and fixed cells for legends
 gridplot(
-  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 2, nrow = 3, byrow=TRUE,
+  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 2, nrow = 3, byrow = TRUE,
   # defining the legend positions by the cell numbers
   legend.pos = 3:4)
  }

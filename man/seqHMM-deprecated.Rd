@@ -83,7 +83,7 @@ Used only in the global optimization step.}
 \item{log_space}{Make computations using log-space instead of scaling for greater
 numerical stability at cost of decreased computational performance. Default is \code{FALSE}.}
 
-\item{...}{Additional arguments to nloptr}
+\item{...}{Additional arguments to \code{nloptr}.}
 
 \item{maxit}{Number of iterations. After zeroing small values, the model is
 refitted, and this is repeated until there is nothing to trim or \code{maxit}

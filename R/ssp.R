@@ -2,7 +2,7 @@
 #' Paths from Hidden Markov Models
 #' 
 #' Function \code{ssp} defines the arguments for plotting with 
-#' \code{\link{ssplot}} or \code{\link{gridplot}}.
+#' \code{\link{plot.ssp}} or \code{\link{gridplot}}.
 #' 
 #' 
 #' 
@@ -44,7 +44,7 @@
 #'   (reversed LCP, i.e. longest common suffix), "LCS" (longest common 
 #'   subsequence), "HAM" (Hamming distance), and "DHD" (dynamic Hamming distance). 
 #'   Transition rates are used for defining substitution costs if needed. See
-#'   \code{\link{seqdef}} for more information on the metrics.
+#'   \code{\link[TraMineR]{seqdef}} for more information on the metrics.
 #'   
 #' @param with.missing Controls whether missing states are included in state 
 #'   distribution plots (\code{type = "d"}). The default is \code{FALSE}.
@@ -142,6 +142,15 @@
 #' @param ... Other arguments to be passed to \code{\link[TraMineR]{seqplot}} to produce 
 #'   the appropriate plot method.
 #'   
+#' @return Object of class \code{ssp}.
+#'   
+#' @seealso \code{\link{plot.ssp}} for plotting objects created with 
+#'   the \code{ssp} function; \code{\link{gridplot}} for plotting multiple \code{ssp} 
+#'   objects; \code{\link{build_hmm}} and \code{\link{fit_model}} for building and 
+#'   fitting hidden Markov models; \code{\link{hidden_paths}} for 
+#'   computing the most probable paths of hidden states; and \code{\link{biofam3c}} and
+#'   \code{\link{hmm_biofam}} for information on the data and model used in the example.
+#'   
 #' @examples 
 #' 
 #' \dontrun{
@@ -195,7 +204,8 @@
 #' # Computing the most probable paths of hidden states
 #' hid <- hidden_paths(hmm_biofam)
 #' # Giving names for hidden states
-#' alphabet(hid) <- paste("Hidden state", 1:4)
+#' library(TraMineR)
+#' alphabet(hid) <- paste("Hidden state", 1:5)
 #' 
 #' # Plotting observations and hidden state paths
 #' ssp4 <- ssp(
@@ -210,14 +220,7 @@
 #'   title = FALSE, ylab = FALSE)
 #' plot(ssp4)
 #' }
-#' @return Object of class \code{ssp}.
-#'   
-#' @seealso \code{\link{plot.ssp}} for plotting objects created with 
-#'   the \code{ssp} function; \code{\link{gridplot}} for plotting multiple \code{ssp} 
-#'   objects; \code{\link{build_hmm}} and \code{\link{fit_model}} for building and 
-#'   fitting hidden Markov models; \code{\link{hidden_paths}} for 
-#'   computing the most probable paths of hidden states; and \code{\link{biofam3c}}
-#'   \code{\link{hmm_biofam}} for information on the data and model used in the example.
+
 
 
 ssp <- function(x, hidden.paths = NULL,

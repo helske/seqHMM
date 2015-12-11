@@ -15,28 +15,28 @@ ssplot(x, hidden.paths = NULL, plots = "obs", type = "d", sortv = NULL,
   ylab.pos = "auto", cex.lab = 1, cex.axis = 1, ...)
 }
 \arguments{
-\item{x}{Either hidden Markov model object of class \code{hmm} or a
-  sequence object created with the \code{\link{seqdef}} function or a list of
-  sequence objects.}
+\item{x}{Either a hidden Markov model object of class \code{hmm} or a state
+  sequence object of class \code{stslist} (created with the \code{\link[TraMineR]{seqdef}})
+  function) or a list of state sequence objects.}
 
 \item{hidden.paths}{Output from \code{\link{hidden_paths}} function. Optional, if
-  \code{x} is a hmm object or if \code{type == "obs"}.}
+  \code{x} is a \code{hmm} object or if \code{type = "obs"}.}
 
 \item{plots}{What to plot. One of \code{"obs"} for observations (the default),
   \code{"hidden.paths"} for most probable paths of hidden states,
   or \code{"both"} for observations and hidden paths together.}
 
-\item{type}{The type of the plot. Available types are \code{"I"} for index
+\item{type}{The type of the plot. Available types are \code{"I"} for sequence index
   plots and \code{"d"} for state distribution plots (the default). See
   \code{\link{seqplot}} for details.}
 
 \item{sortv}{A sorting variable or a sort method (one of \code{"from.start"},
   \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.hidden"}) for
-  \code{type == "I"}. The value \code{"mds.hidden"} is only available for
-  \code{which == "both"} and \code{which == "hidden.paths"}. Options \code{"mds.obs"} and
+  \code{type = "I"}. The value \code{"mds.hidden"} is only available when
+  \code{which = "both"} and \code{which = "hidden.paths"}. Options \code{"mds.obs"} and
   \code{"mds.hidden"} automatically arrange the sequences according to the
   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the
-  observed or hidden states path data from \code{\link{hidden_paths}}.
+  observed data or hidden states paths.
   MDS scores are computed from distances/dissimilarities using a metric
   defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for
   more details on \code{"from.start"} and \code{"from.end"}.}
@@ -47,20 +47,19 @@ ssplot(x, hidden.paths = NULL, plots = "obs", type = "d", sortv = NULL,
   channel).}
 
 \item{dist.method}{The metric to be used for computing the distances of the
-  sequences if multidimensional scaling is used for sorting. One of \code{"OM"}
-  (optimal Matching, the default), \code{"LCP"} (longest common prefix),
-  \code{"RLCP"}
-  (reversed LCP, i.e. longest common suffix), \code{"LCS"} (longest common
-  subsequence), \code{"HAM"} (Hamming distance), \code{"DHD"} (dynamic Hamming distance).
+  sequences if multidimensional scaling is used for sorting. One of "OM"
+  (optimal matching, the default), "LCP" (longest common prefix), "RLCP"
+  (reversed LCP, i.e. longest common suffix), "LCS" (longest common
+  subsequence), "HAM" (Hamming distance), and "DHD" (dynamic Hamming distance).
   Transition rates are used for defining substitution costs if needed. See
-  \code{\link{seqdef}} for more information on the metrics.}
+  \code{\link[TraMineR]{seqdef}} for more information on the metrics.}
 
 \item{with.missing}{Controls whether missing states are included in state
-  distribution plots (\code{type == "d"}). The default is \code{FALSE}.}
+  distribution plots (\code{type = "d"}). The default is \code{FALSE}.}
 
-\item{title}{Title for the graphic. The default is \code{NA}: if
-  \code{title.n == TRUE}, only the number of subjects is plotted. \code{FALSE}
-  prints no title, even when \code{title.n == TRUE}.}
+\item{title}{Main title for the graphic. The default is \code{NA}: if
+  \code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE}
+  prints no title, even when \code{title.n = TRUE}.}
 
 \item{title.n}{Controls whether the number of subjects is printed in the
   title of the plot. The default is \code{TRUE}: n is plotted if \code{title}
@@ -75,21 +74,20 @@ ssplot(x, hidden.paths = NULL, plots = "obs", type = "d", sortv = NULL,
 
 \item{withlegend}{Defines if and where the legend for the states is plotted.
   The default value \code{"auto"} (equivalent to \code{TRUE} and
-  \code{right}) creates separate legends for each requested plot and
+  \code{"right"}) creates separate legends for each requested plot and
   positiones them on the right-hand side of the plot. Other possible values
   are \code{"bottom"},
   \code{"right.combined"}, and \code{"bottom.combined"}, of which the last
-  two create a combined legend in the selected position. Value
-  \code{FALSE} prints no legend.}
+  two create a combined legend in the selected position. \code{FALSE} prints no legend.}
 
 \item{ncol.legend}{(A vector of) the number of columns for the legend(s). The
   default \code{"auto"} creates one column for each legend.}
 
 \item{with.missing.legend}{If set to \code{"auto"} (the default), a legend
   for the missing state is added automatically if one or more of the
-  sequences in the data/channel contains missing states and \code{type == "I"}.
-  If \code{type == "d"} missing states are omitted from the legends unless
-  \code{with.missing == TRUE}. With the value \code{TRUE} a
+  sequences in the data/channel contains missing states and \code{type = "I"}.
+  If \code{type = "d"} missing states are omitted from the legends unless
+  \code{with.missing = TRUE}. With the value \code{TRUE} a
   legend for the missing state is added in any case; equivalently
   \code{FALSE} omits the legend for the missing state.}
 
@@ -102,13 +100,13 @@ ssplot(x, hidden.paths = NULL, plots = "obs", type = "d", sortv = NULL,
   reduce the size of the font, values greater than 1 will increase the size.}
 
 \item{hidden.states.colors}{A vector of colors assigned to hidden states. The default
-  value \code{"auto"} uses the colors assigned to the stslist object created
-  with \code{seqdef} if \code{hidden.paths} is given; otherwise otherwise colors from
+  value \code{"auto"} uses the colors assigned to the \code{stslist} object (created
+  with \code{\link[TraMineR]{seqdef}}) if \code{hidden.paths} is given; otherwise colors from
   \code{\link{colorpalette}} are automatically used.}
 
 \item{hidden.states.labels}{Labels for the hidden states. The default value
   \code{"auto"} uses the names provided in \code{x$state_names} if \code{x} is
-  an hmm object; otherwise the number of the hidden state.}
+  an \code{hmm} object; otherwise the number of the hidden state.}
 
 \item{xaxis}{Controls whether an x-axis is plotted below the plot at the
   bottom. The default value is \code{TRUE}.}
@@ -118,12 +116,13 @@ ssplot(x, hidden.paths = NULL, plots = "obs", type = "d", sortv = NULL,
 
 \item{xtlab}{Optional labels for the x-axis tick labels.  If unspecified, the
   column names of the \code{seqdata} sequence object are used (see
-  \code{\link{seqdef}}).}
+  \code{\link[TraMineR]{seqdef}}).}
 
-\item{xlab.pos}{Controls the position of the x axis label. The default value
-  is 1. Values greater to 1 will place the label further away from the plot.}
+\item{xlab.pos}{Controls the position of the x-axis label. The default value
+  is 1. Values greater than 1 will place the label further away from the plot.}
 
-\item{ylab}{Labels for the channels. A vector of names for each channel
+\item{ylab}{Labels for the channels shown as labels for y-axes.
+  A vector of names for each channel
   (observations). The default value \code{"auto"} uses the names provided in
   \code{x$channel_names} if \code{x} is an \code{hmm} object; otherwise the
   names of the list in \code{x} if given, or the
@@ -134,7 +133,7 @@ ssplot(x, hidden.paths = NULL, plots = "obs", type = "d", sortv = NULL,
 
 \item{ylab.pos}{Controls the position of the y axis labels (labels for
   channels and/or hidden states). Either \code{"auto"} or a numerical vector
-  indicating on how far away from the plots the titles are positioned. The
+  indicating how far away from the plots the titles are positioned. The
   default value \code{"auto"} positions all titles on line 1.
   Shorter vectors are recycled.}
 
@@ -142,12 +141,14 @@ ssplot(x, hidden.paths = NULL, plots = "obs", type = "d", sortv = NULL,
   labels. The default value is 1. Values lesser than 1 will reduce the size
   of the font, values greater than 1 will increase the size.}
 
-\item{cex.axis}{Expansion factor for setting the size of the font for the
-  axis. The default value is 1. Values lesser than 1 will reduce the size of
+\item{cex.axis}{Expansion factor for setting the size of the font for the x-axis
+  tick labels. The default value is 1. Values lesser than 1 will reduce the size of
   the font, values greater than 1 will increase the size.}
 
-\item{...}{Other arguments to be passed to \code{\link{seqplot}} to produce
+\item{...}{Other arguments to be passed to \code{\link[TraMineR]{seqplot}} to produce
   the appropriate plot method.}
+
+\item{yaxis}{Controls whether or not to plot the y-axis. The default is \code{FALSE}.}
 }
 \description{
 Function \code{ssplot} plots stacked sequence plots of sequence object
@@ -171,7 +172,8 @@ attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 
 # Plotting state distribution plots of observations
-ssplot(list(child.seq, marr.seq, left.seq))
+ssplot(list("Children" = child.seq, "Marriage" = marr.seq,
+"Residence" = left.seq))
 
 # Plotting sequence index plots of observations
 ssplot(
@@ -179,10 +181,9 @@ ssplot(
   # Sorting subjects according to the beginning of the 2nd channel (marr.seq)
   sortv = "from.start", sort.channel = 2,
   # Controlling the size, positions, and names for channel labels
-  ylab.pos = c(1, 2, 1), cex.lab = 1, ylab = c("Children", "Married", "Left home"),
+  ylab.pos = c(1, 2, 1), cex.lab = 1, ylab = c("Children", "Married", "Residence"),
   # Plotting without legend
-  withlegend = FALSE
-  )
+  withlegend = FALSE)
 
 # Plotting hidden Markov models
 
@@ -198,14 +199,11 @@ ssplot(
   # Controlling title
   title = "Biofam", cex.title = 1.5,
   # Labels for x axis and tick marks
-  xtlab = 15:30, xlab = "Age"
-  )
+  xtlab = 15:30, xlab = "Age")
 
 # Computing the most probable paths of hidden states
 hidden.paths <- hidden_paths(hmm_biofam)
-hidden.paths.seq <- seqdef(
-  hidden.paths, labels = paste("Hidden state", 1:4)
-  )
+hidden.paths.seq <- seqdef(hidden.paths, labels = paste("Hidden state", 1:5))
 
 # Plotting observations and hidden state paths
 ssplot(
@@ -217,8 +215,7 @@ ssplot(
   # Contolling legend position, type, and proportion
   withlegend = "bottom", legend.prop = 0.15,
   # Plotting without title and y label
-  title = FALSE, ylab = FALSE
-  )
+  title = FALSE, ylab = FALSE)
   }
 }
 \seealso{
