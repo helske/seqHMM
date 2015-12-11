@@ -9,8 +9,9 @@
 #' @export
 #' @param model Object of class \code{hmm} or \code{mhmm}.
 #' @param em_step Logical, use EM algorithm at the start of parameter estimation.
-#'   The default is \code{TRUE}. Note that EM algorithm is faster than direct numerical optimization,
-#'   but is even more prone to get stuck in a local optimum.
+#'   The default is \code{TRUE}. Note that EM algorithm is usually faster than direct numerical optimization,
+#'   but the convergence can slow down near the optimum,
+#'   so it might be useful to switch to direct numerical maximization step.
 #' @param global_step Logical, use global optimization via
 #'   \code{\link{nloptr}} (possibly after the EM step). The default is \code{FALSE}.
 #'@param local_step Logical, use local optimization via
@@ -19,11 +20,13 @@
 #'   Possible arguments are \describe{
 #'   \item{maxeval}{Maximum number of iterations, default is 1000.}
 #'   \item{print_level}{Level of printing. Possible values are 0
-#'   (prints nothing), 1 (prints information at start and end of algorithm), and
-#'   2 (prints at every iteration).}
-#'   \item{reltol}{Relative tolerance for convergence defined as \eqn{(logLik_new - logLik_old)/(abs(logLik_old)+0.1)}.
+#'   (prints nothing), 1 (prints information at start and end of algorithm),
+#'   2 (prints at every iteration),
+#'   and for mixture models 3 (print also during optimization of coefficients).}
+#'   \item{reltol}{Relative tolerance for convergence defined as
+#'   \eqn{(logLik_new - logLik_old)/(abs(logLik_old) + 0.1)}.
 #'   Default is 1e-12.}
-#'   \item{restart}{Optional list containing options for possible EM restarts with following components:
+#'   \item{restart}{List containing options for possible EM restarts with following components:
 #'   \describe{
 #'   \item{times}{Number of restarts of EM algorithm using random initial values. Default is 0 i.e. no restarts. }
 #'   \item{transition}{Logical, should the initial transition probabilities be varied. Default is \code{TRUE}. }
@@ -39,118 +42,31 @@
 #'   \code{\link{nloptr}} argument \code{opts}. The default values are
 #'   \describe{
 #'    \item{algorithm}{\code{"NLOPT_GD_MLSL_LDS"}}
-#'    \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)}}
-#'    \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
+#'    \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS", ftol_rel = 1e-6, xtol_rel = 1e-4)}}
+#'    \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm.)}
+#'    \item{maxtime}{\code{60} (maximum time for global optimization. Set to 0 for unlimited time.)}
 #'}
 #' @param lb,ub Lower and upper bounds for parameters in Softmax parameterization.
-#' Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)].
-#' Used only in the global optimization step.
+#' Default interval is [pmin(-25,2*initialvalues), pmax(14,2*initialvalues)], except for beta coefficients,
+#' where the scale of covariates is taken into account.
+#' Note that it might still be a good idea to scale covariates around unit scale.
+#' Bounds are used only in the global optimization step.
+#'
 #' @param control_local Optional list of additional arguments for
 #'   \code{\link{nloptr}} argument \code{opts}. The default values are
 #'   \describe{
 #'    \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
+#'    \item{ftol_rel}{\code{1e-10}}
 #'    \item{xtol_rel}{\code{1e-8}}
 #'    \item{maxeval}{\code{10000} (maximum number of iterations)}
 #'   }
 #' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater
-#' numerical stability at cost of decreased computational performance. Default is \code{FALSE}.
+#' numerical stability at a cost of decreased computational performance. Default is \code{FALSE}.
 #' @param verbose_dnm_warnings If \code{TRUE} (default), global and local
 #' optimization steps can produce warnings during the computation of objective function.
 #' If \code{FALSE}, these warnings are omitted.
 #' @param ... Additional arguments to \code{nloptr}.
-#' @return List with components \item{model}{Estimated model. }
-#'   \item{logLik}{Log-likelihood of the estimated model. }
-#'   \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
-#'   (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
-#'   number of estimated models in restarted EM with the best likelihood (\code{n_optimum}). }
-#'   \item{global_results}{Results after the global step. }
-#'   \item{local_results}{Results after the local step. }
-#' @seealso \code{\link{build_hmm}} for building Hidden Markov models before
-#'   fitting, \code{\link{trim_model}} for finding better models by changing small
-#'   parameter values to zero, and
-#'   \code{\link{plot.hmm}} and \code{\link{ssplot}} for plotting
-#'   hmm objects.
-#' @details The fitting function provides three estimation steps: 1) EM algorithm,
-#'   2) global optimization, and 3) local optimization. The user can call for one method
-#'   or any combination of these steps, but should note that they are preformed in the
-#'   above-mentioned order. The results from a former step are used as starting values
-#'   in a latter.
-#'
-#'   By default the \code{fit_model} function starts with the EM algorithm,
-#'   and finishes with LBFGS as the local optimizer.
-#'
-#'   It is possible to rerun EM algorithm automatically using random starting
-#'   values based on the first run of EM. Number of restarts is defined by
-#'   argument \code{restarts} in \code{control_em}. As EM algorithm is relatively fast, this method
-#'   might be preferred option compared to proper global optimization strategy of step 2.
-#'
-#'   Default global optimization method (triggered via \code{global_step = TRUE} is
-#'   the multilevel single-linkage method (MLSL) with the LDS modification (\code{NLOPT_GD_MLSL_LDS} as
-#'   \code{algorithm} in \code{control_global}), with LBFGS as the local optimizer.
-#'   The MLSL method draws random starting points and performs a local optimization
-#'   from each. The LDS modification uses low-discrepancy sequences instead of
-#'   pseudo-random numbers as starting points and should improve the convergence rate.
-#'   In order to reduce the computation time spent on non-global optima, the
-#'   convergence tolerance of the local optimizer is set relatively large. At step 3,
-#'   a local optimization (LBFGS by default) is run with a lower tolerance to find the
-#'   optimum with high precision.
-#'
-#'   There are some theoretical guarantees that the MLSL method used as the default
-#'   optimizer in step 2 shoud find all local optima in a finite number of local
-#'   optimizations. Of course, it might not always succeed in a reasonable time.
-#'   The EM algorithm can help in finding good boundaries for the search, especially
-#'   with good starting values, but in some cases it can mislead. A good strategy is to
-#'   try a couple of different fitting options with different combinations of the methods:
-#'   e.g. all steps, only global and local steps, and a few evaluations of EM followed by
-#'   global and local optimization.
-#'
-#'   By default, the estimation time is limited to 60 seconds in global optimization step, so it is
-#'   advisable to change the default settings for the proper global optimization.
-#'
-#'   Any method available in the \code{nloptr} function can be used for the global and
-#'   local steps.
-#'
-#' @details The fitting function provides three estimation steps: 1) EM algorithm,
-#'   2) global optimization, and 3) local optimization. The user can call for one method
-#'   or any combination of these steps, but should note that they are preformed in the
-#'   above-mentioned order. The results from a former step are used as starting values
-#'   in a latter.
-#'
-#'   By default the \code{fit_model} function starts with the EM algorithm,
-#'   and finishes with LBFGS as the local optimizer.
-#'
-#'   It is possible to rerun EM algorithm automatically using random starting
-#'   values based on the first run of EM. Number of restarts is defined by
-#'   argument \code{restarts} in \code{control_em}. As EM algorithm is relatively fast, this method
-#'   might be preferred option compared to proper global optimization strategy of step 2.
-#'
-#'   Default global optimization method (triggered via \code{global_step = TRUE} is
-#'   the multilevel single-linkage method (MLSL) with the LDS modification (\code{NLOPT_GD_MLSL_LDS} as
-#'   \code{algorithm} in \code{control_global}), with LBFGS as the local optimizer.
-#'   The MLSL method draws random starting points and performs a local optimization
-#'   from each. The LDS modification uses low-discrepancy sequences instead of
-#'   pseudo-random numbers as starting points and should improve the convergence rate.
-#'   In order to reduce the computation time spent on non-global optima, the
-#'   convergence tolerance of the local optimizer is set relatively large. At step 3,
-#'   a local optimization (LBFGS by default) is run with a lower tolerance to find the
-#'   optimum with high precision.
-#'
-#'   There are some theoretical guarantees that the MLSL method used as the default
-#'   optimizer in step 2 shoud find all local optima in a finite number of local
-#'   optimizations. Of course, it might not always succeed in a reasonable time.
-#'   The EM algorithm can help in finding good boundaries for the search, especially
-#'   with good starting values, but in some cases it can mislead. A good strategy is to
-#'   try a couple of different fitting options with different combinations of the methods:
-#'   e.g. all steps, only global and local steps, and a few evaluations of EM followed by
-#'   global and local optimization.
-#'
-#'   By default, the estimation time is limited to 60 seconds in global optimization step, so it is
-#'   advisable to change the default settings for the proper global optimization.
-#'
-#'   Any method available in the \code{nloptr} function can be used for the global and
-#'   local steps.
-#' @return List with components \item{model}{Estimated model. }
 #'   \item{logLik}{Log-likelihood of the estimated model. }
 #'   \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
 #'   (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
@@ -165,6 +81,44 @@
 #'   a list of separate hidden Markov models; \code{\link{plot.hmm}} and \code{\link{plot.mhmm}}
 #'   for plotting model objects; and \code{\link{ssplot}} and \code{\link{mssplot}} for plotting
 #'   stacked sequence plots of \code{hmm} and \code{mhmm} objects.
+#' @details The fitting function provides three estimation steps: 1) EM algorithm,
+#'   2) global optimization, and 3) local optimization. The user can call for one method
+#'   or any combination of these steps, but should note that they are preformed in the
+#'   above-mentioned order. The results from a former step are used as starting values
+#'   in a latter, except that some of the global optimization algorithms (such as MLSL and StoGO) only use
+#'   initial values for setting up the boundaries for the optimization.
+#'
+#'   It is possible to rerun EM algorithm automatically using random starting
+#'   values based on the first run of EM. Number of restarts is defined by
+#'   argument \code{restarts} in \code{control_em}. As EM algorithm is relatively fast, this method
+#'   might be preferred option compared to proper global optimization strategy of step 2.
+#'
+#'   Default global optimization method (triggered via \code{global_step = TRUE} is
+#'   the multilevel single-linkage method (MLSL) with the LDS modification (\code{NLOPT_GD_MLSL_LDS} as
+#'   \code{algorithm} in \code{control_global}), with LBFGS as the local optimizer.
+#'   The MLSL method draws random starting points and performs a local optimization
+#'   from each. The LDS modification uses low-discrepancy sequences instead of
+#'   pseudo-random numbers as starting points and should improve the convergence rate.
+#'   In order to reduce the computation time spent on non-global optima, the
+#'   convergence tolerance of the local optimizer is set relatively large. At step 3,
+#'   a local optimization (LBFGS by default) is run with a lower tolerance to find the
+#'   optimum with high precision.
+#'
+#'   There are some theoretical guarantees that the MLSL method used as the default
+#'   optimizer in step 2 shoud find all local optima in a finite number of local
+#'   optimizations. Of course, it might not always succeed in a reasonable time.
+#'   The EM algorithm can help in finding good boundaries for the search, especially
+#'   with good starting values, but in some cases it can mislead. A good strategy is to
+#'   try a couple of different fitting options with different combinations of the methods:
+#'   e.g. all steps, only global and local steps, and a few evaluations of EM followed by
+#'   global and local optimization.
+#'
+#'   By default, the estimation time is limited to 60 seconds in global optimization step, so it is
+#'   advisable to change the default settings for the proper global optimization.
+#'
+#'   Any algorithm available in the \code{nloptr} function can be used for the global and
+#'   local steps.
+#'
 #' @examples
 #'
 #' # Hidden Markov model
@@ -475,30 +429,30 @@
 fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = FALSE,
                       control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1,
                       log_space = FALSE, verbose_dnm_warnings = TRUE, ...){
-  
-  
+
+
   if(!inherits(model, c("hmm", "mhmm")))
     stop("Argument model must be an object of class 'hmm' or 'mhmm.")
-  
+
   if(!em_step && !global_step && !local_step){
     stop("No method chosen for estimation. Choose at least one from em_step, global_step, and local_step.")
   }
   if (threads < 1) stop("Argument threads must be a positive integer.")
-  
+
   mhmm <- inherits(model, c("mhmm"))
-  
+
   if (mhmm) {
     df <- attr(model, "df")
     nobs <- attr(model, "nobs")
     original_model <- model
     model <- combine_models(model)
   }
-  
+
   if (model$n_channels == 1) {
     model$observations <- list(model$observations)
     model$emission_probs <- list(model$emission_probs)
   }
-  
+
   obsArray <- array(0, c(model$n_sequences, model$length_of_sequences,
                          model$n_channels))
   for(i in 1:model$n_channels) {
@@ -506,19 +460,19 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     obsArray[,,i][obsArray[,,i] > model$n_symbols[i]] <- model$n_symbols[i]
   }
   obsArray <- aperm(obsArray)
-  
+
   emissionArray<-array(1,c(model$n_states,max(model$n_symbols)+1,model$n_channels))
   for(i in 1:model$n_channels)
     emissionArray[,1:model$n_symbols[i],i]<-model$emission_probs[[i]]
-  
+
   if (em_step) {
     em.con <- list(print_level = 0, maxeval = 1000, reltol = 1e-12, restart = NULL)
     nmsC <- names(em.con)
     em.con[(namc <- names(control_em))] <- control_em
     if (length(noNms <- namc[!namc %in% nmsC]))
       warning("Unknown names in control_em: ", paste(noNms, collapse = ", "))
-    
-    
+
+
     if (!log_space) {
       if (mhmm) {
         resEM <- EMx(model$transition_probs, emissionArray, model$initial_probs, obsArray,
@@ -538,8 +492,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
                         model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
       }
     }
-    
-    
+
+
     if(resEM$error != 0){
       err_msg <- switch(resEM$error,
                         "-10" = "Scaling factors contain non-finite values.",
@@ -553,8 +507,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       } else warning(paste("EM algorithm failed:", err_msg))
       resEM$logLik <- -Inf
     }
-    
-    
+
+
     if (!is.null(em.con$restart)) {
       restart.con <- list(times = 0, print_level = em.con$print_level, maxeval = 100, reltol = 1e-8,
                           transition = TRUE, emission = TRUE, sd = 0.25)
@@ -563,7 +517,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       if (length(noNms <- namc[!namc %in% nmsC]))
         warning("Unknown names in control_em$restart: ", paste(noNms, collapse = ", "))
     }
-    
+
     counter <- 1
     if (!is.null(em.con$restart) && restart.con$times > 0 &&
         (restart.con$transition | restart.con$emission)) {
@@ -581,7 +535,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         random_emiss <- emissionArray
         random_trans <- model$transition_probs
       }
-      
+
       if (restart.con$transition) {
         nz_trans <- (random_trans > 0 & random_trans < 1)
         np_trans <- sum(nz_trans)
@@ -592,8 +546,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         np_emiss <- sum(nz_emiss)
         base_emiss <- random_emiss[nz_emiss]
       }
-      
-      
+
+
       for (i in 1:restart.con$times) {
         if (restart.con$transition) {
           random_trans[nz_trans] <- abs(base_trans + rnorm(np_trans, sd = restart.con$sd))
@@ -625,9 +579,9 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
                              model$n_symbols, restart.con$maxeval, restart.con$reltol,restart.con$print_level, threads)
           }
         }
-        
+
         resEMi$logLik
-        
+
         if (resEMi$error != 0) {
           err_msg <- switch(resEMi$error,
                             "-10" = "Scaling factors contain non-finite values.",
@@ -658,7 +612,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
             resEM <- EM(resEM$transitionMatrix, resEM$emissionArray, resEM$initialProbs, obsArray,
                         model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
           }
-          
+
         } else {
           if (mhmm) {
             resEM <- log_EMx(resEM$transitionMatrix, resEM$emissionArray, resEM$initialProbs, obsArray,
@@ -671,15 +625,15 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         }
       }
     }
-    
+
     if (resEM$error == 0) {
       if (resEM$change < -em.con$reltol)
         warning("EM algorithm stopped due to decreasing log-likelihood. ")
-      
+
       emissionArray <- resEM$emissionArray
       for (i in 1:model$n_channels)
         model$emission_probs[[i]][] <- emissionArray[ , 1:model$n_symbols[i], i]
-      
+
       if (mhmm && (global_step || local_step)) {
         k <- 0
         for (m in 1:model$n_clusters) {
@@ -689,7 +643,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       } else {
         model$initial_probs[] <- resEM$initialProbs
       }
-      
+
       resEM$n_optimum <- counter
       model$transition_probs[]<-resEM$transitionMatrix
       model$coefficients[]<-resEM$coefficients
@@ -699,9 +653,9 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       ll <- -Inf
     }
   } else resEM <- NULL
-  
+
   if(global_step || local_step){
-    
+
     # Largest transition probabilities (for each row)
     x <- which(model$transition_probs > 0, arr.ind = TRUE)
     transNZ <- x[order(x[,1]),]
@@ -712,13 +666,13 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     npTM <- nrow(paramTM)
     transNZ <- model$transition_probs > 0
     transNZ[maxTM] <- 0
-    
-    
+
+
     emissNZ <- lapply(model$emission_probs, function(i) {
       x <- which(i > 0, arr.ind = TRUE)
       x[order(x[, 1]), ]
     })
-    
+
     if (model$n_states > 1) {
       maxEM <- lapply(model$emission_probs, function(i) cbind(1:model$n_states,max.col(i, ties.method = "first")))
       paramEM <- lapply(1:model$n_channels,function(i) {
@@ -736,13 +690,13 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     }
     maxEMvalue <- lapply(1:model$n_channels, function(i)
       apply(model$emission_probs[[i]],1,max))
-    
+
     emissNZ <- array(0, c(model$n_states,max(model$n_symbols), model$n_channels))
     for (i in 1:model$n_channels) {
       emissNZ[,1:model$n_symbols[i],i]<-model$emission_probs[[i]] > 0
       emissNZ[,1:model$n_symbols[i],i][maxEM[[i]]]<-0
     }
-    
+
     if (mhmm) {
       maxIP <- maxIPvalue <- npIP <- numeric(original_model$n_clusters)
       paramIP <-  initNZ <-vector("list",original_model$n_clusters)
@@ -759,10 +713,10 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       }
       initNZ<-unlist(initNZ)
       npIPAll <- sum(unlist(npIP))
-      
+
       npCoef<-length(model$coefficients[,-1])
       model$coefficients[,1] <- 0
-      
+
       initialvalues<-c(if((npTM+sum(npEM)+npIPAll)>0) log(c(
         if(npTM>0) model$transition_probs[paramTM],
         if(sum(npEM)>0) unlist(sapply(1:model$n_channels,
@@ -772,16 +726,16 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       )),
       model$coefficients[,-1]
       )
-      
+
     } else {
       maxIP <- which.max(model$initial_probs)
       maxIPvalue <- model$initial_probs[maxIP]
       paramIP <- setdiff(which(model$initial_probs > 0), maxIP)
-      
+
       npIP <- length(paramIP)
       initNZ <- model$initial_probs > 0
       initNZ[maxIP] <- 0
-      
+
       initialvalues<-c(if((npTM+sum(npEM)+npIP)>0) log(c(
         if(npTM>0) model$transition_probs[paramTM],
         if(sum(npEM)>0) unlist(sapply(1:model$n_channels,
@@ -789,10 +743,10 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         if(npIP>0) model$initial_probs[paramIP]))
       )
     }
-    
-    
+
+
     objectivef_mhmm<-function(pars, model, estimate = TRUE){
-      
+
       if(any(!is.finite(exp(pars))) && estimate)
         return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
       if(npTM>0){
@@ -820,7 +774,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       }
       model$initial_probs <- unlist(original_model$initial_probs)
       model$coefficients[,-1] <- pars[npTM+sum(npEM)+npIPAll+1:npCoef]
-      
+
       if (estimate) {
         if (!log_space) {
           if (need_grad) {
@@ -841,7 +795,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
                               model$coefficients, model$X, model$n_states_in_clusters, threads))
           }
         }
-        
+
       } else {
         if (sum(npEM) > 0) {
           for (i in 1:model$n_channels) {
@@ -851,9 +805,9 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         model
       }
     }
-    
+
     objectivef_hmm <- function(pars, model, estimate = TRUE){
-      
+
       if(any(!is.finite(exp(pars))) && estimate)
         return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
       if(npTM>0){
@@ -870,21 +824,21 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
             emissionArray[,1:model$n_symbols[i],i]/rowSums(emissionArray[,1:model$n_symbols[i],i, drop = FALSE])
         }
       }
-      
+
       if(npIP>0){
         model$initial_probs[maxIP]<-maxIPvalue
         model$initial_probs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])
         model$initial_probs[]<-model$initial_probs/sum(model$initial_probs)
       }
-      
-      
+
+
       if (estimate) {
         if (!log_space) {
           if (need_grad) {
             objective(model$transition_probs, emissionArray, model$initial_probs, obsArray,
                       transNZ, emissNZ, initNZ, model$n_symbols, threads, verbose_dnm_warnings)
           } else {
-            -sum(logLikHMM(model$transition_probs, emissionArray, 
+            -sum(logLikHMM(model$transition_probs, emissionArray,
                        model$initial_probs, obsArray, threads))
           }
         } else {
@@ -892,7 +846,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
             log_objective(model$transition_probs, emissionArray, model$initial_probs, obsArray,
                           transNZ, emissNZ, initNZ, model$n_symbols, threads)
           } else {
-            -sum(log_logLikHMM(model$transition_probs, emissionArray, 
+            -sum(log_logLikHMM(model$transition_probs, emissionArray,
                            model$initial_probs, obsArray, threads))
           }
         }
@@ -905,15 +859,15 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         model
       }
     }
-    
+
     if (global_step) {
-      
+
       if (missing(lb)) {
         if (mhmm) {
           lb <- c(rep(-25, length(initialvalues) - npCoef),
                   rep(-150 / apply(abs(model$X), 2, max), model$n_clusters - 1))
         } else lb <- -25
-        
+
       }
       lb <- pmin(lb, 2*initialvalues)
       if (missing(ub)) {
@@ -923,7 +877,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         } else ub <- 25
       }
       ub <- pmin(pmax(ub, 2*initialvalues),500)
-      
+
       if (is.null(control_global$maxeval)) {
         control_global$maxeval <- 10000
       }
@@ -938,7 +892,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         }
       }
       need_grad <- grepl("NLOPT_GD_",control_global$algorithm)
-      
+
       if (mhmm) {
         globalres <- nloptr(x0 = initialvalues, eval_f = objectivef_mhmm, lb = lb, ub = ub,
                             opts = control_global, model = model, estimate = TRUE, ...)
@@ -948,12 +902,12 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
                             opts = control_global, model = model, estimate = TRUE,  ...)
         model <- objectivef_hmm(globalres$solution, model, FALSE)
       }
-      
+
       initialvalues <- globalres$solution
       ll <- -globalres$objective
-      
+
     } else globalres <- NULL
-    
+
     if (local_step) {
       if ( is.null(control_local$maxeval)) {
         control_local$maxeval <- 10000
@@ -967,13 +921,13 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       if (is.null(control_local$ftol_rel)) {
         control_local$ftol_rel <- 1e-10
       }
-      
+
       need_grad <- grepl("NLOPT_LD_",control_local$algorithm)
       if (mhmm) {
         localres <- nloptr(x0 = initialvalues, eval_f = objectivef_mhmm,
                            opts = control_local, model = model, estimate = TRUE, ...)
         model <- objectivef_mhmm(localres$solution, model, FALSE)
-        
+
       } else {
         localres <- nloptr(x0 = initialvalues, eval_f = objectivef_hmm,
                            opts = control_local, model = model, estimate = TRUE, ...)
@@ -981,24 +935,24 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       }
       ll <- -localres$objective
     } else localres <- NULL
-    
+
     if (mhmm) {
       rownames(model$coefficients) <- colnames(model$X)
       colnames(model$coefficients) <- model$cluster_names
     }
   } else globalres <- localres <- NULL
-  
+
   if (model$n_channels == 1) {
     model$observations <- model$observations[[1]]
     model$emission_probs <- model$emission_probs[[1]]
   }
-  
+
   if (mhmm) {
     model <- spread_models(model)
     attr(model, "df") <- df
     attr(model, "nobs") <- nobs
     attr(model, "type") <- attr(original_model, "type")
-    
+
     for (i in 1:model$n_clusters) {
       dimnames(model$transition_probs[[i]]) <- dimnames(original_model$transition_probs[[i]])
       for (j in 1:model$n_channels) {
@@ -1006,10 +960,10 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       }
     }
   }
-  
+
   suppressWarnings(try(model <- trim_model(model, verbose = FALSE), silent = TRUE))
   list(model = model,
        logLik = ll, em_results = resEM[c("logLik", "iterations", "change", "n_optimum")],
        global_results = globalres, local_results = localres, call = match.call())
-  
+
 }
