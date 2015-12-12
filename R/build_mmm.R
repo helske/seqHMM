@@ -1,22 +1,22 @@
 #' Build a Mixture Markov Model
-#' 
-#' Function \code{build_mmm} is a shortcut for constructing a mixture Markov 
+#'
+#' Function \code{build_mmm} is a shortcut for constructing a mixture Markov
 #' model as an restricted case of \code{mhmm} object.
-#' 
+#'
 #' @export
 #' @useDynLib seqHMM
 #' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
-#'   the sequences, or a list of such objects (one for each channel).
-#' @param transition_probs A list of matrices of transition 
+#'   the sequences.
+#' @param transition_probs A list of matrices of transition
 #'   probabilities for submodels of each cluster.
-#' @param initial_probs A list which contains vectors of initial state 
+#' @param initial_probs A list which contains vectors of initial state
 #'   probabilities for submodels of each cluster.
-#' @param formula Covariates as an object of class \code{\link{formula}}, 
+#' @param formula Covariates as an object of class \code{\link{formula}},
 #' left side omitted.
-#' @param data An optional data frame, list or environment containing the variables 
-#' in the model. If not found in data, the variables are taken from 
+#' @param data An optional data frame, list or environment containing the variables
+#' in the model. If not found in data, the variables are taken from
 #' \code{environment(formula)}.
-#' @param coefficients An optional $k x l$ matrix of regression coefficients for time-constant 
+#' @param coefficients An optional $k x l$ matrix of regression coefficients for time-constant
 #'   covariates for mixture probabilities, where $l$ is the number of clusters and $k$
 #'   is the number of covariates. A logit-link is used for mixture probabilities.
 #'   The first column is set to zero.
@@ -41,25 +41,25 @@
 #'    \item{\code{n_covariates}}{Number of covariates.}
 #'    \item{\code{n_clusters}}{Number of clusters.}
 #'}
-#' @seealso \code{\link{fit_model}} for estimating model parameters; 
-#' \code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for 
+#' @seealso \code{\link{fit_model}} for estimating model parameters;
+#' \code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for
 #' reorganizing a MHMM into a list of separate hidden Markov models; and
 #' \code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
-#' 
-build_mmm <- 
-  function(observations,transition_probs,initial_probs, 
+#'
+build_mmm <-
+  function(observations,transition_probs,initial_probs,
            formula, data, coefficients, cluster_names = NULL){
-    
+
     if(!inherits(observations, "stslist")){
       stop("The build_mmm function can only be used for single-channel sequence data (as an stslist object). Use the mc_to_sc_data function to convert multiple stslist into single-channel state sequences.")
     }
-    
+
     n_sequences<-nrow(observations)
     length_of_sequences<-ncol(observations)
-    
+
     symbol_names <- alphabet(observations)
     n_symbols<-length(symbol_names)
-    
+
     if (is.list(transition_probs)){
       n_clusters <- length(transition_probs)
     }else{
@@ -67,14 +67,14 @@ build_mmm <-
     }
     if(length(initial_probs)!=n_clusters)
       stop("Unequal list lengths of transition_probs and initial_probs.")
-    
+
     if(is.null(cluster_names)){
       cluster_names <- paste("Cluster", 1:n_clusters)
     }else if(length(cluster_names)!=n_clusters){
       warning("The length of argument cluster_names does not match the number of clusters. Names were not used.")
       cluster_names <- paste("Cluster", 1:n_clusters)
     }
-    
+
     for(i in 1:n_clusters){
       if (!is.matrix(transition_probs[[i]])) {
         stop(paste("Object provided in transition_probs for cluster", i, "is not a matrix."))
@@ -83,36 +83,36 @@ build_mmm <-
         stop(paste("Object provided in initial_probs for cluster", i, "is not a vector."))
       }
     }
-    
+
     # States
     n_states <-rep(n_symbols,n_clusters)
-    
+
     if (any(rep(n_states, each = 2) != unlist(lapply(transition_probs, dim)))) {
       stop("Transition matrices must be square matrices.")
     }
-    
+
     state_names <- replicate(n_clusters,symbol_names, simplify = FALSE)
-     
-    
+
+
     for(i in 1:n_clusters){
       if (!isTRUE(all.equal(rowSums(transition_probs[[i]]),
                             rep(1, n_states[i]), check.attributes=FALSE))) {
         stop(paste("Row sums of the transition probabilities in cluster", i, "do not sum to one."))
-      }      
+      }
       if (!isTRUE(all.equal(sum(initial_probs[[i]]), 1, check.attributes=FALSE))){
         stop(paste("Initial state probabilities in cluster", i, "do not sum to one."))
       }
     }
-    
-    
-    
+
+
+
     emission_probs <- replicate(n_clusters, diag(n_symbols), simplify = FALSE)
     for(i in 1:n_clusters){
       dimnames(transition_probs[[i]]) <- dimnames(emission_probs[[i]]) <- list(from=state_names[[i]],to=state_names[[i]])
       names(initial_probs[[i]]) <- state_names[[i]]
     }
 
-     
+
     if(missing(formula)){
       formula <- stats::formula(rep(1, n_sequences) ~ 1)
     }
@@ -122,7 +122,7 @@ build_mmm <-
       X <- model.matrix(formula, data)
       if(nrow(X)!=n_sequences){
         if(length(all.vars(formula)) > 0 && sum(!complete.cases(data[all.vars(formula)])) > 0){
-          stop("Missing cases are not allowed in covariates. Use e.g. the complete.cases function to detect them, then fix, impute, or remove.") 
+          stop("Missing cases are not allowed in covariates. Use e.g. the complete.cases function to detect them, then fix, impute, or remove.")
         }else{
           stop("Number of subjects in data for covariates does not match the number of subjects in the sequence data.")
         }
@@ -137,31 +137,31 @@ build_mmm <-
       if(ncol(coefficients)!=n_clusters | nrow(coefficients)!=n_covariates)
         stop("Wrong dimensions of coefficients.")
       coefficients[,1]<-0
-    }       
-    
-    
+    }
+
+
     rownames(coefficients) <- colnames(X)
     colnames(coefficients) <- cluster_names
-    
+
     names(transition_probs) <- names(initial_probs) <- names(emission_probs) <- cluster_names
 
       nobs <- sum(!(observations == attr(observations, "nr") |
                       observations == attr(observations, "void") |
                       is.na(observations)))
-    
 
-      
+
+
     model <- structure(list(observations=observations, transition_probs=transition_probs,
                             emission_probs=emission_probs, initial_probs=initial_probs,
-                            coefficients=coefficients, X=X, cluster_names=cluster_names, state_names=state_names, 
-                            symbol_names=symbol_names, channel_names=NULL, 
+                            coefficients=coefficients, X=X, cluster_names=cluster_names, state_names=state_names,
+                            symbol_names=symbol_names, channel_names=NULL,
                             length_of_sequences=length_of_sequences,
                             n_sequences=n_sequences, n_clusters=n_clusters,
                             n_symbols=n_symbols, n_states=n_states,
                             n_channels=1,
-                            n_covariates=n_covariates, formula = formula), class = "mhmm", 
+                            n_covariates=n_covariates, formula = formula), class = "mhmm",
                        nobs = nobs,
-                       df = sum(unlist(initial_probs) > 0) - n_clusters + sum(unlist(transition_probs) > 0) - sum(n_states) + 
+                       df = sum(unlist(initial_probs) > 0) - n_clusters + sum(unlist(transition_probs) > 0) - sum(n_states) +
                          n_covariates * (n_clusters - 1),
       type = "mmm")
     model

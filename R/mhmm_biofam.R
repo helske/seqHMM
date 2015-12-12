@@ -122,9 +122,8 @@
 #' initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 #'
 #' # Birth cohort
-#' biofam3c$covariates$cohort <- cut(biofam3c$covariates$birthyr, c(1908, 1935, 1945, 1957))
-#' biofam3c$covariates$cohort <- factor(
-#'   biofam3c$covariates$cohort, labels=c("1909-1935", "1936-1945", "1946-1957"))
+#' biofam3c$covariates$cohort <- factor(cut(biofam3c$covariates$birthyr,
+#'     c(1908, 1935, 1945, 1957)), labels = c("1909-1935", "1936-1945", "1946-1957"))
 #'
 #' # Build mixture HMM
 #' init_mhmm_bf <- build_mhmm(

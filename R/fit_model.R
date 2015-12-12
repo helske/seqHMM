@@ -186,36 +186,36 @@
 #' data(biofam3c)
 #'
 #' # Building sequence objects
-#' marr.seq <- seqdef(biofam3c$married, start = 15,
+#' marr_seq <- seqdef(biofam3c$married, start = 15,
 #'   alphabet = c("single", "married", "divorced"))
-#' child.seq <- seqdef(biofam3c$children, start = 15,
+#' child_seq <- seqdef(biofam3c$children, start = 15,
 #'   alphabet = c("childless", "children"))
-#' left.seq <- seqdef(biofam3c$left, start = 15,
+#' left_seq <- seqdef(biofam3c$left, start = 15,
 #'   alphabet = c("with parents", "left home"))
 #'
 #' # Define colors
-#' attr(marr.seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
-#' attr(child.seq, "cpal") <- c("darkseagreen1", "coral3")
-#' attr(left.seq, "cpal") <- c("lightblue", "red3")
+#' attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
+#' attr(child_seq, "cpal") <- c("darkseagreen1", "coral3")
+#' attr(left_seq, "cpal") <- c("lightblue", "red3")
 #'
 #' # Starting values for emission matrices
 #'
 #' emiss_marr <- matrix(NA, nrow = 3, ncol = 3)
-#' emiss_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 1
-#' emiss_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 1
-#' emiss_marr[3,] <- seqstatf(marr.seq[, 11:16])[, 2] + 1
+#' emiss_marr[1,] <- seqstatf(marr_seq[, 1:5])[, 2] + 1
+#' emiss_marr[2,] <- seqstatf(marr_seq[, 6:10])[, 2] + 1
+#' emiss_marr[3,] <- seqstatf(marr_seq[, 11:16])[, 2] + 1
 #' emiss_marr <- emiss_marr / rowSums(emiss_marr)
 #'
 #' emiss_child <- matrix(NA, nrow = 3, ncol = 2)
-#' emiss_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 1
-#' emiss_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 1
-#' emiss_child[3,] <- seqstatf(child.seq[, 11:16])[, 2] + 1
+#' emiss_child[1,] <- seqstatf(child_seq[, 1:5])[, 2] + 1
+#' emiss_child[2,] <- seqstatf(child_seq[, 6:10])[, 2] + 1
+#' emiss_child[3,] <- seqstatf(child_seq[, 11:16])[, 2] + 1
 #' emiss_child <- emiss_child / rowSums(emiss_child)
 #'
 #' emiss_left <- matrix(NA, nrow = 3, ncol = 2)
-#' emiss_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 1
-#' emiss_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 1
-#' emiss_left[3,] <- seqstatf(left.seq[, 11:16])[, 2] + 1
+#' emiss_left[1,] <- seqstatf(left_seq[, 1:5])[, 2] + 1
+#' emiss_left[2,] <- seqstatf(left_seq[, 6:10])[, 2] + 1
+#' emiss_left[3,] <- seqstatf(left_seq[, 11:16])[, 2] + 1
 #' emiss_left <- emiss_left / rowSums(emiss_left)
 #'
 #' # Starting values for transition matrix
@@ -228,7 +228,7 @@
 #'
 #' # Building hidden Markov model with initial parameter values
 #' init_hmm_bf <- build_hmm(
-#'   observations = list(marr.seq, child.seq, left.seq),
+#'   observations = list(marr_seq, child_seq, left_seq),
 #'   transition_probs = trans,
 #'   emission_probs = list(emiss_marr, emiss_child, emiss_left),
 #'   initial_probs = inits)
@@ -251,47 +251,39 @@
 #' hmm_3 <- fit_model(
 #'   init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE,
 #'   control_global = list(maxeval = 5000, maxtime = 0), threads = 1)
-#' hmm_3$logLik # -22267.75
+#' hmm_3$logLik # -21675.42
 #'
 #' # EM with restarts, much faster than MLSL
 #' set.seed(123)
-#' hmm_4 <- fit_model(init_hmm_bf, control_em = list(restarts = 5, print_level = 1), threads = 1)
+#' hmm_4 <- fit_model(init_hmm_bf, control_em = list(restart = list(times = 5, print_level = 1)), threads = 1)
 #' hmm_4$logLik # -21675.4
 #'
-#' #' # Global optimization via STOGO with LBFGS as local optimizer and final polisher
+#' #' # Global optimization via StoGO with LBFGS as final polisher
 #' # This can be slow, use parallel computing by adjusting threads argument
 #' # (here threads = 1 for portability issues)
 #' set.seed(123)
 #' hmm_5 <- fit_model(
-#'    init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE,
+#'    init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE, lb = -50, ub = 50,
 #' control_global = list(algorithm = "NLOPT_GD_STOGO", maxeval = 2500, maxtime = 0), threads = 1)
-#' hmm_5$logLik # -22131.76
-#'
-#' # Using log_space results better optimum (same is also true for MLSL example above):
-#' #' set.seed(123)
-#' hmm_5b <- fit_model(
-#'    init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE, log_space = TRUE,
-#' control_global = list(algorithm = "NLOPT_GD_STOGO", maxeval = 2500, maxtime = 0), threads = 1)
-#' hmm_5b$logLik # -21675.4
-
+#' hmm_5$logLik # -21675.4
 #' }
 #'
 #' # Multichannel
 #'
-#' data(biofam3c)
+#' data("biofam3c")
 #'
 #' ## Building sequence objects
-#' marr.seq <- seqdef(biofam3c$married, start = 15,
+#' marr_seq <- seqdef(biofam3c$married, start = 15,
 #'   alphabet = c("single", "married", "divorced"))
-#' child.seq <- seqdef(biofam3c$children, start = 15,
+#' child_seq <- seqdef(biofam3c$children, start = 15,
 #'   alphabet = c("childless", "children"))
-#' left.seq <- seqdef(biofam3c$left, start = 15,
+#' left_seq <- seqdef(biofam3c$left, start = 15,
 #'   alphabet = c("with parents", "left home"))
 #'
 #' ## Choosing colors
-#' attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-#' attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
-#' attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+#' attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+#' attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
+#' attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 #'
 #' ## Starting values for emission probabilities
 #' # Cluster 1
@@ -396,17 +388,14 @@
 #'
 #' # Build mixture HMM
 #' init_mhmm_bf <- build_mhmm(
-#'   observations = list(marr.seq, child.seq, left.seq),
+#'   observations = list(marr_seq, child_seq, left_seq),
 #'   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
 #'   transition_probs = list(A1, A1, A2),
 #'   emission_probs = list(list(B1_marr, B1_child, B1_left),
 #'     list(B2_marr, B2_child, B2_left),
 #'     list(B3_marr, B3_child, B3_left)),
 #'   formula = ~sex + cohort, data = biofam3c$covariates,
-#'   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
-#'   channel_names = c("Marriage", "Parenthood", "Residence"),
-#'   state_names = list(paste("State", 1:4), paste("State", 1:4),
-#'                      paste("State", 1:6)))
+#'   channel_names = c("Marriage", "Parenthood", "Residence"))
 #'
 #' \dontrun{
 #' # Fitting the model with different settings
@@ -422,7 +411,7 @@
 #' # Use EM with multiple restarts
 #' set.seed(123)
 #' mhmm_3 <- fit_model(init_mhmm_bf, control_em = list(restart = list(times = 5, transition = FALSE)))
-#' mhmm_3$logLik # -12713.1
+#' mhmm_3$logLik # -12713.08
 #' }
 #'
 
