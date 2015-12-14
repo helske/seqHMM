@@ -11,11 +11,12 @@
 #' 
 #' @param x Mixture hidden Markov model object of class \code{mhmm}.
 #'
-#' @param ask If true and \code{which.plots} is NULL, \code{plot.mhmm} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}.
+#' @param ask If \code{TRUE} and \code{which.plots} is NULL, \code{plot.mhmm} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}.
 #' 
-#' @param which.plots The number(s) of the requested model as an integer vector. The default \code{NULL} produces all plots.
+#' @param which.plots The number(s) of the requested model(s) as an integer vector. The default \code{NULL} produces all plots.
 #'   
-#' @param hidden.paths Most probable paths of hidden states, i.e. output from \code{\link{hidden_paths}} function.
+#' @param hidden.paths Output from the \code{\link{hidden_paths}} function. The 
+#'   default value \code{NULL} computes hidden paths automatically, if needed.
 #'   
 #' @param plots What to plot. One of \code{"obs"} for observations (the default), 
 #'   \code{"hidden.paths"} for most probable paths of hidden states, 
@@ -27,11 +28,11 @@
 #'   
 #' @param sortv A sorting variable or a sort method (one of \code{"from.start"},
 #'   \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.hidden"}) for 
-#'   \code{type == "I"}. The value \code{"mds.hidden"} is only available for 
+#'   \code{type = "I"}. The value \code{"mds.hidden"} is only available when
 #'   \code{which = "both"} and \code{which = "hidden.paths"}. Options \code{"mds.obs"} and 
 #'   \code{"mds.hidden"} automatically arrange the sequences according to the 
 #'   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the 
-#'   observed sequences or most probable paths of hidden states from \code{\link{hidden_paths}}. 
+#'   observed data or hidden states paths. 
 #'   MDS scores are computed from distances/dissimilarities using a metric 
 #'   defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for 
 #'   more details on \code{"from.start"} and \code{"from.end"}.
@@ -43,16 +44,16 @@
 #'   
 #' @param dist.method The metric to be used for computing the distances of the 
 #'   sequences if multidimensional scaling is used for sorting. One of "OM" 
-#'   (optimal Matching, the default), "LCP" (longest common prefix), "RLCP" 
+#'   (optimal matching, the default), "LCP" (longest common prefix), "RLCP" 
 #'   (reversed LCP, i.e. longest common suffix), "LCS" (longest common 
-#'   subsequence), "HAM" (Hamming distance), "DHD" (dynamic Hamming distance). 
+#'   subsequence), "HAM" (Hamming distance), and "DHD" (dynamic Hamming distance). 
 #'   Transition rates are used for defining substitution costs if needed. See
-#'   \code{\link{seqdef}} for more information on the metrics.
+#'   \code{\link[TraMineR]{seqdef}} for more information on the metrics.
 #'   
 #' @param with.missing Controls whether missing states are included in state 
 #'   distribution plots (\code{type = "d"}). The default is \code{FALSE}.
 #'   
-#' @param title A vector of titles for the graphics. The default is \code{NA}: if 
+#' @param title Main title for the graphic. The default is \code{NA}: if 
 #'   \code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE} 
 #'   prints no title, even when \code{title.n = TRUE}.
 #'   
@@ -69,12 +70,11 @@
 #'   
 #' @param withlegend Defines if and where the legend for the states is plotted. 
 #'   The default value \code{"auto"} (equivalent to \code{TRUE} and 
-#'   \code{right}) creates separate legends for each requested plot and 
+#'   \code{"right"}) creates separate legends for each requested plot and 
 #'   positiones them on the right-hand side of the plot. Other possible values 
 #'   are \code{"bottom"},
 #'   \code{"right.combined"}, and \code{"bottom.combined"}, of which the last 
-#'   two create a combined legend in the selected position. Value 
-#'   \code{FALSE} prints no legend.
+#'   two create a combined legend in the selected position. \code{FALSE} prints no legend.
 #'   
 #' @param ncol.legend (A vector of) the number of columns for the legend(s). The
 #'   default \code{"auto"} creates one column for each legend.
@@ -95,15 +95,14 @@
 #'   labels in the legend. The default value is 1. Values lesser than 1 will 
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #'   
-#' @param hidden.states.colors A vector of colors assigned to hidden states (as ordered by 
-#'   the \code{\link{hidden_paths}} function). The default value \code{"auto"} uses 
-#'   the colors assigned to the \code{stslist} object created with \code{seqdef} if 
-#'   \code{hidden.paths} is given; otherwise colors from \code{\link{colorpalette}} are 
-#'   automatically used. 
+#' @param hidden.states.colors A vector of colors assigned to hidden states. The default 
+#'   value \code{"auto"} uses the colors assigned to the \code{stslist} object (created 
+#'   with \code{\link[TraMineR]{seqdef}}) if \code{hidden.paths} is given; otherwise colors from 
+#'   \code{\link{colorpalette}} are automatically used. 
 #'   
 #' @param hidden.states.labels Labels for the hidden states. The default value 
-#'   \code{"auto"} uses the labels of the \code{hidden.paths} argument if given; otherwise the number
-#'   of the hidden state.
+#'   \code{"auto"} uses the names provided in \code{x$state_names} if \code{x} is
+#'   an \code{hmm} object; otherwise the number of the hidden state.
 #'   
 #' @param xaxis Controls whether an x-axis is plotted below the plot at the 
 #'   bottom. The default value is \code{TRUE}.
@@ -113,14 +112,15 @@
 #'   
 #' @param xtlab Optional labels for the x-axis tick labels.  If unspecified, the
 #'   column names of the \code{seqdata} sequence object are used (see 
-#'   \code{\link{seqdef}}).
+#'   \code{\link[TraMineR]{seqdef}}).
 #'   
-#' @param xlab.pos Controls the position of the x axis label. The default value 
-#'   is 1. Values greater to 1 will place the label further away from the plot.
+#' @param xlab.pos Controls the position of the x-axis label. The default value 
+#'   is 1. Values greater than 1 will place the label further away from the plot.
 #'   
-#' @param yaxis whether or not to plot the y axis. The default is \code{FALSE}.
-#'   
-#' @param ylab Labels for the channels. A vector of names for each channel 
+#' @param yaxis Controls whether or not to plot the y-axis. The default is \code{FALSE}.
+#' 
+#' @param ylab Labels for the channels shown as labels for y-axes. 
+#'   A vector of names for each channel 
 #'   (observations). The default value \code{"auto"} uses the names provided in 
 #'   \code{x$channel_names} if \code{x} is an \code{hmm} object; otherwise the 
 #'   names of the list in \code{x} if given, or the
@@ -131,7 +131,7 @@
 #'   
 #' @param ylab.pos Controls the position of the y axis labels (labels for 
 #'   channels and/or hidden states). Either \code{"auto"} or a numerical vector 
-#'   indicating on how far away from the plots the titles are positioned. The 
+#'   indicating how far away from the plots the titles are positioned. The 
 #'   default value \code{"auto"} positions all titles on line 1.
 #'   Shorter vectors are recycled.
 #'   
@@ -139,12 +139,12 @@
 #'   labels. The default value is 1. Values lesser than 1 will reduce the size 
 #'   of the font, values greater than 1 will increase the size.
 #'   
-#' @param cex.axis Expansion factor for setting the size of the font for the 
-#'   axis. The default value is 1. Values lesser than 1 will reduce the size of 
+#' @param cex.axis Expansion factor for setting the size of the font for the x-axis 
+#'   tick labels. The default value is 1. Values lesser than 1 will reduce the size of 
 #'   the font, values greater than 1 will increase the size.
 #'   
-#' @param ... Other arguments to be passed to \code{\link{seqplot}} to produce 
-#'   the appropriate plot method.
+#' @param ... Other arguments such as \code{yaxis} to be passed on to 
+#'   \code{\link[TraMineR]{seqplot}}.
 #'   
 #' @examples 
 #' # Loading mixture hidden Markov model (mhmm object)

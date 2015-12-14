@@ -4,104 +4,102 @@
 #' emission probabilities as vertices/nodes.
 #' 
 #' @export
-#' @param x A hidden Markov model object of class hmm created with 
-#'   \code{\link{build_hmm}} and \code{\link{fit_model}}. Multichannel 
-#'   hmm objects are automatically transformed to single channel objects. 
+#' @param x A hidden Markov model object of class \code{hmm} created with 
+#'   \code{\link{build_hmm}} (or \code{\link{build_mm}}). Multichannel 
+#'   \code{hmm} objects are automatically transformed into single-channel objects. 
 #'   See function \code{\link{mc_to_sc}} for more information on the 
 #'   transformation.
-#' @param layout specifies the layout of the vertices (nodes). Accepts a 
+#' @param layout specifies the layout of vertices (nodes). Accepts a 
 #'   numerical matrix, a \code{\link[igraph]{layout}} function (without quotation marks), 
-#'   or either of \code{"horizontal"} (the 
+#'   or either of the predefined options \code{"horizontal"} (the 
 #'   default) and \code{"vertical"}. Options \code{"horizontal"} and 
 #'   \code{"vertical"} position vertices at the same horizontal or vertical 
-#'   line. A two-column numerical matrix is used to give x and y coordinates of 
-#'   the vertices. The \code{\link[igraph]{layout}} functions available in the igraph 
-#'   package offer other automatic layouts for graphs.
+#'   line. A two-column numerical matrix can be used to give x and y coordinates of 
+#'   the vertices. The \code{\link[igraph]{layout}} functions available in the 
+#'   \code{igraph} package offer other automatic layouts for graphs.
 #' @param pie Are vertices plotted as pie charts of emission probabilities? 
-#'   Defaulting to TRUE.
-#' @param vertex.size The size of the vertex, given as a scalar or numerical 
+#'   Defaults to TRUE.
+#' @param vertex.size Size of vertices, given as a scalar or numerical 
 #'   vector. The default value is 40.
-#' @param vertex.label Labels for the vertices. Possible options include 
+#' @param vertex.label Labels for vertices. Possible options include 
 #'   \code{"initial.probs"}, \code{"names"}, \code{NA}, and a character or 
 #'   numerical vector. The default \code{"initial.probs"} prints the initial 
 #'   probabilities of the model and \code{"names"} prints the names of the 
 #'   hidden states as labels. \code{NA} prints no labels.
-#' @param vertex.label.dist The distance of the label of the vertex from its 
+#' @param vertex.label.dist Distance of the label of the vertex from its 
 #'   center. The default value \code{"auto"} places the label outside the 
 #'   vertex.
-#' @param vertex.label.pos The position of the label of the vertex, relative to 
-#'   the center of the vertices. A scalar or numerical vector giving the 
-#'   position(s) as radians or one of \code{"bottom"} (pi/2 as radians), 
-#'   \code{"top"} (-pi/2), \code{"left"} (pi), or \code{"right"} (0).
-#' @param vertex.label.family,edge.label.family The font family to be used for
+#' @param vertex.label.pos Positions of vertex labels, relative to 
+#'   the center of the vertex. A scalar or numerical vector giving 
+#'   position(s) as radians or one of \code{"bottom"} (\code{pi/2} as radians), 
+#'   \code{"top"} (\code{-pi/2}), \code{"left"} (\code{pi}), or 
+#'   \code{"right"} (\code{0}).
+#' @param vertex.label.family,edge.label.family Font family to be used for
 #'   vertex/edge labels. See argument \code{family} in \code{\link{par}} for
 #'   more information.
-#' @param loops Defines whether transitions to the same state are plotted.
+#' @param loops Defines whether transitions back to same states are plotted.
 #' @param edge.curved Defines whether to plot curved edges (arcs, arrows) 
-#'   between the vertices. A logical or numerical vector or scalar. A numerical 
-#'   value specifies the curvature of the edge. The default value \code{TRUE} 
+#'   between vertices. A logical or numerical vector or scalar. Numerical 
+#'   values specify curvatures of edges. The default value \code{TRUE} 
 #'   gives curvature of 0.5 to all edges. See \code{\link{igraph.plotting}} for 
 #'   more information.
-#' @param edge.label Labels for the edges. Possible options include 
-#'   \code{"auto"}, \code{"NA"}, and a character or numerical vector. The 
-#'   default \code{"auto"} prints the transition probabilities as edge labels. 
+#' @param edge.label Labels for edges. Possible options include 
+#'   \code{"auto"}, \code{NA}, and a character or numerical vector. The 
+#'   default \code{"auto"} prints transition probabilities as edge labels. 
 #'   \code{NA} prints no labels.
-#' @param edge.width The width of the edges. The default \code{"auto"} plots the
-#'   widths according to the transition probabilities between the hidden states.
-#'   Other possibilities are a single value or a numerical vector giving the 
-#'   widths.
-#' @param cex.edge.width An expansion factor for the edge widths. Defaults to 1.
-#' @param edge.arrow.size The size of the arrows in edges (constant). Defaults to 1.5.
-#' @param label.signif Rounds labels of model parameters to the specified number
+#' @param edge.width Width(s) for edges. The default \code{"auto"} determines
+#'   widths according to transition probabilities between hidden states.
+#'   Other possibilities are a scalar or a numerical vector of widths.
+#' @param cex.edge.width An expansion factor for edge widths. Defaults to 1.
+#' @param edge.arrow.size Size of the arrow in edges (constant). Defaults to 1.5.
+#' @param label.signif Rounds labels of model parameters to specified number
 #'   of significant digits, 2 by default. Ignored for user-given labels.
-#' @param label.scientific Defines if scientific notation is to be used to 
+#' @param label.scientific Defines if scientific notation should be used to 
 #'   describe small numbers. Defaults to \code{FALSE}, e.g. 0.0001 instead of 
 #'   1e-04. Ignored for user-given labels.
 #' @param label.max.length Maximum number of digits in labels of model 
 #'   parameters. Ignored for user-given labels.
-#' @param trim A scalar between 0 and 1 giving the highest probability of 
+#' @param trim Scalar between 0 and 1 giving the highest probability of 
 #'   transitions that are plotted as edges, defaults to 1e-15.
-#' @param combine.slices A scalar between 0 and 1 giving the highest probability
+#' @param combine.slices Scalar between 0 and 1 giving the highest probability
 #'   of emission probabilities that are combined into one state. The dafault 
 #'   value is 0.05.
-#' @param combined.slice.color The color of the slice including the smallest 
-#'   emission probabilitis that user wants to combine (only if argument 
+#' @param combined.slice.color Color of the combined slice that includes 
+#'   the smallest emission probabilities (only if argument 
 #'   \code{"combine.slices"} is greater than 0). The default color is white.
-#' @param combined.slice.label The label for the combined states (when argument 
+#' @param combined.slice.label The label for combined states (when argument 
 #'   \code{"combine.slices"} is greater than 0) to appear in the legend.
-#' @param withlegend defines if and where the legend of the state colors is 
+#' @param withlegend Defines if and where the legend of state colors is 
 #'   plotted. Possible values include \code{"bottom"} (the default), 
 #'   \code{"top"}, \code{"left"}, and \code{"right"}. \code{FALSE} omits the 
 #'   legend.
-#' @param ltext Optional description of the (combined) observed states to appear
+#' @param ltext Optional description of (combined) observed states to appear
 #'   in the legend. A vector of character strings. See \code{\link{seqplot}} for
 #'   more information.
-#' @param legend.prop The proportion of the graphic area used for plotting the 
-#'   legend. A scalar between 0 and 1, defaults to 0.5.
-#' @param cex.legend Expansion factor for setting the size of the font for the 
+#' @param legend.prop Proportion used for plotting the legend. A scalar between 
+#'   0 and 1, defaults to 0.5.
+#' @param cex.legend Expansion factor for setting the size of the font for 
 #'   labels in the legend. The default value is 1. Values lesser than 1 will 
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #' @param ncol.legend The number of columns for the legend. The default value 
 #'   \code{"auto"} sets the number of columns automatically.
-#' @param cpal Optional color palette for the (combinations of) observed states.
+#' @param cpal Optional color palette for (combinations of) observed states.
 #'   The default value \code{"auto"} uses automatic color palette. Otherwise a 
-#'   vector of length \code{x$n_symbols} is given, i.e. requires a color 
+#'   vector of length \code{x$n_symbols} is given, i.e. the argument requires a color 
 #'   specified for all (combinations of) observed states even if they are not 
-#'   plotted (if the probability is less than combine.slices).
-#' @param main Overall title for the plot. Omitted by default.
+#'   plotted (if the probability is less than \code{combine.slices}).
+#' @param main Main title for the plot. Omitted by default.
 #' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as 
 #'   \code{vertex.color}, \code{vertex.label.cex}, or \code{edge.lty}.
 #'   
 #' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building and 
 #'   fitting Hidden Markov models, \code{\link{mc_to_sc}} for transforming 
-#'   multistate hmm objects to single channel objects,
+#'   multistate \code{hmm} objects into single-channel objects,
 #'   \code{\link{hmm_biofam}} and \code{\link{hmm_mvad}} for information on the models 
 #'   used in the examples, and 
 #'   \code{\link{plot.igraph}} for the general plotting function of directed graphs.
 #'   
 #' @examples 
-#' require(TraMineR)
-#' 
 #' # Single-channel data
 #' 
 #' # Loading a hidden Markov model of the mvad data (hmm object)
@@ -112,8 +110,17 @@
 #' \dontrun{
 #' 
 #' require(igraph)
-#' plot(hmm_mvad, layout = layout_in_circle, edge.curved = FALSE, 
-#'   edge.arrow.size = 0.5, edge.width = 1)
+#' plot(hmm_mvad, 
+#'   # Layout given as igraph layout function
+#'   layout = layout_in_circle, 
+#'   # Straight edges
+#'   edge.curved = FALSE, 
+#'   # Smaller arrows and fixed edge widths
+#'   edge.arrow.size = 0.5, edge.width = 1,
+#'   # Vertex labels (initial probabilities) on left
+#'   vertex.label.pos = c("left"), 
+#'   # Less space for the legend
+#'   legend.prop = 0.3)
 #'   
 #' # Multichannel data
 #' 
@@ -128,7 +135,7 @@
 #'      # larger vertices
 #'      vertex.size = 40,
 #'      # varying curvature of edges
-#'      edge.curved = c(0, -0.7, 0.6, 0, -0.7, 0),
+#'      edge.curved = c(0, -0.7, 0.6, 0.7, 0, -0.7, 0),
 #'      # legend with two columns and less space
 #'      ncol.legend = 2, legend.prop = 0.4,
 #'      # new label for combined slice
@@ -136,11 +143,11 @@
 #' 
 #' # Plotting HMM with given coordinates
 #' plot(hmm_biofam,
-#'      # layout given in 2x4 matrix
+#'      # layout given in 2x5 matrix
 #'      # x coordinates in the first column
 #'      # y coordinates in the second column
-#'      layout = matrix(c(1,  3, 3, 5,
-#'                        0, -1, 1, 0), ncol = 2),
+#'      layout = matrix(c(1,  3, 3, 5, 3,
+#'                        0, 0, 1, 0, -1), ncol = 2),
 #'      # larger vertices
 #'      vertex.size = 50,
 #'      # straight edges
@@ -148,7 +155,7 @@
 #'      # thinner edges and arrows
 #'      cex.edge.width = 0.5, edge.arrow.size = 1,
 #'      # varying positions for vertex labels (initial probabilities)
-#'      vertex.label.pos = c(pi, pi/2, -pi/2, 0),
+#'      vertex.label.pos = c(pi, pi/2, -pi/2, 0, pi/2),
 #'        # different legend properties
 #'        withlegend = "top", legend.prop = 0.3, cex.legend = 1.1,
 #'        # different axes
@@ -159,13 +166,14 @@
 #'        ncol.legend = 2)
 #' 
 #' # Plotting HMM with own color palette 
-#' ## States with emission probability less than 0.2 removed
-#' plot(hmm_biofam, cpal = 1:10, combine.slices = 0.2)
+#' plot(hmm_biofam, cpal = 1:10, 
+#'   # States with emission probability less than 0.2 removed
+#'   combine.slices = 0.2)
 #'   
 #' # Plotting HMM without pie graph and with a different layout 
 #' require(igraph)
 #' # Setting the seed for a random layout
-#' set.seed(321)
+#' set.seed(1234)
 #' plot(hmm_biofam,
 #'      # Without pie graph
 #'      pie = FALSE,
@@ -177,8 +185,8 @@
 #'      label.signif = 3,
 #'      # Fixed edge width
 #'      edge.width = 1,
-#'      # Remove edges with probability less than 0.02
-#'      trim = 0.02,
+#'      # Remove edges with probability less than 0.01
+#'      trim = 0.01,
 #'      # Hidden state names as vertex labels
 #'      vertex.label = "names",
 #'      # Labels insidde vertices
