@@ -81,13 +81,15 @@ optimization steps can produce warnings during the computation of objective func
 If \code{FALSE}, these warnings are omitted.}
 
 \item{...}{Additional arguments to \code{nloptr}.
-\item{logLik}{Log-likelihood of the estimated model. }
-\item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
-(\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
-number of estimated models in restarted EM with the best likelihood (\code{n_optimum}). }
-\item{global_results}{Results after the global step. }
-\item{local_results}{Results after the local step. }
-\item{call}{The matched function call. }}
+\describe{
+  \item{logLik}{Log-likelihood of the estimated model. }
+  \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
+  (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
+  number of estimated models in restarted EM with the best likelihood (\code{n_optimum}). }
+  \item{global_results}{Results after the global step. }
+  \item{local_results}{Results after the local step. }
+  \item{call}{The matched function call. }
+  }}
 }
 \description{
 Function \code{fit_model} estimates the parameters of (mixture) hidden
@@ -270,7 +272,7 @@ hmm_3$logLik # -21675.42
 
 # EM with restarts, much faster than MLSL
 set.seed(123)
-hmm_4 <- fit_model(init_hmm_bf, control_em = list(restart = list(times = 5, print_level = 1)), threads = 1)
+hmm_4 <- fit_model(init_hmm_bf, control_em = list(restart = list(times = 5)))
 hmm_4$logLik # -21675.4
 
 #' # Global optimization via StoGO with LBFGS as final polisher

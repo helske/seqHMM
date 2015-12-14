@@ -67,6 +67,7 @@
 #' optimization steps can produce warnings during the computation of objective function.
 #' If \code{FALSE}, these warnings are omitted.
 #' @param ... Additional arguments to \code{nloptr}.
+#' \describe{
 #'   \item{logLik}{Log-likelihood of the estimated model. }
 #'   \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
 #'   (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
@@ -74,6 +75,7 @@
 #'   \item{global_results}{Results after the global step. }
 #'   \item{local_results}{Results after the local step. }
 #'   \item{call}{The matched function call. }
+#'   }
 #' @seealso \code{\link{build_hmm}},  \code{\link{build_mhmm}},
 #' \code{\link{build_mm}},  \code{\link{build_mmm}}, and  \code{\link{build_lcm}}
 #' for building different types of models; \code{\link{summary.mhmm}}
@@ -255,7 +257,7 @@
 #'
 #' # EM with restarts, much faster than MLSL
 #' set.seed(123)
-#' hmm_4 <- fit_model(init_hmm_bf, control_em = list(restart = list(times = 5, print_level = 1)), threads = 1)
+#' hmm_4 <- fit_model(init_hmm_bf, control_em = list(restart = list(times = 5)))
 #' hmm_4$logLik # -21675.4
 #'
 #' #' # Global optimization via StoGO with LBFGS as final polisher

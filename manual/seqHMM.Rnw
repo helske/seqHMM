@@ -9,6 +9,7 @@
 %%
 \documentclass[12pt]{article}
 \usepackage[sc]{mathpazo}
+\usepackage{textcomp} %for oms warning on linux
 \usepackage{amsmath}
 \usepackage{graphicx,psfrag,epsf}
 \usepackage{enumerate}
@@ -542,8 +543,7 @@ plot(
 A color must be provided for all (combinations of) observed states present in the data, whether or not shown in the graph. The \texttt{seqHMM} package uses the \texttt{colorpalette}\index{colorpalette@\texttt{colorpalette}} data for defining the colors in the plots. It is a list of 60 ready-made color palettes with 1--60 distinct colors and is automatically loaded with the package and available for use. See also the \texttt{RColorBrewer} package for more color palettes with distinct colors. The \texttt{plot\_colors}\index{plotcolors@\texttt{plot\_colors}} function is provided fot easy visualization of color palettes.
 
 <<'plotColors', fig.width=5.5, fig.height=3, fig.keep='last', cache=FALSE, fig.cap='Plotting colorpalettes can be handy when choosing colors for states.'>>=
-plot_colors(
-  colorpalette[[8]],
+plot_colors(colorpalette[[8]],
   labels = c("parent", "left", "married", "left+marr", "child",
              "left+child", "left+marr+child", "divorced"))
 @
@@ -551,8 +551,7 @@ plot_colors(
 The \texttt{ssplot}\index{ssplot@\texttt{ssplot}} function also accepts an object of class \texttt{hmm}. It can be used for plotting observations and/or most probable paths of hidden states or their state distributions. The function automatically computes the most probable paths of hidden states with the \texttt{hidden\_paths}\index{hiddenPaths@\texttt{hidden\_paths}} function, if the user does not provide them. Here the sequences are sorted according to multidimensional scaling scores that are computed from optimal matching dissimilarities for hidden state sequences. Any dissimilarity method available in \texttt{TraMineR} can be used instead of the default (see the documentation of the \texttt{seqdef} function for more information).
 
 <<'seqmppplot', fig.width=7, fig.height=5.5, fig.keep='last', cache=TRUE, fig.cap='Using the \\texttt{ssplot} function to draw observations and the most probable hidden state paths given the model.'>>=
-ssplot(
-  mc_fit$model, plots = "both", type = "I", sortv = "mds.hidden",
+ssplot(mc_fit$model, plots = "both", type = "I", sortv = "mds.hidden",
   xtlab = 15:30, xlab = "Age", title = "Observed and hidden state sequences")
 @
 
@@ -733,8 +732,7 @@ It is possible to convert a \texttt{mhmm} object into a list of separate \texttt
 Also MHMMs are plotted with the \texttt{plot}\index{plot.mhmm@\texttt{plot.mhmm}} method. The user can choose between an interactive mode (\texttt{interactive=TRUE}), where the model for each cluster is plotted separately, and a combined plot with all models in one plot. The clusters are determined according to the \texttt{posterior\_probs}\index{posteriorProbs@\texttt{posterior\_probs}} function, which is called automatically. Clusters with no subjects get removed from the plot, and the function gives a warning. With the \texttt{which.plots} argument the user can choose which clusters to plot.
 
 <<'MHMMplot', fig.width=5.5, fig.height=7, fig.keep='last', cache=TRUE>>=
-plot(
-  fit_mhmm$model, interactive = FALSE, which.plots = 2:3, nrow = 2,
+plot(fit_mhmm$model, interactive = FALSE, which.plots = 2:3, nrow = 2,
   legend.prop = 0.35, cex.legend = 1.5, edge.label.cex = 1.5,
   ncol.legend = 2)
 @

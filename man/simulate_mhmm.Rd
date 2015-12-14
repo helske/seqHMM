@@ -17,7 +17,7 @@ for submodels of each cluster.}
 
 \item{emission_probs}{A list which contains matrices of emission probabilities or a list of such 
 objects (one for each channel) for submodels of each cluster. Note that the matrices must have 
-dimensions m x s where m is the number of hidden states and s is the number of unique symbols 
+dimensions $s x m$ where $s$ is the number of hidden states and $m$ is the number of unique symbols 
 (observed states) in the data.}
 
 \item{sequence_length}{Length for simulated sequences.}
@@ -27,7 +27,7 @@ dimensions m x s where m is the number of hidden states and s is the number of u
 \item{data}{An optional data frame, list or environment containing the variables in the model. 
 If not found in data, the variables are taken from \code{environment(formula)}.}
 
-\item{coefficients}{An optional k x l matrix of regression coefficients for time-constant covariates 
+\item{coefficients}{An optional $k x l$ matrix of regression coefficients for time-constant covariates 
 for mixture probabilities, where l is the number of clusters and k is the number of 
 covariates. A logit-link is used for mixture probabilities. The first column is set to zero.}
 }

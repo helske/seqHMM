@@ -27,6 +27,7 @@ Default is \code{FALSE}.}
 }
 \description{
 These are helper functions for quick construction of initial values for various 
-model building functions.
+model building functions. 
+Mostly useful for global optimization algorithms which do not depend on initial values.
 }
 
