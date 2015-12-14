@@ -32,11 +32,11 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout = "horizontal
     which.plots <- 1:x$n_clusters
   }
   
-  if(!is.null(which.plots)){
-    if(any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$n_clusters))){
+  if (!is.null(which.plots)) {
+    if (any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$n_clusters))) {
       stop(paste0("The which.plot argument only accepts numerical values between 1 and ", x$n_clusters, "."))
     }
-  }else if(!ask && is.null(which.plots)){
+  } else if (!ask && is.null(which.plots)) {
     which.plots <- 1:x$n_clusters
   }
   
@@ -44,9 +44,9 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout = "horizontal
     tmenu <- x$cluster_names
     repeat {
       pick <- menu(tmenu, title = "\nSelect graph (or 0 to exit):\n")
-      if(pick == 0){
+      if (pick == 0) {
         return(invisible())
-      }else{
+      } else {
         plot.hmm(divmodels[[pick]], layout, pie, 
                  vertex.size, vertex.label, 
                  vertex.label.dist, vertex.label.pos,
@@ -63,13 +63,13 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout = "horizontal
                  main = main[pick], ...)
       }
     }
-  }else if (ask && !is.null(which.plots)) {
+  } else if (ask && !is.null(which.plots)) {
     tmenu <- which.plots
     repeat {
       pick <- menu(tmenu, title = "\nSelect graph (or 0 to exit):\n")
-      if(pick == 0){
+      if (pick == 0) {
         return(invisible())
-      }else{
+      } else {
         plot.hmm(divmodels[[pick]], layout, pie, 
                  vertex.size, vertex.label, 
                  vertex.label.dist, vertex.label.pos,
@@ -85,7 +85,7 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout = "horizontal
                  cex.legend, ncol.legend, cpal, main = main[pick], ...)
       }
     }
-  }else {
+  } else {
     ask <- length(which.plots) > 1
     for (i in which.plots) {
       plot.hmm(divmodels[[i]], layout, pie, 

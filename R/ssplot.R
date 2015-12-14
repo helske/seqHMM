@@ -113,8 +113,6 @@
 #' @param xlab.pos Controls the position of the x-axis label. The default value 
 #'   is 1. Values greater than 1 will place the label further away from the plot.
 #'   
-#' @param yaxis Controls whether or not to plot the y-axis. The default is \code{FALSE}.
-#' 
 #' @param ylab Labels for the channels shown as labels for y-axes. 
 #'   A vector of names for each channel 
 #'   (observations). The default value \code{"auto"} uses the names provided in 
@@ -139,8 +137,8 @@
 #'   tick labels. The default value is 1. Values lesser than 1 will reduce the size of 
 #'   the font, values greater than 1 will increase the size.
 #'   
-#' @param ... Other arguments to be passed to \code{\link[TraMineR]{seqplot}} to produce 
-#'   the appropriate plot method.
+#' @param ... Other arguments such as \code{yaxis} to be passed on to 
+#'   \code{\link[TraMineR]{seqplot}}.
 #'   
 #' @examples 
 #' \dontrun{

@@ -5,107 +5,109 @@
 #' 
 #' @export
 #' 
-#' @param x A hidden Markov model object of class mhmm created with 
-#'   \code{\link{build_mhmm}} and \code{\link{fit_model}}. Multichannel 
-#'   mhmm objects are automatically transformed to single channel objects. 
+#' @param x A hidden Markov model object of class \code{mhmm} created with 
+#'   \code{\link{build_mhmm}} (or \code{\link{build_mmm}} or 
+#'   \code{\link{build_lcm}}). Multichannel 
+#'   \code{mhmm} objects are automatically transformed into single-channel objects. 
 #'   See function \code{\link{mc_to_sc}} for more information on the 
 #'   transformation.
-#' @param interactive Whether to plot each cluster in succession or in a grid. Defaults to TRUE, i.e. clusters are plotted one after another.
+#' @param interactive Whether to plot each cluster in succession or in a grid. 
+#'   Defaults to \code{TRUE}, i.e. clusters are plotted one after another.
 #' 
-#' @param ask If true and \code{which.plots} is NULL, \code{plot.mhmm} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}. Ignored if \code{interactive = FALSE}.
-#' @param which.plots The number(s) of the requested cluster(s) as an integer vector. The default \code{NULL} produces all plots. Ignored if \code{interactive = FALSE}.
+#' @param ask If \code{TRUE} and \code{which.plots} is NULL, 
+#'   \code{plot.mhmm} operates in interactive mode, via \code{\link{menu}}. 
+#'   Defaults to \code{FALSE}. Ignored if \code{interactive = FALSE}.
+#' @param which.plots The number(s) of the requested cluster(s) as an integer 
+#'   vector. The default \code{NULL} produces all plots.
 #' 
-#' @param nrow,ncol Optional arguments to arrange plots in a grid. Ignored if \code{interactive = TRUE}.
-#' @param byrow Controls the order of plotting in a grid. Defaults to \code{FALSE}, i.e. plots
-#'   are arranged columnwise. Ignored if \code{interactive = TRUE}.
+#' @param nrow,ncol Optional arguments to arrange plots in a grid. Ignored if 
+#'   \code{interactive = TRUE}.
+#' @param byrow Controls the order of plotting in a grid. Defaults to \code{FALSE}, 
+#'   i.e. plots are arranged column-wise. Ignored if \code{interactive = TRUE}.
 #' @param row.prop Sets the proportions of the row heights of the grid. The default
 #'   value is \code{"auto"} for even row heights. Takes a vector of values from
 #'   0 to 1, with values summing to 1. Ignored if \code{interactive = TRUE}.
 #' @param col.prop Sets the proportion of the column heights of the grid. The default
 #'   value is \code{"auto"} for even column widths. Takes a vector of values
 #'   from 0 to 1, with values summing to 1. Ignored if \code{interactive = TRUE}.
-#'   
-#' @param layout layout specifies the layout of the vertices (nodes). Accepts a 
+#'
+#' @param layout specifies the layout of vertices (nodes). Accepts a 
 #'   numerical matrix, a \code{\link[igraph]{layout}} function (without quotation marks), 
-#'   or either of \code{"horizontal"} (the 
+#'   or either of the predefined options \code{"horizontal"} (the 
 #'   default) and \code{"vertical"}. Options \code{"horizontal"} and 
 #'   \code{"vertical"} position vertices at the same horizontal or vertical 
-#'   line. A two-column numerical matrix is used to give x and y coordinates of 
-#'   the vertices. The \code{\link[igraph]{layout}} functions available in the igraph 
-#'   package offer other automatic layouts for graphs.
+#'   line. A two-column numerical matrix can be used to give x and y coordinates of 
+#'   the vertices. The \code{\link[igraph]{layout}} functions available in the 
+#'   \code{igraph} package offer other automatic layouts for graphs.
 #' @param pie Are vertices plotted as pie charts of emission probabilities? 
-#'   Defaulting to TRUE.
-#' @param vertex.size The size of the vertex, given as a scalar or numerical 
+#'   Defaults to TRUE.
+#' @param vertex.size Size of vertices, given as a scalar or numerical 
 #'   vector. The default value is 40.
-#' @param vertex.label Labels for the vertices. Possible options include 
+#' @param vertex.label Labels for vertices. Possible options include 
 #'   \code{"initial.probs"}, \code{"names"}, \code{NA}, and a character or 
 #'   numerical vector. The default \code{"initial.probs"} prints the initial 
-#'   probabilities of the cluster and \code{"names"} prints the names of the 
+#'   probabilities of the model and \code{"names"} prints the names of the 
 #'   hidden states as labels. \code{NA} prints no labels.
-#' @param vertex.label.dist The distance of the label of the vertex from its 
+#' @param vertex.label.dist Distance of the label of the vertex from its 
 #'   center. The default value \code{"auto"} places the label outside the 
 #'   vertex.
-#' @param vertex.label.pos The position of the label of the vertex, relative to 
-#'   the center of the vertices. A scalar or numerical vector giving the 
-#'   position(s) as radians or one of \code{"bottom"} (pi/2 as radians), 
-#'   \code{"top"} (-pi/2), \code{"left"} (pi), or \code{"right"} (0).
-#' @param vertex.label.family,edge.label.family The font family to be used for
+#' @param vertex.label.pos Positions of vertex labels, relative to 
+#'   the center of the vertex. A scalar or numerical vector giving 
+#'   position(s) as radians or one of \code{"bottom"} (\code{pi/2} as radians), 
+#'   \code{"top"} (\code{-pi/2}), \code{"left"} (\code{pi}), or 
+#'   \code{"right"} (\code{0}).
+#' @param vertex.label.family,edge.label.family Font family to be used for
 #'   vertex/edge labels. See argument \code{family} in \code{\link{par}} for
 #'   more information.
-#' @param loops Defines whether transitions to the same state are plotted.
+#' @param loops Defines whether transitions back to same states are plotted.
 #' @param edge.curved Defines whether to plot curved edges (arcs, arrows) 
-#'   between the vertices. A logical or numerical vector or scalar. A numerical 
-#'   value specifies the curvature of the edge. The default value \code{TRUE} 
+#'   between vertices. A logical or numerical vector or scalar. Numerical 
+#'   values specify curvatures of edges. The default value \code{TRUE} 
 #'   gives curvature of 0.5 to all edges. See \code{\link{igraph.plotting}} for 
 #'   more information.
-#' @param edge.label Labels for the edges. Possible options include 
-#'   \code{"auto"}, \code{"NA"}, and a character or numerical vector. The 
-#'   default \code{"auto"} prints the transition probabilities as edge labels. 
+#' @param edge.label Labels for edges. Possible options include 
+#'   \code{"auto"}, \code{NA}, and a character or numerical vector. The 
+#'   default \code{"auto"} prints transition probabilities as edge labels. 
 #'   \code{NA} prints no labels.
-#' @param edge.width The width of the edges. The default \code{"auto"} plots the
-#'   widths according to the transition probabilities between the hidden states.
-#'   Other possibilities are a single value or a numerical vector giving the 
-#'   widths.
-#' @param cex.edge.width An expansion factor for the edge widths. Defaults to 1.
-#' @param edge.arrow.size The size of the arrows in edges (constant). Defaults to 1.5.
-#' @param label.signif Rounds labels of model parameters to the specified number
+#' @param edge.width Width(s) for edges. The default \code{"auto"} determines
+#'   widths according to transition probabilities between hidden states.
+#'   Other possibilities are a scalar or a numerical vector of widths.
+#' @param cex.edge.width An expansion factor for edge widths. Defaults to 1.
+#' @param edge.arrow.size Size of the arrow in edges (constant). Defaults to 1.5.
+#' @param label.signif Rounds labels of model parameters to specified number
 #'   of significant digits, 2 by default. Ignored for user-given labels.
-#' @param label.scientific Defines if scientific notation is to be used to 
+#' @param label.scientific Defines if scientific notation should be used to 
 #'   describe small numbers. Defaults to \code{FALSE}, e.g. 0.0001 instead of 
 #'   1e-04. Ignored for user-given labels.
 #' @param label.max.length Maximum number of digits in labels of model 
 #'   parameters. Ignored for user-given labels.
-#' @param trim A scalar between 0 and 1 giving the highest probability of 
+#' @param trim Scalar between 0 and 1 giving the highest probability of 
 #'   transitions that are plotted as edges, defaults to 1e-15.
-#' @param combine.slices A scalar between 0 and 1 giving the highest probability
+#' @param combine.slices Scalar between 0 and 1 giving the highest probability
 #'   of emission probabilities that are combined into one state. The dafault 
 #'   value is 0.05.
-#' @param combined.slice.color The color of the slice including the smallest 
-#'   emission probabilitis that user wants to combine (only if argument 
+#' @param combined.slice.color Color of the combined slice that includes 
+#'   the smallest emission probabilities (only if argument 
 #'   \code{"combine.slices"} is greater than 0). The default color is white.
-#' @param combined.slice.label The label for the combined states (when argument 
-#'   \code{"combine.slices"} is greater than 0) to appear in the legend. 
-#'   
-#' @param withlegend defines if and where the legend of the state colors is 
+#' @param combined.slice.label The label for combined states (when argument 
+#'   \code{"combine.slices"} is greater than 0) to appear in the legend.
+#' @param withlegend Defines if and where the legend of state colors is 
 #'   plotted. Possible values include \code{"bottom"} (the default), 
-#'   \code{"top"}, \code{"left"}, and \code{"right"}. 
-#'   \code{FALSE} omits the legend.
-#' @param legend.pos Defines the positions of the legend boxes relative to the
-#'   model graphs. One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"}, 
-#'   \code{"left"}, \code{"topleft"}, \code{"top"}, \code{"topright"}, 
-#'   \code{"right"} and \code{"center"} (the default).
-#' @param legend.prop The proportion of legends
-#' @param ltext Optional description of the (combined) observed states to appear
+#'   \code{"top"}, \code{"left"}, and \code{"right"}. \code{FALSE} omits the 
+#'   legend.
+#' @param ltext Optional description of (combined) observed states to appear
 #'   in the legend. A vector of character strings. See \code{\link{seqplot}} for
 #'   more information.
-#' @param ncol.legend (A vector of) the number of columns for the legend(s). The
-#'   default \code{"auto"} creates one column for each legend.
-#' @param cex.legend Expansion factor for setting the size of the font for the
-#'   labels in the legend. The default value is 1. Values lesser than 1 will
+#' @param legend.prop Proportion used for plotting the legend. A scalar between 
+#'   0 and 1, defaults to 0.5.
+#' @param cex.legend Expansion factor for setting the size of the font for 
+#'   labels in the legend. The default value is 1. Values lesser than 1 will 
 #'   reduce the size of the font, values greater than 1 will increase the size.
-#' @param cpal Optional color palette for the (combinations of) observed states.
+#' @param ncol.legend The number of columns for the legend. The default value 
+#'   \code{"auto"} sets the number of columns automatically.
+#' @param cpal Optional color palette for (combinations of) observed states.
 #'   The default value \code{"auto"} uses automatic color palette. Otherwise a 
-#'   vector of length \code{x$n_symbols} is given, i.e. a color must be
+#'   vector of length \code{x$n_symbols} is given, i.e. the argument requires a color 
 #'   specified for all (combinations of) observed states even if they are not 
 #'   plotted (if the probability is less than \code{combine.slices}).
 #' @param main Optional main titles for plots. The default \code{"auto"} uses 

@@ -1,7 +1,7 @@
 #' Stack Multichannel Sequence Plots and/or Most Probable Paths Plots from Hidden Markov 
 #' Models
 #' 
-#' Function \code{plot.ssp} plots stacked sequence plots from ssp objects defined with
+#' Function \code{plot.ssp} plots stacked sequence plots from \code{ssp} objects defined with
 #' \code{\link{ssp}}.
 #' 
 #' @export
