@@ -1,3 +1,4 @@
+//log-sum-exp trick
 #include "seqHMM.h"
 
 #ifdef HAVE_LONG_DOUBLE

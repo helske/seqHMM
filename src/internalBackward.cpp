@@ -1,3 +1,4 @@
+// Internal backward algorithms for HMMs and MHMMs
 #include "seqHMM.h"
 
 void internalBackward(const arma::mat& transition, const arma::cube& emission,

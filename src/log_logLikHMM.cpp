@@ -1,11 +1,13 @@
+// log-likelihood of HMM using log-space
+
 #include "seqHMM.h"
 // [[Rcpp::export]]
 
 NumericVector log_logLikHMM(NumericVector transitionMatrix, NumericVector emissionArray,
   NumericVector initialProbs, IntegerVector obsArray, int threads) {
   
-  IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
-  IntegerVector oDims = obsArray.attr("dim"); //k,n,r
+  IntegerVector eDims = emissionArray.attr("dim"); 
+  IntegerVector oDims = obsArray.attr("dim"); 
   
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);

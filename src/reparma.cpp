@@ -1,6 +1,6 @@
+//Armadillo version of R's rep(x, times)
 #include <algorithm>
 #include "seqHMM.h"
-
 arma::vec reparma(const arma::vec& x, const arma::ivec& y) {
   arma::vec res(sum(y));
   int ind = 0;

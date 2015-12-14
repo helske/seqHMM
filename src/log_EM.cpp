@@ -1,3 +1,5 @@
+// EM algorithm for non-mixture hidden Markov models using logarithm space
+
 #include "seqHMM.h"
 // [[Rcpp::export]]
 

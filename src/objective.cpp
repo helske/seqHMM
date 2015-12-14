@@ -1,3 +1,4 @@
+// log-likelihood and gradients of HMM
 #include "seqHMM.h"
 
 // [[Rcpp::export]]
