@@ -3,7 +3,7 @@
 %%
 %%
 %% This is the Rnw file which is used to build the static seqHMM vignette
-%% 
+%%
 %%
 %%
 %%
@@ -67,7 +67,7 @@
 
 This vignette is supplementary material to the paper by \citet{HelskeHelske}. It shows more detailed examples on how to use features of the \texttt{seqHMM} package in R \citep{RCoreTeam2015}. The package is designed for fitting hidden (or latent) Markov models (HMMs) and mixture hidden Markov models (MHMMs) for social sequence data and other categorical time series. It supports models for one or multiple subjects with one or multiple interdependent sequences (channels). External covariates can be added to explain cluster membership in MHMMs. The \texttt{seqHMM} package provides functions for evaluating and comparing models, as well as functions for easy plotting of multichannel sequences and hidden Markov models. Other restricted variants of the MHMM can also be estimated, e.g. latent class models, binomial and multinomial regression models, Markov models, and mixture Markov models.
 
-Package is written mostly in C++, and it supports parallel processing via OpenMP. For improved numerical accuracy, the recursive algoritms are computed in log-space, which reduces under- and overflow problems in forward--backward algorithm even more than classical scaling approach (which is still an option in \texttt{seqHMM} for improved performance in well-behaving problems).
+Package is written mostly in C++, and it supports parallel processing via OpenMP. For improved numerical accuracy, the recursive algoritms can be computed in log-space, which reduces under- and overflow problems in forward--backward algorithm even more than classical scaling approach (which is still a default option in \texttt{seqHMM} as log-space approach is computationally less efficient).
 
 We start by showing how the package is installed and then prepare the example data before illustrating features of the package. We try to cover a wide range of examples to show different ways of using the functions. More examples and information are available in the documentation of the function (or data) by typing \texttt{?function\_name} or equivalently \texttt{help(function\_name)}.
 
@@ -118,8 +118,8 @@ We use two versions of the same data; one with the original single-channel seque
 We start by showing a glimpse of the original sequence data (in columns 10--25) and then create a state sequence object. We set the start at age 15 and give labels to states.
 
 <<'sc_data', message=FALSE, cache=TRUE>>=
-library(TraMineR)
-data(biofam)
+
+data("biofam", package = "TraMineR")
 
 head(biofam[, 10:25])
 
@@ -133,13 +133,13 @@ biofam.seq <- seqdef(
 For showing a more complex example with multichannel sequence data, we provide an R file which creates three separate sequences from the \texttt{biofam} data. The \texttt{biofam3c} object includes a list with three sequence data sets and a data frame with covariates. Note that the divorced state in the original data does not give information on children on residence, so the those are determined according to the preceeding states.
 
 <<'data', message=FALSE, cache=TRUE>>=
-data(biofam3c)
+data("biofam3c")
 
-marr.seq <- seqdef(biofam3c$married, start = 15,
+marr_seq <- seqdef(biofam3c$married, start = 15,
                    alphabet = c("single", "married", "divorced"))
-child.seq <- seqdef(biofam3c$children, start = 15,
+child_seq <- seqdef(biofam3c$children, start = 15,
                     alphabet = c("childless", "children"))
-left.seq <- seqdef(biofam3c$left, start = 15,
+left_seq <- seqdef(biofam3c$left, start = 15,
                    alphabet = c("with parents", "left home"))
 @
 
@@ -148,9 +148,9 @@ left.seq <- seqdef(biofam3c$left, start = 15,
 The \texttt{TraMineR} package provides several plotting options for simple single-channel sequence data with the \texttt{seqplot} function, but there are no easy options for plotting multichannel data. In \texttt{seqHMM}, such data can be plotted in several ways. We start by choosing colors for the observed states in each channel.
 
 <<'definecolors', cache=TRUE>>=
-attr(marr.seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
-attr(child.seq, "cpal") <- c("darkseagreen1", "coral3")
-attr(left.seq, "cpal") <- c("lightblue", "red3")
+attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
+attr(child_seq, "cpal") <- c("darkseagreen1", "coral3")
+attr(left_seq, "cpal") <- c("lightblue", "red3")
 @
 
 \subsection{Stacked sequence plots}
@@ -158,15 +158,15 @@ attr(left.seq, "cpal") <- c("lightblue", "red3")
 First we plot annual state distributions with the \texttt{ssplot}\index{ssplot@\texttt{ssplot}} function (ssp for Stacked Sequence Plot). The \texttt{ssplot} function accepts two types of sequence plots available in the \texttt{seqplot} function from \texttt{TraMineR}: argument \texttt{type = "d"} gives state distributions and \texttt{type = "I"} shows sequence index plots. If the list objects are given a name, those are printed as labels; otherwise the number of the channel is plotted as a label. Another option is to use the \texttt{ylab} argument to change the labels. The number of sequences is automatically printed unless either the \texttt{title} or the \texttt{title.n} argument is set to \texttt{FALSE}. Figure \ref{fig:plotd} shows the default plot for three-channel data.
 
 <<'plotd', fig.width=5, fig.height=3, fig.keep='last', fig.align='center', cache=TRUE, fig.cap='State distribution plots for multichannel data drawn with the \\texttt{ssplot} function.'>>=
-ssplot(list("Marriage" = marr.seq, "Parenthood" = child.seq,
-       "Residence" = left.seq))
+ssplot(list("Marriage" = marr_seq, "Parenthood" = child_seq,
+       "Residence" = left_seq))
 @
 
 Another option is to define function arguments with the \texttt{ssp} function\index{ssp@\texttt{ssp}} and then use previously saved arguments for plotting with a simple \texttt{plot}\index{plot.ssp@\texttt{plot.ssp}} method. In figure \ref{fig:plotI} sequences are sorted according to the beginning of the marriage sequence (the first channel). Legends are omitted from the plot. The \texttt{ylab.pos} defines the positions of the channel labels.
 
 <<'plotI', fig.width=3.5, fig.height=3, fig.keep='last', fig.align='center', cache=TRUE, fig.cap='Sequence index plots for multichannel data defined with the \\texttt{ssp} function and plotted with the \\texttt{plot} method.'>>=
 ssp2 <- ssp(
-  list(marr.seq, child.seq, left.seq),
+  list(marr_seq, child_seq, left_seq),
   type = "I",title = "Sequence index plots",
   sortv = "from.start", sort.channel = 1,
   withlegend = FALSE, ylab.pos = c(1, 1.5, 1),
@@ -183,9 +183,9 @@ We start by defining the first plot, state distributions for women. We remove bo
 <<'gridplotfm2', fig.width=7, fig.height=8, fig.keep='last', fig.align='center', cache=TRUE, fig.cap='Plotting several \\texttt{ssp} plots in a grid with the \\texttt{gridplot} function.'>>=
 # Preparing plots for women's state distributions
 ssp_f_d <- ssp(
-  x = list(marr.seq[biofam$sex == "woman",],
-           child.seq[biofam$sex == "woman",],
-           left.seq[biofam$sex == "woman",]),
+  x = list(marr_seq[biofam$sex == "woman",],
+           child_seq[biofam$sex == "woman",],
+           left_seq[biofam$sex == "woman",]),
   plots = "obs", type = "d", border = NA, withlegend = FALSE,
   title = "State distributions for women", title.n = FALSE,
   ylab = c("Marriage", "Parenthood", "Residence"),
@@ -199,9 +199,9 @@ ssp_f_I <- update(
 # State distributions with men's data
 ssp_m_d <- update(
   ssp_f_d, title = "State distributions for men",
-  x = list(marr.seq[biofam$sex == "man",],
-           child.seq[biofam$sex == "man",],
-           left.seq[biofam$sex == "man",]))
+  x = list(marr_seq[biofam$sex == "man",],
+           child_seq[biofam$sex == "man",],
+           left_seq[biofam$sex == "man",]))
 
 # Men's sequences
 ssp_m_I <- update(
@@ -225,8 +225,8 @@ ssp_d <- ssp(
   withlegend = "bottom", ncol.legend = 2)
 
 ssp_I <- ssp(
-  list("Marriage" = marr.seq, "Parenthood" = child.seq,
-       "Residence" = left.seq),
+  list("Marriage" = marr_seq, "Parenthood" = child_seq,
+       "Residence" = left_seq),
   type = "I", sortv = "from.end", title = "Sequences",
   xaxis = FALSE, legend.prop = 0.5)
 
@@ -242,7 +242,7 @@ The \texttt{mc\_to\_sc\_data}\index{MCtoSCdata@\texttt{mc\_to\_sc\_data}} functi
 Also single-channel data can be plotted with the \texttt{ssplot}\index{ssplot@\texttt{ssplot}} and  \texttt{gridplot}\index{gridplot@\texttt{gridplot}} functions. Figure \ref{fig:MCtSCdata} illustrates the state distributions. We give more space for the legend to fit the labels, and set new labels for the x axis.
 
 <<'MCtSCdata', fig.width=7, fig.height=3, fig.keep='last', fig.align='center', cache=TRUE, fig.cap= 'Three-channel \\texttt{biofam3c} data converted to single-channel data.'>>=
-sc_data <- mc_to_sc_data(list(marr.seq, child.seq, left.seq))
+sc_data <- mc_to_sc_data(list(marr_seq, child_seq, left_seq))
 
 ssplot(
   sc_data, type = "d", ylab = "Proportion", yaxis = TRUE,
@@ -257,23 +257,23 @@ ssplot(
 Hidden Markov models consists of \emph{observed states}, which are regarded as probabilistic functions of \emph{hidden states}. These hidden states cannot be observed directly, but only through the sequence(s) of observations, since they emit the observations on varying probabilities. A discrete first order hidden Markov model for a single sequence can be characterized by the following:
 
 \begin{itemize}
-\item \emph{Observed state sequence} $\textbf{y}=y_1, y_2, \ldots, y_T$
-  with observed states $m\in\{1, 2, \ldots, M\}$.
+\item \emph{Observed state sequence} $\textbf{y}=(y_1, y_2, \ldots, y_T)$
+  with observed states $m\in\{1, \ldots, M\}$.
 
-\item \emph{Hidden state sequence} $\textbf{z}=z_1, z_2,\ldots, z_T$
-with hidden states $s\in\{1, 2, \ldots, S\}$.
+\item \emph{Hidden state sequence} $\textbf{z}=(z_1, z_2,\ldots, z_T)$
+with hidden states $s\in\{1, \ldots, S\}$.
 
-\item \emph{Transition matrix} $A=\{a_{sr}\}$ where $a_{sr}$ is the probability of moving from the hidden state $s$ at time $t-1$ to the hidden state $r$ at time $t$:
-        \[a_{sr}	= P(z_t=r|z_{t-1}=s);\quad s,r = 1, \ldots, S.
+\item \emph{Transition matrix} $A = \{a_{sr}\}$ of size $S \times S$, where $a_{sr}$ is the probability of moving from the hidden state $s$ at time $t-1$ to the hidden state $r$ at time $t$:
+        \[a_{sr}	= P(z_t=r|z_{t-1}=s);\quad s,r \in\{1, \ldots, S\}.
 				\]
         We only consider homogeneous HMMs where the transition probabilities $a_{sr}$ are constant over time.
 
-\item \emph{Emission matrix} $B=\{b_s(m)\}$ where $b_s(m)$ is the probability of the hidden state $s$ emitting the observed state $m$:
-  			\[b_{s}(m)=P(y_t=m|z_t=s); \quad s=1, \ldots,S; m=1, \ldots,M.
+\item \emph{Emission matrix} $B=\{b_s(m)\}$ of size $S \times M$ where $b_s(m)$ is the probability of the hidden state $s$ emitting the observed state $m$:
+  			\[b_{s}(m)=P(y_t=m|z_t=s); \quad s\in\{1, \ldots, S\}, m\in\{1, \ldots, M\}.
 				\]
 
-\item \emph{Initial probabilities} $\pi=\{\pi_s\}$, where $\pi_s$ is the probability of starting from the hidden state $s$:
-  			\[\pi_s = P(z_1=s);\quad s=1, \ldots,S.
+\item \emph{Initial probability vector} $\pi=\{\pi_s\}$ of length $S$, where $\pi_s$ is the probability of starting from the hidden state $s$:
+  			\[\pi_s = P(z_1=s);\quad s\in \{1, \ldots, S\}.
 				\]
 
   \end{itemize}
@@ -331,7 +331,7 @@ The \texttt{hmm} object can then be fitted with the \texttt{fit\_model}\index{fi
 sc_fit <- fit_model(sc_model)
 @
 
-By default, the \texttt{fit\_model}function starts with a maximum of 100 iterations of the EM step, skips the global step, and finishes with the L-BFGS algorithm as a local estimator. For direct numerical estimation (steps 2 and 3), any optimization method available in the \texttt{nloptr} package \citep{nloptr, nlopt} can be chosen.
+By default, the \texttt{fit\_model}function starts with a maximum of 1000 iterations of the EM step, skips the global and local L-BFGS optimization steps. For direct numerical estimation (steps 2 and 3), any optimization method available in the \texttt{nloptr} package \citep{nloptr, nlopt} can be chosen.
 
 If the global step is chosen, by default it uses the multilevel single-linkage method (MLSL) \citep{Kan1987I, Kan1987II}. It draws multiple random starting values and performs local optimization from each starting point. The LDS modification uses low-discrepancy sequences instead of random numbers as starting points and should improve the convergence rate \citep{Kucherenko2005}.
 
@@ -339,7 +339,7 @@ There are some theoretical guarantees that the MLSL method shoud find all local 
 
 It is also possible to automatically run the EM algorithm multiple times by randomizing starting values. By default, both transition and emission probabilities are modified by adding a random value from the $N(0, 0.25)$ distribution. Although not done by default, this method seems to perform very well as the EM algorithm is relatively fast compared to direct numerical estimation.
 
-For parameter estimation, well known forward--backward recursions are used. As the straightforward implementation of these algorithms pose a great risk of under- and overflow, typically forward probabilities are scaled such that there should be no underflow. Although this is often sufficient for forward algorithm, this can result an overflow problem in backward algorithm where the same scaling factors are used. Thus in addition to scaling approach, \texttt{seqHMM} uses logarithm scale for most of the computations, which further reduces the numerical unstabilities. On the other hand, as there is a need to back-transform to natural scale during the algorithms, the log-space approach seems to be typically about 3--4 times slower than scaling approach. For well-behaving models the scaling approach can still be used by setting argument \texttt{log\_space} to \texttt{FALSE}.
+For parameter estimation, well known forward--backward recursions are used. As the straightforward implementation of these algorithms pose a great risk of under- and overflow, typically forward probabilities are scaled such that there should be no underflow. Although this is often sufficient for forward algorithm, this can result an overflow problem in backward algorithm where the same scaling factors are used. Thus in addition to scaling approach, \texttt{seqHMM} supports logarithm scale for most of the computations, which further reduces the numerical unstabilities. On the other hand, as there is a need to back-transform to natural scale during the algorithms, the log-space approach seems to be typically about 3--4 times slower than scaling approach. Therefore by default all functions use the scaling approach, whereas the log-space approach can be used by setting argument \texttt{log\_space} to \texttt{TRUE}.
 
 Most of the functions relating to model estimation and state inference support parallel computation via OpenMP interface. The user can choose the number of parallel threads (e.g. the number of cores) to use for the specific task. By default, no parallelization is done.
 
@@ -367,36 +367,36 @@ mc_trans <- matrix(
   nrow = 4, ncol = 4, byrow = TRUE)
 
 # Initial values for emission matrices
-mc_B_marr <- matrix(NA, nrow=4, ncol=3)
-mc_B_marr[1,] <- seqstatf(marr.seq[, 1:4])[, 2] + 0.1
-mc_B_marr[2,] <- seqstatf(marr.seq[, 5:8])[, 2] + 0.1
-mc_B_marr[3,] <- seqstatf(marr.seq[, 9:12])[, 2] + 0.1
-mc_B_marr[4,] <- seqstatf(marr.seq[, 13:16])[, 2] + 0.1
+mc_B_marr <- matrix(NA, nrow = 4, ncol = 3)
+mc_B_marr[1,] <- seqstatf(marr_seq[, 1:4])[, 2] + 1
+mc_B_marr[2,] <- seqstatf(marr_seq[, 5:8])[, 2] + 1
+mc_B_marr[3,] <- seqstatf(marr_seq[, 9:12])[, 2] + 1
+mc_B_marr[4,] <- seqstatf(marr_seq[, 13:16])[, 2] + 1
 mc_B_marr <- mc_B_marr / rowSums(mc_B_marr)
 
-mc_B_child <- matrix(NA, nrow=4, ncol=2)
-mc_B_child[1,] <- seqstatf(child.seq[, 1:4])[, 2] + 0.1
-mc_B_child[2,] <- seqstatf(child.seq[, 5:8])[, 2] + 0.1
-mc_B_child[3,] <- seqstatf(child.seq[, 9:12])[, 2] + 0.1
-mc_B_child[4,] <- seqstatf(child.seq[, 13:16])[, 2] + 0.1
+mc_B_child <- matrix(NA, nrow = 4, ncol = 2)
+mc_B_child[1,] <- seqstatf(child_seq[, 1:4])[, 2] + 1
+mc_B_child[2,] <- seqstatf(child_seq[, 5:8])[, 2] + 1
+mc_B_child[3,] <- seqstatf(child_seq[, 9:12])[, 2] + 1
+mc_B_child[4,] <- seqstatf(child_seq[, 13:16])[, 2] + 1
 mc_B_child <- mc_B_child / rowSums(mc_B_child)
 
-mc_B_left <- matrix(NA, nrow=4, ncol=2)
-mc_B_left[1,] <- seqstatf(left.seq[, 1:4])[, 2] + 0.1
-mc_B_left[2,] <- seqstatf(left.seq[, 5:8])[, 2] + 0.1
-mc_B_left[3,] <- seqstatf(left.seq[, 9:12])[, 2] + 0.1
-mc_B_left[4,] <- seqstatf(left.seq[, 13:16])[, 2] + 0.1
+mc_B_left <- matrix(NA, nrow = 4, ncol = 2)
+mc_B_left[1,] <- seqstatf(left_seq[, 1:4])[, 2] + 0.1
+mc_B_left[2,] <- seqstatf(left_seq[, 5:8])[, 2] + 0.1
+mc_B_left[3,] <- seqstatf(left_seq[, 9:12])[, 2] + 0.1
+mc_B_left[4,] <- seqstatf(left_seq[, 13:16])[, 2] + 0.1
 mc_B_left <- mc_B_left / rowSums(mc_B_left)
 
 # Build HMM
 mc_hmm <- build_hmm(
-  observations = list(marr.seq, child.seq, left.seq),
+  observations = list(marr_seq, child_seq, left_seq),
   initial_probs = mc_inits, transition_probs = mc_trans,
   emission_probs = list(mc_B_marr, mc_B_child, mc_B_left),
   channel_names = c("Marriage", "Parenthood", "Residence"))
 
 # Fit HMM
-mc_fit <- fit_model(mc_hmm)
+mc_fit <- fit_model(mc_hmm, local = TRUE)
 @
 
 \subsection{Evaluating and comparing HMMs}
@@ -408,37 +408,43 @@ Log-likelihood is stored in the result from \texttt{fit\_model}\index{fitHMM@\te
 <<'loglik', cache=TRUE>>=
 mc_fit$logLik
 logLik(mc_fit$model)
+
 @
 
-Next we fit a couple of models with different estimation procedures and compare the results using log-likelihood. We first note that for this model the EM algorithm converges to optimum so the local optimization step is not necessary (the difference between the log-likelihoods is neglibigle, -5.7e-5):
+Next we fit a couple of models with different estimation procedures and compare the results using log-likelihood. We first note that for this model the EM algorithm converges to optimum so the local optimization step is not necessary (the difference between the log-likelihoods is neglibigle, -2.8e-9):
 
 <<'em_and_local', cache=TRUE>>=
 mc_fit$em_results$logLik
 -mc_fit$local_results$objective
+
 @
 
-Using only gradient-based optimization without the initial EM step produces substantially poorer fit:
+Using only gradient-based optimization without the initial EM step produces slightly poorer fit:
 <<'fitHMM_local', cache=TRUE>>=
-mc_hmm_local <- fit_model(mc_hmm, em_step = FALSE)
-mc_hmm_local$logLik
+mc_fit_local <- fit_model(mc_hmm, em_step = FALSE, local = TRUE)
+mc_fit_local$logLik
+
 @
 
-Next we will test the performance of the MLSL optimization by setting \texttt{global = TRUE}. Final polishing is done with the L-BFGS. The default estimation time is set to 60 seconds in global step, but usually it is advisable to run it longer. Depending on the performance of the computer, the optimizer may also be able to perform more or less evaluations in the given time limit. Setting \texttt{maxtime = 0} omits the time limit and performs the number of evaluations given for \texttt{maxeval}. The more complex the model, the more time the optimizer needs to throughly search the parameter space.
+Next we will test the performance of the MLSL optimization by setting \texttt{global = TRUE}. Final polishing is done with the L-BFGS. The default estimation time is set to 60 seconds in global step, but usually it is advisable to run it longer. Depending on the performance of the computer, the optimizer may also be able to perform more or less evaluations in the given time limit. Setting \texttt{maxtime = 0} omits the time limit and performs the number of evaluations given for \texttt{maxeval}. The more complex the model, the more time the optimizer needs to throughly search the parameter space. Here we use parallel computing with 4 threads in order to speed up the computations.
 
 <<'fitHMM_global', cache=TRUE>>=
-mc_hmm_global <- fit_model(mc_hmm, em_step = FALSE, global = TRUE,
-  control_global = list(maxtime = 0, maxeval = 1000))
-mc_hmm_global$logLik
+mc_fit_global <- fit_model(mc_hmm, em_step = FALSE,
+  global = TRUE, local = TRUE, threads = 4,
+  control_global = list(maxtime = 0, maxeval = 10000))
+
+-mc_fit_global$global_results$objective
+-mc_fit_global$local_results$objective
 @
 
-In this case the starting values are good enough so that the EM algorithm finds the best solution. The MLSL algorithm is much slower and doesn't quite find the optimum on its own during 1000 evaluations.
+In this case, even when using 10000 iterations the global optimization still does not find the same optimum as the EM algorithm. Note that in order to minimize the time spend on suboptimal regions of parameter space, by default the global optimization step uses larger relative tolerances in internal local optimization phases than the subsequent local optimization step. Also MLSL does not use the initial values at start of the optimization (except in setting the boundaries of parameter space), so it can miss the optimum found by local optimization only.
 
-Automatic restarts of the EM algorithm are called by setting the value \texttt{restarts} in the \texttt{control\_em} argument. By default, both transition and emission probabilities are modified by adding a random numbers from a normal distribution with a mean of 0 and a standard error defined by \texttt{sd\_restart} (0.25 by default). Rows of matrices are then scaled to sum to one. Here randomizing is only useful for a check-up since the original EM already finds the optimum.
+Automatic restarts of the EM algorithm are called by setting the argument \texttt{restart} in the \texttt{control\_em} argument. By default, both transition and emission probabilities are modified by adding a random numbers from a normal distribution with a mean of 0 and a standard error defined by \texttt{sd} (0.25 by default). Rows of matrices are then scaled to sum to one. Here randomizing is only useful for a check-up since the original EM already seems find the global optimum.
 
 <<'fitHMM_repEM', cache=TRUE>>=
 set.seed(123)
 mc_hmm_restarts <- fit_model(mc_hmm,
-  control_em = list(restarts = 100, restart_transition = FALSE))
+  control_em = list(restart = list(times = 100, transition = FALSE)))
 mc_hmm_restarts$logLik
 @
 
@@ -460,26 +466,26 @@ mc_A_3s <- matrix(
        0,    0,    1),
   nrow = 3, ncol = 3, byrow = TRUE)
 
-mc_B_marr_3s <- matrix(NA, nrow=3, ncol=3)
-mc_B_marr_3s[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 0.1
-mc_B_marr_3s[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 0.1
-mc_B_marr_3s[3,] <- seqstatf(marr.seq[, 11:16])[, 2] + 0.1
+mc_B_marr_3s <- matrix(NA, nrow=  3, ncol = 3)
+mc_B_marr_3s[1,] <- seqstatf(marr_seq[, 1:5])[, 2] + 0.1
+mc_B_marr_3s[2,] <- seqstatf(marr_seq[, 6:10])[, 2] + 0.1
+mc_B_marr_3s[3,] <- seqstatf(marr_seq[, 11:16])[, 2] + 0.1
 mc_B_marr_3s <- mc_B_marr_3s / rowSums(mc_B_marr_3s)
 
-mc_B_child_3s <- matrix(NA, nrow=3, ncol=2)
-mc_B_child_3s[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 0.1
-mc_B_child_3s[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 0.1
-mc_B_child_3s[3,] <- seqstatf(child.seq[, 11:16])[, 2] + 0.1
+mc_B_child_3s <- matrix(NA, nrow = 3, ncol = 2)
+mc_B_child_3s[1,] <- seqstatf(child_seq[, 1:5])[, 2] + 0.1
+mc_B_child_3s[2,] <- seqstatf(child_seq[, 6:10])[, 2] + 0.1
+mc_B_child_3s[3,] <- seqstatf(child_seq[, 11:16])[, 2] + 0.1
 mc_B_child_3s <- mc_B_child_3s / rowSums(mc_B_child_3s)
 
-mc_B_left_3s <- matrix(NA, nrow=3, ncol=2)
-mc_B_left_3s[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 0.1
-mc_B_left_3s[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 0.1
-mc_B_left_3s[3,] <- seqstatf(left.seq[, 11:16])[, 2] + 0.1
+mc_B_left_3s <- matrix(NA, nrow = 3, ncol = 2)
+mc_B_left_3s[1,] <- seqstatf(left_seq[, 1:5])[, 2] + 0.1
+mc_B_left_3s[2,] <- seqstatf(left_seq[, 6:10])[, 2] + 0.1
+mc_B_left_3s[3,] <- seqstatf(left_seq[, 11:16])[, 2] + 0.1
 mc_B_left_3s <- mc_B_left_3s / rowSums(mc_B_left_3s)
 
 mc_hmm_3s <- build_hmm(
-  observations = list(marr.seq, child.seq, left.seq),
+  observations = list(marr_seq, child_seq, left_seq),
   initial_probs = mc_inits_3s, transition_probs = mc_A_3s,
   emission_probs = list(mc_B_marr_3s, mc_B_child_3s, mc_B_left_3s),
   channel_names = c("Marriage", "Parenthood", "Residence"))
@@ -489,7 +495,7 @@ mc_fit_3s <- fit_model(mc_hmm_3s)
 mc_fit_3s$logLik
 BIC(mc_fit_3s$model)
 @
-BIC for the four-state model is 33967.66, which is less than 45410.52, BIC for the three-state model. We can conclude, that the model with four hidden states is better.
+BIC for the four-state model is 33967.66, which is less than 45410.52, BIC for the three-state model. We can conclude (assuming that we found the global optimum in both cases), that the model with four hidden states is better.
 
 \subsection{Converting multichannel models to single-channel models}
 
@@ -525,7 +531,7 @@ In Figure \ref{fig:plotHMM3} we change the positions of the vertex labels (initi
 plot(
   mc_fit$model,
   layout = matrix(c(1,3,3,5,
-                    0,-1,1,0), ncol=2),
+                    0,-1,1,0), ncol = 2),
   xlim = c(0.5, 5.5), ylim = c(-1.5, 1.5), rescale = FALSE,
   vertex.size = 50, vertex.label.pos = c(pi, pi/2, -pi/2, 0),
   edge.curved = FALSE, cex.edge.width = 0.8, edge.arrow.size = 1.2,
@@ -553,12 +559,12 @@ ssplot(
 
 \section{Mixture hidden Markov models}
 
-Assume that we have a set of models (clusters) $\mathcal{M} = \{\mathcal{M}^1,\ldots, \mathcal{M}^K\}$, where $\mathcal{M}^k = \{\pi^k, A^k, B_1^k, \ldots, B_C^k\}$ for $k=1, \ldots, K$. For each observation sequence $\textbf{y}_i$, the prior cluster probability, i.e. the probability that sequence $\textbf{y}_i$ is generated by submodel $\mathcal{M}^k$, is defined as multinomial distribution:
+Assume that we have a set of models (clusters) $\mathcal{M} = \{\mathcal{M}^1,\ldots, \mathcal{M}^K\}$, where $\mathcal{M}^k = \{\pi^k, A^k, B_1^k, \ldots, B_C^k\}$ for $k=1, \ldots, K$. For each subject $Y_i$, the prior cluster probability, i.e. the probability that  $Y_i$ is generated by submodel $\mathcal{M}^k$, is defined as multinomial distribution:
 \begin{equation}
 P(\mathcal{M}^k|\textbf{x}_i) = w_{ik}
 = \frac{e^{\beta_k\textbf{x}_i}}{1 + \sum_{j=2}^K e^{\beta_j\textbf{x}_i}},
 \end{equation}
-where $\textbf{x}_i$ consists of the covariates relating to sequence $\textbf{y}_i$. The first cluster is set as the reference by fixing $\beta_1=0$. Note that by convention we use $\beta$ when referring to regression coefficients.
+where $\textbf{x}_i$ consists of the covariates relating to subject $Y_i$. The first cluster is set as the reference by fixing $\beta_1=0$. Note that by convention we use $\beta$ when referring to regression coefficients.
 
 The mixture hidden Markov model (MHMM) can be regarded as a special type HMM by combining the $K$ submodels into one large hidden Markov model consisting of $\sum_{k=1}^K S_k$ states, where the initial state vector contains elements of form $w_k\pi^k$. Now the transition matrix is block diagonal
 \begin{equation}
@@ -572,11 +578,11 @@ A =
 \end{equation}
 where the diagonal blocks $A^k, k=1,\ldots,K$, are square matrices containing the transition probabilities of one cluster. The off-diagonal blocks are zero matrices, so transitions between clusters are not allowed. Similarly, the emission matrices for each channel contains stacked emission matrices $B^k$.
 
-The posterior cluster probabilities $P(M^k|\textbf{y}_i, \textbf{x}_i)$ can be obtained as
+The posterior cluster probabilities $P(M^k|Y_i, \textbf{x}_i)$ can be obtained as
 \begin{equation}
   \begin{aligned}
-P(M^k|\textbf{y}_i, \textbf{x}_i) &= \frac{P(\textbf{y}_i | M^k, \textbf{x}_i) P(M^k|\textbf{x}_i) }{P(\textbf{y}_i| \textbf{x}_i)}\\
-&= \frac{P(\textbf{y}_i | M^k, \textbf{x}_i) P(M^k|\textbf{x}_i) }{\sum_{j=1}^K P(\textbf{y}_i |M^j, \textbf{x}_i) P(M^j|\textbf{x}_i)} = \frac{L_k^i}{L^i},
+P(M^k|Y_i, \textbf{x}_i) &= \frac{P(Y_i | M^k, \textbf{x}_i) P(M^k|\textbf{x}_i) }{P(Y_i| \textbf{x}_i)}\\
+&= \frac{P(Y_i | M^k, \textbf{x}_i) P(M^k|\textbf{x}_i) }{\sum_{j=1}^K P(Y_i |M^j, \textbf{x}_i) P(M^j|\textbf{x}_i)} = \frac{L_k^i}{L^i},
   \end{aligned}
 \end{equation}
 where $L^i$ is the likelihood of the complete MHMM for individual $i$, and $L_k^i$ is the likelihood of cluster $k$ for individual $i$. These are straightforwardly computed from forward probabilities. Posterior cluster probabilities can be used e.g. for computing classification tables.
@@ -609,7 +615,7 @@ A2 <- matrix(
 
 # Starting values for emission probabilities
 # Cluster 1
-alphabet(child.seq) # Checking for the order of observed states
+alphabet(child_seq) # Checking for the order of observed states
 B1_child <- matrix(
   c(0.99, 0.01, # High probability for childless
     0.99, 0.01,
@@ -617,7 +623,7 @@ B1_child <- matrix(
     0.99, 0.01),
   nrow = 4, ncol = 2, byrow = TRUE)
 
-alphabet(marr.seq)
+alphabet(marr_seq)
 B1_marr <- matrix(
   c(0.98, 0.01, 0.01, # High probability for single
     0.98, 0.01, 0.01,
@@ -625,7 +631,7 @@ B1_marr <- matrix(
     0.01, 0.01, 0.98), # High probability for divorced
   nrow = 4, ncol = 3, byrow = TRUE)
 
-alphabet(left.seq)
+alphabet(left_seq)
 B1_left <- matrix(
   c(0.99, 0.01, # High probability for living with parents
     0.01, 0.99, # High probability for having left home
@@ -692,7 +698,7 @@ biofam3c$covariates$cohort <- factor(
 
 # Build MHMM
 init_mhmm <- build_mhmm(
-  observations = list(marr.seq, child.seq, left.seq),
+  observations = list(marr_seq, child_seq, left_seq),
   transition_probs = list(A1, A1, A2),
   emission_probs = list(list(B1_marr, B1_child, B1_left),
                         list(B2_marr, B2_child, B2_left),
@@ -703,20 +709,21 @@ init_mhmm <- build_mhmm(
   channel_names = c("Marriage", "Parenthood", "Residence"))
 
 set.seed(456)
-fit_model <- fit_model(
-  init_mhmm, control_em = list(restarts = 50, restart_transition = FALSE))
+fit_mhmm <- fit_model(
+  init_mhmm, threads = 4, control_em =
+    list(restart = list(times = 50, transition = FALSE)))
 @
 
 The \texttt{summary}\index{summaryMHMM@\texttt{summary.mhmm}} method computes summaries of the MHMM, e.g. standard errors for covariates and prior and posterior probabilities for subjects. A \texttt{print}\index{printSummaryMHMM@\texttt{print.summary.mhmm}} method shows some summaries of these: estimates and standard errors for covariates, log-likelihood and BIC, and information on most probable clusters and prior probabilities. Parameter estimates for transitions, emissions, and initial probabilities are omitted by default.
 
-There are two types of standard errors which can be computed for regression coefficients. The conditional standard errors can be computed using analytical formulas for Hessian, but these do not take account the estimation uncertainty regarding the other model parameters. For unconditional standard errors which take account of possible correlation between the estimates of $\beta$ and other model parameters, the Hessian is computed using finite difference approximation of the jacobian of the analytical gradients. Naturally, the latter option is computationally more demanding, but it should still be a preferred option in final analysis as it gives more realistic results.
+There are two types of standard errors which can be computed for regression coefficients. The conditional standard errors can be computed using analytical formulas for Hessian, but these do not take account the estimation uncertainty regarding the other model parameters. For unconditional standard errors which take account of possible correlation between the estimates of $\beta$ and other model parameters, the Hessian is computed using finite difference approximation of the Jacobian of the analytical gradients. Naturally, the latter option is computationally more demanding, but it should still be a preferred option in final analysis as it gives more realistic results.
 
 <<'parameters', cache=TRUE>>=
-summary(fit_model$model, conditional_se = FALSE)
+summary(fit_mhmm$model, conditional_se = FALSE)
 
 @
 
-The classification table shows the mean probabilities of belonging to each cluster by the most probable cluster. The most probable cluster is determined by the posterior cluster probabilities. A good model shoud have high proportions in the diagonal. Here, for individuals assigned to cluster 1, the average probability for cluster 1 is 0.85, 0.15 for cluster 2, and close to 0 for cluster 3. The highest probability for the assigned cluster is 0.93 for cluster 3.
+The classification table shows the mean probabilities of belonging to each cluster by the most probable cluster. The most probable cluster is determined by the posterior cluster probabilities. A good model shoud have high proportions in the diagonal. Here, for individuals assigned to cluster 1, the average probability for cluster 1 is 0.84, 0.16 for cluster 2, and close to 0 for cluster 3. The highest probability for the assigned cluster is 0.93 for cluster 3.
 
 It is possible to convert a \texttt{mhmm} object into a list of separate \texttt{hmm} objects with the \texttt{separate\_mhmm}\index{sepMixHMM@\texttt{separate\_mhmm}} function. These can then be plotted with functions designed for \texttt{hmm} class objects, e.g. \texttt{ssp}\index{ssp@\texttt{ssp}} and \texttt{gridplot}\index{gridplot@\texttt{gridplot}}. However, usually an easier option is to use plotting functions and methods designed for \texttt{mhmm} objects.
 
@@ -727,7 +734,7 @@ Also MHMMs are plotted with the \texttt{plot}\index{plot.mhmm@\texttt{plot.mhmm}
 
 <<'MHMMplot', fig.width=5.5, fig.height=7, fig.keep='last', cache=TRUE>>=
 plot(
-  fit_model$model, interactive = FALSE, which.plots = 2:3, nrow = 2,
+  fit_mhmm$model, interactive = FALSE, which.plots = 2:3, nrow = 2,
   legend.prop = 0.35, cex.legend = 1.5, edge.label.cex = 1.5,
   ncol.legend = 2)
 @
@@ -735,7 +742,7 @@ plot(
 The equivalent to the \texttt{ssplot} function for MHMMs is called \texttt{mssplot}\index{mssplot@\texttt{mssplot}}. It plots stacked sequence plots separately for each (chosen) cluster. If the user asks to plot more than one cluster, the function is interactive by default. If \texttt{ask = TRUE}, the cluster plots are chosen one by one by selecting their numbers from the menu; otherwise they are plotted in the order they appear in the \texttt{mhmm} object.
 
 <<'MHMMssplot', fig.width=5.5, fig.height=5, fig.keep='last', cache=TRUE>>=
-mssplot(fit_model$model, plots = "both", ask = FALSE, which.plots = 1)
+mssplot(fit_mhmm$model, plots = "both", ask = FALSE, which.plots = 1)
 
 @
 

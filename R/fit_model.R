@@ -9,8 +9,9 @@
 #' @export
 #' @param model Object of class \code{hmm} or \code{mhmm}.
 #' @param em_step Logical, use EM algorithm at the start of parameter estimation.
-#'   The default is \code{TRUE}. Note that EM algorithm is faster than direct numerical optimization,
-#'   but is even more prone to get stuck in a local optimum.
+#'   The default is \code{TRUE}. Note that EM algorithm is usually faster than direct numerical optimization,
+#'   but the convergence can slow down near the optimum,
+#'   so it might be useful to switch to direct numerical maximization step.
 #' @param global_step Logical, use global optimization via
 #'   \code{\link{nloptr}} (possibly after the EM step). The default is \code{FALSE}.
 #'@param local_step Logical, use local optimization via
@@ -19,11 +20,13 @@
 #'   Possible arguments are \describe{
 #'   \item{maxeval}{Maximum number of iterations, default is 1000.}
 #'   \item{print_level}{Level of printing. Possible values are 0
-#'   (prints nothing), 1 (prints information at start and end of algorithm), and
-#'   2 (prints at every iteration).}
-#'   \item{reltol}{Relative tolerance for convergence defined as \eqn{(logLik_new - logLik_old)/(abs(logLik_old)+0.1)}.
+#'   (prints nothing), 1 (prints information at start and end of algorithm),
+#'   2 (prints at every iteration),
+#'   and for mixture models 3 (print also during optimization of coefficients).}
+#'   \item{reltol}{Relative tolerance for convergence defined as
+#'   \eqn{(logLik_new - logLik_old)/(abs(logLik_old) + 0.1)}.
 #'   Default is 1e-12.}
-#'   \item{restart}{Optional list containing options for possible EM restarts with following components:
+#'   \item{restart}{List containing options for possible EM restarts with following components:
 #'   \describe{
 #'   \item{times}{Number of restarts of EM algorithm using random initial values. Default is 0 i.e. no restarts. }
 #'   \item{transition}{Logical, should the initial transition probabilities be varied. Default is \code{TRUE}. }
@@ -39,118 +42,31 @@
 #'   \code{\link{nloptr}} argument \code{opts}. The default values are
 #'   \describe{
 #'    \item{algorithm}{\code{"NLOPT_GD_MLSL_LDS"}}
-#'    \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS",  xtol_rel = 1e-4)}}
-#'    \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm)}
+#'    \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS", ftol_rel = 1e-6, xtol_rel = 1e-4)}}
+#'    \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm.)}
+#'    \item{maxtime}{\code{60} (maximum time for global optimization. Set to 0 for unlimited time.)}
 #'}
 #' @param lb,ub Lower and upper bounds for parameters in Softmax parameterization.
-#' Default interval is [pmin(-10,2*initialvalues), pmax(10,2*initialvalues)].
-#' Used only in the global optimization step.
+#' Default interval is [pmin(-25,2*initialvalues), pmax(14,2*initialvalues)], except for beta coefficients,
+#' where the scale of covariates is taken into account.
+#' Note that it might still be a good idea to scale covariates around unit scale.
+#' Bounds are used only in the global optimization step.
+#'
 #' @param control_local Optional list of additional arguments for
 #'   \code{\link{nloptr}} argument \code{opts}. The default values are
 #'   \describe{
 #'    \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
+#'    \item{ftol_rel}{\code{1e-10}}
 #'    \item{xtol_rel}{\code{1e-8}}
 #'    \item{maxeval}{\code{10000} (maximum number of iterations)}
 #'   }
 #' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater
-#' numerical stability at cost of decreased computational performance. Default is \code{FALSE}.
+#' numerical stability at a cost of decreased computational performance. Default is \code{FALSE}.
 #' @param verbose_dnm_warnings If \code{TRUE} (default), global and local
 #' optimization steps can produce warnings during the computation of objective function.
 #' If \code{FALSE}, these warnings are omitted.
 #' @param ... Additional arguments to \code{nloptr}.
-#' @return List with components \item{model}{Estimated model. }
-#'   \item{logLik}{Log-likelihood of the estimated model. }
-#'   \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
-#'   (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
-#'   number of estimated models in restarted EM with the best likelihood (\code{n_optimum}). }
-#'   \item{global_results}{Results after the global step. }
-#'   \item{local_results}{Results after the local step. }
-#' @seealso \code{\link{build_hmm}} for building Hidden Markov models before
-#'   fitting, \code{\link{trim_model}} for finding better models by changing small
-#'   parameter values to zero, and
-#'   \code{\link{plot.hmm}} and \code{\link{ssplot}} for plotting
-#'   hmm objects.
-#' @details The fitting function provides three estimation steps: 1) EM algorithm,
-#'   2) global optimization, and 3) local optimization. The user can call for one method
-#'   or any combination of these steps, but should note that they are preformed in the
-#'   above-mentioned order. The results from a former step are used as starting values
-#'   in a latter.
-#'
-#'   By default the \code{fit_model} function starts with the EM algorithm,
-#'   and finishes with LBFGS as the local optimizer.
-#'
-#'   It is possible to rerun EM algorithm automatically using random starting
-#'   values based on the first run of EM. Number of restarts is defined by
-#'   argument \code{restarts} in \code{control_em}. As EM algorithm is relatively fast, this method
-#'   might be preferred option compared to proper global optimization strategy of step 2.
-#'
-#'   Default global optimization method (triggered via \code{global_step = TRUE} is
-#'   the multilevel single-linkage method (MLSL) with the LDS modification (\code{NLOPT_GD_MLSL_LDS} as
-#'   \code{algorithm} in \code{control_global}), with LBFGS as the local optimizer.
-#'   The MLSL method draws random starting points and performs a local optimization
-#'   from each. The LDS modification uses low-discrepancy sequences instead of
-#'   pseudo-random numbers as starting points and should improve the convergence rate.
-#'   In order to reduce the computation time spent on non-global optima, the
-#'   convergence tolerance of the local optimizer is set relatively large. At step 3,
-#'   a local optimization (LBFGS by default) is run with a lower tolerance to find the
-#'   optimum with high precision.
-#'
-#'   There are some theoretical guarantees that the MLSL method used as the default
-#'   optimizer in step 2 shoud find all local optima in a finite number of local
-#'   optimizations. Of course, it might not always succeed in a reasonable time.
-#'   The EM algorithm can help in finding good boundaries for the search, especially
-#'   with good starting values, but in some cases it can mislead. A good strategy is to
-#'   try a couple of different fitting options with different combinations of the methods:
-#'   e.g. all steps, only global and local steps, and a few evaluations of EM followed by
-#'   global and local optimization.
-#'
-#'   By default, the estimation time is limited to 60 seconds in global optimization step, so it is
-#'   advisable to change the default settings for the proper global optimization.
-#'
-#'   Any method available in the \code{nloptr} function can be used for the global and
-#'   local steps.
-#'
-#' @details The fitting function provides three estimation steps: 1) EM algorithm,
-#'   2) global optimization, and 3) local optimization. The user can call for one method
-#'   or any combination of these steps, but should note that they are preformed in the
-#'   above-mentioned order. The results from a former step are used as starting values
-#'   in a latter.
-#'
-#'   By default the \code{fit_model} function starts with the EM algorithm,
-#'   and finishes with LBFGS as the local optimizer.
-#'
-#'   It is possible to rerun EM algorithm automatically using random starting
-#'   values based on the first run of EM. Number of restarts is defined by
-#'   argument \code{restarts} in \code{control_em}. As EM algorithm is relatively fast, this method
-#'   might be preferred option compared to proper global optimization strategy of step 2.
-#'
-#'   Default global optimization method (triggered via \code{global_step = TRUE} is
-#'   the multilevel single-linkage method (MLSL) with the LDS modification (\code{NLOPT_GD_MLSL_LDS} as
-#'   \code{algorithm} in \code{control_global}), with LBFGS as the local optimizer.
-#'   The MLSL method draws random starting points and performs a local optimization
-#'   from each. The LDS modification uses low-discrepancy sequences instead of
-#'   pseudo-random numbers as starting points and should improve the convergence rate.
-#'   In order to reduce the computation time spent on non-global optima, the
-#'   convergence tolerance of the local optimizer is set relatively large. At step 3,
-#'   a local optimization (LBFGS by default) is run with a lower tolerance to find the
-#'   optimum with high precision.
-#'
-#'   There are some theoretical guarantees that the MLSL method used as the default
-#'   optimizer in step 2 shoud find all local optima in a finite number of local
-#'   optimizations. Of course, it might not always succeed in a reasonable time.
-#'   The EM algorithm can help in finding good boundaries for the search, especially
-#'   with good starting values, but in some cases it can mislead. A good strategy is to
-#'   try a couple of different fitting options with different combinations of the methods:
-#'   e.g. all steps, only global and local steps, and a few evaluations of EM followed by
-#'   global and local optimization.
-#'
-#'   By default, the estimation time is limited to 60 seconds in global optimization step, so it is
-#'   advisable to change the default settings for the proper global optimization.
-#'
-#'   Any method available in the \code{nloptr} function can be used for the global and
-#'   local steps.
-#' @return List with components \item{model}{Estimated model. }
 #'   \item{logLik}{Log-likelihood of the estimated model. }
 #'   \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
 #'   (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
@@ -165,6 +81,44 @@
 #'   a list of separate hidden Markov models; \code{\link{plot.hmm}} and \code{\link{plot.mhmm}}
 #'   for plotting model objects; and \code{\link{ssplot}} and \code{\link{mssplot}} for plotting
 #'   stacked sequence plots of \code{hmm} and \code{mhmm} objects.
+#' @details The fitting function provides three estimation steps: 1) EM algorithm,
+#'   2) global optimization, and 3) local optimization. The user can call for one method
+#'   or any combination of these steps, but should note that they are preformed in the
+#'   above-mentioned order. The results from a former step are used as starting values
+#'   in a latter, except that some of the global optimization algorithms (such as MLSL and StoGO) only use
+#'   initial values for setting up the boundaries for the optimization.
+#'
+#'   It is possible to rerun EM algorithm automatically using random starting
+#'   values based on the first run of EM. Number of restarts is defined by
+#'   argument \code{restarts} in \code{control_em}. As EM algorithm is relatively fast, this method
+#'   might be preferred option compared to proper global optimization strategy of step 2.
+#'
+#'   Default global optimization method (triggered via \code{global_step = TRUE} is
+#'   the multilevel single-linkage method (MLSL) with the LDS modification (\code{NLOPT_GD_MLSL_LDS} as
+#'   \code{algorithm} in \code{control_global}), with LBFGS as the local optimizer.
+#'   The MLSL method draws random starting points and performs a local optimization
+#'   from each. The LDS modification uses low-discrepancy sequences instead of
+#'   pseudo-random numbers as starting points and should improve the convergence rate.
+#'   In order to reduce the computation time spent on non-global optima, the
+#'   convergence tolerance of the local optimizer is set relatively large. At step 3,
+#'   a local optimization (LBFGS by default) is run with a lower tolerance to find the
+#'   optimum with high precision.
+#'
+#'   There are some theoretical guarantees that the MLSL method used as the default
+#'   optimizer in step 2 shoud find all local optima in a finite number of local
+#'   optimizations. Of course, it might not always succeed in a reasonable time.
+#'   The EM algorithm can help in finding good boundaries for the search, especially
+#'   with good starting values, but in some cases it can mislead. A good strategy is to
+#'   try a couple of different fitting options with different combinations of the methods:
+#'   e.g. all steps, only global and local steps, and a few evaluations of EM followed by
+#'   global and local optimization.
+#'
+#'   By default, the estimation time is limited to 60 seconds in global optimization step, so it is
+#'   advisable to change the default settings for the proper global optimization.
+#'
+#'   Any algorithm available in the \code{nloptr} function can be used for the global and
+#'   local steps.
+#'
 #' @examples
 #'
 #' # Hidden Markov model
@@ -232,36 +186,36 @@
 #' data(biofam3c)
 #'
 #' # Building sequence objects
-#' marr.seq <- seqdef(biofam3c$married, start = 15,
+#' marr_seq <- seqdef(biofam3c$married, start = 15,
 #'   alphabet = c("single", "married", "divorced"))
-#' child.seq <- seqdef(biofam3c$children, start = 15,
+#' child_seq <- seqdef(biofam3c$children, start = 15,
 #'   alphabet = c("childless", "children"))
-#' left.seq <- seqdef(biofam3c$left, start = 15,
+#' left_seq <- seqdef(biofam3c$left, start = 15,
 #'   alphabet = c("with parents", "left home"))
 #'
 #' # Define colors
-#' attr(marr.seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
-#' attr(child.seq, "cpal") <- c("darkseagreen1", "coral3")
-#' attr(left.seq, "cpal") <- c("lightblue", "red3")
+#' attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
+#' attr(child_seq, "cpal") <- c("darkseagreen1", "coral3")
+#' attr(left_seq, "cpal") <- c("lightblue", "red3")
 #'
 #' # Starting values for emission matrices
 #'
 #' emiss_marr <- matrix(NA, nrow = 3, ncol = 3)
-#' emiss_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 1
-#' emiss_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 1
-#' emiss_marr[3,] <- seqstatf(marr.seq[, 11:16])[, 2] + 1
+#' emiss_marr[1,] <- seqstatf(marr_seq[, 1:5])[, 2] + 1
+#' emiss_marr[2,] <- seqstatf(marr_seq[, 6:10])[, 2] + 1
+#' emiss_marr[3,] <- seqstatf(marr_seq[, 11:16])[, 2] + 1
 #' emiss_marr <- emiss_marr / rowSums(emiss_marr)
 #'
 #' emiss_child <- matrix(NA, nrow = 3, ncol = 2)
-#' emiss_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 1
-#' emiss_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 1
-#' emiss_child[3,] <- seqstatf(child.seq[, 11:16])[, 2] + 1
+#' emiss_child[1,] <- seqstatf(child_seq[, 1:5])[, 2] + 1
+#' emiss_child[2,] <- seqstatf(child_seq[, 6:10])[, 2] + 1
+#' emiss_child[3,] <- seqstatf(child_seq[, 11:16])[, 2] + 1
 #' emiss_child <- emiss_child / rowSums(emiss_child)
 #'
 #' emiss_left <- matrix(NA, nrow = 3, ncol = 2)
-#' emiss_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 1
-#' emiss_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 1
-#' emiss_left[3,] <- seqstatf(left.seq[, 11:16])[, 2] + 1
+#' emiss_left[1,] <- seqstatf(left_seq[, 1:5])[, 2] + 1
+#' emiss_left[2,] <- seqstatf(left_seq[, 6:10])[, 2] + 1
+#' emiss_left[3,] <- seqstatf(left_seq[, 11:16])[, 2] + 1
 #' emiss_left <- emiss_left / rowSums(emiss_left)
 #'
 #' # Starting values for transition matrix
@@ -274,7 +228,7 @@
 #'
 #' # Building hidden Markov model with initial parameter values
 #' init_hmm_bf <- build_hmm(
-#'   observations = list(marr.seq, child.seq, left.seq),
+#'   observations = list(marr_seq, child_seq, left_seq),
 #'   transition_probs = trans,
 #'   emission_probs = list(emiss_marr, emiss_child, emiss_left),
 #'   initial_probs = inits)
@@ -297,47 +251,39 @@
 #' hmm_3 <- fit_model(
 #'   init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE,
 #'   control_global = list(maxeval = 5000, maxtime = 0), threads = 1)
-#' hmm_3$logLik # -22267.75
+#' hmm_3$logLik # -21675.42
 #'
 #' # EM with restarts, much faster than MLSL
 #' set.seed(123)
-#' hmm_4 <- fit_model(init_hmm_bf, control_em = list(restarts = 5, print_level = 1), threads = 1)
+#' hmm_4 <- fit_model(init_hmm_bf, control_em = list(restart = list(times = 5, print_level = 1)), threads = 1)
 #' hmm_4$logLik # -21675.4
 #'
-#' #' # Global optimization via STOGO with LBFGS as local optimizer and final polisher
+#' #' # Global optimization via StoGO with LBFGS as final polisher
 #' # This can be slow, use parallel computing by adjusting threads argument
 #' # (here threads = 1 for portability issues)
 #' set.seed(123)
 #' hmm_5 <- fit_model(
-#'    init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE,
+#'    init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE, lb = -50, ub = 50,
 #' control_global = list(algorithm = "NLOPT_GD_STOGO", maxeval = 2500, maxtime = 0), threads = 1)
-#' hmm_5$logLik # -22131.76
-#'
-#' # Using log_space results better optimum (same is also true for MLSL example above):
-#' #' set.seed(123)
-#' hmm_5b <- fit_model(
-#'    init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE, log_space = TRUE,
-#' control_global = list(algorithm = "NLOPT_GD_STOGO", maxeval = 2500, maxtime = 0), threads = 1)
-#' hmm_5b$logLik # -21675.4
-
+#' hmm_5$logLik # -21675.4
 #' }
 #'
 #' # Multichannel
 #'
-#' data(biofam3c)
+#' data("biofam3c")
 #'
 #' ## Building sequence objects
-#' marr.seq <- seqdef(biofam3c$married, start = 15,
+#' marr_seq <- seqdef(biofam3c$married, start = 15,
 #'   alphabet = c("single", "married", "divorced"))
-#' child.seq <- seqdef(biofam3c$children, start = 15,
+#' child_seq <- seqdef(biofam3c$children, start = 15,
 #'   alphabet = c("childless", "children"))
-#' left.seq <- seqdef(biofam3c$left, start = 15,
+#' left_seq <- seqdef(biofam3c$left, start = 15,
 #'   alphabet = c("with parents", "left home"))
 #'
 #' ## Choosing colors
-#' attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-#' attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
-#' attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+#' attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+#' attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
+#' attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 #'
 #' ## Starting values for emission probabilities
 #' # Cluster 1
@@ -442,17 +388,14 @@
 #'
 #' # Build mixture HMM
 #' init_mhmm_bf <- build_mhmm(
-#'   observations = list(marr.seq, child.seq, left.seq),
+#'   observations = list(marr_seq, child_seq, left_seq),
 #'   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
 #'   transition_probs = list(A1, A1, A2),
 #'   emission_probs = list(list(B1_marr, B1_child, B1_left),
 #'     list(B2_marr, B2_child, B2_left),
 #'     list(B3_marr, B3_child, B3_left)),
 #'   formula = ~sex + cohort, data = biofam3c$covariates,
-#'   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
-#'   channel_names = c("Marriage", "Parenthood", "Residence"),
-#'   state_names = list(paste("State", 1:4), paste("State", 1:4),
-#'                      paste("State", 1:6)))
+#'   channel_names = c("Marriage", "Parenthood", "Residence"))
 #'
 #' \dontrun{
 #' # Fitting the model with different settings
@@ -468,7 +411,7 @@
 #' # Use EM with multiple restarts
 #' set.seed(123)
 #' mhmm_3 <- fit_model(init_mhmm_bf, control_em = list(restart = list(times = 5, transition = FALSE)))
-#' mhmm_3$logLik # -12713.1
+#' mhmm_3$logLik # -12713.08
 #' }
 #'
 
@@ -638,7 +581,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
           warning(paste("EM algorithm failed:", err_msg))
         } else {
           eq_good <- isTRUE(all.equal.numeric(resEMi$logLik, resEM$logLik,
-                                   tolerance = 1e-4))
+                                              tolerance = 1e-4))
           counter <- counter + eq_good
           if (is.finite(resEMi$logLik) && resEMi$logLik > resEM$logLik) {
             resEM <- resEMi
@@ -821,15 +764,25 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       model$initial_probs <- unlist(original_model$initial_probs)
       model$coefficients[,-1] <- pars[npTM+sum(npEM)+npIPAll+1:npCoef]
 
-      if(estimate){
+      if (estimate) {
         if (!log_space) {
-          objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray,
-                     transNZ, emissNZ, initNZ, model$n_symbols,
-                     model$coefficients, model$X, model$n_states_in_clusters, threads, verbose_dnm_warnings)
+          if (need_grad) {
+            objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray,
+                       transNZ, emissNZ, initNZ, model$n_symbols,
+                       model$coefficients, model$X, model$n_states_in_clusters, threads, verbose_dnm_warnings)
+          } else {
+            -sum(logLikMixHMM(model$transition_probs, emissionArray, model$initial_probs, obsArray,
+                          model$coefficients, model$X, model$n_states_in_clusters, threads))
+          }
         } else {
-          log_objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray,
-                         transNZ, emissNZ, initNZ, model$n_symbols,
-                         model$coefficients, model$X, model$n_states_in_clusters, threads, verbose_dnm_warnings)
+          if (need_grad) {
+            log_objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray,
+                           transNZ, emissNZ, initNZ, model$n_symbols,
+                           model$coefficients, model$X, model$n_states_in_clusters, threads, verbose_dnm_warnings)
+          } else {
+            -sum(log_logLikMixHMM(model$transition_probs, emissionArray, model$initial_probs, obsArray,
+                              model$coefficients, model$X, model$n_states_in_clusters, threads))
+          }
         }
 
       } else {
@@ -866,18 +819,30 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         model$initial_probs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])
         model$initial_probs[]<-model$initial_probs/sum(model$initial_probs)
       }
-      if(estimate){
+
+
+      if (estimate) {
         if (!log_space) {
-          objective(model$transition_probs, emissionArray, model$initial_probs, obsArray,
-                    transNZ, emissNZ, initNZ, model$n_symbols, threads, verbose_dnm_warnings)
+          if (need_grad) {
+            objective(model$transition_probs, emissionArray, model$initial_probs, obsArray,
+                      transNZ, emissNZ, initNZ, model$n_symbols, threads, verbose_dnm_warnings)
+          } else {
+            -sum(logLikHMM(model$transition_probs, emissionArray,
+                       model$initial_probs, obsArray, threads))
+          }
         } else {
-          log_objective(model$transition_probs, emissionArray, model$initial_probs, obsArray,
-                        transNZ, emissNZ, initNZ, model$n_symbols, threads)
+          if (need_grad) {
+            log_objective(model$transition_probs, emissionArray, model$initial_probs, obsArray,
+                          transNZ, emissNZ, initNZ, model$n_symbols, threads)
+          } else {
+            -sum(log_logLikHMM(model$transition_probs, emissionArray,
+                           model$initial_probs, obsArray, threads))
+          }
         }
       } else {
-        if(sum(npEM)>0){
-          for(i in 1:model$n_channels){
-            model$emission_probs[[i]][]<-emissionArray[,1:model$n_symbols[i],i]
+        if (sum(npEM) > 0) {
+          for (i in 1:model$n_channels) {
+            model$emission_probs[[i]][] <- emissionArray[, 1:model$n_symbols[i], i]
           }
         }
         model
@@ -886,34 +851,36 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
 
     if (global_step) {
 
-      if(missing(lb)){
+      if (missing(lb)) {
         if (mhmm) {
-          lb <- c(rep(-50, length(initialvalues) - npCoef),
+          lb <- c(rep(-25, length(initialvalues) - npCoef),
                   rep(-150 / apply(abs(model$X), 2, max), model$n_clusters - 1))
-        } else lb <- -50
+        } else lb <- -25
 
       }
       lb <- pmin(lb, 2*initialvalues)
-      if(missing(ub)){
+      if (missing(ub)) {
         if (mhmm) {
-          ub <- c(rep(50, length(initialvalues) - npCoef),
+          ub <- c(rep(25, length(initialvalues) - npCoef),
                   rep(150 / apply(abs(model$X), 2, max), model$n_clusters - 1))
-        } else ub <- 50
+        } else ub <- 25
       }
       ub <- pmin(pmax(ub, 2*initialvalues),500)
 
-      if(is.null(control_global$maxeval)){
+      if (is.null(control_global$maxeval)) {
         control_global$maxeval <- 10000
       }
-      if(is.null(control_global$maxtime)){
+      if (is.null(control_global$maxtime)) {
         control_global$maxtime <- 60
       }
-      if(is.null(control_global$algorithm)){
+      if (is.null(control_global$algorithm)) {
         control_global$algorithm <- "NLOPT_GD_MLSL_LDS"
-        if(is.null(control_global$local_opts))
+        if (is.null(control_global$local_opts)) {
           control_global$local_opts <- list(algorithm = "NLOPT_LD_LBFGS",
-                                            ftol_rel = 1e-8, xtol_rel = 1e-4)
+                                            ftol_rel = 1e-6, xtol_rel = 1e-4)
+        }
       }
+      need_grad <- grepl("NLOPT_GD_",control_global$algorithm)
 
       if (mhmm) {
         globalres <- nloptr(x0 = initialvalues, eval_f = objectivef_mhmm, lb = lb, ub = ub,
@@ -931,7 +898,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     } else globalres <- NULL
 
     if (local_step) {
-      if( is.null(control_local$maxeval)) {
+      if ( is.null(control_local$maxeval)) {
         control_local$maxeval <- 10000
       }
       if (is.null(control_local$algorithm)) {
@@ -944,10 +911,10 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         control_local$ftol_rel <- 1e-10
       }
 
-
+      need_grad <- grepl("NLOPT_LD_",control_local$algorithm)
       if (mhmm) {
         localres <- nloptr(x0 = initialvalues, eval_f = objectivef_mhmm,
-                         opts = control_local, model = model, estimate = TRUE, ...)
+                           opts = control_local, model = model, estimate = TRUE, ...)
         model <- objectivef_mhmm(localres$solution, model, FALSE)
 
       } else {
@@ -975,9 +942,9 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     attr(model, "nobs") <- nobs
     attr(model, "type") <- attr(original_model, "type")
 
-    for(i in 1:model$n_clusters){
+    for (i in 1:model$n_clusters) {
       dimnames(model$transition_probs[[i]]) <- dimnames(original_model$transition_probs[[i]])
-      for(j in 1:model$n_channels){
+      for (j in 1:model$n_channels) {
         dimnames(model$emission_probs[[i]][[j]]) <- dimnames(original_model$emission_probs[[i]][[j]])
       }
     }
