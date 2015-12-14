@@ -1,0 +1,60 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Csardi \& Nepusz}{Csardi \&
+  Nepusz}{2006}]{Csardi2006}
+Csardi, G. \& Nepusz, T. (2006).
+\newblock The igraph software package for complex network research.
+\newblock {\em InterJournal}, {\em Complex Systems\/}(1695).
+
+\bibitem[\protect\citeauthoryear{Gabadinho, Ritschard, M{\"u}ller \&
+  Studer}{Gabadinho et~al.}{2011}]{Gabadinho2011}
+Gabadinho, A., Ritschard, G., M{\"u}ller, N.~S., \& Studer, M. (2011).
+\newblock Analyzing and visualizing state sequences in {R} with {TraMineR}.
+\newblock {\em Journal of Statistical Software}, {\em 40\/}(4), 1--37.
+
+\bibitem[\protect\citeauthoryear{Helske \& Helske}{Helske \&
+  Helske}{2015}]{HelskeHelske}
+Helske, S. \& Helske, J. (2015).
+\newblock Mixture hidden markov models for sequence data: the {seqHMM} package
+  in {R}.
+\newblock {\em Unpublished manuscript}.
+
+\bibitem[\protect\citeauthoryear{Johnson}{Johnson}{2014}]{nlopt}
+Johnson, S.~G. (2014).
+\newblock {\em The NLopt nonlinear-optimization package}.
+\newblock http://ab-initio.mit.edu/nlopt.
+
+\bibitem[\protect\citeauthoryear{Kucherenko \& Sytsko}{Kucherenko \&
+  Sytsko}{2005}]{Kucherenko2005}
+Kucherenko, S. \& Sytsko, Y. (2005).
+\newblock Application of deterministic low-discrepancy sequences in global
+  optimization.
+\newblock {\em Computational Optimization and Applications}, {\em 30\/}(3),
+  297--318.
+
+\bibitem[\protect\citeauthoryear{{R Core Team}}{{R Core
+  Team}}{2015}]{RCoreTeam2015}
+{R Core Team} (2015).
+\newblock {\em R: A Language and Environment for Statistical Computing}.
+\newblock Vienna, Austria: R Foundation for Statistical Computing.
+
+\bibitem[\protect\citeauthoryear{Rinnooy~Kan \& Timmer}{Rinnooy~Kan \&
+  Timmer}{1987a}]{Kan1987I}
+Rinnooy~Kan, A. \& Timmer, G. (1987a).
+\newblock Stochastic global optimization methods part {I}: Clustering methods.
+\newblock {\em Mathematical programming}, {\em 39\/}(1), 27--56.
+
+\bibitem[\protect\citeauthoryear{Rinnooy~Kan \& Timmer}{Rinnooy~Kan \&
+  Timmer}{1987b}]{Kan1987II}
+Rinnooy~Kan, A. \& Timmer, G. (1987b).
+\newblock Stochastic global optimization methods part {II}: Multi-level
+  methods.
+\newblock {\em Mathematical Programming}, {\em 39\/}(1), 57--78.
+
+\bibitem[\protect\citeauthoryear{Ypma, Borchers \& Eddelbuettel}{Ypma
+  et~al.}{2014}]{nloptr}
+Ypma, J., Borchers, H.~W., \& Eddelbuettel, D. (2014).
+\newblock {\em nloptr: R interface to NLopt}.
+\newblock R package version 1.0.4.
+
+\end{thebibliography}

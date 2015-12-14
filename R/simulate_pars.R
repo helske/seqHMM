@@ -1,7 +1,9 @@
 #' Simulate Parameters of Hidden Markov Models
 #' 
 #' These are helper functions for quick construction of initial values for various 
-#' model building functions.
+#' model building functions. 
+#' Mostly useful for global optimization algorithms which do not depend on initial values.
+#' 
 #' 
 #' @export
 #' @param n_states Number of states in each cluster.

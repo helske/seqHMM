@@ -30,56 +30,59 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow=NA, ncol=NA, byrow=FALSE,
   
   divmodels <- separate_mhmm(x)
   
-  if(!is.numeric(ncol.legend) && ncol.legend!="auto"){
-    warning("Argument ncol.legend only accepts values \"auto\" or a numerical vector.")
-    ncol.legend <- "auto"
+  
+  if (!is.na(nrow) && (nrow < 0 || nrow %% 1 != 0)) {
+    stop("Argument nrow only accepts positive numeric values.")
+  }
+  if (!is.na(ncol) && (ncol < 0 || ncol %% 1 != 0)) {
+    stop("Argument ncol only accepts positive numeric values.")
   }
   
-  if(!is.numeric(row.prop) && row.prop!="auto"){
-    warning("Argument row.prop only accepts values \"auto\" or a numerical vector.")
-    row.prop <- "auto"
-  }else if(is.numeric(row.prop) && all.equal(sum(row.prop),1)!=TRUE){
-    warning("The elements of the vector provided for row.prop do not sum to 1. Argument row.prop was changed to \"auto\".")
-    row.prop <- "auto"
+  if (!is.logical(byrow)) {
+    stop("Argument byrow only accepts values TRUE and FALSE.")
   }
   
-  if(!is.numeric(col.prop) && col.prop!="auto"){
-    warning("Argument col.prop only accepts values \"auto\" or a numerical vector.")
-    col.prop <- "auto"
-  }else if(is.numeric(col.prop) && all.equal(sum(col.prop),1)!=TRUE){
-    warning("The elements of the vector provided for col.prop do not sum to 1. Argument col.prop was changed to \"auto\".")
-    col.prop <- "auto"
+  if (!is.numeric(ncol.legend) && ncol.legend != "auto") {
+    stop("Argument ncol.legend only accepts values \"auto\" or a numerical vector.")
+  }
+  
+  if (!is.numeric(row.prop) && row.prop!="auto") {
+    stop("Argument row.prop only accepts values \"auto\" or a numerical vector.")
+  } else if (is.numeric(row.prop) && all.equal(sum(row.prop), 1) != TRUE) {
+    stop("The elements of the vector provided for row.prop do not sum to 1.")
+  }
+  
+  if (!is.numeric(col.prop) && col.prop != "auto") {
+    stop("Argument col.prop only accepts values \"auto\" or a numerical vector.")
+  } else if (is.numeric(col.prop) && all.equal(sum(col.prop),1) != TRUE) {
+    stop("The elements of the vector provided for col.prop do not sum to 1.")
   }
   
   
   # Number of plots
-  if(is.null(which.plots)){
+  if (is.null(which.plots)) {
     which.plots <- 1:x$n_clusters
   }
   ngridplots <- length(which.plots)
   
   
-  if(is.na(nrow) && is.na(ncol)){
+  if (is.na(nrow) && is.na(ncol)) {
     nrow <- ceiling(sqrt(ngridplots))
     ncol <- ceiling(ngridplots/nrow)
-  }else if(is.na(nrow)){
+  } else if(is.na(nrow)) {
     nrow <- ceiling(ngridplots/ncol)
-  }else if(is.na(ncol)){
+  } else if(is.na(ncol)) {
     ncol <- ceiling(ngridplots/nrow)
   }
   
   # Number of columns in legends
-  if(!is.na(withlegend) && withlegend==TRUE){ 
-    if(length(ncol.legend)==1 && ncol.legend=="auto"){
+  if (!is.na(withlegend) && withlegend==TRUE) { 
+    if (length(ncol.legend)==1 && ncol.legend=="auto") {
       ncol.legend <- rep(1, ngridplots)
-    }else if(length(ncol.legend)==1 && x$n_clusters>1){
+    } else if(length(ncol.legend)==1 && x$n_clusters>1) {
       ncol.legend <- rep(ncol.legend, ngridplots)
-    }else if(length(ncol.legend)<ngridplots){
-      warning(paste0("The length of ncol.legend does not match the number of requested plots. The last were arranged in 1 column."))
-      ncol.legend <- c(ncol.legend, rep(1,(ngridplots-length(ncol.legend))))
-    }else if(length(ncol.legend)>ngridplots){
-      warning(paste0("The length of ncol.legend does not match the number of requested plots. Only the first ", x$n_clusters, " arguments of \"ncol.legend\" were used."))
-      ncol.legend <- ncol.legend[1:ngridplots]
+    } else if(length(ncol.legend) != ngridplots){
+      vertex.label  <- rep(ncol.legend, length.out = ngridplots)
     }
   }
   
@@ -95,12 +98,10 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow=NA, ncol=NA, byrow=FALSE,
     col.prop <- rep(1/ncol, ncol)
   }
   if(length(row.prop)!=nrow){
-    warning("The length of the vector provided for row.prop does not match the number of nrow in the plot. Argument row.prop was changed to \"auto\".")
-    row.prop <- rep(1/nrow, nrow)
+    stop("The length of the vector provided for row.prop does not match the number of nrow in the plot.")
   }
   if(length(col.prop)!=ncol){
-    warning("The length of the vector provided for col.prop does not match the number of columns in the plot. Argument col.prop was changed to \"auto\".")
-    col.prop <- rep(1/ncol, ncol)
+    stop("The length of the vector provided for col.prop does not match the number of columns in the plot.")
   }
   
   # Plotting order for layout

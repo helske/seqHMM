@@ -1,0 +1,56 @@
+\begin{theindex}
+
+  \item \texttt{BIC}, \hyperpage{21}, \hyperpage{30}
+  \item \texttt{biofam}, \hyperpage{3}
+  \item \texttt{build\_hmm}, \hyperpage{14}, \hyperpage{17}
+  \item \texttt{build\_mhmm}, \hyperpage{30}
+
+  \indexspace
+
+  \item \texttt{colorpalette}, \hyperpage{25}
+
+  \indexspace
+
+  \item \texttt{fit\_model}, \hyperpage{14--17}, \hyperpage{19}
+  \item \texttt{fit\_model}, \hyperpage{30}
+
+  \indexspace
+
+  \item \texttt{gridplot}, \hyperpage{7}, \hyperpage{10}, 
+		\hyperpage{36}
+
+  \indexspace
+
+  \item \texttt{hidden\_paths}, \hyperpage{27}
+
+  \indexspace
+
+  \item \texttt{logLik}, \hyperpage{19}, \hyperpage{30}
+
+  \indexspace
+
+  \item \texttt{mc\_to\_sc}, \hyperpage{23}, \hyperpage{30}
+  \item \texttt{mc\_to\_sc\_data}, \hyperpage{10}
+  \item \texttt{mssplot}, \hyperpage{37}
+
+  \indexspace
+
+  \item \texttt{plot.hmm}, \hyperpage{23}
+  \item \texttt{plot.mhmm}, \hyperpage{36}
+  \item \texttt{plot.ssp}, \hyperpage{6}
+  \item \texttt{plot\_colors}, \hyperpage{25}
+  \item \texttt{posterior\_probs}, \hyperpage{36}
+  \item \texttt{print.summary.mhmm}, \hyperpage{34}
+
+  \indexspace
+
+  \item \texttt{separate\_mhmm}, \hyperpage{36}
+  \item \texttt{ssp}, \hyperpage{6, 7}, \hyperpage{36}
+  \item \texttt{ssplot}, \hyperpage{5}, \hyperpage{10}, \hyperpage{27}
+  \item \texttt{summary.mhmm}, \hyperpage{34}
+
+  \indexspace
+
+  \item \texttt{trim\_model}, \hyperpage{30}
+
+\end{theindex}

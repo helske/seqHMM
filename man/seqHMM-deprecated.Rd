@@ -93,13 +93,15 @@ Bounds are used only in the global optimization step.}
 numerical stability at a cost of decreased computational performance. Default is \code{FALSE}.}
 
 \item{...}{Additional arguments to \code{nloptr}.
-\item{logLik}{Log-likelihood of the estimated model. }
-\item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
-(\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
-number of estimated models in restarted EM with the best likelihood (\code{n_optimum}). }
-\item{global_results}{Results after the global step. }
-\item{local_results}{Results after the local step. }
-\item{call}{The matched function call. }}
+\describe{
+  \item{logLik}{Log-likelihood of the estimated model. }
+  \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
+  (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
+  number of estimated models in restarted EM with the best likelihood (\code{n_optimum}). }
+  \item{global_results}{Results after the global step. }
+  \item{local_results}{Results after the local step. }
+  \item{call}{The matched function call. }
+  }}
 
 \item{maxit}{Number of iterations. After zeroing small values, the model is
 refitted, and this is repeated until there is nothing to trim or \code{maxit}
