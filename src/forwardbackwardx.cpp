@@ -1,3 +1,4 @@
+// Forward-backward algorithm for mixture hidden Markov models
 #include "seqHMM.h"
 
 // [[Rcpp::export]]

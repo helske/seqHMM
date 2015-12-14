@@ -1,3 +1,4 @@
+//Viterbi algorithm for MHMM
 #include "seqHMM.h"
 
 // [[Rcpp::export]]

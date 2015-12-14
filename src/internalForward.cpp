@@ -1,3 +1,5 @@
+// Internal forward algorithms for HMMs and MHMMs
+
 #include "seqHMM.h"
 void internalForward(const arma::mat& transition, const arma::cube& emission, const arma::vec& init,
   const arma::icube& obs, arma::cube& alpha, arma::mat& scales, int threads) {

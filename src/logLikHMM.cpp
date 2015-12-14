@@ -1,3 +1,4 @@
+// log-likelihood of HMM
 #include "seqHMM.h"
 // [[Rcpp::export]]
 

@@ -1,3 +1,5 @@
+// log-likelihood of MHMM using log-space
+
 #include "seqHMM.h"
 // [[Rcpp::export]]
 

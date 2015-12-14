@@ -1,3 +1,5 @@
+// internal backward algorithm using log-space
+
 #include "seqHMM.h"
 
 void log_internalBackward(const arma::mat& transition, const arma::cube& emission,

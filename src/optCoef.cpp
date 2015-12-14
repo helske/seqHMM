@@ -1,3 +1,4 @@
+//Estimation of beta coefficients
 #include "seqHMM.h"
 
 unsigned int optCoef(arma::mat& weights, const arma::icube& obs, const arma::cube& emission,

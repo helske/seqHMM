@@ -17,18 +17,18 @@ LinkingTo: Rcpp, RcppArmadillo
 Depends:
     R (>= 3.0.0)
 Imports:
-    graphics,
-    grDevices,
-    grid,
     gridBase,
     igraph,
     Matrix,
-    methods,
     nloptr,
     numDeriv,
     Rcpp (>= 0.11.3),
-    stats,
     TraMineR (>= 1.8-8),
+    graphics,
+    grDevices,
+    grid,
+    methods,
+    stats,
     utils
 Suggests:
     MASS,
