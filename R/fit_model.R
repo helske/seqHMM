@@ -47,7 +47,7 @@
 #'    \item{maxtime}{\code{60} (maximum time for global optimization. Set to 0 for unlimited time.)}
 #'}
 #' @param lb,ub Lower and upper bounds for parameters in Softmax parameterization.
-#' Default interval is [pmin(-25,2*initialvalues), pmax(14,2*initialvalues)], except for beta coefficients,
+#' Default interval is [pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)], except for beta coefficients,
 #' where the scale of covariates is taken into account.
 #' Note that it might still be a good idea to scale covariates around unit scale.
 #' Bounds are used only in the global optimization step.
@@ -270,6 +270,7 @@
 #' hmm_5$logLik # -21675.4
 #' }
 #'
+#' \dontrun{
 #' # Multichannel
 #'
 #' data("biofam3c")
@@ -399,7 +400,7 @@
 #'   formula = ~sex + cohort, data = biofam3c$covariates,
 #'   channel_names = c("Marriage", "Parenthood", "Residence"))
 #'
-#' \dontrun{
+#' 
 #' # Fitting the model with different settings
 #'
 #' # Only EM with default values
@@ -422,13 +423,16 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
                       log_space = FALSE, verbose_dnm_warnings = TRUE, ...){
 
 
-  if(!inherits(model, c("hmm", "mhmm")))
+  if (!inherits(model, c("hmm", "mhmm"))){
     stop("Argument model must be an object of class 'hmm' or 'mhmm.")
+  }
 
-  if(!em_step && !global_step && !local_step){
+  if (!em_step && !global_step && !local_step) {
     stop("No method chosen for estimation. Choose at least one from em_step, global_step, and local_step.")
   }
-  if (threads < 1) stop("Argument threads must be a positive integer.")
+  if (threads < 1) {
+    stop("Argument threads must be a positive integer.")
+  }
 
   mhmm <- inherits(model, c("mhmm"))
 

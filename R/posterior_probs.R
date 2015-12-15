@@ -8,7 +8,11 @@
 #' @param log_space Compute posterior probabilities in logarithmic scale. Default is \code{FALSE}.
 #' @return Posterior probabilities. In case of multiple observations,
 #' these are computed independently for each sequence.
+#' @examples 
 #' 
+#' pb <- posterior_probs(mhmm_biofam)
+#' # locally most probable states for first subject:
+#' pb[,,1]
 posterior_probs <- function(model, log_space = FALSE){
   fb <- forward_backward(model, log_space = log_space)
   if (!log_space) {
