@@ -14,10 +14,9 @@
   edge.arrow.size = 1.5, edge.label.family = "sans", label.signif = 2,
   label.scientific = FALSE, label.max.length = 6, trim = 1e-15,
   combine.slices = 0.05, combined.slice.color = "white",
-  combined.slice.label = "others", withlegend = "bottom",
-  legend.pos = "center", ltext = NULL, legend.prop = 0.5,
-  cex.legend = 1, ncol.legend = "auto", cpal = "auto", main = "auto",
-  ...)
+  combined.slice.label = "others", withlegend = "bottom", ltext = NULL,
+  legend.prop = 0.5, cex.legend = 1, ncol.legend = "auto",
+  cpal = "auto", main = "auto", ...)
 }
 \arguments{
 \item{x}{A hidden Markov model object of class \code{mhmm} created with

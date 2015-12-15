@@ -224,10 +224,10 @@ ssplot <- function(x, hidden.paths = NULL,
                 ylab.pos = "auto", 
                 cex.lab = 1, cex.axis = 1, ...){
   
-  sspargs <- do.call(ssp,args = as.list(match.call())[-1])
+  sspargs <- do.call(ssp, args = as.list(match.call())[-1])
   plot.new()  
   grid.newpage()
   savepar <- par(no.readonly = TRUE)
   on.exit(savepar, add = TRUE)
-  do.call(SSPlotter,args = sspargs)
+  do.call(SSPlotter, args = sspargs)
 }
