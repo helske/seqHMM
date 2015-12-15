@@ -8,15 +8,21 @@
 #'  mixture HMM of class \code{mhmm}.
 #' 
 #' @return Most probable paths of hidden states as an \code{stslist} object
-#' (see \code{\link{seqdef}}). The log-probability included as an attribute.
+#' (see \code{\link{seqdef}}). The log-probability included as an attribute \code{log_prob}.
 #'   
 #' @examples 
-#' # Loading a hidden Markov model of the biofam data (hmm object)
-#' data(hmm_biofam)
 #' 
-#' # Computing the most probable paths of hidden states
 #' mpp <- hidden_paths(hmm_biofam)
-#'   
+#' ssplot(mpp, type = "I", tlim = 1:100)
+#' 
+#' # because the model structure is so sparse that the posterior probabilities are 
+#' # mostly peaked to single state at each time point, the joint probability of 
+#' # observations and most probable paths of hidden states is almost identical to 
+#' # log-likelihood:
+#' 
+#' sum(attr(mpp, "log_prob"))
+#' logLik(hmm_biofam)
+#' 
 #' @seealso
 #'   \code{\link{hmm_biofam}} for information on the model used in the example;
 #'   and \code{\link{seqIplot}}, \code{\link{ssplot}}, or \code{\link{mssplot}}
@@ -93,7 +99,7 @@ hidden_paths <- function(model){
     attr(mpp, "cpal") <- cp[1:sum(model$n_states)]
   }
   
-  attr(mpp, "log_prob") <- out$logp
+  attr(mpp, "log_prob") <- c(out$logp)
   
   mpp
 }
