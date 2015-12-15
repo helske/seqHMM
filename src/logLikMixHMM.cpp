@@ -13,7 +13,6 @@ NumericVector logLikMixHMM(const arma::mat& transition, NumericVector emissionAr
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
   
-  unsigned int q = coef.n_rows;
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
     warning(
