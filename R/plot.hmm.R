@@ -407,7 +407,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
       if (hasArg(rescale)) {
         rescale  <- dots$rescale
       } else {
-        rescale = FALSE
+        rescale <- FALSE
       }
       if (hasArg(xlim)) {
         xlim  <- dots$xlim

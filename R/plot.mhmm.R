@@ -149,25 +149,25 @@
 
 
 plot.mhmm <- function(x, interactive = TRUE,
-                            ask = FALSE, which.plots = NULL, 
-                            nrow = NA, ncol = NA, byrow = FALSE,
-                            row.prop = "auto", col.prop = "auto", 
-                            layout = "horizontal", pie = TRUE, 
-                            vertex.size = 40, vertex.label = "initial.probs", 
-                            vertex.label.dist = "auto", vertex.label.pos = "bottom",
-                            vertex.label.family = "sans",
-                            loops = FALSE, edge.curved = TRUE, edge.label = "auto", 
-                            edge.width = "auto", cex.edge.width = 1, 
-                            edge.arrow.size = 1.5, edge.label.family = "sans",
-                            label.signif = 2, label.scientific = FALSE, label.max.length = 6,
-                            trim = 1e-15, 
-                            combine.slices = 0.05, combined.slice.color = "white", 
-                            combined.slice.label = "others",
-                            withlegend = "bottom", legend.pos = "center", ltext = NULL, 
-                            legend.prop = 0.5, cex.legend = 1, ncol.legend = "auto", 
-                            cpal = "auto", main = "auto", ...){
+                      ask = FALSE, which.plots = NULL, 
+                      nrow = NA, ncol = NA, byrow = FALSE,
+                      row.prop = "auto", col.prop = "auto", 
+                      layout = "horizontal", pie = TRUE, 
+                      vertex.size = 40, vertex.label = "initial.probs", 
+                      vertex.label.dist = "auto", vertex.label.pos = "bottom",
+                      vertex.label.family = "sans",
+                      loops = FALSE, edge.curved = TRUE, edge.label = "auto", 
+                      edge.width = "auto", cex.edge.width = 1, 
+                      edge.arrow.size = 1.5, edge.label.family = "sans",
+                      label.signif = 2, label.scientific = FALSE, label.max.length = 6,
+                      trim = 1e-15, 
+                      combine.slices = 0.05, combined.slice.color = "white", 
+                      combined.slice.label = "others",
+                      withlegend = "bottom", ltext = NULL, legend.prop = 0.5, 
+                      cex.legend = 1, ncol.legend = "auto", cpal = "auto", 
+                      main = "auto", ...){
   
-  if(interactive){
+  if (interactive) {
     do.call(mHMMplotint, c(list(x = x, ask = ask, which.plots = which.plots, layout = layout, pie = pie, 
                                 vertex.size = vertex.size, vertex.label = vertex.label, 
                                 vertex.label.dist = vertex.label.dist, vertex.label.pos = vertex.label.pos,
@@ -183,26 +183,10 @@ plot.mhmm <- function(x, interactive = TRUE,
                                 withlegend = withlegend, ltext = ltext, legend.prop = legend.prop, 
                                 cex.legend = cex.legend, ncol.legend = ncol.legend, cpal = cpal,
                                 main = main), list(...)))
-  }else{
-    do.call(mHMMplotgrid, c(list(x = x, which.plots =  which.plots, nrow = nrow, ncol = ncol, 
-                                 byrow = byrow,
-                                 row.prop = row.prop, col.prop = col.prop, 
-                                 layout = layout, pie = pie, 
-                                 vertex.size = vertex.size, vertex.label = vertex.label, 
-                                 vertex.label.dist = vertex.label.dist, vertex.label.pos = vertex.label.pos,
-                                 vertex.label.family = vertex.label.family,
-                                 loops = loops, edge.curved = edge.curved, edge.label = edge.label, 
-                                 edge.width = edge.width, cex.edge.width = cex.edge.width, 
-                                 edge.arrow.size = edge.arrow.size, edge.label.family = edge.label.family,
-                                 label.signif = label.signif, label.scientific = label.scientific, 
-                                 label.max.length = label.max.length,
-                                 trim = trim, 
-                                 combine.slices = combine.slices, combined.slice.color = combined.slice.color, 
-                                 combined.slice.label = combined.slice.label,
-                                 withlegend = withlegend, legend.pos = legend.pos, ltext = ltext, 
-                                 legend.prop = legend.prop, 
-                                 cex.legend = cex.legend, ncol.legend = ncol.legend, cpal = cpal,
-                                 main = main), list(...)))
+  } else {
+    args <- as.list(match.call())[-1]
+    args$ask <- args$interactive <- NULL
+    do.call(mHMMplotgrid, args)
   }
   
 }
