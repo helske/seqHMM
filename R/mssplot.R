@@ -176,8 +176,8 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
                     legend.prop = 0.3, cex.legend = 1,
                     hidden.states.colors = "auto", hidden.states.labels = "auto",
                     xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
-                    yaxis = FALSE, ylab = "auto", hidden.states.title = "Hidden states", 
-                    ylab.pos = "auto", 
+                    ylab = "auto", hidden.states.title = "Hidden states", 
+                    yaxis = FALSE, ylab.pos = "auto", 
                     cex.lab = 1, cex.axis = 1, ...){
   
   # Checking for class of x

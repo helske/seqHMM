@@ -122,6 +122,8 @@
 #'   
 #' @param hidden.states.title Optional label for the hidden state plot (in the 
 #'   y-axis). The default is \code{"Hidden states"}.
+#' 
+#' @param yaxis Controls whether or not to plot the y-axis. The default is \code{FALSE}.
 #'   
 #' @param ylab.pos Controls the position of the y axis labels (labels for 
 #'   channels and/or hidden states). Either \code{"auto"} or a numerical vector 
@@ -231,8 +233,8 @@ ssp <- function(x, hidden.paths = NULL,
                 legend.prop = 0.3, cex.legend = 1,
                 hidden.states.colors = "auto", hidden.states.labels = "auto",
                 xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
-                yaxis = FALSE, ylab = "auto", hidden.states.title = "Hidden states", 
-                ylab.pos = "auto", 
+                ylab = "auto", hidden.states.title = "Hidden states", 
+                yaxis = FALSE, ylab.pos = "auto", 
                 cex.lab = 1, cex.axis = 1, ...){
   
   arguments <- list()
