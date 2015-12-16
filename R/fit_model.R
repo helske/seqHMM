@@ -182,10 +182,11 @@
 #'
 #' ##############################################################
 #'
+#' \dontrun{
 #' #' # Three-state three-channel hidden Markov model
 #' # See ?hmm_biofam for five-state version
 #'
-#' data(biofam3c)
+#' data("biofam3c")
 #'
 #' # Building sequence objects
 #' marr_seq <- seqdef(biofam3c$married, start = 15,
@@ -241,8 +242,6 @@
 #' hmm_1 <- fit_model(init_hmm_bf)
 #' hmm_1$logLik # -24179.1
 #'
-#' \dontrun{
-#'
 #' # Only LBFGS
 #' hmm_2 <- fit_model(init_hmm_bf, em_step = FALSE, local_step = TRUE)
 #' hmm_2$logLik # -22267.75
@@ -271,7 +270,7 @@
 #' }
 #'
 #' \dontrun{
-#' # Multichannel
+#' # Mixture HMM
 #'
 #' data("biofam3c")
 #'
