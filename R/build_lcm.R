@@ -148,7 +148,7 @@ build_lcm <-
       }
       emission_probs <- emission_probs_list
       symbol_names <- lapply(observations,alphabet)
-      n_symbols <- sapply(symbol_names,length)
+      n_symbols <- lengths(symbol_names)
       for (i in 1:n_clusters) {
         if (any(n_symbols!=sapply(emission_probs[[i]],ncol))) {
           stop(paste("Number of columns in emission_probs of cluster", i, "is not equal to the number of symbols."))
