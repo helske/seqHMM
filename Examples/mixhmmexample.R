@@ -6,7 +6,7 @@ onlyfair <- sample(0:1, size = 100, replace = TRUE)
 
 obs <- matrix(0,100,100)
 
-obs[onlyfair==1,] <- sample(c("heads","tails"),size=length(obs[onlyfair==1,]),replace=TRUE)
+obs[onlyfair == 1, ] <- sample(c("heads", "tails"), size = length(obs[onlyfair == 1, ]),replace = TRUE)
 obs[sample(which(obs==0), size=sum(obs==0)/1.5)] <- 
   sample(c("heads","tails"), prob = c(0.9,0.1), size=sum(obs==0)/1.5, replace=TRUE)
 obs[which(obs==0)] <- 

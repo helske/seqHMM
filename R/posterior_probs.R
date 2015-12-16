@@ -20,7 +20,7 @@ posterior_probs <- function(model, log_space = FALSE){
   } else {
     ll <- logLik(model, partials = TRUE, log_space = TRUE)
     fb$forward_probs + fb$backward_probs - 
-      array(rep(ll, each = sum(model$n_states)*model$length_of_sequences), 
+      array(rep(ll, each = sum(model$n_states) * model$length_of_sequences), 
         c(sum(model$n_states), model$length_of_sequences, model$n_sequences))
   }
 }

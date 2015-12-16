@@ -307,25 +307,25 @@ build_mhmm <-
         stop("The length of the sequences (number of columns) is not the same in all channels.")
       }
       
-      n_sequences<-nrow(observations[[1]])
-      length_of_sequences<-ncol(observations[[1]])
+      n_sequences <- nrow(observations[[1]])
+      length_of_sequences <- ncol(observations[[1]])
       
       
-      symbol_names<-lapply(observations,alphabet)
-      n_symbols<-sapply(symbol_names,length)
+      symbol_names <- lapply(observations, alphabet)
+      n_symbols <- lengths(symbol_names)
       for (i in 1:n_clusters) {
-        if (length(initial_probs[[i]]) != n_states[i]){
+        if (length(initial_probs[[i]]) != n_states[i]) {
           stop(paste("Length of initial_probs of cluster", i, "is not equal to the number of states."))
         }
-        if (any(lapply(emission_probs[[i]],nrow)!=n_states[i])) {
+        if (any(lapply(emission_probs[[i]],nrow) != n_states[i])) {
           stop(paste("Number of rows in emission_probs of cluster", i, "is not equal to the number of states."))
         }
         
-        if (any(n_symbols!=sapply(emission_probs[[i]],ncol))) {
+        if (any(n_symbols != sapply(emission_probs[[i]],ncol))) {
           stop(paste("Number of columns in emission_probs of cluster", i, "is not equal to the number of symbols."))
         }
-        if (!isTRUE(all.equal(c(sapply(emission_probs[[i]],rowSums)),
-                              rep(1,n_channels*n_states[i]),check.attributes=FALSE))) {
+        if (!isTRUE(all.equal(c(sapply(emission_probs[[i]], rowSums)),
+                              rep(1, n_channels * n_states[i]), check.attributes = FALSE))) {
           stop(paste("Emission probabilities in emission_probs of cluster", i, "do not sum to one."))
         }
         if (is.null(channel_names)) {

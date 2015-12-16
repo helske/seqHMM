@@ -199,20 +199,20 @@ build_hmm <- function(observations, transition_probs, emission_probs, initial_pr
       stop("The length of the sequences (number of columns) is not the same in all channels.")
     }
     
-    n_sequences<-nrow(observations[[1]])
-    length_of_sequences<-ncol(observations[[1]])
+    n_sequences <- nrow(observations[[1]])
+    length_of_sequences <- ncol(observations[[1]])
     
-    symbol_names<-lapply(observations,alphabet)
-    n_symbols<-sapply(symbol_names,length)
+    symbol_names <- lapply(observations,alphabet)
+    n_symbols <- lenghs(symbol_names)
     
-    if(any(sapply(emission_probs,nrow)!=n_states))
+    if (any(sapply(emission_probs,nrow) != n_states))
       stop("Number of rows in emission_probs is not equal to the number of states.")
-    if(any(n_symbols!=sapply(emission_probs,ncol)))
+    if (any(n_symbols != sapply(emission_probs,ncol)))
       stop("Number of columns in emission_probs is not equal to the number of symbols.")
-    if(!isTRUE(all.equal(c(sapply(emission_probs,rowSums)),rep(1,n_channels*n_states),check.attributes=FALSE)))
+    if (!isTRUE(all.equal(c(sapply(emission_probs,rowSums)),rep(1, n_channels * n_states), check.attributes = FALSE)))
       stop("Emission probabilities in emission_probs do not sum to one.")
     
-    if(is.null(channel_names)){
+    if(is.null(channel_names)) {
       if(is.null(channel_names <- names(observations))){
         channel_names <- paste("Channel", 1:n_channels)
       }
