@@ -203,7 +203,7 @@ build_hmm <- function(observations, transition_probs, emission_probs, initial_pr
     length_of_sequences <- ncol(observations[[1]])
     
     symbol_names <- lapply(observations,alphabet)
-    n_symbols <- lenghs(symbol_names)
+    n_symbols <- lengths(symbol_names)
     
     if (any(sapply(emission_probs,nrow) != n_states))
       stop("Number of rows in emission_probs is not equal to the number of states.")
