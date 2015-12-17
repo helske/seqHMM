@@ -35,7 +35,7 @@ vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = FALSE
     original_model <- object
     model <- combine_models(object)
 
-    if(model$n_channels = =  1){
+    if(model$n_channels ==  1){
       model$observations <- list(model$observations)
       model$emission_probs <- list(model$emission_probs)
     }
