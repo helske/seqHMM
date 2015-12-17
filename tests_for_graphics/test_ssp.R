@@ -219,7 +219,6 @@ ssplot(hmm_biofam, xaxis = FALSE)
 ssplot(hmm_biofam, xaxis = FALSE, plots = "both")
 ssplot(hmm_biofam, xaxis = FALSE, plots = "hidden.paths")
 
-
 ### With y-axis
 # Single-channel stslist
 ssplot(hmm_biofam$observations[[1]], yaxis = TRUE)

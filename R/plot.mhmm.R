@@ -140,9 +140,15 @@
 #' data(mhmm_mvad)
 #' 
 #' \dontrun{
-#' # Plotting models in the same graph
+#' # Plotting models in the same graph (in a grid)
 #' # Note: plotting window must be high enough!
-#' plot(mhmm_mvad, interactive = FALSE, nrow = 2, legend.prop = 0.3)
+#' set.seed(123)
+#' plot(mhmm_mvad, interactive = FALSE, 
+#'   # automatic layout, legend on the right-hand side
+#'   layout = layout_nicely, withlegend = "right", 
+#'   # Smaller and less curved edges
+#'   edge.curved = 0.2, cex.edge.width = 0.5, edge.arrow.size = 0.7,
+#'   vertex.label.pos = "bottom")
 #' }
 #' 
 
