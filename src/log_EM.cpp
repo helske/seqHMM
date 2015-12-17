@@ -121,7 +121,9 @@ List log_EM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
     double tmp = sum(ll);
     change = (tmp - sumlogLik) / (std::abs(sumlogLik) + 0.1);
     sumlogLik = tmp;
-
+    if (!arma::is_finite(sumlogLik)) {
+      return List::create(Named("error") = 6);
+    }
     if (trace > 1) {
       Rcout << "iter: " << iter;
       Rcout << " logLik: " << sumlogLik;

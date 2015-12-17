@@ -21,8 +21,7 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
 
   internalForward(transition, emission, init, obs, alpha, scales, threads);
   if(!scales.is_finite()) {
-    Rcpp::warning("Scaling factors contain non-finite values.");
-    return List::create(Named("error") = -10);
+    return List::create(Named("error") = 1);
   }
   double min_sf = scales.min();
   if (min_sf < 1e-150) {
@@ -30,6 +29,9 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
   }
   
   internalBackward(transition, emission, obs, beta, scales, threads);
+  if(!beta.is_finite()) {
+    return List::create(Named("error") = 2);
+  }
   arma::rowvec ll = arma::sum(log(scales));
   double sumlogLik = sum(ll);
   if (trace > 0) {
@@ -107,15 +109,17 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
 
     internalForward(transition, emission, init, obs, alpha, scales, threads);
     if(!scales.is_finite()) {
-      Rcpp::warning("Scaling factors contain non-finite values.");
-      return List::create(Named("error") = -10);
+      return List::create(Named("error") = 1);
+    }
+    internalBackward(transition, emission, obs, beta, scales, threads);
+    if(!beta.is_finite()) {
+      return List::create(Named("error") = 2);
     }
     double min_sf = scales.min();
     if (min_sf < 1e-150) {
       Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable.", min_sf);
     }
-    internalBackward(transition, emission, obs, beta, scales, threads);
-
+    
     ll = sum(log(scales));
 
     double tmp = sum(ll);

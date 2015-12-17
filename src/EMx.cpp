@@ -19,7 +19,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   coef.col(0).zeros();
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
-    return List::create(Named("error") = 1);
+    return List::create(Named("error") = 3);
   }
   weights.each_row() /= sum(weights, 0);
   
@@ -35,14 +35,16 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   arma::sp_mat sp_trans(transition);
   internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
   if(!scales.is_finite()) {
-    Rcpp::warning("Scaling factors contain non-finite values.");
-    return List::create(Named("error") = -10);
+    return List::create(Named("error") = 1);
+  }
+  internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
+  if(!beta.is_finite()) {
+    return List::create(Named("error") = 2);
   }
   double min_sf = scales.min();
   if (min_sf < 1e-150) {
-    Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable.", min_sf);
+    Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable. ", min_sf);
   }
-  internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
   
   double sumlogLik = arma::accu(log(scales));
   
@@ -133,21 +135,19 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
     arma::sp_mat sp_trans(transition);
     internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
     if(!scales.is_finite()) {
-      Rcpp::warning("Scaling factors contain non-finite values.");
-      return List::create(Named("error") = -10);
+      return List::create(Named("error") = 1);
+    }
+    internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
+    if(!beta.is_finite()) {
+      return List::create(Named("error") = 2);
     }
     double min_sf = scales.min();
     if (min_sf < 1e-150) {
-      Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable.", min_sf);
+      Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable. ", min_sf);
     }
-    internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
-    
     double tmp = arma::accu(log(scales));
     change = (tmp - sumlogLik) / (std::abs(sumlogLik) + 0.1);
     sumlogLik = tmp;
-    if (!arma::is_finite(sumlogLik)) {
-      return List::create(Named("error") = 4);
-    }
     if (trace > 1) {
       Rcout << "iter: " << iter;
       Rcout << " logLik: " << sumlogLik;

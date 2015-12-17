@@ -21,7 +21,7 @@ List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray,
 
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
-    return List::create(Named("error") = 1);
+    return List::create(Named("error") = 3);
   }
   weights.each_row() /= sum(weights, 0);
   weights = log(weights);
@@ -149,7 +149,7 @@ List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray,
     change = (tmp - sumlogLik) / (std::abs(sumlogLik) + 0.1);
     sumlogLik = tmp;
     if (!arma::is_finite(sumlogLik)) {
-      return List::create(Named("error") = 4);
+      return List::create(Named("error") = 6);
     }
     if (trace > 1) {
       Rcout << "iter: " << iter;

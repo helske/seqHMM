@@ -7,8 +7,7 @@ Markov Models and Their Restricted Variants}
 \usage{
 fit_model(model, em_step = TRUE, global_step = FALSE, local_step = FALSE,
   control_em = list(), control_global = list(), control_local = list(),
-  lb, ub, threads = 1, log_space = FALSE, verbose_dnm_warnings = TRUE,
-  ...)
+  lb, ub, threads = 1, log_space = FALSE, ...)
 }
 \arguments{
 \item{model}{Object of class \code{hmm} or \code{mhmm}.}
@@ -75,10 +74,6 @@ Bounds are used only in the global optimization step.}
 
 \item{log_space}{Make computations using log-space instead of scaling for greater
 numerical stability at a cost of decreased computational performance. Default is \code{FALSE}.}
-
-\item{verbose_dnm_warnings}{If \code{TRUE} (default), global and local
-optimization steps can produce warnings during the computation of objective function.
-If \code{FALSE}, these warnings are omitted.}
 
 \item{...}{Additional arguments to \code{nloptr}.
 \describe{

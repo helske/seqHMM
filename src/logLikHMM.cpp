@@ -11,10 +11,10 @@ NumericVector logLikHMM(const arma::mat& transition, NumericVector emissionArray
   arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
   arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
 
-  NumericVector ll(obs.n_slices);
-
+  arma::vec ll(obs.n_slices);
+  arma::mat transition_t(transition.t());
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
-  default(none) shared(ll, obs, init, emission, transition)
+  default(none) shared(ll, obs, init, emission, transition_t)
   for (int k = 0; k < obs.n_slices; k++) {
     arma::vec alpha = init;
     
@@ -27,7 +27,7 @@ NumericVector logLikHMM(const arma::mat& transition, NumericVector emissionArray
     alpha /= tmp;
     
     for (unsigned int t = 1; t < obs.n_cols; t++) {
-      alpha = transition.t() * alpha;
+      alpha = transition_t * alpha;
       for (unsigned int r = 0; r < obs.n_rows; r++) {
         alpha %= emission.slice(r).col(obs(r, t, k));
       }
@@ -38,6 +38,6 @@ NumericVector logLikHMM(const arma::mat& transition, NumericVector emissionArray
     }
   }
 
-  return ll;
+  return wrap(ll);
 }
 

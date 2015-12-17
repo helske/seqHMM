@@ -17,10 +17,7 @@ NumericVector log_logLikMixHMM(NumericVector transitionMatrix, NumericVector emi
   
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
-    warning(
-      "Coefficients of covariates resulted non-finite cluster probabilities. Returning -Inf.");
     return wrap(-arma::math::inf());
-    
   }
   weights.each_row() /= sum(weights, 0);
   
@@ -29,7 +26,7 @@ NumericVector log_logLikMixHMM(NumericVector transitionMatrix, NumericVector emi
   emission = log(emission);
   init = log(init);
   
-  NumericVector ll(obs.n_slices);
+  arma::vec ll(obs.n_slices);
   
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(ll, obs, weights, init, emission, transition, numberOfStates)
@@ -51,6 +48,6 @@ NumericVector log_logLikMixHMM(NumericVector transitionMatrix, NumericVector emi
       ll(k) = logSumExp(alpha);
     }
     
-    return ll;
+    return wrap(ll);
 }
 

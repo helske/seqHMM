@@ -13,7 +13,7 @@ unsigned int optCoef(arma::mat& weights, const arma::icube& obs, const arma::cub
     bool solve_ok = arma::solve(tmpvec, hCoef(weights, X),
         gCoef(obs, beta, scales, emission, initk, weights, X, cumsumstate, numberOfStates));
     if (solve_ok == false) {
-      return (2);
+      return (4);
     }
 
     arma::mat coefnew(coef.n_rows, coef.n_cols - 1);
@@ -31,7 +31,7 @@ unsigned int optCoef(arma::mat& weights, const arma::icube& obs, const arma::cub
     }
     weights = exp(X * coef).t();
     if (!weights.is_finite()) {
-      return (3);
+      return (5);
     }
     weights.each_row() /= sum(weights, 0);
 

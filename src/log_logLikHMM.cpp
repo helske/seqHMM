@@ -18,7 +18,7 @@ NumericVector log_logLikHMM(NumericVector transitionMatrix, NumericVector emissi
   emission = log(emission);
   init = log(init);
   
-  NumericVector ll(obs.n_slices);
+  arma::vec ll(obs.n_slices);
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(ll, obs, init, emission, transition)
     for (int k = 0; k < obs.n_slices; k++) {
@@ -41,6 +41,6 @@ NumericVector log_logLikHMM(NumericVector transitionMatrix, NumericVector emissi
       ll(k) = logSumExp(alpha);
     }
     
-    return ll;
+    return wrap(ll);
 }
 

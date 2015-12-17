@@ -19,7 +19,7 @@ List forwardbackward(const arma::mat& transition, NumericVector emissionArray,
   
 
   if(!scales.is_finite()) {
-    Rcpp::stop("Scaling factors contain non-finite values. Check the model or try using the log-space version of the algorithm.");
+    Rcpp::stop("Scaling factors contain non-finite values. \n Check the model or try using the log-space version of the algorithm.");
   }
   double min_sf = scales.min();
   if (min_sf < 1e-150) {

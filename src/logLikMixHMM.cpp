@@ -15,17 +15,14 @@ NumericVector logLikMixHMM(const arma::mat& transition, NumericVector emissionAr
   
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
-    warning(
-      "Coefficients of covariates resulted non-finite cluster probabilities. Returning -Inf.");
     return wrap(-arma::math::inf());
-    
   }
   weights.each_row() /= sum(weights, 0);
   
-  NumericVector ll(obs.n_slices);
-  
+  arma::vec ll(obs.n_slices);
+  arma::sp_mat transition_t(transition.t());
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
-  default(none) shared(ll, obs, weights, init, emission, transition, numberOfStates)
+  default(none) shared(ll, obs, weights, init, emission, transition_t, numberOfStates)
     for (int k = 0; k < obs.n_slices; k++) {
       arma::vec alpha = init % reparma(weights.col(k), numberOfStates);
       
@@ -38,7 +35,7 @@ NumericVector logLikMixHMM(const arma::mat& transition, NumericVector emissionAr
       alpha /= tmp;
       
       for (unsigned int t = 1; t < obs.n_cols; t++) {
-        alpha = transition.t() * alpha;
+        alpha = transition_t * alpha;
         for (unsigned int r = 0; r < obs.n_rows; r++) {
           alpha %= emission.slice(r).col(obs(r, t, k));
         }
@@ -48,5 +45,5 @@ NumericVector logLikMixHMM(const arma::mat& transition, NumericVector emissionAr
         alpha /= tmp;
       }
     }
-    return ll;
+    return wrap(ll);
 }
