@@ -5,7 +5,7 @@
 
 List objective(NumericVector transitionMatrix, NumericVector emissionArray,
   NumericVector initialProbs, IntegerVector obsArray, IntegerVector transNZ,
-  IntegerVector emissNZ, IntegerVector initNZ, const arma::ivec& nSymbols, int threads, bool verbose) {
+  IntegerVector emissNZ, IntegerVector initNZ, const arma::ivec& nSymbols, int threads) {
 
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
@@ -26,27 +26,16 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
 
   internalForward(transition, emission, init, obs, alpha, scales, threads);
   if (!scales.is_finite()) {
-    if(verbose){
-      Rcpp::warning("Scaling factors contain non-finite values.");
-    }
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
 
   internalBackward(transition, emission, obs, beta, scales, threads);
   if (!beta.is_finite()) {
-    if(verbose){
-      Rcpp::warning("Backward probabilities contain non-finite values.");
-    }
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
-  if(verbose){
-    double min_sf = scales.min();
-    if (min_sf < 1e-150) {
-      Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable.", min_sf);
-    }
-  }
+
 
   arma::mat gradmat(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ), obs.n_slices,
     arma::fill::zeros);

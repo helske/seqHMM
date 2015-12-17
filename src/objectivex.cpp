@@ -6,7 +6,7 @@ List objectivex(const arma::mat& transition, NumericVector emissionArray,
                 const arma::vec& init, IntegerVector obsArray, const arma::imat& ANZ,
                 IntegerVector emissNZ, const arma::ivec& INZ, const arma::ivec& nSymbols,
                 const arma::mat& coef, const arma::mat& X, arma::ivec& numberOfStates,
-                int threads, bool verbose) {
+                int threads) {
 
 
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
@@ -23,9 +23,6 @@ List objectivex(const arma::mat& transition, NumericVector emissionArray,
       arma::fill::zeros);
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
-    if(verbose){
-    Rcpp::warning("Prior cluster probabilities contain non-finite values.");
-    }
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
@@ -45,27 +42,16 @@ List objectivex(const arma::mat& transition, NumericVector emissionArray,
   arma::sp_mat sp_trans(transition);
   internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
   if (!scales.is_finite()) {
-    if(verbose){
-    Rcpp::warning("Scaling factors contain non-finite values.");
-    }
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
 
   internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
   if (!beta.is_finite()) {
-    if(verbose){
-    Rcpp::warning("Backward probabilities contain non-finite values.");
-    }
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
-  if(verbose){
-  double min_sf = scales.min();
-  if (min_sf < 1e-150) {
-    Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable.", min_sf);
-  }
-  }
+
   arma::ivec cumsumstate = arma::cumsum(numberOfStates);
 
   arma::mat gradmat(
