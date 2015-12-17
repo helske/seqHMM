@@ -121,6 +121,7 @@
 #' @examples
 #'
 #' # Hidden Markov model
+#'
 #' data("mvad", package = "TraMineR")
 #'
 #' mvad_alphabet <-
@@ -135,21 +136,21 @@
 #'
 #' # Starting values for the emission matrix
 #' emiss <- matrix(
-#'   c(0.1, 0.1, 0.1, 0.1, 0.5, 0.1, # SC
-#'     0.1, 0.5, 0.1, 0.1, 0.1, 0.1, # FE
-#'     0.1, 0.1, 0.1, 0.3, 0.1, 0.3, # JL, TR
-#'     0.1, 0.1, 0.5, 0.1, 0.1, 0.1, # HE
-#'     0.5, 0.1, 0.1, 0.1, 0.1, 0.1),# EM
+#'   c(0.05, 0.05, 0.05, 0.05, 0.75, 0.05, # SC
+#'     0.05, 0.75, 0.05, 0.05, 0.05, 0.05, # FE
+#'     0.05, 0.05, 0.05, 0.4,  0.05, 0.4,  # JL, TR
+#'     0.05, 0.05, 0.75, 0.05, 0.05, 0.05, # HE
+#'     0.75, 0.05, 0.05, 0.05, 0.05, 0.05),# EM
 #'   nrow = 5, ncol = 6, byrow = TRUE)
 #'
 #' # Starting values for the transition matrix
 #' trans <-  matrix(
 #'   c(0.80, 0.05, 0.05, 0.05, 0.05,
-#'     0.05, 0.05, 0.80, 0.05, 0.05,
+#'     0.05, 0.80, 0.05, 0.05, 0.05,
 #'     0.05, 0.05, 0.80, 0.05, 0.05,
 #'     0.05, 0.05, 0.05, 0.80, 0.05,
 #'     0.05, 0.05, 0.05, 0.05, 0.80),
-#'   nrow=5, ncol=5, byrow=TRUE)
+#'   nrow = 5, ncol = 5, byrow = TRUE)
 #'
 #' # Starting values for initial state probabilities
 #' initial_probs <- c(0.2, 0.2, 0.2, 0.2, 0.2)
@@ -159,27 +160,29 @@
 #'   transition_probs = trans, emission_probs = emiss,
 #'   initial_probs = initial_probs)
 #'
-#' hmm_mvad <- fit_model(init_hmm_mvad)$model
+#' fit_hmm_mvad <- fit_model(init_hmm_mvad)
 #'
 #' # Markov model
 #'
+#' set.seed(123)
 #' init_mm_mvad <- build_mm(observations = mvad_seq,
 #'   transition_probs = simulate_transition_probs(6),
 #'   initial_probs = rep(1/6,6))
 #'
-#' mm_mvad <- fit_model(init_mm_mvad)$model
+#' fit_mm_mvad <- fit_model(init_mm_mvad)
 #'
-#' logLik(hmm_mvad)
-#' logLik(mm_mvad)
+#' fit_hmm_mvad$logLik
+#' fit_mm_mvad$logLik
 #'
+#' \dontrun{
 #' require("igraph") #for layout_in_circle
 #'
-#' plot(mm_mvad, layout = layout_in_circle, edge.curved = FALSE,
+#' plot(fit_mm_mvad$model, layout = layout_in_circle, edge.curved = FALSE,
 #'   edge.arrow.size = 0.5, edge.width = 1)
 #'
 #' ##############################################################
 #'
-#' \dontrun{
+#'
 #' #' # Three-state three-channel hidden Markov model
 #' # See ?hmm_biofam for five-state version
 #'
@@ -264,9 +267,7 @@
 #'    init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE, lb = -50, ub = 50,
 #' control_global = list(algorithm = "NLOPT_GD_STOGO", maxeval = 2500, maxtime = 0), threads = 1)
 #' hmm_5$logLik # -21675.4
-#' }
-#'
-#' \dontrun{
+
 #' # Mixture HMM
 #'
 #' data("biofam3c")
@@ -396,7 +397,7 @@
 #'   formula = ~sex + cohort, data = biofam3c$covariates,
 #'   channel_names = c("Marriage", "Parenthood", "Residence"))
 #'
-#' 
+#'
 #' # Fitting the model with different settings
 #'
 #' # Only EM with default values
@@ -417,33 +418,33 @@
 fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = FALSE,
                       control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1,
                       log_space = FALSE, ...){
-  
-  
+
+
   if (!inherits(model, c("hmm", "mhmm"))){
     stop("Argument model must be an object of class 'hmm' or 'mhmm.")
   }
-  
+
   if (!em_step && !global_step && !local_step) {
     stop("No method chosen for estimation. Choose at least one from em_step, global_step, and local_step.")
   }
   if (threads < 1) {
     stop("Argument threads must be a positive integer.")
   }
-  
+
   mhmm <- inherits(model, c("mhmm"))
-  
+
   if (mhmm) {
     df <- attr(model, "df")
     nobs <- attr(model, "nobs")
     original_model <- model
     model <- combine_models(model)
   }
-  
+
   if (model$n_channels == 1) {
     model$observations <- list(model$observations)
     model$emission_probs <- list(model$emission_probs)
   }
-  
+
   obsArray <- array(0, c(model$n_sequences, model$length_of_sequences,
                          model$n_channels))
   for(i in 1:model$n_channels) {
@@ -451,19 +452,19 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     obsArray[,,i][obsArray[,,i] > model$n_symbols[i]] <- model$n_symbols[i]
   }
   obsArray <- aperm(obsArray)
-  
+
   emissionArray<-array(1,c(model$n_states,max(model$n_symbols)+1,model$n_channels))
   for(i in 1:model$n_channels)
     emissionArray[,1:model$n_symbols[i],i]<-model$emission_probs[[i]]
-  
+
   if (em_step) {
     em.con <- list(print_level = 0, maxeval = 1000, reltol = 1e-12, restart = NULL)
     nmsC <- names(em.con)
     em.con[(namc <- names(control_em))] <- control_em
     if (length(noNms <- namc[!namc %in% nmsC]))
       warning("Unknown names in control_em: ", paste(noNms, collapse = ", "))
-    
-    
+
+
     if (!log_space) {
       if (mhmm) {
         resEM <- EMx(model$transition_probs, emissionArray, model$initial_probs, obsArray,
@@ -483,8 +484,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
                         model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
       }
     }
-    
-    
+
+
     if (resEM$error != 0) {
       err_msg <- switch(resEM$error,
                         "Scaling factors contain non-finite values.",
@@ -499,8 +500,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       } else warning(paste("EM algorithm failed:", err_msg))
       resEM$logLik <- -Inf
     }
-    
-    
+
+
     if (!is.null(em.con$restart)) {
       restart.con <- list(times = 0, print_level = em.con$print_level, maxeval = 100, reltol = 1e-8,
                           transition = TRUE, emission = TRUE, sd = 0.25)
@@ -509,7 +510,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       if (length(noNms <- namc[!namc %in% nmsC]))
         warning("Unknown names in control_em$restart: ", paste(noNms, collapse = ", "))
     }
-    
+
     counter <- 1
     if (!is.null(em.con$restart) && restart.con$times > 0 &&
         (restart.con$transition | restart.con$emission)) {
@@ -527,7 +528,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         random_emiss <- emissionArray
         random_trans <- model$transition_probs
       }
-      
+
       if (restart.con$transition) {
         nz_trans <- (random_trans > 0 & random_trans < 1)
         np_trans <- sum(nz_trans)
@@ -538,8 +539,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         np_emiss <- sum(nz_emiss)
         base_emiss <- random_emiss[nz_emiss]
       }
-      
-      
+
+
       for (i in 1:restart.con$times) {
         if (restart.con$transition) {
           random_trans[nz_trans] <- abs(base_trans + rnorm(np_trans, sd = restart.con$sd))
@@ -571,9 +572,9 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
                              model$n_symbols, restart.con$maxeval, restart.con$reltol,restart.con$print_level, threads)
           }
         }
-        
+
         resEMi$logLik
-        
+
         if (resEMi$error != 0) {
           err_msg <- switch(resEMi$error,
                             "Scaling factors contain non-finite values.",
@@ -605,7 +606,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
             resEM <- EM(resEM$transitionMatrix, resEM$emissionArray, resEM$initialProbs, obsArray,
                         model$n_symbols, em.con$maxeval, em.con$reltol,em.con$print_level, threads)
           }
-          
+
         } else {
           if (mhmm) {
             resEM <- log_EMx(resEM$transitionMatrix, resEM$emissionArray, resEM$initialProbs, obsArray,
@@ -618,15 +619,15 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         }
       }
     }
-    
+
     if (resEM$error == 0) {
       if (resEM$change < -em.con$reltol)
         warning("EM algorithm stopped due to decreasing log-likelihood. ")
-      
+
       emissionArray <- resEM$emissionArray
       for (i in 1:model$n_channels)
         model$emission_probs[[i]][] <- emissionArray[ , 1:model$n_symbols[i], i]
-      
+
       if (mhmm && (global_step || local_step)) {
         k <- 0
         for (m in 1:model$n_clusters) {
@@ -636,7 +637,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       } else {
         model$initial_probs[] <- resEM$initialProbs
       }
-      
+
       resEM$n_optimum <- counter
       model$transition_probs[]<-resEM$transitionMatrix
       model$coefficients[]<-resEM$coefficients
@@ -646,9 +647,9 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       ll <- -Inf
     }
   } else resEM <- NULL
-  
+
   if (global_step || local_step){
-    
+
     # Largest transition probabilities (for each row)
     x <- which(model$transition_probs > 0, arr.ind = TRUE)
     transNZ <- x[order(x[,1]),]
@@ -659,13 +660,13 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     npTM <- nrow(paramTM)
     transNZ <- model$transition_probs > 0
     transNZ[maxTM] <- 0
-    
-    
+
+
     emissNZ <- lapply(model$emission_probs, function(i) {
       x <- which(i > 0, arr.ind = TRUE)
       x[order(x[, 1]), ]
     })
-    
+
     if (model$n_states > 1) {
       maxEM <- lapply(model$emission_probs, function(i) cbind(1:model$n_states,max.col(i, ties.method = "first")))
       paramEM <- lapply(1:model$n_channels,function(i) {
@@ -683,13 +684,13 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     }
     maxEMvalue <- lapply(1:model$n_channels, function(i)
       apply(model$emission_probs[[i]],1,max))
-    
+
     emissNZ <- array(0, c(model$n_states,max(model$n_symbols), model$n_channels))
     for (i in 1:model$n_channels) {
       emissNZ[,1:model$n_symbols[i],i]<-model$emission_probs[[i]] > 0
       emissNZ[,1:model$n_symbols[i],i][maxEM[[i]]]<-0
     }
-    
+
     if (mhmm) {
       maxIP <- maxIPvalue <- npIP <- numeric(original_model$n_clusters)
       paramIP <-  initNZ <- vector("list",original_model$n_clusters)
@@ -706,10 +707,10 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       }
       initNZ<-unlist(initNZ)
       npIPAll <- sum(unlist(npIP))
-      
+
       npCoef<-length(model$coefficients[,-1])
       model$coefficients[,1] <- 0
-      
+
       initialvalues<-c(if((npTM+sum(npEM)+npIPAll)>0) log(c(
         if(npTM>0) model$transition_probs[paramTM],
         if(sum(npEM)>0) unlist(sapply(1:model$n_channels,
@@ -719,16 +720,16 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       )),
       model$coefficients[,-1]
       )
-      
+
     } else {
       maxIP <- which.max(model$initial_probs)
       maxIPvalue <- model$initial_probs[maxIP]
       paramIP <- setdiff(which(model$initial_probs > 0), maxIP)
-      
+
       npIP <- length(paramIP)
       initNZ <- model$initial_probs > 0
       initNZ[maxIP] <- 0
-      
+
       initialvalues<-c(if((npTM+sum(npEM)+npIP)>0) log(c(
         if(npTM>0) model$transition_probs[paramTM],
         if(sum(npEM)>0) unlist(sapply(1:model$n_channels,
@@ -736,10 +737,10 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         if(npIP>0) model$initial_probs[paramIP]))
       )
     }
-    
-    
+
+
     objectivef_mhmm<-function(pars, model, estimate = TRUE){
-      
+
       if(any(!is.finite(exp(pars))) && estimate)
         return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
       if(npTM>0){
@@ -767,7 +768,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       }
       model$initial_probs <- unlist(original_model$initial_probs)
       model$coefficients[,-1] <- pars[npTM+sum(npEM)+npIPAll+1:npCoef]
-      
+
       if (estimate) {
         if (!log_space) {
           if (need_grad) {
@@ -783,13 +784,13 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
             log_objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray,
                            transNZ, emissNZ, initNZ, model$n_symbols,
                            model$coefficients, model$X, model$n_states_in_clusters, threads)
-            
+
           } else {
             -sum(log_logLikMixHMM(model$transition_probs, emissionArray, model$initial_probs, obsArray,
                                   model$coefficients, model$X, model$n_states_in_clusters, threads))
           }
         }
-        
+
       } else {
         if (sum(npEM) > 0) {
           for (i in 1:model$n_channels) {
@@ -799,9 +800,9 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         model
       }
     }
-    
+
     objectivef_hmm <- function(pars, model, estimate = TRUE){
-      
+
       if(any(!is.finite(exp(pars))) && estimate)
         return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
       if(npTM>0){
@@ -818,14 +819,14 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
             emissionArray[,1:model$n_symbols[i],i]/rowSums(emissionArray[,1:model$n_symbols[i],i, drop = FALSE])
         }
       }
-      
+
       if(npIP>0){
         model$initial_probs[maxIP]<-maxIPvalue
         model$initial_probs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])
         model$initial_probs[]<-model$initial_probs/sum(model$initial_probs)
       }
-      
-      
+
+
       if (estimate) {
         if (!log_space) {
           if (need_grad) {
@@ -844,7 +845,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
                                  model$initial_probs, obsArray, threads))
           }
         }
-        
+
       } else {
         if (sum(npEM) > 0) {
           for (i in 1:model$n_channels) {
@@ -854,15 +855,15 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         model
       }
     }
-    
+
     if (global_step) {
-      
+
       if (missing(lb)) {
         if (mhmm) {
           lb <- c(rep(-25, length(initialvalues) - npCoef),
                   rep(-150 / apply(abs(model$X), 2, max), model$n_clusters - 1))
         } else lb <- -25
-        
+
       }
       lb <- pmin(lb, 2*initialvalues)
       if (missing(ub)) {
@@ -872,7 +873,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         } else ub <- 25
       }
       ub <- pmin(pmax(ub, 2*initialvalues),500)
-      
+
       if (is.null(control_global$maxeval)) {
         control_global$maxeval <- 10000
       }
@@ -887,7 +888,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         }
       }
       need_grad <- grepl("NLOPT_GD_",control_global$algorithm)
-      
+
       if (mhmm) {
         globalres <- nloptr(x0 = initialvalues, eval_f = objectivef_mhmm, lb = lb, ub = ub,
                             opts = control_global, model = model, estimate = TRUE, ...)
@@ -897,15 +898,15 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
                             opts = control_global, model = model, estimate = TRUE,  ...)
         model <- objectivef_hmm(globalres$solution, model, FALSE)
       }
-      
+
       if (globalres$status < 0) {
         warning(paste("Global optimization terminated:", globalres$message))
       }
       initialvalues <- globalres$solution
       ll <- -globalres$objective
-      
+
     } else globalres <- NULL
-    
+
     if (local_step) {
       if ( is.null(control_local$maxeval)) {
         control_local$maxeval <- 10000
@@ -919,13 +920,13 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       if (is.null(control_local$ftol_rel)) {
         control_local$ftol_rel <- 1e-10
       }
-      
+
       need_grad <- grepl("NLOPT_LD_",control_local$algorithm)
       if (mhmm) {
         localres <- nloptr(x0 = initialvalues, eval_f = objectivef_mhmm,
                            opts = control_local, model = model, estimate = TRUE, ...)
         model <- objectivef_mhmm(localres$solution, model, FALSE)
-        
+
       } else {
         localres <- nloptr(x0 = initialvalues, eval_f = objectivef_hmm,
                            opts = control_local, model = model, estimate = TRUE, ...)
@@ -936,24 +937,24 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       }
       ll <- -localres$objective
     } else localres <- NULL
-    
+
     if (mhmm) {
       rownames(model$coefficients) <- colnames(model$X)
       colnames(model$coefficients) <- model$cluster_names
     }
   } else globalres <- localres <- NULL
-  
+
   if (model$n_channels == 1) {
     model$observations <- model$observations[[1]]
     model$emission_probs <- model$emission_probs[[1]]
   }
-  
+
   if (mhmm) {
     model <- spread_models(model)
     attr(model, "df") <- df
     attr(model, "nobs") <- nobs
     attr(model, "type") <- attr(original_model, "type")
-    
+
     for (i in 1:model$n_clusters) {
       dimnames(model$transition_probs[[i]]) <- dimnames(original_model$transition_probs[[i]])
       for (j in 1:model$n_channels) {
@@ -961,10 +962,10 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       }
     }
   }
-  
+
   suppressWarnings(try(model <- trim_model(model, verbose = FALSE), silent = TRUE))
   list(model = model,
        logLik = ll, em_results = resEM[c("logLik", "iterations", "change", "n_optimum")],
        global_results = globalres, local_results = localres, call = match.call())
-  
+
 }

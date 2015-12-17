@@ -5,12 +5,12 @@ Version: 1.0.1
 Date: 2015-12-16
 Author: Jouni Helske, Satu Helske
 Maintainer: Jouni Helske <jouni.helske@jyu.fi>
-Description: Package seqHMM is designed for inference of mixture hidden Markov models 
-    and their restricted variants where both the hidden state space and the symbol 
-    space of observations is discrete, and observations consists of multiple 
-    sequences possibly with multiple channels such as life calendar data with 
-    multiple life domains. Maximum likelihood estimation via EM algorithm and 
-    direct numerical maximization with analytical gradients is supported. 
+Description: Package seqHMM is designed for inference of mixture hidden Markov models
+    and their restricted variants where both the hidden state space and the symbol
+    space of observations is discrete, and observations consists of multiple
+    sequences possibly with multiple channels such as life calendar data with
+    multiple life domains. Maximum likelihood estimation via EM algorithm and
+    direct numerical maximization with analytical gradients is supported.
     All main algorithms are written in C++.
 LazyData: true
 LinkingTo: Rcpp, RcppArmadillo
@@ -33,9 +33,9 @@ Imports:
 Suggests:
     MASS,
     nnet,
-    R.rsp
+    knitr
 License: GPL (>= 2)
 Encoding: UTF-8
 BugReports: https://github.com/helske/seqHMM/issues
-VignetteBuilder: R.rsp
+VignetteBuilder: knitr
 RoxygenNote: 5.0.1

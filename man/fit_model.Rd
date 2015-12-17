@@ -172,6 +172,7 @@ init_hmm_mvad <- build_hmm(observations = mvad_seq,
   transition_probs = trans, emission_probs = emiss,
   initial_probs = initial_probs)
 
+\dontrun{
 hmm_mvad <- fit_model(init_hmm_mvad)$model
 
 # Markov model
@@ -185,6 +186,7 @@ mm_mvad <- fit_model(init_mm_mvad)$model
 logLik(hmm_mvad)
 logLik(mm_mvad)
 
+
 require("igraph") #for layout_in_circle
 
 plot(mm_mvad, layout = layout_in_circle, edge.curved = FALSE,
@@ -192,7 +194,7 @@ plot(mm_mvad, layout = layout_in_circle, edge.curved = FALSE,
 
 ##############################################################
 
-\dontrun{
+
 #' # Three-state three-channel hidden Markov model
 # See ?hmm_biofam for five-state version
 
@@ -277,9 +279,6 @@ hmm_5 <- fit_model(
    init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE, lb = -50, ub = 50,
 control_global = list(algorithm = "NLOPT_GD_STOGO", maxeval = 2500, maxtime = 0), threads = 1)
 hmm_5$logLik # -21675.4
-}
-
-\dontrun{
 # Mixture HMM
 
 data("biofam3c")
