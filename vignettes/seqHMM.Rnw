@@ -242,7 +242,7 @@ where the diagonal blocks $A^k, k=1,\ldots,K$, are square matrices containing th
 
 
 
-\subsubsection{Covariates and cluster probabilities}
+\subsubsection{Covariates and cluster probabilities}\label{seq:covariates}
 
 Covariates can be added to MHMM to explain cluster memberships as in latent class analysis. The prior cluster probabilities now depend on the subject's covariate values $\textbf{x}_i$ and are defined as multinomial distribution:
 \begin{equation}
@@ -341,11 +341,6 @@ Data simulation   & \code{simulate\_hmm}, \code{simulate\_mhmm} \\
 Table \ref{table:functions} shows the functions and methods available in the \pkg{seqHMM} package. The package includes functions for estimating and evaluating HMMs and MHMMs as well as visualizing data and models. There are some functions for manipulating data and models, and for simulating model parameters or sequence data given a model. In the next sections we will discuss the usage of these functions more thoroughly.
 
 As the straightforward implementation of the forward--backward algorithm poses a great risk of under- and overflow, typically forward probabilities are scaled so that there should be no underflow. Although scaling is often sufficient for forward algorithm, it can still result in an overflow problem in the backward algorithm. This is especially true in case of global optimization algorithms which can search infeasible areas of parameter space. Thus, \code{seqHMM} also supports computation on the logarithmic scale in most of the algorithms, which further reduces the numerical unstabilities. On the other hand, as there is a need to back-transform to the natural scale during the algorithms, the log-space approach is somewhat slower than the scaling approach. Therefore, the default option is to use the scaling approach, which can be changed to the log-space approach by setting the \code{log\_space} argument to \code{TRUE} e.g. in \code{fit\_model}.
-
-
-\subsection{Installation}
-
-The \pkg{seqHMM} package is available on Comprehensive R Archive Repository (CRAN) and easily installed via \code{install.packages("seqHMM")}. Development versions can be obtained from GitHub\footnote{\url{https://github.com/helske/seqHMM}}.
 
 
 \subsection{Building and fitting models}
@@ -498,7 +493,6 @@ mc_initmod <- build_hmm(
 
 # For CRAN vignette: load the estimated model object for speed-up
 data("hmm_biofam")
-hmm_biofam2 <- hmm_biofam
 # mc_fit <- fit_model(mc_initmod, em_step = FALSE, local_step = TRUE,
 #   threads = 4)
 
@@ -507,7 +501,7 @@ hmm_biofam2 <- hmm_biofam
 For easy visualization of the model structure and parameters, we propose plotting HMMs as directed graphs. Such graphs are easily called with the \code{plot} method, with an object of class \code{hmm} as an argument. Figure \ref{fig:plottingHMM} illustrates a five-state HMM. The code for producing the plot is shown in section \hyperlink{code_plottingHMM}{4.4}.
 
 <<plottingHMM, fig.width='\\linewidth', fig.height=4.5, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Illustrating a hidden Markov model as a directed graph. Pies represent five hidden states, with slices showing emission probabilities of combinations of observed states. States with emission probability less than 0.05 are combined into one slice. Edges show the transtion probabilities. Initial probabilities of hidden states are given below the pies.", fig.align='center', fig.keep='last', cache = FALSE>>=
-plot(hmm_biofam2, vertex.size = 50, vertex.label.dist = 1.5,
+plot(hmm_biofam, vertex.size = 50, vertex.label.dist = 1.5,
   edge.curved = c(0, 0.8, -0.8, 0.8, 0, 0.8, 0),
   legend.prop = 0.3, combined.slice.label = "States with prob. < 0.05")
 @
@@ -517,7 +511,7 @@ Hidden states are presented with pie charts as vertices (or nodes), and transiti
 A simple default plot is easy to call, but the user has a lot of control over the layout. Figure \ref{fig:graphicalillustrations5} illustrates another possible visualization of the same model. The code is shown in section \hyperlink{code_graphicalillustrations5}{4.4}.
 
 <<graphicalillustrations5, fig.width='\\linewidth', fig.height=4, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Another version of the hidden Markov model of Figure 4 with a different layout and modified labels, legends, and colors. All observed states are shown.", fig.align='center', fig.keep='last', cache = FALSE>>=
-plot(hmm_biofam2, layout = matrix(c(1, 3, 3, 5,  3,
+plot(hmm_biofam, layout = matrix(c(1, 3, 3, 5,  3,
                                      0, 0, 1, 0, -1), ncol = 2),
   xlim = c(0.5, 5.5), ylim = c(-1.5,1.5), rescale = FALSE,
   vertex.size=50, edge.curved = FALSE, edge.width = 1, edge.arrow.size = 1,
@@ -533,7 +527,7 @@ The \code{ssplot} function (see section \ref{sec:vizualizing}) also accepts an o
 Figure \ref{fig:ssplotHMM} shows observed sequences with the most probable paths of hidden states given the model. Sequences are sorted according to multidimensional scaling scores computed from hidden paths. The code for creating the plot is show in section \hyperlink{ssplotHMM}{4.4}.
 
 <<ssplotHMM, fig.width=5.5, fig.height=5.5, dev.args=list(pointsize=10), fig.cap="Using the \\code{ssplot} function for a \\code{hmm} object makes it easy to plot observed sequences together with the most probable paths of hidden states given the model.", fig.align='center', fig.keep='last', cache = FALSE, echo = FALSE>>=
-ssplot(hmm_biofam2, plots = "both", type = "I", sortv = "mds.hidden",
+ssplot(hmm_biofam, plots = "both", type = "I", sortv = "mds.hidden",
   xtlab = 15:30, xlab = "Age", title = "Observed and hidden state sequences")
 @
 
@@ -655,7 +649,7 @@ We store the model as a separate object for ease of use and then compute BIC.
 <<code_mcHMM_BIC, cache=FALSE, echo = TRUE, message=FALSE, eval = TRUE>>=
 # Vignette: already loaded hmm_biofam
 #hmm_biofam <- mc_fit$model
-BIC(hmm_biofam2)
+BIC(hmm_biofam)
 @
 
 \subsection{Clustering and mixture hidden Markov models}
@@ -717,7 +711,7 @@ mhmm_fit <- fit_model(
 mhmm <- mhmm_fit$model
 @
 
-The \code{summary} method automatically computes some features for a MHMM, e.g. standard errors for covariates and prior and posterior cluster probabilities for subjects. A \code{print} method shows some summaries of these: estimates and standard errors for covariates, log-likelihood and BIC, and information on most probable clusters and prior probabilities. Parameter estimates for transitions, emissions, and initial probabilities are omitted by default. The classification table shows mean probabilities of belonging to each cluster by the most probable cluster (defined from posterior cluster probabilities). A good model shoud have values close to 1 on the diagonal.
+The \code{summary} method automatically computes some features for a MHMM, e.g. standard errors for covariates and prior and posterior cluster probabilities for subjects. A \code{print} method shows some summaries of these: estimates and standard errors for covariates (see section \ref{sec:MHMM}), log-likelihood and BIC, and information on most probable clusters and prior probabilities. Parameter estimates for transitions, emissions, and initial probabilities are omitted by default. The classification table shows mean probabilities of belonging to each cluster by the most probable cluster (defined from posterior cluster probabilities). A good model shoud have values close to 1 on the diagonal.
 
 <<code_summaryMHMM, cache=FALSE>>=
 summary(mhmm, conditional_se = FALSE)
@@ -732,7 +726,7 @@ The figures in section \ref{seq:vizHMM} illustrate the five-state multichannel H
 A basic HMM graph is easily called with the \code{plot} method.
 
 <<code_plottingHMMbasic, fig.width='\\linewidth', fig.height=4.5, dev.args=list(pointsize=10), echo=TRUE, fig.align='center', fig.keep='last', cache = FALSE, eval = TRUE, fig.cap="A default plot of a hidden Markov model.">>=
-plot(hmm)
+plot(hmm_biofam)
 @
 
 A simple default plot is a convenient way of visualizing the models during analysis process, but for publishing it is often better to modify the plot to get an output that best illustrates the structure of the model in hand. Figure \ref{fig:plottingHMM} and Figure \ref{fig:graphicalillustrations5} show two variations of the same model.
@@ -825,8 +819,7 @@ $\beta_{k}$               & Regression coefficients for cluster $k$ \\
 $\{\pi^k, A^k, B_1^k, \ldots, B_C^k, \beta_k\}$ & Model parameters for cluster $k$ \\
 \end{tabular}
 
-\section{Forward--Backward Algorithm}
-\label{app:forwardbackward}
+\section{Forward--Backward Algorithm}\label{app:forwardbackward}
 
 The \emph{forward variable}
 \[
