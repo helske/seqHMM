@@ -45,9 +45,9 @@ The default is 1e-12.}
 If the relative change of the final model of the restart phase is larger than the tolerance
 for the original EM phase, the final model is re-estimated with the original \code{reltol}
 and \code{maxeval} at the end of the EM step.}
-\item{n_optimum}{Save the log-likelihood values of \code{n_optimum} best
+\item{n_optimum}{Save the log-likelihood values of the \code{n_optimum} best
 models (from all estimated models including the original).
-The default is \code{min(times, 25)}.}
+The default is \code{min(times + 1, 25)}.}
 }
 }
 }}
@@ -180,7 +180,7 @@ fit_hmm_mvad <- fit_model(init_hmm_mvad, control_em = list(restart = list(times 
 hmm_mvad <- fit_hmm_mvad$model
 }
 
-# save time, load the model estimated previously
+# save time, load the previously estimated model
 data("hmm_mvad")
 
 # Markov model
@@ -198,8 +198,9 @@ logLik(mm_mvad)
 \dontrun{
 require("igraph") #for layout_in_circle
 
-plot(mm_mvad, layout = layout_in_circle, edge.curved = FALSE,
-  edge.arrow.size = 0.5, edge.width = 1)
+plot(mm_mvad, layout = layout_in_circle, legend.prop = 0.3,
+  edge.curved = 0.3, edge.label = NA,
+  vertex.label.pos = c(0, 0, pi, pi, pi, 0))
 
 ##############################################################
 

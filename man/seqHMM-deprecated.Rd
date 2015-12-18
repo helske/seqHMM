@@ -56,9 +56,9 @@ The default is 1e-12.}
 If the relative change of the final model of the restart phase is larger than the tolerance
 for the original EM phase, the final model is re-estimated with the original \code{reltol}
 and \code{maxeval} at the end of the EM step.}
-\item{n_optimum}{Save the log-likelihood values of \code{n_optimum} best
+\item{n_optimum}{Save the log-likelihood values of the \code{n_optimum} best
 models (from all estimated models including the original).
-The default is \code{min(times, 25)}.}
+The default is \code{min(times + 1, 25)}.}
 }
 }
 }}

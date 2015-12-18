@@ -167,7 +167,7 @@
 #' hmm_mvad <- fit_hmm_mvad$model
 #' }
 #'
-#' # save time, load the model estimated previously
+#' # save time, load the previously estimated model
 #' data("hmm_mvad")
 #'
 #' # Markov model
@@ -185,8 +185,9 @@
 #' \dontrun{
 #' require("igraph") #for layout_in_circle
 #'
-#' plot(mm_mvad, layout = layout_in_circle, edge.curved = FALSE,
-#'   edge.arrow.size = 0.5, edge.width = 1)
+#' plot(mm_mvad, layout = layout_in_circle, legend.prop = 0.3,
+#'   edge.curved = 0.3, edge.label = NA,
+#'   vertex.label.pos = c(0, 0, pi, pi, pi, 0))
 #'
 #' ##############################################################
 #'
@@ -522,11 +523,12 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     }
 
 
-    opt_restart <- numeric(restart.con$times + 1)
-    opt_restart[1] <- resEM$logLik
-
     if (!is.null(em.con$restart) && restart.con$times > 0 &&
         (restart.con$transition | restart.con$emission)) {
+
+      opt_restart <- numeric(restart.con$times + 1)
+      opt_restart[1] <- resEM$logLik
+
       if (!mhmm || resEM$error == 0) {
         random_emiss <- resEM$emissionArray
         random_emiss[(random_emiss < 1e-4) & (emissionArray >= 1e-4)] <- 1e-4
@@ -602,6 +604,9 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
           }
         }
       }
+
+      opts <- sort(opt_restart, decreasing = TRUE)[1:restart.con$n_optimum]
+
       if (em.con$reltol < resEM$change) {
         if (!log_space) {
           if (mhmm) {
@@ -624,6 +629,9 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
           }
         }
       }
+
+    } else {
+      opts <- resEM$logLik
     }
 
     if (resEM$error == 0) {
@@ -645,7 +653,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         model$initial_probs[] <- resEM$initialProbs
       }
 
-      resEM$best_opt_restart <- sort(opt_restart, decreasing = TRUE)[1:restart.con$n_optimum]
+      resEM$best_opt_restart <- opts
       model$transition_probs[] <- resEM$transitionMatrix
       model$coefficients[] <- resEM$coefficients
       ll <- resEM$logLik
