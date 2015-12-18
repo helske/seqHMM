@@ -134,6 +134,7 @@ The fitting function provides three estimation steps: 1) EM algorithm,
 \examples{
 
 # Hidden Markov model
+
 data("mvad", package = "TraMineR")
 
 mvad_alphabet <-
@@ -148,21 +149,21 @@ attr(mvad_seq, "cpal") <- colorpalette[[6]]
 
 # Starting values for the emission matrix
 emiss <- matrix(
-  c(0.1, 0.1, 0.1, 0.1, 0.5, 0.1, # SC
-    0.1, 0.5, 0.1, 0.1, 0.1, 0.1, # FE
-    0.1, 0.1, 0.1, 0.3, 0.1, 0.3, # JL, TR
-    0.1, 0.1, 0.5, 0.1, 0.1, 0.1, # HE
-    0.5, 0.1, 0.1, 0.1, 0.1, 0.1),# EM
+  c(0.05, 0.05, 0.05, 0.05, 0.75, 0.05, # SC
+    0.05, 0.75, 0.05, 0.05, 0.05, 0.05, # FE
+    0.05, 0.05, 0.05, 0.4,  0.05, 0.4,  # JL, TR
+    0.05, 0.05, 0.75, 0.05, 0.05, 0.05, # HE
+    0.75, 0.05, 0.05, 0.05, 0.05, 0.05),# EM
   nrow = 5, ncol = 6, byrow = TRUE)
 
 # Starting values for the transition matrix
 trans <-  matrix(
   c(0.80, 0.05, 0.05, 0.05, 0.05,
-    0.05, 0.05, 0.80, 0.05, 0.05,
+    0.05, 0.80, 0.05, 0.05, 0.05,
     0.05, 0.05, 0.80, 0.05, 0.05,
     0.05, 0.05, 0.05, 0.80, 0.05,
     0.05, 0.05, 0.05, 0.05, 0.80),
-  nrow=5, ncol=5, byrow=TRUE)
+  nrow = 5, ncol = 5, byrow = TRUE)
 
 # Starting values for initial state probabilities
 initial_probs <- c(0.2, 0.2, 0.2, 0.2, 0.2)
@@ -172,24 +173,24 @@ init_hmm_mvad <- build_hmm(observations = mvad_seq,
   transition_probs = trans, emission_probs = emiss,
   initial_probs = initial_probs)
 
-\dontrun{
-hmm_mvad <- fit_model(init_hmm_mvad)$model
+fit_hmm_mvad <- fit_model(init_hmm_mvad)
 
 # Markov model
 
+set.seed(123)
 init_mm_mvad <- build_mm(observations = mvad_seq,
   transition_probs = simulate_transition_probs(6),
   initial_probs = rep(1/6,6))
 
-mm_mvad <- fit_model(init_mm_mvad)$model
+fit_mm_mvad <- fit_model(init_mm_mvad)
 
-logLik(hmm_mvad)
-logLik(mm_mvad)
+fit_hmm_mvad$logLik
+fit_mm_mvad$logLik
 
-
+\dontrun{
 require("igraph") #for layout_in_circle
 
-plot(mm_mvad, layout = layout_in_circle, edge.curved = FALSE,
+plot(fit_mm_mvad$model, layout = layout_in_circle, edge.curved = FALSE,
   edge.arrow.size = 0.5, edge.width = 1)
 
 ##############################################################
