@@ -38,9 +38,9 @@
 #'   If the relative change of the final model of the restart phase is larger than the tolerance
 #'   for the original EM phase, the final model is re-estimated with the original \code{reltol}
 #'   and \code{maxeval} at the end of the EM step.}
-#'   \item{n_optimum}{Save the log-likelihood values of \code{n_optimum} best
+#'   \item{n_optimum}{Save the log-likelihood values of the \code{n_optimum} best
 #'   models (from all estimated models including the original).
-#'   The default is \code{min(times, 25)}.}
+#'   The default is \code{min(times + 1, 25)}.}
 #'   }
 #'   }
 #'   }
@@ -513,11 +513,12 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     if (!is.null(em.con$restart)) {
       restart.con <- list(times = 0, print_level = em.con$print_level, maxeval = 100, reltol = 1e-8,
         transition = TRUE, emission = TRUE, sd = 0.25,
-        n_optimum = min(control_em$restart$times, 25))
+        n_optimum = min(control_em$restart$times + 1, 25))
       nmsC <- names(restart.con)
       restart.con[(namc <- names(control_em$restart))] <- control_em$restart
       if (length(noNms <- namc[!namc %in% nmsC]))
         warning("Unknown names in control_em$restart: ", paste(noNms, collapse = ", "))
+      restart.con$n_optimum <- min(restart.con$n_optimum, restart.con$times + 1)
     }
 
 
