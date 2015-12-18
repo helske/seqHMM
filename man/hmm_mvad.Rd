@@ -35,13 +35,8 @@ emiss <- matrix(
   nrow = 5, ncol = 6, byrow = TRUE)
 
 # Starting values for the transition matrix
-trans <-  matrix(
-  c(0.80, 0.05, 0.05, 0.05, 0.05,
-    0.05, 0.80, 0.05, 0.05, 0.05,
-    0.05, 0.05, 0.80, 0.05, 0.05,
-    0.05, 0.05, 0.05, 0.80, 0.05,
-    0.05, 0.05, 0.05, 0.05, 0.80),
-  nrow = 5, ncol = 5, byrow = TRUE)
+trans <- matrix(0.025, 5, 5)
+diag(trans) <- 0.9
 
 # Starting values for initial state probabilities
 initial_probs <- c(0.2, 0.2, 0.2, 0.2, 0.2)
@@ -51,7 +46,9 @@ init_hmm_mvad <- build_hmm(observations = mvad_seq,
   transition_probs = trans, emission_probs = emiss,
   initial_probs = initial_probs)
 
-hmm_mvad <- fit_model(init_hmm_mvad)$model
+set.seed(21)
+fit_hmm_mvad <- fit_model(init_hmm_mvad, control_em = list(restart = list(times = 100)))
+hmm_mvad <- fit_hmm_mvad$model
 }
 }
 \examples{

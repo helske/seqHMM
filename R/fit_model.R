@@ -74,7 +74,7 @@
 #'   \item{logLik}{Log-likelihood of the estimated model. }
 #'   \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
 #'   (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
-#'   number of estimated models in restarted EM with the best likelihood (\code{n_optimum}). }
+#'   the log-likelihoods of the \code{n_optimum} best models after the EM step (\code{best_opt_restart}). }
 #'   \item{global_results}{Results after the global step. }
 #'   \item{local_results}{Results after the local step. }
 #'   \item{call}{The matched function call. }
