@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/helske/seqHMM.svg?branch=master)](https://travis-ci.org/helske/seqHMM)
-[![downloads](http://cranlogs.r-pkg.org/badges/KFAS)](http://cranlogs.r-pkg.org/badges/KFAS)
-[![cran version](http://www.r-pkg.org/badges/version/KFAS)](http://cran.r-project.org/package=KFAS)
+[![downloads](http://cranlogs.r-pkg.org/badges/seqHMM)](http://cranlogs.r-pkg.org/badges/seqHMM)
+[![cran version](http://www.r-pkg.org/badges/version/seqHMM)](http://cran.r-project.org/package=seqHMM)
 
 seqHMM: Hidden Markov Models for Life Sequences and Other Multivariate, Multichannel Categorical Time Series
 ====================================================================================================
