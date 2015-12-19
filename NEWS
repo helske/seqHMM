@@ -1,0 +1,11 @@
+seqHMM 1.0.3 (Release date: Still under development)
+==============
+
+Bug Fixes:
+
+* Corrected a bug which caused fit_model to stop if restarted EM failed.
+
+seqHMM 1.0.2-1 (Release date: 2015-12-19)
+==============
+
+First version on CRAN.
