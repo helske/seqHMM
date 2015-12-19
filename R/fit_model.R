@@ -587,9 +587,9 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
           }
         }
 
-        opt_restart[i + 1] <- resEMi$logLik
 
         if (resEMi$error != 0) {
+          opt_restart[i + 1] <- -Inf
           err_msg <- switch(resEMi$error,
             "Scaling factors contain non-finite values.",
             "Backward probabilities contain non-finite values.",
@@ -599,6 +599,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
             "Non-finite log-likelihood")
           warning(paste("EM algorithm failed:", err_msg))
         } else {
+          opt_restart[i + 1] <- resEMi$logLik
           if (is.finite(resEMi$logLik) && resEMi$logLik > resEM$logLik) {
             resEM <- resEMi
           }
