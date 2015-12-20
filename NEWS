@@ -1,6 +1,8 @@
 seqHMM 1.0.3 (Release date: Still under development)
 ==============
 
+Corrected dependency on R 3.2.0 due to lengths function.
+
 Bug Fixes:
 
 * Corrected a bug which caused fit_model to stop if restarted EM failed.
