@@ -3,62 +3,58 @@
 
 // [[Rcpp::export]]
 
-List objective(NumericVector transitionMatrix, NumericVector emissionArray,
-  NumericVector initialProbs, IntegerVector obsArray, IntegerVector transNZ,
-  IntegerVector emissNZ, IntegerVector initNZ, const arma::ivec& nSymbols, int threads) {
-
+List objective(const arma::mat& transition, NumericVector emissionArray,
+               const arma::vec& init, IntegerVector obsArray, const arma::imat& ANZ,
+               IntegerVector emissNZ, const arma::ivec& INZ, const arma::ivec& nSymbols, int threads) {
+  
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
-
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
-  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
-  arma::vec init(initialProbs.begin(), emission.n_rows, false);
-  arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, false);
-  arma::imat ANZ(transNZ.begin(), emission.n_rows, emission.n_rows, false);
-  arma::icube BNZ(emissNZ.begin(), emission.n_rows, emission.n_cols - 1, emission.n_slices, false);
-  arma::ivec INZ(initNZ.begin(), emission.n_rows, false);
-
+  
+  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false, true);
+  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false, true);
+  arma::icube BNZ(emissNZ.begin(), emission.n_rows, emission.n_cols - 1, emission.n_slices, false, true);
+  
   arma::vec grad(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ), arma::fill::zeros);
-
+  
   arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
   arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
   arma::mat scales(obs.n_cols, obs.n_slices); //m,n,k
-
+  
   internalForward(transition, emission, init, obs, alpha, scales, threads);
   if (!scales.is_finite()) {
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
-
+  
   internalBackward(transition, emission, obs, beta, scales, threads);
   if (!beta.is_finite()) {
     grad.fill(-arma::math::inf());
     return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   }
-
-
+  
+  
   arma::mat gradmat(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ), obs.n_slices,
-    arma::fill::zeros);
-
+                    arma::fill::zeros);
+  
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(alpha, beta, scales, gradmat, nSymbols, ANZ, BNZ, INZ,              \
-    obs, init, transition, emission)
+          obs, init, transition, emission)
     for (int k = 0; k < obs.n_slices; k++) {
       int countgrad = 0;
-
+      
       // transitionMatrix
       arma::vec gradArow(emission.n_rows);
       arma::mat gradA(emission.n_rows, emission.n_rows);
-
+      
       for (unsigned int i = 0; i < emission.n_rows; i++) {
         arma::uvec ind = arma::find(ANZ.row(i));
-
+        
         if (ind.n_elem > 0) {
           gradArow.zeros();
           gradA.eye();
           gradA.each_row() -= transition.row(i);
           gradA.each_col() %= transition.row(i).t();
-
+          
           for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
             for (unsigned int j = 0; j < emission.n_rows; j++) {
               double tmp = 1.0;
@@ -67,9 +63,9 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
               }
               gradArow(j) += alpha(i, t, k) * tmp * beta(j, t + 1, k) / scales(t + 1, k);
             }
-
+            
           }
-
+          
           gradArow = gradA * gradArow;
           gradmat.col(k).subvec(countgrad, countgrad + ind.n_elem - 1) = gradArow.rows(ind);
           countgrad += ind.n_elem;
@@ -108,12 +104,12 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
                     * beta(i, t + 1, k) / scales(t + 1, k);
                 }
               }
-
+              
             }
             gradBrow = gradB * gradBrow;
             gradmat.col(k).subvec(countgrad, countgrad + ind.n_elem - 1) = gradBrow.rows(ind);
             countgrad += ind.n_elem;
-
+            
           }
         }
       }
@@ -122,7 +118,7 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
       if (ind.n_elem > 0) {
         arma::vec gradIrow(emission.n_rows);
         arma::mat gradI(emission.n_rows, emission.n_rows);
-
+        
         gradIrow.zeros();
         gradI.zeros();
         gradI.eye();
@@ -135,7 +131,7 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
           }
           gradIrow(j) += tmp * beta(j, 0, k) / scales(0, k);
         }
-
+        
         gradIrow = gradI * gradIrow;
         gradmat.col(k).subvec(countgrad, countgrad + ind.n_elem - 1) = gradIrow.rows(ind);
         countgrad += ind.n_elem;
@@ -143,5 +139,5 @@ List objective(NumericVector transitionMatrix, NumericVector emissionArray,
     }
     grad = sum(gradmat, 1);
   return List::create(Named("objective") = -arma::accu(log(scales)),
-    Named("gradient") = wrap(-grad));
+                      Named("gradient") = wrap(-grad));
 }

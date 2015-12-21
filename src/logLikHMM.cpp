@@ -8,8 +8,8 @@ NumericVector logLikHMM(const arma::mat& transition, NumericVector emissionArray
   IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
   IntegerVector oDims = obsArray.attr("dim"); //k,n,r
 
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
-  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false);
+  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false, true);
+  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false, true);
 
   arma::vec ll(obs.n_slices);
   arma::mat transition_t(transition.t());

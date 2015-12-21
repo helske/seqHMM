@@ -236,62 +236,62 @@ BEGIN_RCPP
 END_RCPP
 }
 // log_objective
-List log_objective(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, IntegerVector nSymbols, int threads);
-RcppExport SEXP seqHMM_log_objective(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP transNZSEXP, SEXP emissNZSEXP, SEXP initNZSEXP, SEXP nSymbolsSEXP, SEXP threadsSEXP) {
+List log_objective(const arma::mat& transition, NumericVector emissionArray, const arma::vec& init, IntegerVector obsArray, const arma::imat& ANZ, IntegerVector emissNZ, const arma::ivec& INZ, IntegerVector nSymbols, int threads);
+RcppExport SEXP seqHMM_log_objective(SEXP transitionSEXP, SEXP emissionArraySEXP, SEXP initSEXP, SEXP obsArraySEXP, SEXP ANZSEXP, SEXP emissNZSEXP, SEXP INZSEXP, SEXP nSymbolsSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type transition(transitionSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type init(initSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type transNZ(transNZSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type ANZ(ANZSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type emissNZ(emissNZSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type initNZ(initNZSEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type INZ(INZSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type nSymbols(nSymbolsSEXP);
     Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    __result = Rcpp::wrap(log_objective(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, threads));
+    __result = Rcpp::wrap(log_objective(transition, emissionArray, init, obsArray, ANZ, emissNZ, INZ, nSymbols, threads));
     return __result;
 END_RCPP
 }
 // log_objectivex
-List log_objectivex(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, const arma::ivec& nSymbols, const arma::mat& coef, const arma::mat& X, const arma::ivec& numberOfStates, int threads);
-RcppExport SEXP seqHMM_log_objectivex(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP transNZSEXP, SEXP emissNZSEXP, SEXP initNZSEXP, SEXP nSymbolsSEXP, SEXP coefSEXP, SEXP XSEXP, SEXP numberOfStatesSEXP, SEXP threadsSEXP) {
+List log_objectivex(const arma::mat& transition, NumericVector emissionArray, const arma::vec& init, IntegerVector obsArray, const arma::imat& ANZ, IntegerVector emissNZ, const arma::ivec& INZ, const arma::ivec& nSymbols, const arma::mat& coef, const arma::mat& X, const arma::ivec& numberOfStates, int threads);
+RcppExport SEXP seqHMM_log_objectivex(SEXP transitionSEXP, SEXP emissionArraySEXP, SEXP initSEXP, SEXP obsArraySEXP, SEXP ANZSEXP, SEXP emissNZSEXP, SEXP INZSEXP, SEXP nSymbolsSEXP, SEXP coefSEXP, SEXP XSEXP, SEXP numberOfStatesSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type transition(transitionSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type init(initSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type transNZ(transNZSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type ANZ(ANZSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type emissNZ(emissNZSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type initNZ(initNZSEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type INZ(INZSEXP);
     Rcpp::traits::input_parameter< const arma::ivec& >::type nSymbols(nSymbolsSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type coef(coefSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const arma::ivec& >::type numberOfStates(numberOfStatesSEXP);
     Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    __result = Rcpp::wrap(log_objectivex(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coef, X, numberOfStates, threads));
+    __result = Rcpp::wrap(log_objectivex(transition, emissionArray, init, obsArray, ANZ, emissNZ, INZ, nSymbols, coef, X, numberOfStates, threads));
     return __result;
 END_RCPP
 }
 // objective
-List objective(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs, IntegerVector obsArray, IntegerVector transNZ, IntegerVector emissNZ, IntegerVector initNZ, const arma::ivec& nSymbols, int threads);
-RcppExport SEXP seqHMM_objective(SEXP transitionMatrixSEXP, SEXP emissionArraySEXP, SEXP initialProbsSEXP, SEXP obsArraySEXP, SEXP transNZSEXP, SEXP emissNZSEXP, SEXP initNZSEXP, SEXP nSymbolsSEXP, SEXP threadsSEXP) {
+List objective(const arma::mat& transition, NumericVector emissionArray, const arma::vec& init, IntegerVector obsArray, const arma::imat& ANZ, IntegerVector emissNZ, const arma::ivec& INZ, const arma::ivec& nSymbols, int threads);
+RcppExport SEXP seqHMM_objective(SEXP transitionSEXP, SEXP emissionArraySEXP, SEXP initSEXP, SEXP obsArraySEXP, SEXP ANZSEXP, SEXP emissNZSEXP, SEXP INZSEXP, SEXP nSymbolsSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type transitionMatrix(transitionMatrixSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type transition(transitionSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type emissionArray(emissionArraySEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type initialProbs(initialProbsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type init(initSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type obsArray(obsArraySEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type transNZ(transNZSEXP);
+    Rcpp::traits::input_parameter< const arma::imat& >::type ANZ(ANZSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type emissNZ(emissNZSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type initNZ(initNZSEXP);
+    Rcpp::traits::input_parameter< const arma::ivec& >::type INZ(INZSEXP);
     Rcpp::traits::input_parameter< const arma::ivec& >::type nSymbols(nSymbolsSEXP);
     Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    __result = Rcpp::wrap(objective(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, threads));
+    __result = Rcpp::wrap(objective(transition, emissionArray, init, obsArray, ANZ, emissNZ, INZ, nSymbols, threads));
     return __result;
 END_RCPP
 }
