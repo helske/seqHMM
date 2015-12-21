@@ -181,7 +181,9 @@ plot(hmm_biofam,
 # Plotting HMM with own color palette 
 plot(hmm_biofam, cpal = 1:10, 
   # States with emission probability less than 0.2 removed
-  combine.slices = 0.2)
+  combine.slices = 0.2,
+  # legend with two columns
+  ncol.legend = 2)
   
 # Plotting HMM without pie graph and with a layout function
 require(igraph)
@@ -221,10 +223,10 @@ require(igraph)
 plot(hmm_mvad, 
   # Layout in circle (layout function from igraph)
   layout = layout_in_circle, 
-  # Less curved edges with smaller arrows
-  edge.curved = 0.2, edge.arrow.size = 0.9, 
+  # Less curved edges with smaller arrows, no labels
+  edge.curved = 0.2, edge.arrow.size = 0.9, edge.label = NA,
   # Vertex labels (initial probabilities) on left
-  vertex.label.pos = "left", 
+  vertex.label.pos = c("right", "right", "left", "left", "right"), 
   # Less space for the legend
   legend.prop = 0.3)
 }
