@@ -161,15 +161,16 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
     withlegend <- "many"
   }
   
-
-  choices <- c("bottom", "auto", "right")
-  ind <- pmatch(legend.pos, choices)
-  if (is.na(ind)) {
-    stop("Argument legend.pos only accepts values \"bottom\", \"auto\", \"right\", or a numerical vector (one value for each legend).")
-  }
-  legend.pos <- choices[ind]
-  if (legend.pos == "auto") {
-    legend.pos <- "bottom"
+  if(!is.numeric(legend.pos)){
+    choices <- c("bottom", "auto", "right")
+    ind <- pmatch(legend.pos, choices)
+    if (is.na(ind)) {
+      stop("Argument legend.pos only accepts values \"bottom\", \"auto\", \"right\", or a numerical vector (one value for each legend).")
+    }
+    legend.pos <- choices[ind]
+    if (legend.pos == "auto") {
+      legend.pos <- "bottom"
+    }
   }
   
   legend.pos2 <- match.arg(legend.pos2, c("bottomright", "bottom", "bottomleft", "left", "topleft", "top", "topright", "right", "center"))
@@ -628,19 +629,37 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
       }
       # Combined legends
     } else if (withlegend == "combined") {
-      ltext <- c(ltext, hstext)
-      cpal <- c(cpal, hscpal) 
+      if (x[[1]]$plots == "both" || x[[1]]$plots == "obs") {
+        downViewport("vplegend")
+        par(plt = gridPLT(), new = TRUE)
+        pushViewport(viewport(width = unit(0.9, "npc")))
+        
+        seqlegend(x[[1]]$obs[[1]], fontsize = cex.legend, position = legend.pos2, 
+                  ncol = ncol.legend, cpal = cpal, ltext = ltext,
+                  with.missing = anymissing, 
+                  missing.color = attr(x[[1]]$obs[[1]],"missing.color"))
+        
+        popViewport()
+        
+      }      
+      # Legends for most probable paths
+      if(x[[1]]$plots == "both" || x[[1]]$plots == "hidden.paths"){
+        ltext <- c(ltext, hstext)
+        cpal <- c(cpal, hscpal) 
+        
+        downViewport("vplegend")
+        par(plt = gridPLT(), new = TRUE)
+        pushViewport(viewport(width = unit(0.9, "npc")))
+        
+        seqlegend(x[[1]]$obs[[1]], fontsize = cex.legend, position = legend.pos2, 
+                  ncol = ncol.legend, cpal = cpal, ltext = ltext,
+                  with.missing = anymissing, 
+                  missing.color = attr(x[[1]]$obs[[1]],"missing.color"))
+        
+        popViewport()
+      }
       
-      downViewport("vplegend")
-      par(plt = gridPLT(), new = TRUE)
-      pushViewport(viewport(width = unit(0.9, "npc")))
       
-      seqlegend(x[[1]]$obs[[1]], fontsize = cex.legend, position = legend.pos2, 
-                ncol = ncol.legend, cpal = cpal, ltext = ltext,
-                with.missing = anymissing, 
-                missing.color = attr(x[[1]]$obs[[1]],"missing.color"))
-      
-      popViewport()
     }
   }
   

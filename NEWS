@@ -1,0 +1,18 @@
+seqHMM 1.0.3 (Release date: Still under development)
+==============
+
+Corrected dependency on R 3.2.0 due to lengths function.
+
+Bug Fixes:
+
+* Corrected a bug which caused fit_model to stop if restarted EM failed.
+* vcov.mhmm produced errors in valgrind, corrected issue by replacing Armadillo's inv_sympd function with inv.
+
+Performance improvements:
+
+* Slight performance improvement in all functions by tweaking the usage of armadillo constructors.
+
+seqHMM 1.0.2-1 (Release date: 2015-12-19)
+==============
+
+First version on CRAN.

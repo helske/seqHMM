@@ -32,16 +32,22 @@ Possible arguments are \describe{
 and for mixture models 3 (print also during optimization of coefficients).}
 \item{reltol}{Relative tolerance for convergence defined as
 \eqn{(logLik_new - logLik_old)/(abs(logLik_old) + 0.1)}.
-Default is 1e-12.}
+The default is 1e-12.}
 \item{restart}{List containing options for possible EM restarts with following components:
 \describe{
-\item{times}{Number of restarts of EM algorithm using random initial values. Default is 0 i.e. no restarts. }
-\item{transition}{Logical, should the initial transition probabilities be varied. Default is \code{TRUE}. }
-\item{emission}{Logical, should the initial emission probabilities be varied. Default is \code{TRUE}. }
-\item{sd}{Standard deviation for \code{rnorm} used in randomizing. Default is 0.25.}
-\item{maxeval}{Maximum number of iterations, default is 100.}
-\item{print_level}{Level of printing in restarted EM steps. Defaults to \code{control_em$print_level}. }
-\item{reltol}{Relative tolerance for convergence in restarted EM steps. Default is 1e-8.}
+\item{times}{Number of restarts of EM algorithm using random initial values. The default is 0 i.e. no restarts. }
+\item{transition}{Logical, should the initial transition probabilities be varied. The default is \code{TRUE}. }
+\item{emission}{Logical, should the initial emission probabilities be varied. The default is \code{TRUE}. }
+\item{sd}{Standard deviation for \code{rnorm} used in randomizing. The default is 0.25.}
+\item{maxeval}{Maximum number of iterations, the default is 100.}
+\item{print_level}{Level of printing in restarted EM steps. The default is \code{control_em$print_level}. }
+\item{reltol}{Relative tolerance for convergence in restarted EM steps. The default is 1e-8.
+If the relative change of the final model of the restart phase is larger than the tolerance
+for the original EM phase, the final model is re-estimated with the original \code{reltol}
+and \code{maxeval} at the end of the EM step.}
+\item{n_optimum}{Save the log-likelihood values of the \code{n_optimum} best
+models (from all estimated models including the original).
+The default is \code{min(times + 1, 25)}.}
 }
 }
 }}
@@ -65,22 +71,22 @@ Default is 1e-12.}
 }}
 
 \item{lb, ub}{Lower and upper bounds for parameters in Softmax parameterization.
-Default interval is [pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)], except for beta coefficients,
+The default interval is [pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)], except for beta coefficients,
 where the scale of covariates is taken into account.
 Note that it might still be a good idea to scale covariates around unit scale.
 Bounds are used only in the global optimization step.}
 
-\item{threads}{Number of threads to use in parallel computing. Default is 1.}
+\item{threads}{Number of threads to use in parallel computing. The default is 1.}
 
 \item{log_space}{Make computations using log-space instead of scaling for greater
-numerical stability at a cost of decreased computational performance. Default is \code{FALSE}.}
+numerical stability at a cost of decreased computational performance. The default is \code{FALSE}.}
 
 \item{...}{Additional arguments to \code{nloptr}.
 \describe{
   \item{logLik}{Log-likelihood of the estimated model. }
   \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
   (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
-  number of estimated models in restarted EM with the best likelihood (\code{n_optimum}). }
+  the log-likelihoods of the \code{n_optimum} best models after the EM step (\code{best_opt_restart}). }
   \item{global_results}{Results after the global step. }
   \item{local_results}{Results after the local step. }
   \item{call}{The matched function call. }
@@ -97,23 +103,23 @@ The fitting function provides three estimation steps: 1) EM algorithm,
   2) global optimization, and 3) local optimization. The user can call for one method
   or any combination of these steps, but should note that they are preformed in the
   above-mentioned order. The results from a former step are used as starting values
-  in a latter, except that some of the global optimization algorithms (such as MLSL and StoGO) only use
-  initial values for setting up the boundaries for the optimization.
+  in a latter, except for some of global optimization algorithms (such as MLSL and StoGO)
+  which only use initial values for setting up the boundaries for the optimization.
 
   It is possible to rerun EM algorithm automatically using random starting
   values based on the first run of EM. Number of restarts is defined by
-  argument \code{restarts} in \code{control_em}. As EM algorithm is relatively fast, this method
+  argument \code{restart} in \code{control_em}. As EM algorithm is relatively fast, this method
   might be preferred option compared to proper global optimization strategy of step 2.
 
-  Default global optimization method (triggered via \code{global_step = TRUE} is
+  The default global optimization method (triggered via \code{global_step = TRUE}) is
   the multilevel single-linkage method (MLSL) with the LDS modification (\code{NLOPT_GD_MLSL_LDS} as
-  \code{algorithm} in \code{control_global}), with LBFGS as the local optimizer.
+  \code{algorithm} in \code{control_global}), with L-BFGS as the local optimizer.
   The MLSL method draws random starting points and performs a local optimization
   from each. The LDS modification uses low-discrepancy sequences instead of
   pseudo-random numbers as starting points and should improve the convergence rate.
   In order to reduce the computation time spent on non-global optima, the
   convergence tolerance of the local optimizer is set relatively large. At step 3,
-  a local optimization (LBFGS by default) is run with a lower tolerance to find the
+  a local optimization (L-BFGS by default) is run with a lower tolerance to find the
   optimum with high precision.
 
   There are some theoretical guarantees that the MLSL method used as the default
@@ -134,6 +140,7 @@ The fitting function provides three estimation steps: 1) EM algorithm,
 \examples{
 
 # Hidden Markov model
+
 data("mvad", package = "TraMineR")
 
 mvad_alphabet <-
@@ -148,21 +155,16 @@ attr(mvad_seq, "cpal") <- colorpalette[[6]]
 
 # Starting values for the emission matrix
 emiss <- matrix(
-  c(0.1, 0.1, 0.1, 0.1, 0.5, 0.1, # SC
-    0.1, 0.5, 0.1, 0.1, 0.1, 0.1, # FE
-    0.1, 0.1, 0.1, 0.3, 0.1, 0.3, # JL, TR
-    0.1, 0.1, 0.5, 0.1, 0.1, 0.1, # HE
-    0.5, 0.1, 0.1, 0.1, 0.1, 0.1),# EM
+  c(0.05, 0.05, 0.05, 0.05, 0.75, 0.05, # SC
+    0.05, 0.75, 0.05, 0.05, 0.05, 0.05, # FE
+    0.05, 0.05, 0.05, 0.4,  0.05, 0.4,  # JL, TR
+    0.05, 0.05, 0.75, 0.05, 0.05, 0.05, # HE
+    0.75, 0.05, 0.05, 0.05, 0.05, 0.05),# EM
   nrow = 5, ncol = 6, byrow = TRUE)
 
 # Starting values for the transition matrix
-trans <-  matrix(
-  c(0.80, 0.05, 0.05, 0.05, 0.05,
-    0.05, 0.05, 0.80, 0.05, 0.05,
-    0.05, 0.05, 0.80, 0.05, 0.05,
-    0.05, 0.05, 0.05, 0.80, 0.05,
-    0.05, 0.05, 0.05, 0.05, 0.80),
-  nrow=5, ncol=5, byrow=TRUE)
+trans <- matrix(0.025, 5, 5)
+diag(trans) <- 0.9
 
 # Starting values for initial state probabilities
 initial_probs <- c(0.2, 0.2, 0.2, 0.2, 0.2)
@@ -172,27 +174,37 @@ init_hmm_mvad <- build_hmm(observations = mvad_seq,
   transition_probs = trans, emission_probs = emiss,
   initial_probs = initial_probs)
 
-hmm_mvad <- fit_model(init_hmm_mvad)$model
+\dontrun{
+set.seed(21)
+fit_hmm_mvad <- fit_model(init_hmm_mvad, control_em = list(restart = list(times = 100)))
+hmm_mvad <- fit_hmm_mvad$model
+}
+
+# save time, load the previously estimated model
+data("hmm_mvad")
 
 # Markov model
 
+set.seed(123)
 init_mm_mvad <- build_mm(observations = mvad_seq,
   transition_probs = simulate_transition_probs(6),
-  initial_probs = rep(1/6,6))
+  initial_probs = rep(1/6, 6))
 
 mm_mvad <- fit_model(init_mm_mvad)$model
 
 logLik(hmm_mvad)
 logLik(mm_mvad)
 
+\dontrun{
 require("igraph") #for layout_in_circle
 
-plot(mm_mvad, layout = layout_in_circle, edge.curved = FALSE,
-  edge.arrow.size = 0.5, edge.width = 1)
+plot(mm_mvad, layout = layout_in_circle, legend.prop = 0.3,
+  edge.curved = 0.3, edge.label = NA,
+  vertex.label.pos = c(0, 0, pi, pi, pi, 0))
 
 ##############################################################
 
-\dontrun{
+
 #' # Three-state three-channel hidden Markov model
 # See ?hmm_biofam for five-state version
 
@@ -252,11 +264,11 @@ init_hmm_bf <- build_hmm(
 hmm_1 <- fit_model(init_hmm_bf)
 hmm_1$logLik # -24179.1
 
-# Only LBFGS
+# Only L-BFGS
 hmm_2 <- fit_model(init_hmm_bf, em_step = FALSE, local_step = TRUE)
 hmm_2$logLik # -22267.75
 
-# Global optimization via MLSL_LDS with LBFGS as local optimizer and final polisher
+# Global optimization via MLSL_LDS with L-BFGS as local optimizer and final polisher
 # This can be slow, use parallel computing by adjusting threads argument
 # (here threads = 1 for portability issues)
 hmm_3 <- fit_model(
@@ -269,7 +281,7 @@ set.seed(123)
 hmm_4 <- fit_model(init_hmm_bf, control_em = list(restart = list(times = 5)))
 hmm_4$logLik # -21675.4
 
-#' # Global optimization via StoGO with LBFGS as final polisher
+# Global optimization via StoGO with L-BFGS as final polisher
 # This can be slow, use parallel computing by adjusting threads argument
 # (here threads = 1 for portability issues)
 set.seed(123)
@@ -277,9 +289,6 @@ hmm_5 <- fit_model(
    init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE, lb = -50, ub = 50,
 control_global = list(algorithm = "NLOPT_GD_STOGO", maxeval = 2500, maxtime = 0), threads = 1)
 hmm_5$logLik # -21675.4
-}
-
-\dontrun{
 # Mixture HMM
 
 data("biofam3c")
@@ -416,7 +425,7 @@ init_mhmm_bf <- build_mhmm(
 mhmm_1 <- fit_model(init_mhmm_bf)
 mhmm_1$logLik # -12713.08
 
-# Only LBFGS
+# Only L-BFGS
 mhmm_2 <- fit_model(init_mhmm_bf, em_step = FALSE, local_step = TRUE)
 mhmm_2$logLik # -12966.51
 

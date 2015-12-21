@@ -41,12 +41,12 @@ log_logLikMixHMM <- function(transitionMatrix, emissionArray, initialProbs, obsA
     .Call('seqHMM_log_logLikMixHMM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, coef, X, numberOfStates, threads)
 }
 
-log_objective <- function(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, threads) {
-    .Call('seqHMM_log_objective', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, threads)
+log_objective <- function(transition, emissionArray, init, obsArray, ANZ, emissNZ, INZ, nSymbols, threads) {
+    .Call('seqHMM_log_objective', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, ANZ, emissNZ, INZ, nSymbols, threads)
 }
 
-log_objectivex <- function(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coef, X, numberOfStates, threads) {
-    .Call('seqHMM_log_objectivex', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coef, X, numberOfStates, threads)
+log_objectivex <- function(transition, emissionArray, init, obsArray, ANZ, emissNZ, INZ, nSymbols, coef, X, numberOfStates, threads) {
+    .Call('seqHMM_log_objectivex', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, ANZ, emissNZ, INZ, nSymbols, coef, X, numberOfStates, threads)
 }
 
 logLikHMM <- function(transition, emissionArray, init, obsArray, threads) {
@@ -61,8 +61,8 @@ logSumExp <- function(x) {
     .Call('seqHMM_logSumExp', PACKAGE = 'seqHMM', x)
 }
 
-objective <- function(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, threads) {
-    .Call('seqHMM_objective', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, threads)
+objective <- function(transition, emissionArray, init, obsArray, ANZ, emissNZ, INZ, nSymbols, threads) {
+    .Call('seqHMM_objective', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, ANZ, emissNZ, INZ, nSymbols, threads)
 }
 
 objectivex <- function(transition, emissionArray, init, obsArray, ANZ, emissNZ, INZ, nSymbols, coef, X, numberOfStates, threads) {

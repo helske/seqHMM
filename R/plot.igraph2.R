@@ -1,9 +1,10 @@
+# A copy of plot.igraph from igraph's development version
 # We need to use internal functions of igraph as the version on CRAN does not yet
-# contain one requested features which is available on github
-plot.igraph2 <- function(x, axes = FALSE, add = FALSE, xlim = c(-1, 1), 
-                         ylim = c(-1, 1), mark.groups = list(), mark.shape = 1/2, 
-                         mark.col = rainbow(length(mark.groups), alpha = 0.3), 
-                         mark.border = rainbow(length(mark.groups), alpha = 1), 
+# contain a requested feature (available on GitHub)
+plot.igraph2 <- function(x, axes = FALSE, add = FALSE, xlim = c(-1, 1),
+                         ylim = c(-1, 1), mark.groups = list(), mark.shape = 1/2,
+                         mark.col = rainbow(length(mark.groups), alpha = 0.3),
+                         mark.border = rainbow(length(mark.groups), alpha = 1),
                          mark.expand = 15, ...) {
   graph <- x
   if (!is_igraph(graph)) {
@@ -56,14 +57,14 @@ plot.igraph2 <- function(x, axes = FALSE, add = FALSE, xlim = c(-1, 1),
   maxv <- max(vertex.size)
   if (rescale) {
     layout <- norm_coords(layout, -1, 1, -1, 1)
-    xlim <- c(xlim[1] - margin[2] - maxv, xlim[2] + margin[4] + 
+    xlim <- c(xlim[1] - margin[2] - maxv, xlim[2] + margin[4] +
                 maxv)
-    ylim <- c(ylim[1] - margin[1] - maxv, ylim[2] + margin[3] + 
+    ylim <- c(ylim[1] - margin[1] - maxv, ylim[2] + margin[3] +
                 maxv)
   }
   if (!add) {
-    plot(0, 0, type = "n", xlab = xlab, ylab = ylab, xlim = xlim, 
-         ylim = ylim, axes = axes, frame = frame, asp = asp, 
+    plot(0, 0, type = "n", xlab = xlab, ylab = ylab, xlim = xlim,
+         ylim = ylim, axes = axes, frame = frame, asp = asp,
          main = main, sub = sub)
   }
   if (!is.list(mark.groups) && is.numeric(mark.groups)) {
@@ -81,8 +82,8 @@ plot.igraph2 <- function(x, axes = FALSE, add = FALSE, xlim = c(-1, 1),
     else {
       vs <- rep(vertex.size, length = vcount(graph))[v]
     }
-    igraph:::igraph.polygon(layout[v, , drop = FALSE], vertex.size = vs, 
-                   expand.by = mark.expand[g]/200, shape = mark.shape[g], 
+    igraph:::igraph.polygon(layout[v, , drop = FALSE], vertex.size = vs,
+                   expand.by = mark.expand[g]/200, shape = mark.shape[g],
                    col = mark.col[g], border = mark.border[g])
   }
   el <- as_edgelist(graph, names = FALSE)
@@ -103,10 +104,10 @@ plot.igraph2 <- function(x, axes = FALSE, add = FALSE, xlim = c(-1, 1),
     elab.y[loops.e]
   }
   edge.labels <- edge.labels[nonloops.e]
-  elab.x <- if (is.null(elab.x)) 
+  elab.x <- if (is.null(elab.x))
     NULL
   else elab.x[nonloops.e]
-  elab.y <- if (is.null(elab.y)) 
+  elab.y <- if (is.null(elab.y))
     NULL
   else elab.y[nonloops.e]
   el <- el[nonloops.e, , drop = FALSE]
@@ -116,20 +117,20 @@ plot.igraph2 <- function(x, axes = FALSE, add = FALSE, xlim = c(-1, 1),
   edge.coords[, 3] <- layout[, 1][el[, 2]]
   edge.coords[, 4] <- layout[, 2][el[, 2]]
   if (length(unique(shape)) == 1) {
-    ec <- igraph:::.igraph.shapes[[shape[1]]]$clip(edge.coords, el, 
+    ec <- igraph:::.igraph.shapes[[shape[1]]]$clip(edge.coords, el,
                                           params = params, end = "both")
   }
   else {
     shape <- rep(shape, length = vcount(graph))
     ec <- edge.coords
     ec[, 1:2] <- t(sapply(seq(length = nrow(el)), function(x) {
-      igraph:::.igraph.shapes[[shape[el[x, 1]]]]$clip(edge.coords[x, 
-                                                         , drop = FALSE], el[x, , drop = FALSE], params = params, 
+      igraph:::.igraph.shapes[[shape[el[x, 1]]]]$clip(edge.coords[x,
+                                                         , drop = FALSE], el[x, , drop = FALSE], params = params,
                                              end = "from")
     }))
     ec[, 3:4] <- t(sapply(seq(length = nrow(el)), function(x) {
-      igraph:::.igraph.shapes[[shape[el[x, 2]]]]$clip(edge.coords[x, 
-                                                         , drop = FALSE], el[x, , drop = FALSE], params = params, 
+      igraph:::.igraph.shapes[[shape[el[x, 2]]]]$clip(edge.coords[x,
+                                                         , drop = FALSE], el[x, , drop = FALSE], params = params,
                                              end = "to")
     }))
   }
@@ -152,40 +153,40 @@ plot.igraph2 <- function(x, axes = FALSE, add = FALSE, xlim = c(-1, 1),
     }
     compute.bezier <- function(cp, points) {
       dt <- seq(0, 1, by = 1/(points - 1))
-      sapply(dt, function(t) point.on.cubic.bezier(cp, 
+      sapply(dt, function(t) point.on.cubic.bezier(cp,
                                                    t))
     }
-    plot.bezier <- function(cp, points, color, width, arr, 
+    plot.bezier <- function(cp, points, color, width, arr,
                             lty, arrow.size, arr.w) {
       p <- compute.bezier(cp, points)
-      polygon(p[1, ], p[2, ], border = color, lwd = width, 
+      polygon(p[1, ], p[2, ], border = color, lwd = width,
               lty = lty)
       if (arr == 1 || arr == 3) {
-        igraph:::igraph.Arrows(p[1, ncol(p) - 1], p[2, ncol(p) - 
-                                             1], p[1, ncol(p)], p[2, ncol(p)], sh.col = color, 
-                      h.col = color, size = arrow.size, sh.lwd = width, 
+        igraph:::igraph.Arrows(p[1, ncol(p) - 1], p[2, ncol(p) -
+                                             1], p[1, ncol(p)], p[2, ncol(p)], sh.col = color,
+                      h.col = color, size = arrow.size, sh.lwd = width,
                       h.lwd = width, open = FALSE, code = 2, width = arr.w)
       }
       if (arr == 2 || arr == 3) {
-        igraph:::igraph.Arrows(p[1, 2], p[2, 2], p[1, 1], p[2, 
-                                                   1], sh.col = color, h.col = color, size = arrow.size, 
-                      sh.lwd = width, h.lwd = width, open = FALSE, 
+        igraph:::igraph.Arrows(p[1, 2], p[2, 2], p[1, 1], p[2,
+                                                   1], sh.col = color, h.col = color, size = arrow.size,
+                      sh.lwd = width, h.lwd = width, open = FALSE,
                       code = 2, width = arr.w)
       }
     }
-    loop <- function(x0, y0, cx = x0, cy = y0, color, angle = 0, 
-                     label = NA, width = 1, arr = 2, lty = 1, arrow.size = arrow.size, 
+    loop <- function(x0, y0, cx = x0, cy = y0, color, angle = 0,
+                     label = NA, width = 1, arr = 2, lty = 1, arrow.size = arrow.size,
                      arr.w = arr.w, lab.x, lab.y) {
       rad <- angle
       center <- c(cx, cy)
-      cp <- matrix(c(x0, y0, x0 + 0.4, y0 + 0.2, x0 + 0.4, 
+      cp <- matrix(c(x0, y0, x0 + 0.4, y0 + 0.2, x0 + 0.4,
                      y0 - 0.2, x0, y0), ncol = 2, byrow = TRUE)
       phi <- atan2(cp[, 2] - center[2], cp[, 1] - center[1])
       r <- sqrt((cp[, 1] - center[1])^2 + (cp[, 2] - center[2])^2)
       phi <- phi + rad
       cp[, 1] <- cx + r * cos(phi)
       cp[, 2] <- cy + r * sin(phi)
-      plot.bezier(cp, 50, color, width, arr = arr, lty = lty, 
+      plot.bezier(cp, 50, color, width, arr = arr, lty = lty,
                   arrow.size = arrow.size, arr.w = arr.w)
       if (is.language(label) || !is.na(label)) {
         lx <- x0 + 0.3
@@ -201,7 +202,7 @@ plot.igraph2 <- function(x, axes = FALSE, add = FALSE, xlim = c(-1, 1),
         if (!is.na(lab.y)) {
           ly <- lab.y
         }
-        text(lx, ly, label, col = edge.label.color, font = edge.label.font, 
+        text(lx, ly, label, col = edge.label.color, font = edge.label.font,
              family = edge.label.family, cex = edge.label.cex)
       }
     }
@@ -235,8 +236,8 @@ plot.igraph2 <- function(x, axes = FALSE, add = FALSE, xlim = c(-1, 1),
     }
     xx0 <- layout[loops.v, 1] + cos(la) * vs
     yy0 <- layout[loops.v, 2] - sin(la) * vs
-    mapply(loop, xx0, yy0, color = ec, angle = -la, label = loop.labels, 
-           lty = lty, width = ew, arr = arr, arrow.size = asize, 
+    mapply(loop, xx0, yy0, color = ec, angle = -la, label = loop.labels,
+           lty = lty, width = ew, arr = arr, arrow.size = asize,
            arr.w = arrow.width, lab.x = loop.labx, lab.y = loop.laby)
   }
   if (length(x0) != 0) {
@@ -259,10 +260,10 @@ plot.igraph2 <- function(x, axes = FALSE, add = FALSE, xlim = c(-1, 1),
       curved <- curved[nonloops.e]
     }
     if (length(unique(arrow.mode)) == 1) {
-      lc <- igraph:::igraph.Arrows(x0, y0, x1, y1, h.col = edge.color, 
-                          sh.col = edge.color, sh.lwd = edge.width, h.lwd = 1, 
-                          open = FALSE, code = arrow.mode[1], sh.lty = edge.lty, 
-                          h.lty = 1, size = arrow.size, width = arrow.width, 
+      lc <- igraph:::igraph.Arrows(x0, y0, x1, y1, h.col = edge.color,
+                          sh.col = edge.color, sh.lwd = edge.width, h.lwd = 1,
+                          open = FALSE, code = arrow.mode[1], sh.lty = edge.lty,
+                          h.lty = 1, size = arrow.size, width = arrow.width,
                           curved = curved)
       lc.x <- lc$lab.x
       lc.y <- lc$lab.y
@@ -287,10 +288,10 @@ plot.igraph2 <- function(x, axes = FALSE, add = FALSE, xlim = c(-1, 1),
         if (length(el) > 1) {
           el <- el[valid]
         }
-        lc <- igraph:::igraph.Arrows(x0[valid], y0[valid], x1[valid], 
-                            y1[valid], code = code, sh.col = ec, h.col = ec, 
-                            sh.lwd = ew, h.lwd = 1, h.lty = 1, sh.lty = el, 
-                            open = FALSE, size = arrow.size, width = arrow.width, 
+        lc <- igraph:::igraph.Arrows(x0[valid], y0[valid], x1[valid],
+                            y1[valid], code = code, sh.col = ec, h.col = ec,
+                            sh.lwd = ew, h.lwd = 1, h.lty = 1, sh.lty = el,
+                            open = FALSE, size = arrow.size, width = arrow.width,
                             curved = curved[valid])
         lc.x[valid] <- lc$lab.x
         lc.y[valid] <- lc$lab.y
@@ -302,8 +303,8 @@ plot.igraph2 <- function(x, axes = FALSE, add = FALSE, xlim = c(-1, 1),
     if (!is.null(elab.y)) {
       lc.y <- ifelse(is.na(elab.y), lc.y, elab.y)
     }
-    text(lc.x, lc.y, labels = edge.labels, col = edge.label.color, 
-         family = edge.label.family, font = edge.label.font, 
+    text(lc.x, lc.y, labels = edge.labels, col = edge.label.color,
+         family = edge.label.family, font = edge.label.font,
          cex = edge.label.cex)
   }
   rm(x0, y0, x1, y1)
@@ -312,26 +313,26 @@ plot.igraph2 <- function(x, axes = FALSE, add = FALSE, xlim = c(-1, 1),
   }
   else {
     sapply(seq(length = vcount(graph)), function(x) {
-      igraph:::.igraph.shapes[[shape[x]]]$plot(layout[x, , drop = FALSE], 
+      igraph:::.igraph.shapes[[shape[x]]]$plot(layout[x, , drop = FALSE],
                                       v = x, params = params)
     })
   }
   par(xpd = TRUE)
-  x <- layout[, 1] + label.dist * cos(-label.degree) * (vertex.size + 
+  x <- layout[, 1] + label.dist * cos(-label.degree) * (vertex.size +
                                                           6 * 8)/200
-  y <- layout[, 2] + label.dist * sin(-label.degree) * (vertex.size + 
+  y <- layout[, 2] + label.dist * sin(-label.degree) * (vertex.size +
                                                           6 * 8)/200
   if (length(label.family) == 1) {
-    text(x, y, labels = labels, col = label.color, family = label.family, 
+    text(x, y, labels = labels, col = label.color, family = label.family,
          font = label.font, cex = label.cex)
   }
   else {
-    if1 <- function(vect, idx) if (length(vect) == 1) 
+    if1 <- function(vect, idx) if (length(vect) == 1)
       vect
     else vect[idx]
     sapply(seq_len(vcount(graph)), function(v) {
-      text(x[v], y[v], labels = if1(labels, v), col = if1(label.color, 
-                                                          v), family = if1(label.family, v), font = if1(label.font, 
+      text(x[v], y[v], labels = if1(labels, v), col = if1(label.color,
+                                                          v), family = if1(label.family, v), font = if1(label.font,
                                                                                                         v), cex = if1(label.cex, v))
     })
   }

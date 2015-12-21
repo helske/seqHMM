@@ -43,16 +43,22 @@ Possible arguments are \describe{
 and for mixture models 3 (print also during optimization of coefficients).}
 \item{reltol}{Relative tolerance for convergence defined as
 \eqn{(logLik_new - logLik_old)/(abs(logLik_old) + 0.1)}.
-Default is 1e-12.}
+The default is 1e-12.}
 \item{restart}{List containing options for possible EM restarts with following components:
 \describe{
-\item{times}{Number of restarts of EM algorithm using random initial values. Default is 0 i.e. no restarts. }
-\item{transition}{Logical, should the initial transition probabilities be varied. Default is \code{TRUE}. }
-\item{emission}{Logical, should the initial emission probabilities be varied. Default is \code{TRUE}. }
-\item{sd}{Standard deviation for \code{rnorm} used in randomizing. Default is 0.25.}
-\item{maxeval}{Maximum number of iterations, default is 100.}
-\item{print_level}{Level of printing in restarted EM steps. Defaults to \code{control_em$print_level}. }
-\item{reltol}{Relative tolerance for convergence in restarted EM steps. Default is 1e-8.}
+\item{times}{Number of restarts of EM algorithm using random initial values. The default is 0 i.e. no restarts. }
+\item{transition}{Logical, should the initial transition probabilities be varied. The default is \code{TRUE}. }
+\item{emission}{Logical, should the initial emission probabilities be varied. The default is \code{TRUE}. }
+\item{sd}{Standard deviation for \code{rnorm} used in randomizing. The default is 0.25.}
+\item{maxeval}{Maximum number of iterations, the default is 100.}
+\item{print_level}{Level of printing in restarted EM steps. The default is \code{control_em$print_level}. }
+\item{reltol}{Relative tolerance for convergence in restarted EM steps. The default is 1e-8.
+If the relative change of the final model of the restart phase is larger than the tolerance
+for the original EM phase, the final model is re-estimated with the original \code{reltol}
+and \code{maxeval} at the end of the EM step.}
+\item{n_optimum}{Save the log-likelihood values of the \code{n_optimum} best
+models (from all estimated models including the original).
+The default is \code{min(times + 1, 25)}.}
 }
 }
 }}
@@ -76,28 +82,28 @@ Default is 1e-12.}
 }}
 
 \item{lb}{Lower and upper bounds for parameters in Softmax parameterization.
-Default interval is [pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)], except for beta coefficients,
+The default interval is [pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)], except for beta coefficients,
 where the scale of covariates is taken into account.
 Note that it might still be a good idea to scale covariates around unit scale.
 Bounds are used only in the global optimization step.}
 
 \item{ub}{Lower and upper bounds for parameters in Softmax parameterization.
-Default interval is [pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)], except for beta coefficients,
+The default interval is [pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)], except for beta coefficients,
 where the scale of covariates is taken into account.
 Note that it might still be a good idea to scale covariates around unit scale.
 Bounds are used only in the global optimization step.}
 
-\item{threads}{Number of threads to use in parallel computing. Default is 1.}
+\item{threads}{Number of threads to use in parallel computing. The default is 1.}
 
 \item{log_space}{Make computations using log-space instead of scaling for greater
-numerical stability at a cost of decreased computational performance. Default is \code{FALSE}.}
+numerical stability at a cost of decreased computational performance. The default is \code{FALSE}.}
 
 \item{...}{Additional arguments to \code{nloptr}.
 \describe{
   \item{logLik}{Log-likelihood of the estimated model. }
   \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
   (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
-  number of estimated models in restarted EM with the best likelihood (\code{n_optimum}). }
+  the log-likelihoods of the \code{n_optimum} best models after the EM step (\code{best_opt_restart}). }
   \item{global_results}{Results after the global step. }
   \item{local_results}{Results after the local step. }
   \item{call}{The matched function call. }

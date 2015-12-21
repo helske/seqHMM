@@ -32,6 +32,10 @@
 
 mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
   
+  if (!inherits(model, "hmm") && !inherits(model, "mhmm")){
+    stop("Provide a model of class hmm or mhmm.")
+  }
+  
   if (model$n_channels == 1){
     return(model)
   }
@@ -189,6 +193,7 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
   attr(modelx$observations, "void") <- attr(model$observations[[1]], "void")
   attr(modelx$observations, "missing") <- attr(model$observations[[1]], "missing")
   attr(modelx$observations, "start") <- attr(model$observations[[1]], "start")
+  attr(modelx$observations, "cpal") <- cpal
   
   
   attr(modelx$observations, "nobs") <-

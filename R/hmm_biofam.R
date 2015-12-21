@@ -9,7 +9,7 @@
 #' The model is loaded by calling \code{data(hmm_biofam)}. It was created with the
 #' following code:
 #' \preformatted{
-#' data(biofam3c)
+#' data("biofam3c")
 #'
 #' # Building sequence objects
 #' marr_seq <- seqdef(biofam3c$married, start = 15,
@@ -20,9 +20,9 @@
 #'   alphabet = c("with parents", "left home"))
 #'
 #' ## Choosing colors
-#' attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-#' attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
-#' attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
+#' attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
+#' attr(child_seq, "cpal") <- c("darkseagreen1", "coral3")
+#' attr(left_seq, "cpal") <- c("lightblue", "red3")
 #'
 #' init <- c(0.9, 0.05, 0.02, 0.02, 0.01)
 #'

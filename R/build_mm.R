@@ -2,7 +2,6 @@
 #'
 #' Function \code{build_mm} is a shortcut for constructing a Markov model as an restricted case of \code{hmm} object.
 #' @export
-#' @useDynLib seqHMM
 #' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
 #' the sequences.
 #' @param transition_probs A matrix of transition probabilities. Transition probabilities should follow the

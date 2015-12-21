@@ -10,12 +10,12 @@
 #'   See function \code{\link{mc_to_sc}} for more information on the 
 #'   transformation.
 #' @param layout specifies the layout of vertices (nodes). Accepts a 
-#'   numerical matrix, a \code{\link[igraph]{layout}} function (without quotation marks), 
+#'   numerical matrix, a \code{\link[igraph]{layout_}} function (without quotation marks), 
 #'   or either of the predefined options \code{"horizontal"} (the 
 #'   default) and \code{"vertical"}. Options \code{"horizontal"} and 
 #'   \code{"vertical"} position vertices at the same horizontal or vertical 
 #'   line. A two-column numerical matrix can be used to give x and y coordinates of 
-#'   the vertices. The \code{\link[igraph]{layout}} functions available in the 
+#'   the vertices. The \code{\link[igraph]{layout_}} functions available in the 
 #'   \code{igraph} package offer other automatic layouts for graphs.
 #' @param pie Are vertices plotted as pie charts of emission probabilities? 
 #'   Defaults to TRUE.
@@ -144,7 +144,9 @@
 #' # Plotting HMM with own color palette 
 #' plot(hmm_biofam, cpal = 1:10, 
 #'   # States with emission probability less than 0.2 removed
-#'   combine.slices = 0.2)
+#'   combine.slices = 0.2,
+#'   # legend with two columns
+#'   ncol.legend = 2)
 #'   
 #' # Plotting HMM without pie graph and with a layout function
 #' require(igraph)
@@ -184,10 +186,10 @@
 #' plot(hmm_mvad, 
 #'   # Layout in circle (layout function from igraph)
 #'   layout = layout_in_circle, 
-#'   # Less curved edges with smaller arrows
-#'   edge.curved = 0.2, edge.arrow.size = 0.9, 
+#'   # Less curved edges with smaller arrows, no labels
+#'   edge.curved = 0.2, edge.arrow.size = 0.9, edge.label = NA,
 #'   # Vertex labels (initial probabilities) on left
-#'   vertex.label.pos = "left", 
+#'   vertex.label.pos = c("right", "right", "left", "left", "right"), 
 #'   # Less space for the legend
 #'   legend.prop = 0.3)
 
@@ -241,8 +243,8 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
   
   if (!is.numeric(vertex.label.pos)) {
     choices <- c("bottom", "top", "left", "right")
-    ind <- pmatch(vertex.label.pos, choices)
-    if (is.na(ind)) {
+    ind <- pmatch(vertex.label.pos, choices, duplicates.ok = TRUE)
+    if (any(is.na(ind))) {
       stop("Argument vertex.label.pos only accepts values \"bottom\", \"top\", \"left\", \"right\" or a numerical vector.")
     }
     vertex.label.pos <- choices[ind]
@@ -272,15 +274,19 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
   
   # Positions of vertex labels
   if (!is.numeric(vertex.label.pos)) {
-    if (vertex.label.pos == "bottom") {
-      vertex.label.pos  <- pi/2
-    } else if(vertex.label.pos == "top") {
-      vertex.label.pos  <- -pi/2
-    } else if(vertex.label.pos == "left") {
-      vertex.label.pos  <- pi
-    } else {
-      vertex.label.pos  <- 0
+    vpos <- numeric(length(vertex.label.pos))
+    for(i in 1:length(vertex.label.pos)){
+      if (vertex.label.pos[i] == "bottom") {
+        vpos[i]  <- pi/2
+      } else if(vertex.label.pos[i] == "top") {
+        vpos[i]  <- -pi/2
+      } else if(vertex.label.pos[i] == "left") {
+        vpos[i]  <- pi
+      } else {
+        vpos[i]  <- 0
+      }
     }
+    vertex.label.pos <- vpos
   }
   
   # Vertex labels
@@ -474,11 +480,10 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
         pie.values[[i]]  <- c(pie.values[[i]], cs.prob)
         # Texts and colors for legends
         if (withlegend != FALSE) {
-          pie.colors.l  <- c(pie.colors.l, pie.colors[pie.values[[i]] >= combine.slices])
-          lt  <- c(lt, ltext[pie.values[[i]] >= combine.slices])
+          pie.colors.l  <- c(pie.colors.l, pie.colors[pie.values[[i]][1:(length(pie.values[[i]]) - 1)] >= combine.slices])
+          lt  <- c(lt, ltext[pie.values[[i]][1:(length(pie.values[[i]]) - 1)] >= combine.slices])
         }
       }
-      pie.colors  <- c(pie.colors, combined.slice.color)
       if (withlegend != FALSE) {
         ltext  <- c(unique(lt), combined.slice.label)
         pie.colors.l  <- c(unique(pie.colors.l), combined.slice.color)
@@ -490,6 +495,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
           ncol.legend  <- 1
         }
       }
+      pie.colors <- c(pie.colors, combined.slice.color)
       # Slices not combined
     } else {
       if (ncol.legend == "auto") {

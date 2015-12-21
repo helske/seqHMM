@@ -1,0 +1,882 @@
+%\VignetteEngine{knitr::knitr}
+%\VignetteDepends{igraph,nloptr,TraMineR,numDeriv,gridBase,Matrix}
+%\VignetteIndexEntry{Mixture Hidden Markov Models for Sequence Data: the seqHMM Package in R}
+\documentclass[nojss,article]{jss}
+
+
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{hyperref}
+
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% declarations for jss.cls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% almost as usual
+\author{Satu Helske\\ University of Jyv{\"a}skyl{\"a}, Finland \And
+        Jouni Helske\\ University of Jyv{\"a}skyl{\"a}, Finland}
+\title{Mixture Hidden Markov Models for Sequence Data: the \pkg{seqHMM} Package in \proglang{R}}
+
+%% for pretty printing and a nice hypersummary also set:
+\Plainauthor{Satu Helske, Jouni Helske} %% comma-separated
+\Plaintitle{Mixture Hidden Markov Models for Sequence Data: the seqHMM Package in R} %% without formatting
+\Shorttitle{\pkg{seqHMM}: Mixture Hidden Markov Models for Sequence Data} %% a short title (if necessary)
+
+%% an abstract and keywords
+\Abstract{
+Sequence analysis is being more and more widely used for the analysis of social sequences and other multivariate categorical time series data. However, it is often complex to describe, visualize, and compare large sequence data, especially when there are multiple parallel sequences per subject. Hidden (latent) Markov models (HMMs) are able to detect underlying latent structures and they can be used in various longitudinal settings: to account for measurement error, to detect unobservable states, or to compress information across several types of observations. Extending to mixture hidden Markov models (MHMMs) allows clustering data into homogeneous subsets, with or without external covariates.
+
+The \pkg{seqHMM} package in \proglang{R} is designed for the efficient modeling of sequences and other categorical time series data containing one or multiple subjects with one or multiple interdependent sequences using HMMs and MHMMs. Also other restricted variants of the MHMM can be fitted, e.g. latent class models, Markov models, mixture Markov models, or even ordinary multinomial regression models with suitable parameterization of the HMM.
+
+Good graphical presentations of data and models are useful during the whole analysis process from the first glimpse at the data to model fitting and presentation of results. The package provides easy options for plotting parallel sequence data, and proposes visualizing HMMs as directed graphs.
+}
+\Keywords{multichannel sequences, categorical time series, visualizing sequence data, visualizing models, latent Markov models, latent class models, \proglang{R}}
+\Plainkeywords{multichannel sequences, categorical time series, visualizing sequence data, visualizing models, latent Markov models, latent class models, R} %% without formatting
+
+
+%% publication information
+%% NOTE: Typically, this can be left commented and will be filled out by the technical editor
+%% \Volume{50}
+%% \Issue{9}
+%% \Month{June}
+%% \Year{2012}
+%% \Submitdate{2012-06-04}
+%% \Acceptdate{2012-06-04}
+
+%% The address of (at least) one author should be given
+%% in the following format:
+\Address{
+  Satu Helske\\
+  Department of Mathematics and Statistics \\
+  P.O.Box 35 (MaD) \\
+  FI-40014 University of Jyvaskyla \\
+  Finland \\
+  E-mail: \email{satu.helske@jyu.fi}\\
+  URL: \url{http://users.jyu.fi/~samahels/}
+}
+%% It is also possible to add a telephone and fax number
+%% before the e-mail in the following format:
+%% Telephone: +43/512/507-7103
+%% Fax: +43/512/507-2851
+
+%% for those who use Sweave please include the following line (with % symbols):
+%% need no \usepackage{Sweave.sty}
+
+%% end of declarations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+<<setup, include=FALSE, cache=FALSE>>=
+library(knitr)
+opts_chunk$set(concordance = TRUE, tidy = FALSE)
+options(prompt = "R> ", continue = "+  ", width = 70, useFancyQuotes = FALSE)
+render_sweave()
+@
+
+CRAN-compliant modification of manuscript submitted to \emph{Journal of Statistical Software}
+
+\section{Introduction}
+
+Sequence analysis is being more and more widely used for the analysis of categorical time series. These data consist of multiple independent subjects with one or multiple interdependent sequences (channels). Sequence analysis is used for computing the (dis)similarities of sequences, and often the goal is to find patterns in data using cluster analysis. However, describing, visualizing, and comparing large sequence data is often complex, especially in the case of multiple channels. Hidden (latent) Markov models (HMMs) can be used to compress and visualize information in such data. These models are able to detect underlying latent structures. Extending to mixture hidden Markov models (MHMMs) allows clustering via latent classes, possibly with additional covariate information. One of the major benefits of using hidden Markov modeling is that all stages of analysis are performed, evaluated, and compared in a probabilistic framework; e.g. well-known model selection criteria are available for choosing the best clustering solution.
+
+The \pkg{seqHMM} package for \proglang{R} \citep{RCoreTeam2015} is designed for modeling sequence data and other categorical time series with one or multiple subjects and one or multiple channels using HMMs and MHMMs. The package provides functions for the estimation and inference of models, as well as functions for the easy visualization of multichannel sequences and HMMs. Even though the package was originally developed for researchers familiar with social sequence analysis, knowledge on sequence analysis or social sciences is not necessary for the usage of \pkg{seqHMM}.
+
+There are also other \proglang{R} packages in CRAN for HMM analysis of categorical data. The \pkg{HMM} package \citep{Himmelmann2010} is a compact package designed for fitting an HMM for a single observation sequence. The \pkg{hmm.discnp} package \citep{Turner2014} can handle multiple observation sequences with possibly varying lengths. For modeling continuous-time processes as hidden Markov models, the \pkg{msm} package \citep{Jackson2011} is available. Both \pkg{hmm.discnp} and \pkg{msm} support only single-channel observations. The \pkg{depmixS4} package \citep{Visser2010} is able to fit HMMs for multiple interdependent time series (with continuous or categorical values), but for one subject only. In the \pkg{msm} and \pkg{depmixS4} packages, covariates can be added for initial and transition probabilities. The \pkg{mhsmm} package \citep{OConnell2011} allows modeling of multiple sequences using hidden Markov and semi-Markov models. There are no ready-made options for modeling categorical data, but users can write their own extensions for arbitrary distributions. The \pkg{LMest} package \citep{Bartolucci2015} is aimed to panel data with large number of subjects and small number of time points. It can be used for hidden Markov modeling of multivariate and multichannel categorical data, using covariates in emission and transition processes. \pkg{LMest} also support mixed latent Markov models, where the latent process is allowed to vary in different latent subpopulations. This differs from mixture hidden Markov models used in \pkg{seqHMM}, where also the emission probabilities vary between groups. The \pkg{seqHMM} package also supports covariates in explaining group memberships. A drawback in the \pkg{LMest} package is that the user cannot define initial values or zero constraints for model parameters, and thus important special cases such as left-to-right models cannot be used.
+
+We start with describing data and methods: a short introduction to sequence data and sequence analysis, then the theory of hidden Markov models for such data, an expansion to mixture hidden Markov models and a glance at some special cases, and then some propositions on visualizing multichannel sequence data and hidden Markov models. After the theoretic part we take a look at features of the \pkg{seqHMM} package and at the end show an example on using the package for the analysis of life course data. Appendices include a list of notations and more thorough descriptions of some important algorithms.
+
+\section{Methods}
+\subsection{Sequences and sequence analysis}
+\label{sec:seqdata}
+
+By the term \emph{sequence} we refer to an ordered set of categorical states. It can be a time series, such as a career trajectory or residental history, or any other series with ordered categorical observations, e.g. a DNA sequence or a structure of a story.
+
+As an example we study the \code{biofam} data available in the \pkg{TraMineR} package \citep{Gabadinho2011}. It is a sample of 2000 individuals born in 1909--1972, constructed from the Swiss Household Panel survey in 2002 \citep{Mueller2007}. The data set contains sequences of annual family life statuses from age 15 to 30. Eight observed states are defined from the combination of five basic states: living with parents, left home, married, having children, and divorced. To show a more complex example, we split the original data into three separate \emph{channels} representing different life domains: marriage, parenthood, and residence. The data for each individual now includes three parallel sequences constituting of two or three \emph{states} each: single/married/divorced, childless/parent, and living with parents / having left home.
+
+\emph{Sequence analysis} (SA) is statistical analysis of successions of states. It has roots in bioinformatics and computer science \citep[see e.g.][]{Durbin1998}, but during the past few decades SA has also become more common in other disciplines for the analysis of longitudinal data. In social sciences SA has been used increasingly often and is now ``central to the life-course perspective'' \citep{Blanchard2014}. SA is model-free data-driven approach, which is used for computing (dis)similarities of sequences. The most well-known method is optimal matching \citep{McVicar2002}, but several alternatives exist \citep[see e.g.][]{Aisenbrey2010, Elzinga2014, Gauthier2009, Halpin2010, Hollister2009, Lesnard2010}. Also a method for analysing multichannel data has been developed \citep{Gauthier2010}. Often the goal in SA is to find typical and atypical patterns in trajectories using cluster analysis, but any approach suitable for compressing information on the dissimilarities can be used. The data are usually presented also graphically in some way. So far the \pkg{TraMineR} package has been the most extensive and frequently used software for (social) sequence analysis.
+
+
+\subsection{Hidden Markov models}\label{sec:fitHMM}
+
+In the context of hidden Markov models, sequence data consists of \emph{observed states}, which are regarded as probabilistic functions of \emph{hidden states}. Hidden states cannot be observed directly, but only through the sequence(s) of observations, since they emit the observations on varying probabilities. A discrete first order hidden Markov model for a single sequence is characterized by the following:
+
+\begin{itemize}
+\item \emph{Observed state sequence} $\textbf{y}=(y_1, y_2, \ldots, y_T)$
+  with observed states $m\in\{1, \ldots, M\}$.
+
+\item \emph{Hidden state sequence} $\textbf{z}=(z_1, z_2,\ldots, z_T)$
+with hidden states $s\in\{1, \ldots, S\}$.
+
+\item \emph{Transition matrix} $A = \{a_{sr}\}$ of size $S \times S$, where $a_{sr}$ is the probability of moving from the hidden state $s$ at time $t-1$ to the hidden state $r$ at time $t$:
+        \[a_{sr}	= P(z_t=r|z_{t-1}=s);\quad s,r \in\{1, \ldots, S\}.
+				\]
+        We only consider homogeneous HMMs, where the transition probabilities $a_{sr}$ are constant over time.
+
+\item \emph{Emission matrix} $B=\{b_s(m)\}$ of size $S \times M$, where $b_s(m)$ is the probability of the hidden state $s$ emitting the observed state $m$:
+  			\[b_{s}(m)=P(y_t=m|z_t=s); \quad s\in\{1, \ldots, S\}, m\in\{1, \ldots, M\}.
+				\]
+
+\item \emph{Initial probability vector} $\pi=\{\pi_s\}$ of length $S$, where $\pi_s$ is the probability of starting from the hidden state $s$:
+  			\[\pi_s = P(z_1=s);\quad s\in \{1, \ldots, S\}.
+				\]
+
+  \end{itemize}
+The (first order) Markov assumption states that the hidden state transition probability at time $t$ only depends on the hidden state at the previous time point $t-1$:
+\begin{equation}
+P(z_t|z_{t-1},\ldots,z_1)=P(z_t|z_{t-1}).
+\end{equation}
+Also, the observation at time $t$ is only dependent on the current hidden state, not on previous hidden states or observations:
+\begin{equation}
+P(y_t|y_{t-1},\ldots,y_1,z_t,\ldots,z_1)=P(y_t|z_t).
+\end{equation}
+For a more detailed description of hidden Markov models, see e.g. \citet{Rabiner1989}, \citet{MacDonald1997}, and \citet{Durbin1998}.
+
+\subsubsection{HMM for multiple sequences}
+
+We can also fit the same HMM for multiple subjects; instead of one observed sequence $\textbf{y}$ we have $N$ sequences as $Y = (\textbf{y}_1, \ldots, \textbf{y}_N)^{\top}$, where the observations $\textbf{y}_i=(y_{i1},\ldots, y_{iT})$ of each subject $i$ take values in the observed state space. Observed sequences are assumed to be mutually independent given the hidden states. The observations are assumed to be generated by the same model, but each subject has its own hidden state sequence.
+
+\subsubsection{HMM for multichannel sequences}
+
+In the case of multichannel sequence data, such as the example described in section \ref{sec:seqdata}, for each subject $i$ there are $C$ parallel sequences. Observations are now of the form $y_{itc}, \ i=1,\ldots,N; \quad t=1\ldots,T; \quad c=1\ldots,C$, so that our complete data is $Y = \{Y^1, \ldots, Y^C\}$. In \pkg{seqHMM}, multichannel data are handled as a list of $C$ data frames of size $N\times T$. We also define $Y_i$ as all the observations corresponding to subject $i$.
+
+We apply the same latent structure for all channels. In such a case the model has one transition matrix $A$ but several emission matrices $B_1,\ldots,B_C$, one for each channel. We assume that the observed states in different channels at a given time point $t$ are independent of each other given the hidden state at $t$, i.e., $P(\textbf{y}_{it}|z_{it})=P(y_{it1}|z_{it})\cdots P(y_{itC}|z_{it})$.
+
+Sometimes the independence assumption does not seem theoretically plausible. For example, even conditioning on a hidden state representing a general life stage, are marital status and parenthood truly independent? On the other hand, given a person's religious views, could their opinions on abortion and gay marriage be though as independent?
+
+If the goal is to use hidden Markov models for prediction or simulating new sequence data, the analyst should carefully check the validity of independence assumptions. However, if the goal is merely to describe structures and compress information, it can be useful to accept the independence assumption even though it is not completely reasonable in a theoretical sense. When using multichannel sequences, the number of observed states is smaller, which leads to a more parsimonious representation of the model and easier inference of the phenomenon. Also due to the decreased number of observed states, the number of parameters of the model is decreased leading to the improved computational efficiency of model estimation.
+
+The multichannel approach is particularly useful if some of the channels are only partially observed; combining missing and non-missing information into one observation is usually problematic. One would have to decide whether such observations are coded completely missing, which is simple but loses information, or whether all possible combinations of missing and non-missing states are included, which grows the state space larger and makes the interpretation of the model more difficult. In the multichannel approach the data can be used as it is.
+
+
+\subsubsection{Missing data}
+
+Missing observations are handled straightforwardly in the context of HMMs. When observation $y_{itc}$ is missing, we gain no additional information regarding hidden states. In such a case, we set the emission probability $b_{s}(y_{itc})=1$ for all $s \in {1,\ldots,S}$. Sequences with varying lengths are handled by setting missing values before and/or after the observed states.
+
+\subsubsection{Log-likelihood and parameter estimation}
+\label{sec:estimation}
+
+The unknown transition, emission and initial probabilities are commonly estimated via maximum likelihood. The log-likelihood for multiple multichannel sequences is written as
+\begin{equation}
+\label{eq:L1}
+ \log L = \sum_{i=1}^N \log P\left(Y_i|\mathcal{M}\right),
+\end{equation}
+where $Y_i$ are the observed sequences in channels $c=1,\ldots,C$ for subject $i$ and $\mathcal{M}$ describes the model and its parameters $\{\pi, A, B_1, \ldots, B_C\}$. The probability of the observation sequence of subject $i$ given the model is
+  \begin{equation}\label{eq:obsprob}
+  \begin{aligned}
+	P(Y_i|\mathcal{M})	&= \sum_{\text{all } z} P\left(Y_i|z,\mathcal{M}\right) P\left(z|\mathcal{M}\right)\\
+	&= \sum_{\text{all } z}  P(z_1|\mathcal{M}) P(\textbf{y}_{i1}|z_1, \mathcal{M})	\prod_{t=2}^T P(z_t|z_{t-1},\mathcal{M}) P(\textbf{y}_{it}|z_t,\mathcal{M}) \\
+	&= \sum_{\text{all } z} \pi_{z_1} b_{z_1}(y_{i11})\cdots b_{z_1}(y_{i1C})
+	  \prod_{t=2}^T \left[ a_{z_{t-1}z_t} b_{z_t}(y_{it1})\cdots b_{z_t}(y_{itC}) \right],
+	\end{aligned}
+		    \end{equation}
+where the hidden state sequences $z=(z_1,\ldots, z_T)$ take all possible combinations of values in the hidden state space $\{1,\ldots,S\}$ and where $\textbf{y}_{it}$ are the observations of subject $i$ at $t$ in channels $1,\ldots,C$; $\pi_{z_1}$ is the initial probability of the hidden state at time $t=1$ in sequence $z$; $a_{z_{t-1}z_t}$ is the transition probability from the hidden state at time $t-1$ to the hidden state at $t$; and $b_{z_t}(y_{itc})$ is the probability that the hidden state of subject $i$ at time $t$ emits the observed state at $t$ in channel $c$.
+
+For direct numerical maximization (DNM) of the log-likelihood, any general-purpose optimization routines such as BFGS or Nelder--Mead can be used (with suitable reparameterizations). Another common estimation method is the expectation--maximization (EM) algorithm, also known as the Baum--Welch algorithm in the HMM context. The EM algorithm rapidly converges close to a local optimum, but compared to DNM, the converge speed is often slow near the optimum.
+
+The probability \eqref{eq:obsprob} is efficiently calculated using the forward part of the \emph{for\-ward--back\-ward algorithm} \citep[see appendix \ref{app:forwardbackward}]{Baum1966, Rabiner1989}. The backward part of the algorithm is needed for the EM algorithm, as well as for computation of analytical gradients for derivative based optimization routines.
+
+The estimation process starts by giving initial values to the estimates. Good starting values are needed for finding the optimal solution in a reasonable time. In order to reduce the risk of being trapped in a poor local maximum, a large number of initial values should be tested.
+
+
+
+\subsubsection{Inference on hidden states}
+\label{sec:mpp}
+
+Given our model and observed sequences, we can make several interesting inferences regarding the hidden states. Forward probabilities $\alpha_{it}(s)$ \citep{Rabiner1989} are defined as the joint probability of hidden state $s$ at time $t$ and the observation sequences
+$\textbf{y}_{i1}, \ldots, \textbf{y}_{it}$ given the model $\mathcal{M}$, whereas backward probabilities $\beta_{it}(s)$ are defined as the joint probability of hidden state $s$ at time $t$ and the observation sequences $\textbf{y}_{i(t+1)}, \ldots, \textbf{y}_{iT}$ given the model $\mathcal{M}$.
+
+From forward and backward probabilities we can compute the \emph{posterior probabilities} of states, which give the probability of being in each hidden state at each time point, given the observed sequences of subject $i$. These are defined as
+\begin{equation}
+P(z_{it} = s | Y_i, \mathcal{M}) = \frac{\alpha_{it} \beta_{it}}{P\left(Y_i|\mathcal{M}\right)}.
+\end{equation}
+Posterior probabilities can be used to find the locally most probable hidden state at each time point, but the resulting sequence is not necessarily globally optimal. To find the single best hidden state sequence $\hat{z}_i(Y_i)=\hat{z}_{i1},  \hat{z}_{i2}, \ldots, \hat{z}_{iT}$ for subject $i$, we maximize $P(z|Y_i,\mathcal{M})$ or, equivalently, $P(z, Y_i|\mathcal{M})$. A dynamic programming method, the \emph{Viterbi algorithm} \citep[see appendix \ref{app:viterbi}]{Rabiner1989}, is used for solving the problem.
+
+
+
+\subsubsection{Model comparison}
+
+Models with the same number of parameters can be compared with the log-likelihood. For choosing between models with a different number of hidden states, we need to take account of the number of parameters. We define the Bayesian information criterion (BIC) as
+	\begin{equation}
+	BIC=-2\log(L_d)+p\log \left(\sum_{i = 1}^N \sum_{t = 1}^T \frac{1}{C} \sum_{c = 1}^C \text{I}(y_{itc} \text{ observed}) \right),
+	\end{equation}
+where $L_d$ is computed using equation~\ref{eq:L1}, $p$ is the number of estimated parameters, I is the indicator function, and the summation in the logarithm is the size of the data. If data are completely observed, the summation is simplified to $N \times T$. Missing observations in multichannel data may lead to non-integer data size.
+
+
+\subsection{Clustering by mixture hidden Markov models}
+\label{sec:MHMM}
+
+There are many approaches for finding and describing clusters or latent classes when working with HMMs. A simple option is to group sequences beforehand (e.g. using sequence analysis and some clustering method), after which one HMM is fitted for each cluster. This approach is simple in terms of HMMs. Models with a different number of hidden states and initial values are explored and compared one cluster at a time. HMMs are used for compressing information and comparing different clustering solutions, e.g. finding the best number of clusters. The problem with this solution is that it is, of course, very sensitive to the original clustering and the estimated HMMs might not be well suited for borderline cases.
+
+Instead of fixing sequences into clusters, it is possible to fit one model for the whole data and determine clustering during modeling. Now sequences are not in fixed clusters but get assigned to clusters with certain probabilities during the modeling process. In this section we expand the idea of HMMs to mixture hidden Markov models (MHMMs). This approach was formulated by \citet{Pol1990} as a mixed Markov latent class model and later generalized to include time-constant and time-varying covariates by \citet{Vermunt2008} (who named the resulting model as mixture latent Markov model, MLMM). The MHMM presented here is a variant of MLMM where only time-constant covariates are allowed. Time-constant covariates deal with unobserved heterogeneity and they are used for predicting cluster memberships of subjects.
+
+
+\subsubsection{Mixture hidden Markov model}
+
+Assume that we have a set of models $\mathcal{M} = \{\mathcal{M}^1,\ldots, \mathcal{M}^K\}$, where $\mathcal{M}^k = \{\pi^k, A^k, B_1^k, \ldots, B_C^k\}$ for $k=1, \ldots, K$. For each subject $Y_i$, denote $P(\mathcal{M}^k) = w_k$ as the prior probability that the observation sequences of subject $i$ belongs to the submodel/cluster $\mathcal{M}^k$. Now the log-likelihood is extended from equation \eqref{eq:L1} as
+\begin{equation}\label{eq:submodels}
+  \begin{aligned}
+\log L &= \sum_{i=1}^N \log P(Y_i| \mathcal{M})\\
+  &= \sum_{i=1}^N \log \left[ \sum_{k=1}^K P(\mathcal{M}^k) \sum_{\text{all } z} P\left(Y_i|z,\mathcal{M}^k\right) P\left(z|\mathcal{M}^k\right) \right]	 \\
+	&= \sum_{i=1}^N \log \left[\sum_{k=1}^K w_k  \sum_{\text{all } z} \pi^k_{z_1} b^{k}_{z_1}(y_{i11})\cdots b^{k}_{z_1}(y_{i1C})
+	  \prod_{t=2}^T \left[a^k_{z_{t-1}z_t} b^{k}_{z_t}(y_{it1})\cdots b^{k}_{z_t}(y_{itC}) \right] \right].
+	  \end{aligned}
+	\end{equation}
+
+Compared to the usual hidden Markov model, there is an additional summation over the clusters in equation \eqref{eq:submodels}, which seems to make the computations less straightforward than in the non-mixture case. Fortunately, by redefining MHMM as a special type HMM allows us to use standard HMM algorithms without major modifications. We combine the $K$ submodels into one large hidden Markov model consisting of $\sum_{k=1}^K S_k$ states, where the initial state vector contains elements of the form $w_k\pi^k$. Now the transition matrix is block diagonal
+\begin{equation}
+A =
+ \begin{pmatrix}
+  A^1   	& 0 			& \cdots & 0 			\\
+  0 			& A^2 		& \cdots & 0 			\\
+  \vdots  & \vdots  & \ddots & \vdots \\
+  0 			& 0 			& \cdots & A^K
+ \end{pmatrix},
+\end{equation}
+where the diagonal blocks $A^k, k=1,\ldots,K$, are square matrices containing the transition probabilities of one cluster. The off-diagonal blocks are zero matrices, so transitions between clusters are not allowed. Similarly, the emission matrices for each channel contain stacked emission matrices $B^k$.
+
+
+
+
+\subsubsection{Covariates and cluster probabilities}\label{seq:covariates}
+
+Covariates can be added to MHMM to explain cluster memberships as in latent class analysis. The prior cluster probabilities now depend on the subject's covariate values $\textbf{x}_i$ and are defined as multinomial distribution:
+\begin{equation}
+P(\mathcal{M}^k|\textbf{x}_i) = w_{ik}
+= \frac{e^{\beta_k\textbf{x}_i}}{1 + \sum_{j=2}^K e^{\beta_j\textbf{x}_i}}.
+\end{equation}
+The first cluster is set as the reference by fixing $\beta_1=0$. Note that by convention we use $\beta$ when referring to regression coefficients. It is not to be mixed with backward probabilities, which are usually given the same notation.
+
+As in MHMM without covariates, we can still use standard HMM algorithms with a slight modification; we now allow initial state probabilities to vary between subjects. Of course, we also need to estimate the coefficients $\beta$. For direct numerical maximization the modifications are straightforward. In the EM algorithm, regarding the M-step for $\beta$, \code{seqHMM} uses Newton's method with analytical gradients and Hessian which are straightforward to compute given all other model parameters. This Hessian can also be used for computing the conditional standard errors of coefficients. For unconditional standard errors, which take account of possible correlation between the estimates of $\beta$ and other model parameters, the Hessian is computed using finite difference approximation of the Jacobian of the analytical gradients.
+
+The posterior cluster probabilities $P(\mathcal{M}^k|Y_i, \textbf{x}_i)$ are obtained as
+\begin{equation}
+  \begin{aligned}
+P(\mathcal{M}^k|Y_i, \textbf{x}_i) &= \frac{P(Y_i | \mathcal{M}^k, \textbf{x}_i) P(\mathcal{M}^k|\textbf{x}_i) }{P(Y_i| \textbf{x}_i)}\\
+&= \frac{P(Y_i | \mathcal{M}^k, \textbf{x}_i) P(\mathcal{M}^k|\textbf{x}_i) }{\sum_{j=1}^K P(Y_i |\mathcal{M}^j, \textbf{x}_i) P(\mathcal{M}^j|\textbf{x}_i)} = \frac{L_k^i}{L^i},
+  \end{aligned}
+\end{equation}
+where $L^i$ is the likelihood of the complete MHMM for subject $i$, and $L_k^i$ is the likelihood of cluster $k$ for subject $i$. These are straightforwardly computed from forward probabilities. Posterior cluster probabilities are used e.g. for computing classification tables.
+
+
+\subsection{Important special cases}
+
+The hidden Markov model is not the only important special case of the mixture hidden Markov model. Here we cover some of the most important special cases that are included in the \pkg{seqHMM} package.
+
+\subsubsection{Markov model}
+
+The Markov model (MM) is a special case of the HMM, where there is no hidden structure. It can be regarded as an HMM where the hidden states correspond to the observed states perfectly. Now the number of hidden states matches the number of the observed states. The emission probability $P(y_{it}) = 1$ if $z_t = y_{it}$ and $0$ otherwise, i.e., the emission matrices are identity matrices. Note that for building Markov models the data must be in a single-channel format.
+
+\subsubsection{Mixture Markov model}
+
+Like MM, the mixture Markov model (MMM) is a special case of the MHMM, where there is no hidden structure. The likelihood of the model is now of the form
+\begin{equation}
+  \begin{aligned}
+\log L &= \sum_{i = 1}^N \log P(\mathbf{y}_i | \mathbf{x}_i, \mathcal{M}^k) = \sum_{i = 1}^N \log \sum_{k=1}^K P(\mathcal{M}^k|\mathbf{x}_i) P(\mathbf{y}_i | \mathbf{x}_i, \mathcal{M}^k)\\
+&= \sum_{i = 1}^N \log \sum_{k=1}^K P(\mathcal{M}^k|\mathbf{x}_i) P(y_{i1}|\mathbf{x}_i, \mathcal{M}^k) \prod_{t = 2}^T P(y_{it} | y_{i(t-1)}, \mathbf{x}_i, \mathcal{M}^k).
+  \end{aligned}
+\end{equation}
+Again, the data must be in a single-channel format.
+
+\subsubsection{Latent class model}
+
+Latent class models (LCM) are another class of models that are often used for longitudinal research. Such models have been called, e.g., (latent) growth models, latent trajectory models, or longitudinal latent class models \citep{Vermunt2008, Collins1992}. These models assume that dependencies between observations can be captured by a latent class, i.e., a time-constant variable which we call cluster in this paper.
+
+The \pkg{seqHMM} includes a function for fitting an LCM as a special case of MHMM where there is only one hidden state for each cluster. The transition matrix of each cluster is now reduced to a scalar 1 and the likelihood is of the form
+\begin{equation}
+  \begin{aligned}
+\log L &= \sum_{i = 1}^N \log P(Y_i | \mathbf{x}_i, \mathcal{M}^k)
+= \sum_{i = 1}^N \log \sum_{k=1}^K P(\mathcal{M}^k|\mathbf{x}_i) P(Y_i | \mathbf{x}_i, \mathcal{M}^k)\\
+&= \sum_{i = 1}^N \log \sum_{k=1}^K P(\mathcal{M}^k|\mathbf{x}_i) \prod_{t = 1}^T P(\textbf{y}_{it} | \mathbf{x}_i, \mathcal{M}^k).
+  \end{aligned}
+\end{equation}
+
+For LCMs, the data can consist of multiple channels, i.e., the data for each subject consists of multiple parallel sequences. It is also possible to use \pkg{seqHMM} for estimating LCMs for non-longitudinal data with only one time point, e.g. to study multiple questions in a survey.
+
+
+\section{Package features}
+
+The purpose of the \pkg{seqHMM} package is to offer tools for the whole HMM analysis process from sequence data manipulation and description to model building, evaluation, and visualization. Naturally, \pkg{seqHMM} builds on other packages, especially the \pkg{TraMineR} package designed for sequence analysis. For constructing, summarizing, and visualizing sequence data, \pkg{TraMineR} provides many useful features. First of all, we use the \pkg{TraMineR}'s \code{stslist} class as the sequence data structure of \pkg{seqHMM}. These state sequence objects have attributes such as color palette and alphabet, and they have specific methods for plotting, summarizing, and printing. Many other \pkg{TraMineR}'s features for plotting or data manipulation are also used in \pkg{seqHMM}.
+
+On the other hand, \pkg{seqHMM} extends the functionalities of \pkg{TraMineR}, e.g. by providing easy-to-use plotting functions for multichannel data and a simple function for converting such data into single-channel representation.
+
+Other significant packages include the \pkg{igraph} package \citep{Csardi2006}, which is used for drawing graphs of HMMs, and the \pkg{nloptr} package \citep{nloptr, nlopt}, which is used in direct numerical optimization of model parameters. The computationally intensive parts of the package are written in \proglang{C++} with the help of the \pkg{Rcpp} \citep{Eddelbuettel2011, Eddelbuettel2013} and \pkg{RcppArmadillo} \citep{Eddelbuettel2014} packages.
+
+
+In addition of using \proglang{C++} for major algorithms, \pkg{seqHMM} also supports parallel computation via OpenMP interface by dividing computations for subjects between threads. The user can choose the number of parallel threads (typically the number of cores) to use for the specific task using argument \code{threads} where available.
+
+\begin{table}
+\label{table:functions}
+\caption{Functions and methods in the \pkg{seqHMM} package}
+\begin{tabular}[c]{p{0.4\textwidth} L{0.55\textwidth}}
+\hline
+Usage               & Functions/methods \\
+\hline
+Model construction & \code{build\_hmm}, \code{build\_mhmm}, \code{build\_mm},
+\code{build\_mmm}, \code{build\_lcm},
+\code{simulate\_initial\_probs}, \code{simulate\_transition\_probs}, \code{simulate\_emission\_probs} \\
+\hline
+Model estimation      & \code{fit\_model} \\
+\hline
+Model visualization     & \code{plot}, \code{ssplot}, \code{mssplot} \\
+\hline
+Model inference     & \code{logLik}, \code{BIC}, \code{summary} \\
+\hline
+State inference     & \code{hidden_paths}, \code{posterior_probs}, \code{forward_backward} \\
+\hline
+Data visualization       & \code{ssplot}, \code{ssp} + \code{plot}, \code{ssp} + \code{gridplot}\\
+\hline
+Data and model manipulation & \code{mc\_to\_sc}, \code{mc\_to\_sc\_data}, \code{trim\_hmm}, \code{separate\_mhmm} \\
+\hline
+Data simulation   & \code{simulate\_hmm}, \code{simulate\_mhmm} \\
+\hline
+
+\end{tabular}
+\end{table}
+
+Table \ref{table:functions} shows the functions and methods available in the \pkg{seqHMM} package. The package includes functions for estimating and evaluating HMMs and MHMMs as well as visualizing data and models. There are some functions for manipulating data and models, and for simulating model parameters or sequence data given a model. In the next sections we will discuss the usage of these functions more thoroughly.
+
+As the straightforward implementation of the forward--backward algorithm poses a great risk of under- and overflow, typically forward probabilities are scaled so that there should be no underflow. Although scaling is often sufficient for forward algorithm, it can still result in an overflow problem in the backward algorithm. This is especially true in case of global optimization algorithms which can search infeasible areas of parameter space. Thus, \code{seqHMM} also supports computation on the logarithmic scale in most of the algorithms, which further reduces the numerical unstabilities. On the other hand, as there is a need to back-transform to the natural scale during the algorithms, the log-space approach is somewhat slower than the scaling approach. Therefore, the default option is to use the scaling approach, which can be changed to the log-space approach by setting the \code{log\_space} argument to \code{TRUE} e.g. in \code{fit\_model}.
+
+
+\subsection{Building and fitting models}
+
+A model is first constructed using an appropriate build function. As the Table \ref{table:functions} illustrates, there are several such functions available: \code{build\_hmm} for hidden Markov models, \code{build\_mhmm} for mixture hidden Markov models, \code{build\_mm} for Markov models, \code{build\_mmm} for mixture Markov models, and \code{build\_lcm} for latent class models.
+
+Build functions check that the data and matrices are of the right form and create an object of class \code{hmm} (for HMMs and MMs) or \code{mhmm} (for MHMMs, MMMs, and LCMs). For the latter, covariates can be omitted or added with the usual \code{formula} argument using symbolic formulas familiar from e.g. the \code{lm} function. Even though missing observations are allowed in sequence data, covariates must be completely observed.
+
+After a model is constructed, model parameters are estimated with the \code{fit\_model} function. MMs, MMMs, and LCMs are handled internally as their more general counterparts, except in the case of \code{print} methods where some reduntant parts of the model are not printed.
+
+In all models, initial zero probabilities are regarded as structural zeroes and only positive probabilities are estimated. Thus it is easy to construct e.g. a left-to-right model by defining transition probability matrix as an upper triangular matrix.
+
+The \code{fit\_model} function provides three estimation steps: 1) EM algorithm, 2) global DNM, and 3) local DNM. The user can call for one method or any combination of these steps, but should note that they are performed in the above-mentioned order. At the first step starting values are based on the model object given to \code{fit\_model}. Results from a former step are then used as starting values in a latter. Exception to this are some global optimization algorithms, which do not use initial values (because of this, performing just the local DNM step can lead to better solutions than global DNM with small number of iterations).
+
+In order to reduce the risk of being trapped in a poor local optimum, a large number of initial values should be tested. The \pkg{seqHMM} package strives to automize this. One option is to run EM algorithm multiple times with more or less random starting values for transition or emission probabilities or both. These are called for in the \code{control\_em} argument. Although not done by default, this method seems to perform very well as the EM algorithm is relatively fast compared to DNM.
+
+Another option is to use multilevel single-linkage method (MLSL) \citep{Kan1987I, Kan1987II}. It draws multiple random starting values and performs local optimization from each starting point. The LDS modification uses low-discrepancy sequences instead of random numbers as starting points and should improve the convergence rate \citep{Kucherenko2005}.
+
+By default, the \code{fit\_model} function uses the EM algorithm with a maximum of 1000 iterations and skips the local and global DNM steps. For local step, the L-BFGS algorithm \citep{Nocedal1980, Liu1989} is used by default. Setting \code{global\_step = TRUE} the function performs MSLS-LDS with the L-BFGS as the local optimizer. In order to reduce the computation time spent on non-global optima, the convergence tolerance of the local optimizer is set relatively large, so again local optimization should be performed at the final step. For DNM steps (2 and 3), any optimization method available in the \pkg{nloptr} package can be used.
+
+There are some theoretical guarantees that the MLSL method finds all local optima in a finite number of local optimizations. Of course, it might not always succeed in a reasonable time. Also, it requires setting boundaries for the parameter space, which is not always straightforward. In DNM steps the transition, emission, and initial probabilities are estimated using unconstrained reparameterization using softmax function (a generalization of the logistic function), but good boundaries are essential for efficient use of the MLSL algorithm. If the boundaries are too strict, the global optimum cannot be found; if too wide, the probability of finding the global optimum is decreased. The \texttt{fit\_model} function uses starting values or results from the preciding estimation step to adjust the boundaries. EM can help in setting good boundaries, but in some cases it can also lead to worse results. For finding the best solution, it is advisable to try a couple of different settings; e.g. randomized EM, EM followed by MLSL, a couple of EM iterations followed by MLSL, and only MLSL.
+
+
+
+
+\subsubsection{State and model inference}
+
+In \code{seqHMM}, forward and backward probabilities are computed using the \code{forward\_backward} function, either on the logarithmic scale or in a form of scaled probabilities, depending on the argument \code{log\_space}. Posterior probabilities are obtained from the \code{posterior_probs} function. In \code{seqHMM}, the most probable paths are computed with the \code{hidden\_paths} function. For details of Viterbi and forward--backward algorithm, see e.g. \citet{Rabiner1989}.
+
+The \code{seqHMM} package provides the \code{logLik} method for computing the log-likelihood of a model. The method returns an object of class \code{logLik} which is compatible with the generic information criterion functions \code{AIC} and \code{BIC} of \proglang{R}. When constructing the \code{hmm} and \code{mhmm} objects via model building functions, the number of observations and the number of parameters of the model are stored as attributes \code{nobs} and \code{df} which are extracted by \code{logLik} method for computation of information criterions. The number of model parameters are defined from the initial model by taking account the parameter redundancy constraints (stemming from sum-to-one constraints of transition, emission, and initial state probabilities) and by defining all zero probabilities as structural, fixed values.
+
+The \code{summary} method automatically computes some features for a MHMM, MMM, and latent class model, e.g. standard errors for covariates and prior and posterior cluster probabilities for subjects. A \code{print} method for this summary shows an output of the summaries: estimates and standard errors for covariates, log-likelihood and BIC, and information on most probable clusters and prior probabilities.
+
+
+\newpage
+\subsection{Visualizing sequence data}
+\label{sec:vizualizing}
+
+Good graphical presentations of data and models are useful during the whole analysis process from the first glimpse into data to model fitting and presentation of results. The \pkg{TraMineR} package provides nice plotting options and summaries for simple sequence data, but at the moment there is no easy way of plotting multichannel data. We propose to use a so called \emph{stacked sequence plot} (ssp), where the channels are plotted on top of each other so that the same row in each figure matches the same subject. Figure \ref{fig:graphicalillustrations2} illustrates an example of a stacked sequence plot with the ten first sequences of the \code{biofam} data set. The code for creating the figure is shown in section \hyperlink{plottingI}{4.1}.
+
+<<settingdata, message=FALSE, cache=FALSE, echo = FALSE, eval = TRUE>>=
+library("seqHMM")
+
+data("biofam", package = "TraMineR")
+biofam_seq <- seqdef(
+  biofam[, 10:25],
+  labels = c("parent", "left", "married", "left+marr", "child",
+             "left+child", "left+marr+ch", "divorced"),
+  start = 15)
+
+data("biofam3c")
+marr_seq <- seqdef(biofam3c$married, start = 15,
+                   alphabet = c("single", "married", "divorced"))
+child_seq <- seqdef(biofam3c$children, start = 15,
+                    alphabet = c("childless", "children"))
+left_seq <- seqdef(biofam3c$left, start = 15,
+                   alphabet = c("with parents", "left home"))
+
+attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
+attr(child_seq, "cpal") <- c("darkseagreen1", "coral3")
+attr(left_seq, "cpal") <- c("lightblue", "red3")
+@
+
+<<graphicalillustrations2, fig.width=6.5, fig.height=3.7, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Stacked sequence plot of the first ten individuals in the \\code{biofam} data plotted with the \\code{ssplot} function. The top plot shows the original sequences, and the three bottom plots show the sequences in the separate channels for the same individuals. The sequences are in the same order in each plot, i.e., the same row always matches the same individual.", fig.align='center', fig.keep='last', cache = FALSE, message=FALSE>>=
+ssplot(list(biofam_seq[1:10,], marr_seq[1:10,], child_seq[1:10,],
+  left_seq[1:10,]),
+  sortv = "from.start", sort.channel = 1, type = "I",
+  ylab = c("Original", "Marriage", "Parenthood", "Residence"),
+  xtlab = 15:30, xlab = "Age", title = "Ten first sequences",
+  title.n = FALSE, legend.prop = 0.63, ylab.pos = c(1, 1.5),
+  ncol.legend = c(3, 1, 1, 1))
+@
+
+The \code{ssplot} function is the simplest way of plotting multichannel sequence data in \code{seqHMM}. It can be used to illustrate state distributions or sequence index plots. The former is the default option, since index plots can take a lot of time and memory if data are large. Figure \ref{fig:plottingsequences} illustrates a default plot which the user can modify in many ways (see the code in section \hyperlink{plottingd}{4.1}). More examples are shown in the documentation pages of the \code{ssplot} function.
+
+<<plottingsequences, fig.width=5, fig.height=3, dev.args=list(pointsize=10), fig.cap="Stacked sequence plot of annual state distributions in the three-channel \\code{biofam} data. This is the default output of the \\code{ssplot} function.", fig.keep='last', fig.align='center', cache=FALSE, echo = FALSE>>=
+ssplot(list("Marriage" = marr_seq, "Parenthood" = child_seq,
+  "Residence" = left_seq))
+@
+
+Another option is to define function arguments with the \code{ssp} function and then use previously saved arguments for plotting with a simple \code{plot} method. It is also possible to combine several \code{ssp} figures into one plot with the \code{gridplot} function. Figure \ref{fig:gridplot1} illustrates an example of such plot showing sequence index plots for women and men (see the code in section \hyperlink{plottinggrid}{4.1}). Sequences are ordered in a more meaningful order using multidimensional scaling scores of observations (computed from sequence dissimilarities). After defining the plot for one group, a similar plot for others is easily defined using the \code{update} function.
+
+<<gridplot1, fig.width=5.5, fig.height=3.5, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Showing state distribution plots for women and men in the \\code{biofam} data. Two figures were defined with the \\code{ssp} function and then combined into one figure with the \\code{gridplot} function.", fig.align='center', fig.keep='last', cache = FALSE>>=
+ssp_f <- ssp(
+  list(marr_seq[biofam3c$covariates$sex == "woman",],
+    child_seq[biofam3c$covariates$sex == "woman",],
+    left_seq[biofam3c$covariates$sex == "woman",]),
+  type = "I", sortv = "mds.obs", withlegend = FALSE,
+  title = "Women", ylab.pos = c(1, 2, 1),
+  ylab = c("Married", "Children", "Residence"), xtlab = 15:30)
+
+ssp_m <- update(ssp_f, title = "Men",
+  x = list(marr_seq[biofam3c$covariates$sex == "man",],
+    child_seq[biofam3c$covariates$sex == "man",],
+    left_seq[biofam3c$covariates$sex == "man",]))
+
+gridplot(list(ssp_f, ssp_m), ncol = 2, nrow = 2, byrow = TRUE,
+  legend.pos = "bottom", legend.pos2 = "top", row.prop = c(0.65, 0.35))
+@
+
+The \code{gridplot} function is useful for showing different features for the same subjects or same features for different groups. The user has a lot of control over the layout, e.g. dimensions of the grid, widths and heights of the cells, and positions of the legends.
+
+We also provide a function \code{mc\_to\_sc\_data} for easy conversion of multichannel sequence data into a single channel representation. Plotting combined data is often useful in addition to (or instead of) showing separate channels.
+
+
+
+
+\subsection{Visualizing hidden Markov models}
+\label{seq:vizHMM}
+<<code_mcHMM, cache=FALSE, echo = FALSE, message=FALSE, warning=TRUE, eval = TRUE>>=
+mc_init <- c(0.9, 0.05, 0.02, 0.02, 0.01)
+
+mc_trans <- matrix(
+  c(0.80, 0.10, 0.05, 0.03, 0.02,
+    0,    0.90, 0.05, 0.03, 0.02,
+    0,       0, 0.90, 0.07, 0.03,
+    0,       0,    0, 0.90, 0.10,
+    0,       0,    0,    0,    1),
+  nrow = 5, ncol = 5, byrow = TRUE)
+
+mc_emiss_marr <- matrix(
+  c(0.90, 0.05, 0.05,
+    0.90, 0.05, 0.05,
+    0.05, 0.90, 0.05,
+    0.05, 0.90, 0.05,
+    0.30, 0.30, 0.40),
+  nrow = 5, ncol = 3, byrow = TRUE)
+
+mc_emiss_child <- matrix(
+  c(0.9, 0.1,
+    0.9, 0.1,
+    0.1, 0.9,
+    0.1, 0.9,
+    0.5, 0.5),
+  nrow = 5, ncol = 2, byrow = TRUE)
+
+mc_emiss_left <- matrix(
+  c(0.9, 0.1,
+    0.1, 0.9,
+    0.1, 0.9,
+    0.1, 0.9,
+    0.5, 0.5),
+  nrow = 5, ncol = 2, byrow = TRUE)
+
+mc_initmod <- build_hmm(
+  observations = list(marr_seq, child_seq, left_seq),
+  initial_probs = mc_init, transition_probs = mc_trans,
+  emission_probs = list(mc_emiss_marr, mc_emiss_child, mc_emiss_left),
+  channel_names = c("Marriage", "Parenthood", "Residence"))
+
+# For CRAN vignette: load the estimated model object for speed-up
+data("hmm_biofam")
+# mc_fit <- fit_model(mc_initmod, em_step = FALSE, local_step = TRUE,
+#   threads = 4)
+
+@
+
+For easy visualization of the model structure and parameters, we propose plotting HMMs as directed graphs. Such graphs are easily called with the \code{plot} method, with an object of class \code{hmm} as an argument. Figure \ref{fig:plottingHMM} illustrates a five-state HMM. The code for producing the plot is shown in section \hyperlink{code_plottingHMM}{4.4}.
+
+<<plottingHMM, out.width='\\linewidth', fig.height=6, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Illustrating a hidden Markov model as a directed graph. Pies represent five hidden states, with slices showing emission probabilities of combinations of observed states. States with emission probability less than 0.05 are combined into one slice. Edges show the transtion probabilities. Initial probabilities of hidden states are given below the pies.", fig.align='center', fig.keep='last', cache = FALSE>>=
+plot(hmm_biofam, vertex.size = 50, vertex.label.dist = 1.5,
+  edge.curved = c(0, 0.8, -0.8, 0.8, 0, 0.8, 0),
+  legend.prop = 0.3, combined.slice.label = "States with prob. < 0.05")
+@
+
+Hidden states are presented with pie charts as vertices (or nodes), and transition probabilities are shown as edges (arrows, arcs). By default, the higher the transition probability, the thicker the stroke of the edge. Emitted observed states are shown as slices in the pies. For gaining a simpler view, observations with small emission probabilities (less than 0.05 by default) can be combined into one category. Initial state probabilities are given below or next to the respective vertices. In a case of multichannel sequences, the data and the model are converted into a single-channel representation with the \code{mc\_to\_sc} function.
+
+A simple default plot is easy to call, but the user has a lot of control over the layout. Figure \ref{fig:graphicalillustrations5} illustrates another possible visualization of the same model. The code is shown in section \hyperlink{code_graphicalillustrations5}{4.4}.
+
+<<graphicalillustrations5, out.width='\\linewidth',  fig.height=4, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Another version of the hidden Markov model of Figure 4 with a different layout and modified labels, legends, and colors. All observed states are shown.", fig.align='center', fig.keep='last', cache = FALSE>>=
+plot(hmm_biofam, layout = matrix(c(1, 3, 3, 5,  3,
+                                     0, 0, 1, 0, -1), ncol = 2),
+  xlim = c(0.5, 5.5), ylim = c(-1.5,1.5), rescale = FALSE,
+  vertex.size=50, edge.curved = FALSE, edge.width = 1, edge.arrow.size = 1,
+  vertex.label.pos = c(pi, pi/2, -pi/2, 0, pi/2),
+  withlegend = "top", legend.prop = 0.3, ncol.legend = 2,
+  label.signif = 1, combine.slices = 0, cpal = colorpalette[[30]][c(14:5)])
+@
+
+For defining the colors, the plotting functions use \code{colorpalette} data, which is a list of ready-made color palettes with 1--200 distinct colors. It is provided in the package, so the user can easily modify colors in the plots. See also the \code{RColorBrewer} package \citep{Neuwirth2014} for more color palettes with distinct colors. The \code{plot\_colors} function is provided for easy visualization of color palettes.
+
+The \code{ssplot} function (see section \ref{sec:vizualizing}) also accepts an object of class \code{hmm}. The user can easily choose to plot observations, most probable paths of hidden states, or both. The function automatically computes hidden paths if the user does not provide them.
+
+Figure \ref{fig:ssplotHMM} shows observed sequences with the most probable paths of hidden states given the model. Sequences are sorted according to multidimensional scaling scores computed from hidden paths. The code for creating the plot is show in section \hyperlink{ssplotHMM}{4.4}.
+
+<<ssplotHMM, fig.width=5.5, fig.height=5.5, dev.args=list(pointsize=10), fig.cap="Using the \\code{ssplot} function for a \\code{hmm} object makes it easy to plot observed sequences together with the most probable paths of hidden states given the model.", fig.align='center', fig.keep='last', cache = FALSE, echo = FALSE>>=
+ssplot(hmm_biofam, plots = "both", type = "I", sortv = "mds.hidden",
+  xtlab = 15:30, xlab = "Age", title = "Observed and hidden state sequences")
+@
+
+The \code{plot} method works for \code{mhmm} objects as well. The user can choose between an interactive mode, where the model for each (chosen) cluster is plotted separately, and a combined plot with all models in one plot. The equivalent to the \code{ssplot} function for MHMMs is \code{mssplot}. It plots stacked sequence plots separately for each cluster. If the user asks to plot more than one cluster, the function is interactive by default.
+
+\newpage
+\section{Examples with life course data}
+\label{sec:code}
+
+In this section we show examples of using the \pkg{seqHMM} package. We start by constructing and visualizing sequence data, then show how HMMs are built and fitted for single-channel and multichannel data, then move on to clustering with MHMMs, and finally illustrate how to plot HMMs.
+
+Throughout the examples we use the same \code{biofam} data described in section \ref{sec:seqdata}. We use both the original single-channel data and the three-channel modification named \code{biofam3c}, which is included in the \pkg{seqHMM} package. See more information on the conversion from the documentation of the \code{biofam3c} data.
+
+\subsection{Sequence data}
+\label{sec:exseqdata}
+
+Before getting to estimation, it is good to get to know the data. We start by loading the original \code{biofam} data as well as the three-channel version of the same data, \code{biofam3c}. We convert the data into the \code{stslist} form with the \code{seqdef} function. We set the starting age at 15 and set the order of the states with the \code{alphabet} argument (for plotting). Colors of the states can be modified and stored as an attribute in the \code{stslist} object -- this way the user only needs to define them once.
+
+<<code_settingdata, ref.label = 'settingdata', message=FALSE, warning = TRUE, echo = TRUE>>=
+@
+
+Here we show codes for creating figures \ref{fig:plottingsequences}, \ref{fig:graphicalillustrations2}, and \ref{fig:gridplot1}. Such plots give a good glimpse on multichannel data.
+
+\hypertarget{plottingd}{}\subsubsection[Figure 2: Plotting state distributions]{Figure \ref{fig:plottingsequences}: Plotting state distributions}
+
+We start by showing how to call the simple default plot of Figure \ref{fig:plottingsequences} in section \ref{seq:vizHMM}. By default the function plots state distributions (\code{type = "d"}). Multichannel data are given as a list where each component is an \code{stslist} corresponding one channel. If names are given, those will be used as labels in plotting.
+
+<<code_plottingsequences, ref.label = 'plottingsequences', echo = TRUE, eval = FALSE>>=
+@
+
+
+\hypertarget{plottingI}{}\subsubsection[Figure 1: Plotting sequences]{Figure \ref{fig:graphicalillustrations2}: Plotting sequences}
+
+Figure \ref{fig:graphicalillustrations2} with the whole sequences requires modifying more arguments. We call for sequence index plots (\code{type = "I"}) and sort sequences according to the first channel (the original sequences), starting from the beginning. We give labels to y and x axes and modify the positions of y labels. We give a title to the plot but omit the number of subjects, which by default is printed. We set the proportion of the plot given to legends and the number of columns in each legend.
+
+<<code_graphicalillustrations2, ref.label = 'graphicalillustrations2', echo=TRUE, eval = FALSE>>=
+@
+
+
+\hypertarget{plottinggrid}{}\subsubsection[Figure 3: Plotting sequence data in a grid]{Figure \ref{fig:gridplot1}: Plotting sequence data in a grid}
+
+For using the \code{gridplot} function, we first need to specify the \code{ssp} objects of the separate plots. Here we start by defining the first plot for women with the \code{ssp} function. It stores the features of the plot, but does not draw anything. We want to sort sequences according to multidimensional scaling scores. These are computed from optimal matching dissimilarities for observed sequences. Any dissimilarity method available in \code{TraMineR} can be used instead of the default (see the documentation of the \code{seqdef} function for more information). We want to use the same legends for the both plots, so we remove legends from the \code{ssp} objects.
+
+Since we are going to plot to two similar figures, one for women and one for men, we can pass the first \code{ssp} object to the \code{update} function. This way we only need to define the changesand omit everything that is similar.
+
+These two \code{ssp} objects are then passed on to the \code{gridplot} function. Here we make a $2\times 2$ grid, of which the bottom row is for the legends, but the function can also automatically determine the number of rows and columns and the positions of the legends.
+
+<<code_gridplot1, ref.label = 'gridplot1', echo=TRUE, eval = FALSE>>=
+@
+
+\hypertarget{plottingI}{}\subsubsection[Figure 7: Converting multichannel data to single-channel]{Figure \ref{fig:MCtoSCdata}: Converting multichannel data to single-channel}
+
+When working with multiple channels, it is useful to look at the combined data as well. The \code{mc\_to\_sc\_data} converts the data into a single-channel representation. At each time point of each subject, the states in each channel are combined into one. Note that here the number of combined observations (10 states) is larger than in the original data (8 states), because we have split the original divorced state into three.
+
+Also single-channel data can be plotted with the \code{ssplot} function. Figure \ref{fig:MCtoSCdata} illustrates the state distributions of the combined data. Here we asko to show y axis, which by default is omitted for gaining less cluttered output in stacked plots.
+
+<<MCtoSCdata, fig.width=7, fig.height=3, dev.args=list(pointsize=10), fig.keep='last', fig.align='center', cache=FALSE, fig.cap= "Three-channel \\texttt{biofam3c} data converted into single-channel data.">>=
+sc_data <- mc_to_sc_data(list(marr_seq, child_seq, left_seq))
+
+ssplot(sc_data, type = "d", ylab = "Proportion", yaxis = TRUE,
+  xtlab = 15:30, xlab = "Age", title = "Combined states", legend.prop = 0.4)
+@
+
+\newpage
+\subsection{Hidden Markov models}
+\label{sec:exHMM}
+
+We start by showing how to fit a HMM for single-channel \code{biofam} data.
+
+First we set starting values for initial, transition, and emission probabilities. Here the hidden states are regarded as more general life stages during which individuals are more likely to meet certain observable life events. We expect that the life stages are somehow related to age, so constructing starting values from observed state frequencies by age group seems like an option worth a try (these are easily computed using the \code{seqstatf} function in \pkg{TraMineR}). We construct a model with four hidden states using age groups 15--18, 19--21, 22--24, 25--27 and 28--30.
+
+The \code{fit\_model} function uses the probabilities given by the initial model as starting values when estimating the parameters. Only positive probabilities are estimated; zero values are fixed to zero. Thus amount of 0.1 is added to each value in a case of zero-frequencies in some categories (at this point we do not want to fix any parameters to zero). Each row is divided with its sum, so that the row sums equal to 1.
+
+<<code_sc_initialvalues, cache=FALSE>>=
+sc_init <- c(0.9, 0.06, 0.02, 0.01, 0.01)
+
+sc_trans <- matrix(
+  c(0.80, 0.10, 0.05, 0.03, 0.02,
+    0.02, 0.80, 0.10, 0.05, 0.03,
+    0.02, 0.03, 0.80, 0.10, 0.05,
+    0.02, 0.03, 0.05, 0.80, 0.10,
+    0.02, 0.03, 0.05, 0.05, 0.85),
+  nrow = 5, ncol = 5, byrow = TRUE)
+
+sc_emiss <- matrix(NA, nrow = 5, ncol = 8)
+sc_emiss[1,] <- seqstatf(biofam_seq[, 1:4])[, 2] + 0.1
+sc_emiss[2,] <- seqstatf(biofam_seq[, 5:7])[, 2] + 0.1
+sc_emiss[3,] <- seqstatf(biofam_seq[, 8:10])[, 2] + 0.1
+sc_emiss[4,] <- seqstatf(biofam_seq[, 11:13])[, 2] + 0.1
+sc_emiss[5,] <- seqstatf(biofam_seq[, 14:16])[, 2] + 0.1
+sc_emiss <- sc_emiss / rowSums(sc_emiss)
+@
+The model is initialized with the \code{build\_hmm} function. It checks that the data and matrices are of the right form and creates an object of class \code{hmm}. Markov models are constructed in a similar way using the \code{build\_mm} function, only emission probabilities are omitted.
+<<code_sc_buildHMM, cache=FALSE>>=
+sc_initmod <- build_hmm(observations = biofam_seq, initial_probs = sc_init,
+  transition_probs = sc_trans, emission_probs = sc_emiss)
+@
+We then use \code{fit\_model} for parameter estimation. Here we estimate the model using the default options of the EM step.
+<<code_sc_fitHMM, cache=FALSE>>=
+sc_fit <- fit_model(sc_initmod)
+@
+The fitting function returns the estimated model, its log-likelihood, and information on the optimization steps.
+<<code_sc_results, cache=FALSE>>=
+sc_fit$logLik
+sc_fit$model
+BIC(sc_fit$model)
+@
+
+As a multichannel example we fit a 5-state model for the 3-channel data. Emission probabilities are now given as a list of three emission matrices, one for each channel. The \code{alphabet} function from the \pkg{TraMineR} package can be used to check the order of the observed states -- the same order is used in the \code{build} functions. Here we construct a left-to-right model where transitions to earlier states are not allowed, so the transition matrix is upper-triangular. This seems like a valid option from a life-course prespective. Also, in the previous single-channel model of the same data the transition matrix was estimated almost upper triangular. We also give names for channels -- these are used when printing and plotting the model.
+
+We estimate model parameters using the local step with the default L-BFGS algorithm using parallel computation with 4 threads.
+
+<<code_mcHMM2, ref.label = 'code_mcHMM', echo = TRUE, message=TRUE, warnings=TRUE, eval = TRUE, cache = FALSE>>=
+@
+
+
+We store the model as a separate object for ease of use and then compute BIC.
+
+<<code_mcHMM_BIC, cache=FALSE, echo = TRUE, message=FALSE, eval = TRUE>>=
+# Vignette: already loaded hmm_biofam
+#hmm_biofam <- mc_fit$model
+BIC(hmm_biofam)
+@
+
+\subsection{Clustering and mixture hidden Markov models}
+\label{sec:code_MHMM}
+
+When fitting mixture hidden Markov models, the starting values are given as lists, with one component per cluster. For multichannel data, emission probabilities are given as a list of lists. Here we fit a model for two clusters with 5 and 4 hidden states. For the cluster with five states we use the same starting values as for the multichannel HMM described earlier. Covariates are defined with the usual \code{formula} and \code{data} arguments.
+
+Here we fit a model using 100 random restarts of the EM algorithm followed by the local L-BFGS method. Again we use parallel computation.
+
+<<code_MHMM, cache=FALSE, echo = TRUE, eval = TRUE, warning=TRUE>>=
+mc_init2 <- c(0.9, 0.05, 0.03, 0.02)
+
+mc_trans2 <- matrix(
+  c(0.85, 0.05, 0.05, 0.05,
+    0,    0.90, 0.05, 0.05,
+    0,       0, 0.95, 0.05,
+    0,       0,    0,    1),
+  nrow = 4, ncol = 4, byrow = TRUE)
+
+alphabet(marr_seq)
+mc_emiss_marr2 <- matrix(
+  c(0.90, 0.05, 0.05,
+    0.90, 0.05, 0.05,
+    0.05, 0.85, 0.10,
+    0.05, 0.80, 0.15),
+  nrow = 4, ncol = 3, byrow = TRUE)
+
+alphabet(child_seq)
+mc_emiss_child2 <- matrix(
+  c(0.9, 0.1,
+    0.5, 0.5,
+    0.5, 0.5,
+    0.5, 0.5),
+  nrow = 4, ncol = 2, byrow = TRUE)
+
+alphabet(left_seq)
+mc_emiss_left2 <- matrix(
+  c(0.9, 0.1,
+    0.5, 0.5,
+    0.5, 0.5,
+    0.5, 0.5),
+  nrow = 4, ncol = 2, byrow = TRUE)
+
+init_mhmm <- build_mhmm(
+  observations = list(marr_seq, child_seq, left_seq),
+  initial_probs = list(mc_init, mc_init2),
+  transition_probs = list(mc_trans, mc_trans2),
+  emission_probs = list(list(mc_emiss_marr, mc_emiss_child, mc_emiss_left),
+    list(mc_emiss_marr2, mc_emiss_child2, mc_emiss_left2)),
+  formula = ~sex + birthyr, data = biofam3c$covariates,
+  cluster_names = c("Cluster 1", "Cluster 2"),
+  channel_names = c("Marriage", "Parenthood", "Residence"))
+
+# Vignette: One thread and less restarts
+set.seed(1001)
+mhmm_fit <- fit_model(
+  init_mhmm, local_step = TRUE, threads = 1,
+  control_em = list(restart = list(times = 10)))
+mhmm <- mhmm_fit$model
+@
+
+The \code{summary} method automatically computes some features for a MHMM, e.g. standard errors for covariates and prior and posterior cluster probabilities for subjects. A \code{print} method shows some summaries of these: estimates and standard errors for covariates (see section \ref{sec:MHMM}), log-likelihood and BIC, and information on most probable clusters and prior probabilities. Parameter estimates for transitions, emissions, and initial probabilities are omitted by default. The classification table shows mean probabilities of belonging to each cluster by the most probable cluster (defined from posterior cluster probabilities). A good model shoud have values close to 1 on the diagonal.
+
+<<code_summaryMHMM, cache=FALSE>>=
+summary(mhmm, conditional_se = FALSE)
+@
+
+
+
+\subsection{Visualizing hidden Markov models}
+
+The figures in section \ref{seq:vizHMM} illustrate the five-state multichannel HMM fitted in section \ref{sec:exHMM}.
+
+A basic HMM graph is easily called with the \code{plot} method.
+
+<<code_plottingHMMbasic, out.width='\\linewidth', fig.height=4.5, dev.args=list(pointsize=10), echo=TRUE, fig.align='center', fig.keep='last', cache = FALSE, eval = TRUE, fig.cap="A default plot of a hidden Markov model.">>=
+plot(hmm_biofam)
+@
+
+A simple default plot is a convenient way of visualizing the models during analysis process, but for publishing it is often better to modify the plot to get an output that best illustrates the structure of the model in hand. Figure \ref{fig:plottingHMM} and Figure \ref{fig:graphicalillustrations5} show two variations of the same model.
+
+\hypertarget{code_plottingHMM}{}\subsubsection[Figure 4]{Figure \ref{fig:plottingHMM}: HMM plot with modifications}
+
+In Figure \ref{fig:plottingHMM} we draw larger vertices, control the distances of initial probabilities (vertex labels), set the curvatures of the edges, give a more descriptive label for the combined slices and give less space for the legend.
+
+<<code_plottingHMM, ref.label='plottingHMM', echo=TRUE, eval = FALSE>>=
+@
+
+\hypertarget{code_graphicalillustrations5}{}\subsubsection[Figure 5]{Figure \ref{fig:graphicalillustrations5}: HMM plot with a different layout}
+
+Here we position the vertices using given coordinates. Coordinates are given in a two-column matrix, with x coordinates in the first column and y coordinates in the second. Arguments \code{xlim} and \code{ylim} set the lengths of the axes and \code{rescale = FALSE} prevents rescaling the coordinates to the $[-1,1]\times[-1,1]$ interval (the default). We modify the positions of initial probabilities, fix edge widths to 1, reduce the size of the arrows in edges, position legend on top of the figure, and print labels in two columns in the legend. Parameter values are shown with one significant digit. All emission probabilities are shown regardless of their value (\code{combine.slices = 0}).
+
+New colors are set from the ready-defined \code{colorpalette} data. The \pkg{seqHMM} package uses these palettes when determining colors automatically, e.g. in the \code{mc\_to\_sc} function. Since here there are 10 combined states, the default color palette is number 10. For getting different colors, we choose the ten first colors from palette number 14.
+
+<<code_graphicalillustrations5, ref.label = 'graphicalillustrations5', echo=TRUE, eval = FALSE>>=
+@
+
+\hypertarget{ssplotHMM}{}\subsubsection*{Figure \ref{fig:ssplotHMM}: \code{ssplot} for HMM object}
+
+Plotting observed and hidden state sequences is easy with the \code{ssplot} function: the function accepts an \code{hmm} object instead of (a list of) \code{stslist}s. If hidden state paths are not provided, the function automatically computes them when needed.
+
+<<code_ssplotHMM, ref.label = 'ssplotHMM', eval = FALSE, echo = TRUE>>=
+@
+
+
+\subsection{Visualizing mixture hidden Markov models}
+
+Objects of class \code{mhmm} have similar plotting methods to \code{hmm} objects. The default way of visualizing a model is to plot in an interactive mode, where the model for each cluster is plotted separately. Another option is a combined plot with all models in one plot, although it can be difficult to fit several graphs and legends in one figure.
+
+Figure \ref{fig:code_plottingMHMMbasic} illustrates the MHMM fitted in section \ref{sec:code_MHMM}. By setting \texttt{interactive = FALSE} and \code{nrow = 2} we tell to plot graphs in a grid with two rows. The rest of the arguments are similar to basic HMM plotting and apply for all the graphs.
+
+<<code_plottingMHMMbasic, fig.width=6.5, fig.height=7, dev.args=list(pointsize=10), echo=TRUE, fig.align='center', fig.keep='last', cache = FALSE, eval = TRUE, fig.cap="Plotting submodels of a MHMM with the \\code{plot} method.">>=
+plot(mhmm, interactive = FALSE, nrow = 2, legend.prop = 0.35,
+  cex.legend = 1.3, edge.label.cex = 1.3, vertex.label.cex = 1.3)
+@
+
+The equivalent of the \code{ssplot} function for \code{mhmm} objects is \code{mssplot}. It shows data and/or hidden paths one cluster at a time. The function is interactive if more than one cluster is plotted (thus omitted here). Subjects are allocated to clusters according to the posterior cluster probabilities.
+
+<<code_ssplotMHMM, eval = FALSE, echo = TRUE>>=
+mssplot(mhmm, ask = TRUE)
+@
+
+If the user wants more control than the default \code{mhmm} plotting functions offer, they can use the \code{separate\_mhmm} function to convert a \code{mhmm} object into a list of separate \code{hmm} objects. These can then be plotted as any \code{hmm} objects, e.g. use \code{ssp} and \code{gridplot} for plotting sequences and hidden paths of each cluster into the same figure.
+
+
+\section{Conclusion}
+
+Hidden Markov models are useful in various longitudinal settings with categorical observations. They can be used for accounting measurement error in the observations \citep[e.g. drug use as in][]{Vermunt2008}, for detecting true unobservable states \citep[e.g. different periods of the bipolar disorder as in][]{Lopez2008}, and for compressing information accross several types of observations. The life course example of this paper serves as a simple illustration of such problem, where hidden states are regarded as general life stages during which individuals are more likely to encounter certain life events.
+
+The \pkg{seqHMM} package is designed for analyzing categorical sequences with hidden Markov models and mixture hidden Markov models, as well as their restricted variants Markov models, mixture Markov models, and latent class models. It can handle many types of data from a single sequence to multiple multichannel sequences. Covariates can be included in MHMMs to explain cluster membership. The package also offers versatile plotting options for sequence data and HMMs, and can easily convert multichannel sequence data and models into single-channel representations.
+
+Parameter estimation in (M)HMMs is often very sensitive to starting values. To deal with that, \pkg{seqHMM} offers several fitting options with global and local optimization using direct numerical estimation and the EM algorithm.
+
+Almost all intensive computations are done in C++. The package also supports parallel computation.
+
+Especially combined with the \pkg{TraMineR} package, \pkg{seqHMM} is designed to offer tools for the whole analysis process from data preparation and description to model fitting, evaluation, and visualization. In future we could develop MHMMs to deal with time-varying covariates and add an option to incorporate sampling weights for model estimation. Also the computational efficiency of the restricted variants of (M)HMMs such as latent class models could be improved by taking account of the restricted structure of those models in EM and log-likelihood computations.
+
+
+
+
+\appendix
+
+
+
+\section{Notations}
+\begin{tabular}{l p{0.67\textwidth}}
+Symbol & Meaning \\
+\hline
+$Y_i$            & Observation sequences of subject $i, i=1\ldots,N$ \\
+$\textbf{y}_{it}$         & Observations of subject $i$ at time $t, t=1,\ldots,T$ \\
+$y_{itc}$                 & Observation of subject $i$ at time $t$ in channel $c, c=1,\ldots,C$ \\
+$m_c \in\{1,\ldots,M_c\}$ & Observed state space for channel $c$ \\
+$z_{it}$                  & Hidden state at time $t$ for subject $i$ \\
+$s\in \{1,\ldots,S\}$     & Hidden state space \\
+$A=\{a_{sr}\}$            & Transition matrix of size $S\times S$\\
+$a_{sr}=P(z_t=r|z_{t-1}=s)$ & Transition probability between hidden states $s$ and $r$ \\
+$B_c=\{b_s(m_c)\}$        & Emission matrix of size $S\times M_c$ for channel $c$ \\
+$b_s(m_c)=P(y_{itc}=m_c|z_{it}=s)$ & Emission probability of observed state $m_c$ in channel $c$ given hidden state $s$ \\
+$b_s(\textbf{y}_{it})=b_s(y_{it1})\cdots b_s(y_{itC})$ & Joint emission probability of observations at time $t$ in channels $1,\ldots,C$ given hidden state $s$ \\
+$\pi=(\pi_1,\ldots,\pi_S)$ & Vector of initial probabilities \\
+$\pi_s=P(z_1=s)$          & Initial probability of hidden state $s$ \\
+$\hat{z}_i(Y_i)$ & The most probable hidden state sequence for subject $i$ \\
+$\textbf{x}_i$            & Covariates of subject $i$ \\
+$\mathcal{M}_k, k=1,\ldots,K$ & Submodel for cluster $k$ (latent class/cluster) \\
+$w_{ik}$                  & Probability of cluster $k$ for subject $i$ \\
+$\beta_{k}$               & Regression coefficients for cluster $k$ \\
+$\{\pi^k, A^k, B_1^k, \ldots, B_C^k, \beta_k\}$ & Model parameters for cluster $k$ \\
+\end{tabular}
+
+\section{Forward--Backward Algorithm}\label{app:forwardbackward}
+
+The \emph{forward variable}
+\[
+  \alpha_{it}(s)=P(\textbf{y}_{i1}, \ldots, \textbf{y}_{it},z_t=s|\mathcal{M})
+  \]
+is the joint probability of partial observation sequences for subject $i$ until time $t$ and the hidden state $s$ at time $t$ given the model $M$. Let us denote $b_s(\textbf{y}_{it})=b_s(y_{it1})\cdots b_s(y_{itC})$, the joint emission probability of observations at time $t$ in channels $1,\ldots,C$ given hidden state $s$. The forward variable can be solved inductively:
+  \begin{enumerate}
+\item Initialization \\
+$\alpha_{i1}(s)=\pi_s b_s(\textbf{y}_{i1}), i=1,\ldots,N, s=1,\ldots,S$
+  \item Induction \\
+$\alpha_{i(t+1)}(r)=\left[ \sum_{s=1}^S \alpha_{it}(s) a_{sr} \right] b_r(\textbf{y}_{i(t+1)}), t=1,\ldots,T-1, r=1,\ldots,S$
+  \item Termination \\
+$P(Y_i|\mathcal{M})= \sum_{s=1}^S \alpha_{iT}(s)$
+  \end{enumerate}
+
+The \emph{backward variable}
+\[
+  \beta_{it}(s)=P(\textbf{y}_{i(t+1)}, \ldots, \textbf{y}_{iT}| z_t=s, \mathcal{M})
+  \]
+is the joint probability of the partial observation sequence after time $t$ and hidden state $s$ at time $t$ given the model parameters $M$. (By convention we use the notion $\beta$ for the backward variable. This is not to be confused with the regression coefficients in the mixture HMM.) Also this can be solved inductively:
+  \begin{enumerate}
+\item Initialization \\
+$\beta_{iT}(s)=1, i=1,\ldots,N, s=1,\ldots,S$
+  \item Induction \\
+$\beta_{i(t+1)}(s)=\left[ \sum_{r=1}^S a_{sr} \right] b_s(\textbf{y}_{i(t+1)}) \beta_{i(t+1)}(r), t=T-1,\ldots,1, s=1,\ldots,S$
+  \end{enumerate}
+
+\section{Viterbi Algorithm}
+\label{app:viterbi}
+We define the score
+\begin{equation}
+\delta_{it}(s)=\max_{z_{i1} z_{i2} \cdots z_{i(t-1)}} P(z_{i1} \cdots z_{it}=s, \textbf{y}_{i1} \cdots \textbf{y}_{it}|\mathcal{M}),
+\end{equation}
+which is the highest probability of the hidden state sequence up to time $t$ ending in state $s$. By induction we have
+\begin{equation}
+\label{eq:delta}
+\delta_{i(t+1)}(r)=\left[\max_{s} \delta_{it}(s) a_{sr}\right] \cdot b_r(\textbf{y}_{i(t+1)}).
+\end{equation}
+We collect the arguments maximizing equation \eqref{eq:delta} in an array $\psi_{it}(r)$ to keep track of the best hidden state sequence. The full Viterbi algorithm can be stated as follows:
+  \begin{enumerate}
+\item Initialization \\
+$\delta_{i1}(s)=\pi_s b_s(\textbf{y}_{i1}), s=1,\ldots,S$ \\
+$\psi_{i1}(s)=0$
+  \item Recursion \\
+$\delta_{it}(r)=\max_{s=1,\ldots,S} (\delta_{i(t-1)}(s) a_{sr}) b_h(\textbf{y}_{it})$,  \\
+$\psi_{it}(s)=\operatorname*{arg\,max}_{s=1,\ldots,S} (\delta_{i(t-1)}(s) a_{sr}), s=1,\ldots,S; t=2,\ldots,T$
+  \item Termination \\
+$\hat{P}=\max_{s=1,\ldots,S} (\delta_{iT}(s))$ \\
+$\hat{z}_{iT}=\operatorname*{arg\,max}_{s=1,\ldots,S}(\delta_{iT}(s))$
+  \item Sequence backtracking \\
+$\hat{z}_{it}=\psi_{i(t+1)}(\hat{s}_{i(t+1)}), t=T-1,\ldots,1$.
+\end{enumerate}
+To avoid underflow error due to multiplying many small probabilities, the Viterbi algorithm can be computed in log space, i.e., calculating $\log (\delta_{it}(s))$.
+
+
+\bibliography{references}
+
+
+
+\end{document}

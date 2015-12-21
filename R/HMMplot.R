@@ -37,8 +37,8 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
   
   if (!is.numeric(vertex.label.pos)) {
     choices <- c("bottom", "top", "left", "right")
-    ind <- pmatch(vertex.label.pos, choices)
-    if (is.na(ind)) {
+    ind <- pmatch(vertex.label.pos, choices, duplicates.ok = TRUE)
+    if (any(is.na(ind))) {
       stop("Argument vertex.label.pos only accepts values \"bottom\", \"top\", \"left\", \"right\" or a numerical vector.")
     }
     vertex.label.pos <- choices[ind]
@@ -68,15 +68,19 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
   
   # Positions of vertex labels
   if (!is.numeric(vertex.label.pos)) {
-    if (vertex.label.pos == "bottom") {
-      vertex.label.pos <- pi/2
-    } else if(vertex.label.pos == "top") {
-      vertex.label.pos <- -pi/2
-    } else if(vertex.label.pos == "left") {
-      vertex.label.pos <- pi
-    } else {
-      vertex.label.pos <- 0
+    vpos <- numeric(length(vertex.label.pos))
+    for(i in 1:length(vertex.label.pos)){
+      if (vertex.label.pos[i] == "bottom") {
+        vpos[i]  <- pi/2
+      } else if(vertex.label.pos[i] == "top") {
+        vpos[i]  <- -pi/2
+      } else if(vertex.label.pos[i] == "left") {
+        vpos[i]  <- pi
+      } else {
+        vpos[i]  <- 0
+      }
     }
+    vertex.label.pos <- vpos
   }
   
   # Vertex labels
@@ -257,15 +261,15 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
       }
       for (i in 1:x$n_states) {
         # How much probability for combined slice
-        cs.prob <- sum(pie.values[[i]][pie.values[[i]] < combine.slices])
+        cs.prob  <- sum(pie.values[[i]][pie.values[[i]] < combine.slices])
         # Remove small probabilities form pies
-        pie.values[[i]][pie.values[[i]] < combine.slices] <- 0
+        pie.values[[i]][pie.values[[i]] < combine.slices]  <- 0
         # Colors and labels for large slices
-        pie.values[[i]] <- c(pie.values[[i]], cs.prob)
+        pie.values[[i]]  <- c(pie.values[[i]], cs.prob)
         # Texts and colors for legends
         if (withlegend != FALSE) {
-          pie.colors.l <- c(pie.colors.l, pie.colors[pie.values[[i]] >= combine.slices])
-          lt <- c(lt, ltext[pie.values[[i]] >= combine.slices])
+          pie.colors.l  <- c(pie.colors.l, pie.colors[pie.values[[i]][1:(length(pie.values[[i]]) - 1)] >= combine.slices])
+          lt  <- c(lt, ltext[pie.values[[i]][1:(length(pie.values[[i]]) - 1)] >= combine.slices])
         }
       }
       pie.colors <- c(pie.colors, combined.slice.color)
@@ -280,6 +284,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
           ncol.legend <- 1
         }
       }
+      pie.colors <- c(pie.colors, combined.slice.color)
       # Slices not combined
     } else {
       if (ncol.legend == "auto") {

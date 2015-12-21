@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/helske/seqHMM.svg?branch=master)](https://travis-ci.org/helske/seqHMM)
+[![downloads](http://cranlogs.r-pkg.org/badges/seqHMM)](http://cranlogs.r-pkg.org/badges/seqHMM)
+[![cran version](http://www.r-pkg.org/badges/version/seqHMM)](http://cran.r-project.org/package=seqHMM)
 
 seqHMM: Hidden Markov Models for Life Sequences and Other Multivariate, Multichannel Categorical Time Series
 ====================================================================================================
@@ -7,13 +9,17 @@ The `seqHMM` package is designed for fitting hidden (or latent) Markov models (H
 
 The package supports models for one or multiple subjects with one or multiple parallel sequences (channels). External covariates can be added to explain cluster membership in mixture models. The package provides functions for evaluating and comparing models, as well as functions for easy plotting of multichannel sequence data and hidden Markov models.
 
-Maximum likelihood estimation via EM algorithm and direct numerical maximization with analytical gradients is supported. All main algorithms are written in C++.
-
-The package is still under development but should be available at CRAN by the end of 2015.
+Maximum likelihood estimation via EM algorithm and direct numerical maximization with analytical gradients is supported. All main algorithms are written in C++ with parallel computation support via OpenMP.
 
 We would be happy to hear feedback! If you have any questions, comments, or wishes, please contact Satu Helske or Jouni Helske, firstname.lastname@jyu.fi. You can also add a new issue here in GitHub.
 
-If you want to try the `seqHMM` package, you can install it via the `devtools` package:
+The package is available on CRAN. Istall it via
+
+```R
+install.packages("seqHMM")
+```
+
+If you want to try the development version of the `seqHMM` package, install it from Github using the `devtools` package:
 
 ```R
 install.packages("devtools")
@@ -36,12 +42,10 @@ This example uses the `biofam` data from the `TraMineR` package. The data consis
 - 6 = "left home+married+child"
 - 7 = "divorced"
 
-For the functions of the `seqHMM` package, sequence data is given as a state sequence object (`stslist`) using the `seqdef` function in the `TraMineR` package. To show a more complex example, the original data is split into three separate channels. This data is pre-generated and stored as
-`biofam3c`. It contains a list of three sequence data sets and a data frame including the covariates. Find more information and the code for the conversion by typing `help(biofam3c)`.
+For the functions of the `seqHMM` package, sequence data is given as a state sequence object (`stslist`) using the `seqdef` function in the `TraMineR` package. To show a more complex example, the original data is split into three separate channels. This data is pre-generated and stored as `biofam3c`. It contains a list of three sequence data sets and a data frame including the covariates. Find more information and the code for the conversion by typing `help(biofam3c)`.
 
 ```
-library(TraMineR)
-
+library(seqHMM)
 data(biofam3c)
 
 # Building sequence objects (starting at age 15)
