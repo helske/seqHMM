@@ -128,14 +128,12 @@
 #' # Plotting only the first cluster
 #' plot(mhmm_biofam, which.plots = 1)
 #'
-#' \dontrun{
 #' \donttest{
 #' # Plotting each cluster (change with Enter)
 #' plot(mhmm_biofam)
 #'
 #' # Choosing the cluster (one at a time)
 #' plot(mhmm_biofam, ask = TRUE)
-#' }
 #' }
 #' # Loading MHMM of the mvad data
 #' data(mhmm_mvad)
