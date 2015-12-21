@@ -161,7 +161,7 @@ Function \code{ssp} defines the arguments for plotting with
 
 \dontrun{
 
-data(biofam3c)
+data("biofam3c")
 
 ## Building sequence objects
 child.seq <- seqdef(biofam3c$children, start = 15)
@@ -194,7 +194,7 @@ plot(ssp2)
 # Plotting hidden Markov models
 
 # Loading data
-data(hmm_biofam)
+data("hmm_biofam")
 
 # Plotting observations and most probable hidden states paths
 ssp3 <- ssp(

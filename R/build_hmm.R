@@ -1,24 +1,24 @@
 #' Build a Hidden Markov Model
-#' 
+#'
 #' Function \code{build_hmm} constructs a hidden Markov model object of class \code{hmm}.
-#' 
-#' Returned model contains some attributes such as \code{nobs} and \code{df} 
-#' which define the number of observations in the  model and number of estimable 
-#' model parameters, which are used in computing BIC. 
-#' When computing \code{nobs} for multichannel model, each observed value in 
-#' single channel amounts to $1/C$ observation, i.e. fully observed 
-#' time point for single sequences amounts to one observation. For degrees of 
+#'
+#' Returned model contains some attributes such as \code{nobs} and \code{df}
+#' which define the number of observations in the  model and number of estimable
+#' model parameters, which are used in computing BIC.
+#' When computing \code{nobs} for multichannel model, each observed value in
+#' single channel amounts to $1/C$ observation, i.e. fully observed
+#' time point for single sequences amounts to one observation. For degrees of
 #' freedom \code{df}, zero probabilities of initial model are defined as structural zeroes.
 #' @export
-#' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing 
+#' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
 #' the sequences, or a list of such objects (one for each channel).
 #' @param transition_probs A matrix of transition probabilities.
-#' @param emission_probs A matrix of emission probabilities or a list of such 
-#' objects (one for each channel). Emission probabilities should follow the 
-#' ordering of the alphabet of observations (\code{alphabet(observations)}, returned as \code{symbol_names}). 
+#' @param emission_probs A matrix of emission probabilities or a list of such
+#' objects (one for each channel). Emission probabilities should follow the
+#' ordering of the alphabet of observations (\code{alphabet(observations)}, returned as \code{symbol_names}).
 #' @param initial_probs A vector of initial state probabilities.
-#' @param state_names A list of optional labels for the hidden states. If \code{NULL}, 
-#' the state names are taken from the row names of the transition matrix. If this is 
+#' @param state_names A list of optional labels for the hidden states. If \code{NULL},
+#' the state names are taken from the row names of the transition matrix. If this is
 #' also \code{NULL}, numbered states are used.
 #' @param channel_names A vector of optional names for the channels.
 #' @return Object of class \code{hmm} with following elements:
@@ -36,22 +36,21 @@
 #'    \item{\code{n_states}}{Number of hidden states.}
 #'    \item{\code{n_channels}}{Number of channels.}
 #'}
-#' 
-#' @examples 
-#' require(TraMineR)
-#' 
+#'
+#' @examples
+#'
 #' # Single-channel data
 #'
-#' data(mvad)
-#' 
-#' mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school", 
+#' data("mvad", package = "TraMineR")
+#'
+#' mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school",
 #'                    "training")
-#' mvad.labels <- c("employment", "further education", "higher education", 
+#' mvad.labels <- c("employment", "further education", "higher education",
 #'                  "joblessness", "school", "training")
 #' mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-#' mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes, 
+#' mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes,
 #'                    labels = mvad.labels, xtstep = 6)
-#' 
+#'
 #' # Starting values for the emission matrix
 #' emiss <- matrix(NA, nrow = 4, ncol = 6)
 #' emiss[1,] <- seqstatf(mvad.seq[, 1:12])[, 2] + 1
@@ -59,103 +58,103 @@
 #' emiss[3,] <- seqstatf(mvad.seq[, 25:48])[, 2] + 1
 #' emiss[4,] <- seqstatf(mvad.seq[, 49:70])[, 2] + 1
 #' emiss <- emiss / rowSums(emiss)
-#' 
+#'
 #' # Starting values for the transition matrix
-#' 
+#'
 #' tr <- matrix(
 #'   c(0.80, 0.10, 0.05, 0.05,
 #'     0.05, 0.80, 0.10, 0.05,
 #'     0.05, 0.05, 0.80, 0.10,
-#'     0.05, 0.05, 0.10, 0.80), 
+#'     0.05, 0.05, 0.10, 0.80),
 #'   nrow=4, ncol=4, byrow=TRUE)
-#' 
+#'
 #' # Starting values for initial state probabilities
 #' init <- c(0.3, 0.3, 0.2, 0.2)
-#' 
+#'
 #' # Building a hidden Markov model with starting values
 #' init_hmm_mvad <- build_hmm(
-#'   observations = mvad.seq, transition_probs = tr, 
+#'   observations = mvad.seq, transition_probs = tr,
 #'   emission_probs = emiss, initial_probs = init
 #' )
-#' 
+#'
 #' #########################################
-#' 
-#' 
+#'
+#'
 #' # Multichannel data
-#' 
+#'
 #' # Three-state three-channel hidden Markov model
 #' # See ?hmm_biofam for five-state version
-#' 
-#' data(biofam3c)
-#' 
+#'
+#' data("biofam3c")
+#'
 #' # Building sequence objects
-#' marr.seq <- seqdef(biofam3c$married, start = 15, 
+#' marr.seq <- seqdef(biofam3c$married, start = 15,
 #'   alphabet = c("single", "married", "divorced"))
-#' child.seq <- seqdef(biofam3c$children, start = 15, 
+#' child.seq <- seqdef(biofam3c$children, start = 15,
 #'   alphabet = c("childless", "children"))
-#' left.seq <- seqdef(biofam3c$left, start = 15, 
+#' left.seq <- seqdef(biofam3c$left, start = 15,
 #'   alphabet = c("with parents", "left home"))
-#' 
+#'
 #' # Define colors
 #' attr(marr.seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
 #' attr(child.seq, "cpal") <- c("darkseagreen1", "coral3")
 #' attr(left.seq, "cpal") <- c("lightblue", "red3")
-#' 
+#'
 #' # Starting values for emission matrices
-#' 
+#'
 #' emiss_marr <- matrix(NA, nrow = 3, ncol = 3)
 #' emiss_marr[1,] <- seqstatf(marr.seq[, 1:5])[, 2] + 1
 #' emiss_marr[2,] <- seqstatf(marr.seq[, 6:10])[, 2] + 1
 #' emiss_marr[3,] <- seqstatf(marr.seq[, 11:16])[, 2] + 1
 #' emiss_marr <- emiss_marr / rowSums(emiss_marr)
-#' 
+#'
 #' emiss_child <- matrix(NA, nrow = 3, ncol = 2)
 #' emiss_child[1,] <- seqstatf(child.seq[, 1:5])[, 2] + 1
 #' emiss_child[2,] <- seqstatf(child.seq[, 6:10])[, 2] + 1
 #' emiss_child[3,] <- seqstatf(child.seq[, 11:16])[, 2] + 1
 #' emiss_child <- emiss_child / rowSums(emiss_child)
-#' 
+#'
 #' emiss_left <- matrix(NA, nrow = 3, ncol = 2)
 #' emiss_left[1,] <- seqstatf(left.seq[, 1:5])[, 2] + 1
 #' emiss_left[2,] <- seqstatf(left.seq[, 6:10])[, 2] + 1
 #' emiss_left[3,] <- seqstatf(left.seq[, 11:16])[, 2] + 1
 #' emiss_left <- emiss_left / rowSums(emiss_left)
-#' 
+#'
 #' # Starting values for transition matrix
 #' trans <- matrix(c(0.9, 0.07, 0.03,
 #'                 0,  0.9,  0.1,
 #'                 0,    0,    1), nrow = 3, ncol = 3, byrow = TRUE)
-#' 
+#'
 #' # Starting values for initial state probabilities
 #' inits <- c(0.9, 0.09, 0.01)
-#' 
+#'
 #' # Building hidden Markov model with initial parameter values
 #' init_hmm_bf <- build_hmm(
-#'   observations = list(marr.seq, child.seq, left.seq), 
+#'   observations = list(marr.seq, child.seq, left.seq),
 #'   transition_probs = trans,
-#'   emission_probs = list(emiss_marr, emiss_child, emiss_left), 
+#'   emission_probs = list(emiss_marr, emiss_child, emiss_left),
 #'   initial_probs = inits)
-#' 
+#'
 #' @seealso \code{\link{fit_model}} for estimating model parameters.
 
 build_hmm <- function(observations, transition_probs, emission_probs, initial_probs,
   state_names = NULL, channel_names = NULL){
-  
+
   if (!is.matrix(transition_probs)) {
     stop(paste("Object provided for transition_probs is not a matrix."))
   }
   if (!is.vector(initial_probs)) {
     stop(paste("Object provided for initial_probs is not a vector."))
   }
-  
+
   if(dim(transition_probs)[1]!=dim(transition_probs)[2])
     stop("Transition_probs must be a square matrix.")
   n_states <- nrow(transition_probs)
-  
+
   if (length(initial_probs) != n_states){
     stop(paste("Length of initial_probs is not equal to the number of states."))
   }
-  
+
   if (is.null(state_names)) {
     if (is.null(state_names <- rownames(transition_probs))) {
       state_names <- paste("State", 1:n_states)
@@ -165,21 +164,21 @@ build_hmm <- function(observations, transition_probs, emission_probs, initial_pr
       stop("Length of state_names is not equal to the number of hidden states.")
     }
   }
-  
+
   if(!isTRUE(all.equal(rowSums(transition_probs),rep(1,dim(transition_probs)[1]),check.attributes=FALSE)))
     stop("Transition probabilities in transition_probs do not sum to one.")
-  
+
   dimnames(transition_probs)<-list(from=state_names,to=state_names)
-  
+
   if(is.list(emission_probs) && length(emission_probs)==1){
-    emission_probs <- emission_probs[[1]]   
+    emission_probs <- emission_probs[[1]]
   }
   if(is.list(observations) && !inherits(observations, "stslist") && length(observations)==1){
     observations <- observations[[1]]
   }
-  
-  
-  
+
+
+
   if(is.list(emission_probs)){
     if(length(observations)!=length(emission_probs)){
       stop("Number of channels defined by emission_probs differs from one defined by observations.")
@@ -190,27 +189,27 @@ build_hmm <- function(observations, transition_probs, emission_probs, initial_pr
         stop(paste("Object provided in emission_probs for channel", j, "is not a matrix."))
       }
     }
-    
+
     if (length(unique(sapply(observations, nrow))) > 1) {
       stop("The number of subjects (rows) is not the same in all channels.")
     }
     if (length(unique(sapply(observations, ncol))) > 1) {
       stop("The length of the sequences (number of columns) is not the same in all channels.")
     }
-    
+
     n_sequences <- nrow(observations[[1]])
     length_of_sequences <- ncol(observations[[1]])
-    
+
     symbol_names <- lapply(observations,alphabet)
     n_symbols <- lengths(symbol_names)
-    
+
     if (any(sapply(emission_probs,nrow) != n_states))
       stop("Number of rows in emission_probs is not equal to the number of states.")
     if (any(n_symbols != sapply(emission_probs,ncol)))
       stop("Number of columns in emission_probs is not equal to the number of symbols.")
     if (!isTRUE(all.equal(c(sapply(emission_probs,rowSums)),rep(1, n_channels * n_states), check.attributes = FALSE)))
       stop("Emission probabilities in emission_probs do not sum to one.")
-    
+
     if(is.null(channel_names)) {
       if(is.null(channel_names <- names(observations))){
         channel_names <- paste("Channel", 1:n_channels)
@@ -234,7 +233,7 @@ build_hmm <- function(observations, transition_probs, emission_probs, initial_pr
     length_of_sequences<-ncol(observations)
     symbol_names<-alphabet(observations)
     n_symbols<-length(symbol_names)
-    
+
     if(n_states!=dim(emission_probs)[1])
       stop("Number of rows in emission_probs is not equal to the number of states.")
     if(n_symbols!=dim(emission_probs)[2])
@@ -242,11 +241,11 @@ build_hmm <- function(observations, transition_probs, emission_probs, initial_pr
     if(!isTRUE(all.equal(rep(1,n_states),rowSums(emission_probs),check.attributes=FALSE)))
       stop("Emission probabilities in emission_probs do not sum to one.")
     dimnames(emission_probs)<-list(state_names=state_names,symbol_names=symbol_names)
-    
-  }  
-  
+
+  }
+
   names(initial_probs) <- state_names
-  
+
   if(n_channels > 1){
     nobs <- sum(sapply(observations, function(x) sum(!(x == attr(observations[[1]], "nr") |
         x == attr(observations[[1]], "void") |
@@ -256,7 +255,7 @@ build_hmm <- function(observations, transition_probs, emission_probs, initial_pr
         observations == attr(observations, "void") |
         is.na(observations)))
   }
-  
+
   model <- structure(list(observations=observations,transition_probs=transition_probs,
     emission_probs=emission_probs,initial_probs=initial_probs,
     state_names=state_names,
@@ -264,11 +263,11 @@ build_hmm <- function(observations, transition_probs, emission_probs, initial_pr
     length_of_sequences=length_of_sequences,
     n_sequences=n_sequences,
     n_symbols=n_symbols,n_states=n_states,
-    n_channels=n_channels), class = "hmm", 
+    n_channels=n_channels), class = "hmm",
     nobs = nobs,
-    df = sum(initial_probs > 0) - 1 + sum(transition_probs > 0) - n_states + 
+    df = sum(initial_probs > 0) - 1 + sum(transition_probs > 0) - n_states +
       sum(unlist(emission_probs) > 0) - n_states * n_channels,
     type = "hmm")
-  
+
   model
 }

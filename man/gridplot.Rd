@@ -29,8 +29,8 @@ whole plot. Either one of \code{"bottom"} (equivalent to \code{"auto"}) or
 legends to (the cells must be in one row/column).}
 
 \item{legend.pos2}{Defines the positions of the legend boxes relative to the
-cell(s). One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"}, 
-\code{"left"}, \code{"topleft"}, \code{"top"} (the default), \code{"topright"}, 
+cell(s). One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"},
+\code{"left"}, \code{"topleft"}, \code{"top"} (the default), \code{"topright"},
 \code{"right"} and \code{"center"}.}
 
 \item{title.legend}{The titles for the legend boxes. The default \code{"auto"} takes
@@ -64,7 +64,7 @@ grid.
 }
 \examples{
 \dontrun{
-data(biofam3c)
+data("biofam3c")
 
 # Creating sequence objects
 child.seq <- seqdef(biofam3c$children, start = 15)
@@ -79,28 +79,28 @@ attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 # Preparing plot for state distribution plots of observations for women
 ssp_f <- ssp(
-  list(child.seq[biofam3c$covariates$sex == "woman",], 
-       marr.seq[biofam3c$covariates$sex == "woman",], 
+  list(child.seq[biofam3c$covariates$sex == "woman",],
+       marr.seq[biofam3c$covariates$sex == "woman",],
        left.seq[biofam3c$covariates$sex == "woman",]),
-  type = "d", plots = "obs", title = "Women", 
+  type = "d", plots = "obs", title = "Women",
   ylab = c("Children", "Married", "Left home"))
 
 # Preparing plot for state distribution plots of observations for men
 # (Updating the previous plot, only arguments that change values)
 ssp_m <- update(ssp_f, title = "Men",
-  x = list(child.seq[biofam3c$covariates$sex == "man",], 
-       marr.seq[biofam3c$covariates$sex == "man",], 
+  x = list(child.seq[biofam3c$covariates$sex == "man",],
+       marr.seq[biofam3c$covariates$sex == "man",],
        left.seq[biofam3c$covariates$sex == "man",]))
 
-# Plotting state distribution plots of observations for women and men in two columns 
+# Plotting state distribution plots of observations for women and men in two columns
 gridplot(list(ssp_f, ssp_m), ncol = 2, withlegend = FALSE)
 
 # Preparing plots for women's state distributions
 ssp_f2 <- ssp(
-  list(marr.seq[biofam3c$covariates$sex == "woman",], 
+  list(marr.seq[biofam3c$covariates$sex == "woman",],
        child.seq[biofam3c$covariates$sex == "woman",],
        left.seq[biofam3c$covariates$sex == "woman",]),
-  type = "d", border = NA, withlegend = FALSE, 
+  type = "d", border = NA, withlegend = FALSE,
   title = "State distributions for women", title.n = FALSE, xtlab = 15:30,
   ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home"))
 
@@ -110,28 +110,28 @@ ssp_f3 <- update(
 
 # State distributions with men's data
 ssp_m2 <- update(
-  ssp_f2, title = "State distributions for men", 
-  x = list(marr.seq[biofam3c$covariates$sex == "man",], 
+  ssp_f2, title = "State distributions for men",
+  x = list(marr.seq[biofam3c$covariates$sex == "man",],
            child.seq[biofam3c$covariates$sex == "man",],
            left.seq[biofam3c$covariates$sex == "man",]))
 
 # Men's sequences
 ssp_m3 <- update(
   ssp_m2, type = "I", sortv = "mds.obs", title = "Sequences for men")
-  
-# Plotting state distributions and index plots of observations 
+
+# Plotting state distributions and index plots of observations
 # for women and men in two columns (+ one column for legends)
 gridplot(
-  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 3, byrow = TRUE, 
+  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 3, byrow = TRUE,
   withlegend = "combined", legend.pos = "right", col.prop = c(0.35, 0.35, 0.3))
-  
+
 # The same with different positioning and fixed cells for legends
 gridplot(
-  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 2, nrow = 3, byrow = TRUE, 
+  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 2, nrow = 3, byrow = TRUE,
   # defining the legend positions by the cell numbers
   legend.pos = 3:4)
- }                 
-                  
+ }
+
 }
 \seealso{
 \code{\link{ssp}} for defining the plot before using

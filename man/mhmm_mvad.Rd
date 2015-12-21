@@ -72,7 +72,7 @@ mhmm_mvad <- fit_model(init_mhmm_mvad, control_em = list(restart = list(times = 
 }
 }
 \examples{
-data(mhmm_mvad)
+data("mhmm_mvad")
 
 summary(mhmm_mvad)
 

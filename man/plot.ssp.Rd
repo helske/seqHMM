@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.ssp.R
 \name{plot.ssp}
 \alias{plot.ssp}
-\title{Stack Multichannel Sequence Plots and/or Most Probable Paths Plots from Hidden Markov 
+\title{Stack Multichannel Sequence Plots and/or Most Probable Paths Plots from Hidden Markov
 Models}
 \usage{
 \method{plot}{ssp}(x, ...)
@@ -18,7 +18,7 @@ Function \code{plot.ssp} plots stacked sequence plots from \code{ssp} objects de
 }
 \examples{
 
-data(biofam3c)
+data("biofam3c")
 
 ## Building sequence objects
 child_seq <- seqdef(biofam3c$children, start = 15)
@@ -36,8 +36,8 @@ ssp1 <- ssp(list(child_seq, marr_seq, left_seq))
 plot(ssp1)
 }
 \seealso{
-\code{\link{ssp}} for more examples and information on defining the plot before using 
-  \code{plot.ssp}; \code{\link{ssplot}} for straight plotting of \code{ssp} objects; 
+\code{\link{ssp}} for more examples and information on defining the plot before using
+  \code{plot.ssp}; \code{\link{ssplot}} for straight plotting of \code{ssp} objects;
   and \code{\link{gridplot}} for plotting multiple \code{ssp} objects.
 }
 

@@ -8,19 +8,19 @@ build_hmm(observations, transition_probs, emission_probs, initial_probs,
   state_names = NULL, channel_names = NULL)
 }
 \arguments{
-\item{observations}{TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing 
+\item{observations}{TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences, or a list of such objects (one for each channel).}
 
 \item{transition_probs}{A matrix of transition probabilities.}
 
-\item{emission_probs}{A matrix of emission probabilities or a list of such 
-objects (one for each channel). Emission probabilities should follow the 
+\item{emission_probs}{A matrix of emission probabilities or a list of such
+objects (one for each channel). Emission probabilities should follow the
 ordering of the alphabet of observations (\code{alphabet(observations)}, returned as \code{symbol_names}).}
 
 \item{initial_probs}{A vector of initial state probabilities.}
 
-\item{state_names}{A list of optional labels for the hidden states. If \code{NULL}, 
-the state names are taken from the row names of the transition matrix. If this is 
+\item{state_names}{A list of optional labels for the hidden states. If \code{NULL},
+the state names are taken from the row names of the transition matrix. If this is
 also \code{NULL}, numbered states are used.}
 
 \item{channel_names}{A vector of optional names for the channels.}
@@ -46,27 +46,26 @@ Object of class \code{hmm} with following elements:
 Function \code{build_hmm} constructs a hidden Markov model object of class \code{hmm}.
 }
 \details{
-Returned model contains some attributes such as \code{nobs} and \code{df} 
-which define the number of observations in the  model and number of estimable 
-model parameters, which are used in computing BIC. 
-When computing \code{nobs} for multichannel model, each observed value in 
-single channel amounts to $1/C$ observation, i.e. fully observed 
-time point for single sequences amounts to one observation. For degrees of 
+Returned model contains some attributes such as \code{nobs} and \code{df}
+which define the number of observations in the  model and number of estimable
+model parameters, which are used in computing BIC.
+When computing \code{nobs} for multichannel model, each observed value in
+single channel amounts to $1/C$ observation, i.e. fully observed
+time point for single sequences amounts to one observation. For degrees of
 freedom \code{df}, zero probabilities of initial model are defined as structural zeroes.
 }
 \examples{
-require(TraMineR)
 
 # Single-channel data
 
-data(mvad)
+data("mvad", package = "TraMineR")
 
-mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school", 
+mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school",
                    "training")
-mvad.labels <- c("employment", "further education", "higher education", 
+mvad.labels <- c("employment", "further education", "higher education",
                  "joblessness", "school", "training")
 mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes, 
+mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes,
                    labels = mvad.labels, xtstep = 6)
 
 # Starting values for the emission matrix
@@ -83,7 +82,7 @@ tr <- matrix(
   c(0.80, 0.10, 0.05, 0.05,
     0.05, 0.80, 0.10, 0.05,
     0.05, 0.05, 0.80, 0.10,
-    0.05, 0.05, 0.10, 0.80), 
+    0.05, 0.05, 0.10, 0.80),
   nrow=4, ncol=4, byrow=TRUE)
 
 # Starting values for initial state probabilities
@@ -91,7 +90,7 @@ init <- c(0.3, 0.3, 0.2, 0.2)
 
 # Building a hidden Markov model with starting values
 init_hmm_mvad <- build_hmm(
-  observations = mvad.seq, transition_probs = tr, 
+  observations = mvad.seq, transition_probs = tr,
   emission_probs = emiss, initial_probs = init
 )
 
@@ -103,14 +102,14 @@ init_hmm_mvad <- build_hmm(
 # Three-state three-channel hidden Markov model
 # See ?hmm_biofam for five-state version
 
-data(biofam3c)
+data("biofam3c")
 
 # Building sequence objects
-marr.seq <- seqdef(biofam3c$married, start = 15, 
+marr.seq <- seqdef(biofam3c$married, start = 15,
   alphabet = c("single", "married", "divorced"))
-child.seq <- seqdef(biofam3c$children, start = 15, 
+child.seq <- seqdef(biofam3c$children, start = 15,
   alphabet = c("childless", "children"))
-left.seq <- seqdef(biofam3c$left, start = 15, 
+left.seq <- seqdef(biofam3c$left, start = 15,
   alphabet = c("with parents", "left home"))
 
 # Define colors
@@ -148,9 +147,9 @@ inits <- c(0.9, 0.09, 0.01)
 
 # Building hidden Markov model with initial parameter values
 init_hmm_bf <- build_hmm(
-  observations = list(marr.seq, child.seq, left.seq), 
+  observations = list(marr.seq, child.seq, left.seq),
   transition_probs = trans,
-  emission_probs = list(emiss_marr, emiss_child, emiss_left), 
+  emission_probs = list(emiss_marr, emiss_child, emiss_left),
   initial_probs = inits)
 
 }

@@ -8,11 +8,11 @@ trim_model(model, maxit = 0, return_loglik = FALSE, zerotol = 1e-08,
   verbose = TRUE, ...)
 }
 \arguments{
-\item{model}{Model of class \code{hmm} or \code{mhmm} for which 
+\item{model}{Model of class \code{hmm} or \code{mhmm} for which
 trimming is performed.}
 
-\item{maxit}{Number of iterations. After zeroing small values, the model is 
-refitted, and this is repeated until there is nothing to trim or \code{maxit} 
+\item{maxit}{Number of iterations. After zeroing small values, the model is
+refitted, and this is repeated until there is nothing to trim or \code{maxit}
 iterations are done.}
 
 \item{return_loglik}{Return the log-likelihood of the trimmed model together with
@@ -25,19 +25,19 @@ the model object. The default is \code{FALSE}.}
 \item{...}{Further parameters passed on to \code{fit_model}.}
 }
 \description{
-Function \code{trim_model} tries to set small insignificant probabilities to zero 
+Function \code{trim_model} tries to set small insignificant probabilities to zero
 without decreasing the likelihood.
 }
 \examples{
-data(hmm_biofam)
+data("hmm_biofam")
 
-# Testing if changing parameter values smaller than 1e-04 to zero 
+# Testing if changing parameter values smaller than 1e-04 to zero
 # leads to improved log-likelihood.
 hmm_trim <- trim_model(hmm_biofam, zerotol = 1e-04, maxit = 10)
 }
 \seealso{
-\code{\link{build_hmm}} and \code{\link{fit_model}} for building and fitting 
-hidden Markov models; and \code{\link{hmm_biofam}} for information on the model used 
+\code{\link{build_hmm}} and \code{\link{fit_model}} for building and fitting
+hidden Markov models; and \code{\link{hmm_biofam}} for information on the model used
 in the example.
 }
 

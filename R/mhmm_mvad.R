@@ -75,7 +75,7 @@
 #' @keywords datasets
 #' @name mhmm_mvad
 #' @examples
-#' data(mhmm_mvad)
+#' data("mhmm_mvad")
 #'
 #' summary(mhmm_mvad)
 #'

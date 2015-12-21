@@ -2,7 +2,7 @@
 % Please edit documentation in R/separate_mhmm.R
 \name{separate_mhmm}
 \alias{separate_mhmm}
-\title{Reorganize a mixture hidden Markov model to a list of separate hidden Markov models 
+\title{Reorganize a mixture hidden Markov model to a list of separate hidden Markov models
 (covariates ignored)}
 \usage{
 separate_mhmm(model)
@@ -14,20 +14,20 @@ separate_mhmm(model)
 List with components of class \code{hmm}.
 }
 \description{
-The \code{separate_mhmm} function reorganizes the parameters of a \code{mhmm} object 
-into a list where each list component is an object of class \code{hmm} consisting of the 
+The \code{separate_mhmm} function reorganizes the parameters of a \code{mhmm} object
+into a list where each list component is an object of class \code{hmm} consisting of the
 parameters of the corresponding cluster.
 }
 \examples{
 # Loading mixture hidden Markov model (mhmm object)
 # of the biofam data
-data(mhmm_biofam)
+data("mhmm_biofam")
 
 # Separate models for clusters
 sep_hmm <- separate_mhmm(mhmm_biofam)
 }
 \seealso{
-\code{\link{build_mhmm}} and \code{\link{fit_model}} 
+\code{\link{build_mhmm}} and \code{\link{fit_model}}
 for building and fitting MHMMs; and \code{\link{mhmm_biofam}} for
 more information on the model used in examples.
 }

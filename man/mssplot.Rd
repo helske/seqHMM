@@ -2,7 +2,7 @@
 % Please edit documentation in R/mssplot.R
 \name{mssplot}
 \alias{mssplot}
-\title{Interactive Stacked Plots of Multichannel Sequences and/or Most Probable 
+\title{Interactive Stacked Plots of Multichannel Sequences and/or Most Probable
 Paths for Mixture Hidden Markov Models}
 \usage{
 mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
@@ -22,146 +22,146 @@ mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
 
 \item{which.plots}{The number(s) of the requested model(s) as an integer vector. The default \code{NULL} produces all plots.}
 
-\item{hidden.paths}{Output from the \code{\link{hidden_paths}} function. The 
+\item{hidden.paths}{Output from the \code{\link{hidden_paths}} function. The
 default value \code{NULL} computes hidden paths automatically, if needed.}
 
-\item{plots}{What to plot. One of \code{"obs"} for observations (the default), 
-\code{"hidden.paths"} for most probable paths of hidden states, 
+\item{plots}{What to plot. One of \code{"obs"} for observations (the default),
+\code{"hidden.paths"} for most probable paths of hidden states,
 or \code{"both"} for observations and hidden paths together.}
 
-\item{type}{The type of the plot. Available types are \code{"I"} for index 
-plots and \code{"d"} for state distribution plots (the default). See 
+\item{type}{The type of the plot. Available types are \code{"I"} for index
+plots and \code{"d"} for state distribution plots (the default). See
 \code{\link{seqplot}} for details.}
 
 \item{sortv}{A sorting variable or a sort method (one of \code{"from.start"},
-\code{"from.end"}, \code{"mds.obs"}, or \code{"mds.hidden"}) for 
+\code{"from.end"}, \code{"mds.obs"}, or \code{"mds.hidden"}) for
 \code{type = "I"}. The value \code{"mds.hidden"} is only available when
-\code{which = "both"} and \code{which = "hidden.paths"}. Options \code{"mds.obs"} and 
-\code{"mds.hidden"} automatically arrange the sequences according to the 
-scores of multidimensional scaling (using \code{\link{cmdscale}}) for the 
-observed data or hidden states paths. 
-MDS scores are computed from distances/dissimilarities using a metric 
-defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for 
+\code{which = "both"} and \code{which = "hidden.paths"}. Options \code{"mds.obs"} and
+\code{"mds.hidden"} automatically arrange the sequences according to the
+scores of multidimensional scaling (using \code{\link{cmdscale}}) for the
+observed data or hidden states paths.
+MDS scores are computed from distances/dissimilarities using a metric
+defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for
 more details on \code{"from.start"} and \code{"from.end"}.}
 
-\item{sort.channel}{The number of the channel according to which the 
+\item{sort.channel}{The number of the channel according to which the
 \code{"from.start"} or \code{"from.end"} sorting is done. Sorting according
-to hidden states is called with value 0. The default value is 1 (the first 
+to hidden states is called with value 0. The default value is 1 (the first
 channel).}
 
-\item{dist.method}{The metric to be used for computing the distances of the 
-sequences if multidimensional scaling is used for sorting. One of "OM" 
-(optimal matching, the default), "LCP" (longest common prefix), "RLCP" 
-(reversed LCP, i.e. longest common suffix), "LCS" (longest common 
-subsequence), "HAM" (Hamming distance), and "DHD" (dynamic Hamming distance). 
+\item{dist.method}{The metric to be used for computing the distances of the
+sequences if multidimensional scaling is used for sorting. One of "OM"
+(optimal matching, the default), "LCP" (longest common prefix), "RLCP"
+(reversed LCP, i.e. longest common suffix), "LCS" (longest common
+subsequence), "HAM" (Hamming distance), and "DHD" (dynamic Hamming distance).
 Transition rates are used for defining substitution costs if needed. See
 \code{\link[TraMineR]{seqdef}} for more information on the metrics.}
 
-\item{with.missing}{Controls whether missing states are included in state 
+\item{with.missing}{Controls whether missing states are included in state
 distribution plots (\code{type = "d"}). The default is \code{FALSE}.}
 
-\item{title}{Main title for the graphic. The default is \code{NA}: if 
-\code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE} 
+\item{title}{Main title for the graphic. The default is \code{NA}: if
+\code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE}
 prints no title, even when \code{title.n = TRUE}.}
 
-\item{title.n}{Controls whether the number of subjects is printed in the 
+\item{title.n}{Controls whether the number of subjects is printed in the
 title of the plot. The default is \code{TRUE}: n is plotted if \code{title}
 is anything but \code{FALSE}.}
 
-\item{cex.title}{Expansion factor for setting the size of the font for the 
+\item{cex.title}{Expansion factor for setting the size of the font for the
 title. The default value is 1. Values lesser than 1 will reduce the size of
 the font, values greater than 1 will increase the size.}
 
-\item{title.pos}{Controls the position of the main title of the plot. The 
+\item{title.pos}{Controls the position of the main title of the plot. The
 default value is 1. Values greater than 1 will place the title higher.}
 
-\item{withlegend}{Defines if and where the legend for the states is plotted. 
-The default value \code{"auto"} (equivalent to \code{TRUE} and 
-\code{"right"}) creates separate legends for each requested plot and 
-positiones them on the right-hand side of the plot. Other possible values 
+\item{withlegend}{Defines if and where the legend for the states is plotted.
+The default value \code{"auto"} (equivalent to \code{TRUE} and
+\code{"right"}) creates separate legends for each requested plot and
+positiones them on the right-hand side of the plot. Other possible values
 are \code{"bottom"},
-\code{"right.combined"}, and \code{"bottom.combined"}, of which the last 
+\code{"right.combined"}, and \code{"bottom.combined"}, of which the last
 two create a combined legend in the selected position. \code{FALSE} prints no legend.}
 
 \item{ncol.legend}{(A vector of) the number of columns for the legend(s). The
 default \code{"auto"} creates one column for each legend.}
 
-\item{with.missing.legend}{If set to \code{"auto"} (the default), a legend 
-for the missing state is added automatically if one or more of the 
-sequences in the data/channel contains missing states and \code{type = "I"}. 
-If \code{type = "d"} missing states are omitted from the legends unless 
-\code{with.missing = TRUE}. With the value \code{TRUE} a 
-legend for the missing state is added in any case; equivalently 
+\item{with.missing.legend}{If set to \code{"auto"} (the default), a legend
+for the missing state is added automatically if one or more of the
+sequences in the data/channel contains missing states and \code{type = "I"}.
+If \code{type = "d"} missing states are omitted from the legends unless
+\code{with.missing = TRUE}. With the value \code{TRUE} a
+legend for the missing state is added in any case; equivalently
 \code{FALSE} omits the legend for the missing state.}
 
-\item{legend.prop}{Sets the proportion of the graphic area used for plotting 
+\item{legend.prop}{Sets the proportion of the graphic area used for plotting
 the legend when \code{withlegend} is not \code{FALSE}. The default value is
 0.3. Takes values from 0 to 1.}
 
-\item{cex.legend}{Expansion factor for setting the size of the font for the 
-labels in the legend. The default value is 1. Values lesser than 1 will 
+\item{cex.legend}{Expansion factor for setting the size of the font for the
+labels in the legend. The default value is 1. Values lesser than 1 will
 reduce the size of the font, values greater than 1 will increase the size.}
 
-\item{hidden.states.colors}{A vector of colors assigned to hidden states. The default 
-value \code{"auto"} uses the colors assigned to the \code{stslist} object (created 
-with \code{\link[TraMineR]{seqdef}}) if \code{hidden.paths} is given; otherwise colors from 
+\item{hidden.states.colors}{A vector of colors assigned to hidden states. The default
+value \code{"auto"} uses the colors assigned to the \code{stslist} object (created
+with \code{\link[TraMineR]{seqdef}}) if \code{hidden.paths} is given; otherwise colors from
 \code{\link{colorpalette}} are automatically used.}
 
-\item{hidden.states.labels}{Labels for the hidden states. The default value 
+\item{hidden.states.labels}{Labels for the hidden states. The default value
 \code{"auto"} uses the names provided in \code{x$state_names} if \code{x} is
 an \code{hmm} object; otherwise the number of the hidden state.}
 
-\item{xaxis}{Controls whether an x-axis is plotted below the plot at the 
+\item{xaxis}{Controls whether an x-axis is plotted below the plot at the
 bottom. The default value is \code{TRUE}.}
 
-\item{xlab}{An optional label for the x-axis. If set to \code{NA}, no label 
+\item{xlab}{An optional label for the x-axis. If set to \code{NA}, no label
 is drawn.}
 
 \item{xtlab}{Optional labels for the x-axis tick labels.  If unspecified, the
-column names of the \code{seqdata} sequence object are used (see 
+column names of the \code{seqdata} sequence object are used (see
 \code{\link[TraMineR]{seqdef}}).}
 
-\item{xlab.pos}{Controls the position of the x-axis label. The default value 
+\item{xlab.pos}{Controls the position of the x-axis label. The default value
 is 1. Values greater than 1 will place the label further away from the plot.}
 
-\item{ylab}{Labels for the channels shown as labels for y-axes. 
-A vector of names for each channel 
-(observations). The default value \code{"auto"} uses the names provided in 
-\code{x$channel_names} if \code{x} is an \code{hmm} object; otherwise the 
+\item{ylab}{Labels for the channels shown as labels for y-axes.
+A vector of names for each channel
+(observations). The default value \code{"auto"} uses the names provided in
+\code{x$channel_names} if \code{x} is an \code{hmm} object; otherwise the
 names of the list in \code{x} if given, or the
 number of the channel if names are not given. \code{FALSE} prints no labels.}
 
-\item{hidden.states.title}{Optional label for the hidden state plot (in the 
+\item{hidden.states.title}{Optional label for the hidden state plot (in the
 y-axis). The default is \code{"Hidden states"}.}
 
 \item{yaxis}{Controls whether or not to plot the y-axis. The default is \code{FALSE}.}
 
-\item{ylab.pos}{Controls the position of the y axis labels (labels for 
-channels and/or hidden states). Either \code{"auto"} or a numerical vector 
-indicating how far away from the plots the titles are positioned. The 
+\item{ylab.pos}{Controls the position of the y axis labels (labels for
+channels and/or hidden states). Either \code{"auto"} or a numerical vector
+indicating how far away from the plots the titles are positioned. The
 default value \code{"auto"} positions all titles on line 1.
 Shorter vectors are recycled.}
 
 \item{cex.lab}{Expansion factor for setting the size of the font for the axis
-labels. The default value is 1. Values lesser than 1 will reduce the size 
+labels. The default value is 1. Values lesser than 1 will reduce the size
 of the font, values greater than 1 will increase the size.}
 
-\item{cex.axis}{Expansion factor for setting the size of the font for the x-axis 
-tick labels. The default value is 1. Values lesser than 1 will reduce the size of 
+\item{cex.axis}{Expansion factor for setting the size of the font for the x-axis
+tick labels. The default value is 1. Values lesser than 1 will reduce the size of
 the font, values greater than 1 will increase the size.}
 
-\item{...}{Other arguments such as \code{yaxis} to be passed on to 
+\item{...}{Other arguments such as \code{yaxis} to be passed on to
 \code{\link[TraMineR]{seqplot}}.}
 }
 \description{
-Function \code{mssplot} plots stacked sequence plots of observation sequences 
-and/or most probable hidden state paths for each model of the \code{mhmm} 
+Function \code{mssplot} plots stacked sequence plots of observation sequences
+and/or most probable hidden state paths for each model of the \code{mhmm}
 object (model chosen according to the most probable path).
 }
 \examples{
 # Loading mixture hidden Markov model (mhmm object)
 # of the biofam data
-data(mhmm_biofam)
+data("mhmm_biofam")
 
 # Plotting the first cluster only
 mssplot(mhmm_biofam, which.plots = 1)
@@ -171,11 +171,11 @@ mssplot(mhmm_biofam, which.plots = 1)
 mssplot(mhmm_biofam)
 }
 
-  
+
 }
 \seealso{
-\code{\link{build_mhmm}} and \code{\link{fit_model}} for building and 
-  fitting mixture hidden Markov models, \code{\link{hidden_paths}} for 
+\code{\link{build_mhmm}} and \code{\link{fit_model}} for building and
+  fitting mixture hidden Markov models, \code{\link{hidden_paths}} for
   computing the most probable paths (Viterbi paths) of hidden states, and
   \code{\link{plot.mhmm}} for plotting \code{mhmm} objects as directed graphs.
 }

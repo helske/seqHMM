@@ -10,13 +10,13 @@
 \arguments{
 \item{object}{Mixture hidden Markov model of class \code{mhmm}.}
 
-\item{parameters}{Whether or not to return transition, emission, and 
+\item{parameters}{Whether or not to return transition, emission, and
 initial probabilities. \code{FALSE} by default.}
 
-\item{conditional_se}{Return conditional standard errors of coefficients. 
+\item{conditional_se}{Return conditional standard errors of coefficients.
 See \code{\link{vcov.mhmm}} for details. \code{TRUE} by default.}
 
-\item{log_space}{Make computations using log-space instead of scaling for greater 
+\item{log_space}{Make computations using log-space instead of scaling for greater
 numerical stability at cost of decreased computational performance. Default is \code{FALSE}.}
 
 \item{...}{Further arguments to \code{\link{vcov.mhmm}}.}
@@ -31,7 +31,7 @@ numerical stability at cost of decreased computational performance. Default is \
    \item{most_probable_cluster}{The most probable cluster according to posterior probabilities.}
    \item{coefficients}{Coefficients of covariates.}
    \item{vcov}{Variance-covariance matrix of coefficients.}
-   \item{prior_cluster_probabilities}{Prior cluster probabilities 
+   \item{prior_cluster_probabilities}{Prior cluster probabilities
    (mixing proportions) given the covariates.}
    \item{posterior_cluster_probabilities}{Posterior cluster membership probabilities.}
    \item{classification_table}{Cluster probabilities (columns) by the most probable cluster (rows).}
@@ -43,22 +43,22 @@ Function \code{summary.mhmm} gives a summary of a mixture hidden Markov model.
 \details{
 The \code{summary.mhmm} function computes features from a mixture hidden Markov
 model and stores them as a list. A \code{print} method prints summaries of these:
-log-likelihood and BIC, coefficients and standard errors of covariates, means of prior 
+log-likelihood and BIC, coefficients and standard errors of covariates, means of prior
 cluster probabilities, and information on most probable clusters.
 }
 \examples{
 # Loading mixture hidden Markov model (mhmm object)
 # of the biofam data
-data(mhmm_biofam)
-  
+data("mhmm_biofam")
+
 # Model summary
 summary(mhmm_biofam)
-  
-  
+
+
 }
 \seealso{
-\code{\link{build_mhmm}} and \code{\link{fit_model}} for building and 
-  fitting mixture hidden Markov models; and 
+\code{\link{build_mhmm}} and \code{\link{fit_model}} for building and
+  fitting mixture hidden Markov models; and
   \code{\link{mhmm_biofam}} for information on the model used in examples.
 }
 

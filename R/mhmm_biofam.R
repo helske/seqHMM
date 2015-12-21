@@ -148,7 +148,7 @@
 #' @keywords datasets
 #' @name mhmm_biofam
 #' @examples
-#' data(mhmm_biofam)
+#' data("mhmm_biofam")
 #'
 #' # use conditional_se = FALSE for more accurate standard errors
 #' # (these are considerebly slower to compute)

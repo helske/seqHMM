@@ -109,8 +109,8 @@ numerical stability at a cost of decreased computational performance. The defaul
   \item{call}{The matched function call. }
   }}
 
-\item{maxit}{Number of iterations. After zeroing small values, the model is 
-refitted, and this is repeated until there is nothing to trim or \code{maxit} 
+\item{maxit}{Number of iterations. After zeroing small values, the model is
+refitted, and this is repeated until there is nothing to trim or \code{maxit}
 iterations are done.}
 
 \item{return_loglik}{Return the log-likelihood of the trimmed model together with

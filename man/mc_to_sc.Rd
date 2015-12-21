@@ -20,18 +20,18 @@ only actual observations are included.}
 }
 \description{
 Transforms data and parameters of multichannel model to single channel model.
-Observed states (symbols) are combined and parameters multiplied across the 
+Observed states (symbols) are combined and parameters multiplied across the
 channels.
 }
 \details{
-Note that in case of no missing observations, the log-likelihood of the original 
-and transformed models are identical but 
-the AIC and BIC can be different as the model attributes \code{nobs} and 
+Note that in case of no missing observations, the log-likelihood of the original
+and transformed models are identical but
+the AIC and BIC can be different as the model attributes \code{nobs} and
 \code{df} are recomputed based on the single channel representation.
 }
 \examples{
 # Loading a hidden Markov model of the biofam data (hmm object)
-data(hmm_biofam)
+data("hmm_biofam")
 logLik(hmm_biofam)
 sc <- mc_to_sc(hmm_biofam)
 logLik(sc)

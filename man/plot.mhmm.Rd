@@ -168,7 +168,7 @@ with pie charts of emission probabilities as vertices/nodes.
 \examples{
 # Loading mixture hidden Markov model (mhmm object)
 # of the biofam data
-data(mhmm_biofam)
+data("mhmm_biofam")
 
 # Plotting only the first cluster
 plot(mhmm_biofam, which.plots = 1)
@@ -181,7 +181,7 @@ plot(mhmm_biofam)
 plot(mhmm_biofam, ask = TRUE)
 }
 # Loading MHMM of the mvad data
-data(mhmm_mvad)
+data("mhmm_mvad")
 
 \dontrun{
 # Plotting models in the same graph (in a grid)

@@ -155,7 +155,7 @@
 #'
 #' \dontrun{
 #'
-#' data(biofam3c)
+#' data("biofam3c")
 #'
 #' ## Building sequence objects
 #' child.seq <- seqdef(biofam3c$children, start = 15)
@@ -188,7 +188,7 @@
 #' # Plotting hidden Markov models
 #'
 #' # Loading data
-#' data(hmm_biofam)
+#' data("hmm_biofam")
 #'
 #' # Plotting observations and most probable hidden states paths
 #' ssp3 <- ssp(

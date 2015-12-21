@@ -13,15 +13,15 @@ A list containing ready defined color palettes with distinct colors using
 iWantHue.
 }
 \examples{
-data(colorpalette)
-# Color palette with 9 colors 
-colorpalette[[9]] 
-# Color palette with 24 colors 
+data("colorpalette")
+# Color palette with 9 colors
+colorpalette[[9]]
+# Color palette with 24 colors
 colorpalette[[24]]
-  
+
 }
 \seealso{
-Implementations of iWantHue for R: 
+Implementations of iWantHue for R:
   \itemize{
     \item \url{https://github.com/hoesler/rwantshue}
     \item \url{https://github.com/johnbaums/hues}

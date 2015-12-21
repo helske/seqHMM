@@ -12,35 +12,35 @@ build_mhmm(observations, transition_probs, emission_probs, initial_probs,
 \item{observations}{TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences, or a list of such objects (one for each channel).}
 
-\item{transition_probs}{A list of matrices of transition 
+\item{transition_probs}{A list of matrices of transition
 probabilities for submodels of each cluster.}
 
 \item{emission_probs}{A list which contains matrices of emission probabilities or
-a list of such objects (one for each channel) for submodels of each cluster. 
-Note that the matrices must have dimensions m x s where m is the number of 
-hidden states and s is the number of unique symbols (observed states) in the 
-data. Emission probabilities should follow the ordering of the alphabet of 
+a list of such objects (one for each channel) for submodels of each cluster.
+Note that the matrices must have dimensions m x s where m is the number of
+hidden states and s is the number of unique symbols (observed states) in the
+data. Emission probabilities should follow the ordering of the alphabet of
 observations (\code{alphabet(observations)}, returned as \code{symbol_names}).}
 
-\item{initial_probs}{A list which contains vectors of initial state 
+\item{initial_probs}{A list which contains vectors of initial state
 probabilities for submodels of each cluster.}
 
-\item{formula}{Covariates as an object of class \code{\link{formula}}, 
+\item{formula}{Covariates as an object of class \code{\link{formula}},
 left side omitted.}
 
-\item{data}{An optional data frame, list or environment containing the variables 
-in the model. If not found in data, the variables are taken from 
+\item{data}{An optional data frame, list or environment containing the variables
+in the model. If not found in data, the variables are taken from
 \code{environment(formula)}.}
 
-\item{coefficients}{An optional $k x l$ matrix of regression coefficients for time-constant 
+\item{coefficients}{An optional $k x l$ matrix of regression coefficients for time-constant
 covariates for mixture probabilities, where $l$ is the number of clusters and $k$
 is the number of covariates. A logit-link is used for mixture probabilities.
 The first column is set to zero.}
 
 \item{cluster_names}{A vector of optional names for the clusters.}
 
-\item{state_names}{A list of optional labels for the hidden states. If \code{NULL}, 
-the state names are taken as row names of transition matrices. If this is also \code{NULL}, 
+\item{state_names}{A list of optional labels for the hidden states. If \code{NULL},
+the state names are taken as row names of transition matrices. If this is also \code{NULL},
 numbered states are used.}
 
 \item{channel_names}{A vector of optional names for the channels.}
@@ -71,17 +71,17 @@ Object of class \code{mhmm} with following elements:
 Function \code{build_mhmm} constructs a mixture hidden Markov model object of class \code{mhmm}.
 }
 \details{
-Returned model contains some attributes such as \code{nobs} and \code{df} 
-which define the number of observations in the  model and number of estimable 
-model parameters, which are used in computing BIC. 
-When computing \code{nobs} for multichannel model, each observed value in 
-single channel amounts to $1/C$ observation, i.e. fully observed 
-time point for single sequences amounts to one observation. For degrees of 
+Returned model contains some attributes such as \code{nobs} and \code{df}
+which define the number of observations in the  model and number of estimable
+model parameters, which are used in computing BIC.
+When computing \code{nobs} for multichannel model, each observed value in
+single channel amounts to $1/C$ observation, i.e. fully observed
+time point for single sequences amounts to one observation. For degrees of
 freedom \code{df}, zero probabilities of initial model are defined as structural zeroes.
 }
 \examples{
 
-data(biofam3c)
+data("biofam3c")
 
 ## Building sequence objects
 marr.seq <- seqdef(biofam3c$married, start = 15,
@@ -209,13 +209,13 @@ init_mhmm_bf <- build_mhmm(
   formula = ~sex + cohort, data = biofam3c$covariates,
   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
   channel_names = c("Marriage", "Parenthood", "Residence"),
-  state_names = list(paste("State", 1:4), paste("State", 1:4), 
+  state_names = list(paste("State", 1:4), paste("State", 1:4),
                      paste("State", 1:6)))
 
 }
 \seealso{
-\code{\link{fit_model}} for fitting mixture Hidden Markov models; 
-\code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for 
+\code{\link{fit_model}} for fitting mixture Hidden Markov models;
+\code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for
 reorganizing a MHMM into a list of separate hidden Markov models; and
 \code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
 }
