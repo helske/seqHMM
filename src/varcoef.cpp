@@ -7,5 +7,6 @@ NumericMatrix varcoef(const arma::mat& coef, const arma::mat& X) {
 
   arma::mat weights = exp(X * coef).t();
   weights.each_row() /= sum(weights, 0);
-  return wrap(arma::inv_sympd(-hCoef(weights, X)));
+  // use inv instead of faster inv_sympd as the latter produces error on valgrind
+  return wrap(arma::inv(-hCoef(weights, X)));
 }
