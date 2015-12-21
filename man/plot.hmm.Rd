@@ -23,12 +23,12 @@ See function \code{\link{mc_to_sc}} for more information on the
 transformation.}
 
 \item{layout}{specifies the layout of vertices (nodes). Accepts a 
-numerical matrix, a \code{\link[igraph]{layout}} function (without quotation marks), 
+numerical matrix, a \code{\link[igraph]{layout_}} function (without quotation marks), 
 or either of the predefined options \code{"horizontal"} (the 
 default) and \code{"vertical"}. Options \code{"horizontal"} and 
 \code{"vertical"} position vertices at the same horizontal or vertical 
 line. A two-column numerical matrix can be used to give x and y coordinates of 
-the vertices. The \code{\link[igraph]{layout}} functions available in the 
+the vertices. The \code{\link[igraph]{layout_}} functions available in the 
 \code{igraph} package offer other automatic layouts for graphs.}
 
 \item{pie}{Are vertices plotted as pie charts of emission probabilities? 
