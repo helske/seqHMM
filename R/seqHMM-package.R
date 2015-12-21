@@ -16,6 +16,7 @@
 #' @docType package
 #' @name seqHMM
 #' @aliases seqHMM
+#' @useDynLib seqHMM
 #' @import igraph
 #' @import gridBase
 #' @import grid

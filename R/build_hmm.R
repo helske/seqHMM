@@ -10,7 +10,6 @@
 #' time point for single sequences amounts to one observation. For degrees of 
 #' freedom \code{df}, zero probabilities of initial model are defined as structural zeroes.
 #' @export
-#' @useDynLib seqHMM
 #' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing 
 #' the sequences, or a list of such objects (one for each channel).
 #' @param transition_probs A matrix of transition probabilities.

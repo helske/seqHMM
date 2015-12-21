@@ -4,7 +4,6 @@
 #' model as an restricted case of \code{mhmm} object.
 #'
 #' @export
-#' @useDynLib seqHMM
 #' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
 #'   the sequences.
 #' @param transition_probs A list of matrices of transition

@@ -4,7 +4,6 @@
 #' as an restricted case of mixture hidden Markov model.
 #' 
 #' @export
-#' @useDynLib seqHMM
 #' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
 #'   the sequences, or a list of such objects (one for each channel).
 #' @param emission_probs A matrix containing emission probabilities for each class by rows, 
