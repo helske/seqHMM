@@ -17,18 +17,6 @@ forwardbackwardx <- function(transition, emissionArray, init, obsArray, coef, X,
     .Call('seqHMM_forwardbackwardx', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, coef, X, numberOfStates, forwardonly, threads)
 }
 
-logLikHMM <- function(transition, emissionArray, init, obsArray, threads) {
-    .Call('seqHMM_logLikHMM', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, threads)
-}
-
-logLikMixHMM <- function(transition, emissionArray, init, obsArray, coef, X, numberOfStates, threads) {
-    .Call('seqHMM_logLikMixHMM', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, coef, X, numberOfStates, threads)
-}
-
-logSumExp <- function(x) {
-    .Call('seqHMM_logSumExp', PACKAGE = 'seqHMM', x)
-}
-
 log_EM <- function(transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol, trace, threads) {
     .Call('seqHMM_log_EM', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, nSymbols, itermax, tol, trace, threads)
 }
@@ -59,6 +47,18 @@ log_objective <- function(transitionMatrix, emissionArray, initialProbs, obsArra
 
 log_objectivex <- function(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coef, X, numberOfStates, threads) {
     .Call('seqHMM_log_objectivex', PACKAGE = 'seqHMM', transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, coef, X, numberOfStates, threads)
+}
+
+logLikHMM <- function(transition, emissionArray, init, obsArray, threads) {
+    .Call('seqHMM_logLikHMM', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, threads)
+}
+
+logLikMixHMM <- function(transition, emissionArray, init, obsArray, coef, X, numberOfStates, threads) {
+    .Call('seqHMM_logLikMixHMM', PACKAGE = 'seqHMM', transition, emissionArray, init, obsArray, coef, X, numberOfStates, threads)
+}
+
+logSumExp <- function(x) {
+    .Call('seqHMM_logSumExp', PACKAGE = 'seqHMM', x)
 }
 
 objective <- function(transitionMatrix, emissionArray, initialProbs, obsArray, transNZ, emissNZ, initNZ, nSymbols, threads) {
