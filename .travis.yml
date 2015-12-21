@@ -3,9 +3,8 @@ sudo: required
 
 warnings_are_errors: false
 
-r_build_args: "--resave-data"
 
-r_check_args: "--as-cran --no-manual"
+r_check_args: "--as-cran  --run-dontrun"
 
 notifications:
  email:
