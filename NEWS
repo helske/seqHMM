@@ -7,6 +7,7 @@ Bug Fixes:
 
 * Corrected a bug which caused fit_model to stop if restarted EM failed.
 * vcov.mhmm produced errors in valgrind, corrected issue by replacing Armadillo's inv_sympd function with inv.
+* Corrected a bug relating to colorpalette in mc_to_sc function.
 
 Performance improvements:
 
