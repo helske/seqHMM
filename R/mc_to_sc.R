@@ -57,7 +57,7 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
     modelx$emission_probs <- B
     modelx$n_symbols <- ncol(B)
     modelx$n_channels <- as.integer(1)
-    modelx$symbol_names <- colnames(B)
+    alph <- modelx$symbol_names <- colnames(B)
     modelx$channel_names <- "Observations"
 
     modelx$observations<-model$observations[[1]]
@@ -126,7 +126,7 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
 
     modelx$n_symbols <- ncol(B[[1]])
     modelx$n_channels <- as.integer(1)
-    modelx$symbol_names <- colnames(B[[1]])
+    alph <- modelx$symbol_names <- colnames(B[[1]])
 
     modelx$channel_names <- "Observations"
 
@@ -193,7 +193,7 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
   attr(modelx$observations, "void") <- attr(model$observations[[1]], "void")
   attr(modelx$observations, "missing") <- attr(model$observations[[1]], "missing")
   attr(modelx$observations, "start") <- attr(model$observations[[1]], "start")
-  attr(modelx$observations, "cpal") <- cpal
+  attr(modelx$observations, "cpal") <- cpal[alph %in% alphabet(modelx$observations)]
 
 
   attr(modelx$observations, "nobs") <-
