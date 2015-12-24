@@ -1,4 +1,4 @@
-seqHMM 1.0.3 (Release date: Still under development)
+seqHMM 1.0.3 (Release date: 2015-12-23)
 ==============
 
 Corrected dependency on R 3.2.0 due to lengths function.
