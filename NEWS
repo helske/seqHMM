@@ -1,3 +1,9 @@
+seqHMM 1.0.3-1 (Release date: 2015-12-29)
+==============
+
+As requested by CRAN, changed donttest example of interactive plotting to conditional block depending
+on whether session is interactive or not.
+
 seqHMM 1.0.3 (Release date: 2015-12-23)
 ==============
 

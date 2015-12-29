@@ -173,26 +173,25 @@ data("mhmm_biofam")
 # Plotting only the first cluster
 plot(mhmm_biofam, which.plots = 1)
 
-\donttest{
-# Plotting each cluster (change with Enter)
-plot(mhmm_biofam)
+if (interactive()) {
+  # Plotting each cluster (change with Enter)
+  plot(mhmm_biofam)
 
-# Choosing the cluster (one at a time)
-plot(mhmm_biofam, ask = TRUE)
-}
-# Loading MHMM of the mvad data
-data("mhmm_mvad")
+  # Choosing the cluster (one at a time)
+  plot(mhmm_biofam, ask = TRUE)
 
-\dontrun{
-# Plotting models in the same graph (in a grid)
-# Note: plotting window must be high enough!
-set.seed(123)
-plot(mhmm_mvad, interactive = FALSE,
-  # automatic layout, legend on the right-hand side
-  layout = layout_nicely, withlegend = "right",
-  # Smaller and less curved edges
-  edge.curved = 0.2, cex.edge.width = 0.5, edge.arrow.size = 0.7,
-  vertex.label.pos = "bottom")
+  # Loading MHMM of the mvad data
+  data("mhmm_mvad")
+
+  # Plotting models in the same graph (in a grid)
+  # Note: plotting window must be high enough!
+  set.seed(123)
+  plot(mhmm_mvad, interactive = FALSE,
+    # automatic layout, legend on the right-hand side
+    layout = layout_nicely, withlegend = "right",
+    # Smaller and less curved edges
+    edge.curved = 0.2, cex.edge.width = 0.5, edge.arrow.size = 0.7,
+    vertex.label.pos = "bottom")
 }
 
 }
