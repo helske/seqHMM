@@ -76,9 +76,9 @@ data("mhmm_mvad")
 
 summary(mhmm_mvad)
 
-\dontrun{
-# Plotting the model for each cluster (change with Enter)
-plot(mhmm_mvad)
+if (interactive()) {
+  # Plotting the model for each cluster (change with Enter)
+  plot(mhmm_mvad)
 }
 
 }
