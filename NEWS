@@ -1,3 +1,11 @@
+seqHMM 1.0.4 (Release date: )
+==============
+
+Bug Fixes:
+
+* Corrected mc_to_sc for single state models due to dimension dropping.
+
+
 seqHMM 1.0.3-1 (Release date: 2015-12-29)
 ==============
 

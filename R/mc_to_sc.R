@@ -98,7 +98,7 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
     } else {
       modelx$observations <- suppressWarnings(suppressMessages((seqdef(modelx$observations))))
       modelx$emission_probs <- modelx$emission_probs[, colnames(modelx$emission_probs) %in%
-          alphabet(modelx$observations) == TRUE]
+          alphabet(modelx$observations) == TRUE, drop = FALSE]
       modelx$symbol_names <- colnames(modelx$emission_probs)
       modelx$n_symbols <- ncol(modelx$emission_probs)
     }
@@ -167,7 +167,7 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
       modelx$observations <- suppressWarnings(suppressMessages((seqdef(modelx$observations))))
       for (m in 1:model$n_clusters){
         modelx$emission_probs[[m]] <- modelx$emission_probs[[m]][, colnames(modelx$emission_probs[[m]]) %in%
-            alphabet(modelx$observations) == TRUE]
+            alphabet(modelx$observations) == TRUE, drop = FALSE]
       }
       modelx$symbol_names <- colnames(modelx$emission_probs[[1]])
       modelx$n_symbols <- ncol(modelx$emission_probs[[1]])
