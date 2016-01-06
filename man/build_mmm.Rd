@@ -60,6 +60,14 @@ model as an restricted case of \code{mhmm} object.
 \examples{
 
 data("mvad", package = "TraMineR")
+mvad.alphabet <- c("employment", "FE", "HE", "joblessness", "school",
+  "training")
+mvad.labels <- c("employment", "further education", "higher education",
+  "joblessness", "school", "training")
+mvad.scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
+mvad.seq <- seqdef(mvad, 17:86, alphabet = mvad.alphabet, states = mvad.scodes,
+  labels = mvad.labels, xtstep = 6)
+
 set.seed(123)
 mmm_mvad <- build_mmm(observations = mvad_seq,
   transition_probs = simulate_transition_probs(n_states = 6, n_clusters = 2),
