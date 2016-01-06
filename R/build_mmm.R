@@ -45,6 +45,19 @@
 #' reorganizing a MHMM into a list of separate hidden Markov models; and
 #' \code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
 #'
+#' @examples
+#'
+#' data("mvad", package = "TraMineR")
+#' set.seed(123)
+#' mmm_mvad <- build_mmm(observations = mvad_seq,
+#'   transition_probs = simulate_transition_probs(n_states = 6, n_clusters = 2),
+#'   initial_probs = replicate(2, rep(1/6, 6), simplify = FALSE),
+#'   formula = ~male, data = mvad)
+#'
+#' mmm_mvad <- fit_model(mmm_mvad)$model
+#'
+#' plot(mmm_mvad, interactive = FALSE, withlegend = "right", layout = layout_as_star)
+#'
 build_mmm <-
   function(observations,transition_probs,initial_probs,
            formula, data, coefficients, cluster_names = NULL){
