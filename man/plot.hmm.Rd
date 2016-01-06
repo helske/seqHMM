@@ -225,7 +225,7 @@ plot(hmm_mvad,
   layout = layout_in_circle,
   # Less curved edges with smaller arrows, no labels
   edge.curved = 0.2, edge.arrow.size = 0.9, edge.label = NA,
-  # Vertex labels (initial probabilities) on left
+  # Positioning vertex labels (initial probabilities)
   vertex.label.pos = c("right", "right", "left", "left", "right"),
   # Less space for the legend
   legend.prop = 0.3)

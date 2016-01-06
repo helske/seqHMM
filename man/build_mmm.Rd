@@ -57,6 +57,20 @@ Object of class \code{mhmm} with following elements:
 Function \code{build_mmm} is a shortcut for constructing a mixture Markov
 model as an restricted case of \code{mhmm} object.
 }
+\examples{
+
+data("mvad", package = "TraMineR")
+set.seed(123)
+mmm_mvad <- build_mmm(observations = mvad_seq,
+  transition_probs = simulate_transition_probs(n_states = 6, n_clusters = 2),
+  initial_probs = replicate(2, rep(1/6, 6), simplify = FALSE),
+  formula = ~male, data = mvad)
+
+mmm_mvad <- fit_model(mmm_mvad)$model
+
+plot(mmm_mvad, interactive = FALSE, withlegend = "right", layout = layout_as_star)
+
+}
 \seealso{
 \code{\link{fit_model}} for estimating model parameters;
 \code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for

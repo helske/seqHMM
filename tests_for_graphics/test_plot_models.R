@@ -50,7 +50,7 @@ plot(mhmm_biofam, layout = "vertical", withlegend = "right")
 plot(mhmm_biofam, ask = TRUE)
 plot(mhmm_biofam, interactive = FALSE, which.plots = 2:3,
   layout = layout_as_star, edge.curved = 0, withlegend = "right")
-plot(mhmm_biofam, interactive = FALSE, which.plots = 2:3,
+plot(mhmm_biofam, interactive = FALSE,
   ncol = 3, layout = "vertical", withlegend = "right")
 
 data("mhmm_mvad")
@@ -67,9 +67,12 @@ mmm_mvad <- build_mmm(observations = mvad_seq,
   transition_probs = simulate_transition_probs(n_states = 6, n_clusters = 2),
   initial_probs = replicate(2, rep(1/6, 6), simplify = FALSE),
   formula = ~male, data = mvad)
-mmm_mvad <- fit_model(mmm_mvad)$model
 plot(mmm_mvad)
-plot(mmm_mvad, interactive = FALSE, withlegend = "right", layout = layout_as_star)
+plot(mmm_mvad, interactive = FALSE, withlegend = "right",
+  layout = layout_as_star, edge.label = NA, edge.arrow.size = 0.8,
+  edge.curved = 0.2, legend.prop = 0.3,
+  vertex.label.pos = c("left", "right", "right", "left", "left", "right"),
+  cex.legend = 1.2)
 
 
 # Latent class model
