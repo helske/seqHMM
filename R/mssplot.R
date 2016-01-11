@@ -154,9 +154,9 @@
 #' # Plotting the first cluster only
 #' mssplot(mhmm_biofam, which.plots = 1)
 #'
-#' \dontrun{
-#' # Interactive plot
-#' mssplot(mhmm_biofam)
+#' if (interactive()) {
+#'   # Interactive plot
+#'   mssplot(mhmm_biofam)
 #' }
 #'
 #'

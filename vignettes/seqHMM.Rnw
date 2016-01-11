@@ -1,8 +1,10 @@
 %\VignetteEngine{knitr::knitr}
 %\VignetteDepends{igraph,nloptr,TraMineR,numDeriv,gridBase,Matrix}
 %\VignetteIndexEntry{Mixture Hidden Markov Models for Sequence Data: the seqHMM Package in R}
+%\VignetteKeyword{categorical time series}
+%\VignetteKeyword{latent Markov models}
+%\VignetteKeyword{latent class models}
 \documentclass[nojss,article]{jss}
-
 
 \usepackage{amsmath}
 \usepackage{array}

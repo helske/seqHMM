@@ -45,6 +45,39 @@
 #' reorganizing a MHMM into a list of separate hidden Markov models; and
 #' \code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
 #'
+#' @examples
+#'
+#' # Define sequence data
+#' data("mvad", package = "TraMineR")
+#' mvad_alphabet <- c("employment", "FE", "HE", "joblessness", "school",
+#'   "training")
+#' mvad_labels <- c("employment", "further education", "higher education",
+#'   "joblessness", "school", "training")
+#' mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
+#' mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet, states = mvad_scodes,
+#'   labels = mvad_labels, xtstep = 6)
+#'
+#' # Initialize the MMM
+#' set.seed(123)
+#' mmm_mvad <- build_mmm(observations = mvad_seq,
+#'   transition_probs = simulate_transition_probs(n_states = 6, n_clusters = 2),
+#'   initial_probs = replicate(2, rep(1/6, 6), simplify = FALSE),
+#'   formula = ~male, data = mvad)
+#'
+#' # Estimate model parameters
+#' mmm_mvad <- fit_model(mmm_mvad)$model
+#'
+#' # Plot model (both clusters in the same plot)
+#' plot(mmm_mvad, interactive = FALSE,
+#'   # Modify legend position and properties
+#'   withlegend = "right", legend.prop = 0.3, cex.legend = 1.2,
+#'   # Define vertex layout
+#'   layout = layout_as_star,
+#'   # Modify edge properties
+#'   edge.label = NA, edge.arrow.size = 0.8, edge.curved = 0.2,
+#'   # Modify vertex label positions (initial probabilities)
+#'   vertex.label.pos = c("left", "right", "right", "left", "left", "right"))
+#'
 build_mmm <-
   function(observations,transition_probs,initial_probs,
            formula, data, coefficients, cluster_names = NULL){

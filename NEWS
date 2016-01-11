@@ -1,4 +1,25 @@
-seqHMM 1.0.3 (Release date: Still under development)
+seqHMM 1.0.4 (Release date: )
+==============
+
+* Added examples for build_mmm.
+* Added more space for main titles in plot.mhmm.
+
+Bug Fixes:
+
+* Corrected mc_to_sc for single state models due to dimension dropping.
+* Corrected a bug in plot.hmm when layout = "vertical".
+* Fixed legend layout in plot.hmm.
+
+
+
+
+seqHMM 1.0.3-1 (Release date: 2015-12-29)
+==============
+
+As requested by CRAN, changed donttest example of interactive plotting to conditional block depending
+on whether session is interactive or not.
+
+seqHMM 1.0.3 (Release date: 2015-12-23)
 ==============
 
 Corrected dependency on R 3.2.0 due to lengths function.
@@ -7,6 +28,7 @@ Bug Fixes:
 
 * Corrected a bug which caused fit_model to stop if restarted EM failed.
 * vcov.mhmm produced errors in valgrind, corrected issue by replacing Armadillo's inv_sympd function with inv.
+* Corrected a bug relating to colorpalette in mc_to_sc function.
 
 Performance improvements:
 

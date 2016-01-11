@@ -188,7 +188,7 @@
 #'   layout = layout_in_circle,
 #'   # Less curved edges with smaller arrows, no labels
 #'   edge.curved = 0.2, edge.arrow.size = 0.9, edge.label = NA,
-#'   # Vertex labels (initial probabilities) on left
+#'   # Positioning vertex labels (initial probabilities)
 #'   vertex.label.pos = c("right", "right", "left", "left", "right"),
 #'   # Less space for the legend
 #'   legend.prop = 0.3)
@@ -228,7 +228,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
     if (labs == TRUE && (z > 0.001 || z == 0)) {
       labs  <- FALSE
     }
-    if (z < 10^-(label.max.length)) {
+    if (z < 10 ^ -(label.max.length)) {
       z  <- prettyNum(signif(round(z, digits = label.max.length), digits = label.signif), scientific = labs)
     } else {
       z  <- prettyNum(signif(z, digits = label.signif), scientific = labs)
@@ -257,7 +257,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
   }
   withlegend <- choices[ind]
   if (withlegend %in% c(TRUE, "auto")){
-    withlegend <- "right"
+    withlegend <- "bottom"
   }
 
 
@@ -398,10 +398,14 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
     } else {
       ltext  <- x$symbol_names
     }
-    if (withlegend == "bottom" || withlegend == TRUE || withlegend == "right") {
+    if (withlegend == "bottom") {
       graphics::layout(matrix(1:2, nrow = 2), heights = c(1 - legend.prop, legend.prop))
+    } else if (withlegend == "right") {
+      graphics::layout(matrix(1:2, nrow = 1), widths = c(1 - legend.prop, legend.prop))
+    } else if (withlegend == "left") {
+      graphics::layout(matrix(2:1, nrow = 1), widths = c(legend.prop, 1 - legend.prop))
     } else {
-      graphics::layout(matrix(2:1, nrow = 2), heights = c(legend.prop, 1 - legend.prop))
+      graphics::layout(matrix(2:1, nrow = 2), widths = c(legend.prop, 1 - legend.prop))
     }
     par(cex = 1)
   }
@@ -436,6 +440,11 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
       dots[["ylim"]]  <- NULL
       dots[["rescale"]]  <- NULL
     } else if (layout == "vertical") {
+      if (hasArg(rescale)) {
+        rescale  <- dots$rescale
+      } else {
+        rescale <- FALSE
+      }
       if (hasArg(xlim)) {
         xlim  <- dots$xlim
       } else {
@@ -489,7 +498,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
         pie.colors.l  <- c(unique(pie.colors.l), combined.slice.color)
       }
       if (ncol.legend == "auto") {
-        if (withlegend == "bottom" || withlegend == TRUE || withlegend == "top") {
+        if (withlegend == "bottom" || withlegend == "top") {
           ncol.legend  <- ceiling(length(pie.colors) / 4)
         } else {
           ncol.legend  <- 1
@@ -499,7 +508,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
       # Slices not combined
     } else {
       if (ncol.legend == "auto") {
-        if (withlegend == "bottom" || withlegend == TRUE || withlegend == "top") {
+        if (withlegend == "bottom" || withlegend == "top") {
           ncol.legend  <- ceiling(ncol(x$emission_probs) / 4)
         } else {
           ncol.legend  <- 1

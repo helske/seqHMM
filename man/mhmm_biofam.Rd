@@ -150,9 +150,9 @@ data("mhmm_biofam")
 # (these are considerebly slower to compute)
 summary(mhmm_biofam$model)
 
-\dontrun{
-# Plotting the model for each cluster (change with Enter)
-plot(mhmm_biofam)
+if (interactive()) {
+  # Plotting the model for each cluster (change with Enter)
+  plot(mhmm_biofam)
 }
 
 }

@@ -232,4 +232,5 @@ ssplot <- function(x, hidden.paths = NULL,
   savepar <- par(no.readonly = TRUE)
   on.exit(savepar, add = TRUE)
   do.call(SSPlotter, args = sspargs)
+  par(savepar)
 }
