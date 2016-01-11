@@ -9,7 +9,7 @@ Bug Fixes:
 * Corrected mc_to_sc for single state models due to dimension dropping.
 * Corrected a bug in plot.hmm when layout = "vertical".
 * Fixed legend layout in plot.hmm.
-
+* EM with HMM using log-space produced error due to missing element in output of EM.
 
 
 
