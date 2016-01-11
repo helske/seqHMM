@@ -144,5 +144,5 @@ List log_EM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
   return List::create(Named("initialProbs") = wrap(exp(init)),
       Named("transitionMatrix") = wrap(exp(transition)),
       Named("emissionArray") = wrap(exp(emission)), Named("logLik") = sumlogLik,
-      Named("iterations") = iter, Named("change") = change);
+      Named("iterations") = iter, Named("change") = change, Named("error") = 0);
 }
