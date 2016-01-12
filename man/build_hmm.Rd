@@ -8,7 +8,7 @@ build_hmm(observations, transition_probs, emission_probs, initial_probs,
   state_names = NULL, channel_names = NULL)
 }
 \arguments{
-\item{observations}{TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
+\item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences, or a list of such objects (one for each channel).}
 
 \item{transition_probs}{A matrix of transition probabilities.}
@@ -26,9 +26,9 @@ also \code{NULL}, numbered states are used.}
 \item{channel_names}{A vector of optional names for the channels.}
 }
 \value{
-Object of class \code{hmm} with following elements:
+Object of class \code{hmm} with the following elements:
 \describe{
-   \item{\code{observations}}{State sequence object or a list of such containing the data.}
+   \item{\code{observations}}{State sequence object or a list of such objects containing the data.}
    \item{\code{transition_probs}}{A matrix of transition probabilities.}
    \item{\code{emission_probs}}{A matrix or a list of matrices of emission probabilities.}
    \item{\code{initial_probs}}{A vector of initial probabilities.}
@@ -46,13 +46,14 @@ Object of class \code{hmm} with following elements:
 Function \code{build_hmm} constructs a hidden Markov model object of class \code{hmm}.
 }
 \details{
-Returned model contains some attributes such as \code{nobs} and \code{df}
-which define the number of observations in the  model and number of estimable
-model parameters, which are used in computing BIC.
-When computing \code{nobs} for multichannel model, each observed value in
-single channel amounts to $1/C$ observation, i.e. fully observed
-time point for single sequences amounts to one observation. For degrees of
-freedom \code{df}, zero probabilities of initial model are defined as structural zeroes.
+The returned model contains some attributes such as \code{nobs} and \code{df},
+which define the number of observations in the  model and the number of estimable
+model parameters, used in computing BIC.
+When computing \code{nobs} for a multichannel model with \eqn{C} channels, 
+each observed value in a single channel amounts to \eqn{1/C} observation, 
+i.e. a fully observed time point for a single sequence amounts to one observation. 
+For the degrees of freedom \code{df}, zero probabilities of the initial model are 
+defined as structural zeroes.
 }
 \examples{
 
@@ -100,7 +101,7 @@ init_hmm_mvad <- build_hmm(
 # Multichannel data
 
 # Three-state three-channel hidden Markov model
-# See ?hmm_biofam for five-state version
+# See ?hmm_biofam for a five-state version
 
 data("biofam3c")
 
@@ -139,8 +140,9 @@ emiss_left <- emiss_left / rowSums(emiss_left)
 
 # Starting values for transition matrix
 trans <- matrix(c(0.9, 0.07, 0.03,
-                0,  0.9,  0.1,
-                0,    0,    1), nrow = 3, ncol = 3, byrow = TRUE)
+                  0,    0.9,  0.1,
+                  0,      0,    1), 
+  nrow = 3, ncol = 3, byrow = TRUE)
 
 # Starting values for initial state probabilities
 inits <- c(0.9, 0.09, 0.01)
@@ -154,6 +156,7 @@ init_hmm_bf <- build_hmm(
 
 }
 \seealso{
-\code{\link{fit_model}} for estimating model parameters.
+\code{\link{fit_model}} for estimating model parameters; and 
+  \code{\link{plot.hmm}} for plotting \code{hmm} objects.
 }
 

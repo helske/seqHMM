@@ -1,23 +1,30 @@
 #' Simulate Mixture Hidden Markov Models
 #' 
-#' Simulate sequences of observed and hidden states given parameters of a mixture 
+#' Simulate sequences of observed and hidden states given the parameters of a mixture 
 #' hidden Markov model.
 #'
-#' @param n_sequences Number of simulations.
+#' @param n_sequences The number of simulations.
 #' @param initial_probs A list containing vectors of initial state probabilities 
-#' for submodels of each cluster.
-#' @param transition_probs A list of matrices of transition probabilities for submodels of each cluster.
-#' @param emission_probs A list which contains matrices of emission probabilities or a list of such 
-#' objects (one for each channel) for submodels of each cluster. Note that the matrices must have 
-#' dimensions $s x m$ where $s$ is the number of hidden states and $m$ is the number of unique symbols 
-#' (observed states) in the data.
-#' @param sequence_length Length for simulated sequences.
-#' @param formula Covariates as an object of class \code{\link{formula}}, left side omitted.
-#' @param data An optional data frame, list or environment containing the variables in the model. 
-#' If not found in data, the variables are taken from \code{environment(formula)}.
-#' @param coefficients An optional $k x l$ matrix of regression coefficients for time-constant covariates 
-#' for mixture probabilities, where l is the number of clusters and k is the number of 
-#' covariates. A logit-link is used for mixture probabilities. The first column is set to zero.
+#' for the submodel of each cluster.
+#' @param transition_probs A list of matrices of transition probabilities 
+#'   for the submodel of each cluster.
+#' @param emission_probs A list which contains matrices of emission 
+#'   probabilities or a list of such objects (one for each channel) for 
+#'   the submodel of each cluster. Note that the matrices must have 
+#'   dimensions \eqn{s x m} where \eqn{s} is the number of hidden states 
+#'   and \eqn{m} is the number of unique symbols (observed states) in the 
+#'   data.
+#' @param sequence_length The length of the simulated sequences.
+#' @param formula Covariates as an object of class \code{\link{formula}}, 
+#'   left side omitted.
+#' @param data An optional data frame, a list or an environment containing 
+#'   the variables in the model. If not found in data, the variables are 
+#'   taken from \code{environment(formula)}.
+#' @param coefficients An optional \eqn{k x l} matrix of regression 
+#'   coefficients for time-constant covariates for mixture probabilities, 
+#'   where \eqn{l} is the number of clusters and \eqn{k} is the number of 
+#'   covariates. A logit-link is used for mixture probabilities. The first 
+#'   column is set to zero.
 #' 
 #' @return A list of state sequence objects of class \code{stslist}.
 #' @seealso \code{\link{build_mhmm}} and \code{\link{fit_model}} for building 
@@ -29,13 +36,16 @@
 #' @examples 
 #' emission_probs_1 <- matrix(c(0.75, 0.05, 0.25, 0.95), 2, 2)
 #' emission_probs_2 <- matrix(c(0.1, 0.8, 0.9, 0.2), 2, 2)
-#' colnames(emission_probs_1) <- colnames(emission_probs_2) <- c("heads", "tails")
-#' transition_probs_1 <- matrix(c(9, 0.1, 1, 9.9)/10, 2, 2)
-#' transition_probs_2 <- matrix(c(35, 1, 1, 35)/36, 2, 2)
+#' colnames(emission_probs_1) <- colnames(emission_probs_2) <- 
+#'   c("heads", "tails")
+#' 
+#' transition_probs_1 <- matrix(c(9, 0.1, 1, 9.9) / 10, 2, 2)
+#' transition_probs_2 <- matrix(c(35, 1, 1, 35) / 36, 2, 2)
 #' rownames(emission_probs_1) <- rownames(transition_probs_1) <- 
 #'   colnames(transition_probs_1) <- c("coin 1", "coin 2")
 #' rownames(emission_probs_2) <- rownames(transition_probs_2) <- 
 #'   colnames(transition_probs_2) <- c("coin 3", "coin 4")
+#'   
 #' initial_probs_1 <- c(1, 0)
 #' initial_probs_2 <- c(1, 0)
 #' 
@@ -57,7 +67,7 @@
 #'   data = dataf, coefficients = coefs)
 #' 
 #' ssplot(sim$observations, hidden.paths = sim$states, plots = "both", 
-#'   sortv = "mds.hidden", type = "I")
+#'   sortv = "from.start", sort.channel = 0, type = "I")
 #' 
 #' hmm <- build_mhmm(sim$observations, 
 #'   initial_probs = list(initial_probs_1, initial_probs_2), 
@@ -71,8 +81,9 @@
 #'
 #' paths <- hidden_paths(fit$model)
 #' 
-#' ssplot(list(estimates = paths, true = sim$states), sortv = "mds.obs", 
-#'   ylab = c("estimated paths", "true (simulated)"), type = "I")
+#' ssplot(list(estimates = paths, true = sim$states), sortv = "from.start", 
+#'   sort.channel = 2, ylab = c("estimated paths", "true (simulated)"), 
+#'   type = "I")
 #' 
 simulate_mhmm <- function(n_sequences, initial_probs, transition_probs, 
   emission_probs, sequence_length, formula, data, coefficients){

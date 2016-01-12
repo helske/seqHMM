@@ -12,8 +12,8 @@
 #' @param return_loglik Return the log-likelihood of the trimmed model together with
 #'   the model object. The default is \code{FALSE}.
 #' @param zerotol Values smaller than this are trimmed to zero.
-#' @param verbose Print results of trimming. Default is \code{TRUE}.
-#' @param ... Further parameters passed on to \code{fit_model}.
+#' @param verbose Print results of trimming. The default is \code{TRUE}.
+#' @param ... Further parameters passed on to \code{\link{fit_model}}.
 #'
 #' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building and fitting
 #' hidden Markov models; and \code{\link{hmm_biofam}} for information on the model used
@@ -22,9 +22,9 @@
 #' @examples
 #' data("hmm_biofam")
 #'
-#' # Testing if changing parameter values smaller than 1e-04 to zero
+#' # Testing if changing parameter values smaller than 1e-03 to zero
 #' # leads to improved log-likelihood.
-#' hmm_trim <- trim_model(hmm_biofam, zerotol = 1e-04, maxit = 10)
+#' hmm_trim <- trim_model(hmm_biofam, zerotol = 1e-03, maxit = 10)
 trim_model <- function(model, maxit = 0, return_loglik=FALSE, zerotol=1e-8, verbose = TRUE, ...){
 
   ll_original <- logLik(model)

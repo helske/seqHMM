@@ -1,5 +1,5 @@
 ssplotM <- function(x, hidden.paths, 
-                   plots, type, 
+                   plots, type, tlim,
                    sortv, sort.channel, dist.method,
                    with.missing,
                    title, title.n, cex.title, title.pos,

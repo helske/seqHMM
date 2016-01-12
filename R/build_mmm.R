@@ -1,10 +1,10 @@
 #' Build a Mixture Markov Model
 #'
 #' Function \code{build_mmm} is a shortcut for constructing a mixture Markov
-#' model as an restricted case of \code{mhmm} object.
+#' model as a restricted case of an \code{mhmm} object.
 #'
 #' @export
-#' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
+#' @param observations An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 #'   the sequences.
 #' @param transition_probs A list of matrices of transition
 #'   probabilities for submodels of each cluster.
@@ -15,10 +15,10 @@
 #' @param data An optional data frame, list or environment containing the variables
 #' in the model. If not found in data, the variables are taken from
 #' \code{environment(formula)}.
-#' @param coefficients An optional $k x l$ matrix of regression coefficients for time-constant
-#'   covariates for mixture probabilities, where $l$ is the number of clusters and $k$
-#'   is the number of covariates. A logit-link is used for mixture probabilities.
-#'   The first column is set to zero.
+#' @param coefficients An optional \eqn{k x l} matrix of regression coefficients for 
+#'   time-constant covariates for mixture probabilities, where \eqn{l} is the number 
+#'   of clusters and \eqn{k} is the number of covariates. A logit-link is used for
+#'   mixture probabilities. The first column is set to zero.
 #' @param cluster_names A vector of optional names for the clusters.
 #' @return Object of class \code{mhmm} with following elements:
 #' \describe{
@@ -41,9 +41,10 @@
 #'    \item{\code{n_clusters}}{Number of clusters.}
 #'}
 #' @seealso \code{\link{fit_model}} for estimating model parameters;
-#' \code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for
-#' reorganizing a MHMM into a list of separate hidden Markov models; and
-#' \code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
+#' \code{\link{summary.mhmm}} for a summary of a mixture model; 
+#' \code{\link{separate_mhmm}} for organizing an \code{mhmm} object into a list of 
+#' separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting 
+#' mixture models.
 #'
 #' @examples
 #'
@@ -68,6 +69,7 @@
 #' mmm_mvad <- fit_model(mmm_mvad)$model
 #'
 #' # Plot model (both clusters in the same plot)
+#' require(igraph)
 #' plot(mmm_mvad, interactive = FALSE,
 #'   # Modify legend position and properties
 #'   withlegend = "right", legend.prop = 0.3, cex.legend = 1.2,
@@ -77,6 +79,9 @@
 #'   edge.label = NA, edge.arrow.size = 0.8, edge.curved = 0.2,
 #'   # Modify vertex label positions (initial probabilities)
 #'   vertex.label.pos = c("left", "right", "right", "left", "left", "right"))
+#'   
+#' # Summary of the MMM
+#' summary(mmm_mvad)
 #'
 build_mmm <-
   function(observations,transition_probs,initial_probs,

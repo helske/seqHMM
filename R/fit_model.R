@@ -1,40 +1,39 @@
 #' Estimate Parameters of (Mixture) Hidden
 #' Markov Models and Their Restricted Variants
 #'
-#' Function \code{fit_model} estimates the parameters of (mixture) hidden
-#' Markov models and their restricted variants by maximimum likelihood.
+#' Function \code{fit_model} estimates the parameters of mixture hidden
+#' Markov models and its restricted variants using maximimum likelihood.
 #' Initial values for estimation are taken from the corresponding components
 #' of the model with preservation of original zero probabilities.
 #'
 #' @export
-#' @param model Object of class \code{hmm} or \code{mhmm}.
-#' @param em_step Logical, use EM algorithm at the start of parameter estimation.
-#'   The default is \code{TRUE}. Note that EM algorithm is usually faster than direct numerical optimization,
-#'   but the convergence can slow down near the optimum,
-#'   so it might be useful to switch to direct numerical maximization step.
-#' @param global_step Logical, use global optimization via
+#' @param model An object of class \code{hmm} or \code{mhmm}.
+#' @param em_step Logical. Whether or not to use the EM algorithm at the start 
+#'   of the parameter estimation. The default is \code{TRUE}.
+#' @param global_step Logical. Whether or not to use global optimization via
 #'   \code{\link{nloptr}} (possibly after the EM step). The default is \code{FALSE}.
-#'@param local_step Logical, use local optimization via
+#'@param local_step Logical. Whether or not to use local optimization via
 #'   \code{\link{nloptr}} (possibly after the EM and/or global steps). The default is \code{FALSE}.
-#' @param control_em Optional list of control parameters for for EM algorithm.
+#' @param control_em Optional list of control parameters for the EM algorithm.
 #'   Possible arguments are \describe{
-#'   \item{maxeval}{Maximum number of iterations, default is 1000.}
-#'   \item{print_level}{Level of printing. Possible values are 0
-#'   (prints nothing), 1 (prints information at start and end of algorithm),
+#'   \item{maxeval}{The maximum number of iterations, the default is 1000.}
+#'   \item{print_level}{The level of printing. Possible values are 0
+#'   (prints nothing), 1 (prints information at the start and the end of the algorithm),
 #'   2 (prints at every iteration),
 #'   and for mixture models 3 (print also during optimization of coefficients).}
 #'   \item{reltol}{Relative tolerance for convergence defined as
 #'   \eqn{(logLik_new - logLik_old)/(abs(logLik_old) + 0.1)}.
 #'   The default is 1e-12.}
-#'   \item{restart}{List containing options for possible EM restarts with following components:
+#'   \item{restart}{A list containing options for possible EM restarts with the 
+#'     following components:
 #'   \describe{
-#'   \item{times}{Number of restarts of EM algorithm using random initial values. The default is 0 i.e. no restarts. }
-#'   \item{transition}{Logical, should the initial transition probabilities be varied. The default is \code{TRUE}. }
-#'   \item{emission}{Logical, should the initial emission probabilities be varied. The default is \code{TRUE}. }
-#'   \item{sd}{Standard deviation for \code{rnorm} used in randomizing. The default is 0.25.}
+#'   \item{times}{Number of restarts of the EM algorithm using random initial values. The default is 0, i.e. no restarts. }
+#'   \item{transition}{Logical. Should the original transition probabilities be varied? The default is \code{TRUE}. }
+#'   \item{emission}{Logical. Should the original emission probabilities be varied? The default is \code{TRUE}. }
+#'   \item{sd}{Standard deviation for \code{rnorm} used in randomization. The default is 0.25.}
 #'   \item{maxeval}{Maximum number of iterations, the default is 100.}
 #'   \item{print_level}{Level of printing in restarted EM steps. The default is \code{control_em$print_level}. }
-#'   \item{reltol}{Relative tolerance for convergence in restarted EM steps. The default is 1e-8.
+#'   \item{reltol}{Relative tolerance for convergence at restarted EM steps. The default is 1e-8.
 #'   If the relative change of the final model of the restart phase is larger than the tolerance
 #'   for the original EM phase, the final model is re-estimated with the original \code{reltol}
 #'   and \code{maxeval} at the end of the EM step.}
@@ -53,7 +52,8 @@
 #'    \item{maxtime}{\code{60} (maximum time for global optimization. Set to 0 for unlimited time.)}
 #'}
 #' @param lb,ub Lower and upper bounds for parameters in Softmax parameterization.
-#' The default interval is [pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)], except for beta coefficients,
+#' The default interval is \eqn{[pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)]}, 
+#' except for beta coefficients,
 #' where the scale of covariates is taken into account.
 #' Note that it might still be a good idea to scale covariates around unit scale.
 #' Bounds are used only in the global optimization step.
@@ -70,7 +70,7 @@
 #' @param log_space Make computations using log-space instead of scaling for greater
 #' numerical stability at a cost of decreased computational performance. The default is \code{FALSE}.
 #' @param ... Additional arguments to \code{nloptr}.
-#' \describe{
+#' @return \describe{
 #'   \item{logLik}{Log-likelihood of the estimated model. }
 #'   \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
 #'   (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
@@ -81,7 +81,7 @@
 #'   }
 #' @seealso \code{\link{build_hmm}},  \code{\link{build_mhmm}},
 #' \code{\link{build_mm}},  \code{\link{build_mmm}}, and  \code{\link{build_lcm}}
-#' for building different types of models; \code{\link{summary.mhmm}}
+#'   for constructing different types of models; \code{\link{summary.mhmm}}
 #'   for a summary of a MHMM; \code{\link{separate_mhmm}} for reorganizing a MHMM into
 #'   a list of separate hidden Markov models; \code{\link{plot.hmm}} and \code{\link{plot.mhmm}}
 #'   for plotting model objects; and \code{\link{ssplot}} and \code{\link{mssplot}} for plotting
@@ -93,10 +93,11 @@
 #'   in a latter, except for some of global optimization algorithms (such as MLSL and StoGO)
 #'   which only use initial values for setting up the boundaries for the optimization.
 #'
-#'   It is possible to rerun EM algorithm automatically using random starting
+#'   It is possible to rerun the EM algorithm automatically using random starting
 #'   values based on the first run of EM. Number of restarts is defined by
-#'   argument \code{restart} in \code{control_em}. As EM algorithm is relatively fast, this method
-#'   might be preferred option compared to proper global optimization strategy of step 2.
+#'   the \code{restart} argument in \code{control_em}. As the EM algorithm is 
+#'   relatively fast, this method might be preferred option compared to the proper 
+#'   global optimization strategy of step 2.
 #'
 #'   The default global optimization method (triggered via \code{global_step = TRUE}) is
 #'   the multilevel single-linkage method (MLSL) with the LDS modification (\code{NLOPT_GD_MLSL_LDS} as
@@ -171,7 +172,7 @@
 #' data("hmm_mvad")
 #'
 #' # Markov model
-#'
+#' 
 #' set.seed(123)
 #' init_mm_mvad <- build_mm(observations = mvad_seq,
 #'   transition_probs = simulate_transition_probs(6),
@@ -179,6 +180,7 @@
 #'
 #' mm_mvad <- fit_model(init_mm_mvad)$model
 #'
+#' # Comparing likelihoods, MM fits better
 #' logLik(hmm_mvad)
 #' logLik(mm_mvad)
 #'
@@ -276,7 +278,9 @@
 #'    init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE, lb = -50, ub = 50,
 #' control_global = list(algorithm = "NLOPT_GD_STOGO", maxeval = 2500, maxtime = 0), threads = 1)
 #' hmm_5$logLik # -21675.4
-
+#' 
+#' ##############################################################
+#' 
 #' # Mixture HMM
 #'
 #' data("biofam3c")

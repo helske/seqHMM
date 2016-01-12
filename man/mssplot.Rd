@@ -6,7 +6,7 @@
 Paths for Mixture Hidden Markov Models}
 \usage{
 mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
-  plots = "obs", type = "d", sortv = NULL, sort.channel = 1,
+  plots = "obs", type = "d", tlim = 0, sortv = NULL, sort.channel = 1,
   dist.method = "OM", with.missing = FALSE, title = NA, title.n = TRUE,
   cex.title = 1, title.pos = 1, withlegend = "auto",
   ncol.legend = "auto", with.missing.legend = "auto", legend.prop = 0.3,
@@ -32,6 +32,10 @@ or \code{"both"} for observations and hidden paths together.}
 \item{type}{The type of the plot. Available types are \code{"I"} for index
 plots and \code{"d"} for state distribution plots (the default). See
 \code{\link{seqplot}} for details.}
+
+\item{tlim}{Indexes of the subjects to be plotted (the default is 0, 
+i.e. all subjects are plotted). For example, \code{tlim = 1:10} plots
+the first ten subjects in data.}
 
 \item{sortv}{A sorting variable or a sort method (one of \code{"from.start"},
 \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.hidden"}) for
@@ -150,7 +154,7 @@ of the font, values greater than 1 will increase the size.}
 tick labels. The default value is 1. Values lesser than 1 will reduce the size of
 the font, values greater than 1 will increase the size.}
 
-\item{...}{Other arguments such as \code{yaxis} to be passed on to
+\item{...}{Other arguments to be passed on to
 \code{\link[TraMineR]{seqplot}}.}
 }
 \description{

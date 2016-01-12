@@ -7,7 +7,7 @@
 build_mm(observations, transition_probs, initial_probs)
 }
 \arguments{
-\item{observations}{TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
+\item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences.}
 
 \item{transition_probs}{A matrix of transition probabilities. Transition probabilities should follow the
@@ -33,10 +33,11 @@ Object of class \code{hmm} with following elements:
 }
 }
 \description{
-Function \code{build_mm} is a shortcut for constructing a Markov model as an restricted case of \code{hmm} object.
+Function \code{build_mm} is a shortcut for constructing a Markov model as a restricted 
+  case of an \code{hmm} object.
 }
 \examples{
-
+# Construct sequence data
 data("mvad", package = "TraMineR")
 
 mvad_alphabet <-
@@ -47,13 +48,15 @@ mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
 mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet,
   states = mvad_scodes, labels = mvad_labels, xtstep = 6)
 
+# Define a color palette for the sequence data
 attr(mvad_seq, "cpal") <- colorpalette[[6]]
 
-
+# Initialize a Markov model
 init_mm_mvad <- build_mm(observations = mvad_seq,
   transition_probs = simulate_transition_probs(6),
   initial_probs = rep(1/6,6))
 
+# Fit the model
 mm_mvad <- fit_model(init_mm_mvad)
 
 }

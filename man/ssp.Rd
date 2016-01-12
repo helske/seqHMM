@@ -5,14 +5,15 @@
 \title{Define Arguments for Plotting Multichannel Sequences and/or Most Probable
 Paths from Hidden Markov Models}
 \usage{
-ssp(x, hidden.paths = NULL, plots = "obs", type = "d", sortv = NULL,
-  sort.channel = 1, dist.method = "OM", with.missing = FALSE,
-  title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
-  withlegend = "auto", ncol.legend = "auto", with.missing.legend = "auto",
-  legend.prop = 0.3, cex.legend = 1, hidden.states.colors = "auto",
-  hidden.states.labels = "auto", xaxis = TRUE, xlab = NA, xtlab = NULL,
-  xlab.pos = 1, ylab = "auto", hidden.states.title = "Hidden states",
-  yaxis = FALSE, ylab.pos = "auto", cex.lab = 1, cex.axis = 1, ...)
+ssp(x, hidden.paths = NULL, plots = "obs", type = "d", tlim = 0,
+  sortv = NULL, sort.channel = 1, dist.method = "OM",
+  with.missing = FALSE, title = NA, title.n = TRUE, cex.title = 1,
+  title.pos = 1, withlegend = "auto", ncol.legend = "auto",
+  with.missing.legend = "auto", legend.prop = 0.3, cex.legend = 1,
+  hidden.states.colors = "auto", hidden.states.labels = "auto",
+  xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1, ylab = "auto",
+  hidden.states.title = "Hidden states", yaxis = FALSE, ylab.pos = "auto",
+  cex.lab = 1, cex.axis = 1, ...)
 }
 \arguments{
 \item{x}{Either a hidden Markov model object of class \code{hmm} or a state
@@ -30,10 +31,14 @@ or \code{"both"} for observations and hidden paths together.}
 plots and \code{"d"} for state distribution plots (the default). See
 \code{\link{seqplot}} for details.}
 
+\item{tlim}{Indexes of the subjects to be plotted (the default is 0, 
+i.e. all subjects are plotted). For example, \code{tlim = 1:10} plots
+the first ten subjects in data.}
+
 \item{sortv}{A sorting variable or a sort method (one of \code{"from.start"},
 \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.hidden"}) for
 \code{type = "I"}. The value \code{"mds.hidden"} is only available when
-\code{which = "both"} and \code{which = "hidden.paths"}. Options \code{"mds.obs"} and
+hidden paths are available. Options \code{"mds.obs"} and
 \code{"mds.hidden"} automatically arrange the sequences according to the
 scores of multidimensional scaling (using \code{\link{cmdscale}}) for the
 observed data or hidden states paths.
@@ -61,8 +66,9 @@ distribution plots (\code{type = "d"}). The default is \code{FALSE}.}
 \code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE}
 prints no title, even when \code{title.n = TRUE}.}
 
-\item{title.n}{Controls whether the number of subjects is printed in the
-title of the plot. The default is \code{TRUE}: n is plotted if \code{title}
+\item{title.n}{Controls whether the number of subjects (in the 
+first channel) is printed in the title of the plot. The default is 
+\code{TRUE}: n is plotted if \code{title}
 is anything but \code{FALSE}.}
 
 \item{cex.title}{Expansion factor for setting the size of the font for the
@@ -81,7 +87,8 @@ are \code{"bottom"},
 two create a combined legend in the selected position. \code{FALSE} prints no legend.}
 
 \item{ncol.legend}{(A vector of) the number of columns for the legend(s). The
-default \code{"auto"} creates one column for each legend.}
+default \code{"auto"} determines number of columns depending on the position of
+the legend.}
 
 \item{with.missing.legend}{If set to \code{"auto"} (the default), a legend
 for the missing state is added automatically if one or more of the
@@ -147,8 +154,7 @@ of the font, values greater than 1 will increase the size.}
 tick labels. The default value is 1. Values lesser than 1 will reduce the size of
 the font, values greater than 1 will increase the size.}
 
-\item{...}{Other arguments such as \code{yaxis} to be passed on to
-\code{\link[TraMineR]{seqplot}}.}
+\item{...}{Other arguments to be passed on to \code{\link[TraMineR]{seqplot}}.}
 }
 \value{
 Object of class \code{ssp}.
@@ -158,9 +164,6 @@ Function \code{ssp} defines the arguments for plotting with
 \code{\link{plot.ssp}} or \code{\link{gridplot}}.
 }
 \examples{
-
-\dontrun{
-
 data("biofam3c")
 
 ## Building sequence objects
@@ -180,6 +183,7 @@ ssp1 <- ssp(list("Parenthood" = child.seq, "Marriage" = marr.seq,
 # Plotting ssp1
 plot(ssp1)
 
+\dontrun{
 # Defining the plot for sequence index plots of observations
 ssp2 <- ssp(
   list(child.seq, marr.seq, left.seq), type = "I", plots = "obs",

@@ -21,11 +21,15 @@
 #' @param type The type of the plot. Available types are \code{"I"} for sequence index
 #'   plots and \code{"d"} for state distribution plots (the default). See
 #'   \code{\link{seqplot}} for details.
+#'  
+#' @param tlim Indexes of the subjects to be plotted (the default is 0, 
+#' i.e. all subjects are plotted). For example, \code{tlim = 1:10} plots
+#' the first ten subjects in data.
 #'
 #' @param sortv A sorting variable or a sort method (one of \code{"from.start"},
 #'   \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.hidden"}) for
 #'   \code{type = "I"}. The value \code{"mds.hidden"} is only available when
-#'   \code{which = "both"} and \code{which = "hidden.paths"}. Options \code{"mds.obs"} and
+#'   hidden paths are available. Options \code{"mds.obs"} and
 #'   \code{"mds.hidden"} automatically arrange the sequences according to the
 #'   scores of multidimensional scaling (using \code{\link{cmdscale}}) for the
 #'   observed data or hidden states paths.
@@ -53,9 +57,9 @@
 #'   \code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE}
 #'   prints no title, even when \code{title.n = TRUE}.
 #'
-#' @param title.n Controls whether the number of subjects is printed in the
-#'   title of the plot. The default is \code{TRUE}: n is plotted if \code{title}
-#'   is anything but \code{FALSE}.
+#' @param title.n Controls whether the number of subjects (in the 
+#'   first channel) is printed in the title of the plot. The default is 
+#'   \code{TRUE}: n is plotted if \code{title} is anything but \code{FALSE}.
 #'
 #' @param cex.title Expansion factor for setting the size of the font for the
 #'   title. The default value is 1. Values lesser than 1 will reduce the size of
@@ -73,7 +77,8 @@
 #'   two create a combined legend in the selected position. \code{FALSE} prints no legend.
 #'
 #' @param ncol.legend (A vector of) the number of columns for the legend(s). The
-#'   default \code{"auto"} creates one column for each legend.
+#'   default \code{"auto"} determines number of columns depending on the position of
+#'   the legend.
 #'
 #' @param with.missing.legend If set to \code{"auto"} (the default), a legend
 #'   for the missing state is added automatically if one or more of the
@@ -139,33 +144,32 @@
 #'   tick labels. The default value is 1. Values lesser than 1 will reduce the size of
 #'   the font, values greater than 1 will increase the size.
 #'
-#' @param ... Other arguments such as \code{yaxis} to be passed on to
+#' @param ... Other arguments to be passed on to
 #'   \code{\link[TraMineR]{seqplot}}.
 #'
 #' @examples
-#' \dontrun{
-#'
 #' data("biofam3c")
 #'
 #' # Creating sequence objects
-#' child.seq <- seqdef(biofam3c$children, start = 15)
-#' marr.seq <- seqdef(biofam3c$married, start = 15)
-#' left.seq <- seqdef(biofam3c$left, start = 15)
+#' child_seq <- seqdef(biofam3c$children, start = 15)
+#' marr_seq <- seqdef(biofam3c$married, start = 15)
+#' left_seq <- seqdef(biofam3c$left, start = 15)
 #'
 #' ## Choosing colors
-#' attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
-#' attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-#' attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+#' attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
+#' attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+#' attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 #'
 #'
 #' # Plotting state distribution plots of observations
-#' ssplot(list("Children" = child.seq, "Marriage" = marr.seq,
-#' "Residence" = left.seq))
-#'
+#' ssplot(list("Children" = child_seq, "Marriage" = marr_seq,
+#' "Residence" = left_seq))
+#' 
+#' \dontrun{
 #' # Plotting sequence index plots of observations
 #' ssplot(
-#'   list(child.seq, marr.seq, left.seq), type = "I",
-#'   # Sorting subjects according to the beginning of the 2nd channel (marr.seq)
+#'   list(child_seq, marr_seq, left_seq), type = "I",
+#'   # Sorting subjects according to the beginning of the 2nd channel (marr_seq)
 #'   sortv = "from.start", sort.channel = 2,
 #'   # Controlling the size, positions, and names for channel labels
 #'   ylab.pos = c(1, 2, 1), cex.lab = 1, ylab = c("Children", "Married", "Residence"),
@@ -190,13 +194,13 @@
 #'
 #' # Computing the most probable paths of hidden states
 #' hidden.paths <- hidden_paths(hmm_biofam)
-#' hidden.paths.seq <- seqdef(hidden.paths, labels = paste("Hidden state", 1:5))
+#' hidden.paths_seq <- seqdef(hidden.paths, labels = paste("Hidden state", 1:5))
 #'
 #' # Plotting observations and hidden state paths
 #' ssplot(
 #'   hmm_biofam, type = "I", plots = "hidden.paths",
 #'   # Sequence object of most probable paths
-#'   hidden.paths = hidden.paths.seq,
+#'   hidden.paths = hidden.paths_seq,
 #'   # Sorting according to the end of hidden state paths
 #'   sortv = "from.end", sort.channel = 0,
 #'   # Contolling legend position, type, and proportion
@@ -213,7 +217,7 @@
 
 
 ssplot <- function(x, hidden.paths = NULL,
-                plots = "obs", type = "d",
+                plots = "obs", type = "d", tlim = 0,
                 sortv = NULL, sort.channel = 1, dist.method = "OM",
                 with.missing = FALSE,
                 title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,

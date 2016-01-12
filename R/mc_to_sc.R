@@ -1,34 +1,43 @@
-#' Transform Multichannel Hidden Markov Model to Single Channel Representation
+#' Transform a Multichannel Hidden Markov Model into a Single Channel Representation
 #'
-#' Transforms data and parameters of multichannel model to single channel model.
-#' Observed states (symbols) are combined and parameters multiplied across the
-#' channels.
+#' Transforms data and parameters of a multichannel model into a single 
+#' channel model. Observed states (symbols) are combined and parameters 
+#' multiplied across channels.
 #'
-#' Note that in case of no missing observations, the log-likelihood of the original
-#' and transformed models are identical but
-#' the AIC and BIC can be different as the model attributes \code{nobs} and
-#' \code{df} are recomputed based on the single channel representation.
+#' Note that in case of no missing observations, the log-likelihood of 
+#' the original and transformed models are identical but the AIC and BIC 
+#' can be different as the model attribute \code{df} is recomputed based 
+#' on the single channel representation.
 #'
 #'
 #' @export
-#' @param model Object of class \code{hmm} or \code{mhmm}.
-#' @param combine_missing Controls whether combined states of observations are
-#'   coded missing (\code{NA}) if some of the channels include missing information.
-#'   Defaults to \code{TRUE}.
+#' @param model An object of class \code{hmm} or \code{mhmm}.
+#' @param combine_missing Controls whether combined states of observations 
+#'   at time \eqn{t} are coded missing (coded with \eqn{*} in \code{stslist}s) 
+#'   if one or more of the channels include missing information at time \eqn{t}. 
+#'   Defaults to \code{TRUE}. \code{FALSE} keeps missing states
+#'   as they are, producing more states in data; e.g. \eqn{single/childless/*} 
+#'   where the observation in channel 3 is missing. 
 #' @param all_combinations Controls whether all possible combinations of
 #'   observed states are included in the single channel representation or only
 #'   combinations that are found in the data. Defaults to \code{FALSE}, i.e.
 #'   only actual observations are included.
 #'
+#' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building and
+#'   fitting Hidden Markov models; and \code{\link{hmm_biofam}} for information on
+#'   the model used in the example.
+#'   
 #' @examples
 #' # Loading a hidden Markov model of the biofam data (hmm object)
 #' data("hmm_biofam")
-#' logLik(hmm_biofam)
+#' 
+#' # Convert the multichannel model to a single-channel model
 #' sc <- mc_to_sc(hmm_biofam)
+#' 
+#' # Likelihoods of the single-channel and the multichannel model are the same
+#' # (Might not be true if there are missing observations)
 #' logLik(sc)
-#' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building and
-#'   fitting Hidden Markov models; and \code{\link{hmm_biofam}} for information on
-#'   the model used in the example;.
+#' logLik(hmm_biofam)
 
 mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
 
@@ -196,17 +205,17 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
   attr(modelx$observations, "cpal") <- cpal[alph %in% alphabet(modelx$observations)]
 
 
-  attr(modelx$observations, "nobs") <-
+  attr(modelx, "nobs") <-
     sum(!(modelx$observations == attr(modelx$observations, "nr") |
         modelx$observations == attr(modelx$observations, "void") |
         is.na(modelx$observations)))
   if (inherits(model, "hmm")) {
-    attr(modelx$observations, "df") <-
+    attr(modelx, "df") <-
       sum(modelx$initial_probs > 0) - 1 + sum(modelx$transition_probs > 0) -
       modelx$n_states +
       sum(unlist(modelx$emission_probs) > 0) - modelx$n_states
   } else {
-    attr(modelx$observations, "df") <-
+    attr(modelx, "df") <-
       sum(unlist(modelx$initial_probs) > 0) - modelx$n_clusters +
       sum(unlist(modelx$transition_probs) > 0) - sum(modelx$n_states) +
       sum(unlist(modelx$emission_probs) > 0) - sum(modelx$n_states) +

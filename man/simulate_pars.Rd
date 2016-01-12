@@ -30,4 +30,9 @@ These are helper functions for quick construction of initial values for various
 model building functions. 
 Mostly useful for global optimization algorithms which do not depend on initial values.
 }
+\seealso{
+\code{\link{build_hmm}}, \code{\link{build_mhmm}},
+  \code{\link{build_mm}}, \code{\link{build_mmm}}, and  \code{\link{build_lcm}}
+  for constructing different types of models.
+}
 

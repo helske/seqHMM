@@ -2,36 +2,37 @@
 #'
 #' Function \code{build_mhmm} constructs a mixture hidden Markov model object of class \code{mhmm}.
 #'
-#' Returned model contains some attributes such as \code{nobs} and \code{df}
-#' which define the number of observations in the  model and number of estimable
-#' model parameters, which are used in computing BIC.
-#' When computing \code{nobs} for multichannel model, each observed value in
-#' single channel amounts to $1/C$ observation, i.e. fully observed
-#' time point for single sequences amounts to one observation. For degrees of
-#' freedom \code{df}, zero probabilities of initial model are defined as structural zeroes.
-#'
+#' The returned model contains some attributes such as \code{nobs} and \code{df},
+#' which define the number of observations in the  model and the number of estimable
+#' model parameters, used in computing BIC.
+#' When computing \code{nobs} for a multichannel model with \eqn{C} channels, 
+#' each observed value in a single channel amounts to \eqn{1/C} observation, 
+#' i.e. a fully observed time point for a single sequence amounts to one observation. 
+#' For the degrees of freedom \code{df}, zero probabilities of the initial model are 
+#' defined as structural zeroes.
+#' 
 #' @export
-#' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
+#' @param observations An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 #'   the sequences, or a list of such objects (one for each channel).
 #' @param transition_probs A list of matrices of transition
-#'   probabilities for submodels of each cluster.
+#'   probabilities for the submodel of each cluster.
 #' @param emission_probs A list which contains matrices of emission probabilities or
-#'   a list of such objects (one for each channel) for submodels of each cluster.
-#'   Note that the matrices must have dimensions m x s where m is the number of
-#'   hidden states and s is the number of unique symbols (observed states) in the
+#'   a list of such objects (one for each channel) for the submodel of each cluster.
+#'   Note that the matrices must have dimensions \eqn{m x s} where \eqn{m} is the number of
+#'   hidden states and \eqn{s} is the number of unique symbols (observed states) in the
 #'   data. Emission probabilities should follow the ordering of the alphabet of
 #'   observations (\code{alphabet(observations)}, returned as \code{symbol_names}).
 #' @param initial_probs A list which contains vectors of initial state
-#'   probabilities for submodels of each cluster.
+#'   probabilities for the submodel of each cluster.
 #' @param formula Covariates as an object of class \code{\link{formula}},
 #' left side omitted.
 #' @param data An optional data frame, list or environment containing the variables
 #' in the model. If not found in data, the variables are taken from
 #' \code{environment(formula)}.
-#' @param coefficients An optional $k x l$ matrix of regression coefficients for time-constant
-#'   covariates for mixture probabilities, where $l$ is the number of clusters and $k$
-#'   is the number of covariates. A logit-link is used for mixture probabilities.
-#'   The first column is set to zero.
+#' @param coefficients An optional \eqn{k x l} matrix of regression coefficients for 
+#'   time-constant covariates for mixture probabilities, where \eqn{l} is the number 
+#'   of clusters and \eqn{k} is the number of covariates. A logit-link is used for
+#'   mixture probabilities. The first column is set to zero.
 #' @param cluster_names A vector of optional names for the clusters.
 #' @param state_names A list of optional labels for the hidden states. If \code{NULL},
 #' the state names are taken as row names of transition matrices. If this is also \code{NULL},
@@ -67,17 +68,17 @@
 #' data("biofam3c")
 #'
 #' ## Building sequence objects
-#' marr.seq <- seqdef(biofam3c$married, start = 15,
+#' marr_seq <- seqdef(biofam3c$married, start = 15,
 #'   alphabet = c("single", "married", "divorced"))
-#' child.seq <- seqdef(biofam3c$children, start = 15,
+#' child_seq <- seqdef(biofam3c$children, start = 15,
 #'   alphabet = c("childless", "children"))
-#' left.seq <- seqdef(biofam3c$left, start = 15,
+#' left_seq <- seqdef(biofam3c$left, start = 15,
 #'   alphabet = c("with parents", "left home"))
 #'
 #' ## Choosing colors
-#' attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-#' attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
-#' attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+#' attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+#' attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
+#' attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 #'
 #' ## Starting values for emission probabilities
 #'
@@ -183,7 +184,7 @@
 #'
 #' # Build mixture HMM
 #' init_mhmm_bf <- build_mhmm(
-#'   observations = list(marr.seq, child.seq, left.seq),
+#'   observations = list(marr_seq, child_seq, left_seq),
 #'   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
 #'   transition_probs = list(A1, A1, A2),
 #'   emission_probs = list(list(B1_marr, B1_child, B1_left),

@@ -25,12 +25,12 @@ A list of state sequence objects of class \code{stslist}.
 Simulate sequences of observed and hidden states given parameters of a hidden Markov model.
 }
 \examples{
-# Parameters for a HMM
+# Parameters for the HMM
 emission_probs <- matrix(c(0.5, 0.2, 0.5, 0.8), 2, 2)
 transition_probs <- matrix(c(5/6, 1/6, 1/6, 5/6), 2, 2)
 initial_probs <- c(1, 0)
 
-# Setting seed for simulation
+# Setting the seed for simulation
 set.seed(1)
 
 # Simulating sequences

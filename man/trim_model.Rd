@@ -20,9 +20,9 @@ the model object. The default is \code{FALSE}.}
 
 \item{zerotol}{Values smaller than this are trimmed to zero.}
 
-\item{verbose}{Print results of trimming. Default is \code{TRUE}.}
+\item{verbose}{Print results of trimming. The default is \code{TRUE}.}
 
-\item{...}{Further parameters passed on to \code{fit_model}.}
+\item{...}{Further parameters passed on to \code{\link{fit_model}}.}
 }
 \description{
 Function \code{trim_model} tries to set small insignificant probabilities to zero
@@ -31,9 +31,9 @@ without decreasing the likelihood.
 \examples{
 data("hmm_biofam")
 
-# Testing if changing parameter values smaller than 1e-04 to zero
+# Testing if changing parameter values smaller than 1e-03 to zero
 # leads to improved log-likelihood.
-hmm_trim <- trim_model(hmm_biofam, zerotol = 1e-04, maxit = 10)
+hmm_trim <- trim_model(hmm_biofam, zerotol = 1e-03, maxit = 10)
 }
 \seealso{
 \code{\link{build_hmm}} and \code{\link{fit_model}} for building and fitting

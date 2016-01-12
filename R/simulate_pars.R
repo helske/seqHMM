@@ -13,6 +13,9 @@
 #' @param diag_c In case of left right model, a constant value to be added to diagonal of transition matrices before scaling.
 #' @param n_symbols Number of distinct symbols in each channel.
 #' @rdname simulate_pars
+#' @seealso \code{\link{build_hmm}}, \code{\link{build_mhmm}},
+#'   \code{\link{build_mm}}, \code{\link{build_mmm}}, and  \code{\link{build_lcm}}
+#'   for constructing different types of models.
 simulate_initial_probs <- function(n_states, n_clusters = 1){
   
   n_states <- rep(n_states, length = n_clusters)

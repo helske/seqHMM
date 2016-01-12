@@ -21,6 +21,10 @@
 #'
 #' # Separate models for clusters
 #' sep_hmm <- separate_mhmm(mhmm_biofam)
+#' 
+#' # Plotting the model for the first cluster
+#' plot(sep_hmm[[1]])
+
 
 separate_mhmm <- function(model){
 

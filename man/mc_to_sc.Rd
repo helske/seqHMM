@@ -2,16 +2,19 @@
 % Please edit documentation in R/mc_to_sc.R
 \name{mc_to_sc}
 \alias{mc_to_sc}
-\title{Transform Multichannel Hidden Markov Model to Single Channel Representation}
+\title{Transform a Multichannel Hidden Markov Model into a Single Channel Representation}
 \usage{
 mc_to_sc(model, combine_missing = TRUE, all_combinations = FALSE)
 }
 \arguments{
-\item{model}{Object of class \code{hmm} or \code{mhmm}.}
+\item{model}{An object of class \code{hmm} or \code{mhmm}.}
 
-\item{combine_missing}{Controls whether combined states of observations are
-coded missing (\code{NA}) if some of the channels include missing information.
-Defaults to \code{TRUE}.}
+\item{combine_missing}{Controls whether combined states of observations 
+at time \eqn{t} are coded missing (coded with \eqn{*} in \code{stslist}s) 
+if one or more of the channels include missing information at time \eqn{t}. 
+Defaults to \code{TRUE}. \code{FALSE} keeps missing states
+as they are, producing more states in data; e.g. \eqn{single/childless/*} 
+where the observation in channel 3 is missing.}
 
 \item{all_combinations}{Controls whether all possible combinations of
 observed states are included in the single channel representation or only
@@ -19,26 +22,31 @@ combinations that are found in the data. Defaults to \code{FALSE}, i.e.
 only actual observations are included.}
 }
 \description{
-Transforms data and parameters of multichannel model to single channel model.
-Observed states (symbols) are combined and parameters multiplied across the
-channels.
+Transforms data and parameters of a multichannel model into a single 
+channel model. Observed states (symbols) are combined and parameters 
+multiplied across channels.
 }
 \details{
-Note that in case of no missing observations, the log-likelihood of the original
-and transformed models are identical but
-the AIC and BIC can be different as the model attributes \code{nobs} and
-\code{df} are recomputed based on the single channel representation.
+Note that in case of no missing observations, the log-likelihood of 
+the original and transformed models are identical but the AIC and BIC 
+can be different as the model attribute \code{df} is recomputed based 
+on the single channel representation.
 }
 \examples{
 # Loading a hidden Markov model of the biofam data (hmm object)
 data("hmm_biofam")
-logLik(hmm_biofam)
+
+# Convert the multichannel model to a single-channel model
 sc <- mc_to_sc(hmm_biofam)
+
+# Likelihoods of the single-channel and the multichannel model are the same
+# (Might not be true if there are missing observations)
 logLik(sc)
+logLik(hmm_biofam)
 }
 \seealso{
 \code{\link{build_hmm}} and \code{\link{fit_model}} for building and
   fitting Hidden Markov models; and \code{\link{hmm_biofam}} for information on
-  the model used in the example;.
+  the model used in the example.
 }
 

@@ -2,27 +2,31 @@
 % Please edit documentation in R/posterior_probs.R
 \name{posterior_probs}
 \alias{posterior_probs}
-\title{Posterior Probabilities for (Mixture) Hidden Markov Model}
+\title{Posterior Probabilities for (Mixture) Hidden Markov Models}
 \usage{
 posterior_probs(model, log_space = FALSE)
 }
 \arguments{
 \item{model}{A (mixture) hidden Markov model of class \code{hmm} or \code{mhmm}.}
 
-\item{log_space}{Compute posterior probabilities in logarithmic scale. Default is \code{FALSE}.}
+\item{log_space}{Compute posterior probabilities in logarithmic scale. The default is \code{FALSE}.}
 }
 \value{
 Posterior probabilities. In case of multiple observations,
-these are computed independently for each sequence.
+these are computed independentlsy for each sequence.
 }
 \description{
 Function \code{posterior_probs} computes the posterior probabilities of hidden states of
 a (mixture) hidden Markov model.
 }
 \examples{
+# Load a pre-defined MHMM
+data("mhmm_biofam")
 
+# Compute posterior probabilities
 pb <- posterior_probs(mhmm_biofam)
-# locally most probable states for first subject:
-pb[,,1]
+
+# Locally most probable states for the first subject:
+pb[, , 1]
 }
 

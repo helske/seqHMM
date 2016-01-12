@@ -4,14 +4,10 @@
 \alias{alphabet}
 \alias{seqdef}
 \alias{seqstatf}
-\title{Imported Functions from \code{TraMineR}
- 
-Imported functions for convinience. For details, see corresponding help pages of \code{\link[TraMineR]{seqstatf}},
-\code{\link[TraMineR]{alphabet}} and \code{\link[TraMineR]{seqdef}}.}
+\title{Imported Functions from \code{TraMineR}}
 \description{
-Imported Functions from \code{TraMineR}
- 
-Imported functions for convinience. For details, see corresponding help pages of \code{\link[TraMineR]{seqstatf}},
-\code{\link[TraMineR]{alphabet}} and \code{\link[TraMineR]{seqdef}}.
+Imported functions for convinience. For details, see 
+  the corresponding help pages of \code{\link[TraMineR]{seqstatf}},
+  \code{\link[TraMineR]{alphabet}} and \code{\link[TraMineR]{seqdef}}.
 }
 

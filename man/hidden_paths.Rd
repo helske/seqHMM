@@ -7,23 +7,28 @@
 hidden_paths(model)
 }
 \arguments{
-\item{model}{Hidden Markov model of class \code{hmm} or
-mixture HMM of class \code{mhmm}.}
+\item{model}{A hidden Markov model of class \code{hmm} or
+a mixture HMM of class \code{mhmm}.}
 }
 \value{
-Most probable paths of hidden states as an \code{stslist} object
-(see \code{\link{seqdef}}). The log-probability included as an attribute \code{log_prob}.
+The most probable paths of hidden states as an \code{stslist} object
+(see \code{\link{seqdef}}). The log-probability is included as an attribute \code{log_prob}.
 }
 \description{
 Function \code{hidden_paths} computes the most probable path of
 hidden states of a (mixture) hidden Markov model given the observed sequences.
 }
 \examples{
+# Load a pre-defined HMM
+data("hmm_biofam")
 
+# Compute the most probable hidden state paths given the data and the model
 mpp <- hidden_paths(hmm_biofam)
+
+# Plot hidden paths for the first 100 individuals
 ssplot(mpp, type = "I", tlim = 1:100)
 
-# because the model structure is so sparse that the posterior probabilities are 
+# Because the model structure is so sparse that the posterior probabilities are 
 # mostly peaked to single state at each time point, the joint probability of 
 # observations and most probable paths of hidden states is almost identical to 
 # log-likelihood:
@@ -35,6 +40,6 @@ logLik(hmm_biofam)
 \seealso{
 \code{\link{hmm_biofam}} for information on the model used in the example;
   and \code{\link{seqIplot}}, \code{\link{ssplot}}, or \code{\link{mssplot}}
-  for plotting the most probable paths of hidden states.
+  for plotting hidden paths.
 }
 

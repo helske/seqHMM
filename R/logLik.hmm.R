@@ -4,14 +4,15 @@
 #'
 #'
 #' @export
-#' @param object Hidden Markov model of class \code{hmm}.
+#' @param object A  hidden Markov model of class \code{hmm}.
 #' @param partials Return a vector containing the individual contributions of each sequence to the total log-likelihood. 
-#' Default is \code{FALSE}, which returns the sum of all log-likelihood components.
-#' @param threads Number of threads to use in parallel computing. Default is 1.
+#'   The default is \code{FALSE}, which returns the sum of all log-likelihood components.
+#' @param threads Number of threads to use in parallel computing. The default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater 
-#' numerical stability at cost of decreased computational performance. Default is \code{FALSE}.
+#' numerical stability at the cost of decreased computational performance. 
+#'   The default is \code{TRUE}.
 #' @param ... Ignored.
-#' @return Log-likelihood of hidden Markov model. This is an object of class 
+#' @return Log-likelihood of the hidden Markov model. This is an object of class 
 #' \code{logLik} with attributes \code{nobs} and \code{df} inherited from the model object.
 #' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building and 
 #'   fitting Hidden Markov models.

@@ -1,10 +1,10 @@
 #' Build a Latent Class Model
 #' 
 #' Function \code{build_lcm} is a shortcut for constructing a latent class model 
-#' as an restricted case of mixture hidden Markov model.
+#' as a restricted case of an \code{mhmm} object.
 #' 
 #' @export
-#' @param observations TraMineR stslist (see \code{\link[TraMineR]{seqdef}}) containing
+#' @param observations An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 #'   the sequences, or a list of such objects (one for each channel).
 #' @param emission_probs A matrix containing emission probabilities for each class by rows, 
 #'   or in case of multichannel data a list of such matrices. 
@@ -17,13 +17,13 @@
 #' @param data An optional data frame, list or environment containing the variables 
 #' in the model. If not found in data, the variables are taken from 
 #' \code{environment(formula)}.
-#' @param coefficients An optional $k x l$ matrix of regression coefficients for time-constant 
-#'   covariates for mixture probabilities, where $l$ is the number of clusters and $k$
-#'   is the number of covariates. A logit-link is used for mixture probabilities.
-#'   The first column is set to zero.
+#' @param coefficients An optional \eqn{k x l} matrix of regression coefficients for 
+#'   time-constant covariates for mixture probabilities, where \eqn{l} is the number 
+#'   of clusters and \eqn{k} is the number of covariates. A logit-link is used for
+#'   mixture probabilities. The first column is set to zero.
 #' @param cluster_names A vector of optional names for the classes/clusters.
 #' @param channel_names A vector of optional names for the channels.
-#' @return Object of class \code{mhmm} with following elements:
+#' @return Object of class \code{mhmm} with the following elements:
 #' \describe{
 #'    \item{\code{observations}}{State sequence object or a list of such containing the data.}
 #'    \item{\code{transition_probs}}{A matrix of transition probabilities.}
@@ -43,25 +43,62 @@
 #'    \item{\code{n_covariates}}{Number of covariates.}
 #'    \item{\code{n_clusters}}{Number of clusters.}
 #'}
-#' @seealso \code{\link{fit_model}} for estimating model parameters; 
-#' \code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for 
-#' reorganizing a MHMM into a list of separate hidden Markov models; and
-#' \code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
+#' @seealso \code{\link{fit_model}} for estimating model parameters;
+#' \code{\link{summary.mhmm}} for a summary of a mixture model; 
+#' \code{\link{separate_mhmm}} for organizing an \code{mhmm} object into a list of 
+#' separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting 
+#' mixture models.
 #' 
 #' @examples
-#' 
-#' # simulate observations from two classes
+#' # Simulate observations from two classes
 #' set.seed(123)
 #' obs <- seqdef(rbind(
 #'   matrix(sample(letters[1:3], 5000, TRUE, prob = c(0.1, 0.6, 0.3)), 500, 10),
 #'   matrix(sample(letters[1:3], 2000, TRUE, prob = c(0.4, 0.4, 0.2)), 200, 10)))
 #' 
-#' model <- build_lcm(obs, simulate_emission_probs(2, 3))
+#' # Initialize the model
+#' model <- build_lcm(obs, 
+#'   # Simulating emission probs (matrix of n_clusters rows and n_symbols columns)
+#'   # Note that the simulation function is made for HMMs -> number of clusters defined with n_states
+#'   simulate_emission_probs(n_states = 2, n_symbols = 3))
+#' 
+#' # Estimate model parameters
 #' fit <- fit_model(model)
-#' # how many of the observations were correctly classified:
+#' 
+#' # How many of the observations were correctly classified:
 #' sum(summary(fit$model)$most_probable_cluster == rep(c("Class 2", "Class 1"), times = c(500, 200)))
 #' 
-#' #' # Binomial regression
+#' ############################################################
+#' 
+#' # LCM for longitudinal data
+#' 
+#' # Define sequence data
+#' data("mvad", package = "TraMineR")
+#' mvad_alphabet <- c("employment", "FE", "HE", "joblessness", "school",
+#'   "training")
+#' mvad_labels <- c("employment", "further education", "higher education",
+#'   "joblessness", "school", "training")
+#' mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
+#' mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet, states = mvad_scodes,
+#'   labels = mvad_labels, xtstep = 6)
+#'
+#' # Starting values for emission probabilities
+#' emiss <- rbind(rep(1/6, 6), rep(1/6, 6))
+#' 
+#' # Initialize the LCM
+#' init_lcm_mvad <- build_lcm(observations = mvad_seq,
+#'   emission_probs = emiss, formula = ~male, data = mvad)
+#'
+#' # Estimate model parameters (EM algorithm with random restarts)
+#' lcm_mvad <- fit_model(init_lcm_mvad, 
+#'   control_em = list(restart = list(times = 5)))$model
+#' 
+#' # Plot the LCM
+#' plot(lcm_mvad, interactive = FALSE, ncol = 2)
+#' 
+#' ###################################################################
+#' 
+#' # Binomial regression (comparison to glm)
 #'
 #' require("MASS")
 #' data("birthwt")
@@ -71,7 +108,8 @@
 #' summary(fit$model)
 #' summary(glm(low ~ age + lwt + smoke + ht, binomial, data = birthwt))
 #' 
-#' # Multinomial regression
+#' 
+#' # Multinomial regression (comparison to multinom)
 #' 
 #' require("nnet")
 #' 
@@ -125,7 +163,7 @@ build_lcm <-
     
     if (n_channels > 1) {
       if (length(observations) != n_channels) {
-        stop("Number of channels defined by emission_probs differs from one defined by observations.")
+        stop("Number of channels defined by emission_probs differs from the one defined by observations. Give emission_probs as a matrix with n_cluster rows and n_symbol columns (for single-channel data) or a list of such matrices (for multichannel data).")
       }
       
       if (length(unique(sapply(observations, nrow))) > 1) {

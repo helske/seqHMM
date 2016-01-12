@@ -26,6 +26,10 @@
 #'   plots and \code{"d"} for state distribution plots (the default). See
 #'   \code{\link{seqplot}} for details.
 #'
+#' @param tlim Indexes of the subjects to be plotted (the default is 0, 
+#' i.e. all subjects are plotted). For example, \code{tlim = 1:10} plots
+#' the first ten subjects in data.
+#' 
 #' @param sortv A sorting variable or a sort method (one of \code{"from.start"},
 #'   \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.hidden"}) for
 #'   \code{type = "I"}. The value \code{"mds.hidden"} is only available when
@@ -143,7 +147,7 @@
 #'   tick labels. The default value is 1. Values lesser than 1 will reduce the size of
 #'   the font, values greater than 1 will increase the size.
 #'
-#' @param ... Other arguments such as \code{yaxis} to be passed on to
+#' @param ... Other arguments to be passed on to
 #'   \code{\link[TraMineR]{seqplot}}.
 #'
 #' @examples
@@ -167,7 +171,7 @@
 
 
 mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
-                    plots = "obs", type = "d",
+                    plots = "obs", type = "d", tlim = 0,
                     sortv = NULL, sort.channel = 1, dist.method = "OM",
                     with.missing = FALSE,
                     title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,

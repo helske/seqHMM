@@ -1,13 +1,13 @@
 #' Forward and Backward Probabilities for Hidden Markov Model
 #'
-#' Function \code{forward_backward} computes the scaled forward and backward probabilities of hidden Markov models.
+#' The \code{forward_backward} function computes scaled forward and backward probabilities of a hidden Markov model.
 #'
 #' @export 
 #' @param model Object of class \code{hmm} or \code{mhmm}.
-#' @param forward_only If \code{TRUE}, only forward probabilities are computed. Default is \code{FALSE}.
+#' @param forward_only If \code{TRUE}, only forward probabilities are computed. The default is \code{FALSE}.
 #' @param log_space Compute forward and backward probabilities in logarithmic scale instead of scaling. 
-#'  Default is \code{FALSE}.
-#' @param threads Number of threads used in parallel computing. Default is 1.
+#'  The default is \code{FALSE}.
+#' @param threads Number of threads used in parallel computing. The default is 1.
 #' @return List with components 
 #'   \item{forward_probs}{If \code{log_space = FALSE}, scaled forward probabilities, i.e. probability of state given 
 #'   observations up to that time point. If \code{log_space = TRUE}, 
@@ -18,10 +18,14 @@
 #'   Only computed if \code{log_space = FALSE}.} 
 #'   In case of multiple observations, these are computed independently for each sequence.
 #' @examples 
+#' # Load a pre-defined MHMM
+#' data("mhmm_biofam")
 #' 
+#' # Compute forward and backward probabilities
 #' fb <- forward_backward(mhmm_biofam)
-#' # most probable state at time t given the observations upto time t for first sequence:
-#' apply(fb$forward_probs[,,1],2,which.max)
+#' 
+#' # The most probable hidden state at time t given the observations up to time t for the first subject:
+#' apply(fb$forward_probs[, , 1], 2, which.max)
 #' 
 forward_backward <- function(model, forward_only = FALSE, log_space = FALSE, threads = 1){
   
