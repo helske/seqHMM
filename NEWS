@@ -11,8 +11,9 @@ Bug Fixes:
 * Corrected mc_to_sc for single state models due to dimension dropping.
 * Corrected a bug in plot.hmm when layout = "vertical".
 * Fixed legend layout in plot.hmm.
-* Fixed a bug causing wrong nobs and df attributes in mc_to_sc.
-* Fixed a bug causing a wrong number of sequences to ssp titles when tlim is used.
+* Wrong nobs and df attributes in mc_to_sc.
+* Wrong number of sequences to ssp titles when tlim is used.
+* EM with HMM using log-space produced error due to missing element in output of EM.
 
 
 seqHMM 1.0.3-1 (Release date: 2015-12-29)
