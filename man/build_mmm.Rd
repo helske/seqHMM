@@ -59,6 +59,7 @@ model as a restricted case of an \code{mhmm} object.
 }
 \examples{
 
+\dontrun{
 # Define sequence data
 data("mvad", package = "TraMineR")
 mvad_alphabet <- c("employment", "FE", "HE", "joblessness", "school",
@@ -93,7 +94,7 @@ plot(mmm_mvad, interactive = FALSE,
   
 # Summary of the MMM
 summary(mmm_mvad)
-
+}
 }
 \seealso{
 \code{\link{fit_model}} for estimating model parameters;

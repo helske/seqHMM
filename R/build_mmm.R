@@ -48,6 +48,7 @@
 #'
 #' @examples
 #'
+#' \dontrun{
 #' # Define sequence data
 #' data("mvad", package = "TraMineR")
 #' mvad_alphabet <- c("employment", "FE", "HE", "joblessness", "school",
@@ -82,7 +83,7 @@
 #'   
 #' # Summary of the MMM
 #' summary(mmm_mvad)
-#'
+#' }
 build_mmm <-
   function(observations,transition_probs,initial_probs,
            formula, data, coefficients, cluster_names = NULL){
