@@ -375,8 +375,12 @@ ssp <- function(x, hidden.paths = NULL,
   }
   
   # Checking the number of sequences for title.n
-  if (length(tlim) == 1 && tlim == 0) {
-    n.seq <- dim(obs[[1]])[1]
+  if (type =="d" || (length(tlim) == 1 && tlim == 0)) {
+    if(nchannels == 1){
+      n.seq <- dim(obs)[1]
+    } else {
+      n.seq <- dim(obs[[1]])[1]
+    }
   } else {  
     n.seq <- length(tlim)
   }
