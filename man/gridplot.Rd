@@ -67,39 +67,39 @@ grid.
 data("biofam3c")
 
 # Creating sequence objects
-child.seq <- seqdef(biofam3c$children, start = 15)
-marr.seq <- seqdef(biofam3c$married, start = 15)
-left.seq <- seqdef(biofam3c$left, start = 15)
+child_seq <- seqdef(biofam3c$children, start = 15)
+marr_seq <- seqdef(biofam3c$married, start = 15)
+left_seq <- seqdef(biofam3c$left, start = 15)
 
 ## Choosing colors
-attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
-attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
+attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 
 # Preparing plot for state distribution plots of observations for women
 ssp_f <- ssp(
-  list(child.seq[biofam3c$covariates$sex == "woman",],
-       marr.seq[biofam3c$covariates$sex == "woman",],
-       left.seq[biofam3c$covariates$sex == "woman",]),
+  list(child_seq[biofam3c$covariates$sex == "woman",],
+       marr_seq[biofam3c$covariates$sex == "woman",],
+       left_seq[biofam3c$covariates$sex == "woman",]),
   type = "d", plots = "obs", title = "Women",
   ylab = c("Children", "Married", "Left home"))
 
 # Preparing plot for state distribution plots of observations for men
 # (Updating the previous plot, only arguments that change values)
 ssp_m <- update(ssp_f, title = "Men",
-  x = list(child.seq[biofam3c$covariates$sex == "man",],
-       marr.seq[biofam3c$covariates$sex == "man",],
-       left.seq[biofam3c$covariates$sex == "man",]))
+  x = list(child_seq[biofam3c$covariates$sex == "man",],
+       marr_seq[biofam3c$covariates$sex == "man",],
+       left_seq[biofam3c$covariates$sex == "man",]))
 
 # Plotting state distribution plots of observations for women and men in two columns
 gridplot(list(ssp_f, ssp_m), ncol = 2, withlegend = FALSE)
 
 # Preparing plots for women's state distributions
 ssp_f2 <- ssp(
-  list(marr.seq[biofam3c$covariates$sex == "woman",],
-       child.seq[biofam3c$covariates$sex == "woman",],
-       left.seq[biofam3c$covariates$sex == "woman",]),
+  list(marr_seq[biofam3c$covariates$sex == "woman",],
+       child_seq[biofam3c$covariates$sex == "woman",],
+       left_seq[biofam3c$covariates$sex == "woman",]),
   type = "d", border = NA, withlegend = FALSE,
   title = "State distributions for women", title.n = FALSE, xtlab = 15:30,
   ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home"))
@@ -111,9 +111,9 @@ ssp_f3 <- update(
 # State distributions with men's data
 ssp_m2 <- update(
   ssp_f2, title = "State distributions for men",
-  x = list(marr.seq[biofam3c$covariates$sex == "man",],
-           child.seq[biofam3c$covariates$sex == "man",],
-           left.seq[biofam3c$covariates$sex == "man",]))
+  x = list(marr_seq[biofam3c$covariates$sex == "man",],
+           child_seq[biofam3c$covariates$sex == "man",],
+           left_seq[biofam3c$covariates$sex == "man",]))
 
 # Men's sequences
 ssp_m3 <- update(

@@ -85,17 +85,17 @@ defined as structural zeroes.
 data("biofam3c")
 
 ## Building sequence objects
-marr.seq <- seqdef(biofam3c$married, start = 15,
+marr_seq <- seqdef(biofam3c$married, start = 15,
   alphabet = c("single", "married", "divorced"))
-child.seq <- seqdef(biofam3c$children, start = 15,
+child_seq <- seqdef(biofam3c$children, start = 15,
   alphabet = c("childless", "children"))
-left.seq <- seqdef(biofam3c$left, start = 15,
+left_seq <- seqdef(biofam3c$left, start = 15,
   alphabet = c("with parents", "left home"))
 
 ## Choosing colors
-attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
-attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
+attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 ## Starting values for emission probabilities
 
@@ -201,7 +201,7 @@ biofam3c$covariates$cohort <- factor(
 
 # Build mixture HMM
 init_mhmm_bf <- build_mhmm(
-  observations = list(marr.seq, child.seq, left.seq),
+  observations = list(marr_seq, child_seq, left_seq),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
   transition_probs = list(A1, A1, A2),
   emission_probs = list(list(B1_marr, B1_child, B1_left),
