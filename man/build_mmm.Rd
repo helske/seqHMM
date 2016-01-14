@@ -59,7 +59,7 @@ model as a restricted case of an \code{mhmm} object.
 }
 \examples{
 
-\dontrun{
+
 # Define sequence data
 data("mvad", package = "TraMineR")
 mvad_alphabet <- c("employment", "FE", "HE", "joblessness", "school",
@@ -77,6 +77,7 @@ mmm_mvad <- build_mmm(observations = mvad_seq,
   initial_probs = replicate(2, rep(1/6, 6), simplify = FALSE),
   formula = ~male, data = mvad)
 
+\dontrun{
 # Estimate model parameters
 mmm_mvad <- fit_model(mmm_mvad)$model
 
