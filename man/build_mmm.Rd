@@ -76,6 +76,7 @@ mmm_mvad <- build_mmm(observations = mvad_seq,
   initial_probs = replicate(2, rep(1/6, 6), simplify = FALSE),
   formula = ~male, data = mvad)
 
+\dontrun{
 # Estimate model parameters
 mmm_mvad <- fit_model(mmm_mvad)$model
 
@@ -93,7 +94,7 @@ plot(mmm_mvad, interactive = FALSE,
   
 # Summary of the MMM
 summary(mmm_mvad)
-
+}
 }
 \seealso{
 \code{\link{fit_model}} for estimating model parameters;

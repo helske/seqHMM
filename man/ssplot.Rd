@@ -165,25 +165,25 @@ probable paths of \code{hmm} objects.
 data("biofam3c")
 
 # Creating sequence objects
-child.seq <- seqdef(biofam3c$children, start = 15)
-marr.seq <- seqdef(biofam3c$married, start = 15)
-left.seq <- seqdef(biofam3c$left, start = 15)
+child_seq <- seqdef(biofam3c$children, start = 15)
+marr_seq <- seqdef(biofam3c$married, start = 15)
+left_seq <- seqdef(biofam3c$left, start = 15)
 
 ## Choosing colors
-attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
-attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
+attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
+attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 
 # Plotting state distribution plots of observations
-ssplot(list("Children" = child.seq, "Marriage" = marr.seq,
-"Residence" = left.seq))
+ssplot(list("Children" = child_seq, "Marriage" = marr_seq,
+"Residence" = left_seq))
 
 \dontrun{
 # Plotting sequence index plots of observations
 ssplot(
-  list(child.seq, marr.seq, left.seq), type = "I",
-  # Sorting subjects according to the beginning of the 2nd channel (marr.seq)
+  list(child_seq, marr_seq, left_seq), type = "I",
+  # Sorting subjects according to the beginning of the 2nd channel (marr_seq)
   sortv = "from.start", sort.channel = 2,
   # Controlling the size, positions, and names for channel labels
   ylab.pos = c(1, 2, 1), cex.lab = 1, ylab = c("Children", "Married", "Residence"),
@@ -208,13 +208,13 @@ ssplot(
 
 # Computing the most probable paths of hidden states
 hidden.paths <- hidden_paths(hmm_biofam)
-hidden.paths.seq <- seqdef(hidden.paths, labels = paste("Hidden state", 1:5))
+hidden.paths_seq <- seqdef(hidden.paths, labels = paste("Hidden state", 1:5))
 
 # Plotting observations and hidden state paths
 ssplot(
   hmm_biofam, type = "I", plots = "hidden.paths",
   # Sequence object of most probable paths
-  hidden.paths = hidden.paths.seq,
+  hidden.paths = hidden.paths_seq,
   # Sorting according to the end of hidden state paths
   sortv = "from.end", sort.channel = 0,
   # Contolling legend position, type, and proportion
