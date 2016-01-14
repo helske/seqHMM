@@ -59,6 +59,7 @@ model as a restricted case of an \code{mhmm} object.
 }
 \examples{
 
+
 # Define sequence data
 data("mvad", package = "TraMineR")
 mvad_alphabet <- c("employment", "FE", "HE", "joblessness", "school",

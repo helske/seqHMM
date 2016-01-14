@@ -48,6 +48,7 @@
 #'
 #' @examples
 #'
+#'
 #' # Define sequence data
 #' data("mvad", package = "TraMineR")
 #' mvad_alphabet <- c("employment", "FE", "HE", "joblessness", "school",
@@ -65,6 +66,7 @@
 #'   initial_probs = replicate(2, rep(1/6, 6), simplify = FALSE),
 #'   formula = ~male, data = mvad)
 #'
+#' \dontrun{
 #' # Estimate model parameters
 #' mmm_mvad <- fit_model(mmm_mvad)$model
 #'
@@ -82,12 +84,12 @@
 #'   
 #' # Summary of the MMM
 #' summary(mmm_mvad)
-#'
+#' }
 build_mmm <-
   function(observations,transition_probs,initial_probs,
            formula, data, coefficients, cluster_names = NULL){
 
-    if(!inherits(observations, "stslist")){
+    if (!inherits(observations, "stslist")) {
       stop("The build_mmm function can only be used for single-channel sequence data (as an stslist object). Use the mc_to_sc_data function to convert multiple stslist into single-channel state sequences.")
     }
 
