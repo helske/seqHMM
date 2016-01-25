@@ -1,4 +1,12 @@
-seqHMM 1.0.4 (Release date: )
+seqHMM 1.0.5 (Release date: )
+==============
+
+Bug fixes:
+
+* mssplot now uses hidden paths instead of posterior probabilities to determine the most probable cluster for each subject (previous solution caused errors when posterior probabilities suggested different cluster than hidden paths).
+
+
+seqHMM 1.0.4 (Release date: 2016-01-14)
 ==============
 
 * Added examples for build_mmm.

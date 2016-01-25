@@ -262,14 +262,24 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
     k <- k+x$n_states[i]
   }
 
-  summ <- summary(x)
 
-  mpclust <- unique(summ$most_probable_cluster)
+  # Clusters determined by hidden_paths
+  hp_by_cluster_logic <- rep(list(NULL), x$n_clusters)
+  hp_by_cluster <- rep(list(NULL), x$n_clusters)
   mm <- NULL
-  if(length(mpclust)<x$n_clusters){
-    mm <- which(!(x$cluster_names%in%mpclust))
+  for (i in 1:x$n_clusters) {
+    # Find matching cluster names from the first hidden state of each individual
+    hp_by_cluster_logic[[i]] <- grepl(paste0(x$cluster_names[i], ":"), hidden.paths[, 1])
+    hp_by_cluster[[i]] <- hidden.paths[hp_by_cluster_logic[[i]], ]
+    # Give a warning, if no subjects assigned to cluster
+    if (sum(hp_by_cluster_logic[[i]]) == 0) {
+      mm <- c(mm, i)
+    }
+  }
+  if (length(mm) > 0) {
     warning(paste("When computing the most probable paths, no subjects were assigned to following clusters:", paste(x$cluster_names[mm], collapse = ", ")))
   }
+
 
   if(!is.null(which.plots)){
     if(any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$n_clusters))){
@@ -298,11 +308,11 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
       if(pick == 0){
         return(invisible())
       }else{
-        args$x <- lapply(x$observations, function(y) y[summ$most_probable_cluster == x$cluster_names[tmenu[pick]],])
+        args$x <- lapply(x$observations, function(y) y[hp_by_cluster_logic[[pick]], ])
         if(plots != "obs"){
           args$hidden.states.labels <- hidden.pathslabs[[pick]]
           args$hidden.paths <- suppressWarnings(suppressMessages(
-            seqdef(hidden.paths[summ$most_probable_cluster == x$cluster_names[tmenu[pick]],],
+            seqdef(hp_by_cluster[[pick]],
                    labels = args$hidden.states.labels)))
           args$hidden.states.colors <- hidden.pathscols[[pick]]
         }
@@ -319,11 +329,11 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
       if(pick == 0){
         return(invisible())
       }else{
-        args$x <- lapply(x$observations, function(y) y[summ$most_probable_cluster == x$cluster_names[tmenu[pick]],])
+        args$x <- lapply(x$observations, function(y) y[hp_by_cluster_logic[[pick]], ])
         if(plots != "obs"){
           args$hidden.states.labels <- hidden.pathslabs[[pick]]
           args$hidden.paths <- suppressWarnings(suppressMessages(
-            seqdef(hidden.paths[summ$most_probable_cluster == x$cluster_names[tmenu[pick]],],
+            seqdef(hp_by_cluster[[pick]],
                    labels = args$hidden.states.labels)))
           args$hidden.states.colors <- hidden.pathscols[[pick]]
         }
@@ -335,11 +345,12 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
     ask <- length(which.plots) > 1
     plot.new()
     for (i in which.plots) {
-      args$x <- lapply(x$observations, function(y) y[summ$most_probable_cluster == x$cluster_names[i],])
+      args$x <- lapply(x$observations, function(y) y[hp_by_cluster_logic[[pick]], ])
       if(plots != "obs"){
         args$hidden.states.labels <- hidden.pathslabs[[i]]
         args$hidden.paths <- suppressWarnings(suppressMessages(
-          seqdef(hidden.paths[summ$most_probable_cluster == x$cluster_names[i],], labels = args$hidden.states.labels)))
+          seqdef(hp_by_cluster[[i]],
+                 labels = args$hidden.states.labels)))
         args$hidden.states.colors <- hidden.pathscols[[i]]
       }
       args$title <- titles[i]
