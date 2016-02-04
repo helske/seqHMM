@@ -4,6 +4,7 @@ seqHMM 1.0.5 (Release date: )
 Bug fixes:
 
 * mssplot now uses hidden paths instead of posterior probabilities to determine the most probable cluster for each subject (previous solution caused errors when posterior probabilities suggested different cluster than hidden paths).
+* gridplot now uses with.missing.legend also with combined legends.
 
 
 seqHMM 1.0.4 (Release date: 2016-01-14)

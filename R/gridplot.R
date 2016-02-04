@@ -546,8 +546,12 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         for (j in 1:x[[1]]$nchannels) {
           ltexts[[j]] <- unique(c(c(ltexts[[j]], attr(x[[i]]$obs[[j]], "labels"))))
           cpals[[j]] <- unique(c(cpals[[j]], attr(x[[i]]$obs[[j]], "cpal")))
-          if (any(x[[i]]$obs[[j]] == "*")) {
-            anymissing <- TRUE
+          if (with.missing.legend == "auto") {
+            if (any(x[[i]]$obs[[j]] == "*")) {
+              anymissing <- TRUE
+            }
+          } else {
+            anymissing <- with.missing.legend
           }
         }
       }
@@ -578,7 +582,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
             par(plt = gridPLT(), new = TRUE)
             seqlegend(x[[1]]$obs[[i]], fontsize = cex.legend, position = legend.pos2,
                       cpal = cpals[[i]], ltext = ltexts[[i]],
-                      ncol = ncol.legend[i], with.missing = x[[1]]$with.missing.legend,
+                      ncol = ncol.legend[i], with.missing = with.missing.legend,
                       title = title.legend[i])
             popViewport()
           }
@@ -590,7 +594,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
           seqlegend(x[[1]]$hidden.paths.seq, fontsize = cex.legend,
                     position = legend.pos2, ncol = ncol.legend[length(ncol.legend)],
                     cpal = hscpal, ltext = hstext,
-                    with.missing = x[[1]]$with.missing.legend,
+                    with.missing = with.missing.legend,
                     title = title.legend[length(title.legend)])
           popViewport()
         }
@@ -609,7 +613,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
             par(plt = gridPLT(), new = TRUE)
             seqlegend(x[[1]]$obs[[i]], fontsize = cex.legend, position = legend.pos2,
                       cpal = cpals[[i]], ltext = ltexts[[i]],
-                      ncol = ncol.legend[i], with.missing = x[[1]]$with.missing.legend,
+                      ncol = ncol.legend[i], with.missing = with.missing.legend,
                       title = title.legend[i])
             popViewport()
           }
@@ -621,7 +625,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
           seqlegend(x[[1]]$hidden.paths.seq, fontsize = cex.legend,
                     position = legend.pos2, ncol = ncol.legend[length(ncol.legend)],
                     cpal = hscpal, ltext = hstext,
-                    with.missing = x[[1]]$with.missing.legend,
+                    with.missing = with.missing.legend,
                     title = title.legend[length(title.legend)])
           popViewport()
         }
