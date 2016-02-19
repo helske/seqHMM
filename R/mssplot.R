@@ -223,11 +223,11 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
     args$ylab <- x$channel_names
   }
 
-  if(plots != "obs" && is.null(hidden.paths)){
+  if(is.null(hidden.paths)){
     hidden.paths <- suppressWarnings(suppressMessages(hidden_paths(x)))
   }
 
-  if(plots != "obs" && !("hidden.states.labels" %in% names(args))){
+  if(!("hidden.states.labels" %in% names(args))){
     hidden.states.labels <- NULL
     for(i in 1:x$n_clusters){
       hidden.states.labels <- c(hidden.states.labels, paste("State", 1:x$n_states[i]))
@@ -240,7 +240,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
     k <- k+x$n_states[i]
   }
 
-  if(plots != "obs" && !("hidden.states.colors" %in% names(args))){
+  if(!("hidden.states.colors" %in% names(args))){
     if (length(alphabet(hidden.paths)) <= 200) {
       hidden.states.colors <- seqHMM::colorpalette[[length(alphabet(hidden.paths))]]
     } else {
@@ -345,7 +345,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
     ask <- length(which.plots) > 1
     plot.new()
     for (i in which.plots) {
-      args$x <- lapply(x$observations, function(y) y[hp_by_cluster_logic[[pick]], ])
+      args$x <- lapply(x$observations, function(y) y[hp_by_cluster_logic[[i]], ])
       if(plots != "obs"){
         args$hidden.states.labels <- hidden.pathslabs[[i]]
         args$hidden.paths <- suppressWarnings(suppressMessages(

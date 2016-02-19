@@ -193,7 +193,7 @@ SSPlotter <- function(obs, nchannels, nplots,
     } else {
       pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nplots))
       par(plt = gridPLT(), new = TRUE)
-      seqplot(hidden.paths.seq, type = type, tlim = tlim, withlegend = FALSE,
+      seqplot(hidden.paths.seq, type = type, withlegend = FALSE,
         use.layout = FALSE, yaxis = yaxis, axes = xaxis, ylab = NA,
         xtlab = xtlab, cex.plot = cex.axis, ...)
       popViewport()
