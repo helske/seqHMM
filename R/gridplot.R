@@ -527,12 +527,12 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
       hscpal <- NULL
       if (x[[1]]$nchannels > 1) {
         for(i in 1:x[[1]]$nchannels){
-          hstext <- c(hstext, attr(x[[1]]$hidden.paths.seq, "labels"))
-          hscpal <- c(hscpal, attr(x[[1]]$hidden.paths.seq, "cpal"))
+          hstext <- c(hstext, attr(x[[1]]$hidden.paths, "labels"))
+          hscpal <- c(hscpal, attr(x[[1]]$hidden.paths, "cpal"))
         }
       } else {
-        hstext <- c(hstext, attr(x[[1]]$hidden.paths.seq, "labels"))
-        hscpal <- c(hscpal, attr(x[[1]]$hidden.paths.seq, "cpal"))
+        hstext <- c(hstext, attr(x[[1]]$hidden.paths, "labels"))
+        hscpal <- c(hscpal, attr(x[[1]]$hidden.paths, "cpal"))
       }
     }
 
@@ -561,8 +561,8 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
       }
     }
 #     if(x[[1]]$plots == "both" || x[[1]]$plots == "hidden.paths"){
-#       ltext <- c(ltext, attr(x[[maxhsplot]]$hidden.paths.seq, "labels"))
-#       cpal <- c(cpal, attr(x[[maxhsplot]]$hidden.paths.seq, "cpal"))
+#       ltext <- c(ltext, attr(x[[maxhsplot]]$hidden.paths, "labels"))
+#       cpal <- c(cpal, attr(x[[maxhsplot]]$hidden.paths, "cpal"))
 #     }
 
     # Separate legends
@@ -591,7 +591,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         if (x[[1]]$plots == "both" || x[[1]]$plots == "hidden.paths") {
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = x[[1]]$nplots))
           par(plt = gridPLT(), new = TRUE)
-          seqlegend(x[[1]]$hidden.paths.seq, fontsize = cex.legend,
+          seqlegend(x[[1]]$hidden.paths, fontsize = cex.legend,
                     position = legend.pos2, ncol = ncol.legend[length(ncol.legend)],
                     cpal = hscpal, ltext = hstext,
                     with.missing = with.missing.legend,
@@ -622,7 +622,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         if(x[[1]]$plots == "both" || x[[1]]$plots == "hidden.paths"){
           pushViewport(viewport(layout.pos.col = x[[1]]$nplots, layout.pos.row = 1))
           par(plt = gridPLT(), new = TRUE)
-          seqlegend(x[[1]]$hidden.paths.seq, fontsize = cex.legend,
+          seqlegend(x[[1]]$hidden.paths, fontsize = cex.legend,
                     position = legend.pos2, ncol = ncol.legend[length(ncol.legend)],
                     cpal = hscpal, ltext = hstext,
                     with.missing = with.missing.legend,
