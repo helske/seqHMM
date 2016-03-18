@@ -21,8 +21,8 @@
 #' @param type The type of the plot. Available types are \code{"I"} for sequence index
 #'   plots and \code{"d"} for state distribution plots (the default). See
 #'   \code{\link{seqplot}} for details.
-#'  
-#' @param tlim Indexes of the subjects to be plotted (the default is 0, 
+#'
+#' @param tlim Indexes of the subjects to be plotted (the default is 0,
 #' i.e. all subjects are plotted). For example, \code{tlim = 1:10} plots
 #' the first ten subjects in data.
 #'
@@ -57,8 +57,8 @@
 #'   \code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE}
 #'   prints no title, even when \code{title.n = TRUE}.
 #'
-#' @param title.n Controls whether the number of subjects (in the 
-#'   first channel) is printed in the title of the plot. The default is 
+#' @param title.n Controls whether the number of subjects (in the
+#'   first channel) is printed in the title of the plot. The default is
 #'   \code{TRUE}: n is plotted if \code{title} is anything but \code{FALSE}.
 #'
 #' @param cex.title Expansion factor for setting the size of the font for the
@@ -164,7 +164,7 @@
 #' # Plotting state distribution plots of observations
 #' ssplot(list("Children" = child_seq, "Marriage" = marr_seq,
 #' "Residence" = left_seq))
-#' 
+#'
 #' \dontrun{
 #' # Plotting sequence index plots of observations
 #' ssplot(
@@ -230,7 +230,9 @@ ssplot <- function(x, hidden.paths = NULL,
                 yaxis = FALSE, ylab.pos = "auto",
                 cex.lab = 1, cex.axis = 1, ...){
 
-  sspargs <- do.call(ssp, args = as.list(match.call())[-1])
+  args <- as.list(match.call())[-1]
+  args[[1]] <- eval(args[[1]], envir = parent.frame())
+  sspargs <- do.call(ssp, args = args)
   plot.new()
   grid.newpage()
   savepar <- par(no.readonly = TRUE)
