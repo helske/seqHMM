@@ -518,7 +518,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     if (!is.null(em.con$restart)) {
       restart.con <- list(times = 0, print_level = em.con$print_level,
         maxeval = em.con$maxeval, reltol = em.con$reltol,
-        transition = TRUE, emission = TRUE, sd = 0.25,
+        transition = TRUE, emission = TRUE, coef = FALSE, sd = 0.25,
         n_optimum = min(control_em$restart$times + 1, 25))
       nmsC <- names(restart.con)
       restart.con[(namc <- names(control_em$restart))] <- control_em$restart
@@ -544,9 +544,11 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         random_trans <- resEM$transitionMatrix
         random_trans[(random_trans < 1e-4) & (model$transition_probs > 0)] <- 1e-4
         random_trans <- random_trans / rowSums(random_trans)
+        random_coef <- resEM$coefficients
       } else {
         random_emiss <- emissionArray
         random_trans <- model$transition_probs
+        random_coef <- model$coefficients
       }
 
       if (restart.con$transition) {
@@ -558,6 +560,12 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         nz_emiss <- (random_emiss > 0 & random_emiss < 1)
         np_emiss <- sum(nz_emiss)
         base_emiss <- random_emiss[nz_emiss]
+      }
+
+      if (restart.con$coef) {
+        base_coef <- random_coef
+        coef_scale <- max(abs(base_coef))
+        n_coef <- length(base_coef)
       }
 
       for (i in 1:restart.con$times) {
@@ -574,10 +582,13 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
               random_emiss[,1:model$n_symbols[j],j] / rowSums(random_emiss[,1:model$n_symbols[j],j])
           }
         }
+        if (restart.con$coef) {
+          random_coef[] <- rnorm(n_coef, base_coef, sd = coef_scale)
+        }
         if (!log_space) {
           if (mhmm) {
             resEMi <- EMx(random_trans, random_emiss, model$initial_probs, obsArray,
-              model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, restart.con$maxeval,
+              model$n_symbols, random_coef, model$X, model$n_states_in_clusters, restart.con$maxeval,
               restart.con$reltol,restart.con$print_level, threads)
           } else {
             resEMi <- EM(random_trans, random_emiss, model$initial_probs, obsArray,
@@ -586,7 +597,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         } else {
           if (mhmm) {
             resEMi <- log_EMx(random_trans, random_emiss, model$initial_probs, obsArray,
-              model$n_symbols, model$coefficients, model$X, model$n_states_in_clusters, restart.con$maxeval,
+              model$n_symbols,random_coef, model$X, model$n_states_in_clusters, restart.con$maxeval,
               restart.con$reltol,restart.con$print_level, threads)
           } else {
             resEMi <- log_EM(random_trans, random_emiss, model$initial_probs, obsArray,
