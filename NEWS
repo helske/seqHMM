@@ -1,3 +1,15 @@
+seqHMM 1.0.6 (Release date: )
+==============
+
+* Argument diag_c in simulate_transition_probs is now used also in cases where
+  left_right = FALSE.
+
+Bug fixes:
+
+* The ssplot with function assigned wrong colors for hidden states in cases where
+  the state names were not alphabetically ordered. The performance of the
+  function was also improved by removing extra calls to seqdef.
+
 seqHMM 1.0.5 (Release date: 2016-02-24)
 ==============
 
