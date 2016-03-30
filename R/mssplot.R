@@ -26,10 +26,10 @@
 #'   plots and \code{"d"} for state distribution plots (the default). See
 #'   \code{\link{seqplot}} for details.
 #'
-#' @param tlim Indexes of the subjects to be plotted (the default is 0, 
+#' @param tlim Indexes of the subjects to be plotted (the default is 0,
 #' i.e. all subjects are plotted). For example, \code{tlim = 1:10} plots
 #' the first ten subjects in data.
-#' 
+#'
 #' @param sortv A sorting variable or a sort method (one of \code{"from.start"},
 #'   \code{"from.end"}, \code{"mds.obs"}, or \code{"mds.hidden"}) for
 #'   \code{type = "I"}. The value \code{"mds.hidden"} is only available when
@@ -56,11 +56,11 @@
 #'
 #' @param with.missing Controls whether missing states are included in state
 #'   distribution plots (\code{type = "d"}). The default is \code{FALSE}.
-#'  
-#' @param missing.color Alternative color for representing missing values 
-#'   in the sequences. By default, this color is taken from the \code{missing.color} 
+#'
+#' @param missing.color Alternative color for representing missing values
+#'   in the sequences. By default, this color is taken from the \code{missing.color}
 #'   attribute of the sequence object.
-#'   
+#'
 #' @param title Main title for the graphic. The default is \code{NA}: if
 #'   \code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE}
 #'   prints no title, even when \code{title.n = TRUE}.
@@ -175,18 +175,18 @@
 
 
 mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
-                    plots = "obs", type = "d", tlim = 0,
-                    sortv = NULL, sort.channel = 1, dist.method = "OM",
-                    with.missing = FALSE, missing.color = NULL,
-                    title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
-                    withlegend = "auto", ncol.legend = "auto",
-                    with.missing.legend = "auto",
-                    legend.prop = 0.3, cex.legend = 1,
-                    hidden.states.colors = "auto", hidden.states.labels = "auto",
-                    xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
-                    ylab = "auto", hidden.states.title = "Hidden states",
-                    yaxis = FALSE, ylab.pos = "auto",
-                    cex.lab = 1, cex.axis = 1, ...){
+  plots = "obs", type = "d", tlim = 0,
+  sortv = NULL, sort.channel = 1, dist.method = "OM",
+  with.missing = FALSE, missing.color = NULL,
+  title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
+  withlegend = "auto", ncol.legend = "auto",
+  with.missing.legend = "auto",
+  legend.prop = 0.3, cex.legend = 1,
+  hidden.states.colors = "auto", hidden.states.labels = "auto",
+  xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
+  ylab = "auto", hidden.states.title = "Hidden states",
+  yaxis = FALSE, ylab.pos = "auto",
+  cex.lab = 1, cex.axis = 1, ...){
 
   # Checking for class of x
   if(!inherits(x, "mhmm")){
@@ -260,7 +260,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
   k <- 0
   for(i in 1:x$n_clusters){
     hidden.pathscols[[i]] <- hidden.states.colors[(k+1):(k+x$n_states[i])]
-    k <- k+x$n_states[i]
+    k <- k+unname(x$n_states[i])
   }
 
 
@@ -270,8 +270,8 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
   mm <- NULL
   for (i in 1:x$n_clusters) {
     # Find matching cluster names from the first hidden state of each individual
-    if(length(unique(unlist(x$state_names))) == length(unlist(x$state_names))) {
-      hp_by_cluster_logic[[i]] <- hidden.paths[, 1] == x$cluster_names[i]
+    if (length(unique(unlist(x$state_names))) == length(unlist(x$state_names))) {
+      hp_by_cluster_logic[[i]] <- hidden.paths[, 1] %in% x$state_names[[i]]
     } else {
       hp_by_cluster_logic[[i]] <- grepl(paste0(x$cluster_names[i], ":"), hidden.paths[, 1])
     }
@@ -318,10 +318,14 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
           args$hidden.states.labels <- hidden.pathslabs[[pick]]
           args$hidden.paths <- suppressWarnings(suppressMessages(
             seqdef(hp_by_cluster[[pick]],
-                   labels = args$hidden.states.labels)))
+              labels = args$hidden.states.labels)))
           args$hidden.states.colors <- hidden.pathscols[[pick]]
-          if (!is.null(sortv) && sortv == "mds.hidden" && length(args$hidden.states.labels) == 1) {
-            args$sortv <- "mds.obs"
+          if (!is.null(sortv) && sortv == "mds.hidden") {
+            if (length(args$hidden.states.labels) == 1) {
+              args$sortv <- "mds.obs"
+            } else {
+              args$sortv <- "mds.hidden"
+            }
           }
         }
         args$title <- titles[tmenu[pick]]
@@ -342,10 +346,14 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
           args$hidden.states.labels <- hidden.pathslabs[[pick]]
           args$hidden.paths <- suppressWarnings(suppressMessages(
             seqdef(hp_by_cluster[[pick]],
-                   labels = args$hidden.states.labels)))
+              labels = args$hidden.states.labels)))
           args$hidden.states.colors <- hidden.pathscols[[pick]]
-          if (!is.null(sortv) && sortv == "mds.hidden" && length(args$hidden.states.labels) == 1) {
-            args$sortv <- "mds.obs"
+          if (!is.null(sortv) && sortv == "mds.hidden") {
+            if (length(args$hidden.states.labels) == 1) {
+              args$sortv <- "mds.obs"
+            } else {
+              args$sortv <- "mds.hidden"
+            }
           }
         }
         args$title <- titles[tmenu[pick]]
@@ -361,10 +369,14 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
         args$hidden.states.labels <- hidden.pathslabs[[i]]
         args$hidden.paths <- suppressWarnings(suppressMessages(
           seqdef(hp_by_cluster[[i]],
-                 labels = args$hidden.states.labels)))
+            labels = args$hidden.states.labels)))
         args$hidden.states.colors <- hidden.pathscols[[i]]
-        if (!is.null(sortv) && sortv == "mds.hidden" && length(args$hidden.states.labels) == 1) {
-          args$sortv <- "mds.obs"
+        if (!is.null(sortv) && sortv == "mds.hidden") {
+          if (length(args$hidden.states.labels) == 1) {
+            args$sortv <- "mds.obs"
+          } else {
+            args$sortv <- "mds.hidden"
+          }
         }
       }
       args$title <- titles[i]

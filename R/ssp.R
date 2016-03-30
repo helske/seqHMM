@@ -52,9 +52,9 @@
 #'
 #' @param with.missing Controls whether missing states are included in state
 #'   distribution plots (\code{type = "d"}). The default is \code{FALSE}.
-#'   
-#' @param missing.color Alternative color for representing missing values 
-#'   in the sequences. By default, this color is taken from the \code{missing.color} 
+#'
+#' @param missing.color Alternative color for representing missing values
+#'   in the sequences. By default, this color is taken from the \code{missing.color}
 #'   attribute of the sequence object.
 #'
 #' @param title Main title for the graphic. The default is \code{NA}: if
@@ -499,7 +499,7 @@ ssp <- function(x, hidden.paths = NULL,
 
     # Color palette for hidden.paths
     # Automatic color palette
-    if (length(hidden.states.colors) > 1) {
+    if (length(hidden.states.colors) > 1 || hidden.states.colors != "auto") {
       # Check for the validity of the color palette
       if (all(isColor(hidden.states.colors))) {
         if(length(hidden.states.colors) != length(alphabet(hidden.paths))) {
@@ -515,8 +515,8 @@ ssp <- function(x, hidden.paths = NULL,
 
     # Sort sequences according to multidimensional scaling score of hidden.paths
     if (!is.null(sortv) && length(sortv) == 1 && sortv == "mds.hidden") {
-      dist.hidden.paths <- suppressMessages(seqdist(hidden.paths, method = dist.method,
-        sm = "TRATE", with.missing = TRUE))
+      dist.hidden.paths <- suppressWarnings(suppressMessages(seqdist(hidden.paths, method = dist.method,
+        sm = "TRATE", with.missing = TRUE)))
       sortv <- cmdscale(dist.hidden.paths, k = 1)
     }
   }
@@ -527,8 +527,8 @@ ssp <- function(x, hidden.paths = NULL,
     if (nchannels > 1) {
       # Multidimensional scaling on observations
       if (length(sortv) == 1 && sortv == "mds.obs") {
-        dist.obs <- suppressMessages(seqdistmc(obs, method = dist.method,
-          sm = "TRATE", with.missing = TRUE))
+        dist.obs <- suppressWarnings(suppressMessages(seqdistmc(obs, method = dist.method,
+          sm = "TRATE", with.missing = TRUE)))
         sortv <- cmdscale(dist.obs, k = 1)
       }
       # Sorting from start or end (extended version of the same feature in TraMineR:::plot.stslist)
@@ -580,8 +580,8 @@ ssp <- function(x, hidden.paths = NULL,
       # Single-channel data (nchannels == 1)
     } else {
       if (length(sortv) == 1 && sortv == "mds.obs") {
-        dist.obs <- suppressMessages(seqdist(obs, method = dist.method,
-          sm = "TRATE", with.missing = TRUE))
+        dist.obs <- suppressWarnings(suppressMessages(seqdist(obs, method = dist.method,
+          sm = "TRATE", with.missing = TRUE)))
         sortv <- cmdscale(dist.obs, k = 1)
       } else if (length(sortv) == 1 && (sortv == "from.start" || sortv == "from.end")) {
         end <- if (sortv == "from.end") {
