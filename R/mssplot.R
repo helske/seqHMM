@@ -320,7 +320,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
             seqdef(hp_by_cluster[[pick]],
                    labels = args$hidden.states.labels)))
           args$hidden.states.colors <- hidden.pathscols[[pick]]
-          if (sortv == "mds.hidden" && length(args$hidden.states.labels) == 1) {
+          if (!is.null(sortv) && sortv == "mds.hidden" && length(args$hidden.states.labels) == 1) {
             args$sortv <- "mds.obs"
           }
         }
@@ -344,7 +344,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
             seqdef(hp_by_cluster[[pick]],
                    labels = args$hidden.states.labels)))
           args$hidden.states.colors <- hidden.pathscols[[pick]]
-          if (sortv == "mds.hidden" && length(args$hidden.states.labels) == 1) {
+          if (!is.null(sortv) && sortv == "mds.hidden" && length(args$hidden.states.labels) == 1) {
             args$sortv <- "mds.obs"
           }
         }
@@ -363,7 +363,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
           seqdef(hp_by_cluster[[i]],
                  labels = args$hidden.states.labels)))
         args$hidden.states.colors <- hidden.pathscols[[i]]
-        if (sortv == "mds.hidden" && length(args$hidden.states.labels) == 1) {
+        if (!is.null(sortv) && sortv == "mds.hidden" && length(args$hidden.states.labels) == 1) {
           args$sortv <- "mds.obs"
         }
       }

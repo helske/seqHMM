@@ -6,9 +6,13 @@ seqHMM 1.0.6 (Release date: )
 
 Bug fixes:
 
-* The ssplot with function assigned wrong colors for hidden states in cases where
+* The ssplot function assigned wrong colors for hidden states in cases where
   the state names were not alphabetically ordered. The performance of the
   function was also improved by removing extra calls to seqdef.
+* Changing the missing.color argument did not work in legends of ssp, ssplot, and   
+  mssplot.
+* The mssplot function now works with unique hidden state names (problem occured e.g.   with latent class models).
+* The mssplot function with sortv = "mds.hidden" produced strange errors when plotting   clusters with one hidden state. Now automatically uses "mds.obs" in such cases.
 
 seqHMM 1.0.5 (Release date: 2016-02-24)
 ==============
