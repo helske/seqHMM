@@ -52,6 +52,10 @@
 #'
 #' @param with.missing Controls whether missing states are included in state
 #'   distribution plots (\code{type = "d"}). The default is \code{FALSE}.
+#'   
+#' @param missing.color Alternative color for representing missing values 
+#'   in the sequences. By default, this color is taken from the \code{missing.color} 
+#'   attribute of the sequence object.
 #'
 #' @param title Main title for the graphic. The default is \code{NA}: if
 #'   \code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE}
@@ -229,7 +233,7 @@
 ssp <- function(x, hidden.paths = NULL,
                 plots = "obs", type = "d", tlim = 0,
                 sortv = NULL, sort.channel = 1, dist.method = "OM",
-                with.missing = FALSE,  
+                with.missing = FALSE, missing.color = NULL,
                 title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
                 withlegend = "auto", ncol.legend = "auto",
                 with.missing.legend = "auto",
@@ -677,7 +681,7 @@ ssp <- function(x, hidden.paths = NULL,
     arguments <- c(arguments, list(hidden.paths = hidden.paths, plots = plots, type = type,
                                    tlim = tlim, n.seq = n.seq,
                                    sortv = sortv, sort.channel = sort.channel, plotxaxis = plotxaxis,
-                                   with.missing = with.missing,
+                                   with.missing = with.missing, missing.color = missing.color,
                                    title = title, title.n = title.n, cex.title = cex.title, title.pos = title.pos,
                                    withlegend = withlegend, ncol.legend = ncol.legend,
                                    with.missing.legend = with.missing.legend,
@@ -691,7 +695,7 @@ ssp <- function(x, hidden.paths = NULL,
     arguments <- c(arguments, list(hidden.paths = hidden.paths, plots = plots, type = type,
                                    tlim = tlim, n.seq = n.seq,
                                    sortv = sortv, sort.channel = sort.channel, plotxaxis = plotxaxis,
-                                   with.missing = with.missing,
+                                   with.missing = with.missing,  missing.color = missing.color,
                                    title = title, title.n = title.n, cex.title = cex.title, title.pos = title.pos,
                                    withlegend = withlegend, ncol.legend = ncol.legend,
                                    with.missing.legend = with.missing.legend,

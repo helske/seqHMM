@@ -52,7 +52,11 @@
 #'
 #' @param with.missing Controls whether missing states are included in state
 #'   distribution plots (\code{type = "d"}). The default is \code{FALSE}.
-#'
+#'  
+#' @param missing.color Alternative color for representing missing values 
+#'   in the sequences. By default, this color is taken from the \code{missing.color} 
+#'   attribute of the sequence object.
+#'   
 #' @param title Main title for the graphic. The default is \code{NA}: if
 #'   \code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE}
 #'   prints no title, even when \code{title.n = TRUE}.
@@ -219,7 +223,7 @@
 ssplot <- function(x, hidden.paths = NULL,
                 plots = "obs", type = "d", tlim = 0,
                 sortv = NULL, sort.channel = 1, dist.method = "OM",
-                with.missing = FALSE,
+                with.missing = FALSE, missing.color = NULL,
                 title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
                 withlegend = "auto", ncol.legend = "auto",
                 with.missing.legend = "auto",

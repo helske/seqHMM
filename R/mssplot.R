@@ -56,7 +56,11 @@
 #'
 #' @param with.missing Controls whether missing states are included in state
 #'   distribution plots (\code{type = "d"}). The default is \code{FALSE}.
-#'
+#'  
+#' @param missing.color Alternative color for representing missing values 
+#'   in the sequences. By default, this color is taken from the \code{missing.color} 
+#'   attribute of the sequence object.
+#'   
 #' @param title Main title for the graphic. The default is \code{NA}: if
 #'   \code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE}
 #'   prints no title, even when \code{title.n = TRUE}.
@@ -173,7 +177,7 @@
 mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
                     plots = "obs", type = "d", tlim = 0,
                     sortv = NULL, sort.channel = 1, dist.method = "OM",
-                    with.missing = FALSE,
+                    with.missing = FALSE, missing.color = NULL,
                     title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
                     withlegend = "auto", ncol.legend = "auto",
                     with.missing.legend = "auto",
@@ -228,10 +232,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
   }
 
   if(!("hidden.states.labels" %in% names(args))){
-    hidden.states.labels <- NULL
-    for(i in 1:x$n_clusters){
-      hidden.states.labels <- c(hidden.states.labels, paste("State", 1:x$n_states[i]))
-    }
+    hidden.states.labels <- unlist(x$state_names)
   }
   hidden.pathslabs <- list()
   k <- 0
@@ -269,7 +270,11 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
   mm <- NULL
   for (i in 1:x$n_clusters) {
     # Find matching cluster names from the first hidden state of each individual
-    hp_by_cluster_logic[[i]] <- grepl(paste0(x$cluster_names[i], ":"), hidden.paths[, 1])
+    if(length(unique(unlist(x$state_names))) == length(unlist(x$state_names))) {
+      hp_by_cluster_logic[[i]] <- hidden.paths[, 1] == x$cluster_names[i]
+    } else {
+      hp_by_cluster_logic[[i]] <- grepl(paste0(x$cluster_names[i], ":"), hidden.paths[, 1])
+    }
     hp_by_cluster[[i]] <- hidden.paths[hp_by_cluster_logic[[i]], ]
     # Give a warning, if no subjects assigned to cluster
     if (sum(hp_by_cluster_logic[[i]]) == 0) {
@@ -315,6 +320,9 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
             seqdef(hp_by_cluster[[pick]],
                    labels = args$hidden.states.labels)))
           args$hidden.states.colors <- hidden.pathscols[[pick]]
+          if (sortv == "mds.hidden" && length(args$hidden.states.labels) == 1) {
+            args$sortv <- "mds.obs"
+          }
         }
         args$title <- titles[tmenu[pick]]
         do.call(ssplotM,args = args)
@@ -336,6 +344,9 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
             seqdef(hp_by_cluster[[pick]],
                    labels = args$hidden.states.labels)))
           args$hidden.states.colors <- hidden.pathscols[[pick]]
+          if (sortv == "mds.hidden" && length(args$hidden.states.labels) == 1) {
+            args$sortv <- "mds.obs"
+          }
         }
         args$title <- titles[tmenu[pick]]
         do.call(ssplotM,args = args)
@@ -352,6 +363,9 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
           seqdef(hp_by_cluster[[i]],
                  labels = args$hidden.states.labels)))
         args$hidden.states.colors <- hidden.pathscols[[i]]
+        if (sortv == "mds.hidden" && length(args$hidden.states.labels) == 1) {
+          args$sortv <- "mds.obs"
+        }
       }
       args$title <- titles[i]
       do.call(ssplotM,args = args)

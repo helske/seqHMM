@@ -2,7 +2,7 @@ SSPlotter <- function(obs, nchannels, nplots,
   legend.c.prop, legend.r.prop, ylab.space, xaxis.space, xt.space,
   hidden.paths.seq, orderv, plotxaxis,
   hidden.paths, plots, type, tlim, n.seq, sortv, sort.channel,
-  with.missing, title, title.n, cex.title, title.pos,
+  with.missing, missing.color, title, title.n, cex.title, title.pos,
   withlegend, ncol.legend, with.missing.legend,
   legend.prop, cex.legend, hidden.states.colors, hidden.states.labels,
   xaxis, xlab, xtlab, xlab.pos, yaxis, ylab,
@@ -59,21 +59,21 @@ SSPlotter <- function(obs, nchannels, nplots,
             par(plt = gridPLT(), new = TRUE)
             seqplot(obs[[i]], type = "I", tlim = tlim, withlegend = FALSE,
               use.layout = FALSE, yaxis = yaxis, axes = FALSE, ylab = NA,
-              xtlab = xtlab, ...)
+              xtlab = xtlab, missing.color = missing.color, ...)
             popViewport()
           }
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
           seqplot(obs[[nchannels]], type = "I", tlim = tlim, withlegend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
-            xtlab = xtlab, cex.plot = cex.axis, ...)
+            xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
           popViewport()
         } else {
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
           seqplot(obs, type = "I", tlim = tlim, withlegend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
-            xtlab = xtlab, cex.plot = cex.axis, ...)
+            xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
           popViewport()
         }
 
@@ -84,21 +84,21 @@ SSPlotter <- function(obs, nchannels, nplots,
             par(plt = gridPLT(), new = TRUE)
             seqplot(obs[[i]][orderv,], type = "I", tlim = tlim, withlegend = FALSE,
               use.layout = FALSE, yaxis = yaxis, axes = FALSE, ylab = NA,
-              xtlab = xtlab, ...)
+              xtlab = xtlab, missing.color = missing.color, ...)
             popViewport()
           }
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
           seqplot(obs[[nchannels]][orderv,], type = "I", tlim = tlim, withlegend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
-            xtlab = xtlab, cex.plot = cex.axis, ...)
+            xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
           popViewport()
         } else {
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
           seqplot(obs[orderv,], type = "I", tlim = tlim, withlegend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
-            xtlab = xtlab, cex.plot = cex.axis, ...)
+            xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
           popViewport()
         }
 
@@ -110,21 +110,21 @@ SSPlotter <- function(obs, nchannels, nplots,
             par(plt = gridPLT(), new = TRUE)
             seqplot(obs[[i]], type = "I", tlim = tlim, sortv = sortv, withlegend = FALSE,
               use.layout = FALSE, yaxis = yaxis, axes = FALSE, ylab = NA,
-              xtlab = xtlab, ...)
+              xtlab = xtlab, missing.color = missing.color, ...)
             popViewport()
           }
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
           seqplot(obs[[nchannels]], type = "I", tlim = tlim, sortv = sortv, withlegend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
-            xtlab = xtlab, cex.plot = cex.axis, ...)
+            xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
           popViewport()
         } else {
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
           seqplot(obs, type = "I", tlim = tlim, sortv = sortv, withlegend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
-            xtlab = xtlab, cex.plot = cex.axis, ...)
+            xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
           popViewport()
         }
 
@@ -140,21 +140,23 @@ SSPlotter <- function(obs, nchannels, nplots,
           par(plt = gridPLT(), new = TRUE)
           seqplot(obs[[i]], type = "d", withlegend = FALSE,
             use.layout = FALSE, yaxis = yaxis, axes = FALSE, ylab = NA,
-            with.missing = with.missing, xtlab = xtlab, ...)
+            with.missing = with.missing, xtlab = xtlab, missing.color = missing.color, ...)
           popViewport()
         }
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
         par(plt = gridPLT(), new = TRUE)
         seqplot(obs[[nchannels]], type = "d", withlegend = FALSE, xaxis = plotxaxis,
           use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
-          with.missing = with.missing, xtlab = xtlab, cex.plot = cex.axis, ...)
+          with.missing = with.missing, xtlab = xtlab, cex.plot = cex.axis, 
+          missing.color = missing.color, ...)
         popViewport()
       } else {
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
         par(plt = gridPLT(), new = TRUE)
         seqplot(obs, type = "d", withlegend = FALSE, xaxis = plotxaxis,
           use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
-          with.missing = with.missing, xtlab = xtlab, cex.plot = cex.axis, ...)
+          with.missing = with.missing, xtlab = xtlab, cex.plot = cex.axis, 
+          missing.color = missing.color, ...)
         popViewport()
       }
 
@@ -173,21 +175,21 @@ SSPlotter <- function(obs, nchannels, nplots,
         par(plt = gridPLT(), new = TRUE)
         seqplot(hidden.paths.seq, type = type, tlim = tlim, sortv = sortv, withlegend = FALSE,
           use.layout = FALSE, yaxis = yaxis, axes = xaxis, ylab = NA,
-          xtlab = xtlab, cex.plot = cex.axis, ...)
+          xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
         popViewport()
       } else if (length(sortv) == 1 && (sortv == "from.start" || sortv == "from.end")) {
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nplots))
         par(plt = gridPLT(), new = TRUE)
         seqplot(hidden.paths.seq[orderv,], type = type, tlim = tlim, withlegend = FALSE,
           use.layout = FALSE, yaxis = yaxis, axes = xaxis, ylab = NA,
-          xtlab = xtlab, cex.plot = cex.axis, ...)
+          xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
         popViewport()
       } else if(length(sortv) > 1) {
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nplots))
         par(plt = gridPLT(), new = TRUE)
         seqplot(hidden.paths.seq, type = type, tlim = tlim, sortv = sortv, withlegend = FALSE,
           use.layout = FALSE, yaxis = yaxis, axes = xaxis, ylab = NA,
-          xtlab = xtlab, cex.plot = cex.axis, ...)
+          xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
         popViewport()
       }
     } else {
@@ -195,7 +197,7 @@ SSPlotter <- function(obs, nchannels, nplots,
       par(plt = gridPLT(), new = TRUE)
       seqplot(hidden.paths.seq, type = type, withlegend = FALSE,
         use.layout = FALSE, yaxis = yaxis, axes = xaxis, ylab = NA,
-        xtlab = xtlab, cex.plot = cex.axis, ...)
+        xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
       popViewport()
     }
     # Close viewport "vpplot"
@@ -264,18 +266,22 @@ SSPlotter <- function(obs, nchannels, nplots,
         if (nchannels > 1) {
           if (withlegend == "bottom") {
             seqlegend(obs[[i]], fontsize = cex.legend, position = "top",
-              ncol = ncol.legend[i], with.missing = with.missing.legend)
+              ncol = ncol.legend[i], with.missing = with.missing.legend, 
+              missing.color = missing.color)
           } else {
             seqlegend(obs[[i]], fontsize = cex.legend, position = "left",
-              ncol = ncol.legend[i], with.missing = with.missing.legend)
+              ncol = ncol.legend[i], with.missing = with.missing.legend, 
+              missing.color = missing.color)
           }
         } else {
           if(withlegend == "bottom"){
             seqlegend(obs, fontsize = cex.legend, position = "top",
-              ncol = ncol.legend[i], with.missing = with.missing.legend)
+              ncol = ncol.legend[i], with.missing = with.missing.legend, 
+              missing.color = missing.color)
           } else {
             seqlegend(obs, fontsize = cex.legend, position = "left",
-              ncol = ncol.legend[i], with.missing = with.missing.legend)
+              ncol = ncol.legend[i], with.missing = with.missing.legend, 
+              missing.color = missing.color)
           }
         }
         popViewport(2)
@@ -289,11 +295,13 @@ SSPlotter <- function(obs, nchannels, nplots,
       par(plt = gridPLT(), new = TRUE)
       if (withlegend == "bottom") {
         seqlegend(hidden.paths.seq, fontsize = cex.legend, position = "top",
-          ncol = ncol.legend[length(ncol.legend)], with.missing = with.missing.legend)
+          ncol = ncol.legend[length(ncol.legend)], with.missing = with.missing.legend, 
+          missing.color = missing.color)
       } else {
         seqlegend(hidden.paths.seq, fontsize = cex.legend, position = "left",
           ncol = ncol.legend[length(ncol.legend)],
-          with.missing = with.missing.legend)
+          with.missing = with.missing.legend, 
+          missing.color = missing.color)
       }
       popViewport(2)
     }
@@ -340,24 +348,28 @@ SSPlotter <- function(obs, nchannels, nplots,
           seqlegend(obs[[1]], fontsize = cex.legend, position = "left",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = anymissing,
-            missing.color = attr(obs[[1]],"missing.color"))
+            missing.color = ifelse(is.null(missing.color), 
+                                   attr(obs[[1]],"missing.color"), missing.color))
         } else { # withlegend == "bottom.combined"
           seqlegend(obs[[1]], fontsize = cex.legend, position = "top",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = anymissing,
-            missing.color = attr(obs[[1]],"missing.color"))
+            missing.color = ifelse(is.null(missing.color), 
+                                   attr(obs[[1]],"missing.color"), missing.color))
         }
       } else {
         if (withlegend == "right.combined") {
           seqlegend(obs, fontsize = cex.legend, position = "left",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = anymissing,
-            missing.color = attr(obs,"missing.color"))
+            missing.color = ifelse(is.null(missing.color), 
+                                   attr(obs,"missing.color"), missing.color))
         } else { # withlegend == "bottom.combined"
           seqlegend(obs, fontsize = cex.legend, position = "top",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = anymissing,
-            missing.color = attr(obs,"missing.color"))
+            missing.color = ifelse(is.null(missing.color), 
+                                   attr(obs,"missing.color"), missing.color))
         }
       }
     } else {
@@ -366,24 +378,28 @@ SSPlotter <- function(obs, nchannels, nplots,
           seqlegend(hidden.paths, fontsize = cex.legend, position = "left",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,
-            missing.color = attr(obs[[1]],"missing.color"))
+            missing.color = ifelse(is.null(missing.color), 
+                                   attr(obs[[1]],"missing.color"), missing.color))
         } else { # withlegend == "bottom.combined"
           seqlegend(hidden.paths, fontsize = cex.legend, position = "top",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,
-            missing.color = attr(obs[[1]],"missing.color"))
+            missing.color = ifelse(is.null(missing.color), 
+                                   attr(obs[[1]],"missing.color"), missing.color))
         }
       } else {
         if(withlegend == "right.combined"){
           seqlegend(hidden.paths, fontsize = cex.legend, position = "left",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,
-            missing.color = attr(obs,"missing.color"))
+            missing.color = ifelse(is.null(missing.color), 
+                                   attr(obs,"missing.color"), missing.color))
         } else { # withlegend == "bottom.combined"
           seqlegend(hidden.paths, fontsize = cex.legend, position = "top",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,
-            missing.color = attr(obs,"missing.color"))
+            missing.color = ifelse(is.null(missing.color), 
+                                   attr(obs,"missing.color"), missing.color))
         }
       }
     }
