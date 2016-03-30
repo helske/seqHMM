@@ -12,7 +12,7 @@ fit_model(model, em_step = TRUE, global_step = FALSE, local_step = FALSE,
 \arguments{
 \item{model}{An object of class \code{hmm} or \code{mhmm}.}
 
-\item{em_step}{Logical. Whether or not to use the EM algorithm at the start 
+\item{em_step}{Logical. Whether or not to use the EM algorithm at the start
 of the parameter estimation. The default is \code{TRUE}.}
 
 \item{global_step}{Logical. Whether or not to use global optimization via
@@ -31,16 +31,16 @@ and for mixture models 3 (print also during optimization of coefficients).}
 \item{reltol}{Relative tolerance for convergence defined as
 \eqn{(logLik_new - logLik_old)/(abs(logLik_old) + 0.1)}.
 The default is 1e-12.}
-\item{restart}{A list containing options for possible EM restarts with the 
+\item{restart}{A list containing options for possible EM restarts with the
   following components:
 \describe{
 \item{times}{Number of restarts of the EM algorithm using random initial values. The default is 0, i.e. no restarts. }
 \item{transition}{Logical. Should the original transition probabilities be varied? The default is \code{TRUE}. }
 \item{emission}{Logical. Should the original emission probabilities be varied? The default is \code{TRUE}. }
 \item{sd}{Standard deviation for \code{rnorm} used in randomization. The default is 0.25.}
-\item{maxeval}{Maximum number of iterations, the default is 100.}
+\item{maxeval}{Maximum number of iterations, the default is \code{control_em$maxeval}}
 \item{print_level}{Level of printing in restarted EM steps. The default is \code{control_em$print_level}. }
-\item{reltol}{Relative tolerance for convergence at restarted EM steps. The default is 1e-8.
+\item{reltol}{Relative tolerance for convergence at restarted EM steps. The default is \code{control_em$reltol}.
 If the relative change of the final model of the restart phase is larger than the tolerance
 for the original EM phase, the final model is re-estimated with the original \code{reltol}
 and \code{maxeval} at the end of the EM step.}
@@ -70,7 +70,7 @@ The default is \code{min(times + 1, 25)}.}
 }}
 
 \item{lb, ub}{Lower and upper bounds for parameters in Softmax parameterization.
-The default interval is \eqn{[pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)]}, 
+The default interval is \eqn{[pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)]},
 except for beta coefficients,
 where the scale of covariates is taken into account.
 Note that it might still be a good idea to scale covariates around unit scale.
@@ -110,8 +110,8 @@ The fitting function provides three estimation steps: 1) EM algorithm,
 
   It is possible to rerun the EM algorithm automatically using random starting
   values based on the first run of EM. Number of restarts is defined by
-  the \code{restart} argument in \code{control_em}. As the EM algorithm is 
-  relatively fast, this method might be preferred option compared to the proper 
+  the \code{restart} argument in \code{control_em}. As the EM algorithm is
+  relatively fast, this method might be preferred option compared to the proper
   global optimization strategy of step 2.
 
   The default global optimization method (triggered via \code{global_step = TRUE}) is

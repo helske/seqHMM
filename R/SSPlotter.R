@@ -294,7 +294,7 @@ SSPlotter <- function(obs, nchannels, nplots,
       pushViewport(viewport(width = unit(0.9, "npc")))
       par(plt = gridPLT(), new = TRUE)
       if (withlegend == "bottom") {
-        seqlegend(hidden.paths.seq, fontsize = cex.legend, position = "top",
+        seqlegend(hidden.paths, fontsize = cex.legend, position = "top",
           ncol = ncol.legend[length(ncol.legend)], with.missing = with.missing.legend, 
           missing.color = missing.color)
 

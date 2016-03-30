@@ -18,16 +18,16 @@ simulate_emission_probs(n_states, n_symbols, n_clusters = 1)
 
 \item{n_clusters}{Number of clusters.}
 
-\item{left_right}{Constrain the transition probabilities to upper triangular. 
+\item{left_right}{Constrain the transition probabilities to upper triangular.
 Default is \code{FALSE}.}
 
-\item{diag_c}{In case of left right model, a constant value to be added to diagonal of transition matrices before scaling.}
+\item{diag_c}{A constant value to be added to diagonal of transition matrices before scaling.}
 
 \item{n_symbols}{Number of distinct symbols in each channel.}
 }
 \description{
-These are helper functions for quick construction of initial values for various 
-model building functions. 
+These are helper functions for quick construction of initial values for various
+model building functions.
 Mostly useful for global optimization algorithms which do not depend on initial values.
 }
 \seealso{

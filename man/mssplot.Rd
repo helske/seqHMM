@@ -7,10 +7,10 @@ Paths for Mixture Hidden Markov Models}
 \usage{
 mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
   plots = "obs", type = "d", tlim = 0, sortv = NULL, sort.channel = 1,
-  dist.method = "OM", with.missing = FALSE, title = NA, title.n = TRUE,
-  cex.title = 1, title.pos = 1, withlegend = "auto",
-  ncol.legend = "auto", with.missing.legend = "auto", legend.prop = 0.3,
-  cex.legend = 1, hidden.states.colors = "auto",
+  dist.method = "OM", with.missing = FALSE, missing.color = NULL,
+  title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
+  withlegend = "auto", ncol.legend = "auto", with.missing.legend = "auto",
+  legend.prop = 0.3, cex.legend = 1, hidden.states.colors = "auto",
   hidden.states.labels = "auto", xaxis = TRUE, xlab = NA, xtlab = NULL,
   xlab.pos = 1, ylab = "auto", hidden.states.title = "Hidden states",
   yaxis = FALSE, ylab.pos = "auto", cex.lab = 1, cex.axis = 1, ...)
@@ -63,6 +63,10 @@ Transition rates are used for defining substitution costs if needed. See
 
 \item{with.missing}{Controls whether missing states are included in state
 distribution plots (\code{type = "d"}). The default is \code{FALSE}.}
+
+\item{missing.color}{Alternative color for representing missing values 
+in the sequences. By default, this color is taken from the \code{missing.color} 
+attribute of the sequence object.}
 
 \item{title}{Main title for the graphic. The default is \code{NA}: if
 \code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE}
