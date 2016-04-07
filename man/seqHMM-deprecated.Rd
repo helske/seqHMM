@@ -41,7 +41,7 @@ Possible arguments are \describe{
 and for mixture models 3 (print also during optimization of coefficients).}
 \item{reltol}{Relative tolerance for convergence defined as
 \eqn{(logLik_new - logLik_old)/(abs(logLik_old) + 0.1)}.
-The default is 1e-12.}
+The default is 1e-10.}
 \item{restart}{A list containing options for possible EM restarts with the
   following components:
 \describe{
