@@ -62,8 +62,8 @@ Transition rates are used for defining substitution costs if needed. See
 \item{with.missing}{Controls whether missing states are included in state
 distribution plots (\code{type = "d"}). The default is \code{FALSE}.}
 
-\item{missing.color}{Alternative color for representing missing values 
-in the sequences. By default, this color is taken from the \code{missing.color} 
+\item{missing.color}{Alternative color for representing missing values
+in the sequences. By default, this color is taken from the \code{missing.color}
 attribute of the sequence object.}
 
 \item{title}{Main title for the graphic. The default is \code{NA}: if

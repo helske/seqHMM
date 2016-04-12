@@ -33,7 +33,7 @@ or \code{"both"} for observations and hidden paths together.}
 plots and \code{"d"} for state distribution plots (the default). See
 \code{\link{seqplot}} for details.}
 
-\item{tlim}{Indexes of the subjects to be plotted (the default is 0, 
+\item{tlim}{Indexes of the subjects to be plotted (the default is 0,
 i.e. all subjects are plotted). For example, \code{tlim = 1:10} plots
 the first ten subjects in data.}
 
@@ -64,8 +64,8 @@ Transition rates are used for defining substitution costs if needed. See
 \item{with.missing}{Controls whether missing states are included in state
 distribution plots (\code{type = "d"}). The default is \code{FALSE}.}
 
-\item{missing.color}{Alternative color for representing missing values 
-in the sequences. By default, this color is taken from the \code{missing.color} 
+\item{missing.color}{Alternative color for representing missing values
+in the sequences. By default, this color is taken from the \code{missing.color}
 attribute of the sequence object.}
 
 \item{title}{Main title for the graphic. The default is \code{NA}: if
