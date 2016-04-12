@@ -23,7 +23,7 @@
 #'   and for mixture models 3 (print also during optimization of coefficients).}
 #'   \item{reltol}{Relative tolerance for convergence defined as
 #'   \eqn{(logLik_new - logLik_old)/(abs(logLik_old) + 0.1)}.
-#'   The default is 1e-12.}
+#'   The default is 1e-10.}
 #'   \item{restart}{A list containing options for possible EM restarts with the
 #'     following components:
 #'   \describe{
@@ -164,7 +164,7 @@
 #'
 #' \dontrun{
 #' set.seed(21)
-#' fit_hmm_mvad <- fit_model(init_hmm_mvad, control_em = list(restart = list(times = 100)))
+#' fit_hmm_mvad <- fit_model(init_hmm_mvad, control_em = list(restart = list(times = 50)))
 #' hmm_mvad <- fit_hmm_mvad$model
 #' }
 #'
@@ -275,8 +275,9 @@
 #' # (here threads = 1 for portability issues)
 #' set.seed(123)
 #' hmm_5 <- fit_model(
-#'    init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE, lb = -50, ub = 50,
-#' control_global = list(algorithm = "NLOPT_GD_STOGO", maxeval = 2500, maxtime = 0), threads = 1)
+#'    init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE, 
+#'    lb = -50, ub = 50, control_global = list(algorithm = "NLOPT_GD_STOGO", 
+#'    maxeval = 2500, maxtime = 0), threads = 1)
 #' hmm_5$logLik # -21675.4
 #'
 #' ##############################################################
@@ -471,7 +472,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     emissionArray[,1:model$n_symbols[i],i]<-model$emission_probs[[i]]
 
   if (em_step) {
-    em.con <- list(print_level = 0, maxeval = 1000, reltol = 1e-12, restart = NULL)
+    em.con <- list(print_level = 0, maxeval = 1000, reltol = 1e-10, restart = NULL)
     nmsC <- names(em.con)
     em.con[(namc <- names(control_em))] <- control_em
     if (length(noNms <- namc[!namc %in% nmsC]))
