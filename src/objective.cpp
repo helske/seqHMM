@@ -32,12 +32,13 @@ List objective(const arma::mat& transition, NumericVector emissionArray,
   //   return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
   // }
 
+  //use this instead of local vectors with grad += grad_k;, uses more memory but gives bit-identical results
+  //arma::mat gradmat(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ), obs.n_slices);
 
   unsigned int error = 0;
   double ll = 0;
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) reduction(+:ll) num_threads(threads) \
-  default(none) shared(grad, nSymbols, ANZ, BNZ, INZ,                                                      \
-    obs, init, transition, emission, error)
+  default(none) shared(grad, nSymbols, ANZ, BNZ, INZ, obs, init, transition, emission, error)
     for (int k = 0; k < obs.n_slices; k++) {
       if (error == 0) {
         arma::mat alpha(emission.n_rows, obs.n_cols); //m,n
@@ -150,16 +151,21 @@ List objective(const arma::mat& transition, NumericVector emissionArray,
           ll += arma::sum(log(scales));
 #pragma omp critical
           grad += grad_k;
+         // gradmat.col(k) = grad_k;
+        }
 //           for (unsigned int ii = 0; ii < grad_k.n_elem; ii++) {
 // #pragma omp atomic
 //             grad(ii) += grad_k(ii);
 //         }
-        }
+
       }
     }
     if(error > 0){
       ll = -arma::math::inf();
       grad.fill(-arma::math::inf());
     }
+    // } else {
+    //   grad = sum(gradmat, 1);
+    // }
     return List::create(Named("objective") = -ll, Named("gradient") = wrap(-grad));
 }
