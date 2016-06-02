@@ -15,10 +15,17 @@ using namespace Rcpp;
 
 arma::vec reparma(const arma::vec& x, const arma::ivec& y);
 
-void uvForward(const arma::mat& transition, const arma::cube& emission, const arma::vec& init,
+void uvForward(const arma::sp_mat& transition_t, const arma::cube& emission, const arma::vec& init,
   const arma::imat& obs, arma::mat& alpha, arma::vec& scales);
-void uvBackward(const arma::mat& transition, const arma::cube& emission,
+void uvBackward(const arma::sp_mat& transition, const arma::cube& emission,
   const arma::imat& obs, arma::mat& beta, const arma::vec& scales);
+
+//
+// void uvForward(const arma::mat& transition_t, const arma::cube& emission, const arma::vec& init,
+//   const arma::imat& obs, arma::mat& alpha, arma::vec& scales);
+// void uvBackward(const arma::mat& transition, const arma::cube& emission,
+//   const arma::imat& obs, arma::mat& beta, const arma::vec& scales);
+
 
 void internalForwardx(const arma::sp_mat& transition_t, const arma::cube& emission,
                       const arma::mat& init, const arma::icube& obs, arma::cube& alpha, arma::mat& scales, int threads);

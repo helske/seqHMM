@@ -42,11 +42,11 @@ List objective(const arma::mat& transition, NumericVector emissionArray,
     for (int k = 0; k < obs.n_slices; k++) {
       if (error == 0) {
         arma::mat alpha(emission.n_rows, obs.n_cols); //m,n
-        arma::mat beta(emission.n_rows, obs.n_cols); //m,n
         arma::vec scales(obs.n_cols); //n
-
-        uvForward(transition, emission, init, obs.slice(k), alpha, scales);
-        uvBackward(transition, emission, obs.slice(k), beta, scales);
+        arma::sp_mat sp_trans(transition);
+        uvForward(sp_trans.t(), emission, init, obs.slice(k), alpha, scales);
+        arma::mat beta(emission.n_rows, obs.n_cols); //m,n
+        uvBackward(sp_trans, emission, obs.slice(k), beta, scales);
 
         int countgrad = 0;
         arma::vec grad_k(grad.n_elem, arma::fill::zeros);

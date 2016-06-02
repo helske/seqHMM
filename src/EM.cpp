@@ -63,10 +63,11 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
     default(none) shared(init, transition, obs, emission, delta, ksii, gamma, nSymbols, error_code, min_sf)
       for (unsigned int k = 0; k < obs.n_slices; k++) {
         arma::mat alpha(emission.n_rows, obs.n_cols); //m,n,k
-        arma::mat beta(emission.n_rows, obs.n_cols); //m,n,k
         arma::vec scales(obs.n_cols);
-        uvForward(transition, emission, init, obs.slice(k), alpha, scales);
-        uvBackward(transition, emission, obs.slice(k), beta, scales);
+        arma::sp_mat sp_trans(transition);
+        uvForward(sp_trans.t(), emission, init, obs.slice(k), alpha, scales);
+        arma::mat beta(emission.n_rows, obs.n_cols); //m,n,k
+        uvBackward(sp_trans, emission, obs.slice(k), beta, scales);
         sumlogLik_new += arma::sum(log(scales));
 
         arma::mat ksii_k(emission.n_rows, emission.n_rows, arma::fill::zeros);

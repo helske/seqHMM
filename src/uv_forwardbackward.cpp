@@ -2,7 +2,7 @@
 
 #include "seqHMM.h"
 
-void uvForward(const arma::mat& transition, const arma::cube& emission, const arma::vec& init,
+void uvForward(const arma::sp_mat& transition_t, const arma::cube& emission, const arma::vec& init,
   const arma::imat& obs, arma::mat& alpha, arma::vec& scales) {
 
   alpha.col(0) = init;
@@ -12,7 +12,7 @@ void uvForward(const arma::mat& transition, const arma::cube& emission, const ar
   scales(0) = sum(alpha.col(0));
   alpha.col(0) /= scales(0);
   for (unsigned int t = 1; t < obs.n_cols; t++) {
-    alpha.col(t) = transition.t() * alpha.col(t - 1);
+    alpha.col(t) = transition_t * alpha.col(t - 1);
     for (unsigned int r = 0; r < obs.n_rows; r++) {
       alpha.col(t) %= emission.slice(r).col(obs(r, t));
     }
@@ -22,7 +22,7 @@ void uvForward(const arma::mat& transition, const arma::cube& emission, const ar
 
 }
 
-void uvBackward(const arma::mat& transition, const arma::cube& emission,
+void uvBackward(const arma::sp_mat& transition, const arma::cube& emission,
   const arma::imat& obs, arma::mat& beta, const arma::vec& scales) {
 
   beta.col(obs.n_cols - 1).fill(1.0);
@@ -34,3 +34,4 @@ void uvBackward(const arma::mat& transition, const arma::cube& emission,
     beta.col(t) =  transition * tmpbeta / scales(t + 1);
   }
 }
+
