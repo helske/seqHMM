@@ -30,12 +30,12 @@ void internalForward(const arma::mat& transition, const arma::cube& emission,
 void internalBackward(const arma::mat& transition, const arma::cube& emission,
                       const arma::icube& obs, arma::cube& beta, const arma::mat& scales, int threads);
 
-unsigned int optCoef(arma::mat& weights, const arma::icube& obs, const arma::cube& emission, const arma::mat& initk,
-                     const arma::cube& beta, const arma::mat& scales, arma::mat& coef, const arma::mat& X,
+unsigned int optCoef(arma::mat& weights, const arma::icube& obs, const arma::cube& emission,
+                     const arma::mat& bsi, arma::mat& coef, const arma::mat& X,
                      const arma::ivec& cumsumstate, const arma::ivec& numberOfStates, int trace);
 
-arma::vec gCoef(const arma::icube& obs, const arma::cube& beta, const arma::mat& scales, const arma::cube& emission,
-                const arma::mat& initk,  const arma::mat& weights, const arma::mat& X, const arma::ivec& cumsumstate,
+arma::vec gCoef(const arma::icube& obs, const arma::mat& bsi, const arma::cube& emission,
+                const arma::mat& weights, const arma::mat& X, const arma::ivec& cumsumstate,
                 const arma::ivec& numberOfStates);
 
 arma::mat hCoef(const arma::mat& weights, const arma::mat& X);
