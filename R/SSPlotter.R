@@ -296,16 +296,14 @@ SSPlotter <- function(obs, nchannels, nplots,
       if (withlegend == "bottom") {
         seqlegend(hidden.paths, fontsize = cex.legend, position = "top",
           ncol = ncol.legend[length(ncol.legend)], with.missing = with.missing.legend, 
-          missing.color = missing.color)
-
-        seqlegend(hidden.paths, fontsize = cex.legend, position = "top",
-          ncol = ncol.legend[length(ncol.legend)], with.missing = with.missing.legend, 
-          missing.color = missing.color)
+          missing.color = missing.color, 
+          ltext = hidden.states.labels)
       } else {
         seqlegend(hidden.paths, fontsize = cex.legend, position = "left",
           ncol = ncol.legend[length(ncol.legend)],
           with.missing = with.missing.legend, 
-          missing.color = missing.color)
+          missing.color = missing.color, 
+          ltext = hidden.states.labels)
       }
       popViewport(2)
     }
@@ -383,13 +381,15 @@ SSPlotter <- function(obs, nchannels, nplots,
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,
             missing.color = ifelse(is.null(missing.color), 
-                                   attr(obs[[1]],"missing.color"), missing.color))
+                                   attr(obs[[1]],"missing.color"), missing.color), 
+            ltext = hidden.states.labels)
         } else { # withlegend == "bottom.combined"
           seqlegend(hidden.paths, fontsize = cex.legend, position = "top",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,
             missing.color = ifelse(is.null(missing.color), 
-                                   attr(obs[[1]],"missing.color"), missing.color))
+                                   attr(obs[[1]],"missing.color"), missing.color), 
+            ltext = hidden.states.labels)
         }
       } else {
         if(withlegend == "right.combined"){
@@ -397,13 +397,15 @@ SSPlotter <- function(obs, nchannels, nplots,
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,
             missing.color = ifelse(is.null(missing.color), 
-                                   attr(obs,"missing.color"), missing.color))
+                                   attr(obs,"missing.color"), missing.color), 
+            ltext = hidden.states.labels)
         } else { # withlegend == "bottom.combined"
           seqlegend(hidden.paths, fontsize = cex.legend, position = "top",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,
             missing.color = ifelse(is.null(missing.color), 
-                                   attr(obs,"missing.color"), missing.color))
+                                   attr(obs,"missing.color"), missing.color), 
+            ltext = hidden.states.labels)
         }
       }
     }
