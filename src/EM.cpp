@@ -45,7 +45,7 @@ List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVect
   //  //EM-algorithm begins
   //
   double change = tol + 1.0;
-  int iter = 0;
+  int iter = -1; //for backward compatibility
   double sumlogLik_new = 0;
   double sumlogLik = -1e150; //sum(ll);
   while ((change > tol) & (iter < itermax)) {

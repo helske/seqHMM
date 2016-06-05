@@ -55,7 +55,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   //  //EM-algorithm begins
   //
   double change = tol + 1.0;
-  int iter = 0;
+  int iter = -1; //for backward compatibility
 
   arma::ivec cumsumstate = arma::cumsum(numberOfStates);
   double sumlogLik_new = 0;
