@@ -3,20 +3,11 @@
 #include "seqHMM.h"
 // [[Rcpp::export]]
 
-List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray,
-    NumericVector initialProbs, IntegerVector obsArray, IntegerVector nSymbols, NumericMatrix coefs,
-    const arma::mat& X, const arma::ivec& numberOfStates, int itermax, double tol, int trace, int threads) {
+List log_EMx(arma::mat transition, arma::cube emission, arma::vec init,
+  const arma::ucube& obs, const arma::uvec& nSymbols, arma::mat coef,
+    const arma::mat& X, const arma::uvec& numberOfStates, int itermax, 
+    double tol, int trace, unsigned int threads) {
 
-
-  IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
-  IntegerVector oDims = obsArray.attr("dim"); //k,n,r
-
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
-  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false, true);
-  arma::vec init(initialProbs.begin(), emission.n_rows, true);
-  arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, true);
-
-  arma::mat coef(coefs.begin(), coefs.nrow(), coefs.ncol());
   coef.col(0).zeros();
 
   arma::mat weights = exp(X * coef).t();
@@ -45,7 +36,7 @@ List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray,
 
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(obs, alpha, ll)
-  for (int k = 0; k < obs.n_slices; k++) {
+  for (unsigned int k = 0; k < obs.n_slices; k++) {
     ll(k) = logSumExp(alpha.slice(k).col(obs.n_cols - 1));
   }
 
@@ -58,7 +49,7 @@ List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray,
   //  
   double change = tol + 1.0;
   int iter = 0;
-  arma::ivec cumsumstate = cumsum(numberOfStates);
+  arma::uvec cumsumstate = cumsum(numberOfStates);
 
   while ((change > tol) & (iter < itermax)) {
     iter++;
@@ -73,11 +64,11 @@ List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray,
 
 #pragma omp parallel for if(obs.n_slices>=threads) schedule(static) num_threads(threads) \
     default(none) shared(transition, obs, ll, alpha, beta, emission, ksii, gamma, nSymbols)
-    for (int k = 0; k < obs.n_slices; k++) {
+    for (unsigned int k = 0; k < obs.n_slices; k++) {
       if (obs.n_cols > 1) {
         for (unsigned int j = 0; j < emission.n_rows; j++) {
           for (unsigned int i = 0; i < emission.n_rows; i++) {
-            if (transition(i, j) > -arma::math::inf()) {
+            if (transition(i, j) > -arma::datum::inf) {
               arma::vec tmpnm1(obs.n_cols - 1);
               for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
                 tmpnm1(t) = alpha(i, t, k) + transition(i, j) + beta(j, t + 1, k);
@@ -95,13 +86,13 @@ List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray,
       for (unsigned int r = 0; r < emission.n_slices; r++) {
         for (int l = 0; l < nSymbols[r]; l++) {
           for (unsigned int i = 0; i < emission.n_rows; i++) {
-            if (emission(i, l, r) > -arma::math::inf()) {
+            if (emission(i, l, r) > -arma::datum::inf) {
               arma::vec tmpn(obs.n_cols);
               for (unsigned int t = 0; t < obs.n_cols; t++) {
                 if (l == (obs(r, t, k))) {
                   tmpn(t) = alpha(i, t, k) + beta(i, t, k);
                 } else
-                  tmpn(t) = -arma::math::inf();
+                  tmpn(t) = -arma::datum::inf;
               }
 #pragma omp atomic
               gamma(i, l, r) += exp(logSumExp(tmpn) - ll(k));
@@ -127,7 +118,7 @@ List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray,
       emission.slice(r).cols(0, nSymbols(r) - 1) = log(gamma.slice(r).cols(0, nSymbols(r) - 1));
     }
 
-    for (int i = 0; i < numberOfStates.n_elem; i++) {
+    for (unsigned int i = 0; i < numberOfStates.n_elem; i++) {
       delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1) /= arma::as_scalar(
           arma::accu(delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1)));
     }
@@ -141,7 +132,7 @@ List log_EMx(NumericVector transitionMatrix, NumericVector emissionArray,
     log_internalForwardx(transition, emission, initk, obs, alpha, threads);
     log_internalBackward(transition, emission, obs, beta, threads);
 
-    for (int k = 0; k < obs.n_slices; k++) {
+    for (unsigned int k = 0; k < obs.n_slices; k++) {
       ll(k) = logSumExp(alpha.slice(k).col(obs.n_cols - 1));
     }
 

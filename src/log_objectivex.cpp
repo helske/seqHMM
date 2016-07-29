@@ -2,26 +2,18 @@
 #include "seqHMM.h"
 // [[Rcpp::export]]
 
-List log_objectivex(const arma::mat& transition, NumericVector emissionArray,
-                    const arma::vec& init, IntegerVector obsArray, const arma::imat& ANZ,
-                    IntegerVector emissNZ, const arma::ivec& INZ, const arma::ivec& nSymbols, const arma::mat& coef,
-                    const arma::mat& X, const arma::ivec& numberOfStates, int threads) {
-  
-  IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
-  IntegerVector oDims = obsArray.attr("dim"); //k,n,r
-  
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false, true);
-  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false, true);
-  
-  arma::icube BNZ(emissNZ.begin(), emission.n_rows, emission.n_cols - 1, emission.n_slices, false, true);
+List log_objectivex(const arma::mat& transition, const arma::cube& emission,
+                    const arma::vec& init, const arma::ucube& obs, const arma::umat& ANZ,
+                    const arma::ucube& BNZ, const arma::uvec& INZ, const arma::uvec& nSymbols, const arma::mat& coef,
+                    const arma::mat& X, const arma::uvec& numberOfStates, unsigned int threads) {
   
   int q = coef.n_rows;
   arma::vec grad(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ) + (numberOfStates.n_elem - 1) * q,
                  arma::fill::zeros);
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
-    grad.fill(-arma::math::inf());
-    return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
+    grad.fill(-arma::datum::inf);
+    return List::create(Named("objective") = arma::datum::inf, Named("gradient") = wrap(grad));
   }
   
   weights.each_row() /= sum(weights, 0);
@@ -49,7 +41,7 @@ List log_objectivex(const arma::mat& transition, NumericVector emissionArray,
     ll(k) = logSumExp(alpha.slice(k).col(obs.n_cols - 1));
   }
   
-  arma::ivec cumsumstate = arma::cumsum(numberOfStates);
+  arma::uvec cumsumstate = arma::cumsum(numberOfStates);
   
   arma::mat gradmat(
       arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ) + (numberOfStates.n_elem - 1) * q,
@@ -60,16 +52,16 @@ List log_objectivex(const arma::mat& transition, NumericVector emissionArray,
   default(none) shared(q, gradmat, nSymbols, ANZ, BNZ, INZ, ll,                            \
           numberOfStates, cumsumstate, obs, init, X, weights, transition, emission,        \
           initLog, transitionLog, emissionLog, initk, alpha, beta)
-    for (int k = 0; k < obs.n_slices; k++) {
+    for (unsigned int k = 0; k < obs.n_slices; k++) {
       int countgrad = 0;
       
       // transitionMatrix
       if (arma::accu(ANZ) > 0) {
-        for (int jj = 0; jj < numberOfStates.n_elem; jj++) {
+        for (unsigned int jj = 0; jj < numberOfStates.n_elem; jj++) {
           arma::vec gradArow(numberOfStates(jj));
           arma::mat gradA(numberOfStates(jj), numberOfStates(jj));
           int ind_jj = cumsumstate(jj) - numberOfStates(jj);
-          for (int i = 0; i < numberOfStates(jj); i++) {
+          for (unsigned int i = 0; i < numberOfStates(jj); i++) {
             arma::uvec ind = arma::find(
               ANZ.row(ind_jj + i).subvec(ind_jj, cumsumstate(jj) - 1));
             
@@ -79,7 +71,7 @@ List log_objectivex(const arma::mat& transition, NumericVector emissionArray,
               gradA.each_row() -= transition.row(ind_jj + i).subvec(ind_jj, cumsumstate(jj) - 1);
               gradA.each_col() %= transition.row(ind_jj + i).subvec(ind_jj, cumsumstate(jj) - 1).t();
               
-              for (int j = 0; j < numberOfStates(jj); j++) {
+              for (unsigned int j = 0; j < numberOfStates(jj); j++) {
                 for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
                   double tmp = 0.0;
                   for (unsigned int r = 0; r < obs.n_rows; r++) {
@@ -145,12 +137,12 @@ List log_objectivex(const arma::mat& transition, NumericVector emissionArray,
         }
       }
       if (arma::accu(INZ) > 0) {
-        for (int i = 0; i < numberOfStates.n_elem; i++) {
+        for (unsigned int i = 0; i < numberOfStates.n_elem; i++) {
           int ind_i = cumsumstate(i) - numberOfStates(i);
           arma::uvec ind = arma::find(INZ.subvec(ind_i, cumsumstate(i) - 1));
           if (ind.n_elem > 0) {
             arma::vec gradIrow(numberOfStates(i), arma::fill::zeros);
-            for (int j = 0; j < numberOfStates(i); j++) {
+            for (unsigned int j = 0; j < numberOfStates(i); j++) {
               double tmp = 0.0;
               for (unsigned int r = 0; r < obs.n_rows; r++) {
                 tmp += emissionLog(ind_i + j, obs(r, 0, k), r);
@@ -168,7 +160,7 @@ List log_objectivex(const arma::mat& transition, NumericVector emissionArray,
           }
         }
       }
-      for (int jj = 1; jj < numberOfStates.n_elem; jj++) {
+      for (unsigned int jj = 1; jj < numberOfStates.n_elem; jj++) {
         int ind_jj = cumsumstate(jj) - numberOfStates(jj);
         for (int j = 0; j < emission.n_rows; j++) {
           double tmp = 0.0;

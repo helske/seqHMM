@@ -2,35 +2,27 @@
 #include "seqHMM.h"
 
 // [[Rcpp::export]]
-List estimate_coefs(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-         IntegerVector obsArray, const arma::ivec& nSymbols, NumericMatrix coefs, const arma::mat& X,
-         const arma::ivec& numberOfStates, int itermax, double tol, int trace, int threads) {
-  
-  IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
-  IntegerVector oDims = obsArray.attr("dim"); //k,n,r
-  
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
-  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false, true);
-  arma::vec init(initialProbs.begin(), emission.n_rows, false);
-  arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, false);
-  
-  arma::mat coef(coefs.begin(), coefs.nrow(), coefs.ncol());
+List estimate_coefs(const arma::mat& transition, const arma::cube& emission, 
+  const arma::vec& init, const arma::ucube& obs, const arma::uvec& nSymbols, 
+  arma::mat coef, const arma::mat& X, const arma::uvec& numberOfStates, 
+  int itermax, double tol, int trace, unsigned int threads) {
+
   coef.col(0).zeros();
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
     return List::create(Named("error") = 3);
   }
   weights.each_row() /= sum(weights, 0);
-  
+
   arma::mat initk(emission.n_rows, obs.n_slices);
   for (unsigned int k = 0; k < obs.n_slices; k++) {
     initk.col(k) = init % reparma(weights.col(k), numberOfStates);
   }
-  
+
   arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
   arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
   arma::mat scales(obs.n_cols, obs.n_slices); //m,n,k
-  
+
   arma::sp_mat sp_trans(transition);
   internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
   if(!scales.is_finite()) {
@@ -44,31 +36,31 @@ List estimate_coefs(NumericVector transitionMatrix, NumericVector emissionArray,
   if (min_sf < 1e-150) {
     Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable. ", min_sf);
   }
-  
+
   double sumlogLik = arma::accu(log(scales));
-  
+
   if (trace > 0) {
     Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
   }
-  
+
   double change = tol + 1.0;
   int iter = 0;
-  
-  arma::ivec cumsumstate = arma::cumsum(numberOfStates);
-  
+
+  arma::uvec cumsumstate = arma::cumsum(numberOfStates);
+
   while ((change > tol) & (iter < itermax)) {
     iter++;
-  
-  unsigned int error = optCoef(weights, obs, emission, initk, beta, scales, coef, X, cumsumstate,
-                                   numberOfStates, trace);
-  if (error != 0) {
-    return List::create(Named("error") = error);
-  }
-  
+  //
+  // unsigned int error = optCoef(weights, obs, emission, initk, beta, scales, coef, X, cumsumstate,
+  //                                  numberOfStates, trace);
+  // if (error != 0) {
+  //   return List::create(Named("error") = error);
+  // }
+
   for (unsigned int k = 0; k < obs.n_slices; k++) {
     initk.col(k) = init % reparma(weights.col(k), numberOfStates);
   }
-  
+
   internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
   if(!scales.is_finite()) {
     return List::create(Named("error") = 1);
@@ -89,7 +81,7 @@ List estimate_coefs(NumericVector transitionMatrix, NumericVector emissionArray,
     Rcout << " logLik: " << sumlogLik;
     Rcout << " relative change: " << change << std::endl;
   }
-  
+
   }
   if (trace > 0) {
     if (iter == itermax) {
@@ -100,7 +92,7 @@ List estimate_coefs(NumericVector transitionMatrix, NumericVector emissionArray,
       Rcpp::Rcout << " after " << iter << " iterations." << std::endl;
     }
     Rcpp::Rcout << "Final log-likelihood: " << sumlogLik << std::endl;
-    
+
   }
   return List::create(Named("coefficients") = wrap(coef), Named("error") = 0);
 }

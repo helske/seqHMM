@@ -1,9 +1,9 @@
 // estimation of beta coefficients using log-space
 #include "seqHMM.h"
 
-unsigned int log_optCoef(arma::mat& weights, const arma::icube& obs, const arma::cube& emission,
+unsigned int log_optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cube& emission,
     const arma::mat& initk, const arma::cube& beta, const arma::vec& ll, arma::mat& coef,
-    const arma::mat& X, const arma::ivec& cumsumstate, const arma::ivec& numberOfStates,
+    const arma::mat& X, const arma::uvec& cumsumstate, const arma::uvec& numberOfStates,
     int trace) {
 
   weights = exp(X * coef).t();
@@ -43,9 +43,9 @@ unsigned int log_optCoef(arma::mat& weights, const arma::icube& obs, const arma:
   return (0);
 }
 
-arma::vec log_gCoef(const arma::icube& obs, const arma::cube& beta, const arma::cube& emission,
+arma::vec log_gCoef(const arma::ucube& obs, const arma::cube& beta, const arma::cube& emission,
     const arma::mat& initk, const arma::mat& weights, const arma::vec& ll, const arma::mat& X,
-    const arma::ivec& cumsumstate, const arma::ivec& numberOfStates) {
+    const arma::uvec& cumsumstate, const arma::uvec& numberOfStates) {
 
   int q = X.n_cols;
   arma::vec grad(q * (weights.n_rows - 1), arma::fill::zeros);

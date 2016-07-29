@@ -11,9 +11,18 @@ estimate_coef(model, threads = 1, ...)
 \item{model}{An object of class \code{hmm} or \code{mhmm}.}
 
 \item{threads}{Number of threads to use in parallel computing. The default is 1.}
+<<<<<<< HEAD
 }
 \description{
 Function \code{estimate_coef} estimates the regression coefficients of mixture hidden
 Markov models and its restricted variants.
+=======
+
+\item{...}{Ignored.}
+}
+\description{
+Function \code{estimate_coef} estimates the regression coefficients of mixture hidden
+Markov models and its restricted variants while keeping other parameters fixed.
+>>>>>>> 42648a88c18ce94005e10bf7bc1be3faada53426
 }
 

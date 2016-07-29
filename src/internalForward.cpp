@@ -2,11 +2,11 @@
 
 #include "seqHMM.h"
 void internalForward(const arma::mat& transition, const arma::cube& emission, const arma::vec& init,
-  const arma::icube& obs, arma::cube& alpha, arma::mat& scales, int threads) {
-  
+  const arma::ucube& obs, arma::cube& alpha, arma::mat& scales, unsigned int threads) {
+
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(alpha, scales, obs, init, emission, transition)
-    for (int k = 0; k < obs.n_slices; k++) {
+    for (unsigned int k = 0; k < obs.n_slices; k++) {
       alpha.slice(k).col(0) = init;
       for (unsigned int r = 0; r < obs.n_rows; r++) {
         alpha.slice(k).col(0) %= emission.slice(r).col(obs(r, 0, k));
@@ -25,14 +25,14 @@ void internalForward(const arma::mat& transition, const arma::cube& emission, co
 }
 
 void internalForwardx(const arma::sp_mat& transition_t, const arma::cube& emission,
-  const arma::mat& init, const arma::icube& obs, arma::cube& alpha, arma::mat& scales,
-  int threads) {
-  
-  
+  const arma::mat& init, const arma::ucube& obs, arma::cube& alpha, arma::mat& scales,
+  unsigned int threads) {
+
+
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(alpha, scales, obs, init, emission, transition_t)
-    for (int k = 0; k < obs.n_slices; k++) {
-      
+    for (unsigned int k = 0; k < obs.n_slices; k++) {
+
       alpha.slice(k).col(0) = init.col(k);
       for (unsigned int r = 0; r < obs.n_rows; r++) {
         alpha.slice(k).col(0) %= emission.slice(r).col(obs(r, 0, k));

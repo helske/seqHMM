@@ -1,9 +1,9 @@
 //Estimation of beta coefficients
 #include "seqHMM.h"
 
-unsigned int optCoef(arma::mat& weights, const arma::icube& obs, const arma::cube& emission,
-    const arma::mat& initk, const arma::cube& beta, const arma::mat& scales, arma::mat& coef,
-    const arma::mat& X, const arma::ivec& cumsumstate, const arma::ivec& numberOfStates,
+unsigned int optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cube& emission,
+    const arma::mat& bsi, arma::mat& coef,
+    const arma::mat& X, const arma::uvec& cumsumstate, const arma::uvec& numberOfStates,
     int trace) {
 
   int iter = 0;
@@ -11,7 +11,7 @@ unsigned int optCoef(arma::mat& weights, const arma::icube& obs, const arma::cub
   while ((change > 1e-8) & (iter < 100)) {
     arma::vec tmpvec(X.n_cols * (weights.n_rows - 1));
     bool solve_ok = arma::solve(tmpvec, hCoef(weights, X),
-        gCoef(obs, beta, scales, emission, initk, weights, X, cumsumstate, numberOfStates));
+        gCoef(obs, bsi, emission, weights, X, cumsumstate, numberOfStates));
     if (solve_ok == false) {
       return (4);
     }
@@ -39,9 +39,9 @@ unsigned int optCoef(arma::mat& weights, const arma::icube& obs, const arma::cub
   return (0);
 }
 
-arma::vec gCoef(const arma::icube& obs, const arma::cube& beta, const arma::mat& scales,
-    const arma::cube& emission, const arma::mat& initk, const arma::mat& weights,
-    const arma::mat& X, const arma::ivec& cumsumstate, const arma::ivec& numberOfStates) {
+arma::vec gCoef(const arma::ucube& obs, const arma::mat& bsi,
+    const arma::cube& emission, const arma::mat& weights,
+    const arma::mat& X, const arma::uvec& cumsumstate, const arma::uvec& numberOfStates) {
 
   int q = X.n_cols;
   arma::vec grad(q * (weights.n_rows - 1), arma::fill::zeros);
@@ -55,11 +55,10 @@ arma::vec gCoef(const arma::icube& obs, const arma::cube& beta, const arma::mat&
           tmp *= emission(j, obs(r, 0, k), r);
         }
         if ((j >= (cumsumstate(jj) - numberOfStates(jj))) & (j < cumsumstate(jj))) {
-          grad.subvec(q * (jj - 1), q * jj - 1) += tmp * beta(j, 0, k) / scales(0, k) * initk(j, k)
-              * X.row(k).t() * (1.0 - weights(jj, k));
+          grad.subvec(q * (jj - 1), q * jj - 1) += tmp * bsi(j, k) *
+               X.row(k).t() * (1.0 - weights(jj, k));
         } else {
-          grad.subvec(q * (jj - 1), q * jj - 1) -= tmp * beta(j, 0, k) / scales(0, k) * initk(j, k)
-              * X.row(k).t() * weights(jj, k);
+          grad.subvec(q * (jj - 1), q * jj - 1) -= tmp * bsi(j,k) * X.row(k).t() * weights(jj, k);
         }
       }
     }

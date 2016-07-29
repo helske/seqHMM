@@ -3,15 +3,9 @@
 
 // [[Rcpp::export]]
 
-List forwardbackwardx(const arma::mat& transition, NumericVector emissionArray,
-  const arma::vec& init, IntegerVector obsArray, const arma::mat& coef, const arma::mat& X,
-  const arma::ivec& numberOfStates, bool forwardonly, int threads) {
-  
-  IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
-  IntegerVector oDims = obsArray.attr("dim"); //r,n,k
-  
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false, true);
-  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false, true);
+List forwardbackwardx(const arma::mat& transition, const arma::cube& emission,
+  const arma::vec& init, const arma::ucube obs, const arma::mat& coef, const arma::mat& X,
+  const arma::uvec& numberOfStates, bool forwardonly, unsigned int threads) {
   
   arma::mat weights = exp(X * coef).t();
   weights.each_row() /= arma::sum(weights, 0);

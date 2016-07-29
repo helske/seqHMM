@@ -3,7 +3,7 @@
 #include "seqHMM.h"
 
 void log_internalForward(const arma::mat& transition, const arma::cube& emission,
-  const arma::vec& init, const arma::icube& obs, arma::cube& alpha, int threads) {
+  const arma::vec& init, const arma::ucube& obs, arma::cube& alpha, unsigned int threads) {
   
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(alpha, obs, init, emission, transition)
@@ -16,7 +16,7 @@ void log_internalForward(const arma::mat& transition, const arma::cube& emission
         for (unsigned int i = 0; i < transition.n_rows; i++) {
           alpha(i, t, k) = logSumExp(alpha.slice(k).col(t - 1) + transition.col(i));
         }
-        for (int r = 0; r < obs.n_rows; r++) {
+        for (unsigned int r = 0; r < obs.n_rows; r++) {
           alpha.slice(k).col(t) += emission.slice(r).col(obs(r, t, k));
         }
       }
@@ -24,7 +24,7 @@ void log_internalForward(const arma::mat& transition, const arma::cube& emission
 }
 
 void log_internalForwardx(const arma::mat& transition, const arma::cube& emission,
-                          const arma::mat& init, const arma::icube& obs, arma::cube& alpha, int threads) {
+                          const arma::mat& init, const arma::ucube& obs, arma::cube& alpha, unsigned int threads) {
   
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(alpha, obs, init, emission, transition)
@@ -37,7 +37,7 @@ void log_internalForwardx(const arma::mat& transition, const arma::cube& emissio
         for (unsigned int i = 0; i < transition.n_rows; i++) {
           alpha(i, t, k) = logSumExp(alpha.slice(k).col(t - 1) + transition.col(i));
         }
-        for (int r = 0; r < obs.n_rows; r++) {
+        for (unsigned int r = 0; r < obs.n_rows; r++) {
           alpha.slice(k).col(t) += emission.slice(r).col(obs(r, t, k));
         }
       }
