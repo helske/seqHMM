@@ -1,9 +1,9 @@
 //Estimation of beta coefficients
 #include "seqHMM.h"
 
-unsigned int optCoef(arma::mat& weights, const arma::icube& obs, const arma::cube& emission,
+unsigned int optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cube& emission,
     const arma::mat& bsi, arma::mat& coef,
-    const arma::mat& X, const arma::ivec& cumsumstate, const arma::ivec& numberOfStates,
+    const arma::mat& X, const arma::uvec& cumsumstate, const arma::uvec& numberOfStates,
     int trace) {
 
   int iter = 0;
@@ -39,9 +39,9 @@ unsigned int optCoef(arma::mat& weights, const arma::icube& obs, const arma::cub
   return (0);
 }
 
-arma::vec gCoef(const arma::icube& obs, const arma::mat& bsi,
+arma::vec gCoef(const arma::ucube& obs, const arma::mat& bsi,
     const arma::cube& emission, const arma::mat& weights,
-    const arma::mat& X, const arma::ivec& cumsumstate, const arma::ivec& numberOfStates) {
+    const arma::mat& X, const arma::uvec& cumsumstate, const arma::uvec& numberOfStates) {
 
   int q = X.n_cols;
   arma::vec grad(q * (weights.n_rows - 1), arma::fill::zeros);

@@ -3,20 +3,13 @@
 
 // [[Rcpp::export]]
 
-List forwardbackward(const arma::mat& transition, NumericVector emissionArray,
-    const arma::vec& init, IntegerVector obsArray, bool forwardonly, int threads) {
-
-  IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
-  IntegerVector oDims = obsArray.attr("dim"); //k,n,r
-
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false, true);
-  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false, true);
+List forwardbackward(const arma::mat& transition, const arma::cube& emission,
+    const arma::vec& init, const arma::ucube& obs, bool forwardonly, unsigned int threads) {
 
   arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
   arma::mat scales(obs.n_cols, obs.n_slices); //n,k
 
   internalForward(transition, emission, init, obs, alpha, scales, threads);
-  
 
   if(!scales.is_finite()) {
     Rcpp::stop("Scaling factors contain non-finite values. \n Check the model or try using the log-space version of the algorithm.");

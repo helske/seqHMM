@@ -3,7 +3,7 @@
 #include "seqHMM.h"
 
 void uvForward(const arma::sp_mat& transition_t, const arma::cube& emission, const arma::vec& init,
-  const arma::imat& obs, arma::mat& alpha, arma::vec& scales) {
+  const arma::umat& obs, arma::mat& alpha, arma::vec& scales) {
 
   alpha.col(0) = init;
   for (unsigned int r = 0; r < obs.n_rows; r++) {
@@ -23,7 +23,7 @@ void uvForward(const arma::sp_mat& transition_t, const arma::cube& emission, con
 }
 
 void uvBackward(const arma::sp_mat& transition, const arma::cube& emission,
-  const arma::imat& obs, arma::mat& beta, const arma::vec& scales) {
+  const arma::umat& obs, arma::mat& beta, const arma::vec& scales) {
 
   beta.col(obs.n_cols - 1).fill(1.0);
   for (int t = obs.n_cols - 2; t >= 0; t--) {

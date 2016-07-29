@@ -3,19 +3,10 @@
 
 // [[Rcpp::export]]
 
-List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-  IntegerVector obsArray, const arma::ivec& nSymbols, NumericMatrix coefs, const arma::mat& X,
-  const arma::ivec& numberOfStates, int itermax, double tol, int trace, int threads) {
+List EMx(arma::mat transition, arma::cube emission, arma::vec init,
+  const arma::ucube& obs, const arma::uvec& nSymbols, arma::mat coef, const arma::mat& X,
+  const arma::uvec& numberOfStates, int itermax, double tol, int trace, unsigned int threads) {
 
-  IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
-  IntegerVector oDims = obsArray.attr("dim"); //k,n,r
-
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
-  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false, true);
-  arma::vec init(initialProbs.begin(), emission.n_rows, true);
-  arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, true);
-
-  arma::mat coef(coefs.begin(), coefs.nrow(), coefs.ncol());
   coef.col(0).zeros();
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
@@ -57,7 +48,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
   double change = tol + 1.0;
   int iter = -1; //for backward compatibility
 
-  arma::ivec cumsumstate = arma::cumsum(numberOfStates);
+  arma::uvec cumsumstate = arma::cumsum(numberOfStates);
   double sumlogLik_new = 0;
   double sumlogLik = -1e150;
 
@@ -78,7 +69,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
 
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static)  reduction(+:sumlogLik_new) num_threads(threads) \
     default(none) shared(bsi, initk, transition, obs, emission, delta, ksii, gamma, nSymbols, error_code, min_sf)
-      for (int k = 0; k < obs.n_slices; k++) {
+      for (unsigned int k = 0; k < obs.n_slices; k++) {
         arma::mat alpha(emission.n_rows, obs.n_cols); //m,n,k
         arma::vec scales(obs.n_cols);
         arma::sp_mat sp_trans(transition);
@@ -176,7 +167,7 @@ List EMx(NumericVector transitionMatrix, NumericVector emissionArray, NumericVec
           emission.slice(r).cols(0, nSymbols(r) - 1) = gamma.slice(r).cols(0, nSymbols(r) - 1);
         }
 
-        for (int i = 0; i < numberOfStates.n_elem; i++) {
+        for (unsigned int i = 0; i < numberOfStates.n_elem; i++) {
           delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1) /= arma::as_scalar(
             arma::accu(delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1)));
         }

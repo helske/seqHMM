@@ -2,19 +2,11 @@
 #include "seqHMM.h"
 
 // [[Rcpp::export]]
-List estimate_coefs(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-         IntegerVector obsArray, const arma::ivec& nSymbols, NumericMatrix coefs, const arma::mat& X,
-         const arma::ivec& numberOfStates, int itermax, double tol, int trace, int threads) {
+List estimate_coefs(const arma::mat& transition, const arma::cube& emission, 
+  const arma::vec& init, const arma::ucube& obs, const arma::uvec& nSymbols, 
+  arma::mat coef, const arma::mat& X, const arma::uvec& numberOfStates, 
+  int itermax, double tol, int trace, unsigned int threads) {
 
-  IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
-  IntegerVector oDims = obsArray.attr("dim"); //k,n,r
-
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false);
-  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false, true);
-  arma::vec init(initialProbs.begin(), emission.n_rows, false);
-  arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, false);
-
-  arma::mat coef(coefs.begin(), coefs.nrow(), coefs.ncol());
   coef.col(0).zeros();
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
@@ -54,7 +46,7 @@ List estimate_coefs(NumericVector transitionMatrix, NumericVector emissionArray,
   double change = tol + 1.0;
   int iter = 0;
 
-  arma::ivec cumsumstate = arma::cumsum(numberOfStates);
+  arma::uvec cumsumstate = arma::cumsum(numberOfStates);
 
   while ((change > tol) & (iter < itermax)) {
     iter++;

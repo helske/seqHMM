@@ -3,14 +3,8 @@
 
 // [[Rcpp::export]]
 
-List viterbi(const arma::mat& transition, NumericVector emissionArray,
-  const arma::vec& init, IntegerVector obsArray) {
-
-  IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
-  IntegerVector oDims = obsArray.attr("dim"); //k,n,r
-
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false, true);
-  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false, true);
+List viterbi(const arma::mat& transition, const arma::cube& emission,
+  const arma::vec& init, const arma::ucube& obs) {
 
   arma::umat q(obs.n_slices, obs.n_cols);
   arma::vec logp(obs.n_slices);

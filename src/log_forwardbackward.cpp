@@ -3,16 +3,9 @@
 #include "seqHMM.h"
 // [[Rcpp::export]]
 
-List log_forwardbackward(NumericVector transitionMatrix, NumericVector emissionArray,
-    NumericVector initialProbs, IntegerVector obsArray, bool forwardonly, int threads) {
+List log_forwardbackward(arma::mat transition, arma::cube emission, 
+  arma::vec init, const arma::ucube& obs, bool forwardonly, unsigned int threads) {
 
-  IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
-  IntegerVector oDims = obsArray.attr("dim"); //k,n,r
-
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
-  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false, true);
-  arma::vec init(initialProbs.begin(), emission.n_rows, true);
-  arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, true);
 
   init = log(init);
   transition = log(transition);

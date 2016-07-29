@@ -3,16 +3,9 @@
 
 // [[Rcpp::export]]
 
-List objective(const arma::mat& transition, NumericVector emissionArray,
-  const arma::vec& init, IntegerVector obsArray, const arma::imat& ANZ,
-  IntegerVector emissNZ, const arma::ivec& INZ, const arma::ivec& nSymbols, int threads) {
-
-  IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
-  IntegerVector oDims = obsArray.attr("dim"); //k,n,r
-
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], false, true);
-  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false, true);
-  arma::icube BNZ(emissNZ.begin(), emission.n_rows, emission.n_cols - 1, emission.n_slices, false, true);
+List objective(const arma::mat& transition, const arma::cube& emission,
+  const arma::vec& init, arma::ucube& obs, const arma::umat& ANZ,
+  const arma::ucube& BNZ, const arma::uvec& INZ, const arma::uvec& nSymbols, unsigned int threads) {
 
   arma::vec grad(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ), arma::fill::zeros);
 
@@ -39,7 +32,7 @@ List objective(const arma::mat& transition, NumericVector emissionArray,
   double ll = 0;
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) reduction(+:ll) num_threads(threads) \
   default(none) shared(grad, nSymbols, ANZ, BNZ, INZ, obs, init, transition, emission, error)
-    for (int k = 0; k < obs.n_slices; k++) {
+    for (unsigned int k = 0; k < obs.n_slices; k++) {
       if (error == 0) {
         arma::mat alpha(emission.n_rows, obs.n_cols); //m,n
         arma::vec scales(obs.n_cols); //n

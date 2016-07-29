@@ -4,45 +4,12 @@
 
 // [[Rcpp::export]]
 
-List EM(NumericVector transitionMatrix, NumericVector emissionArray, NumericVector initialProbs,
-  IntegerVector obsArray, const arma::ivec& nSymbols, int itermax, double tol, int trace, int threads) {
+List EM(arma::mat transition, arma::cube emission, arma::vec init,
+  const arma::ucube& obs, const arma::uvec& nSymbols, int itermax, double tol, 
+  int trace, unsigned int threads) {
 
-  IntegerVector eDims = emissionArray.attr("dim"); //m,p,r
-  IntegerVector oDims = obsArray.attr("dim"); //k,n,r
-
-  arma::cube emission(emissionArray.begin(), eDims[0], eDims[1], eDims[2], true);
-  arma::icube obs(obsArray.begin(), oDims[0], oDims[1], oDims[2], false, true);
-  arma::vec init(initialProbs.begin(), emission.n_rows, true);
-  arma::mat transition(transitionMatrix.begin(), emission.n_rows, emission.n_rows, true);
-
-  // if(!scales.is_finite()) {
-  //   return List::create(Named("error") = 1);
-  // }
-  // double min_sf = scales.min();
-  // if (min_sf < 1e-150) {
-  //   Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable.", min_sf);
-  // }
-
-
-  // if(!beta.is_finite()) {
-  //   return List::create(Named("error") = 2);
-  // }
-
-  // arma::rowvec ll(obs.n_slices);// = arma::sum(log(scales));
-
-  // for (unsigned int k = 0; k < obs.n_slices; k++) {
-  //   arma::mat alpha(emission.n_rows, obs.n_cols); //m,n,k
-  //   arma::mat beta(emission.n_rows, obs.n_cols); //m,n,k
-  //   arma::vec scales(obs.n_cols);
-  //   uvForward(transition, emission, init, obs.slice(k), alpha, scales);
-  //   uvBackward(transition, emission, obs.slice(k), beta, scales);
-  //   sumlogLik += arma::sum(log(scales));
-  // }
-  // if (trace > 0) {
-  //   Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
-  // }
-  //
-  //  //EM-algorithm begins
+ 
+    //  //EM-algorithm begins
   //
   double change = tol + 1.0;
   int iter = -1; //for backward compatibility
