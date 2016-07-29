@@ -36,9 +36,10 @@ List viterbi(const arma::mat& transition, NumericVector emissionArray,
         }
       }
     }
-
-    delta.col(obs.n_cols - 1).max(q(k, obs.n_cols - 1));
-
+    
+   // Changes in Armadillo
+   // delta.col(obs.n_cols - 1).max(q(k, obs.n_cols - 1));
+   q(k, obs.n_cols - 1) = delta.col(obs.n_cols - 1).index_max();
     for (int t = (obs.n_cols - 2); t >= 0; t--) {
       q(k, t) = phi(q(k, t + 1), t + 1);
     }
