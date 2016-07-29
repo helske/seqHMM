@@ -12,7 +12,7 @@
 // [[Rcpp::export]]
 double logSumExp(const arma::vec& x) {
   unsigned int maxi = x.index_max();
-  LDOUBLE maxv = x.max();
+  LDOUBLE maxv = x(maxi);
   if (!(maxv > -arma::datum::inf)) {
     return -arma::datum::inf;
   }
