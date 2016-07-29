@@ -13,12 +13,12 @@
 double logSumExp(const arma::vec& x) {
   unsigned int maxi = 0;
   LDOUBLE maxv = x.max(maxi);
-  if (!(maxv > -arma::math::inf())) {
-    return -arma::math::inf();
+  if (!(maxv > -arma::datum::inf) {
+    return -arma::datum::inf;
   }
   LDOUBLE cumsum = 0.0;
   for (unsigned int i = 0; i < x.n_elem; i++) {
-    if ((i != maxi) & (x(i) > -arma::math::inf())) {
+    if ((i != maxi) & (x(i) > -arma::datum::inf)) {
       cumsum += EXPL(x(i) - maxv);
     }
   }

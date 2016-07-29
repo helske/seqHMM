@@ -15,7 +15,7 @@ NumericVector logLikMixHMM(const arma::mat& transition, NumericVector emissionAr
   
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
-    return wrap(-arma::math::inf());
+    return wrap(-arma::datum::inf);
   }
   weights.each_row() /= sum(weights, 0);
   

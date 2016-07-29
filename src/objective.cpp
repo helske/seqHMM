@@ -22,14 +22,14 @@ List objective(const arma::mat& transition, NumericVector emissionArray,
   //
   // internalForward(transition, emission, init, obs, alpha, scales, threads);
   // if (!scales.is_finite()) {
-  //   grad.fill(-arma::math::inf());
-  //   return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
+  //   grad.fill(-arma::datum::inf);
+  //   return List::create(Named("objective") = arma::datum::inf, Named("gradient") = wrap(grad));
   // }
   //
   // internalBackward(transition, emission, obs, beta, scales, threads);
   // if (!beta.is_finite()) {
-  //   grad.fill(-arma::math::inf());
-  //   return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
+  //   grad.fill(-arma::datum::inf);
+  //   return List::create(Named("objective") = arma::datum::inf, Named("gradient") = wrap(grad));
   // }
 
   //use this instead of local vectors with grad += grad_k;, uses more memory but gives bit-identical results
@@ -161,8 +161,8 @@ List objective(const arma::mat& transition, NumericVector emissionArray,
       }
     }
     if(error > 0){
-      ll = -arma::math::inf();
-      grad.fill(-arma::math::inf());
+      ll = -arma::datum::inf;
+      grad.fill(-arma::datum::inf);
     }
     // } else {
     //   grad = sum(gradmat, 1);

@@ -23,8 +23,8 @@ List objectivex(const arma::mat& transition, NumericVector emissionArray,
       arma::fill::zeros);
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
-    grad.fill(-arma::math::inf());
-    return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
+    grad.fill(-arma::datum::inf);
+    return List::create(Named("objective") = arma::datum::inf, Named("gradient") = wrap(grad));
   }
 
   weights.each_row() /= sum(weights, 0);
@@ -42,14 +42,14 @@ List objectivex(const arma::mat& transition, NumericVector emissionArray,
   // arma::sp_mat sp_trans(transition);
   // internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
   // if (!scales.is_finite()) {
-  //   grad.fill(-arma::math::inf());
-  //   return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
+  //   grad.fill(-arma::datum::inf);
+  //   return List::create(Named("objective") = arma::datum::inf, Named("gradient") = wrap(grad));
   // }
 
   // internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
   // if (!beta.is_finite()) {
-  //   grad.fill(-arma::math::inf());
-  //   return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
+  //   grad.fill(-arma::datum::inf);
+  //   return List::create(Named("objective") = arma::datum::inf, Named("gradient") = wrap(grad));
   // }
 
   arma::ivec cumsumstate = arma::cumsum(numberOfStates);
@@ -207,8 +207,8 @@ List objectivex(const arma::mat& transition, NumericVector emissionArray,
       }
     }
     if(error > 0){
-      ll = -arma::math::inf();
-      grad.fill(-arma::math::inf());
+      ll = -arma::datum::inf;
+      grad.fill(-arma::datum::inf);
     }
     return List::create(Named("objective") = -ll, Named("gradient") = wrap(-grad));
 }

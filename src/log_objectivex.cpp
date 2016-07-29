@@ -20,8 +20,8 @@ List log_objectivex(const arma::mat& transition, NumericVector emissionArray,
                  arma::fill::zeros);
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
-    grad.fill(-arma::math::inf());
-    return List::create(Named("objective") = arma::math::inf(), Named("gradient") = wrap(grad));
+    grad.fill(-arma::datum::inf);
+    return List::create(Named("objective") = arma::datum::inf, Named("gradient") = wrap(grad));
   }
   
   weights.each_row() /= sum(weights, 0);

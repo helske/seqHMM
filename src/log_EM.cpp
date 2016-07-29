@@ -60,7 +60,7 @@ List log_EM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
       if (obs.n_cols > 1) {
         for (unsigned int j = 0; j < emission.n_rows; j++) {
           for (unsigned int i = 0; i < emission.n_rows; i++) {
-            if (transition(i, j) > -arma::math::inf()) {
+            if (transition(i, j) > -arma::datum::inf) {
               arma::vec tmpnm1(obs.n_cols - 1);
               for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
                 tmpnm1(t) = alpha(i, t, k) + transition(i, j) + beta(j, t + 1, k);
@@ -78,13 +78,13 @@ List log_EM(NumericVector transitionMatrix, NumericVector emissionArray, Numeric
       for (unsigned int r = 0; r < emission.n_slices; r++) {
         for (int l = 0; l < nSymbols(r); l++) {
           for (unsigned int i = 0; i < emission.n_rows; i++) {
-            if (emission(i, l, r) > -arma::math::inf()) {
+            if (emission(i, l, r) > -arma::datum::inf) {
               arma::vec tmpn(obs.n_cols);
               for (unsigned int t = 0; t < obs.n_cols; t++) {
                 if (l == (obs(r, t, k))) {
                   tmpn(t) = alpha(i, t, k) + beta(i, t, k);
                 } else
-                  tmpn(t) = -arma::math::inf();
+                  tmpn(t) = -arma::datum::inf;
               }
 #pragma omp atomic
               gamma(i, l, r) += exp(logSumExp(tmpn) - ll(k));
