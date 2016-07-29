@@ -68,12 +68,16 @@ ssplot(hmm_biofam, withlegend = "bottom", ncol.legend = 2)
 ssplot(hmm_biofam$observations, withlegend = "right.combined", ncol.legend = 2)
 # HMM
 ssplot(hmm_biofam, withlegend = "right.combined", ncol.legend = 2)
+# HMM + hidden paths
+ssplot(hmm_biofam, plots = "both", withlegend = "right.combined", ncol.legend = 2)
 
 ## bottom.combined
 # Multiple stslists
 ssplot(hmm_biofam$observations, withlegend = "bottom.combined", ncol.legend = 2)
 # HMM
 ssplot(hmm_biofam, withlegend = "bottom.combined", ncol.legend = 2)
+# HMM + hidden paths
+ssplot(hmm_biofam, plots = "both", withlegend = "bottom.combined", ncol.legend = 2)
 
 ######################### Plots ############################
 
@@ -240,3 +244,12 @@ ssplot(hmm_biofam$observations[[1]], with.missing.legend = TRUE)
 ssplot(hmm_biofam$observations, with.missing.legend = TRUE)
 # HMM
 ssplot(hmm_biofam, with.missing.legend = TRUE)
+
+
+### With missing
+# Single-channel stslist
+ssplot(hmm_biofam$observations[[1]], with.missing.legend = TRUE, with.missing = TRUE)
+# Multiple stslists
+ssplot(hmm_biofam$observations, with.missing.legend = TRUE, with.missing = TRUE)
+# HMM
+ssplot(hmm_biofam, with.missing.legend = TRUE, with.missing = TRUE)
