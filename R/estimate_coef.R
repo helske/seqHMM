@@ -7,7 +7,6 @@
 #' @export
 #' @param model An object of class \code{hmm} or \code{mhmm}.
 #' @param threads Number of threads to use in parallel computing. The default is 1.
-
 estimate_coef <- function(model, threads = 1){
   
   
