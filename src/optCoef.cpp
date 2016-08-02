@@ -48,8 +48,8 @@ arma::vec gCoef(const arma::ucube& obs, const arma::mat& bsi,
   double tmp;
 
   for (unsigned int k = 0; k < obs.n_slices; k++) {
-    for (int jj = 1; jj < numberOfStates.n_elem; jj++) {
-      for (int j = 0; j < emission.n_rows; j++) {
+    for (unsigned int jj = 1; jj < numberOfStates.n_elem; jj++) {
+      for (unsigned int j = 0; j < emission.n_rows; j++) {
         tmp = 1.0;
         for (unsigned int r = 0; r < obs.n_rows; r++) {
           tmp *= emission(j, obs(r, 0, k), r);

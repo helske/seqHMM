@@ -68,7 +68,7 @@ List log_EM(arma::mat transition, arma::cube emission, arma::vec init,
       }
 
       for (unsigned int r = 0; r < emission.n_slices; r++) {
-        for (int l = 0; l < nSymbols(r); l++) {
+        for (unsigned int l = 0; l < nSymbols(r); l++) {
           for (unsigned int i = 0; i < emission.n_rows; i++) {
             if (emission(i, l, r) > -arma::datum::inf) {
               arma::vec tmpn(obs.n_cols);

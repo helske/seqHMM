@@ -104,7 +104,7 @@ List log_objectivex(const arma::mat& transition, const arma::cube& emission,
               gradB.eye();
               gradB.each_row() -= emission.slice(r).row(i).subvec(0, nSymbols(r) - 1);
               gradB.each_col() %= emission.slice(r).row(i).subvec(0, nSymbols(r) - 1).t();
-              for (int j = 0; j < nSymbols(r); j++) {
+              for (unsigned int j = 0; j < nSymbols(r); j++) {
                 if (obs(r, 0, k) == j) {
                   double tmp = 0.0;
                   for (unsigned int r2 = 0; r2 < obs.n_rows; r2++) {
@@ -162,7 +162,7 @@ List log_objectivex(const arma::mat& transition, const arma::cube& emission,
       }
       for (unsigned int jj = 1; jj < numberOfStates.n_elem; jj++) {
         int ind_jj = cumsumstate(jj) - numberOfStates(jj);
-        for (int j = 0; j < emission.n_rows; j++) {
+        for (unsigned int j = 0; j < emission.n_rows; j++) {
           double tmp = 0.0;
           for (unsigned int r = 0; r < obs.n_rows; r++) {
             tmp += emissionLog(j, obs(r, 0, k), r);

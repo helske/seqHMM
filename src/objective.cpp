@@ -83,7 +83,7 @@ List objective(const arma::mat& transition, const arma::cube& emission,
               gradB.eye();
               gradB.each_row() -= emission.slice(r).row(i).subvec(0, nSymbols(r) - 1);
               gradB.each_col() %= emission.slice(r).row(i).subvec(0, nSymbols(r) - 1).t();
-              for (int j = 0; j < nSymbols(r); j++) {
+              for (unsigned int j = 0; j < nSymbols(r); j++) {
                 if (obs(r, 0, k) == j) {
                   double tmp = 1.0;
                   for (unsigned int r2 = 0; r2 < obs.n_rows; r2++) {

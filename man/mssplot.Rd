@@ -68,19 +68,19 @@ distribution plots (\code{type = "d"}). The default is \code{FALSE}.}
 in the sequences. By default, this color is taken from the \code{missing.color}
 attribute of the sequence object.}
 
-\item{title}{Main title for the graphic. The default is \code{NA}: if
-\code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE}
-prints no title, even when \code{title.n = TRUE}.}
+\item{title}{A vector of main titles for the graphics. The default is \code{NA}: if
+\code{title.n = TRUE}, the name of the cluster and the number of subjects is plotted. 
+\code{FALSE} prints no titles, even when \code{title.n = TRUE}.}
 
-\item{title.n}{Controls whether the number of subjects is printed in the
-title of the plot. The default is \code{TRUE}: n is plotted if \code{title}
+\item{title.n}{Controls whether the number of subjects is printed in the main
+titles of the plots. The default is \code{TRUE}: n is plotted if \code{title}
 is anything but \code{FALSE}.}
 
-\item{cex.title}{Expansion factor for setting the size of the font for the
-title. The default value is 1. Values lesser than 1 will reduce the size of
+\item{cex.title}{Expansion factor for setting the size of the font for the main
+titles. The default value is 1. Values lesser than 1 will reduce the size of
 the font, values greater than 1 will increase the size.}
 
-\item{title.pos}{Controls the position of the main title of the plot. The
+\item{title.pos}{Controls the position of the main titles of the plots. The
 default value is 1. Values greater than 1 will place the title higher.}
 
 \item{withlegend}{Defines if and where the legend for the states is plotted.

@@ -6,7 +6,7 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
   const arma::vec& init, const arma::ucube& obs, const arma::umat& ANZ,
   const arma::ucube& BNZ, const arma::uvec& INZ, const arma::uvec& nSymbols,
   const arma::mat& coef, const arma::mat& X, arma::uvec& numberOfStates,
-  int threads) {
+  unsigned int threads) {
 
   unsigned int q = coef.n_rows;
   arma::vec grad(
@@ -54,7 +54,7 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) reduction(+:ll) num_threads(threads)       \
   default(none) shared(q, grad, nSymbols, ANZ, BNZ, INZ,                                                         \
     numberOfStates, cumsumstate, obs, init, initk, X, weights, transition, emission, error)
-    for (int k = 0; k < obs.n_slices; k++) {
+    for (unsigned int k = 0; k < obs.n_slices; k++) {
       if (error == 0) {
         arma::mat alpha(emission.n_rows, obs.n_cols); //m,n
         arma::vec scales(obs.n_cols); //n
@@ -68,12 +68,12 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
         // transitionMatrix
         if (arma::accu(ANZ) > 0) {
 
-          for (int jj = 0; jj < numberOfStates.n_elem; jj++) {
+          for (unsigned int jj = 0; jj < numberOfStates.n_elem; jj++) {
             arma::vec gradArow(numberOfStates(jj));
             arma::mat gradA(numberOfStates(jj), numberOfStates(jj));
             int ind_jj = cumsumstate(jj) - numberOfStates(jj);
 
-            for (int i = 0; i < numberOfStates(jj); i++) {
+            for (unsigned int i = 0; i < numberOfStates(jj); i++) {
               arma::uvec ind = arma::find(ANZ.row(ind_jj + i).subvec(ind_jj, cumsumstate(jj) - 1));
 
               if (ind.n_elem > 0) {
@@ -83,7 +83,7 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
                 gradA.each_col() %= transition.row(ind_jj + i).subvec(ind_jj, cumsumstate(jj) - 1).t();
 
 
-                for (int j = 0; j < numberOfStates(jj); j++) {
+                for (unsigned int j = 0; j < numberOfStates(jj); j++) {
                   for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
                     double tmp = alpha(ind_jj + i, t);
                     for (unsigned int r = 0; r < obs.n_rows; r++) {
@@ -113,7 +113,7 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
                 gradB.eye();
                 gradB.each_row() -= emission.slice(r).row(i).subvec(0, nSymbols(r) - 1);
                 gradB.each_col() %= emission.slice(r).row(i).subvec(0, nSymbols(r) - 1).t();
-                for (int j = 0; j < nSymbols(r); j++) {
+                for (unsigned int j = 0; j < nSymbols(r); j++) {
                   if (obs(r, 0, k) == j) {
                     double tmp = initk(i, k);
                     for (unsigned int r2 = 0; r2 < obs.n_rows; r2++) {
@@ -145,13 +145,13 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
           }
         }
         if (arma::accu(INZ) > 0) {
-          for (int i = 0; i < numberOfStates.n_elem; i++) {
+          for (unsigned int i = 0; i < numberOfStates.n_elem; i++) {
             int ind_i = cumsumstate(i) - numberOfStates(i);
             arma::uvec ind = arma::find(
               INZ.subvec(ind_i, cumsumstate(i) - 1));
             if (ind.n_elem > 0) {
               arma::vec gradIrow(numberOfStates(i), arma::fill::zeros);
-              for (int j = 0; j < numberOfStates(i); j++) {
+              for (unsigned int j = 0; j < numberOfStates(i); j++) {
                 double tmp = weights(i, k);
                 for (unsigned int r = 0; r < obs.n_rows; r++) {
                   tmp *= emission(ind_i + j, obs(r, 0, k), r);
@@ -169,10 +169,10 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
             }
           }
         }
-        for (int jj = 1; jj < numberOfStates.n_elem; jj++) {
+        for (unsigned int jj = 1; jj < numberOfStates.n_elem; jj++) {
           int ind_jj = (cumsumstate(jj) - numberOfStates(jj));
 
-          for (int j = 0; j < emission.n_rows; j++) {
+          for (unsigned int j = 0; j < emission.n_rows; j++) {
             double tmp = 1.0;
             for (unsigned int r = 0; r < obs.n_rows; r++) {
               tmp *= emission(j, obs(r, 0, k), r);
