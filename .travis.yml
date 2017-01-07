@@ -7,9 +7,6 @@ r:
  - release
  - devel
 
-## TraMineR needs Hmisc, which needs newest survival
-r_github_packages:
-  - therneau/survival
 addons:
     apt:
       packages:
