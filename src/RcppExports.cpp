@@ -7,21 +7,21 @@
 using namespace Rcpp;
 
 // EM
-List EM(arma::mat transition, arma::cube emission, arma::vec init, const arma::ucube& obs, const arma::uvec& nSymbols, int itermax, double tol, int trace, unsigned int threads);
-RcppExport SEXP seqHMM_EM(SEXP transitionSEXP, SEXP emissionSEXP, SEXP initSEXP, SEXP obsSEXP, SEXP nSymbolsSEXP, SEXP itermaxSEXP, SEXP tolSEXP, SEXP traceSEXP, SEXP threadsSEXP) {
+List EM(const arma::mat& transition_, const arma::cube& emission_, const arma::vec& init_, const arma::ucube& obs, const arma::uvec& nSymbols, int itermax, double tol, int trace, unsigned int threads);
+RcppExport SEXP seqHMM_EM(SEXP transition_SEXP, SEXP emission_SEXP, SEXP init_SEXP, SEXP obsSEXP, SEXP nSymbolsSEXP, SEXP itermaxSEXP, SEXP tolSEXP, SEXP traceSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type transition(transitionSEXP);
-    Rcpp::traits::input_parameter< arma::cube >::type emission(emissionSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type init(initSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type transition_(transition_SEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type emission_(emission_SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type init_(init_SEXP);
     Rcpp::traits::input_parameter< const arma::ucube& >::type obs(obsSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type nSymbols(nSymbolsSEXP);
     Rcpp::traits::input_parameter< int >::type itermax(itermaxSEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
     Rcpp::traits::input_parameter< int >::type trace(traceSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(EM(transition, emission, init, obs, nSymbols, itermax, tol, trace, threads));
+    rcpp_result_gen = Rcpp::wrap(EM(transition_, emission_, init_, obs, nSymbols, itermax, tol, trace, threads));
     return rcpp_result_gen;
 END_RCPP
 }

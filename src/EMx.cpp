@@ -2,11 +2,17 @@
 #include "seqHMM.h"
 
 // [[Rcpp::export]]
-
-List EMx(arma::mat transition, arma::cube emission, arma::vec init,
-  const arma::ucube& obs, const arma::uvec& nSymbols, arma::mat coef, const arma::mat& X,
+List EMx(const arma::mat& transition_, const arma::cube emission_, const arma::vec init_,
+  const arma::ucube& obs, const arma::uvec& nSymbols, const arma::mat& coef_, const arma::mat& X,
   const arma::uvec& numberOfStates, int itermax, double tol, int trace, unsigned int threads) {
-
+  
+  // Make sure we don't alter the original vec/mat/cube
+  // needed for cube, in future maybe in other cases as well
+  arma::cube emission(emission_);
+  arma::mat transition(transition_);
+  arma::vec init(init_);
+  arma::vec coef(coef_);
+  
   coef.col(0).zeros();
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
@@ -18,30 +24,7 @@ List EMx(arma::mat transition, arma::cube emission, arma::vec init,
   for (unsigned int k = 0; k < obs.n_slices; k++) {
     initk.col(k) = init % reparma(weights.col(k), numberOfStates);
   }
-  //
-  //   arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
-  //   arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
-  //   arma::mat scales(obs.n_cols, obs.n_slices); //m,n,k
-  //
-  //   arma::sp_mat sp_trans(transition);
-  //   internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
-  //   if(!scales.is_finite()) {
-  //     return List::create(Named("error") = 1);
-  //   }
-  //   internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
-  //   if(!beta.is_finite()) {
-  //     return List::create(Named("error") = 2);
-  //   }
-  //   double min_sf = scales.min();
-  //   if (min_sf < 1e-150) {
-  //     Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable. ", min_sf);
-  //   }
-
-  // double sumlogLik = arma::accu(log(scales));
-  //
-  // if (trace > 0) {
-  //   Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
-  // }
+  
   //
   //  //EM-algorithm begins
   //
@@ -59,9 +42,6 @@ List EMx(arma::mat transition, arma::cube emission, arma::vec init,
     arma::cube gamma(emission.n_rows, emission.n_cols, emission.n_slices, arma::fill::zeros);
     arma::vec delta(emission.n_rows, arma::fill::zeros);
 
-    // for (unsigned int k = 0; k < obs.n_slices; k++) {
-    //   delta += alpha.slice(k).col(0) % beta.slice(k).col(0);
-    // }
     arma::mat bsi(emission.n_rows, obs.n_slices);
     sumlogLik_new = 0;
     double max_sf = 1;
@@ -70,6 +50,7 @@ List EMx(arma::mat transition, arma::cube emission, arma::vec init,
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static)  reduction(+:sumlogLik_new) num_threads(threads) \
     default(none) shared(bsi, initk, transition, obs, emission, delta, ksii, gamma, nSymbols, error_code, max_sf)
       for (unsigned int k = 0; k < obs.n_slices; k++) {
+        
         arma::mat alpha(emission.n_rows, obs.n_cols); //m,n,k
         arma::vec scales(obs.n_cols);
         arma::sp_mat sp_trans(transition);

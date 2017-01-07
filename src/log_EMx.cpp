@@ -3,11 +3,18 @@
 #include "seqHMM.h"
 // [[Rcpp::export]]
 
-List log_EMx(arma::mat transition, arma::cube emission, arma::vec init,
-  const arma::ucube& obs, const arma::uvec& nSymbols, arma::mat coef,
-    const arma::mat& X, const arma::uvec& numberOfStates, int itermax, 
-    double tol, int trace, unsigned int threads) {
+List log_EMx(const arma::mat& transition_, const arma::cube emission_, 
+  const arma::vec& init_, const arma::ucube& obs, const arma::uvec& nSymbols, 
+  const arma::mat& coef_, const arma::mat& X, const arma::uvec& numberOfStates, 
+  int itermax, double tol, int trace, unsigned int threads) {
 
+  // Make sure we don't alter the original vec/mat/cube
+  // needed for cube, in future maybe in other cases as well
+  arma::cube emission = log(emission_);
+  arma::mat transition = log(transition_);
+  arma::vec init = log(init_);
+  arma::mat coef(coef_);
+  
   coef.col(0).zeros();
 
   arma::mat weights = exp(X * coef).t();
@@ -16,11 +23,7 @@ List log_EMx(arma::mat transition, arma::cube emission, arma::vec init,
   }
   weights.each_row() /= sum(weights, 0);
   weights = log(weights);
-
-  transition = log(transition);
-  emission = log(emission);
-  init = log(init);
-
+  
   arma::mat initk(emission.n_rows, obs.n_slices);
   for (unsigned int k = 0; k < obs.n_slices; k++) {
     initk.col(k) = init + reparma(weights.col(k), numberOfStates);

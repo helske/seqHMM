@@ -3,13 +3,13 @@
 // [[Rcpp::export]]
 
 List log_objectivex(const arma::mat& transition, const arma::cube& emission,
-                    const arma::vec& init, const arma::ucube& obs, const arma::umat& ANZ,
-                    const arma::ucube& BNZ, const arma::uvec& INZ, const arma::uvec& nSymbols, const arma::mat& coef,
-                    const arma::mat& X, const arma::uvec& numberOfStates, unsigned int threads) {
+  const arma::vec& init, const arma::ucube& obs, const arma::umat& ANZ,
+  const arma::ucube& BNZ, const arma::uvec& INZ, const arma::uvec& nSymbols, const arma::mat& coef,
+  const arma::mat& X, const arma::uvec& numberOfStates, unsigned int threads) {
   
   int q = coef.n_rows;
   arma::vec grad(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ) + (numberOfStates.n_elem - 1) * q,
-                 arma::fill::zeros);
+    arma::fill::zeros);
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
     grad.fill(-arma::datum::inf);
@@ -50,8 +50,8 @@ List log_objectivex(const arma::mat& transition, const arma::cube& emission,
   
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(q, gradmat, nSymbols, ANZ, BNZ, INZ, ll,                            \
-          numberOfStates, cumsumstate, obs, init, X, weights, transition, emission,        \
-          initLog, transitionLog, emissionLog, initk, alpha, beta)
+    numberOfStates, cumsumstate, obs, init, X, weights, transition, emission,              \
+    initLog, transitionLog, emissionLog, initk, alpha, beta)
     for (unsigned int k = 0; k < obs.n_slices; k++) {
       int countgrad = 0;
       

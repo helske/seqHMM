@@ -2,31 +2,11 @@
 #include "seqHMM.h"
 
 // [[Rcpp::export]]
-
 List objective(const arma::mat& transition, const arma::cube& emission,
   const arma::vec& init, arma::ucube& obs, const arma::umat& ANZ,
   const arma::ucube& BNZ, const arma::uvec& INZ, const arma::uvec& nSymbols, unsigned int threads) {
 
   arma::vec grad(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ), arma::fill::zeros);
-
-  // arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
-  // arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
-  // arma::mat scales(obs.n_cols, obs.n_slices); //m,n,k
-  //
-  // internalForward(transition, emission, init, obs, alpha, scales, threads);
-  // if (!scales.is_finite()) {
-  //   grad.fill(-arma::datum::inf);
-  //   return List::create(Named("objective") = arma::datum::inf, Named("gradient") = wrap(grad));
-  // }
-  //
-  // internalBackward(transition, emission, obs, beta, scales, threads);
-  // if (!beta.is_finite()) {
-  //   grad.fill(-arma::datum::inf);
-  //   return List::create(Named("objective") = arma::datum::inf, Named("gradient") = wrap(grad));
-  // }
-
-  //use this instead of local vectors with grad += grad_k;, uses more memory but gives bit-identical results
-  //arma::mat gradmat(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ), obs.n_slices);
 
   unsigned int error = 0;
   double ll = 0;

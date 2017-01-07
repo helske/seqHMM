@@ -3,12 +3,12 @@
 #include "seqHMM.h"
 // [[Rcpp::export]]
 
-NumericVector log_logLikHMM(arma::mat transition, arma::cube emission, arma::vec init,
-  const arma::ucube& obs, unsigned int threads) {
+NumericVector log_logLikHMM(const arma::mat& transition_, const arma::cube& emission_, 
+  const arma::vec& init_, const arma::ucube& obs, unsigned int threads) {
   
-  transition = log(transition);
-  emission = log(emission);
-  init = log(init);
+  arma::vec init = log(init_);
+  arma::mat transition = log(transition_);
+  arma::cube emission = log(emission_);
   
   arma::vec ll(obs.n_slices);
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \

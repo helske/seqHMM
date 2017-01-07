@@ -3,16 +3,18 @@
 #include "seqHMM.h"
 // [[Rcpp::export]]
 
-List log_forwardbackwardx(arma::mat transition, arma::cube emission, arma::vec init,
+List log_forwardbackwardx(const arma::mat& transition_, 
+  const arma::cube& emission_, const arma::vec& init_,
   const arma::ucube& obs, const arma::mat& coef, const arma::mat& X,
     const arma::uvec& numberOfStates, bool forwardonly, unsigned int threads) {
 
+  arma::vec init = log(init_);
+  arma::mat transition = log(transition_);
+  arma::cube emission = log(emission_);
+  
   arma::mat weights = exp(X * coef).t();
   weights.each_row() /= arma::sum(weights, 0);
   weights = log(weights);
-  transition = log(transition);
-  emission = log(emission);
-  init = log(init);
 
   arma::mat initk(emission.n_rows, obs.n_slices);
   for (unsigned int k = 0; k < obs.n_slices; k++) {

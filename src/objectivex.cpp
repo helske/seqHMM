@@ -25,30 +25,9 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
   for (unsigned int k = 0; k < obs.n_slices; k++) {
     initk.col(k) = init % reparma(weights.col(k), numberOfStates);
   }
-  //
-  //   arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
-  //   arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
-  //   arma::mat scales(obs.n_cols, obs.n_slices); //m,n,k
-
-  // arma::sp_mat sp_trans(transition);
-  // internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
-  // if (!scales.is_finite()) {
-  //   grad.fill(-arma::datum::inf);
-  //   return List::create(Named("objective") = arma::datum::inf, Named("gradient") = wrap(grad));
-  // }
-
-  // internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
-  // if (!beta.is_finite()) {
-  //   grad.fill(-arma::datum::inf);
-  //   return List::create(Named("objective") = arma::datum::inf, Named("gradient") = wrap(grad));
-  // }
-
+  
   arma::uvec cumsumstate = arma::cumsum(numberOfStates);
-  //
-  //   arma::mat gradmat(
-  //       arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ) + (numberOfStates.n_elem- 1) * q,
-  //       obs.n_slices, arma::fill::zeros);
-
+  
   unsigned int error = 0;
   double ll = 0;
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) reduction(+:ll) num_threads(threads)       \

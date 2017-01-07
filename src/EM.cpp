@@ -4,13 +4,18 @@
 
 // [[Rcpp::export]]
 
-List EM(arma::mat transition, arma::cube emission, arma::vec init,
+List EM(const arma::mat& transition_, const arma::cube& emission_, const arma::vec& init_,
   const arma::ucube& obs, const arma::uvec& nSymbols, int itermax, double tol, 
   int trace, unsigned int threads) {
 
- 
-    //  //EM-algorithm begins
-  //
+  // Make sure we don't alter the original vec/mat/cube
+  // needed for cube, in future maybe in other cases as well
+  arma::cube emission(emission_);
+  arma::mat transition(transition_);
+  arma::vec init(init_);
+  
+  // EM-algorithm begins
+  
   double change = tol + 1.0;
   int iter = -1; //for backward compatibility
   double sumlogLik_new = 0;
