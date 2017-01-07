@@ -9,8 +9,9 @@ Bug fixes:
 * Fixed a bug from version 1.0.6 where the EM algorithm with restarts did not 
   work as efficiently as intended due to changes in initializing emission matrices. 
   More specifically, the previous version used Rcpp sugar which does not use deep 
-  copies in case of arma::cubes. This resulted subsequent EM runs to depend on the 
-  first optimum.
+  copies in case of arma::cubes, which resulted the subsequent EM runs to depend 
+  on the first optimum (affecting especially the identification of non-zero emission 
+  probabilities).
 
 
 seqHMM 1.0.6 (Release date: 2016-08-01)
