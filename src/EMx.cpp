@@ -64,11 +64,11 @@ List EMx(arma::mat transition, arma::cube emission, arma::vec init,
     // }
     arma::mat bsi(emission.n_rows, obs.n_slices);
     sumlogLik_new = 0;
-    double min_sf = 1;
+    double max_sf = 1;
     unsigned int error_code = 0;
 
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static)  reduction(+:sumlogLik_new) num_threads(threads) \
-    default(none) shared(bsi, initk, transition, obs, emission, delta, ksii, gamma, nSymbols, error_code, min_sf)
+    default(none) shared(bsi, initk, transition, obs, emission, delta, ksii, gamma, nSymbols, error_code, max_sf)
       for (unsigned int k = 0; k < obs.n_slices; k++) {
         arma::mat alpha(emission.n_rows, obs.n_cols); //m,n,k
         arma::vec scales(obs.n_cols);
@@ -76,7 +76,7 @@ List EMx(arma::mat transition, arma::cube emission, arma::vec init,
         uvForward(sp_trans.t(), emission, initk.col(k), obs.slice(k), alpha, scales);
         arma::mat beta(emission.n_rows, obs.n_cols); //m,n,k
         uvBackward(sp_trans, emission, obs.slice(k), beta, scales);
-        sumlogLik_new += arma::sum(log(scales));
+        sumlogLik_new -= arma::sum(log(scales));
 
         arma::mat ksii_k(emission.n_rows, emission.n_rows, arma::fill::zeros);
         arma::cube gamma_k(emission.n_rows, emission.n_cols, emission.n_slices, arma::fill::zeros);
@@ -87,7 +87,7 @@ List EMx(arma::mat transition, arma::cube emission, arma::vec init,
           for (unsigned int j = 0; j < emission.n_rows; j++) {
             if (transition(i, j) > 0.0) {
               for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
-                double tmp = alpha(i, t) * transition(i, j) * beta(j, t + 1) / scales(t + 1);
+                double tmp = alpha(i, t) * transition(i, j) * beta(j, t + 1) * scales(t + 1);
                 for (unsigned int r = 0; r < obs.n_rows; r++) {
                   tmp *= emission(j, obs(r, t + 1, k), r);
                 }
@@ -111,7 +111,7 @@ List EMx(arma::mat transition, arma::cube emission, arma::vec init,
           }
         }
         for (unsigned int j = 0; j < emission.n_rows; j++) {
-          bsi(j, k) = beta(j, 0) / scales(0) * initk(j, k);
+          bsi(j, k) = beta(j, 0) * scales(0) * initk(j, k);
         }
 #pragma omp critical
 {
@@ -121,7 +121,7 @@ List EMx(arma::mat transition, arma::cube emission, arma::vec init,
   if(!beta.is_finite()) {
     error_code = 2;
   }
-  min_sf = std::min(min_sf, scales.min());
+  max_sf = std::min(max_sf, scales.max());
   delta += delta_k;
   ksii += ksii_k;
   gamma += gamma_k;
@@ -133,8 +133,8 @@ List EMx(arma::mat transition, arma::cube emission, arma::vec init,
       if(error_code == 2) {
         return List::create(Named("error") = 2);
       }
-      if (min_sf < 1e-150) {
-        Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable.", min_sf);
+      if (max_sf > 1e150) {
+        Rcpp::warning("Largest scaling factor was %e, results can be numerically unstable.", max_sf);
       }
       change = (sumlogLik_new - sumlogLik) / (std::abs(sumlogLik) + 0.1);
       sumlogLik = sumlogLik_new;

@@ -9,15 +9,15 @@ void uvForward(const arma::sp_mat& transition_t, const arma::cube& emission, con
   for (unsigned int r = 0; r < obs.n_rows; r++) {
     alpha.col(0) %= emission.slice(r).col(obs(r, 0));
   }
-  scales(0) = sum(alpha.col(0));
-  alpha.col(0) /= scales(0);
+  scales(0) = 1.0 / sum(alpha.col(0));
+  alpha.col(0) *= scales(0);
   for (unsigned int t = 1; t < obs.n_cols; t++) {
     alpha.col(t) = transition_t * alpha.col(t - 1);
     for (unsigned int r = 0; r < obs.n_rows; r++) {
       alpha.col(t) %= emission.slice(r).col(obs(r, t));
     }
-    scales(t) = sum(alpha.col(t));
-    alpha.col(t) /= scales(t);
+    scales(t) = 1.0 / sum(alpha.col(t));
+    alpha.col(t) *= scales(t);
   }
 
 }
@@ -31,7 +31,7 @@ void uvBackward(const arma::sp_mat& transition, const arma::cube& emission,
     for (unsigned int r = 0; r < obs.n_rows; r++) {
       tmpbeta %= emission.slice(r).col(obs(r, t + 1));
     }
-    beta.col(t) =  transition * tmpbeta / scales(t + 1);
+    beta.col(t) =  transition * tmpbeta * scales(t + 1);
   }
 }
 

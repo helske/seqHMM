@@ -11,15 +11,15 @@ void internalForward(const arma::mat& transition, const arma::cube& emission, co
       for (unsigned int r = 0; r < obs.n_rows; r++) {
         alpha.slice(k).col(0) %= emission.slice(r).col(obs(r, 0, k));
       }
-      scales(0, k) = sum(alpha.slice(k).col(0));
-      alpha.slice(k).col(0) /= scales(0, k);
+      scales(0, k) = 1.0 / sum(alpha.slice(k).col(0));
+      alpha.slice(k).col(0) *= scales(0, k);
       for (unsigned int t = 1; t < obs.n_cols; t++) {
         alpha.slice(k).col(t) = transition.t() * alpha.slice(k).col(t - 1);
         for (unsigned int r = 0; r < obs.n_rows; r++) {
           alpha.slice(k).col(t) %= emission.slice(r).col(obs(r, t, k));
         }
-        scales(t, k) = sum(alpha.slice(k).col(t));
-        alpha.slice(k).col(t) /= scales(t, k);
+        scales(t, k) = 1.0 / sum(alpha.slice(k).col(t));
+        alpha.slice(k).col(t) *= scales(t, k);
       }
     }
 }
@@ -37,15 +37,15 @@ void internalForwardx(const arma::sp_mat& transition_t, const arma::cube& emissi
       for (unsigned int r = 0; r < obs.n_rows; r++) {
         alpha.slice(k).col(0) %= emission.slice(r).col(obs(r, 0, k));
       }
-      scales(0, k) = sum(alpha.slice(k).col(0));
-      alpha.slice(k).col(0) /= scales(0, k);
+      scales(0, k) = 1.0 / sum(alpha.slice(k).col(0));
+      alpha.slice(k).col(0) *= scales(0, k);
       for (unsigned int t = 1; t < obs.n_cols; t++) {
         alpha.slice(k).col(t) = transition_t * alpha.slice(k).col(t - 1);
         for (unsigned int r = 0; r < obs.n_rows; r++) {
           alpha.slice(k).col(t) %= emission.slice(r).col(obs(r, t, k));
         }
-        scales(t, k) = sum(alpha.slice(k).col(t));
-        alpha.slice(k).col(t) /= scales(t, k);
+        scales(t, k) = 1.0 / sum(alpha.slice(k).col(t));
+        alpha.slice(k).col(t) *= scales(t, k);
       }
     }
 }

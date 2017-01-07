@@ -62,7 +62,7 @@ List objective(const arma::mat& transition, const arma::cube& emission,
                 for (unsigned int r = 0; r < obs.n_rows; r++) {
                   tmp *= emission(j, obs(r, t + 1, k), r);
                 }
-                gradArow(j) += alpha(i, t) * tmp * beta(j, t + 1) / scales(t + 1);
+                gradArow(j) += alpha(i, t) * tmp * beta(j, t + 1) * scales(t + 1);
               }
 
             }
@@ -91,7 +91,7 @@ List objective(const arma::mat& transition, const arma::cube& emission,
                       tmp *= emission(i, obs(r2, 0, k), r2);
                     }
                   }
-                  gradBrow(j) += init(i) * tmp * beta(i, 0) / scales(0);
+                  gradBrow(j) += init(i) * tmp * beta(i, 0) * scales(0);
                 }
                 for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
                   if (obs(r, t + 1, k) == j) {
@@ -102,7 +102,7 @@ List objective(const arma::mat& transition, const arma::cube& emission,
                       }
                     }
                     gradBrow(j) += arma::dot(alpha.col(t), transition.col(i)) * tmp
-                      * beta(i, t + 1) / scales(t + 1);
+                      * beta(i, t + 1) * scales(t + 1);
                   }
                 }
 
@@ -130,7 +130,7 @@ List objective(const arma::mat& transition, const arma::cube& emission,
             for (unsigned int r = 0; r < obs.n_rows; r++) {
               tmp *= emission(j, obs(r, 0, k), r);
             }
-            gradIrow(j) += tmp * beta(j, 0) / scales(0);
+            gradIrow(j) += tmp * beta(j, 0) * scales(0);
           }
 
           gradIrow = gradI * gradIrow;
@@ -141,7 +141,7 @@ List objective(const arma::mat& transition, const arma::cube& emission,
 #pragma omp atomic
           error++;
         } else {
-          ll += arma::sum(log(scales));
+          ll -= arma::sum(log(scales));
 #pragma omp critical
           grad += grad_k;
          // gradmat.col(k) = grad_k;

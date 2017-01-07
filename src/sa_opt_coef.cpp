@@ -32,12 +32,12 @@ List estimate_coefs(const arma::mat& transition, const arma::cube& emission,
   if(!beta.is_finite()) {
     return List::create(Named("error") = 2);
   }
-  double min_sf = scales.min();
-  if (min_sf < 1e-150) {
-    Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable. ", min_sf);
+  double max_sf = scales.max();
+  if (max_sf > 1e150) {
+    Rcpp::warning("Largest scaling factor was %e, results can be numerically unstable.", max_sf);
   }
 
-  double sumlogLik = arma::accu(log(scales));
+  double sumlogLik = -arma::accu(log(scales));
 
   if (trace > 0) {
     Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
@@ -69,11 +69,11 @@ List estimate_coefs(const arma::mat& transition, const arma::cube& emission,
   if(!beta.is_finite()) {
     return List::create(Named("error") = 2);
   }
-  double min_sf = scales.min();
-  if (min_sf < 1e-150) {
-    Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable. ", min_sf);
+  double max_sf = scales.max();
+  if (max_sf > 1e150) {
+    Rcpp::warning("Largest scaling factor was %e, results can be numerically unstable.", max_sf);
   }
-  double tmp = arma::accu(log(scales));
+  double tmp = -arma::accu(log(scales));
   change = (tmp - sumlogLik) / (std::abs(sumlogLik) + 0.1);
   sumlogLik = tmp;
   if (trace > 1) {

@@ -14,9 +14,9 @@ List forwardbackward(const arma::mat& transition, const arma::cube& emission,
   if(!scales.is_finite()) {
     Rcpp::stop("Scaling factors contain non-finite values. \n Check the model or try using the log-space version of the algorithm.");
   }
-  double min_sf = scales.min();
-  if (min_sf < 1e-150) {
-    Rcpp::warning("Smallest scaling factor was %e, results can be numerically unstable.", min_sf);
+  double max_sf = scales.max();
+  if (max_sf > 1e150) {
+    Rcpp::warning("Largest scaling factor was %e, results can be numerically unstable.", max_sf);
   }
   
   if (forwardonly) {
