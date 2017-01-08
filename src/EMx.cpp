@@ -2,7 +2,7 @@
 #include "seqHMM.h"
 
 // [[Rcpp::export]]
-List EMx(const arma::mat& transition_, const arma::cube emission_, const arma::vec init_,
+List EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::vec& init_,
   const arma::ucube& obs, const arma::uvec& nSymbols, const arma::mat& coef_, const arma::mat& X,
   const arma::uvec& numberOfStates, int itermax, double tol, int trace, unsigned int threads) {
   

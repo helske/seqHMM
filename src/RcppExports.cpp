@@ -26,14 +26,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // EMx
-List EMx(const arma::mat& transition_, const arma::cube emission_, const arma::vec init_, const arma::ucube& obs, const arma::uvec& nSymbols, const arma::mat& coef_, const arma::mat& X, const arma::uvec& numberOfStates, int itermax, double tol, int trace, unsigned int threads);
+List EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::vec& init_, const arma::ucube& obs, const arma::uvec& nSymbols, const arma::mat& coef_, const arma::mat& X, const arma::uvec& numberOfStates, int itermax, double tol, int trace, unsigned int threads);
 RcppExport SEXP seqHMM_EMx(SEXP transition_SEXP, SEXP emission_SEXP, SEXP init_SEXP, SEXP obsSEXP, SEXP nSymbolsSEXP, SEXP coef_SEXP, SEXP XSEXP, SEXP numberOfStatesSEXP, SEXP itermaxSEXP, SEXP tolSEXP, SEXP traceSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type transition_(transition_SEXP);
-    Rcpp::traits::input_parameter< const arma::cube >::type emission_(emission_SEXP);
-    Rcpp::traits::input_parameter< const arma::vec >::type init_(init_SEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type emission_(emission_SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type init_(init_SEXP);
     Rcpp::traits::input_parameter< const arma::ucube& >::type obs(obsSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type nSymbols(nSymbolsSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type coef_(coef_SEXP);
@@ -83,14 +83,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // log_EM
-List log_EM(const arma::mat& transition_, const arma::cube& emission_, const arma::vec init_, const arma::ucube& obs, const arma::uvec& nSymbols, int itermax, double tol, int trace, unsigned int threads);
+List log_EM(const arma::mat& transition_, const arma::cube& emission_, const arma::vec& init_, const arma::ucube& obs, const arma::uvec& nSymbols, int itermax, double tol, int trace, unsigned int threads);
 RcppExport SEXP seqHMM_log_EM(SEXP transition_SEXP, SEXP emission_SEXP, SEXP init_SEXP, SEXP obsSEXP, SEXP nSymbolsSEXP, SEXP itermaxSEXP, SEXP tolSEXP, SEXP traceSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type transition_(transition_SEXP);
     Rcpp::traits::input_parameter< const arma::cube& >::type emission_(emission_SEXP);
-    Rcpp::traits::input_parameter< const arma::vec >::type init_(init_SEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type init_(init_SEXP);
     Rcpp::traits::input_parameter< const arma::ucube& >::type obs(obsSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type nSymbols(nSymbolsSEXP);
     Rcpp::traits::input_parameter< int >::type itermax(itermaxSEXP);
@@ -102,13 +102,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // log_EMx
-List log_EMx(const arma::mat& transition_, const arma::cube emission_, const arma::vec& init_, const arma::ucube& obs, const arma::uvec& nSymbols, const arma::mat& coef_, const arma::mat& X, const arma::uvec& numberOfStates, int itermax, double tol, int trace, unsigned int threads);
+List log_EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::vec& init_, const arma::ucube& obs, const arma::uvec& nSymbols, const arma::mat& coef_, const arma::mat& X, const arma::uvec& numberOfStates, int itermax, double tol, int trace, unsigned int threads);
 RcppExport SEXP seqHMM_log_EMx(SEXP transition_SEXP, SEXP emission_SEXP, SEXP init_SEXP, SEXP obsSEXP, SEXP nSymbolsSEXP, SEXP coef_SEXP, SEXP XSEXP, SEXP numberOfStatesSEXP, SEXP itermaxSEXP, SEXP tolSEXP, SEXP traceSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type transition_(transition_SEXP);
-    Rcpp::traits::input_parameter< const arma::cube >::type emission_(emission_SEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type emission_(emission_SEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type init_(init_SEXP);
     Rcpp::traits::input_parameter< const arma::ucube& >::type obs(obsSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type nSymbols(nSymbolsSEXP);
