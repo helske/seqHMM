@@ -11,7 +11,7 @@ List EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::
   arma::cube emission(emission_);
   arma::mat transition(transition_);
   arma::vec init(init_);
-  arma::vec coef(coef_);
+  arma::mat coef(coef_);
   
   coef.col(0).zeros();
   arma::mat weights = exp(X * coef).t();
