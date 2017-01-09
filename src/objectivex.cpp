@@ -149,7 +149,7 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
           }
         }
         for (unsigned int jj = 1; jj < numberOfStates.n_elem; jj++) {
-          int ind_jj = (cumsumstate(jj) - numberOfStates(jj));
+          unsigned int ind_jj = (cumsumstate(jj) - numberOfStates(jj));
 
           for (unsigned int j = 0; j < emission.n_rows; j++) {
             double tmp = 1.0;

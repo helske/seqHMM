@@ -54,7 +54,7 @@ arma::vec log_gCoef(const arma::ucube& obs, const arma::cube& beta, const arma::
     for (unsigned int k = 0; k < obs.n_slices; k++) {
       for (unsigned int j = 0; j < emission.n_rows; j++) {
         tmp = 0.0;
-        for (int r = 0; r < obs.n_rows; r++) {
+        for (unsigned int r = 0; r < obs.n_rows; r++) {
           tmp += emission(j, obs(r, 0, k), r);
         }
         if ((j >= (cumsumstate(jj) - numberOfStates(jj))) & (j < cumsumstate(jj))) {
