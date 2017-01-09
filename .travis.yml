@@ -7,11 +7,6 @@ r:
  - release
  - devel
 
-addons:
-    apt:
-      packages:
-        valgrind
-
 # from devtools:
 # Set CXX1X for R-devel, as R-devel does not detect CXX1X support for gcc 4.6.3
 before_install:
@@ -20,4 +15,4 @@ before_install:
 after_failure:
 - ./travis-tool.sh dump_logs
 
-r_check_args: "--as-cran --run-dontrun --use-valgrind"
+r_check_args: "--as-cran --run-dontrun"
