@@ -15,4 +15,4 @@ before_install:
 after_failure:
 - ./travis-tool.sh dump_logs
 
-r_check_args: "--as-cran --run-dontrun"
+r_check_args: "--as-cran"
