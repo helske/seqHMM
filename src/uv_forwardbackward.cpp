@@ -25,7 +25,7 @@ void uvForward(const arma::sp_mat& transition_t, const arma::cube& emission, con
 void uvBackward(const arma::sp_mat& transition, const arma::cube& emission,
   const arma::umat& obs, arma::mat& beta, const arma::vec& scales) {
 
-  beta.col(obs.n_cols - 1).fill(1.0);
+  beta.col(obs.n_cols - 1).fill(scales(obs.n_cols - 1));
   for (int t = obs.n_cols - 2; t >= 0; t--) {
     arma::vec tmpbeta = beta.col(t + 1);
     for (unsigned int r = 0; r < obs.n_rows; r++) {

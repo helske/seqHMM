@@ -34,6 +34,7 @@ List EM(const arma::mat& transition_, const arma::cube& emission_, const arma::v
 #pragma omp parallel for if(obs.n_slices>=threads) schedule(static) reduction(+:sumlogLik_new) num_threads(threads) \
     default(none) shared(init, transition, obs, emission, delta, ksii, gamma, nSymbols, error_code, max_sf)
       for (unsigned int k = 0; k < obs.n_slices; k++) {
+        
         arma::mat alpha(emission.n_rows, obs.n_cols); //m,n,k
         arma::vec scales(obs.n_cols);
         arma::sp_mat sp_trans(transition);
@@ -45,15 +46,15 @@ List EM(const arma::mat& transition_, const arma::cube& emission_, const arma::v
         arma::mat ksii_k(emission.n_rows, emission.n_rows, arma::fill::zeros);
         arma::cube gamma_k(emission.n_rows, emission.n_cols, emission.n_slices, arma::fill::zeros);
         arma::vec delta_k(emission.n_rows);
-        delta_k = alpha.col(0) % beta.col(0);
+        delta_k = alpha.col(0) % beta.col(0) / scales(0);
 
         if (obs.n_cols > 1) {
           for (unsigned int j = 0; j < emission.n_rows; j++) {
             for (unsigned int i = 0; i < emission.n_rows; i++) {
               if (transition(i, j) > 0.0) {
                 for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
-                  double tmp = alpha(i, t) * transition(i, j) * beta(j, t + 1)
-                  * scales(t + 1);
+                  double tmp = alpha(i, t) * transition(i, j) * beta(j, t + 1);
+                  //* scales(t + 1);
                   for (unsigned int r = 0; r < obs.n_rows; r++) {
                     tmp *= emission(j, obs(r, t + 1, k), r);
                   }
@@ -70,7 +71,7 @@ List EM(const arma::mat& transition_, const arma::cube& emission_, const arma::v
               if (emission(i, l, r) > 0.0) {
                 for (unsigned int t = 0; t < obs.n_cols; t++) {
                   if (l == (obs(r, t, k))) {
-                    gamma_k(i, l, r) += alpha(i, t) * beta(i, t);
+                    gamma_k(i, l, r) += alpha(i, t) * beta(i, t) / scales(t);
                   }
                 }
               }
