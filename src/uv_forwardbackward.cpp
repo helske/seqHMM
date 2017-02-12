@@ -31,7 +31,7 @@ void uvBackward(const arma::sp_mat& transition, const arma::cube& emission,
     for (unsigned int r = 0; r < obs.n_rows; r++) {
       tmpbeta %= emission.slice(r).col(obs(r, t + 1));
     }
-    beta.col(t) =  transition * tmpbeta * scales(t + 1);
+    beta.col(t) =  transition * tmpbeta * scales(t);
   }
 }
 
