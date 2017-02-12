@@ -62,13 +62,13 @@ List EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::
         arma::mat ksii_k(emission.n_rows, emission.n_rows, arma::fill::zeros);
         arma::cube gamma_k(emission.n_rows, emission.n_cols, emission.n_slices, arma::fill::zeros);
         arma::vec delta_k(emission.n_rows);
-        delta_k = alpha.col(0) % beta.col(0);
+        delta_k = alpha.col(0) % beta.col(0) / scales(0);
 
         for (unsigned int i = 0; i < emission.n_rows; i++) {
           for (unsigned int j = 0; j < emission.n_rows; j++) {
             if (transition(i, j) > 0.0) {
               for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
-                double tmp = alpha(i, t) * transition(i, j) * beta(j, t + 1);// * scales(t + 1);
+                double tmp = alpha(i, t) * transition(i, j) * beta(j, t + 1);
                 for (unsigned int r = 0; r < obs.n_rows; r++) {
                   tmp *= emission(j, obs(r, t + 1, k), r);
                 }
@@ -83,7 +83,7 @@ List EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::
               if (emission(i, l, r) > 0.0) {
                 for (unsigned int t = 0; t < obs.n_cols; t++) {
                   if (l == (obs(r, t, k))) {
-                    double tmp = alpha(i, t) * beta(i, t) /scales(t);
+                    double tmp = alpha(i, t) * beta(i, t) / scales(t);
                     gamma_k(i, l, r) += tmp;
                   }
                 }

@@ -13,7 +13,7 @@ default(none) shared(beta, scales, obs, emission,transition)
         for (unsigned int r = 0; r < obs.n_rows; r++) {
           tmpbeta %= emission.slice(r).col(obs(r, t + 1, k));
         }
-        beta.slice(k).col(t) =  transition * tmpbeta * scales(t + 1, k);
+        beta.slice(k).col(t) =  transition * tmpbeta * scales(t, k);
     }
   }
 }
@@ -31,7 +31,7 @@ void internalBackwardx(const arma::sp_mat& transition, const arma::cube& emissio
         for (unsigned int r = 0; r < obs.n_rows; r++) {
           tmpbeta %= emission.slice(r).col(obs(r, t + 1, k));
         }
-        beta.slice(k).col(t) =  transition * tmpbeta * scales(t + 1, k);
+        beta.slice(k).col(t) =  transition * tmpbeta * scales(t, k);
       }
     }
 }

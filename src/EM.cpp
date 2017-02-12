@@ -54,7 +54,6 @@ List EM(const arma::mat& transition_, const arma::cube& emission_, const arma::v
               if (transition(i, j) > 0.0) {
                 for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
                   double tmp = alpha(i, t) * transition(i, j) * beta(j, t + 1);
-                  //* scales(t + 1);
                   for (unsigned int r = 0; r < obs.n_rows; r++) {
                     tmp *= emission(j, obs(r, t + 1, k), r);
                   }

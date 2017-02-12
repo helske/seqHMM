@@ -68,7 +68,7 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
                     for (unsigned int r = 0; r < obs.n_rows; r++) {
                       tmp *= emission(ind_jj + j, obs(r, t + 1, k), r);
                     }
-                    gradArow(j) += tmp * beta(ind_jj + j, t + 1) * scales(t + 1);
+                    gradArow(j) += tmp * beta(ind_jj + j, t + 1);
                   }
 
                 }
@@ -100,11 +100,11 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
                         tmp *= emission(i, obs(r2, 0, k), r2);
                       }
                     }
-                    gradBrow(j) += tmp * beta(i, 0) * scales(0);
+                    gradBrow(j) += tmp * beta(i, 0);
                   }
                   for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
                     if (obs(r, t + 1, k) == j) {
-                      double tmp = beta(i, t + 1) * scales(t + 1);
+                      double tmp = beta(i, t + 1);
                       for (unsigned int r2 = 0; r2 < obs.n_rows; r2++) {
                         if (r2 != r) {
                           tmp *= emission(i, obs(r2, t + 1, k), r2);
@@ -135,7 +135,7 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
                 for (unsigned int r = 0; r < obs.n_rows; r++) {
                   tmp *= emission(ind_i + j, obs(r, 0, k), r);
                 }
-                gradIrow(j) += tmp * beta(ind_i + j, 0) * scales(0);
+                gradIrow(j) += tmp * beta(ind_i + j, 0);
 
               }
               arma::mat gradI(numberOfStates(i), numberOfStates(i), arma::fill::zeros);
@@ -158,10 +158,10 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
             }
             if ((j >= ind_jj) & (j < cumsumstate(jj))) {
               grad_k.subvec(countgrad + q * (jj - 1), countgrad + q * jj - 1) += tmp
-              * beta(j, 0) * scales(0) * initk(j, k) * X.row(k).t() * (1.0 - weights(jj, k));
+              * beta(j, 0) * initk(j, k) * X.row(k).t() * (1.0 - weights(jj, k));
             } else {
               grad_k.subvec(countgrad + q * (jj - 1), countgrad + q * jj - 1) -= tmp
-              * beta(j, 0) * scales(0) * initk(j, k) * X.row(k).t() * weights(jj, k);
+              * beta(j, 0) * initk(j, k) * X.row(k).t() * weights(jj, k);
             }
           }
 
