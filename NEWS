@@ -1,6 +1,12 @@
 seqHMM 1.0.7 (Release date: 2017-xx-xx)
 ==============
 
+* Corrected a "feature" of the scaled forward-backward algorithm which caused 
+  potential numerical issues in backward probabilities. More specifically, 
+  previously the scaled backward variable at time t was scaled with the scaling 
+  factors c_[t+1] of the forward variable, instead of c_t. In typical 
+  applications this did not cause any problems, but some models which previously 
+  caused problems can work now without resorting to the log-space algorithm.
 * Scaling factors used in forward-backward algorithms are now stored as 1/c_t,
   where c_t are the scaling factors from older versions of seqHMM.
   
@@ -10,8 +16,8 @@ Bug fixes:
   work as efficiently as intended due to changes in initializing emission matrices. 
   More specifically, the previous version used Rcpp sugar which does not use deep 
   copies in case of arma::cubes, which resulted the subsequent EM runs to depend 
-  on the first optimum (affecting especially the identification of non-zero emission 
-  probabilities).
+  on the first optimum (affecting especially the identification of non-zero 
+  emission probabilities).
 
 
 seqHMM 1.0.6 (Release date: 2016-08-01)

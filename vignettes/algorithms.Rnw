@@ -1,0 +1,199 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{hyperref}
+ \usepackage[authoryear,round,longnamesfirst]{natbib}
+ 
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\author{Jouni Helske\\ University of Jyv{\"a}skyl{\"a}, Finland \\
+        Satu Helske\\ University of Oxford, UK}
+\title{The main algorithms used in the \textrm{seqHMM} package}
+
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+This vignette contains the descriptions of the main algorithms used in the \textrm{seqHMM} package. First, a forward-backward algorithm is presented, followed by a Viterbi algorithm, and the derivations of the gradients for the numerical optimisation routines.
+
+\section{Forward--Backward Algorithm}
+\label{app:forwardbackward}
+
+Following \citet{Rabiner1989}, the \emph{forward variable}
+\[
+  \alpha_{it}(s)=P(\textbf{y}_{i1}, \ldots, \textbf{y}_{it},z_t=s|\mathcal{M})
+\]
+is the joint probability of partial observation sequences for subject $i$ until time $t$ and the hidden state $s$ at time $t$ given the model $\mathcal{M}$. Let us denote $b_s(\textbf{y}_{it})=b_s(y_{it1})\cdots b_s(y_{itC})$, the joint emission probability of observations at time $t$ in channels $1,\ldots,C$ given hidden state $s$. The forward variable can be solved recursively for subject $i=1,\ldots,N$:
+  \begin{enumerate}
+\item Initialization: For $s=1,\ldots,S$, compute \\
+$\alpha_{i1}(s)=\pi_s b_s(\textbf{y}_{i1})$
+  \item Recursion: For $t=1,\ldots,T-1$, and $r=1,\ldots,S$, compute \\
+$\alpha_{i(t+1)}(r) = \left[ \sum_{s=1}^S \alpha_{it}(s) a_{sr} \right] b_r(\textbf{y}_{i(t+1)})$
+  \item Termination: Compute the likelihood \\
+$P(Y_i|\mathcal{M})= \sum_{s=1}^S \alpha_{iT}(s)$
+  \end{enumerate}
+
+The \emph{backward variable}
+\[
+  \beta_{it}(s)=P(\textbf{y}_{i(t+1)}, \ldots, \textbf{y}_{iT}| z_t=s, \mathcal{M})
+  \]
+is the joint probability of the partial observation sequence after time $t$ and hidden state $s$ at time $t$ given the model $\mathcal{M}$. For subject $i=1,\ldots,N$, the backward variable can be computed as
+  \begin{enumerate}
+\item Initialization: For $s=1,\ldots,S$, set \\
+$\beta_{iT}(s) = 1$
+  \item Recursion: For $t=T-1,\ldots,1$, and $s=1,\ldots,S$, compute  \\
+$\beta_{it}(s)=\left[ \sum_{r=1}^S a_{sr} \right] b_s(\textbf{y}_{i(t+1)}) \beta_{i(t+1)}(r)$
+  \end{enumerate}
+
+In practice the forward-backward algorithm is prone to numerical instabilities. Typically we scale the forward and backward probabilities, as follows \citep{Rabiner1989}. For subject $i=1,\ldots,N$,
+
+  \begin{enumerate}
+\item Initialization: For $s=1,\ldots,S$, compute  \\
+\begin{equation}
+\begin{aligned}
+\alpha_{i1}(s) &= \pi_s b_s(\textbf{y}_{i1}), \\
+c_t &= 1 / \sum_{s=1}^S \alpha_{i1}(s),\\
+\hat \alpha_{i1}(s) &= c_t \alpha_{i1}(s)
+\end{aligned}
+\end{equation}
+  \item Recursion: For $t=1,\ldots,T-1$, and $r=1,\ldots,S$, compute \\
+\begin{equation}
+\begin{aligned}
+\alpha_{i(t+1)}(r) &=\left[ \sum_{s=1}^S \alpha_{it}(s) a_{sr} \right] b_r(\textbf{y}_{i(t+1)})\\
+c_t &= 1 / \sum_{s=1}^S \alpha_{i(t+1)}(s),\\
+\hat \alpha_{i(t+1)}(s) &= c_t \alpha_{i(t+1)}(s)
+\end{aligned}
+\end{equation}
+  \item Termination: Compute the log-likelihood \\
+$\textrm{log} P(Y_i|\mathcal{M})= -\sum_{t=1}^T c_{t}$
+  \end{enumerate}
+
+The scaling factors $c_t$ from the forward algorithm are commonly used to scale also the backward variables, although other scaling schemes are possible as well. In \textrm{seqHMM}, the scaled backward variables for subject $i=1,\ldots,N$ are computed as
+
+\begin{enumerate}
+\item Initialization: For $s=1,\ldots,S$, compute  \\
+\begin{equation}
+\begin{aligned}
+\hat \beta_{iT}(s) &= 1
+\end{aligned}
+\end{equation}
+  \item Recursion: For $t=T-1,\ldots,1$, and $r=1,\ldots,S$, compute \\
+\begin{equation}
+\begin{aligned}
+\beta_{it}(s) &=\left[ \sum_{r=1}^S a_{sr} \right] b_s(\textbf{y}_{i(t+1)}) \beta_{i(t+1)}(r),\\
+\hat \beta_{it}(s) &= c_{t} \beta_{it}(s)
+\end{aligned}
+\end{equation}
+  \end{enumerate}
+
+Most of the times this scaling method described works well, but in some 
+ill-conditioned cases it is possible that the default scaling still produces underflow in backward algorithm. For these cases, \textrm{seqHMM} also supports the computation of the forward and backward variables in log-space. Although numerically more stable, the algorithm is somewhat slower due repeated use of log-sum-exp trick.
+  
+\section{Viterbi Algorithm}
+\label{app:viterbi}
+
+We define the score
+\[
+\delta_{it}(s)=\max_{z_{i1} z_{i2} \cdots z_{i(t-1)}} P(z_{i1} \cdots z_{it}=s, \textbf{y}_{i1} \cdots \textbf{y}_{it}|\mathcal{M}),
+\]
+which is the highest probability of the hidden state sequence up to time $t$ ending in state $s$. By induction we have
+\begin{equation}
+\label{eq:delta}
+\delta_{i(t+1)}(r)=\left[\max_{s} \delta_{it}(s) a_{sr}\right] \cdot b_r(\textbf{y}_{i(t+1)}).
+\end{equation}
+We collect the arguments maximizing Equation~\ref{eq:delta} in an array $\psi_{it}(r)$ to keep track of the best hidden state sequence. The full Viterbi algorithm can be stated as follows:
+  \begin{enumerate}
+\item Initialization \\
+$\delta_{i1}(s)=\pi_s b_s(\textbf{y}_{i1}), s=1,\ldots,S$ \\
+$\psi_{i1}(s)=0$
+  \item Recursion \\
+$\delta_{it}(r)=\max_{s=1,\ldots,S} (\delta_{i(t-1)}(s) a_{sr}) b_h(\textbf{y}_{it})$,  \\
+$\psi_{it}(s)=\operatorname*{arg\,max}_{s=1,\ldots,S} (\delta_{i(t-1)}(s) a_{sr}), s=1,\ldots,S; t=2,\ldots,T$
+  \item Termination \\
+$\hat{P}=\max_{s=1,\ldots,S} (\delta_{iT}(s))$ \\
+$\hat{z}_{iT}=\operatorname*{arg\,max}_{s=1,\ldots,S}(\delta_{iT}(s))$
+  \item Sequence backtracking \\
+$\hat{z}_{it}=\psi_{i(t+1)}(\hat{s}_{i(t+1)}), t=T-1,\ldots,1$.
+\end{enumerate}
+To avoid numerical underflow due to multiplying many small probabilities, the Viterbi algorithm can be straighforwardly computed in log space, i.e., calculating $\log (\delta_{it}(s))$.
+
+\section{Gradients}
+
+Following \citet{Levinson1983}, by using the scaled forward and backward variables we have
+
+\[
+\frac{\partial \log P(Y_i|\mathcal{M})}{\partial \pi_{s}} = b_s(\textbf{y}_{i1}) \hat \beta_{i1}(s),
+\]
+\[
+\frac{\partial \log P(Y_i|\mathcal{M})}{\partial a_{sr}} = \sum_{t=1}^{T-1} \hat \alpha_{it}(s)b_r(\textbf{y}_{i(t+1)}) \hat \beta_{i(t+1)}(r),
+\]
+and
+\[
+\frac{\partial \log P(Y_i|\mathcal{M})}{\partial b_{rc}(m)} = 
+\sum_{t: y_{itc} = m} \sum_{s=1}^S \alpha_{1t}(s)a_{sr} \hat \beta_{i(t+1)}(r) + \textrm{I}(y_{i1c} = m)\pi_r\hat\beta_{i1}(r).
+\]
+
+In the direct numerical optimization algorithms used by \texttt{seqHMM}, the model is parameterised using unconstrained parameters $\pi'_s, a'_{sr}, b'_{rmc}$ such that $a_{sr} = \exp(a'_sr)/\sum_{k=1}^S \exp(a'_sk)$, and similarly for emission and initial probabilities. This leads to
+
+
+\[
+\frac{\partial \log P(Y_i|\mathcal{M})}{\partial \pi'_{s}} = \frac{\partial \log P(Y_i|\mathcal{M})}{\partial \pi_{s}} \pi_s (1 - \pi_s)
+\]
+\[
+\frac{\partial \log P(Y_i|\mathcal{M})}{\partial a'_{sr}} = \frac{\partial \log P(Y_i|\mathcal{M})}{\partial a_{sr}} a_{sr} (1 - a_{sr}),
+\]
+and
+\[
+\frac{\partial \log P(Y_i|\mathcal{M})}{\partial b'_{rmc}} = 
+\frac{\partial \log P(Y_i|\mathcal{M})}{\partial b_{rmc}} b_{rmc} (1 - b_{rmc}).
+\]
+
+\subsection{MHMM case}
+
+For mixture HMM with $K$ clusters, we define a full model with $S=S^1+\ldots,S^K$ states in a block form with $\pi_i = (w_{i1} \pi^1,\ldots,w_{iK}\pi^K )'$, where $\pi^k$, $k=1,\ldots,K$ is the vector of initial probabilities for the submodel $\mathcal{M}^k$ and $w_{ik} = \exp(\gamma_k\mathbf{x}_i) / (1 + \sum_{j=2}^K \exp(\gamma_j\mathbf{x}_i))$, with $\gamma_1=0$.
+
+First note that the log-likelihood of the HMM for $i$th subject can be written as
+\[
+P(Y_i|\mathcal{M}) = \sum_{s=1}^S \sum_{r=1}^S \alpha_t(s)a_{sr}b_r(\mathbf{y}_{i(t+1)})\beta_{t+1}(r),
+\]
+for any $t=1,\ldots,T-1$. Thus for $t=1$ we have
+
+\begin{equation}
+\begin{aligned}
+P(Y_i|\mathcal{M}) &= \sum_{s=1}^S \sum_{r=1}^S \alpha_1(s)a_{sr}b_r(\mathbf{y}_{i2})\beta_{2}(r)\\ 
+&= \sum_{s=1}^S \alpha_1(s) \sum_{r=1}^S a_{sr}b_r(\mathbf{y}_{i2})\beta_{2}(r)\\
+&= \sum_{s=1}^S \alpha_1(s) \beta_1(s)\\
+&= \sum_{s=1}^S \pi_{is} b_s(\mathbf{y}_{i1})\beta_1(s).
+\end{aligned}
+\end{equation}
+
+Therefore the gradients for the unconstrained parameters $\pi^{k'}_s$ of the $k$th cluster are given as
+\[
+\frac{\partial \log P(Y_i|\mathcal{M})}{\partial \pi^{k'}_{s}} = \frac{\partial \log P(Y_i|\mathcal{M}^k)}{\partial \pi^k_{s}} \pi^k_s (1 - \pi^k_s) w_{ik}.
+\]
+For $\gamma^k$, the gradients are of form
+\begin{equation}
+\begin{aligned}
+\frac{\partial \log P(Y_i|\mathcal{M})}{\partial \gamma^k}
+&= \sum_{s=1}^S b_s(\mathbf{y}_{i1}) \hat \beta_1(s) \frac{\pi_{is}}{\partial \gamma^k}.
+\end{aligned}
+\end{equation}
+
+Now if state $s$ belongs to cluster $k$, we have 
+\begin{equation}
+\begin{aligned}
+\frac{\partial \pi_{is}}{\partial \gamma^k} &= \pi^k_{s}\frac{\partial}{\partial \gamma^k} \frac{\exp(\gamma_k\mathbf{x}_i)}{\sum_{j=1}^K \exp(\gamma_j\mathbf{x}_i))}\\
+&=\pi^k_{s}\mathbf{x}'_i w_{ik} (1 - w_{ik}),
+\end{aligned}
+\end{equation}
+and $\frac{\partial \pi_{is}}{\partial \gamma^k} = -\pi_s^h \mathbf{x}'_i w_{ih} w_{ik}$, where $h$ is the index of cluster containing the state $s$.
+
+\pagebreak
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
