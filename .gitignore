@@ -19,10 +19,9 @@ src-x64
 .Rproj.user
 .settings
 vignettes/figure
-vignettes/Sweave.sty
-vignettes/seqHMM.log
-vignettes/seqHMM.synctex.gz
-vignettes/seqHMM.tex
-vignettes/seqHMM.pdf
-vignettes/seqHMM.bbl
-vignettes/seqHMM-concordance.tex
+vignettes/*.sty
+vignettes/*.log
+vignettes/*.synctex.gz
+vignettes/*.tex
+vignettes/*.pdf
+vignettes/*.bbl
