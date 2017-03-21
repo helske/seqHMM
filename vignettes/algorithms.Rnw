@@ -1,3 +1,8 @@
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{The main algorithms used in the seqHMM package}
+%\VignetteKeyword{categorical time series}
+%\VignetteKeyword{latent Markov models}
+%\VignetteKeyword{latent class models}
 \documentclass{article}
 
 \usepackage{amsmath}
@@ -9,7 +14,7 @@
 
 \author{Jouni Helske\\ University of Jyv{\"a}skyl{\"a}, Finland \\
         Satu Helske\\ University of Oxford, UK}
-\title{The main algorithms used in the \textrm{seqHMM} package}
+\title{The main algorithms used in the \texttt{seqHMM} package}
 
 
 \begin{document}
@@ -18,35 +23,35 @@
 
 \section{Introduction}
 
-This vignette contains the descriptions of the main algorithms used in the \textrm{seqHMM} package. First, a forward-backward algorithm is presented, followed by a Viterbi algorithm, and the derivations of the gradients for the numerical optimisation routines.
+This vignette contains the descriptions of the main algorithms used in the \texttt{seqHMM} package. First, a forward-backward algorithm is presented, followed by a Viterbi algorithm, and the derivations of the gradients for the numerical optimisation routines.
 
 \section{Forward--Backward Algorithm}
 \label{app:forwardbackward}
 
 Following \citet{Rabiner1989}, the \emph{forward variable}
 \[
-  \alpha_{it}(s)=P(\textbf{y}_{i1}, \ldots, \textbf{y}_{it},z_t=s|\mathcal{M})
+  \alpha_{it}(s)=P(\mathbf{y}_{i1}, \ldots, \mathbf{y}_{it},z_t=s|\mathcal{M})
 \]
-is the joint probability of partial observation sequences for subject $i$ until time $t$ and the hidden state $s$ at time $t$ given the model $\mathcal{M}$. Let us denote $b_s(\textbf{y}_{it})=b_s(y_{it1})\cdots b_s(y_{itC})$, the joint emission probability of observations at time $t$ in channels $1,\ldots,C$ given hidden state $s$. The forward variable can be solved recursively for subject $i=1,\ldots,N$:
+is the joint probability of partial observation sequences for subject $i$ until time $t$ and the hidden state $s$ at time $t$ given the model $\mathcal{M}$. Let us denote $b_s(\mathbf{y}_{it})=b_s(y_{it1})\cdots b_s(y_{itC})$, the joint emission probability of observations at time $t$ in channels $1,\ldots,C$ given hidden state $s$. The forward variable can be solved recursively for subject $i=1,\ldots,N$:
   \begin{enumerate}
 \item Initialization: For $s=1,\ldots,S$, compute \\
-$\alpha_{i1}(s)=\pi_s b_s(\textbf{y}_{i1})$
+$\alpha_{i1}(s)=\pi_s b_s(\mathbf{y}_{i1})$
   \item Recursion: For $t=1,\ldots,T-1$, and $r=1,\ldots,S$, compute \\
-$\alpha_{i(t+1)}(r) = \left[ \sum_{s=1}^S \alpha_{it}(s) a_{sr} \right] b_r(\textbf{y}_{i(t+1)})$
+$\alpha_{i(t+1)}(r) = \left[ \sum_{s=1}^S \alpha_{it}(s) a_{sr} \right] b_r(\mathbf{y}_{i(t+1)})$
   \item Termination: Compute the likelihood \\
 $P(Y_i|\mathcal{M})= \sum_{s=1}^S \alpha_{iT}(s)$
   \end{enumerate}
 
 The \emph{backward variable}
 \[
-  \beta_{it}(s)=P(\textbf{y}_{i(t+1)}, \ldots, \textbf{y}_{iT}| z_t=s, \mathcal{M})
+  \beta_{it}(s)=P(\mathbf{y}_{i(t+1)}, \ldots, \mathbf{y}_{iT}| z_t=s, \mathcal{M})
   \]
 is the joint probability of the partial observation sequence after time $t$ and hidden state $s$ at time $t$ given the model $\mathcal{M}$. For subject $i=1,\ldots,N$, the backward variable can be computed as
   \begin{enumerate}
 \item Initialization: For $s=1,\ldots,S$, set \\
 $\beta_{iT}(s) = 1$
   \item Recursion: For $t=T-1,\ldots,1$, and $s=1,\ldots,S$, compute  \\
-$\beta_{it}(s)=\left[ \sum_{r=1}^S a_{sr} \right] b_s(\textbf{y}_{i(t+1)}) \beta_{i(t+1)}(r)$
+$\beta_{it}(s)=\left[ \sum_{r=1}^S a_{sr} \right] b_s(\mathbf{y}_{i(t+1)}) \beta_{i(t+1)}(r)$
   \end{enumerate}
 
 In practice the forward-backward algorithm is prone to numerical instabilities. Typically we scale the forward and backward probabilities, as follows \citep{Rabiner1989}. For subject $i=1,\ldots,N$,
@@ -55,7 +60,7 @@ In practice the forward-backward algorithm is prone to numerical instabilities. 
 \item Initialization: For $s=1,\ldots,S$, compute  \\
 \begin{equation}
 \begin{aligned}
-\alpha_{i1}(s) &= \pi_s b_s(\textbf{y}_{i1}), \\
+\alpha_{i1}(s) &= \pi_s b_s(\mathbf{y}_{i1}), \\
 c_t &= 1 / \sum_{s=1}^S \alpha_{i1}(s),\\
 \hat \alpha_{i1}(s) &= c_t \alpha_{i1}(s)
 \end{aligned}
@@ -63,7 +68,7 @@ c_t &= 1 / \sum_{s=1}^S \alpha_{i1}(s),\\
   \item Recursion: For $t=1,\ldots,T-1$, and $r=1,\ldots,S$, compute \\
 \begin{equation}
 \begin{aligned}
-\alpha_{i(t+1)}(r) &=\left[ \sum_{s=1}^S \alpha_{it}(s) a_{sr} \right] b_r(\textbf{y}_{i(t+1)})\\
+\alpha_{i(t+1)}(r) &=\left[ \sum_{s=1}^S \alpha_{it}(s) a_{sr} \right] b_r(\mathbf{y}_{i(t+1)})\\
 c_t &= 1 / \sum_{s=1}^S \alpha_{i(t+1)}(s),\\
 \hat \alpha_{i(t+1)}(s) &= c_t \alpha_{i(t+1)}(s)
 \end{aligned}
@@ -72,7 +77,7 @@ c_t &= 1 / \sum_{s=1}^S \alpha_{i(t+1)}(s),\\
 $\textrm{log} P(Y_i|\mathcal{M})= -\sum_{t=1}^T c_{t}$
   \end{enumerate}
 
-The scaling factors $c_t$ from the forward algorithm are commonly used to scale also the backward variables, although other scaling schemes are possible as well. In \textrm{seqHMM}, the scaled backward variables for subject $i=1,\ldots,N$ are computed as
+The scaling factors $c_t$ from the forward algorithm are commonly used to scale also the backward variables, although other scaling schemes are possible as well. In \texttt{seqHMM}, the scaled backward variables for subject $i=1,\ldots,N$ are computed as
 
 \begin{enumerate}
 \item Initialization: For $s=1,\ldots,S$, compute  \\
@@ -84,34 +89,34 @@ The scaling factors $c_t$ from the forward algorithm are commonly used to scale 
   \item Recursion: For $t=T-1,\ldots,1$, and $r=1,\ldots,S$, compute \\
 \begin{equation}
 \begin{aligned}
-\beta_{it}(s) &=\left[ \sum_{r=1}^S a_{sr} \right] b_s(\textbf{y}_{i(t+1)}) \beta_{i(t+1)}(r),\\
+\beta_{it}(s) &=\left[ \sum_{r=1}^S a_{sr} \right] b_s(\mathbf{y}_{i(t+1)}) \beta_{i(t+1)}(r),\\
 \hat \beta_{it}(s) &= c_{t} \beta_{it}(s)
 \end{aligned}
 \end{equation}
   \end{enumerate}
 
 Most of the times this scaling method described works well, but in some 
-ill-conditioned cases it is possible that the default scaling still produces underflow in backward algorithm. For these cases, \textrm{seqHMM} also supports the computation of the forward and backward variables in log-space. Although numerically more stable, the algorithm is somewhat slower due repeated use of log-sum-exp trick.
+ill-conditioned cases it is possible that the default scaling still produces underflow in backward algorithm. For these cases, \texttt{seqHMM} also supports the computation of the forward and backward variables in log-space. Although numerically more stable, the algorithm is somewhat slower due repeated use of log-sum-exp trick.
   
 \section{Viterbi Algorithm}
 \label{app:viterbi}
 
 We define the score
 \[
-\delta_{it}(s)=\max_{z_{i1} z_{i2} \cdots z_{i(t-1)}} P(z_{i1} \cdots z_{it}=s, \textbf{y}_{i1} \cdots \textbf{y}_{it}|\mathcal{M}),
+\delta_{it}(s)=\max_{z_{i1} z_{i2} \cdots z_{i(t-1)}} P(z_{i1} \cdots z_{it}=s, \mathbf{y}_{i1} \cdots \mathbf{y}_{it}|\mathcal{M}),
 \]
 which is the highest probability of the hidden state sequence up to time $t$ ending in state $s$. By induction we have
 \begin{equation}
 \label{eq:delta}
-\delta_{i(t+1)}(r)=\left[\max_{s} \delta_{it}(s) a_{sr}\right] \cdot b_r(\textbf{y}_{i(t+1)}).
+\delta_{i(t+1)}(r)=\left[\max_{s} \delta_{it}(s) a_{sr}\right] \cdot b_r(\mathbf{y}_{i(t+1)}).
 \end{equation}
 We collect the arguments maximizing Equation~\ref{eq:delta} in an array $\psi_{it}(r)$ to keep track of the best hidden state sequence. The full Viterbi algorithm can be stated as follows:
   \begin{enumerate}
 \item Initialization \\
-$\delta_{i1}(s)=\pi_s b_s(\textbf{y}_{i1}), s=1,\ldots,S$ \\
+$\delta_{i1}(s)=\pi_s b_s(\mathbf{y}_{i1}), s=1,\ldots,S$ \\
 $\psi_{i1}(s)=0$
   \item Recursion \\
-$\delta_{it}(r)=\max_{s=1,\ldots,S} (\delta_{i(t-1)}(s) a_{sr}) b_h(\textbf{y}_{it})$,  \\
+$\delta_{it}(r)=\max_{s=1,\ldots,S} (\delta_{i(t-1)}(s) a_{sr}) b_h(\mathbf{y}_{it})$,  \\
 $\psi_{it}(s)=\operatorname*{arg\,max}_{s=1,\ldots,S} (\delta_{i(t-1)}(s) a_{sr}), s=1,\ldots,S; t=2,\ldots,T$
   \item Termination \\
 $\hat{P}=\max_{s=1,\ldots,S} (\delta_{iT}(s))$ \\
@@ -126,10 +131,10 @@ To avoid numerical underflow due to multiplying many small probabilities, the Vi
 Following \citet{Levinson1983}, by using the scaled forward and backward variables we have
 
 \[
-\frac{\partial \log P(Y_i|\mathcal{M})}{\partial \pi_{s}} = b_s(\textbf{y}_{i1}) \hat \beta_{i1}(s),
+\frac{\partial \log P(Y_i|\mathcal{M})}{\partial \pi_{s}} = b_s(\mathbf{y}_{i1}) \hat \beta_{i1}(s),
 \]
 \[
-\frac{\partial \log P(Y_i|\mathcal{M})}{\partial a_{sr}} = \sum_{t=1}^{T-1} \hat \alpha_{it}(s)b_r(\textbf{y}_{i(t+1)}) \hat \beta_{i(t+1)}(r),
+\frac{\partial \log P(Y_i|\mathcal{M})}{\partial a_{sr}} = \sum_{t=1}^{T-1} \hat \alpha_{it}(s)b_r(\mathbf{y}_{i(t+1)}) \hat \beta_{i(t+1)}(r),
 \]
 and
 \[
@@ -137,7 +142,7 @@ and
 \sum_{t: y_{itc} = m} \sum_{s=1}^S \alpha_{1t}(s)a_{sr} \hat \beta_{i(t+1)}(r) + \textrm{I}(y_{i1c} = m)\pi_r\hat\beta_{i1}(r).
 \]
 
-In the direct numerical optimization algorithms used by \texttt{seqHMM}, the model is parameterised using unconstrained parameters $\pi'_s, a'_{sr}, b'_{rmc}$ such that $a_{sr} = \exp(a'_sr)/\sum_{k=1}^S \exp(a'_sk)$, and similarly for emission and initial probabilities. This leads to
+In the direct numerical optimization algorithms used by \texttt{seqHMM}, the model is parameterised using unconstrained parameters $\pi'_s, a'_{sr}, b'_{rc}(m)$ such that $a_{sr} = \exp(a'_sr)/\sum_{k=1}^S \exp(a'_sk)$, and similarly for emission and initial probabilities. This leads to
 
 
 \[
@@ -148,8 +153,8 @@ In the direct numerical optimization algorithms used by \texttt{seqHMM}, the mod
 \]
 and
 \[
-\frac{\partial \log P(Y_i|\mathcal{M})}{\partial b'_{rmc}} = 
-\frac{\partial \log P(Y_i|\mathcal{M})}{\partial b_{rmc}} b_{rmc} (1 - b_{rmc}).
+\frac{\partial \log P(Y_i|\mathcal{M})}{\partial b'_{rc}(m)} = 
+\frac{\partial \log P(Y_i|\mathcal{M})}{\partial b_{rc}(m)} b_{rc}(m) (1 - b_{rc}(m)).
 \]
 
 \subsection{MHMM case}
