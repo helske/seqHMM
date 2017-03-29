@@ -9,6 +9,9 @@ seqHMM 1.0.7 (Release date: 2017-xx-xx)
   caused problems can work now without resorting to the log-space algorithm.
 * Scaling factors used in forward-backward algorithms are now stored as 1/c_t,
   where c_t are the scaling factors from older versions of seqHMM.
+* The build_mm function now automatically estimates model parameters from the observed
+  initial state distribution and transition counts.
+* Automatic starting values for build_HMM.
   
 Bug fixes:
 
