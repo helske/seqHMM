@@ -1,7 +1,7 @@
 SSPlotter <- function(obs, nchannels, nplots,
   legend.c.prop, legend.r.prop, ylab.space, xaxis.space, xt.space,
   orderv, plotxaxis,
-  hidden.paths, plots, type, tlim, n.seq, sortv, sort.channel,
+  hidden.paths, plots, type, n.seq, sortv, sort.channel,
   with.missing, missing.color, title, title.n, cex.title, title.pos,
   withlegend, ncol.legend, with.missing.legend,
   legend.prop, cex.legend, hidden.states.colors, hidden.states.labels,
@@ -57,21 +57,21 @@ SSPlotter <- function(obs, nchannels, nplots,
           for(i in 1:(nchannels-1)) {
             pushViewport(viewport(layout.pos.col = 1, layout.pos.row = i))
             par(plt = gridPLT(), new = TRUE)
-            seqplot(obs[[i]], type = "I", tlim = tlim, withlegend = FALSE,
+            seqplot(obs[[i]], type = "I", withlegend = FALSE,
               use.layout = FALSE, yaxis = yaxis, axes = FALSE, ylab = NA,
               xtlab = xtlab, missing.color = missing.color, ...)
             popViewport()
           }
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
-          seqplot(obs[[nchannels]], type = "I", tlim = tlim, withlegend = FALSE,
+          seqplot(obs[[nchannels]], type = "I", withlegend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
             xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
           popViewport()
         } else {
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
-          seqplot(obs, type = "I", tlim = tlim, withlegend = FALSE,
+          seqplot(obs, type = "I", withlegend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
             xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
           popViewport()
@@ -82,21 +82,21 @@ SSPlotter <- function(obs, nchannels, nplots,
           for (i in 1:(nchannels-1)) {
             pushViewport(viewport(layout.pos.col = 1, layout.pos.row = i))
             par(plt = gridPLT(), new = TRUE)
-            seqplot(obs[[i]][orderv,], type = "I", tlim = tlim, withlegend = FALSE,
+            seqplot(obs[[i]][orderv,], type = "I", withlegend = FALSE,
               use.layout = FALSE, yaxis = yaxis, axes = FALSE, ylab = NA,
               xtlab = xtlab, missing.color = missing.color, ...)
             popViewport()
           }
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
-          seqplot(obs[[nchannels]][orderv,], type = "I", tlim = tlim, withlegend = FALSE,
+          seqplot(obs[[nchannels]][orderv,], type = "I", withlegend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
             xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
           popViewport()
         } else {
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
-          seqplot(obs[orderv,], type = "I", tlim = tlim, withlegend = FALSE,
+          seqplot(obs[orderv,], type = "I", withlegend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
             xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
           popViewport()
@@ -108,21 +108,21 @@ SSPlotter <- function(obs, nchannels, nplots,
           for (i in 1:(nchannels-1)) {
             pushViewport(viewport(layout.pos.col = 1, layout.pos.row = i))
             par(plt = gridPLT(), new = TRUE)
-            seqplot(obs[[i]], type = "I", tlim = tlim, sortv = sortv, withlegend = FALSE,
+            seqplot(obs[[i]], type = "I", sortv = sortv, withlegend = FALSE,
               use.layout = FALSE, yaxis = yaxis, axes = FALSE, ylab = NA,
               xtlab = xtlab, missing.color = missing.color, ...)
             popViewport()
           }
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
-          seqplot(obs[[nchannels]], type = "I", tlim = tlim, sortv = sortv, withlegend = FALSE,
+          seqplot(obs[[nchannels]], type = "I", sortv = sortv, withlegend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
             xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
           popViewport()
         } else {
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
-          seqplot(obs, type = "I", tlim = tlim, sortv = sortv, withlegend = FALSE,
+          seqplot(obs, type = "I", sortv = sortv, withlegend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
             xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
           popViewport()
@@ -173,21 +173,21 @@ SSPlotter <- function(obs, nchannels, nplots,
       if (is.null(sortv)) {
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nplots))
         par(plt = gridPLT(), new = TRUE)
-        seqplot(hidden.paths, type = type, tlim = tlim, sortv = sortv, withlegend = FALSE,
+        seqplot(hidden.paths, type = type, sortv = sortv, withlegend = FALSE,
           use.layout = FALSE, yaxis = yaxis, axes = xaxis, ylab = NA,
           xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
         popViewport()
       } else if (length(sortv) == 1 && (sortv == "from.start" || sortv == "from.end")) {
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nplots))
         par(plt = gridPLT(), new = TRUE)
-        seqplot(hidden.paths[orderv,], type = type, tlim = tlim, withlegend = FALSE,
+        seqplot(hidden.paths[orderv,], type = type, withlegend = FALSE,
           use.layout = FALSE, yaxis = yaxis, axes = xaxis, ylab = NA,
           xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
         popViewport()
       } else if(length(sortv) > 1) {
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nplots))
         par(plt = gridPLT(), new = TRUE)
-        seqplot(hidden.paths, type = type, tlim = tlim, sortv = sortv, withlegend = FALSE,
+        seqplot(hidden.paths, type = type, sortv = sortv, withlegend = FALSE,
           use.layout = FALSE, yaxis = yaxis, axes = xaxis, ylab = NA,
           xtlab = xtlab, cex.plot = cex.axis, missing.color = missing.color, ...)
         popViewport()

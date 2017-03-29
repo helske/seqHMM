@@ -379,7 +379,7 @@ ssp <- function(x, hidden.paths = NULL,
   }
 
   # Checking the number of sequences for title.n
-  if (type =="d" || (length(tlim) == 1 && tlim == 0)) {
+  if (length(tlim) == 1 && tlim == 0) {
     if(nchannels == 1){
       n.seq <- dim(obs)[1]
     } else {
@@ -440,6 +440,23 @@ ssp <- function(x, hidden.paths = NULL,
   } else {
     xt.space <- 1
   }
+  
+  # Select subjects based on tlim
+  if (length(tlim) > 1 || length(tlim) == 1 && tlim > 0) {
+    if (nchannels == 1) {
+      obs <- obs[tlim, ]
+      if (inherits(x, "hmm")) {
+        x$observations <- obs[tlim, ]
+        x$n_sequences <- length(tlim)
+      }
+    } else {
+      obs <- lapply(obs, function(x) x[tlim, ])
+      if (inherits(x, "hmm")) {
+        x$observations <- lapply(obs, function(x) x[tlim, ])
+        x$n_sequences <- length(tlim)
+      }
+    }
+  }
 
   arguments <- list(obs = obs, nchannels = nchannels, nplots = nplots,
     legend.c.prop = legend.c.prop, legend.r.prop = legend.r.prop,
@@ -458,6 +475,8 @@ ssp <- function(x, hidden.paths = NULL,
       length(ncol.legend) > 1) {
     ncol.legend <- ncol.legend[1]
   }
+  
+  
 
 
   # Most probable paths of hidden states
@@ -465,6 +484,9 @@ ssp <- function(x, hidden.paths = NULL,
       (plots == "obs" && is.null(hidden.paths) && inherits(x, "hmm") && sort.channel == 0)) {
     # Hidden paths provided
     if (!is.null(hidden.paths)) {
+      if (length(tlim) > 1 || length(tlim) == 1 && tlim > 0) {
+        hidden.paths <- hidden.paths[tlim, ]
+      }
       # Automatic labels for hidden states
       if (!is.null(hidden.states.labels) && length(hidden.states.labels) == 1 &&
           hidden.states.labels == "auto") {
@@ -649,7 +671,7 @@ ssp <- function(x, hidden.paths = NULL,
 
   if (length(list(...)) == 0) {
     arguments <- c(arguments, list(hidden.paths = hidden.paths, plots = plots, type = type,
-      tlim = tlim, n.seq = n.seq,
+      n.seq = n.seq,
       sortv = sortv, sort.channel = sort.channel, plotxaxis = plotxaxis,
       with.missing = with.missing, missing.color = missing.color,
       title = title, title.n = title.n, cex.title = cex.title, title.pos = title.pos,
@@ -663,7 +685,7 @@ ssp <- function(x, hidden.paths = NULL,
       cex.lab = cex.lab, cex.axis = cex.axis, call = match.call()))
   } else {
     arguments <- c(arguments, list(hidden.paths = hidden.paths, plots = plots, type = type,
-      tlim = tlim, n.seq = n.seq,
+      n.seq = n.seq,
       sortv = sortv, sort.channel = sort.channel, plotxaxis = plotxaxis,
       with.missing = with.missing, missing.color = missing.color,
       title = title, title.n = title.n, cex.title = cex.title, title.pos = title.pos,

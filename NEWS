@@ -18,6 +18,7 @@ Bug fixes:
   copies in case of arma::cubes, which resulted the subsequent EM runs to depend 
   on the first optimum (affecting especially the identification of non-zero 
   emission probabilities).
+* Fixed a bug in the ssp function where tlim was taken account of after sorting       sequences and computing hidden paths (now cases are chosen before other actions).
 
 
 seqHMM 1.0.6 (Release date: 2016-08-01)
