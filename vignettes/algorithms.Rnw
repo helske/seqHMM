@@ -107,7 +107,7 @@ We define the score
 which is the highest probability of the hidden state sequence up to time $t$ ending in state $s$. By induction we have
 \begin{equation}
 \label{eq:delta}
-\delta_{i(t+1)}(r)=\left[\max_{s} \delta_{it}(s) a_{sr}\right] \cdot b_r(\mathbf{y}_{i(t+1)}).
+\delta_{i(t+1)}(r)=\left[\max_{s} \delta_{it}(s) a_{sr}\right] b_r(\mathbf{y}_{i(t+1)}).
 \end{equation}
 We collect the arguments maximizing Equation~\ref{eq:delta} in an array $\psi_{it}(r)$ to keep track of the best hidden state sequence. The full Viterbi algorithm can be stated as follows:
   \begin{enumerate}
@@ -158,7 +158,7 @@ and
 
 \subsection{MHMM case}
 
-For mixture HMM with $K$ clusters, we define a full model with $S=S^1+\ldots,S^K$ states in a block form with $\pi_i = (w_{i1} \pi^1,\ldots,w_{iK}\pi^K )'$, where $\pi^k$, $k=1,\ldots,K$ is the vector of initial probabilities for the submodel $\mathcal{M}^k$ and $w_{ik} = \exp(\gamma_k\mathbf{x}_i) / (1 + \sum_{j=2}^K \exp(\gamma_j\mathbf{x}_i))$, with $\gamma_1=0$.
+For mixture HMM with $K$ clusters, we define a full model with $S=S^1+\cdots+S^K$ states in a block form with $\pi_i = (w_{i1} \pi^1,\ldots,w_{iK}\pi^K )^\top$, where $\pi^k$, $k=1,\ldots,K$ is the vector of initial probabilities for the submodel $\mathcal{M}^k$ and $w_{ik} = \exp(\textbf{x}^{\top}_i\gamma_k) / (1 + \sum_{j=2}^K \exp(\textbf{x}^{\top}_i\gamma_j)$, with $\gamma_1=0$.
 
 First note that the log-likelihood of the HMM for $i$th subject can be written as
 \[
@@ -183,20 +183,23 @@ For $\gamma^k$, the gradients are of form
 \begin{equation}
 \begin{aligned}
 \frac{\partial \log P(Y_i|\mathcal{M})}{\partial \gamma^k}
-&= \sum_{s=1}^S b_s(\mathbf{y}_{i1}) \hat \beta_1(s) \frac{\pi_{is}}{\partial \gamma^k}.
+&= \sum_{s=1}^S b_s(\mathbf{y}_{i1}) \hat \beta_1(s) \frac{\pi_{is}}{\partial \gamma_k}.
 \end{aligned}
 \end{equation}
 
 Now if state $s$ belongs to cluster $k$, we have 
 \begin{equation}
 \begin{aligned}
-\frac{\partial \pi_{is}}{\partial \gamma^k} &= \pi^k_{s}\frac{\partial}{\partial \gamma^k} \frac{\exp(\gamma_k\mathbf{x}_i)}{\sum_{j=1}^K \exp(\gamma_j\mathbf{x}_i))}\\
-&=\pi^k_{s}\mathbf{x}'_i w_{ik} (1 - w_{ik}),
+\frac{\partial \pi_{is}}{\partial \gamma_k} &= \pi^k_{s}\frac{\partial}{\partial \gamma_k} \frac{\exp(\textbf{x}^{\top}_i\gamma_k)}{\sum_{j=1}^K \exp(\textbf{x}^{\top}_i\gamma_j))}\\
+&=\pi^k_{s}\mathbf{x}^\top_i w_{ik} (1 - w_{ik}),
 \end{aligned}
 \end{equation}
-and $\frac{\partial \pi_{is}}{\partial \gamma^k} = -\pi_s^h \mathbf{x}'_i w_{ih} w_{ik}$, where $h$ is the index of cluster containing the state $s$.
+and 
+\[
+\frac{\partial \pi_{is}}{\partial \gamma_k} = -\pi_s^h \mathbf{x}^\top_i w_{ih}w_{ik},
+\] otherwise, where $h$ is the index of cluster containing the state $s$.
 
-\pagebreak
+
 \bibliographystyle{plainnat}
 \bibliography{references}
 
