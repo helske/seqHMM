@@ -1,6 +1,8 @@
 seqHMM 1.0.7 (Release date: 2017-xx-xx)
 ==============
 
+* Added supplementary vignettes for visualization, estimation, and theoretical 
+  background.
 * Corrected a "feature" of the scaled forward-backward algorithm which caused 
   potential numerical issues in backward probabilities. More specifically, 
   previously the scaled backward variable at time t was scaled with the scaling 
@@ -9,8 +11,10 @@ seqHMM 1.0.7 (Release date: 2017-xx-xx)
   caused problems can work now without resorting to the log-space algorithm.
 * Scaling factors used in forward-backward algorithms are now stored as 1/c_t,
   where c_t are the scaling factors from older versions of seqHMM.
-* The build_mm function now automatically estimates model parameters from the         observed initial state distribution and transition counts.
-* Added automatic starting values for build_hmm, build_mhmm, build_mmm, and           build_lcm.
+* The build_mm function now automatically estimates model parameters from the 
+  observed initial state distribution and transition counts.
+* Added automatic starting values for build_hmm, build_mhmm, build_mmm, and 
+  build_lcm.
   
 Bug fixes:
 
@@ -20,7 +24,8 @@ Bug fixes:
   copies in case of arma::cubes, which resulted the subsequent EM runs to depend 
   on the first optimum (affecting especially the identification of non-zero 
   emission probabilities).
-* Fixed a bug in the ssp function where tlim was taken account of after sorting       sequences and computing hidden paths (now cases are chosen before other actions).
+* Fixed a bug in the ssp function where tlim was taken account of after sorting 
+  sequences and computing hidden paths (now cases are chosen before other actions).
 
 
 seqHMM 1.0.6 (Release date: 2016-08-01)
