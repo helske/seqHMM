@@ -402,7 +402,7 @@ attr(child_seq, "cpal") <- c("darkseagreen1", "coral3")
 attr(left_seq, "cpal") <- c("lightblue", "red3")
 @
 
-<<graphicalillustrations2, fig.width=6.5, fig.height=3.7, dev.args=list(pointsize=10), echo=FALSE, fig.cap='Stacked sequence plot of the first ten individuals in the \\code{biofam} data plotted with the \\code{ssplot} function. The top plot shows the original sequences, and the three bottom plots show the sequences in the separate channels for the same individuals. The sequences are in the same order in each plot, i.e., the same row always matches the same individual.', fig.align='center', fig.keep='last', cache=FALSE, message=FALSE>>=
+<<graphicalillustrations2, fig.width=6.5, fig.height=3.7, dev.args=list(pointsize=10), fig.keep='last', cache=FALSE, message=FALSE, echo=FALSE, fig.cap='Stacked sequence plot of the first ten individuals in the \\code{biofam} data plotted with the \\code{ssplot} function. The top plot shows the original sequences, and the three bottom plots show the sequences in the separate channels for the same individuals. The sequences are in the same order in each plot, i.e., the same row always matches the same individual.', fig.align='center'>>=
 ssplot(list(biofam_seq[1:10,], marr_seq[1:10,], child_seq[1:10,],
   left_seq[1:10,]),
   sortv = "from.start", sort.channel = 1, type = "I",
@@ -807,7 +807,7 @@ $a_{sr}=P(z_t=r|z_{t-1}=s)$ & Transition probability between hidden states $s$ a
 $B_c=\{b_s(m_c)\}$        & Emission matrix of size $S\times M_c$ for channel $c$ \\
 $b_s(m_c)=P(y_{itc}=m_c|z_{it}=s)$ & Emission probability of observed state $m_c$ in channel $c$ given hidden state $s$ \\
 $b_s(\textbf{y}_{it})=b_s(y_{it1})\cdots b_s(y_{itC})$ & Joint emission probability of observations at time $t$ in channels $1,\ldots,C$ given hidden state $s$ \\
-$\pi=(\pi_1,\ldots,\pi_S)$ & Vector of initial probabilities \\
+$\pi=(\pi_1,\ldots,\pi_S)^{\top}$ & Vector of initial probabilities \\
 $\pi_s=P(z_1=s)$          & Initial probability of hidden state $s$ \\
 $\hat{z}_i(Y_i)$ & The most probable hidden state sequence for subject $i$ \\
 $\textbf{x}_i$            & Covariates of subject $i$ \\
