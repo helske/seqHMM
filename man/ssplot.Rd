@@ -235,4 +235,3 @@ fitting hidden Markov models; \code{\link{hidden_paths}} for
 computing the most probable paths of hidden states; and \code{\link{biofam3c}}
 \code{\link{hmm_biofam}} for information on the data and model used in the example.
 }
-

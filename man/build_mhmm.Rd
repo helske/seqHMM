@@ -4,13 +4,17 @@
 \alias{build_mhmm}
 \title{Build a Mixture Hidden Markov Model}
 \usage{
-build_mhmm(observations, transition_probs, emission_probs, initial_probs,
-  formula, data, coefficients, cluster_names = NULL, state_names = NULL,
-  channel_names = NULL)
+build_mhmm(observations, n_states, transition_probs, emission_probs,
+  initial_probs, formula, data, coefficients, cluster_names = NULL,
+  state_names = NULL, channel_names = NULL, ...)
 }
 \arguments{
 \item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences, or a list of such objects (one for each channel).}
+
+\item{n_states}{A numerical vector giving the number of hidden states in each submodel 
+(not used if starting values for model parameters are given with 
+\code{initial_probs}, \code{transition_probs}, and \code{emission_probs}).}
 
 \item{transition_probs}{A list of matrices of transition
 probabilities for the submodel of each cluster.}
@@ -44,6 +48,8 @@ the state names are taken as row names of transition matrices. If this is also \
 numbered states are used.}
 
 \item{channel_names}{A vector of optional names for the channels.}
+
+\item{...}{Additional arguments to \code{simulate_transition_probs}.}
 }
 \value{
 Object of class \code{mhmm} with following elements:
@@ -97,6 +103,14 @@ attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
 attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
 attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
+## MHMM with random starting values, no covariates
+set.seed(468)
+init_mhmm_bf1 <- build_mhmm(
+  observations = list(marr_seq, child_seq, left_seq),
+  n_states = c(4, 4, 6),
+  channel_names = c("Marriage", "Parenthood", "Residence"))
+  
+  
 ## Starting values for emission probabilities
 
 # Cluster 1
@@ -199,8 +213,8 @@ biofam3c$covariates$cohort <- cut(biofam3c$covariates$birthyr, c(1908, 1935, 194
 biofam3c$covariates$cohort <- factor(
   biofam3c$covariates$cohort, labels=c("1909-1935", "1936-1945", "1946-1957"))
 
-# Build mixture HMM
-init_mhmm_bf <- build_mhmm(
+## MHMM with own starting values and covariates
+init_mhmm_bf2 <- build_mhmm(
   observations = list(marr_seq, child_seq, left_seq),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
   transition_probs = list(A1, A1, A2),
@@ -220,4 +234,3 @@ init_mhmm_bf <- build_mhmm(
 reorganizing a MHMM into a list of separate hidden Markov models; and
 \code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
 }
-

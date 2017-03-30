@@ -184,7 +184,7 @@ if (interactive()) {
 \seealso{
 \code{\link{build_mhmm}} and \code{\link{fit_model}} for building and
   fitting mixture hidden Markov models, \code{\link{hidden_paths}} for
-  computing the most probable paths (Viterbi paths) of hidden states, and
-  \code{\link{plot.mhmm}} for plotting \code{mhmm} objects as directed graphs.
+  computing the most probable paths (Viterbi paths) of hidden states,
+  \code{\link{plot.mhmm}} for plotting \code{mhmm} objects as directed graphs, and
+  \code{\link{colorpalette}} for default colors.
 }
-

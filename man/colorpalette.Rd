@@ -10,7 +10,7 @@ iWantHue web page \url{http://tools.medialab.sciences-po.fr/iwanthue/}
 }
 \description{
 A list containing ready defined color palettes with distinct colors using
-iWantHue.
+iWantHue. By default, \code{seqHMM} uses these palettes when assigning colors.
 }
 \examples{
 data("colorpalette")
@@ -21,6 +21,7 @@ colorpalette[[24]]
 
 }
 \seealso{
+\code{\link{plot_colors}} for visualization of color palettes.
 Implementations of iWantHue for R:
   \itemize{
     \item \url{https://github.com/hoesler/rwantshue}
@@ -28,4 +29,3 @@ Implementations of iWantHue for R:
   }
 }
 \keyword{datasets}
-

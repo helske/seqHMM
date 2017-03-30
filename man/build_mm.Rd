@@ -4,16 +4,11 @@
 \alias{build_mm}
 \title{Build a Markov Model}
 \usage{
-build_mm(observations, transition_probs, initial_probs)
+build_mm(observations)
 }
 \arguments{
 \item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences.}
-
-\item{transition_probs}{A matrix of transition probabilities. Transition probabilities should follow the
-ordering of the alphabet of observations (\code{alphabet(observations)}, returned as \code{state_names}).}
-
-\item{initial_probs}{A vector of initial state probabilities.}
 }
 \value{
 Object of class \code{hmm} with following elements:
@@ -33,8 +28,14 @@ Object of class \code{hmm} with following elements:
 }
 }
 \description{
-Function \code{build_mm} is a shortcut for constructing a Markov model as a restricted 
-  case of an \code{hmm} object.
+Function \code{build_mm} builds and automatically estimates a Markov model. It is also a shortcut for 
+constructing a Markov model as a restricted case of an \code{hmm} object.
+}
+\details{
+Unlike the other build functions in \code{seqHMM}, the \code{build_mm} function
+automatically estimates the model parameters. As initial and transition probabilities can be
+directly estimated from the observed initial state probabilities and transition counts, there
+is no need for starting values or further estimation with the \code{\link{fit_model}} function.
 }
 \examples{
 # Construct sequence data
@@ -51,16 +52,10 @@ mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet,
 # Define a color palette for the sequence data
 attr(mvad_seq, "cpal") <- colorpalette[[6]]
 
-# Initialize a Markov model
-init_mm_mvad <- build_mm(observations = mvad_seq,
-  transition_probs = simulate_transition_probs(6),
-  initial_probs = rep(1/6,6))
-
-# Fit the model
-mm_mvad <- fit_model(init_mm_mvad)
+# Estimate the Markov model
+mm_mvad <- build_mm(observations = mvad_seq)
 
 }
 \seealso{
-\code{\link{fit_model}} for estimating model parameters.
+\code{\link{plot.hmm}} for plotting the model.
 }
-

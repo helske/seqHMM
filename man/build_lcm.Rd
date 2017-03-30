@@ -4,12 +4,15 @@
 \alias{build_lcm}
 \title{Build a Latent Class Model}
 \usage{
-build_lcm(observations, emission_probs, formula, data, coefficients,
+build_lcm(observations, n_clusters, emission_probs, formula, data, coefficients,
   cluster_names = NULL, channel_names = NULL)
 }
 \arguments{
 \item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences, or a list of such objects (one for each channel).}
+
+\item{n_clusters}{A scalar giving the number of clusters/submodels 
+(not used if starting values for model parameters are given with \code{emission_probs}).}
 
 \item{emission_probs}{A matrix containing emission probabilities for each class by rows, 
 or in case of multichannel data a list of such matrices. 
@@ -68,10 +71,8 @@ obs <- seqdef(rbind(
   matrix(sample(letters[1:3], 2000, TRUE, prob = c(0.4, 0.4, 0.2)), 200, 10)))
 
 # Initialize the model
-model <- build_lcm(obs, 
-  # Simulating emission probs (matrix of n_clusters rows and n_symbols columns)
-  # Note that the simulation function is made for HMMs -> number of clusters defined with n_states
-  simulate_emission_probs(n_states = 2, n_symbols = 3))
+set.seed(9087)
+model <- build_lcm(obs, n_clusters = 2)
 
 # Estimate model parameters
 fit <- fit_model(model)
@@ -92,16 +93,21 @@ mvad_labels <- c("employment", "further education", "higher education",
 mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
 mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet, states = mvad_scodes,
   labels = mvad_labels, xtstep = 6)
+  
+# Initialize the LCM with random starting values
+set.seed(7654)
+init_lcm_mvad1 <- build_lcm(observations = mvad_seq,
+  n_clusters = 2, formula = ~male, data = mvad)
 
-# Starting values for emission probabilities
+# Own starting values for emission probabilities
 emiss <- rbind(rep(1/6, 6), rep(1/6, 6))
 
-# Initialize the LCM
-init_lcm_mvad <- build_lcm(observations = mvad_seq,
+# LCM with own starting values
+init_lcm_mvad2 <- build_lcm(observations = mvad_seq,
   emission_probs = emiss, formula = ~male, data = mvad)
 
 # Estimate model parameters (EM algorithm with random restarts)
-lcm_mvad <- fit_model(init_lcm_mvad, 
+lcm_mvad <- fit_model(init_lcm_mvad1, 
   control_em = list(restart = list(times = 5)))$model
 
 # Plot the LCM
@@ -114,7 +120,9 @@ plot(lcm_mvad, interactive = FALSE, ncol = 2)
 require("MASS")
 data("birthwt")
 
-model <- build_lcm(seqdef(birthwt$low), diag(2), ~ age + lwt + smoke + ht, birthwt)
+model <- build_lcm(
+  observations = seqdef(birthwt$low), emission_probs = diag(2), 
+  formula = ~age + lwt + smoke + ht, data = birthwt)
 fit <- fit_model(model)
 summary(fit$model)
 summary(glm(low ~ age + lwt + smoke + ht, binomial, data = birthwt))
@@ -133,7 +141,9 @@ pr <- pr/rowSums(pr)
 y <- apply(pr, 1, which.max)
 table(y)
 
-model <- build_lcm(seqdef(y), diag(3), ~ x1 + x2,  data.frame(X[, -1]))
+model <- build_lcm(
+  observations = seqdef(y), emission_probs = diag(3), 
+  formula = ~x1 + x2,  data = data.frame(X[, -1]))
 fit <- fit_model(model)
 summary(fit$model)
 summary(multinom(y ~ x1 + x2, data = data.frame(X[,-1])))
@@ -145,4 +155,3 @@ summary(multinom(y ~ x1 + x2, data = data.frame(X[,-1])))
 separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting 
 mixture models.
 }
-

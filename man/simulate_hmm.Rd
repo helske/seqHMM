@@ -49,4 +49,3 @@ multiple sequence data sets; \code{\link{seqdef}} for more
 information on state sequence objects; and \code{\link{simulate_mhmm}}
 for simulating mixture hidden Markov models.
 }
-

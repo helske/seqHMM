@@ -59,6 +59,7 @@
 #'   matrix(sample(letters[1:3], 2000, TRUE, prob = c(0.4, 0.4, 0.2)), 200, 10)))
 #' 
 #' # Initialize the model
+#' set.seed(9087)
 #' model <- build_lcm(obs, n_clusters = 2)
 #' 
 #' # Estimate model parameters
@@ -107,7 +108,9 @@
 #' require("MASS")
 #' data("birthwt")
 #' 
-#' model <- build_lcm(seqdef(birthwt$low), diag(2), ~ age + lwt + smoke + ht, birthwt)
+#' model <- build_lcm(
+#'   observations = seqdef(birthwt$low), emission_probs = diag(2), 
+#'   formula = ~age + lwt + smoke + ht, data = birthwt)
 #' fit <- fit_model(model)
 #' summary(fit$model)
 #' summary(glm(low ~ age + lwt + smoke + ht, binomial, data = birthwt))
@@ -126,7 +129,9 @@
 #' y <- apply(pr, 1, which.max)
 #' table(y)
 #' 
-#' model <- build_lcm(seqdef(y), diag(3), ~ x1 + x2,  data.frame(X[, -1]))
+#' model <- build_lcm(
+#'   observations = seqdef(y), emission_probs = diag(3), 
+#'   formula = ~x1 + x2,  data = data.frame(X[, -1]))
 #' fit <- fit_model(model)
 #' summary(fit$model)
 #' summary(multinom(y ~ x1 + x2, data = data.frame(X[,-1])))

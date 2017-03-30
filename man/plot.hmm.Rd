@@ -238,4 +238,3 @@ plot(hmm_mvad,
   used in the examples, and
   \code{\link{plot.igraph}} for the general plotting function of directed graphs.
 }
-

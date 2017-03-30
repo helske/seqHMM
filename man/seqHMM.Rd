@@ -20,4 +20,3 @@ Maximum likelihood estimation via the EM algorithm and direct numerical maximiza
 with analytical gradients is supported. All main algorithms are written in C++. 
 Parallel computation is implemented via OpenMP.
 }
-

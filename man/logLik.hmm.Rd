@@ -32,4 +32,3 @@ Function \code{logLik.hmm} computes the log-likelihood value of a hidden Markov 
 \code{\link{build_hmm}} and \code{\link{fit_model}} for building and 
   fitting Hidden Markov models.
 }
-

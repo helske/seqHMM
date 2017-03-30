@@ -72,4 +72,3 @@ seqstatf(sc_data_all)
   \code{\link{ssplot}} for plotting multiple sequence data sets in the
   same plot; and \code{\link{seqdef}} for creating state sequence objects.
 }
-

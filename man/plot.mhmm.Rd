@@ -201,4 +201,3 @@ if (interactive()) {
   directed graphs; and \code{\link{mhmm_biofam}} and \code{\link{mhmm_mvad}} for
   the models used in examples.
 }
-

@@ -4,12 +4,16 @@
 \alias{build_mmm}
 \title{Build a Mixture Markov Model}
 \usage{
-build_mmm(observations, transition_probs, initial_probs, formula, data,
-  coefficients, cluster_names = NULL)
+build_mmm(observations, n_clusters, transition_probs, initial_probs, formula,
+  data, coefficients, cluster_names = NULL, ...)
 }
 \arguments{
 \item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences.}
+
+\item{n_clusters}{A scalar giving the number of clusters/submodels 
+(not used if starting values for model parameters are given with 
+\code{initial_probs} and \code{transition_probs}).}
 
 \item{transition_probs}{A list of matrices of transition
 probabilities for submodels of each cluster.}
@@ -30,6 +34,8 @@ of clusters and \eqn{k} is the number of covariates. A logit-link is used for
 mixture probabilities. The first column is set to zero.}
 
 \item{cluster_names}{A vector of optional names for the clusters.}
+
+\item{...}{Additional arguments to \code{simulate_transition_probs}.}
 }
 \value{
 Object of class \code{mhmm} with following elements:
@@ -73,8 +79,7 @@ mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet, states = mvad_scodes,
 # Initialize the MMM
 set.seed(123)
 mmm_mvad <- build_mmm(observations = mvad_seq,
-  transition_probs = simulate_transition_probs(n_states = 6, n_clusters = 2),
-  initial_probs = replicate(2, rep(1/6, 6), simplify = FALSE),
+  n_clusters = 2,
   formula = ~male, data = mvad)
 
 \dontrun{
@@ -104,4 +109,3 @@ summary(mmm_mvad)
 separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting 
 mixture models.
 }
-

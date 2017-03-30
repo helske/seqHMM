@@ -30,4 +30,3 @@ plot_colors(rainbow(15))
 See e.g. the \code{\link{colorpalette}} data and \code{RColorBrewer} 
 package for ready-made color palettes.
 }
-

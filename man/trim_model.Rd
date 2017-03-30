@@ -40,4 +40,3 @@ hmm_trim <- trim_model(hmm_biofam, zerotol = 1e-03, maxit = 10)
 hidden Markov models; and \code{\link{hmm_biofam}} for information on the model used
 in the example.
 }
-

@@ -243,4 +243,3 @@ plot(ssp4)
   computing the most probable paths of hidden states; and \code{\link{biofam3c}} and
   \code{\link{hmm_biofam}} for information on the data and model used in the example.
 }
-

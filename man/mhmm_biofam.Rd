@@ -162,4 +162,3 @@ Examples of building and fitting MHMMs in \code{\link{build_mhmm}} and
 \code{\link{biofam3c}} for the three-channel version used in this model.
 }
 \keyword{datasets}
-

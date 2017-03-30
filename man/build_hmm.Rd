@@ -4,12 +4,15 @@
 \alias{build_hmm}
 \title{Build a Hidden Markov Model}
 \usage{
-build_hmm(observations, transition_probs, emission_probs, initial_probs,
-  state_names = NULL, channel_names = NULL)
+build_hmm(observations, n_states, transition_probs, emission_probs,
+  initial_probs, state_names = NULL, channel_names = NULL, ...)
 }
 \arguments{
 \item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences, or a list of such objects (one for each channel).}
+
+\item{n_states}{A scalar giving the number of hidden states (not used if starting values for model parameters
+are given with \code{initial_probs}, \code{transition_probs}, and \code{emission_probs}).}
 
 \item{transition_probs}{A matrix of transition probabilities.}
 
@@ -24,6 +27,8 @@ the state names are taken from the row names of the transition matrix. If this i
 also \code{NULL}, numbered states are used.}
 
 \item{channel_names}{A vector of optional names for the channels.}
+
+\item{...}{Additional arguments to \code{simulate_transition_probs}.}
 }
 \value{
 Object of class \code{hmm} with the following elements:
@@ -69,6 +74,9 @@ mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
 mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet, states = mvad_scodes,
                    labels = mvad_labels, xtstep = 6)
 
+# Initializing an HMM with 4 hidden states, random starting values                   
+init_hmm_mvad1 <- build_hmm(observations = mvad_seq, n_states = 4)
+
 # Starting values for the emission matrix
 emiss <- matrix(NA, nrow = 4, ncol = 6)
 emiss[1,] <- seqstatf(mvad_seq[, 1:12])[, 2] + 1
@@ -89,11 +97,10 @@ tr <- matrix(
 # Starting values for initial state probabilities
 init <- c(0.3, 0.3, 0.2, 0.2)
 
-# Building a hidden Markov model with starting values
-init_hmm_mvad <- build_hmm(
+# HMM with own starting values
+init_hmm_mvad2 <- build_hmm(
   observations = mvad_seq, transition_probs = tr,
-  emission_probs = emiss, initial_probs = init
-)
+  emission_probs = emiss, initial_probs = init)
 
 #########################################
 
@@ -117,6 +124,13 @@ left_seq <- seqdef(biofam3c$left, start = 15,
 attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
 attr(child_seq, "cpal") <- c("darkseagreen1", "coral3")
 attr(left_seq, "cpal") <- c("lightblue", "red3")
+
+# Left-to-right HMM with 3 hidden states and random starting values
+set.seed(1010)
+init_hmm_bf1 <- build_hmm(
+  observations = list(marr_seq, child_seq, left_seq), 
+  n_states = 3, left_right = TRUE, diag_c = 2)
+
 
 # Starting values for emission matrices
 
@@ -147,8 +161,8 @@ trans <- matrix(c(0.9, 0.07, 0.03,
 # Starting values for initial state probabilities
 inits <- c(0.9, 0.09, 0.01)
 
-# Building hidden Markov model with initial parameter values
-init_hmm_bf <- build_hmm(
+# HMM with own starting values
+init_hmm_bf2 <- build_hmm(
   observations = list(marr_seq, child_seq, left_seq),
   transition_probs = trans,
   emission_probs = list(emiss_marr, emiss_child, emiss_left),
@@ -159,4 +173,3 @@ init_hmm_bf <- build_hmm(
 \code{\link{fit_model}} for estimating model parameters; and 
   \code{\link{plot.hmm}} for plotting \code{hmm} objects.
 }
-

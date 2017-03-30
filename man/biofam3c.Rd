@@ -3,6 +3,7 @@
 \docType{data}
 \name{biofam3c}
 \alias{biofam3c}
+\alias{biofam3c}
 \title{Three-channel biofam data}
 \format{A list including three sequence data sets for 2000 individuals with 16 state
 variables, and a separate data frame with 1 id variable, 8 covariates, and 2 weights variables.}
@@ -166,4 +167,3 @@ parcours de vie à l'aide de l'optimal matching. In \emph{XIVe Rencontre de la S
 francophone de classification (SFC 2007), Paris, 5 - 7 septembre 2007}, pp. 157–160.
 }
 \keyword{datasets}
-

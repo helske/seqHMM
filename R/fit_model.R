@@ -172,13 +172,10 @@
 #' data("hmm_mvad")
 #'
 #' # Markov model
+#' # Note: build_mm estimates model parameters from observations,
+#' # no need for estimating with fit_model
 #'
-#' set.seed(123)
-#' init_mm_mvad <- build_mm(observations = mvad_seq,
-#'   transition_probs = simulate_transition_probs(6),
-#'   initial_probs = rep(1/6, 6))
-#'
-#' mm_mvad <- fit_model(init_mm_mvad)$model
+#' mm_mvad <- build_mm(observations = mvad_seq)
 #'
 #' # Comparing likelihoods, MM fits better
 #' logLik(hmm_mvad)
