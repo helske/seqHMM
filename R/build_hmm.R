@@ -110,6 +110,7 @@
 #' attr(left_seq, "cpal") <- c("lightblue", "red3")
 #' 
 #' # Left-to-right HMM with 3 hidden states and random starting values
+#' set.seed(1010)
 #' init_hmm_bf1 <- build_hmm(
 #'   observations = list(marr_seq, child_seq, left_seq), 
 #'   n_states = 3, left_right = TRUE, diag_c = 2)
@@ -265,6 +266,8 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
       dimnames(emission_probs)<-list(state_names=state_names,symbol_names=symbol_names)
       
     }
+    
+  # Simulate starting values  
   } else {
     
     transition_probs <- simulate_transition_probs(n_states = n_states, n_clusters = 1, ...)
@@ -298,16 +301,16 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
     } else if (is.list(observations) && !inherits(observations, "stslist") && length(observations) == 1) {
       n_channels <- 1
       
+      observations <- observations[[1]]
+      if (is.null(channel_names)) {
+        channel_names <- "Observations"
+      }
+      
       n_sequences <- nrow(observations)
       length_of_sequences <- ncol(observations)
       
       symbol_names <- alphabet(observations)
       n_symbols <- length(symbol_names)
-      
-      observations <- observations[[1]]
-      if (is.null(channel_names)) {
-        channel_names <- "Observations"
-      }
       
       emission_probs <- simulate_emission_probs(n_states = n_states, n_symbols = n_symbols)
       dimnames(emission_probs)<-list(state_names=state_names,symbol_names=symbol_names)
@@ -333,9 +336,7 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
       emission_probs <- vector("list", n_channels) 
       for (c in 1:n_channels) {
         emission_probs[[c]] <- simulate_emission_probs(n_states = n_states, n_symbols = n_symbols[c])
-      }
-      for (i in 1:n_channels) {
-        dimnames(emission_probs[[i]]) <- list(state_names = state_names, symbol_names = symbol_names[[i]])
+        dimnames(emission_probs[[c]]) <- list(state_names = state_names, symbol_names = symbol_names[[c]])
       }
       names(emission_probs) <- channel_names
       

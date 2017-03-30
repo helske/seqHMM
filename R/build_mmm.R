@@ -6,6 +6,9 @@
 #' @export
 #' @param observations An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 #'   the sequences.
+#' @param n_clusters A scalar giving the number of clusters/submodels 
+#' (not used if starting values for model parameters are given with 
+#' \code{initial_probs} and \code{transition_probs}).
 #' @param transition_probs A list of matrices of transition
 #'   probabilities for submodels of each cluster.
 #' @param initial_probs A list which contains vectors of initial state
@@ -20,6 +23,7 @@
 #'   of clusters and \eqn{k} is the number of covariates. A logit-link is used for
 #'   mixture probabilities. The first column is set to zero.
 #' @param cluster_names A vector of optional names for the clusters.
+#' @param ... Additional arguments to \code{simulate_transition_probs}.
 #' @return Object of class \code{mhmm} with following elements:
 #' \describe{
 #'    \item{\code{observations}}{State sequence object or a list of such containing the data.}
@@ -62,8 +66,7 @@
 #' # Initialize the MMM
 #' set.seed(123)
 #' mmm_mvad <- build_mmm(observations = mvad_seq,
-#'   transition_probs = simulate_transition_probs(n_states = 6, n_clusters = 2),
-#'   initial_probs = replicate(2, rep(1/6, 6), simplify = FALSE),
+#'   n_clusters = 2,
 #'   formula = ~male, data = mvad)
 #'
 #' \dontrun{
@@ -86,18 +89,25 @@
 #' summary(mmm_mvad)
 #' }
 build_mmm <-
-  function(observations,transition_probs,initial_probs,
-           formula, data, coefficients, cluster_names = NULL){
+  function(observations, n_clusters, transition_probs, initial_probs,
+           formula, data, coefficients, cluster_names = NULL, ...){
 
     if (!inherits(observations, "stslist")) {
       stop("The build_mmm function can only be used for single-channel sequence data (as an stslist object). Use the mc_to_sc_data function to convert multiple stslist into single-channel state sequences.")
     }
-
-    n_sequences<-nrow(observations)
-    length_of_sequences<-ncol(observations)
-
+    
+    n_sequences <- nrow(observations)
+    length_of_sequences <- ncol(observations)
+    
     symbol_names <- alphabet(observations)
-    n_symbols<-length(symbol_names)
+    n_symbols <- length(symbol_names)
+    
+    
+    if (missing(n_clusters)) {
+      
+      if (missing(transition_probs) || missing(initial_probs)) {
+        stop(paste("Provide either n_clusters or both initial_probs and transition_probs."))
+      }
 
     if (is.list(transition_probs)){
       n_clusters <- length(transition_probs)
@@ -149,6 +159,39 @@ build_mmm <-
     for(i in 1:n_clusters){
       dimnames(transition_probs[[i]]) <- dimnames(emission_probs[[i]]) <- list(from=state_names[[i]],to=state_names[[i]])
       names(initial_probs[[i]]) <- state_names[[i]]
+    }
+    
+    # Simulate starting values
+    } else {
+      
+      if (is.null(cluster_names)) {
+        cluster_names <- paste("Cluster", 1:n_clusters)
+      } else if (length(cluster_names) != n_clusters) {
+        warning("The length of argument cluster_names does not match the length of n_clusters. Names were not used.")
+        cluster_names <- paste("Cluster", 1:n_clusters)
+      }
+      
+      # States
+      n_states <- rep(n_symbols, n_clusters)
+      state_names <- replicate(n_clusters, symbol_names, simplify = FALSE)
+      
+      
+      transition_probs <- simulate_transition_probs(n_states = n_states, n_clusters = n_clusters, ...)
+      
+      for (k in 1:n_clusters) {
+        dimnames(transition_probs[[k]]) <- list(from = state_names[[k]], to = state_names[[k]])
+      }
+      
+      
+      initial_probs <- simulate_initial_probs(n_states = n_states, n_clusters = n_clusters)
+      
+
+      emission_probs <- replicate(n_clusters, diag(n_symbols), simplify = FALSE)
+      for (k in 1:n_clusters) {
+        dimnames(transition_probs[[k]]) <- dimnames(emission_probs[[k]]) <- list(from = state_names[[k]], to = state_names[[k]])
+        names(initial_probs[[k]]) <- state_names[[k]]
+      }
+      
     }
 
 

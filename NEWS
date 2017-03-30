@@ -9,9 +9,8 @@ seqHMM 1.0.7 (Release date: 2017-xx-xx)
   caused problems can work now without resorting to the log-space algorithm.
 * Scaling factors used in forward-backward algorithms are now stored as 1/c_t,
   where c_t are the scaling factors from older versions of seqHMM.
-* The build_mm function now automatically estimates model parameters from the observed
-  initial state distribution and transition counts.
-* Automatic starting values for build_HMM.
+* The build_mm function now automatically estimates model parameters from the         observed initial state distribution and transition counts.
+* Added automatic starting values for build_hmm, build_mhmm, build_mmm, and           build_lcm.
   
 Bug fixes:
 
@@ -33,7 +32,8 @@ seqHMM 1.0.6 (Release date: 2016-08-01)
   (previously 1e-12), and the reltol and maxeval values for restarts are by
   default taken from the initial EM algorithm (previosly reltol was 1e-8 and
   maxeval = 100 for restarts).
-* Fixed hidden states labels for ssp functions (previously always used the default values).
+* Fixed hidden states labels for ssp functions (previously always used the 
+  default values).
 
 Bug fixes:
 
