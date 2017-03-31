@@ -1,3 +1,8 @@
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{Visualization tools in the seqHMM package}
+%\VignetteKeyword{categorical time series}
+%\VignetteKeyword{latent Markov models}
+%\VignetteKeyword{latent class models}
 \documentclass{article}
 
 \usepackage[authoryear,round,longnamesfirst]{natbib}
@@ -5,8 +10,6 @@
 \usepackage{array}
 \usepackage{hyperref}
 % \usepackage[backend=bibtex]{biblatex}
-
-
 
 % \newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 

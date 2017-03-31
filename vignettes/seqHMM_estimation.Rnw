@@ -1,3 +1,8 @@
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{Examples and tips for estimating Markovian models with seqHMM}
+%\VignetteKeyword{categorical time series}
+%\VignetteKeyword{latent Markov models}
+%\VignetteKeyword{latent class models}
 \documentclass{article}
 
 \usepackage[authoryear,round,longnamesfirst]{natbib}
