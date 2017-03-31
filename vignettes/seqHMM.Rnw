@@ -53,14 +53,20 @@ Good graphical presentations of data and models are useful during the whole anal
 %% in the following format:
 \Address{
   Satu Helske\\
-  Department of Mathematics and Statistics \\
+  Department of Sociology \\
   University of Oxford \\
   Manor Road Building \\
   Manor Road \\
   Oxford \\
   OX1 3UQ \\
   UK \\
-  E-mail: \email{satu.helske@sociology.ox.ac.uk}
+  E-mail: \email{satu.helske@sociology.ox.ac.uk}\\
+  
+Jouni Helske\\
+Department of Mathematics and Statistics\\
+University of Jyv\"askyl\"a\\
+40014 Jyv\"askyl\"a, Finland\\
+E-mail: \email{Jouni.Helske@jyu.fi}
 }
 %% It is also possible to add a telephone and fax number
 %% before the e-mail in the following format:
