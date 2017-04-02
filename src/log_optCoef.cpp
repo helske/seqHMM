@@ -1,4 +1,4 @@
-// estimation of beta coefficients using log-space
+// estimation of gamma coefficients using log-space
 #include "seqHMM.h"
 
 unsigned int log_optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cube& emission,

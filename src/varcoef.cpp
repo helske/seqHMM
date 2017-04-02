@@ -1,4 +1,4 @@
-//Variance-covariance matrix of beta coefficient based on inverse of -Hessian
+//Variance-covariance matrix of gamma coefficients based on inverse of -Hessian
 #include "seqHMM.h"
 
 // [[Rcpp::export]]

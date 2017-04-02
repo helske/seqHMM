@@ -53,7 +53,7 @@
 #'}
 #' @param lb,ub Lower and upper bounds for parameters in Softmax parameterization.
 #' The default interval is \eqn{[pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)]},
-#' except for beta coefficients,
+#' except for gamma coefficients,
 #' where the scale of covariates is taken into account.
 #' Note that it might still be a good idea to scale covariates around unit scale.
 #' Bounds are used only in the global optimization step.
