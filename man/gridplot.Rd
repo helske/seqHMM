@@ -137,3 +137,4 @@ gridplot(
 \code{\link{ssp}} for defining the plot before using
   \code{gridplot}, and \code{\link{plot.ssp}} for plotting only one ssp object.
 }
+

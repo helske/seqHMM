@@ -5,18 +5,17 @@ Version: 1.0.7
 Date: 2017-04-2
 Author: Jouni Helske, Satu Helske
 Maintainer: Jouni Helske <jouni.helske@jyu.fi>
-Description: Designed for fitting hidden (latent)
-    Markov models and mixture hidden Markov models for social
-    sequence data and other categorical time series. Also some more restricted
-    versions of these type of models are available: Markov models, mixture
-    Markov models, and latent class models. The package supports models for one or
-    multiple subjects with one or multiple parallel sequences (channels). External
-    covariates can be added to explain cluster membership in mixture models. The
-    package provides functions for evaluating and comparing models, as well as
-    functions for easy plotting of multichannel sequence data and hidden Markov
-    models. Models are estimated using maximum likelihood via the EM algorithm and/or
-    direct numerical maximization with analytical gradients.
-    All main algorithms are written in C++ with support for parallel computation.
+Description: Designed for fitting hidden (latent) Markov models and mixture
+    hidden Markov models for social sequence data and other categorical time series.
+    Also some more restricted versions of these type of models are available: Markov
+    models, mixture Markov models, and latent class models. The package supports
+    models for one or multiple subjects with one or multiple parallel sequences
+    (channels). External covariates can be added to explain cluster membership in
+    mixture models. The package provides functions for evaluating and comparing
+    models, as well as functions for easy plotting of multichannel sequence data and
+    hidden Markov models. Models are estimated using maximum likelihood via the EM
+    algorithm and/or direct numerical maximization with analytical gradients. All
+    main algorithms are written in C++ with support for parallel computation.
 LazyData: true
 LinkingTo: Rcpp, RcppArmadillo
 Depends:
@@ -43,4 +42,4 @@ License: GPL (>= 2)
 Encoding: UTF-8
 BugReports: https://github.com/helske/seqHMM/issues
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 5.0.1

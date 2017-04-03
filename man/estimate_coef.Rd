@@ -16,3 +16,4 @@ estimate_coef(model, threads = 1)
 Function \code{estimate_coef} estimates the regression coefficients of mixture hidden
 Markov models and its restricted variants while keeping other parameters fixed.
 }
+

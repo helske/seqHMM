@@ -38,3 +38,4 @@ and the model parameters corresponding to nonzero probabilities.
 Computing the non-conditional standard errors can be slow for large models as
 the Jacobian of analytical gradients is computed using finite difference approximation.
 }
+

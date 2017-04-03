@@ -155,3 +155,4 @@ summary(multinom(y ~ x1 + x2, data = data.frame(X[,-1])))
 separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting 
 mixture models.
 }
+

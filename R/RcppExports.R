@@ -17,6 +17,18 @@ forwardbackwardx <- function(transition, emission, init, obs, coef, X, numberOfS
     .Call('seqHMM_forwardbackwardx', PACKAGE = 'seqHMM', transition, emission, init, obs, coef, X, numberOfStates, forwardonly, threads)
 }
 
+logLikHMM <- function(transition, emission, init, obs, threads) {
+    .Call('seqHMM_logLikHMM', PACKAGE = 'seqHMM', transition, emission, init, obs, threads)
+}
+
+logLikMixHMM <- function(transition, emission, init, obs, coef, X, numberOfStates, threads) {
+    .Call('seqHMM_logLikMixHMM', PACKAGE = 'seqHMM', transition, emission, init, obs, coef, X, numberOfStates, threads)
+}
+
+logSumExp <- function(x) {
+    .Call('seqHMM_logSumExp', PACKAGE = 'seqHMM', x)
+}
+
 log_EM <- function(transition_, emission_, init_, obs, nSymbols, itermax, tol, trace, threads) {
     .Call('seqHMM_log_EM', PACKAGE = 'seqHMM', transition_, emission_, init_, obs, nSymbols, itermax, tol, trace, threads)
 }
@@ -33,14 +45,6 @@ log_forwardbackwardx <- function(transition_, emission_, init_, obs, coef, X, nu
     .Call('seqHMM_log_forwardbackwardx', PACKAGE = 'seqHMM', transition_, emission_, init_, obs, coef, X, numberOfStates, forwardonly, threads)
 }
 
-logLikHMM <- function(transition, emission, init, obs, threads) {
-    .Call('seqHMM_logLikHMM', PACKAGE = 'seqHMM', transition, emission, init, obs, threads)
-}
-
-logLikMixHMM <- function(transition, emission, init, obs, coef, X, numberOfStates, threads) {
-    .Call('seqHMM_logLikMixHMM', PACKAGE = 'seqHMM', transition, emission, init, obs, coef, X, numberOfStates, threads)
-}
-
 log_logLikHMM <- function(transition_, emission_, init_, obs, threads) {
     .Call('seqHMM_log_logLikHMM', PACKAGE = 'seqHMM', transition_, emission_, init_, obs, threads)
 }
@@ -55,10 +59,6 @@ log_objective <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbo
 
 log_objectivex <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads) {
     .Call('seqHMM_log_objectivex', PACKAGE = 'seqHMM', transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads)
-}
-
-logSumExp <- function(x) {
-    .Call('seqHMM_logSumExp', PACKAGE = 'seqHMM', x)
 }
 
 objective <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, threads) {

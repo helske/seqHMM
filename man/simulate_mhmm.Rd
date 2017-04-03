@@ -105,3 +105,4 @@ multiple sequence data sets; \code{\link{seqdef}} for more
 information on state sequence objects; and \code{\link{simulate_hmm}}
 for simulating hidden Markov models.
 }
+

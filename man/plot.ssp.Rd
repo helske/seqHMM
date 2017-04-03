@@ -40,3 +40,4 @@ plot(ssp1)
   \code{plot.ssp}; \code{\link{ssplot}} for straight plotting of \code{ssp} objects;
   and \code{\link{gridplot}} for plotting multiple \code{ssp} objects.
 }
+

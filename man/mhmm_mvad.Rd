@@ -87,3 +87,4 @@ Examples of building and fitting MHMMs in \code{\link{build_mhmm}} and
 \code{\link{fit_model}}; and \code{\link[TraMineR]{mvad}} for more information on the data.
 }
 \keyword{datasets}
+

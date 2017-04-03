@@ -188,3 +188,4 @@ if (interactive()) {
   \code{\link{plot.mhmm}} for plotting \code{mhmm} objects as directed graphs, and
   \code{\link{colorpalette}} for default colors.
 }
+

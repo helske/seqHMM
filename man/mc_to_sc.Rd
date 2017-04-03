@@ -49,3 +49,4 @@ logLik(hmm_biofam)
   fitting Hidden Markov models; and \code{\link{hmm_biofam}} for information on
   the model used in the example.
 }
+

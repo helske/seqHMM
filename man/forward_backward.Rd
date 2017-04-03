@@ -43,3 +43,4 @@ fb <- forward_backward(mhmm_biofam)
 apply(fb$forward_probs[, , 1], 2, which.max)
 
 }
+

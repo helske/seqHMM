@@ -109,3 +109,4 @@ summary(mmm_mvad)
 separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting 
 mixture models.
 }
+

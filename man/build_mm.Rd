@@ -59,3 +59,4 @@ mm_mvad <- build_mm(observations = mvad_seq)
 \seealso{
 \code{\link{plot.hmm}} for plotting the model.
 }
+

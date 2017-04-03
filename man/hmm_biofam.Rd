@@ -87,3 +87,4 @@ Examples of building and fitting HMMs in \code{\link{build_hmm}} and
 \code{\link{biofam3c}} for the three-channel version used in this model.
 }
 \keyword{datasets}
+

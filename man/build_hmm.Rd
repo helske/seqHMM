@@ -173,3 +173,4 @@ init_hmm_bf2 <- build_hmm(
 \code{\link{fit_model}} for estimating model parameters; and 
   \code{\link{plot.hmm}} for plotting \code{hmm} objects.
 }
+
