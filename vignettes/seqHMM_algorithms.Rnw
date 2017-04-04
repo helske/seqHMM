@@ -22,7 +22,7 @@
 
 \section{Introduction}
 
-This vignette contains the descriptions of the main algorithms used in the \texttt{seqHMM} package. First, a forward-backward algorithm is presented, followed by a Viterbi algorithm, and the derivations of the gradients for the numerical optimisation routines.
+This vignette contains the descriptions of the main algorithms used in the \texttt{seqHMM} \citep{Helske2016} package. First, a forward-backward algorithm is presented, followed by a Viterbi algorithm, and the derivations of the gradients for the numerical optimisation routines.
 
 \section{Forward--Backward Algorithm}
 \label{app:forwardbackward}
@@ -201,6 +201,6 @@ and
 
 
 \bibliographystyle{plainnat}
-\bibliography{references}
+\bibliography{references_for_vignettes}
 
 \end{document}

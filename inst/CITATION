@@ -1,0 +1,21 @@
+c(
+  bibentry(
+    bibtype = "Manual",
+    title = "Mixture hidden {Markov} models for sequence data: the {seqHMM} package in {R}",
+    author = "Satu Helske and Jouni Helske",
+    year = sub("-.*", "", meta$Date),
+    note = sprintf("R package version %s", meta$Version),
+    url = "https://cran.r-project.org/package=seqHMM",
+    key = "seqHMM"
+  ),
+  bibentry(
+    bibtype = "techreport",
+    title = "Mixture hidden {Markov} models for sequence data: the {seqHMM} package in {R}",
+    author = "Satu Helske and Jouni Helske",
+    journal = "Submitted to Journal of Statistical Software",
+    note = "Available at ArXiv",
+    url = "http://arxiv.org/abs/1704.00543",
+    year = "2017",
+    key = "Helske2017"
+  )
+)

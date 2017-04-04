@@ -674,9 +674,9 @@ BIC(hmm_biofam)
 \subsection{Clustering and mixture hidden Markov models}
 \label{sec:code_MHMM}
 
-When fitting mixture hidden Markov models, the starting values are given as lists, with one component per cluster. For multichannel data, emission probabilities are given as a list of lists. Here we fit a model for two clusters with 5 and 4 hidden states. For the cluster with five states we use the same starting values as for the multichannel HMM described earlier. Covariates are defined with the usual \code{formula} and \code{data} arguments.
+When fitting mixture hidden Markov models, the starting values are given as lists, with one component per cluster. For multichannel data, emission probabilities are given as a list of lists. Here we fit a model for two clusters with 5 and 4 hidden states. For the cluster with five states we use the same starting values as for the multichannel HMM described earlier. Covariates are defined with the usual \code{formula} and \code{data} arguments. Here we use sex and birth cohort to explain cluster memberships.
 
-Here we fit a model using 100 random restarts of the EM algorithm followed by the local L-BFGS method. Again we use parallel computation.
+We fit a model using 100 random restarts of the EM algorithm followed by the local L-BFGS method. Again we use parallel computation.
 
 <<code_MHMM, cache=FALSE, echo = TRUE, eval = TRUE, warning=TRUE>>=
 mc_init2 <- c(0.9, 0.05, 0.03, 0.02)
@@ -700,16 +700,20 @@ mhmm_trans <- list(mc_trans, mc_trans2)
 mhmm_emiss <- list(list(mc_emiss_marr, mc_emiss_child, mc_emiss_left), 
   list(mc_emiss_marr2, mc_emiss_child2, mc_emiss_left2))
 
+biofam3c$covariates$cohort <- cut(biofam3c$covariates$birthyr, 
+  c(1908, 1935, 1945, 1957))
+biofam3c$covariates$cohort <- factor(biofam3c$covariates$cohort, 
+  labels=c("1909-1935", "1936-1945", "1946-1957"))
+
 init_mhmm <- build_mhmm(observations = mc_obs, initial_probs = mhmm_init, 
   transition_probs = mhmm_trans, emission_probs = mhmm_emiss, 
-  formula = ~sex + birthyr, data = biofam3c$covariates, 
+  formula = ~sex + cohort, data = biofam3c$covariates, 
   channel_names = c("Marriage", "Parenthood", "Residence"), 
   cluster_names = c("Cluster 1", "Cluster 2"))
 
-# Vignette: One thread and less restarts
-set.seed(1001)
-mhmm_fit <- fit_model(
-  init_mhmm, local_step = TRUE, threads = 1,
+# vignette: less restarts and no parallelization
+set.seed(1011)
+mhmm_fit <- fit_model(init_mhmm, local_step = TRUE, threads = 1,
   control_em = list(restart = list(times = 10)))
 mhmm <- mhmm_fit$model
 @
