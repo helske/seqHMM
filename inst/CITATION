@@ -9,7 +9,7 @@ c(
     key = "seqHMM"
   ),
   bibentry(
-    bibtype = "techreport",
+    bibtype = "Article",
     title = "Mixture hidden {Markov} models for sequence data: the {seqHMM} package in {R}",
     author = "Satu Helske and Jouni Helske",
     journal = "Submitted to Journal of Statistical Software",
