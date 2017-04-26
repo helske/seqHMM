@@ -20,7 +20,8 @@
 posterior_probs <- function(model, log_space = FALSE){
   fb <- forward_backward(model, log_space = log_space)
   if (!log_space) {
-  fb$forward_probs * fb$backward_probs
+    sapply(1:sum(model$n_states), function(i) 
+      fb$forward_probs[i, , ] * fb$backward_probs[i, , ] / fb$scaling_factors)
   } else {
     ll <- logLik(model, partials = TRUE, log_space = TRUE)
     fb$forward_probs + fb$backward_probs - 
