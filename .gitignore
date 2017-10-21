@@ -19,9 +19,11 @@ src-x64
 .Rproj.user
 .settings
 vignettes/figure
-vignettes/*.sty
-vignettes/*.log
-vignettes/*.synctex.gz
-vignettes/*.tex
-vignettes/*.pdf
-vignettes/*.bbl
+*.sty
+*.log
+*.synctex.gz
+*.tex
+*.pdf
+*.bbl
+*.idx
+*.ilf
