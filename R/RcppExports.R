@@ -2,86 +2,86 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 EM <- function(transition_, emission_, init_, obs, nSymbols, itermax, tol, trace, threads) {
-    .Call('seqHMM_EM', PACKAGE = 'seqHMM', transition_, emission_, init_, obs, nSymbols, itermax, tol, trace, threads)
+    .Call(`_seqHMM_EM`, transition_, emission_, init_, obs, nSymbols, itermax, tol, trace, threads)
 }
 
 EMx <- function(transition_, emission_, init_, obs, nSymbols, coef_, X, numberOfStates, itermax, tol, trace, threads) {
-    .Call('seqHMM_EMx', PACKAGE = 'seqHMM', transition_, emission_, init_, obs, nSymbols, coef_, X, numberOfStates, itermax, tol, trace, threads)
+    .Call(`_seqHMM_EMx`, transition_, emission_, init_, obs, nSymbols, coef_, X, numberOfStates, itermax, tol, trace, threads)
 }
 
 forwardbackward <- function(transition, emission, init, obs, forwardonly, threads) {
-    .Call('seqHMM_forwardbackward', PACKAGE = 'seqHMM', transition, emission, init, obs, forwardonly, threads)
+    .Call(`_seqHMM_forwardbackward`, transition, emission, init, obs, forwardonly, threads)
 }
 
 forwardbackwardx <- function(transition, emission, init, obs, coef, X, numberOfStates, forwardonly, threads) {
-    .Call('seqHMM_forwardbackwardx', PACKAGE = 'seqHMM', transition, emission, init, obs, coef, X, numberOfStates, forwardonly, threads)
-}
-
-logLikHMM <- function(transition, emission, init, obs, threads) {
-    .Call('seqHMM_logLikHMM', PACKAGE = 'seqHMM', transition, emission, init, obs, threads)
-}
-
-logLikMixHMM <- function(transition, emission, init, obs, coef, X, numberOfStates, threads) {
-    .Call('seqHMM_logLikMixHMM', PACKAGE = 'seqHMM', transition, emission, init, obs, coef, X, numberOfStates, threads)
-}
-
-logSumExp <- function(x) {
-    .Call('seqHMM_logSumExp', PACKAGE = 'seqHMM', x)
+    .Call(`_seqHMM_forwardbackwardx`, transition, emission, init, obs, coef, X, numberOfStates, forwardonly, threads)
 }
 
 log_EM <- function(transition_, emission_, init_, obs, nSymbols, itermax, tol, trace, threads) {
-    .Call('seqHMM_log_EM', PACKAGE = 'seqHMM', transition_, emission_, init_, obs, nSymbols, itermax, tol, trace, threads)
+    .Call(`_seqHMM_log_EM`, transition_, emission_, init_, obs, nSymbols, itermax, tol, trace, threads)
 }
 
 log_EMx <- function(transition_, emission_, init_, obs, nSymbols, coef_, X, numberOfStates, itermax, tol, trace, threads) {
-    .Call('seqHMM_log_EMx', PACKAGE = 'seqHMM', transition_, emission_, init_, obs, nSymbols, coef_, X, numberOfStates, itermax, tol, trace, threads)
+    .Call(`_seqHMM_log_EMx`, transition_, emission_, init_, obs, nSymbols, coef_, X, numberOfStates, itermax, tol, trace, threads)
 }
 
 log_forwardbackward <- function(transition_, emission_, init_, obs, forwardonly, threads) {
-    .Call('seqHMM_log_forwardbackward', PACKAGE = 'seqHMM', transition_, emission_, init_, obs, forwardonly, threads)
+    .Call(`_seqHMM_log_forwardbackward`, transition_, emission_, init_, obs, forwardonly, threads)
 }
 
 log_forwardbackwardx <- function(transition_, emission_, init_, obs, coef, X, numberOfStates, forwardonly, threads) {
-    .Call('seqHMM_log_forwardbackwardx', PACKAGE = 'seqHMM', transition_, emission_, init_, obs, coef, X, numberOfStates, forwardonly, threads)
+    .Call(`_seqHMM_log_forwardbackwardx`, transition_, emission_, init_, obs, coef, X, numberOfStates, forwardonly, threads)
 }
 
 log_logLikHMM <- function(transition_, emission_, init_, obs, threads) {
-    .Call('seqHMM_log_logLikHMM', PACKAGE = 'seqHMM', transition_, emission_, init_, obs, threads)
+    .Call(`_seqHMM_log_logLikHMM`, transition_, emission_, init_, obs, threads)
 }
 
 log_logLikMixHMM <- function(transition, emission, init, obs, coef, X, numberOfStates, threads) {
-    .Call('seqHMM_log_logLikMixHMM', PACKAGE = 'seqHMM', transition, emission, init, obs, coef, X, numberOfStates, threads)
+    .Call(`_seqHMM_log_logLikMixHMM`, transition, emission, init, obs, coef, X, numberOfStates, threads)
 }
 
 log_objective <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, threads) {
-    .Call('seqHMM_log_objective', PACKAGE = 'seqHMM', transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, threads)
+    .Call(`_seqHMM_log_objective`, transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, threads)
 }
 
 log_objectivex <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads) {
-    .Call('seqHMM_log_objectivex', PACKAGE = 'seqHMM', transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads)
+    .Call(`_seqHMM_log_objectivex`, transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads)
+}
+
+logLikHMM <- function(transition, emission, init, obs, threads) {
+    .Call(`_seqHMM_logLikHMM`, transition, emission, init, obs, threads)
+}
+
+logLikMixHMM <- function(transition, emission, init, obs, coef, X, numberOfStates, threads) {
+    .Call(`_seqHMM_logLikMixHMM`, transition, emission, init, obs, coef, X, numberOfStates, threads)
+}
+
+logSumExp <- function(x) {
+    .Call(`_seqHMM_logSumExp`, x)
 }
 
 objective <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, threads) {
-    .Call('seqHMM_objective', PACKAGE = 'seqHMM', transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, threads)
+    .Call(`_seqHMM_objective`, transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, threads)
 }
 
 objectivex <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads) {
-    .Call('seqHMM_objectivex', PACKAGE = 'seqHMM', transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads)
+    .Call(`_seqHMM_objectivex`, transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads)
 }
 
 estimate_coefs <- function(transition, emission, init, obs, nSymbols, coef, X, numberOfStates, itermax, tol, trace, threads) {
-    .Call('seqHMM_estimate_coefs', PACKAGE = 'seqHMM', transition, emission, init, obs, nSymbols, coef, X, numberOfStates, itermax, tol, trace, threads)
+    .Call(`_seqHMM_estimate_coefs`, transition, emission, init, obs, nSymbols, coef, X, numberOfStates, itermax, tol, trace, threads)
 }
 
 varcoef <- function(coef, X) {
-    .Call('seqHMM_varcoef', PACKAGE = 'seqHMM', coef, X)
+    .Call(`_seqHMM_varcoef`, coef, X)
 }
 
 viterbi <- function(transition, emission, init, obs) {
-    .Call('seqHMM_viterbi', PACKAGE = 'seqHMM', transition, emission, init, obs)
+    .Call(`_seqHMM_viterbi`, transition, emission, init, obs)
 }
 
 viterbix <- function(transition, emission, init, obs, coef, X, numberOfStates) {
-    .Call('seqHMM_viterbix', PACKAGE = 'seqHMM', transition, emission, init, obs, coef, X, numberOfStates)
+    .Call(`_seqHMM_viterbix`, transition, emission, init, obs, coef, X, numberOfStates)
 }
 

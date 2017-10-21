@@ -4,7 +4,7 @@ Title: Hidden Markov Models for Life Sequences and Other Multivariate,
 Version: 1.0.8
 Date: 2017-04-26
 Author: Jouni Helske, Satu Helske
-Maintainer: Jouni Helske <jouni.helske@jyu.fi>
+Maintainer: Jouni Helske <jouni.helske@iki.fi>
 Description: Designed for fitting hidden (latent) Markov models and mixture
     hidden Markov models for social sequence data and other categorical time series.
     Also some more restricted versions of these type of models are available: Markov
