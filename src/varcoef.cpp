@@ -1,12 +1,11 @@
 //Variance-covariance matrix of gamma coefficients based on inverse of -Hessian
-#include "seqHMM.h"
+#include "optcoef.h"
 
 // [[Rcpp::export]]
-
-NumericMatrix varcoef(const arma::mat& coef, const arma::mat& X) {
+Rcpp::NumericMatrix varcoef(const arma::mat& coef, const arma::mat& X) {
 
   arma::mat weights = exp(X * coef).t();
   weights.each_row() /= sum(weights, 0);
   // use inv instead of faster inv_sympd as the latter produces error on valgrind
-  return wrap(arma::inv(-hCoef(weights, X)));
+  return Rcpp::wrap(arma::inv(-hCoef(weights, X)));
 }

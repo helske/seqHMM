@@ -1,8 +1,7 @@
 // log-likelihood of HMM
-#include "seqHMM.h"
+#include <RcppArmadillo.h>
 // [[Rcpp::export]]
-
-NumericVector logLikHMM(const arma::mat& transition, const arma::cube& emission,
+Rcpp::NumericVector logLikHMM(const arma::mat& transition, const arma::cube& emission,
     const arma::vec& init, const arma::ucube& obs, unsigned int threads) {
 
   arma::vec ll(obs.n_slices);
@@ -32,6 +31,6 @@ NumericVector logLikHMM(const arma::mat& transition, const arma::cube& emission,
     }
   }
 
-  return wrap(ll);
+  return Rcpp::wrap(ll);
 }
 

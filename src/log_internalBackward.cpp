@@ -1,7 +1,7 @@
 // internal backward algorithm using log-space
 
-#include "seqHMM.h"
-
+#include "forward_backward.h"
+#include "logsumexp.h"
 void log_internalBackward(const arma::mat& transition, const arma::cube& emission,
   const arma::ucube& obs, arma::cube& beta, unsigned int threads) {
   

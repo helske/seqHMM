@@ -1,8 +1,10 @@
 //stand-alone coefficient estimation
-#include "seqHMM.h"
+#include "optcoef.h"
+#include "forward_backward.h"
+#include "reparma.h"
 
 // [[Rcpp::export]]
-List estimate_coefs(const arma::mat& transition, const arma::cube& emission, 
+Rcpp::List estimate_coefs(const arma::mat& transition, const arma::cube& emission, 
   const arma::vec& init, const arma::ucube& obs, const arma::uvec& nSymbols, 
   arma::mat coef, const arma::mat& X, const arma::uvec& numberOfStates, 
   int itermax, double tol, int trace, unsigned int threads) {
@@ -10,7 +12,7 @@ List estimate_coefs(const arma::mat& transition, const arma::cube& emission,
   coef.col(0).zeros();
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
-    return List::create(Named("error") = 3);
+    return Rcpp::List::create(Rcpp::Named("error") = 3);
   }
   weights.each_row() /= sum(weights, 0);
 
@@ -26,11 +28,11 @@ List estimate_coefs(const arma::mat& transition, const arma::cube& emission,
   arma::sp_mat sp_trans(transition);
   internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
   if(!scales.is_finite()) {
-    return List::create(Named("error") = 1);
+    return Rcpp::List::create(Rcpp::Named("error") = 1);
   }
   internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
   if(!beta.is_finite()) {
-    return List::create(Named("error") = 2);
+    return Rcpp::List::create(Rcpp::Named("error") = 2);
   }
   double max_sf = scales.max();
   if (max_sf > 1e150) {
@@ -40,7 +42,7 @@ List estimate_coefs(const arma::mat& transition, const arma::cube& emission,
   double sumlogLik = -arma::accu(log(scales));
 
   if (trace > 0) {
-    Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
+    Rcpp:: Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
   }
 
   double change = tol + 1.0;
@@ -54,7 +56,7 @@ List estimate_coefs(const arma::mat& transition, const arma::cube& emission,
   // unsigned int error = optCoef(weights, obs, emission, initk, beta, scales, coef, X, cumsumstate,
   //                                  numberOfStates, trace);
   // if (error != 0) {
-  //   return List::create(Named("error") = error);
+  //   return Rcpp::List::create(Rcpp::Named("error") = error);
   // }
 
   for (unsigned int k = 0; k < obs.n_slices; k++) {
@@ -63,11 +65,11 @@ List estimate_coefs(const arma::mat& transition, const arma::cube& emission,
 
   internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
   if(!scales.is_finite()) {
-    return List::create(Named("error") = 1);
+    return Rcpp::List::create(Rcpp::Named("error") = 1);
   }
   internalBackwardx(sp_trans, emission, obs, beta, scales, threads);
   if(!beta.is_finite()) {
-    return List::create(Named("error") = 2);
+    return Rcpp::List::create(Rcpp::Named("error") = 2);
   }
   double max_sf = scales.max();
   if (max_sf > 1e150) {
@@ -77,9 +79,9 @@ List estimate_coefs(const arma::mat& transition, const arma::cube& emission,
   change = (tmp - sumlogLik) / (std::abs(sumlogLik) + 0.1);
   sumlogLik = tmp;
   if (trace > 1) {
-    Rcout << "iter: " << iter;
-    Rcout << " logLik: " << sumlogLik;
-    Rcout << " relative change: " << change << std::endl;
+    Rcpp::Rcout << "iter: " << iter;
+    Rcpp::Rcout << " logLik: " << sumlogLik;
+    Rcpp::Rcout << " relative change: " << change << std::endl;
   }
 
   }
@@ -94,5 +96,5 @@ List estimate_coefs(const arma::mat& transition, const arma::cube& emission,
     Rcpp::Rcout << "Final log-likelihood: " << sumlogLik << std::endl;
 
   }
-  return List::create(Named("coefficients") = wrap(coef), Named("error") = 0);
+  return Rcpp::List::create(Rcpp::Named("coefficients") = Rcpp::wrap(coef), Rcpp::Named("error") = 0);
 }

@@ -1,8 +1,9 @@
 // log-likelihood and gradients of HMM
-#include "seqHMM.h"
+#include "optcoef.h"
+#include "forward_backward.h"
 
 // [[Rcpp::export]]
-List objective(const arma::mat& transition, const arma::cube& emission,
+Rcpp::List objective(const arma::mat& transition, const arma::cube& emission,
   const arma::vec& init, arma::ucube& obs, const arma::umat& ANZ,
   const arma::ucube& BNZ, const arma::uvec& INZ, const arma::uvec& nSymbols, unsigned int threads) {
 
@@ -140,5 +141,5 @@ List objective(const arma::mat& transition, const arma::cube& emission,
     // } else {
     //   grad = sum(gradmat, 1);
     // }
-    return List::create(Named("objective") = -ll, Named("gradient") = wrap(-grad));
+    return Rcpp::List::create(Rcpp::Named("objective") = -ll, Rcpp::Named("gradient") = Rcpp::wrap(-grad));
 }

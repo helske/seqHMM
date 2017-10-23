@@ -1,6 +1,7 @@
 // Internal forward algorithms for HMMs and MHMMs
 
-#include "seqHMM.h"
+#include "forward_backward.h"
+
 void internalForward(const arma::mat& transition, const arma::cube& emission, const arma::vec& init,
   const arma::ucube& obs, arma::cube& alpha, arma::mat& scales, unsigned int threads) {
 
@@ -27,7 +28,6 @@ void internalForward(const arma::mat& transition, const arma::cube& emission, co
 void internalForwardx(const arma::sp_mat& transition_t, const arma::cube& emission,
   const arma::mat& init, const arma::ucube& obs, arma::cube& alpha, arma::mat& scales,
   unsigned int threads) {
-
 
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(alpha, scales, obs, init, emission, transition_t)

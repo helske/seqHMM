@@ -1,5 +1,5 @@
 //Estimation of beta coefficients
-#include "seqHMM.h"
+#include "optcoef.h"
 
 unsigned int optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cube& emission,
     const arma::mat& bsi, arma::mat& coef,
@@ -25,9 +25,9 @@ unsigned int optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cub
     coef.submat(0, 1, coef.n_rows - 1, coef.n_cols - 1) = coefnew;
     iter++;
     if (trace == 3) {
-      Rcout << "coefficient optimization iter: " << iter;
-      Rcout << " new coefficients: " << std::endl << coefnew << std::endl;
-      Rcout << " relative change: " << change << std::endl;
+      Rcpp::Rcout << "coefficient optimization iter: " << iter;
+      Rcpp::Rcout << " new coefficients: " << std::endl << coefnew << std::endl;
+      Rcpp::Rcout << " relative change: " << change << std::endl;
     }
     weights = exp(X * coef).t();
     if (!weights.is_finite()) {

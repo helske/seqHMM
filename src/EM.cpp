@@ -1,10 +1,10 @@
 // EM algorithm for non-mixture hidden Markov models
 
-#include "seqHMM.h"
+#include "forward_backward.h"
 
 // [[Rcpp::export]]
 
-List EM(const arma::mat& transition_, const arma::cube& emission_, const arma::vec& init_,
+Rcpp::List EM(const arma::mat& transition_, const arma::cube& emission_, const arma::vec& init_,
   const arma::ucube& obs, const arma::uvec& nSymbols, int itermax, double tol, 
   int trace, unsigned int threads) {
 
@@ -92,10 +92,10 @@ List EM(const arma::mat& transition_, const arma::cube& emission_, const arma::v
 }
       }
       if(error_code == 1) {
-        return List::create(Named("error") = 1);
+        return Rcpp::List::create(Rcpp::Named("error") = 1);
       }
       if(error_code == 2) {
-        return List::create(Named("error") = 2);
+        return Rcpp::List::create(Rcpp::Named("error") = 2);
       }
       if (max_sf > 1e150) {
         Rcpp::warning("Largest scaling factor was %e, results can be numerically unstable.", max_sf);
@@ -105,12 +105,12 @@ List EM(const arma::mat& transition_, const arma::cube& emission_, const arma::v
 
       if (trace > 0) {
         if(iter == 1) {
-          Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
+          Rcpp::Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
         } else {
           if (trace > 1) {
-            Rcout << "iter: " << iter;
-            Rcout << " logLik: " << sumlogLik;
-            Rcout << " relative change: " << change << std::endl;
+            Rcpp::Rcout << "iter: " << iter;
+            Rcpp::Rcout << " logLik: " << sumlogLik;
+            Rcpp::Rcout << " relative change: " << change << std::endl;
           }
         }
       }
@@ -130,11 +130,11 @@ List EM(const arma::mat& transition_, const arma::cube& emission_, const arma::v
       }
       // internalForward(transition, emission, init, obs, alpha, scales, threads);
       // if(!scales.is_finite()) {
-      //   return List::create(Named("error") = 1);
+      //   return Rcpp::List::create(Rcpp::Named("error") = 1);
       // }
       // internalBackward(transition, emission, obs, beta, scales, threads);
       // if(!beta.is_finite()) {
-      //   return List::create(Named("error") = 2);
+      //   return Rcpp::List::create(Rcpp::Named("error") = 2);
       // }
       // double min_sf = scales.min();
       // if (min_sf < 1e-150) {
@@ -157,7 +157,7 @@ List EM(const arma::mat& transition_, const arma::cube& emission_, const arma::v
     }
     Rcpp::Rcout << "Final log-likelihood: " << sumlogLik << std::endl;
   }
-  return List::create(Named("initialProbs") = wrap(init),
-    Named("transitionMatrix") = wrap(transition), Named("emissionArray") = wrap(emission),
-    Named("logLik") = sumlogLik, Named("iterations") = iter, Named("change") = change, Named("error") = 0);
+  return Rcpp::List::create(Rcpp::Named("initialProbs") = Rcpp::wrap(init),
+    Rcpp::Named("transitionMatrix") = Rcpp::wrap(transition), Rcpp::Named("emissionArray") = Rcpp::wrap(emission),
+    Rcpp::Named("logLik") = sumlogLik, Rcpp::Named("iterations") = iter, Rcpp::Named("change") = change, Rcpp::Named("error") = 0);
 }

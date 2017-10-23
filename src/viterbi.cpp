@@ -1,9 +1,8 @@
 //Viterbi algorithm for HMM
-#include "seqHMM.h"
+#include <RcppArmadillo.h>
 
 // [[Rcpp::export]]
-
-List viterbi(const arma::mat& transition, const arma::cube& emission,
+Rcpp::List viterbi(const arma::mat& transition, const arma::cube& emission,
   const arma::vec& init, const arma::ucube& obs) {
 
   arma::umat q(obs.n_slices, obs.n_cols);
@@ -40,5 +39,5 @@ List viterbi(const arma::mat& transition, const arma::cube& emission,
     logp(k) = delta.col(obs.n_cols - 1).max();
   }
 
-  return List::create(Named("q") = wrap(q), Named("logp") = wrap(logp));
+  return Rcpp::List::create(Rcpp::Named("q") = Rcpp::wrap(q), Rcpp::Named("logp") = Rcpp::wrap(logp));
 }

@@ -1,9 +1,10 @@
 // EM algorithm for non-mixture hidden Markov models using logarithm space
 
-#include "seqHMM.h"
+#include "log_forward_backward.h"
+#include "logsumexp.h"
 // [[Rcpp::export]]
 
-List log_EM(const arma::mat& transition_, const arma::cube& emission_, 
+Rcpp::List log_EM(const arma::mat& transition_, const arma::cube& emission_, 
   const arma::vec& init_, const arma::ucube& obs, const arma::uvec& nSymbols, 
   int itermax, double tol, int trace, unsigned int threads) {
 
@@ -29,7 +30,7 @@ List log_EM(const arma::mat& transition_, const arma::cube& emission_,
 
   double sumlogLik = sum(ll);
   if (trace > 0) {
-    Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
+    Rcpp::Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
   }
   //  
   //  //EM-algorithm begins
@@ -117,12 +118,12 @@ List log_EM(const arma::mat& transition_, const arma::cube& emission_,
     change = (tmp - sumlogLik) / (std::abs(sumlogLik) + 0.1);
     sumlogLik = tmp;
     if (!arma::is_finite(sumlogLik)) {
-      return List::create(Named("error") = 6);
+      return Rcpp::List::create(Rcpp::Named("error") = 6);
     }
     if (trace > 1) {
-      Rcout << "iter: " << iter;
-      Rcout << " logLik: " << sumlogLik;
-      Rcout << " relative change: " << change << std::endl;
+      Rcpp::Rcout << "iter: " << iter;
+      Rcpp::Rcout << " logLik: " << sumlogLik;
+      Rcpp::Rcout << " relative change: " << change << std::endl;
     }
 
   }
@@ -136,8 +137,8 @@ List log_EM(const arma::mat& transition_, const arma::cube& emission_,
     }
     Rcpp::Rcout << "Final log-likelihood: " << sumlogLik << std::endl;
   }
-  return List::create(Named("initialProbs") = wrap(exp(init)),
-      Named("transitionMatrix") = wrap(exp(transition)),
-      Named("emissionArray") = wrap(exp(emission)), Named("logLik") = sumlogLik,
-      Named("iterations") = iter, Named("change") = change, Named("error") = 0);
+  return Rcpp::List::create(Rcpp::Named("initialProbs") = Rcpp::wrap(exp(init)),
+      Rcpp::Named("transitionMatrix") = Rcpp::wrap(exp(transition)),
+      Rcpp::Named("emissionArray") = Rcpp::wrap(exp(emission)), Rcpp::Named("logLik") = sumlogLik,
+      Rcpp::Named("iterations") = iter, Rcpp::Named("change") = change, Rcpp::Named("error") = 0);
 }

@@ -1,9 +1,10 @@
 // log-likelihood and gradients of HMM using log-space
 
-#include "seqHMM.h"
-// [[Rcpp::export]]
+#include "log_forward_backward.h"
+#include "logsumexp.h"
 
-List log_objective(const arma::mat& transition, const arma::cube& emission,
+// [[Rcpp::export]]
+Rcpp::List log_objective(const arma::mat& transition, const arma::cube& emission,
   const arma::vec& init, const arma::ucube& obs, const arma::umat& ANZ,
   const arma::ucube& BNZ, const arma::uvec& INZ, arma::uvec& nSymbols, unsigned int threads) {
   
@@ -130,5 +131,5 @@ List log_objective(const arma::mat& transition, const arma::cube& emission,
       }
     }
     grad = sum(gradmat, 1);
-  return List::create(Named("objective") = -sum(ll), Named("gradient") = wrap(-grad));
+  return Rcpp::List::create(Rcpp::Named("objective") = -sum(ll), Rcpp::Named("gradient") = Rcpp::wrap(-grad));
 }

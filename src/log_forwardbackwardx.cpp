@@ -1,9 +1,10 @@
 // Forward-backward algorithm for mixture hidden Markov models using log-space
 
-#include "seqHMM.h"
+#include "log_forward_backward.h"
+#include "reparma.h"
 // [[Rcpp::export]]
 
-List log_forwardbackwardx(const arma::mat& transition_, 
+Rcpp::List log_forwardbackwardx(const arma::mat& transition_, 
   const arma::cube& emission_, const arma::vec& init_,
   const arma::ucube& obs, const arma::mat& coef, const arma::mat& X,
     const arma::uvec& numberOfStates, bool forwardonly, unsigned int threads) {
@@ -24,12 +25,12 @@ List log_forwardbackwardx(const arma::mat& transition_,
   log_internalForwardx(transition, emission, initk, obs, alpha, threads);
 
   if (forwardonly) {
-    return List::create(Named("forward_probs") = wrap(alpha));
+    return Rcpp::List::create(Rcpp::Named("forward_probs") = Rcpp::wrap(alpha));
   } else {
     arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
     log_internalBackward(transition, emission, obs, beta, threads);
-    return List::create(Named("forward_probs") = wrap(alpha), Named("backward_probs") = wrap(beta));
+    return Rcpp::List::create(Rcpp::Named("forward_probs") = Rcpp::wrap(alpha), Rcpp::Named("backward_probs") = Rcpp::wrap(beta));
   }
 
-  return wrap(alpha);
+  return Rcpp::wrap(alpha);
 }

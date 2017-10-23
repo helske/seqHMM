@@ -1,6 +1,6 @@
 // univariate forward and backward algorithms for HMMs and MHMMs
 
-#include "seqHMM.h"
+#include "forward_backward.h"
 
 void uvForward(const arma::sp_mat& transition_t, const arma::cube& emission, const arma::vec& init,
   const arma::umat& obs, arma::mat& alpha, arma::vec& scales) {

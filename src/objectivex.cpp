@@ -1,13 +1,14 @@
 // log-likelihood and gradients of MHMM
-#include "seqHMM.h"
+#include "optcoef.h"
+#include "forward_backward.h"
+#include "reparma.h"
 // [[Rcpp::export]]
-
-List objectivex(const arma::mat& transition, const arma::cube& emission,
-  const arma::vec& init, const arma::ucube& obs, const arma::umat& ANZ,
-  const arma::ucube& BNZ, const arma::uvec& INZ, const arma::uvec& nSymbols,
-  const arma::mat& coef, const arma::mat& X, arma::uvec& numberOfStates,
-  unsigned int threads) {
-
+Rcpp::List objectivex(const arma::mat& transition, const arma::cube& emission,
+                const arma::vec& init, const arma::ucube& obs, const arma::umat& ANZ,
+                const arma::ucube& BNZ, const arma::uvec& INZ, const arma::uvec& nSymbols,
+                const arma::mat& coef, const arma::mat& X, arma::uvec& numberOfStates,
+                unsigned int threads) {
+  
   unsigned int q = coef.n_rows;
   arma::vec grad(
       arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ) + (numberOfStates.n_elem- 1) * q,
@@ -15,13 +16,13 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
     grad.fill(-arma::datum::inf);
-    return List::create(Named("objective") = arma::datum::inf, Named("gradient") = wrap(grad));
+    return Rcpp::List::create(Rcpp::Named("objective") = arma::datum::inf, Rcpp::Named("gradient") = Rcpp::wrap(grad));
   }
-
+  
   weights.each_row() /= sum(weights, 0);
-
+  
   arma::mat initk(emission.n_rows, obs.n_slices);
-
+  
   for (unsigned int k = 0; k < obs.n_slices; k++) {
     initk.col(k) = init % reparma(weights.col(k), numberOfStates);
   }
@@ -32,7 +33,7 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
   double ll = 0;
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) reduction(+:ll) num_threads(threads)       \
   default(none) shared(q, grad, nSymbols, ANZ, BNZ, INZ,                                                         \
-    numberOfStates, cumsumstate, obs, init, initk, X, weights, transition, emission, error)
+          numberOfStates, cumsumstate, obs, init, initk, X, weights, transition, emission, error)
     for (unsigned int k = 0; k < obs.n_slices; k++) {
       if (error == 0) {
         arma::mat alpha(emission.n_rows, obs.n_cols); //m,n
@@ -41,27 +42,27 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
         uvForward(sp_trans.t(), emission, initk.col(k), obs.slice(k), alpha, scales);
         arma::mat beta(emission.n_rows, obs.n_cols); //m,n
         uvBackward(sp_trans, emission, obs.slice(k), beta, scales);
-
+        
         int countgrad = 0;
         arma::vec grad_k(grad.n_elem, arma::fill::zeros);
         // transitionMatrix
         if (arma::accu(ANZ) > 0) {
-
+          
           for (unsigned int jj = 0; jj < numberOfStates.n_elem; jj++) {
             arma::vec gradArow(numberOfStates(jj));
             arma::mat gradA(numberOfStates(jj), numberOfStates(jj));
             int ind_jj = cumsumstate(jj) - numberOfStates(jj);
-
+            
             for (unsigned int i = 0; i < numberOfStates(jj); i++) {
               arma::uvec ind = arma::find(ANZ.row(ind_jj + i).subvec(ind_jj, cumsumstate(jj) - 1));
-
+              
               if (ind.n_elem > 0) {
                 gradArow.zeros();
                 gradA.eye();
                 gradA.each_row() -= transition.row(ind_jj + i).subvec(ind_jj, cumsumstate(jj) - 1);
                 gradA.each_col() %= transition.row(ind_jj + i).subvec(ind_jj, cumsumstate(jj) - 1).t();
-
-
+                
+                
                 for (unsigned int j = 0; j < numberOfStates(jj); j++) {
                   for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
                     double tmp = alpha(ind_jj + i, t);
@@ -70,9 +71,9 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
                     }
                     gradArow(j) += tmp * beta(ind_jj + j, t + 1);
                   }
-
+                  
                 }
-
+                
                 gradArow = gradA * gradArow;
                 grad_k.subvec(countgrad, countgrad + ind.n_elem - 1) = gradArow.rows(ind);
                 countgrad += ind.n_elem;
@@ -113,12 +114,12 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
                       gradBrow(j) += arma::dot(alpha.col(t), transition.col(i)) * tmp;
                     }
                   }
-
+                  
                 }
                 gradBrow = gradB * gradBrow;
                 grad_k.subvec(countgrad, countgrad + ind.n_elem - 1) = gradBrow.rows(ind);
                 countgrad += ind.n_elem;
-
+                
               }
             }
           }
@@ -136,7 +137,7 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
                   tmp *= emission(ind_i + j, obs(r, 0, k), r);
                 }
                 gradIrow(j) += tmp * beta(ind_i + j, 0);
-
+                
               }
               arma::mat gradI(numberOfStates(i), numberOfStates(i), arma::fill::zeros);
               gradI.eye();
@@ -150,7 +151,7 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
         }
         for (unsigned int jj = 1; jj < numberOfStates.n_elem; jj++) {
           unsigned int ind_jj = (cumsumstate(jj) - numberOfStates(jj));
-
+          
           for (unsigned int j = 0; j < emission.n_rows; j++) {
             double tmp = 1.0;
             for (unsigned int r = 0; r < obs.n_rows; r++) {
@@ -164,7 +165,7 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
               * beta(j, 0) * initk(j, k) * X.row(k).t() * weights(jj, k);
             }
           }
-
+          
         }
         if (!scales.is_finite() || !beta.is_finite()) {
 #pragma omp atomic
@@ -180,5 +181,5 @@ List objectivex(const arma::mat& transition, const arma::cube& emission,
       ll = -arma::datum::inf;
       grad.fill(-arma::datum::inf);
     }
-    return List::create(Named("objective") = -ll, Named("gradient") = wrap(-grad));
+    return Rcpp::List::create(Rcpp::Named("objective") = -ll, Rcpp::Named("gradient") = Rcpp::wrap(-grad));
 }

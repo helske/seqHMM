@@ -1,5 +1,5 @@
 //log-sum-exp trick
-#include "seqHMM.h"
+#include "logsumexp.h"
 
 #ifdef HAVE_LONG_DOUBLE
 #  define LDOUBLE long double

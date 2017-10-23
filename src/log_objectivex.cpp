@@ -1,8 +1,9 @@
 // log-likelihood and gradients of MHMM using log-space
-#include "seqHMM.h"
+#include "log_forward_backward.h"
+#include "logsumexp.h"
+#include "reparma.h"
 // [[Rcpp::export]]
-
-List log_objectivex(const arma::mat& transition, const arma::cube& emission,
+Rcpp::List log_objectivex(const arma::mat& transition, const arma::cube& emission,
   const arma::vec& init, const arma::ucube& obs, const arma::umat& ANZ,
   const arma::ucube& BNZ, const arma::uvec& INZ, const arma::uvec& nSymbols, const arma::mat& coef,
   const arma::mat& X, const arma::uvec& numberOfStates, unsigned int threads) {
@@ -13,7 +14,7 @@ List log_objectivex(const arma::mat& transition, const arma::cube& emission,
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
     grad.fill(-arma::datum::inf);
-    return List::create(Named("objective") = arma::datum::inf, Named("gradient") = wrap(grad));
+    return Rcpp::List::create(Rcpp::Named("objective") = arma::datum::inf, Rcpp::Named("gradient") = Rcpp::wrap(grad));
   }
   
   weights.each_row() /= sum(weights, 0);
@@ -179,5 +180,5 @@ List log_objectivex(const arma::mat& transition, const arma::cube& emission,
         
       }
     }
-    return List::create(Named("objective") = -sum(ll), Named("gradient") = wrap(-sum(gradmat, 1)));
+    return Rcpp::List::create(Rcpp::Named("objective") = -sum(ll), Rcpp::Named("gradient") = Rcpp::wrap(-sum(gradmat, 1)));
 }

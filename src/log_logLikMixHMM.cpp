@@ -1,15 +1,16 @@
 // log-likelihood of MHMM using log-space
 
-#include "seqHMM.h"
+#include "logsumexp.h"
+#include "reparma.h"
 // [[Rcpp::export]]
 
-NumericVector log_logLikMixHMM(arma::mat transition, arma::cube emission, arma::vec init,
+Rcpp::NumericVector log_logLikMixHMM(arma::mat transition, arma::cube emission, arma::vec init,
   const arma::ucube& obs, const arma::mat& coef, const arma::mat& X,
   const arma::uvec& numberOfStates, unsigned int threads) {
   
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
-    return wrap(-arma::datum::inf);
+    return Rcpp::wrap(-arma::datum::inf);
   }
   weights.each_row() /= sum(weights, 0);
   
@@ -40,6 +41,6 @@ NumericVector log_logLikMixHMM(arma::mat transition, arma::cube emission, arma::
       ll(k) = logSumExp(alpha);
     }
     
-    return wrap(ll);
+    return Rcpp::wrap(ll);
 }
 

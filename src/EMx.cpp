@@ -1,8 +1,10 @@
 // EM algorithm for mixture hidden Markov models
-#include "seqHMM.h"
+#include "forward_backward.h"
+#include "optcoef.h"
+#include "reparma.h"
 
 // [[Rcpp::export]]
-List EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::vec& init_,
+Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::vec& init_,
   const arma::ucube& obs, const arma::uvec& nSymbols, const arma::mat& coef_, const arma::mat& X,
   const arma::uvec& numberOfStates, int itermax, double tol, int trace, unsigned int threads) {
   
@@ -16,7 +18,7 @@ List EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::
   coef.col(0).zeros();
   arma::mat weights = exp(X * coef).t();
   if (!weights.is_finite()) {
-    return List::create(Named("error") = 3);
+    return Rcpp::List::create(Rcpp::Named("error") = 3);
   }
   weights.each_row() /= sum(weights, 0);
 
@@ -109,10 +111,10 @@ List EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::
 }
       }
       if(error_code == 1) {
-        return List::create(Named("error") = 1);
+        return Rcpp::List::create(Rcpp::Named("error") = 1);
       }
       if(error_code == 2) {
-        return List::create(Named("error") = 2);
+        return Rcpp::List::create(Rcpp::Named("error") = 2);
       }
       if (max_sf > 1e150) {
         Rcpp::warning("Largest scaling factor was %e, results can be numerically unstable.", max_sf);
@@ -121,12 +123,12 @@ List EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::
       sumlogLik = sumlogLik_new;
       if (trace > 0) {
         if(iter == 1) {
-          Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
+          Rcpp::Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
         } else {
           if (trace > 1) {
-            Rcout << "iter: " << iter;
-            Rcout << " logLik: " << sumlogLik;
-            Rcout << " relative change: " << change << std::endl;
+            Rcpp::Rcout << "iter: " << iter;
+            Rcpp::Rcout << " logLik: " << sumlogLik;
+            Rcpp::Rcout << " relative change: " << change << std::endl;
           }
         }
       }
@@ -134,7 +136,7 @@ List EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::
         unsigned int error = optCoef(weights, obs, emission, bsi, coef, X, cumsumstate,
           numberOfStates, trace);
         if (error != 0) {
-          return List::create(Named("error") = error);
+          return Rcpp::List::create(Rcpp::Named("error") = error);
         }
 
         if (obs.n_cols > 1) {
@@ -170,8 +172,8 @@ List EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::
     }
     Rcpp::Rcout << "Final log-likelihood: " << sumlogLik << std::endl;
   }
-  return List::create(Named("coefficients") = wrap(coef), Named("initialProbs") = wrap(init),
-    Named("transitionMatrix") = wrap(transition), Named("emissionArray") = wrap(emission),
-    Named("logLik") = sumlogLik, Named("iterations") = iter, Named("change") = change,
-      Named("error") = 0);
+  return Rcpp::List::create(Rcpp::Named("coefficients") = Rcpp::wrap(coef), Rcpp::Named("initialProbs") = Rcpp::wrap(init),
+    Rcpp::Named("transitionMatrix") = Rcpp::wrap(transition), Rcpp::Named("emissionArray") = Rcpp::wrap(emission),
+    Rcpp::Named("logLik") = sumlogLik, Rcpp::Named("iterations") = iter, Rcpp::Named("change") = change,
+      Rcpp::Named("error") = 0);
 }
