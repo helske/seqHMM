@@ -170,9 +170,9 @@ plot.mhmm <- function(x, interactive = TRUE,
                       combined.slice.label = "others",
                       with.legend = "bottom", ltext = NULL, legend.prop = 0.5,
                       cex.legend = 1, ncol.legend = "auto", cpal = "auto",
-                      main = "auto", withlegend, ...){
+                      main = "auto", ...){
   
-  checkargs(alist(with.legend = withlegend))
+  check_deprecated_args(match.call())
 
   if (interactive) {
     do.call(mHMMplotint, c(list(x = x, ask = ask, which.plots = which.plots, layout = layout, pie = pie,

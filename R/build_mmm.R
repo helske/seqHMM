@@ -77,7 +77,7 @@
 #' require(igraph)
 #' plot(mmm_mvad, interactive = FALSE,
 #'   # Modify legend position and properties
-#'   withlegend = "right", legend.prop = 0.3, cex.legend = 1.2,
+#'   with.legend = "right", legend.prop = 0.3, cex.legend = 1.2,
 #'   # Define vertex layout
 #'   layout = layout_as_star,
 #'   # Modify edge properties

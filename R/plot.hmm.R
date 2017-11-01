@@ -209,10 +209,10 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
                       combined.slice.label = "others",
                       with.legend = "bottom", ltext = NULL, legend.prop = 0.5,
                       cex.legend = 1, ncol.legend = "auto", cpal = "auto",
-                      main = NULL, withlegend, ...){
+                      main = NULL, ...){
 
   
-  checkargs(alist(with.legend = withlegend))
+  check_deprecated_args(match.call())
   
   # Saving and changing marginals
   oldPar  <- par(no.readonly = TRUE)

@@ -136,10 +136,9 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
                      legend.pos2 = "center", title.legend = "auto",
                      ncol.legend = "auto",
                      with.missing.legend = "auto",
-                     row.prop = "auto", col.prop = "auto", cex.legend = 1,
-                     withlegend){
+                     row.prop = "auto", col.prop = "auto", cex.legend = 1){
   
-  checkargs(alist(with.legend = withlegend))
+  check_deprecated_args(match.call())
   
   grid.newpage()
   plot.new()

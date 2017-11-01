@@ -170,7 +170,7 @@ ssp2 <- ssp(
   list(marr_seq, child_seq, left_seq),
   type = "I",title = "Sequence index plots",
   sortv = "from.start", sort.channel = 1,
-  withlegend = FALSE, ylab.pos = c(1, 1.5, 1),
+  with.legend = FALSE, ylab.pos = c(1, 1.5, 1),
   ylab = c("Marriage", "Parenthood", "Residence"))
 plot(ssp2)
 @
@@ -187,7 +187,7 @@ ssp_f_d <- ssp(
   x = list(marr_seq[biofam$sex == "woman",],
            child_seq[biofam$sex == "woman",],
            left_seq[biofam$sex == "woman",]),
-  plots = "obs", type = "d", border = NA, withlegend = FALSE,
+  plots = "obs", type = "d", border = NA, with.legend = FALSE,
   title = "State distributions for women", title.n = FALSE,
   ylab = c("Marriage", "Parenthood", "Residence"),
   xlab = "Age", xtlab = 15:30)
@@ -223,7 +223,7 @@ ssp_d <- ssp(
   biofam.seq, border = NA, title.n = FALSE,
   title = "State distributions (original states)",
   yaxis = TRUE, ylab = FALSE,
-  withlegend = "bottom", ncol.legend = 2)
+  with.legend = "bottom", ncol.legend = 2)
 
 ssp_I <- ssp(
   list("Marriage" = marr_seq, "Parenthood" = child_seq,
@@ -232,7 +232,7 @@ ssp_I <- ssp(
   xaxis = FALSE, legend.prop = 0.5)
 
 gridplot(
-  list(ssp_d, ssp_I), ncol = 2, withlegend = FALSE, col.prop = c(0.5, 0.5))
+  list(ssp_d, ssp_I), ncol = 2, with.legend = FALSE, col.prop = c(0.5, 0.5))
 
 @
 
@@ -536,7 +536,7 @@ plot(
   xlim = c(0.5, 5.5), ylim = c(-1.5, 1.5), rescale = FALSE,
   vertex.size = 50, vertex.label.pos = c(pi, pi/2, -pi/2, 0),
   edge.curved = FALSE, cex.edge.width = 0.8, edge.arrow.size = 1.2,
-  withlegend = "top", legend.prop = 0.3, cex.legend = 1.1, ncol.legend = 2,
+  with.legend = "top", legend.prop = 0.3, cex.legend = 1.1, ncol.legend = 2,
   combine.slices = 0, cpal = colorpalette[[15]][1:10])
 @
 

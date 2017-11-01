@@ -28,7 +28,7 @@ ssplot(
 ssp_f2 <- ssp(
   list(marr.seq[bio$sex == "woman",], child.seq[bio$sex == "woman",],
        left.seq[bio$sex == "woman",]),
-  type = "d", plots = "obs", border = NA, withlegend = FALSE,
+  type = "d", plots = "obs", border = NA, with.legend = FALSE,
   title = "State distributions for women", title.n = FALSE,
   ylab = c("Married", "Parenthood", "Left home"), ylab.pos = c(1,2,1),
   xlab = "Age", xtlab = 15:30)

@@ -186,9 +186,9 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
   xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
   ylab = "auto", hidden.states.title = "Hidden states",
   yaxis = FALSE, ylab.pos = "auto",
-  cex.lab = 1, cex.axis = 1, withlegend, ...){
+  cex.lab = 1, cex.axis = 1, ...){
   
-  checkargs(alist(with.legend = withlegend))
+  check_deprecated_args(match.call())
   
   # Checking for class of x
   if(!inherits(x, "mhmm")){
