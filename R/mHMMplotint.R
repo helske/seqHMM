@@ -9,7 +9,7 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout = "horizontal
                         trim = 1e-15, 
                         combine.slices = 0.05, combined.slice.color = "white", 
                         combined.slice.label = "others",
-                        withlegend = "bottom", ltext = NULL, legend.prop = 0.5, 
+                        with.legend = "bottom", ltext = NULL, legend.prop = 0.5, 
                         cex.legend = 1, ncol.legend = "auto", cpal = "auto", 
                         main = "auto", ...){
   
@@ -58,7 +58,7 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout = "horizontal
                  trim, 
                  combine.slices, combined.slice.color, 
                  combined.slice.label,
-                 withlegend, ltext, legend.prop, 
+                 with.legend, ltext, legend.prop, 
                  cex.legend, ncol.legend, cpal, 
                  main = main[pick], ...)
       }
@@ -81,7 +81,7 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout = "horizontal
                  trim, 
                  combine.slices, combined.slice.color, 
                  combined.slice.label,
-                 withlegend, ltext, legend.prop, 
+                 with.legend, ltext, legend.prop, 
                  cex.legend, ncol.legend, cpal, main = main[pick], ...)
       }
     }
@@ -99,7 +99,7 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout = "horizontal
                trim, 
                combine.slices, combined.slice.color, 
                combined.slice.label,
-               withlegend, ltext, legend.prop, 
+               with.legend, ltext, legend.prop, 
                cex.legend, ncol.legend, cpal, main = main[i], ...)
       if (ask) {
         op <- par(ask = TRUE)

@@ -15,7 +15,7 @@
 #' @param byrow Controls the order of plotting. Defaults to \code{FALSE}, i.e. plots
 #'   are arranged column-wise.
 #'
-#' @param withlegend Defines if and how the legends for the states are plotted.
+#' @param with.legend Defines if and how the legends for the states are plotted.
 #'   The default value \code{"auto"} (equivalent to \code{TRUE} and
 #'   \code{"many"}) creates separate legends for each requested plot. Other
 #'   possibilities are \code{"combined"} (all legends combined) and \code{FALSE}
@@ -56,6 +56,8 @@
 #'   value is \code{"auto"} for even column widths. Takes a vector of values
 #'   from 0 to 1, with values summing to 1.
 #'
+#' @param withlegend Deprecated. Use \code{with.legend} instead.
+#' 
 #' @examples
 #' \dontrun{
 #' data("biofam3c")
@@ -87,14 +89,14 @@
 #'        left_seq[biofam3c$covariates$sex == "man",]))
 #'
 #' # Plotting state distribution plots of observations for women and men in two columns
-#' gridplot(list(ssp_f, ssp_m), ncol = 2, withlegend = FALSE)
+#' gridplot(list(ssp_f, ssp_m), ncol = 2, with.legend = FALSE)
 #'
 #' # Preparing plots for women's state distributions
 #' ssp_f2 <- ssp(
 #'   list(marr_seq[biofam3c$covariates$sex == "woman",],
 #'        child_seq[biofam3c$covariates$sex == "woman",],
 #'        left_seq[biofam3c$covariates$sex == "woman",]),
-#'   type = "d", border = NA, withlegend = FALSE,
+#'   type = "d", border = NA, with.legend = FALSE,
 #'   title = "State distributions for women", title.n = FALSE, xtlab = 15:30,
 #'   ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home"))
 #'
@@ -117,7 +119,7 @@
 #' # for women and men in two columns (+ one column for legends)
 #' gridplot(
 #'   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 3, byrow = TRUE,
-#'   withlegend = "combined", legend.pos = "right", col.prop = c(0.35, 0.35, 0.3))
+#'   with.legend = "combined", legend.pos = "right", col.prop = c(0.35, 0.35, 0.3))
 #'
 #' # The same with different positioning and fixed cells for legends
 #' gridplot(
@@ -130,11 +132,15 @@
 #'   \code{gridplot}, and \code{\link{plot.ssp}} for plotting only one ssp object.
 
 gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
-                     withlegend = "auto", legend.pos = "auto",
+                     with.legend = "auto", legend.pos = "auto",
                      legend.pos2 = "center", title.legend = "auto",
                      ncol.legend = "auto",
                      with.missing.legend = "auto",
-                     row.prop = "auto", col.prop = "auto", cex.legend = 1){
+                     row.prop = "auto", col.prop = "auto", cex.legend = 1,
+                     withlegend){
+  
+  checkargs(alist(with.legend = withlegend))
+  
   grid.newpage()
   plot.new()
   opar <- par(no.readonly = TRUE)
@@ -150,15 +156,15 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
     stop("Argument byrow only accepts values TRUE and FALSE.")
   }
 
-  # Checking withlegend
+  # Checking with.legend
   choices <- c(TRUE, FALSE, "auto", "combined", "many")
-  ind <- pmatch(withlegend, choices)
+  ind <- pmatch(with.legend, choices)
   if (is.na(ind)) {
-    stop("Argument withlegend must be one of TRUE, FALSE, \"auto\", \"many\", \"combined\"")
+    stop("Argument with.legend must be one of TRUE, FALSE, \"auto\", \"many\", \"combined\"")
   }
-  withlegend <- choices[ind]
-  if (withlegend %in% c(TRUE, "auto")){
-    withlegend <- "many"
+  with.legend <- choices[ind]
+  if (with.legend %in% c(TRUE, "auto")){
+    with.legend <- "many"
   }
 
   if(!is.numeric(legend.pos)){
@@ -203,20 +209,20 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
   }
 
   # Checks for automatic legends
-  if (!is.na(withlegend) && withlegend != FALSE && ngridplots > 1) {
+  if (!is.na(with.legend) && with.legend != FALSE && ngridplots > 1) {
     nlegend <- x[[1]]$nplots
     for(i in 2:ngridplots){
       if(nlegend  !=  x[[i]]$nplots){
         warning("The number of legends is not the same in all requested plots. Legends could not be printed.")
-        withlegend <- FALSE
+        with.legend <- FALSE
         break()
       }
       nlegend <- x[[i]]$nplots
     }
   }
 
-  if (x[[1]]$nchannels == 1 && withlegend == "many") {
-    withlegend <- "combined"
+  if (x[[1]]$nchannels == 1 && with.legend == "many") {
+    with.legend <- "combined"
   }
 
   # Set numbers of rows and columns if missing
@@ -241,14 +247,14 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
   emptycells <- gridnrow * gridncol - ngridplots
 
   # Enough cells without plots?
-  if ((is.na(withlegend) && withlegend != FALSE) && length(legend.pos) > 1 && emptycells < ngridplots) {
+  if ((is.na(with.legend) && with.legend != FALSE) && length(legend.pos) > 1 && emptycells < ngridplots) {
     warning("There were not enough empty cells for the legends. Legends were positioned automatically.")
     legend.pos <- "bottom"
   }
 
 
   # Legend titles
-  if (!is.na(withlegend) && withlegend != FALSE && !is.na(title.legend) &&
+  if (!is.na(with.legend) && with.legend != FALSE && !is.na(title.legend) &&
       title.legend != FALSE && !is.null(title.legend)) {
     # Wrong length for title.legend
     if (length(title.legend) > 1 || (length(title.legend) == 1 && title.legend != "auto")) {
@@ -264,7 +270,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
   }
 
   # Legend positions
-  if (!is.na(withlegend) && withlegend != FALSE) {
+  if (!is.na(with.legend) && with.legend != FALSE) {
     # Convert legend positions to "right"/"bottom" for layout
     if (length(legend.pos) > 1){
       if (byrow == TRUE){
@@ -323,8 +329,8 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
           legend.pos <- c((gridnrow * gridncol - floor(emptycells / gridncol) * gridncol + 1):(gridnrow * gridncol))
         }
       }
-      if (length(ncol.legend) == 1 && ncol.legend == "auto" && withlegend != TRUE &&
-         withlegend == "combined") {
+      if (length(ncol.legend) == 1 && ncol.legend == "auto" && with.legend != TRUE &&
+         with.legend == "combined") {
         ncol.legend <- x[[1]]$nplots
       }
       # Legend at right
@@ -366,14 +372,14 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
           legend.pos <- c(gridnrow:1) * gridncol
         }
       }
-      if (length(ncol.legend) == 1 && ncol.legend == "auto" && withlegend != TRUE &&
-         withlegend == "combined") {
+      if (length(ncol.legend) == 1 && ncol.legend == "auto" && with.legend != TRUE &&
+         with.legend == "combined") {
         ncol.legend <- 1
       }
     }
 
     # Legend rows and columns
-    if (withlegend == "many") {
+    if (with.legend == "many") {
       if (length(ncol.legend) == 1 && ncol.legend == "auto") {
         ncol.legend <- rep(1, length.out = x[[1]]$nplots)
         legend.nrow <- sapply(lapply(x[[1]]$obs, "alphabet"), "length")
@@ -419,7 +425,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
     plotnrow <- rep(c(1:gridnrow), times = gridncol)
     plotncol <- rep(c(1:gridncol), each = gridnrow)
     plotgrid <- cbind(plotnrow, plotncol)
-    if (!is.na(withlegend) && withlegend != FALSE) {
+    if (!is.na(with.legend) && with.legend != FALSE) {
       lpos <- matrix(c(1:nrow(plotgrid)), byrow = FALSE, nrow = gridnrow)
       legendplace <- matrix(c(lpos[,] %in% legend.pos), byrow = FALSE, nrow = gridnrow)
       plotplace <- matrix(c(!(lpos[,] %in% legend.pos)), byrow = FALSE, nrow = gridnrow)
@@ -429,7 +435,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         plotlegend <- plotlegend[order(plotlegend[,2]), , drop = FALSE]
       }
       if (length(ncol.legend) == 1 && ncol.legend == "auto") {
-        if (withlegend == "combined") {
+        if (with.legend == "combined") {
           if (length(unique(plotlegend[, 1])) >= length(unique(plotlegend[, 2]))) {
             ncol.legend <- 1
           } else {
@@ -447,7 +453,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
     plotnrow <- rep(c(1:gridnrow), each = gridncol)
     plotncol <- rep(c(1:gridncol), times = gridnrow)
     plotgrid <- cbind(plotnrow, plotncol)
-    if (!is.na(withlegend) && withlegend != FALSE) {
+    if (!is.na(with.legend) && with.legend != FALSE) {
       lpos <- matrix(c(1:nrow(plotgrid)), byrow = TRUE, nrow = gridnrow)
       legendplace <- matrix(c(lpos[,] %in% legend.pos), byrow = FALSE, nrow = gridnrow)
       plotplace <- matrix(c(!(lpos[,] %in% legend.pos)), byrow = FALSE, nrow = gridnrow)
@@ -457,7 +463,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         plotlegend <- plotlegend[order(plotlegend[, 2]), , drop = FALSE]
       }
       if (length(ncol.legend) == 1 && ncol.legend == "auto") {
-        if (withlegend == "combined") {
+        if (with.legend == "combined") {
           if (length(unique(plotlegend[, 1])) >= length(unique(plotlegend[, 2]))) {
             ncol.legend <- 1
           } else {
@@ -489,7 +495,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
                                         layout.pos.col = plotcells[i, 2],
                                         name = paste0("vpplot", i)))
   }
-  if (!is.na(withlegend) && withlegend != FALSE) {
+  if (!is.na(with.legend) && with.legend != FALSE) {
     assign("vplegend", viewport(layout.pos.row = unique(plotlegend[, 1]),
                                 layout.pos.col = unique(plotlegend[, 2]),
                                 name = "vplegend"))
@@ -520,7 +526,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
   }
 
   # Legends
-  if (!is.na(withlegend) && withlegend != FALSE) {
+  if (!is.na(with.legend) && with.legend != FALSE) {
     # Hidden states (all in one legend)
     if (x[[1]]$plots == "both" || x[[1]]$plots == "hidden.paths") {
       hstext <- NULL
@@ -566,7 +572,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
 #     }
 
     # Separate legends
-    if (withlegend == "many") {
+    if (with.legend == "many") {
       downViewport("vplegend")
       # Vertical legends
       if(legendp == "right"){
@@ -580,7 +586,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
           for(i in 1:x[[1]]$nchannels){
             pushViewport(viewport(layout.pos.col = 1, layout.pos.row = i))
             par(plt = gridPLT(), new = TRUE)
-            seqlegend(x[[1]]$obs[[i]], fontsize = cex.legend, position = legend.pos2,
+            seqlegend(x[[1]]$obs[[i]], cex = cex.legend, position = legend.pos2,
                       cpal = cpals[[i]], ltext = ltexts[[i]],
                       ncol = ncol.legend[i], with.missing = with.missing.legend,
                       title = title.legend[i])
@@ -591,7 +597,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         if (x[[1]]$plots == "both" || x[[1]]$plots == "hidden.paths") {
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = x[[1]]$nplots))
           par(plt = gridPLT(), new = TRUE)
-          seqlegend(x[[1]]$hidden.paths, fontsize = cex.legend,
+          seqlegend(x[[1]]$hidden.paths, cex = cex.legend,
                     position = legend.pos2, ncol = ncol.legend[length(ncol.legend)],
                     cpal = hscpal, ltext = hstext,
                     with.missing = with.missing.legend,
@@ -611,7 +617,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
           for(i in 1:x[[1]]$nchannels){
             pushViewport(viewport(layout.pos.col = i, layout.pos.row = 1))
             par(plt = gridPLT(), new = TRUE)
-            seqlegend(x[[1]]$obs[[i]], fontsize = cex.legend, position = legend.pos2,
+            seqlegend(x[[1]]$obs[[i]], cex = cex.legend, position = legend.pos2,
                       cpal = cpals[[i]], ltext = ltexts[[i]],
                       ncol = ncol.legend[i], with.missing = with.missing.legend,
                       title = title.legend[i])
@@ -622,7 +628,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         if(x[[1]]$plots == "both" || x[[1]]$plots == "hidden.paths"){
           pushViewport(viewport(layout.pos.col = x[[1]]$nplots, layout.pos.row = 1))
           par(plt = gridPLT(), new = TRUE)
-          seqlegend(x[[1]]$hidden.paths, fontsize = cex.legend,
+          seqlegend(x[[1]]$hidden.paths, cex = cex.legend,
                     position = legend.pos2, ncol = ncol.legend[length(ncol.legend)],
                     cpal = hscpal, ltext = hstext,
                     with.missing = with.missing.legend,
@@ -632,13 +638,13 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         popViewport()
       }
       # Combined legends
-    } else if (withlegend == "combined") {
+    } else if (with.legend == "combined") {
       if (x[[1]]$plots == "both" || x[[1]]$plots == "obs") {
         downViewport("vplegend")
         par(plt = gridPLT(), new = TRUE)
         pushViewport(viewport(width = unit(0.9, "npc")))
 
-        seqlegend(x[[1]]$obs[[1]], fontsize = cex.legend, position = legend.pos2,
+        seqlegend(x[[1]]$obs[[1]], cex = cex.legend, position = legend.pos2,
                   ncol = ncol.legend, cpal = cpal, ltext = ltext,
                   with.missing = anymissing,
                   missing.color = attr(x[[1]]$obs[[1]],"missing.color"))
@@ -655,7 +661,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         par(plt = gridPLT(), new = TRUE)
         pushViewport(viewport(width = unit(0.9, "npc")))
 
-        seqlegend(x[[1]]$obs[[1]], fontsize = cex.legend, position = legend.pos2,
+        seqlegend(x[[1]]$obs[[1]], cex = cex.legend, position = legend.pos2,
                   ncol = ncol.legend, cpal = cpal, ltext = ltext,
                   with.missing = anymissing,
                   missing.color = attr(x[[1]]$obs[[1]],"missing.color"))

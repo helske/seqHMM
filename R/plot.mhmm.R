@@ -91,7 +91,7 @@
 #'   \code{"combine.slices"} is greater than 0). The default color is white.
 #' @param combined.slice.label The label for combined states (when argument
 #'   \code{"combine.slices"} is greater than 0) to appear in the legend.
-#' @param withlegend Defines if and where the legend of state colors is
+#' @param with.legend Defines if and where the legend of state colors is
 #'   plotted. Possible values include \code{"bottom"} (the default),
 #'   \code{"top"}, \code{"left"}, and \code{"right"}. \code{FALSE} omits the
 #'   legend.
@@ -112,6 +112,7 @@
 #'   plotted (if the probability is less than \code{combine.slices}).
 #' @param main Optional main titles for plots. The default \code{"auto"} uses
 #' \code{cluster_names} as titles, \code{NULL} prints no titles.
+#' @param withlegend Deprecated. Use \code{with.legend} instead.
 #' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as
 #'   \code{vertex.color}, \code{vertex.label.cex}, or \code{edge.lty}.
 #'
@@ -143,7 +144,7 @@
 #'   set.seed(123)
 #'   plot(mhmm_mvad, interactive = FALSE,
 #'     # automatic layout, legend on the right-hand side
-#'     layout = layout_nicely, withlegend = "right",
+#'     layout = layout_nicely, with.legend = "right",
 #'     # Smaller and less curved edges
 #'     edge.curved = 0.2, cex.edge.width = 0.5, edge.arrow.size = 0.7,
 #'     vertex.label.pos = "bottom")
@@ -167,9 +168,11 @@ plot.mhmm <- function(x, interactive = TRUE,
                       trim = 1e-15,
                       combine.slices = 0.05, combined.slice.color = "white",
                       combined.slice.label = "others",
-                      withlegend = "bottom", ltext = NULL, legend.prop = 0.5,
+                      with.legend = "bottom", ltext = NULL, legend.prop = 0.5,
                       cex.legend = 1, ncol.legend = "auto", cpal = "auto",
-                      main = "auto", ...){
+                      main = "auto", withlegend, ...){
+  
+  checkargs(alist(with.legend = withlegend))
 
   if (interactive) {
     do.call(mHMMplotint, c(list(x = x, ask = ask, which.plots = which.plots, layout = layout, pie = pie,
@@ -184,7 +187,7 @@ plot.mhmm <- function(x, interactive = TRUE,
                                 trim = trim,
                                 combine.slices = combine.slices, combined.slice.color = combined.slice.color,
                                 combined.slice.label = combined.slice.label,
-                                withlegend = withlegend, ltext = ltext, legend.prop = legend.prop,
+                                with.legend = with.legend, ltext = ltext, legend.prop = legend.prop,
                                 cex.legend = cex.legend, ncol.legend = ncol.legend, cpal = cpal,
                                 main = main), list(...)))
   } else {

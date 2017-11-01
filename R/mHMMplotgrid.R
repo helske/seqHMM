@@ -10,7 +10,7 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow = NA, ncol = NA, byrow = FA
                          trim = 1e-15,
                          combine.slices = 0.05, combined.slice.color = "white",
                          combined.slice.label = "others",
-                         withlegend = "bottom", legend.pos = "center", ltext = NULL, legend.prop = 0.5,
+                         with.legend = "bottom", legend.pos = "center", ltext = NULL, legend.prop = 0.5,
                          cex.legend = 1, ncol.legend = "auto", cpal = "auto",
                          main = "auto", ...) {
 
@@ -82,7 +82,7 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow = NA, ncol = NA, byrow = FA
   }
 
 #   # Number of columns in legends
-#   if (!is.na(withlegend) && withlegend != FALSE) {
+#   if (!is.na(with.legend) && with.legend != FALSE) {
 #     if (length(ncol.legend) == 1 && ncol.legend == "auto") {
 #       ncol.legend <- rep(2, ngridplots)
 #     } else if (length(ncol.legend) == 1 && x$n_clusters > 1) {
@@ -111,13 +111,13 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow = NA, ncol = NA, byrow = FA
   }
 
   # Plotting order for layout
-  if (!is.na(withlegend) && withlegend != FALSE) {
+  if (!is.na(with.legend) && with.legend != FALSE) {
     if (!byrow) {
       plotlayout <- matrix(c(1:ngridplots,
                              rep(0, nrow * ncol - ngridplots)), nrow = nrow)
       legendlayout <- matrix(c((ngridplots + 1):(2 * ngridplots),
                                rep(0, nrow * ncol - ngridplots)), nrow = nrow)
-      if (withlegend == "right") {
+      if (with.legend == "right") {
         # Matrix for layout
         lmatrix <- cbind(plotlayout[, 1], legendlayout[, 1])
         if (ncol > 1) {
@@ -133,7 +133,7 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow = NA, ncol = NA, byrow = FA
           }
         }
         rprops <- row.prop
-      } else if (withlegend == "left") {
+      } else if (with.legend == "left") {
         lmatrix <- cbind(legendlayout[, 1], plotlayout[, 1])
         if (ncol > 1) {
           for (i in 2:ncol) {
@@ -148,7 +148,7 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow = NA, ncol = NA, byrow = FA
           }
         }
         rprops <- row.prop
-      } else if (withlegend == "bottom") {
+      } else if (with.legend == "bottom") {
         lmatrix <- rbind(plotlayout[1, ], legendlayout[1, ])
         if (nrow > 1) {
           for (i in 2:nrow) {
@@ -163,7 +163,7 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow = NA, ncol = NA, byrow = FA
           }
         }
         cprops <- col.prop
-        # withlegend == "top"
+        # with.legend == "top"
       } else {
         lmatrix <- rbind(legendlayout[1, ], plotlayout[1, ])
         if (nrow > 1) {
@@ -191,7 +191,7 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow = NA, ncol = NA, byrow = FA
         plotlayout[plotlayout > ngridplots] <- 0
         legendlayout[legendlayout > (2 * ngridplots)] <- 0
       }
-      if (withlegend == "right") {
+      if (with.legend == "right") {
         # Matrix for layout
         lmatrix <- cbind(plotlayout[, 1], legendlayout[, 1])
         if (ncol > 1) {
@@ -207,7 +207,7 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow = NA, ncol = NA, byrow = FA
           }
         }
         rprops <- row.prop
-      } else if (withlegend == "left") {
+      } else if (with.legend == "left") {
         lmatrix <- cbind(legendlayout[,1], plotlayout[,1])
         if (ncol > 1) {
           for (i in 2:ncol) {
@@ -222,7 +222,7 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow = NA, ncol = NA, byrow = FA
           }
         }
         rprops <- row.prop
-      } else if (withlegend == "bottom") {
+      } else if (with.legend == "bottom") {
         lmatrix <- rbind(plotlayout[1, ], legendlayout[1, ])
         if (nrow > 1) {
           for (i in 2:nrow) {
@@ -301,7 +301,7 @@ mHMMplotgrid <- function(x, which.plots = NULL, nrow = NA, ncol = NA, byrow = FA
   }
 
   # Plotting legends
-  if (withlegend != FALSE) {
+  if (with.legend != FALSE) {
     for (p in which.plots) {
       eval(HMMcalls[[p]]$legendcall)
     }

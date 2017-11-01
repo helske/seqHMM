@@ -74,7 +74,7 @@
 #' @param title.pos Controls the position of the main titles of the plots. The
 #'   default value is 1. Values greater than 1 will place the title higher.
 #'
-#' @param withlegend Defines if and where the legend for the states is plotted.
+#' @param with.legend Defines if and where the legend for the states is plotted.
 #'   The default value \code{"auto"} (equivalent to \code{TRUE} and
 #'   \code{"right"}) creates separate legends for each requested plot and
 #'   positiones them on the right-hand side of the plot. Other possible values
@@ -94,7 +94,7 @@
 #'   \code{FALSE} omits the legend for the missing state.
 #'
 #' @param legend.prop Sets the proportion of the graphic area used for plotting
-#'   the legend when \code{withlegend} is not \code{FALSE}. The default value is
+#'   the legend when \code{with.legend} is not \code{FALSE}. The default value is
 #'   0.3. Takes values from 0 to 1.
 #'
 #' @param cex.legend Expansion factor for setting the size of the font for the
@@ -149,6 +149,8 @@
 #'   tick labels. The default value is 1. Values lesser than 1 will reduce the size of
 #'   the font, values greater than 1 will increase the size.
 #'
+#' @param withlegend Deprecated. Use \code{with.legend} instead.
+#' 
 #' @param ... Other arguments to be passed on to
 #'   \code{\link[TraMineR]{seqplot}}.
 #'
@@ -177,15 +179,17 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
   sortv = NULL, sort.channel = 1, dist.method = "OM",
   with.missing = FALSE, missing.color = NULL,
   title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
-  withlegend = "auto", ncol.legend = "auto",
+  with.legend = "auto", ncol.legend = "auto",
   with.missing.legend = "auto",
   legend.prop = 0.3, cex.legend = 1,
   hidden.states.colors = "auto", hidden.states.labels = "auto",
   xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
   ylab = "auto", hidden.states.title = "Hidden states",
   yaxis = FALSE, ylab.pos = "auto",
-  cex.lab = 1, cex.axis = 1, ...){
-
+  cex.lab = 1, cex.axis = 1, withlegend, ...){
+  
+  checkargs(alist(with.legend = withlegend))
+  
   # Checking for class of x
   if(!inherits(x, "mhmm")){
     stop("Your object x is not a mhmm object. Use build_mhmm to create one.")

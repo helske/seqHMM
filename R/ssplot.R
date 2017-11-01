@@ -72,7 +72,7 @@
 #' @param title.pos Controls the position of the main title of the plot. The
 #'   default value is 1. Values greater than 1 will place the title higher.
 #'
-#' @param withlegend Defines if and where the legend for the states is plotted.
+#' @param with.legend Defines if and where the legend for the states is plotted.
 #'   The default value \code{"auto"} (equivalent to \code{TRUE} and
 #'   \code{"right"}) creates separate legends for each requested plot and
 #'   positiones them on the right-hand side of the plot. Other possible values
@@ -93,7 +93,7 @@
 #'   \code{FALSE} omits the legend for the missing state.
 #'
 #' @param legend.prop Sets the proportion of the graphic area used for plotting
-#'   the legend when \code{withlegend} is not \code{FALSE}. The default value is
+#'   the legend when \code{with.legend} is not \code{FALSE}. The default value is
 #'   0.3. Takes values from 0 to 1.
 #'
 #' @param cex.legend Expansion factor for setting the size of the font for the
@@ -148,6 +148,8 @@
 #'   tick labels. The default value is 1. Values lesser than 1 will reduce the size of
 #'   the font, values greater than 1 will increase the size.
 #'
+#' @param withlegend Deprecated. Use \code{with.legend} instead.
+#' 
 #' @param ... Other arguments to be passed on to
 #'   \code{\link[TraMineR]{seqplot}}.
 #'
@@ -178,7 +180,7 @@
 #'   # Controlling the size, positions, and names for channel labels
 #'   ylab.pos = c(1, 2, 1), cex.lab = 1, ylab = c("Children", "Married", "Residence"),
 #'   # Plotting without legend
-#'   withlegend = FALSE)
+#'   with.legend = FALSE)
 #'
 #' # Plotting hidden Markov models
 #'
@@ -208,7 +210,7 @@
 #'   # Sorting according to the end of hidden state paths
 #'   sortv = "from.end", sort.channel = 0,
 #'   # Contolling legend position, type, and proportion
-#'   withlegend = "bottom", legend.prop = 0.15,
+#'   with.legend = "bottom", legend.prop = 0.15,
 #'   # Plotting without title and y label
 #'   title = FALSE, ylab = FALSE)
 #'   }
@@ -225,15 +227,17 @@ ssplot <- function(x, hidden.paths = NULL,
                 sortv = NULL, sort.channel = 1, dist.method = "OM",
                 with.missing = FALSE, missing.color = NULL,
                 title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
-                withlegend = "auto", ncol.legend = "auto",
+                with.legend = "auto", ncol.legend = "auto",
                 with.missing.legend = "auto",
                 legend.prop = 0.3, cex.legend = 1,
                 hidden.states.colors = "auto", hidden.states.labels = "auto",
                 xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
                 ylab = "auto", hidden.states.title = "Hidden states",
                 yaxis = FALSE, ylab.pos = "auto",
-                cex.lab = 1, cex.axis = 1, ...){
-
+                cex.lab = 1, cex.axis = 1, withlegend, ...){
+  
+  checkargs(alist(with.legend = withlegend))
+  
   args <- as.list(match.call())[-1]
   args[[1]] <- eval(args[[1]], envir = parent.frame())
   sspargs <- do.call(ssp, args = args)
