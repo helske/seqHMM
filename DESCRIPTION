@@ -38,7 +38,6 @@ Suggests:
     MASS,
     nnet,
     knitr
-SystemRequirements: C++11
 License: GPL (>= 2)
 Encoding: UTF-8
 BugReports: https://github.com/helske/seqHMM/issues
