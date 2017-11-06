@@ -36,7 +36,7 @@ ssp_f2 <- ssp(
   list(marr.seq[biofam3c$covariates$sex == "woman",],
        child.seq[biofam3c$covariates$sex == "woman",],
        left.seq[biofam3c$covariates$sex == "woman",]),
-  type = "d", border = NA, withlegend = FALSE,
+  type = "d", border = NA, with.legend = FALSE,
   title = "State distributions for women", title.n = FALSE, xtlab = 15:30,
   ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home"))
 
@@ -60,10 +60,10 @@ data("hmm_mvad")
 data("mhmm_biofam")
 sep_mhmm <- separate_mhmm(mhmm_biofam)
 
-ssp_bf <- ssp(hmm_biofam, withlegend = FALSE)
+ssp_bf <- ssp(hmm_biofam, with.legend = FALSE)
 ssp_mvad <- ssp(hmm_mvad)
 
-mhmm_1 <- ssp(sep_mhmm[[1]], withlegend = FALSE)
+mhmm_1 <- ssp(sep_mhmm[[1]], with.legend = FALSE)
 mhmm_2 <- update(mhmm_1, x = sep_mhmm[[2]])
 mhmm_3 <- update(mhmm_1, x = sep_mhmm[[3]])
 
@@ -106,4 +106,4 @@ gridplot(list(ssp_f2, ssp_m2), ncol = 2, nrow = 2, legend.pos = "auto")
 ################ Different data ###############
 
 gridplot(list(ssp_bf, ssp_mvad)) # Expect warning
-gridplot(list(ssp_bf, ssp_mvad), withlegend = FALSE)
+gridplot(list(ssp_bf, ssp_mvad), with.legend = FALSE)

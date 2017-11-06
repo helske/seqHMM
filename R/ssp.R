@@ -485,7 +485,7 @@ ssp <- function(x, hidden.paths = NULL,
   
   # Most probable paths of hidden states
   if (plots == "both" || plots == "hidden.paths" || (plots == "obs" && !is.null(hidden.paths)) ||
-      (plots == "obs" && is.null(hidden.paths) && inherits(x, "hmm") && sort.channel == 0)) {
+      (plots == "obs" && is.null(hidden.paths) && inherits(x, "hmm") && (sort.channel == 0 || (!is.null(sortv) && sortv == "mds.hidden")))) {
     # Hidden paths provided
     if (!is.null(hidden.paths)) {
       if (length(tlim) > 1 || length(tlim) == 1 && tlim > 0) {

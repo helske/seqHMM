@@ -2,7 +2,7 @@
 
 data("hmm_biofam")
 plot(hmm_biofam)
-plot(hmm_biofam, layout = "vertical", withlegend = "right")
+plot(hmm_biofam, layout = "vertical", with.legend = "right")
 plot(hmm_biofam, )
 plot(hmm_biofam, layout = "vertical", pie = FALSE, vertex.label = "names",
   vertex.label.pos = pi/5, vertex.label.family = "serif", loops = TRUE)
@@ -12,11 +12,11 @@ plot(hmm_mvad)
 require("igraph")
 plot(hmm_mvad, layout = layout_in_circle, edge.label = NA, legend.prop = 0.25,
   vertex.label.pos = c("bottom", "right", "top", "bottom", "right"),
-  withlegend = "left", edge.curved = 0.2)
+  with.legend = "left", edge.curved = 0.2)
 plot(hmm_mvad, layout = layout_in_circle, label.signif = 2,
-  label.max.length = 3, withlegend = FALSE)
+  label.max.length = 3, with.legend = FALSE)
 plot(hmm_mvad, layout = layout_in_circle, label.signif = 3,
-  label.scientific = TRUE, label.max.length = 6, withlegend = FALSE)
+  label.scientific = TRUE, label.max.length = 6, with.legend = FALSE)
 
 
 
@@ -32,31 +32,29 @@ mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
 mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet,
   states = mvad_scodes, labels = mvad_labels, xtstep = 6)
 attr(mvad_seq, "cpal") <- colorpalette[[6]]
-mm_mvad <- build_mm(observations = mvad_seq,
-  transition_probs = simulate_transition_probs(6),
-  initial_probs = rep(1/6,6))
+mm_mvad <- build_mm(observations = mvad_seq)
 plot(mm_mvad)
-plot(mm_mvad, layout = layout_in_circle, edge.label = NA, withlegend = "bottom")
-plot(mm_mvad, layout = layout_in_circle, edge.label = 1:30, withlegend = "right")
-plot(mm_mvad, layout = layout_in_circle, edge.label = NA, withlegend = "left")
-plot(mm_mvad, layout = layout_in_circle, edge.label = NA, withlegend = "top")
+plot(mm_mvad, layout = layout_in_circle, edge.label = NA, with.legend = "bottom")
+plot(mm_mvad, layout = layout_in_circle, edge.label = 1:28, with.legend = "right")
+plot(mm_mvad, layout = layout_in_circle, edge.label = NA, with.legend = "left")
+plot(mm_mvad, layout = layout_in_circle, edge.label = NA, with.legend = "top")
 
 
 # Mixture hidden Markov model
 
 data("mhmm_biofam")
 plot(mhmm_biofam, which.plots = 1)
-plot(mhmm_biofam, layout = "vertical", withlegend = "right")
+plot(mhmm_biofam, layout = "vertical", with.legend = "right")
 plot(mhmm_biofam, ask = TRUE)
 plot(mhmm_biofam, interactive = FALSE, which.plots = 2:3,
-  layout = layout_as_star, edge.curved = 0, withlegend = "right")
+  layout = layout_as_star, edge.curved = 0, with.legend = "right")
 plot(mhmm_biofam, interactive = FALSE,
-  ncol = 3, layout = "vertical", withlegend = "right")
+  ncol = 3, layout = "vertical", with.legend = "right")
 
 data("mhmm_mvad")
 set.seed(123)
 plot(mhmm_mvad, interactive = FALSE, layout = layout_nicely,
-  withlegend = "right", edge.curved = 0.2, cex.edge.width = 0.5,
+  with.legend = "right", edge.curved = 0.2, cex.edge.width = 0.5,
   edge.arrow.size = 0.7, vertex.label.pos = "bottom")
 
 
@@ -68,7 +66,7 @@ mmm_mvad <- build_mmm(observations = mvad_seq,
   initial_probs = replicate(2, rep(1/6, 6), simplify = FALSE),
   formula = ~male, data = mvad)
 plot(mmm_mvad)
-plot(mmm_mvad, interactive = FALSE, withlegend = "right",
+plot(mmm_mvad, interactive = FALSE, with.legend = "right",
   layout = layout_as_star, edge.label = NA, edge.arrow.size = 0.8,
   edge.curved = 0.2, legend.prop = 0.3,
   vertex.label.pos = c("left", "right", "right", "left", "left", "right"),
@@ -81,6 +79,6 @@ set.seed(123)
 obs <- seqdef(rbind(
   matrix(sample(letters[1:3], 5000, TRUE, prob = c(0.1, 0.6, 0.3)), 500, 10),
   matrix(sample(letters[1:3], 2000, TRUE, prob = c(0.4, 0.4, 0.2)), 200, 10)))
-lcm <- build_lcm(obs, simulate_emission_probs(2, 3))
+lcm <- build_lcm(obs, n_clusters = 2)
 plot(lcm)
-plot(lcm, interactive = FALSE, withlegend = "right")
+plot(lcm, interactive = FALSE, with.legend = "right")
