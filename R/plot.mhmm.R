@@ -170,7 +170,7 @@ plot.mhmm <- function(x, interactive = TRUE,
                       combined.slice.label = "others",
                       with.legend = "bottom", ltext = NULL, legend.prop = 0.5,
                       cex.legend = 1, ncol.legend = "auto", cpal = "auto",
-                      main = "auto", ...){
+                      main = "auto", withlegend, ...){
   
   check_deprecated_args(match.call())
 
