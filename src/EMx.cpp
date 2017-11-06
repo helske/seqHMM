@@ -50,7 +50,7 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
     unsigned int error_code = 0;
 
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static)  reduction(+:sumlogLik_new) num_threads(threads) \
-    default(none) shared(bsi, initk, transition, obs, emission, delta, ksii, gamma, nSymbols, error_code, max_sf)
+    default(none) shared(bsi, initk, transition, obs, emission, delta, ksii, gamma, nSymbols) private(error_code, max_sf)
       for (unsigned int k = 0; k < obs.n_slices; k++) {
         
         arma::mat alpha(emission.n_rows, obs.n_cols); //m,n,k
@@ -96,19 +96,15 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
         for (unsigned int j = 0; j < emission.n_rows; j++) {
           bsi(j, k) = beta(j, 0)  * initk(j, k);
         }
-#pragma omp critical
-{
-  if(!scales.is_finite()) {
-    error_code = 1;
-  }
-  if(!beta.is_finite()) {
-    error_code = 2;
-  }
-  max_sf = std::min(max_sf, scales.max());
-  delta += delta_k;
-  ksii += ksii_k;
-  gamma += gamma_k;
-}
+        
+        max_sf = std::min(max_sf, scales.max());
+        if(!scales.is_finite()) {
+          error_code = 1;
+        }
+        if(!beta.is_finite()) {
+          error_code = 2;
+        }
+
       }
       if(error_code == 1) {
         return Rcpp::List::create(Rcpp::Named("error") = 1);
@@ -121,6 +117,13 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
       }
       change = (sumlogLik_new - sumlogLik) / (std::abs(sumlogLik) + 0.1);
       sumlogLik = sumlogLik_new;
+      
+#pragma omp critical
+{
+  delta += delta_k;
+  ksii += ksii_k;
+  gamma += gamma_k;
+}
       if (trace > 0) {
         if(iter == 1) {
           Rcpp::Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
