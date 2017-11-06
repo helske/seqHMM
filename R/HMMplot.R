@@ -101,7 +101,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
     if (is.na(ind)) {
       stop("Argument vertex.label.dist only accepts the value \"auto\" or a numerical vector.")
     }
-    vertex.label.dist <- vertex.size * 0.4 / 10
+    vertex.label.dist <- vertex.size * 0.4 / 3.5
   } else if (length(vertex.label.dist) > 1 && length(vertex.label.dist) != x$n_states){
     warning("The length of the vector provided for the argument \"vertex.label.dist\" does not match the number of edges.")
     vertex.label.dist <- rep(vertex.label.dist, length.out = length(x$n_states))
@@ -304,7 +304,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
     if (!is.matrix(layout) && !is.function(layout) &&
          (layout == "horizontal" || layout == "vertical")) {
       if (length(dots) > 0) {
-        plotcall <- as.call(c(list(plot.igraph2, g1, layout = glayout,
+        plotcall <- as.call(c(list(plot.igraph, g1, layout = glayout,
                          vertex.shape = "pie", vertex.pie = pie.values,
                          vertex.pie.color = list(pie.colors),
                          vertex.size = vertex.size,
@@ -317,7 +317,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
                          edge.arrow.size = edge.arrow.size,
                          xlim = xlim, ylim = ylim, rescale=rescale, main = main), dots))
       } else {
-        plotcall <- call("plot.igraph2", g1, layout = glayout,
+        plotcall <- call("plot.igraph", g1, layout = glayout,
                          vertex.shape = "pie", vertex.pie = pie.values,
                          vertex.pie.color = list(pie.colors),
                          vertex.size = vertex.size,
@@ -332,7 +332,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
       }
     } else {
       if (length(dots) > 0) {
-        plotcall <- as.call(c(list(plot.igraph2, g1, layout = glayout,
+        plotcall <- as.call(c(list(plot.igraph, g1, layout = glayout,
                          vertex.shape = "pie", vertex.pie = pie.values,
                          vertex.pie.color = list(pie.colors),
                          vertex.size = vertex.size,
@@ -344,7 +344,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
                          edge.label.family = edge.label.family,
                          edge.arrow.size = edge.arrow.size, main = main), dots))
       } else {
-        plotcall <- call("plot.igraph2", g1, layout = glayout,
+        plotcall <- call("plot.igraph", g1, layout = glayout,
                          vertex.shape = "pie", vertex.pie = pie.values,
                          vertex.pie.color = list(pie.colors),
                          vertex.size = vertex.size,
@@ -361,7 +361,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
     if(!is.matrix(layout) && !is.function(layout) &&
          (layout == "horizontal" || layout == "vertical")){
       if (length(dots) > 0) {
-        plotcall <- as.call(c(list(plot.igraph2, g1, layout = glayout,
+        plotcall <- as.call(c(list(plot.igraph, g1, layout = glayout,
                          vertex.size = vertex.size,
                          vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
                          vertex.label.degree = vertex.label.pos,
@@ -371,7 +371,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
                          edge.label.family = edge.label.family,
                          xlim = xlim, ylim = ylim, rescale = rescale, main = main), dots))
       } else {
-        plotcall <- call("plot.igraph2", g1, layout = glayout,
+        plotcall <- call("plot.igraph", g1, layout = glayout,
                          vertex.size = vertex.size,
                          vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
                          vertex.label.degree = vertex.label.pos,
@@ -383,7 +383,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
       }
     } else {
       if(length(dots) > 0){
-        plotcall <- as.call(c(list(plot.igraph2, g1, layout = glayout,
+        plotcall <- as.call(c(list(plot.igraph, g1, layout = glayout,
                          vertex.size = vertex.size,
                          vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
                          vertex.label.degree = vertex.label.pos,
@@ -392,7 +392,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
                          edge.label = edge.label,
                          edge.label.family = edge.label.family, main = main), dots))
       } else {
-        plotcall <- call("plot.igraph2", g1, layout = glayout,
+        plotcall <- call("plot.igraph", g1, layout = glayout,
                          vertex.size = vertex.size,
                          vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
                          vertex.label.degree = vertex.label.pos,
