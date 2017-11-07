@@ -1,4 +1,4 @@
-seqHMM 1.0.8 (Release date: )
+seqHMM 1.0.8 (Release date: 2017-11-07)
 ==============
 
 * Fixed a bug in forward_backward function, which did not provide correct 
@@ -6,7 +6,8 @@ seqHMM 1.0.8 (Release date: )
   scaled correctly.
 * Related to above bug, posterior_probs now provides proper probabilities 
   between 0 and 1.
-* Fixed a bug in ssp; caused an error for sortv = "hidden.paths" when hidden paths were not provided even though x was an hmm object.
+* Fixed a bug in ssp; caused an error for sortv = "hidden.paths" when hidden 
+  paths were not provided even though x was an hmm object.
 * Changed argument withlegend to with.legend due to changes in the TraMineR package. 
 * Related to the TraMineR update, fixed warnings given by ssp functions.
 * Fixing model plots after an update in the igraph package.
