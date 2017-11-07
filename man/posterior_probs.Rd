@@ -29,4 +29,3 @@ pb <- posterior_probs(mhmm_biofam)
 # Locally most probable states for the first subject:
 pb[, , 1]
 }
-

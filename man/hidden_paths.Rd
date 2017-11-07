@@ -42,4 +42,3 @@ logLik(hmm_biofam)
   and \code{\link{seqIplot}}, \code{\link{ssplot}}, or \code{\link{mssplot}}
   for plotting hidden paths.
 }
-

@@ -61,4 +61,3 @@ summary(mhmm_biofam)
   fitting mixture hidden Markov models; and
   \code{\link{mhmm_biofam}} for information on the model used in examples.
 }
-

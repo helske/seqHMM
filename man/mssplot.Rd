@@ -9,11 +9,12 @@ mssplot(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
   plots = "obs", type = "d", tlim = 0, sortv = NULL, sort.channel = 1,
   dist.method = "OM", with.missing = FALSE, missing.color = NULL,
   title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
-  withlegend = "auto", ncol.legend = "auto", with.missing.legend = "auto",
-  legend.prop = 0.3, cex.legend = 1, hidden.states.colors = "auto",
-  hidden.states.labels = "auto", xaxis = TRUE, xlab = NA, xtlab = NULL,
-  xlab.pos = 1, ylab = "auto", hidden.states.title = "Hidden states",
-  yaxis = FALSE, ylab.pos = "auto", cex.lab = 1, cex.axis = 1, ...)
+  with.legend = "auto", ncol.legend = "auto",
+  with.missing.legend = "auto", legend.prop = 0.3, cex.legend = 1,
+  hidden.states.colors = "auto", hidden.states.labels = "auto",
+  xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1, ylab = "auto",
+  hidden.states.title = "Hidden states", yaxis = FALSE, ylab.pos = "auto",
+  cex.lab = 1, cex.axis = 1, ...)
 }
 \arguments{
 \item{x}{Mixture hidden Markov model object of class \code{mhmm}.}
@@ -83,7 +84,7 @@ the font, values greater than 1 will increase the size.}
 \item{title.pos}{Controls the position of the main titles of the plots. The
 default value is 1. Values greater than 1 will place the title higher.}
 
-\item{withlegend}{Defines if and where the legend for the states is plotted.
+\item{with.legend}{Defines if and where the legend for the states is plotted.
 The default value \code{"auto"} (equivalent to \code{TRUE} and
 \code{"right"}) creates separate legends for each requested plot and
 positiones them on the right-hand side of the plot. Other possible values
@@ -103,7 +104,7 @@ legend for the missing state is added in any case; equivalently
 \code{FALSE} omits the legend for the missing state.}
 
 \item{legend.prop}{Sets the proportion of the graphic area used for plotting
-the legend when \code{withlegend} is not \code{FALSE}. The default value is
+the legend when \code{with.legend} is not \code{FALSE}. The default value is
 0.3. Takes values from 0 to 1.}
 
 \item{cex.legend}{Expansion factor for setting the size of the font for the
@@ -160,6 +161,8 @@ the font, values greater than 1 will increase the size.}
 
 \item{...}{Other arguments to be passed on to
 \code{\link[TraMineR]{seqplot}}.}
+
+\item{withlegend}{Deprecated. Use \code{with.legend} instead.}
 }
 \description{
 Function \code{mssplot} plots stacked sequence plots of observation sequences
@@ -188,4 +191,3 @@ if (interactive()) {
   \code{\link{plot.mhmm}} for plotting \code{mhmm} objects as directed graphs, and
   \code{\link{colorpalette}} for default colors.
 }
-

@@ -34,4 +34,3 @@ plot(sep_hmm[[1]])
 for building and fitting MHMMs; and \code{\link{mhmm_biofam}} for
 more information on the model used in examples.
 }
-

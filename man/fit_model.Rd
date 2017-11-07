@@ -452,4 +452,3 @@ mhmm_3$logLik # -12713.08
   for plotting model objects; and \code{\link{ssplot}} and \code{\link{mssplot}} for plotting
   stacked sequence plots of \code{hmm} and \code{mhmm} objects.
 }
-

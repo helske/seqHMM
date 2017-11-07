@@ -12,8 +12,9 @@
   edge.label.family = "sans", label.signif = 2, label.scientific = FALSE,
   label.max.length = 6, trim = 1e-15, combine.slices = 0.05,
   combined.slice.color = "white", combined.slice.label = "others",
-  withlegend = "bottom", ltext = NULL, legend.prop = 0.5,
-  cex.legend = 1, ncol.legend = "auto", cpal = "auto", main = NULL, ...)
+  with.legend = "bottom", ltext = NULL, legend.prop = 0.5,
+  cex.legend = 1, ncol.legend = "auto", cpal = "auto", main = NULL,
+  withlegend, ...)
 }
 \arguments{
 \item{x}{A hidden Markov model object of class \code{hmm} created with
@@ -102,7 +103,7 @@ the smallest emission probabilities (only if argument
 \item{combined.slice.label}{The label for combined states (when argument
 \code{"combine.slices"} is greater than 0) to appear in the legend.}
 
-\item{withlegend}{Defines if and where the legend of state colors is
+\item{with.legend}{Defines if and where the legend of state colors is
 plotted. Possible values include \code{"bottom"} (the default),
 \code{"top"}, \code{"left"}, and \code{"right"}. \code{FALSE} omits the
 legend.}
@@ -128,6 +129,8 @@ specified for all (combinations of) observed states even if they are not
 plotted (if the probability is less than \code{combine.slices}).}
 
 \item{main}{Main title for the plot. Omitted by default.}
+
+\item{withlegend}{Deprecated. Use \code{with.legend} instead.}
 
 \item{...}{Other parameters passed on to \code{\link{plot.igraph}} such as
 \code{vertex.color}, \code{vertex.label.cex}, or \code{edge.lty}.}
@@ -170,7 +173,7 @@ plot(hmm_biofam,
   # varying positions for vertex labels (initial probabilities)
   vertex.label.pos = c(pi, pi/2, -pi/2, 0, pi/2),
   # different legend properties
-  withlegend = "top", legend.prop = 0.3, cex.legend = 1.1,
+  with.legend = "top", legend.prop = 0.3, cex.legend = 1.1,
   # Fix axes to the right scale
   xlim = c(0.5, 5.5), ylim = c(-1.5, 1.5), rescale = FALSE,
   # all states (not combining states with small probabilities)
@@ -238,4 +241,3 @@ plot(hmm_mvad,
   used in the examples, and
   \code{\link{plot.igraph}} for the general plotting function of directed graphs.
 }
-

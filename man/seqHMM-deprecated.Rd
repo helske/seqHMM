@@ -2,11 +2,15 @@
 % Please edit documentation in R/seqHMM-deprecated.R
 \docType{package}
 \name{seqHMM-deprecated}
-\alias{fit_hmm}
-\alias{fit_mhmm}
 \alias{seqHMM-deprecated}
+\alias{fit_hmm}
 \alias{seqHMM-deprecated-package}
+\alias{seqHMM-deprecated}
+\alias{fit_mhmm}
+\alias{seqHMM-deprecated-package}
+\alias{seqHMM-deprecated}
 \alias{trim_hmm}
+\alias{seqHMM-deprecated-package}
 \title{Deprecated function(s) in the seqHMM package}
 \usage{
 fit_hmm(model, em_step = TRUE, global_step = FALSE, local_step = FALSE,
@@ -119,4 +123,3 @@ These functions are provided for compatibility with older version of
 the seqHMM package.  They will be eventually completely
 removed.
 }
-

@@ -90,7 +90,7 @@ mmm_mvad <- fit_model(mmm_mvad)$model
 require(igraph)
 plot(mmm_mvad, interactive = FALSE,
   # Modify legend position and properties
-  withlegend = "right", legend.prop = 0.3, cex.legend = 1.2,
+  with.legend = "right", legend.prop = 0.3, cex.legend = 1.2,
   # Define vertex layout
   layout = layout_as_star,
   # Modify edge properties
@@ -109,4 +109,3 @@ summary(mmm_mvad)
 separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting 
 mixture models.
 }
-

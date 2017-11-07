@@ -29,4 +29,3 @@ Implementations of iWantHue for R:
   }
 }
 \keyword{datasets}
-

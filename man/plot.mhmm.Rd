@@ -14,9 +14,9 @@
   edge.arrow.size = 1.5, edge.label.family = "sans", label.signif = 2,
   label.scientific = FALSE, label.max.length = 6, trim = 1e-15,
   combine.slices = 0.05, combined.slice.color = "white",
-  combined.slice.label = "others", withlegend = "bottom", ltext = NULL,
+  combined.slice.label = "others", with.legend = "bottom", ltext = NULL,
   legend.prop = 0.5, cex.legend = 1, ncol.legend = "auto",
-  cpal = "auto", main = "auto", ...)
+  cpal = "auto", main = "auto", withlegend, ...)
 }
 \arguments{
 \item{x}{A hidden Markov model object of class \code{mhmm} created with
@@ -130,7 +130,7 @@ the smallest emission probabilities (only if argument
 \item{combined.slice.label}{The label for combined states (when argument
 \code{"combine.slices"} is greater than 0) to appear in the legend.}
 
-\item{withlegend}{Defines if and where the legend of state colors is
+\item{with.legend}{Defines if and where the legend of state colors is
 plotted. Possible values include \code{"bottom"} (the default),
 \code{"top"}, \code{"left"}, and \code{"right"}. \code{FALSE} omits the
 legend.}
@@ -158,6 +158,8 @@ plotted (if the probability is less than \code{combine.slices}).}
 \item{main}{Optional main titles for plots. The default \code{"auto"} uses
 \code{cluster_names} as titles, \code{NULL} prints no titles.}
 
+\item{withlegend}{Deprecated. Use \code{with.legend} instead.}
+
 \item{...}{Other parameters passed on to \code{\link{plot.igraph}} such as
 \code{vertex.color}, \code{vertex.label.cex}, or \code{edge.lty}.}
 }
@@ -184,14 +186,14 @@ if (interactive()) {
   data("mhmm_mvad")
 
   # Plotting models in the same graph (in a grid)
-  # Note: plotting window must be high enough!
+  # Note: the plotting window must be high enough!
   set.seed(123)
   plot(mhmm_mvad, interactive = FALSE,
     # automatic layout, legend on the right-hand side
-    layout = layout_nicely, withlegend = "right",
+    layout = layout_nicely, with.legend = "right",
     # Smaller and less curved edges
     edge.curved = 0.2, cex.edge.width = 0.5, edge.arrow.size = 0.7,
-    vertex.label.pos = "bottom")
+    vertex.label.pos = -4 * pi / 5, vertex.label.dist = 5)
 }
 
 }
@@ -201,4 +203,3 @@ if (interactive()) {
   directed graphs; and \code{\link{mhmm_biofam}} and \code{\link{mhmm_mvad}} for
   the models used in examples.
 }
-

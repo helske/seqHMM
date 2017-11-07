@@ -234,4 +234,3 @@ init_mhmm_bf2 <- build_mhmm(
 reorganizing a MHMM into a list of separate hidden Markov models; and
 \code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
 }
-

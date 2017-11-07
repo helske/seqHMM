@@ -8,7 +8,7 @@ Paths from Hidden Markov Models}
 ssplot(x, hidden.paths = NULL, plots = "obs", type = "d", tlim = 0,
   sortv = NULL, sort.channel = 1, dist.method = "OM",
   with.missing = FALSE, missing.color = NULL, title = NA,
-  title.n = TRUE, cex.title = 1, title.pos = 1, withlegend = "auto",
+  title.n = TRUE, cex.title = 1, title.pos = 1, with.legend = "auto",
   ncol.legend = "auto", with.missing.legend = "auto", legend.prop = 0.3,
   cex.legend = 1, hidden.states.colors = "auto",
   hidden.states.labels = "auto", xaxis = TRUE, xlab = NA, xtlab = NULL,
@@ -81,7 +81,7 @@ the font, values greater than 1 will increase the size.}
 \item{title.pos}{Controls the position of the main title of the plot. The
 default value is 1. Values greater than 1 will place the title higher.}
 
-\item{withlegend}{Defines if and where the legend for the states is plotted.
+\item{with.legend}{Defines if and where the legend for the states is plotted.
 The default value \code{"auto"} (equivalent to \code{TRUE} and
 \code{"right"}) creates separate legends for each requested plot and
 positiones them on the right-hand side of the plot. Other possible values
@@ -102,7 +102,7 @@ legend for the missing state is added in any case; equivalently
 \code{FALSE} omits the legend for the missing state.}
 
 \item{legend.prop}{Sets the proportion of the graphic area used for plotting
-the legend when \code{withlegend} is not \code{FALSE}. The default value is
+the legend when \code{with.legend} is not \code{FALSE}. The default value is
 0.3. Takes values from 0 to 1.}
 
 \item{cex.legend}{Expansion factor for setting the size of the font for the
@@ -159,6 +159,8 @@ the font, values greater than 1 will increase the size.}
 
 \item{...}{Other arguments to be passed on to
 \code{\link[TraMineR]{seqplot}}.}
+
+\item{withlegend}{Deprecated. Use \code{with.legend} instead.}
 }
 \description{
 Function \code{ssplot} plots stacked sequence plots of sequence object
@@ -192,7 +194,7 @@ ssplot(
   # Controlling the size, positions, and names for channel labels
   ylab.pos = c(1, 2, 1), cex.lab = 1, ylab = c("Children", "Married", "Residence"),
   # Plotting without legend
-  withlegend = FALSE)
+  with.legend = FALSE)
 
 # Plotting hidden Markov models
 
@@ -222,7 +224,7 @@ ssplot(
   # Sorting according to the end of hidden state paths
   sortv = "from.end", sort.channel = 0,
   # Contolling legend position, type, and proportion
-  withlegend = "bottom", legend.prop = 0.15,
+  with.legend = "bottom", legend.prop = 0.15,
   # Plotting without title and y label
   title = FALSE, ylab = FALSE)
   }
@@ -235,4 +237,3 @@ fitting hidden Markov models; \code{\link{hidden_paths}} for
 computing the most probable paths of hidden states; and \code{\link{biofam3c}}
 \code{\link{hmm_biofam}} for information on the data and model used in the example.
 }
-

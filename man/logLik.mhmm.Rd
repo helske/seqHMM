@@ -32,4 +32,3 @@ Function \code{logLik.mhmm} computes the log-likelihood value of a mixture hidde
 \code{\link{build_mhmm}} and \code{\link{fit_model}} for building and 
   fitting mixture Hidden Markov models.
 }
-

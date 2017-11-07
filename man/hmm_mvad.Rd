@@ -63,4 +63,3 @@ Examples of building and fitting HMMs in \code{\link{build_hmm}} and
 \code{\link{fit_model}}; and \code{\link[TraMineR]{mvad}} for more information on the data.
 }
 \keyword{datasets}
-

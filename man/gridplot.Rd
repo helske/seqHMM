@@ -4,7 +4,7 @@
 \alias{gridplot}
 \title{Plot Multidimensional Sequence Plots in a Grid}
 \usage{
-gridplot(x, nrow = NA, ncol = NA, byrow = FALSE, withlegend = "auto",
+gridplot(x, nrow = NA, ncol = NA, byrow = FALSE, with.legend = "auto",
   legend.pos = "auto", legend.pos2 = "center", title.legend = "auto",
   ncol.legend = "auto", with.missing.legend = "auto", row.prop = "auto",
   col.prop = "auto", cex.legend = 1)
@@ -17,7 +17,7 @@ gridplot(x, nrow = NA, ncol = NA, byrow = FALSE, withlegend = "auto",
 \item{byrow}{Controls the order of plotting. Defaults to \code{FALSE}, i.e. plots
 are arranged column-wise.}
 
-\item{withlegend}{Defines if and how the legends for the states are plotted.
+\item{with.legend}{Defines if and how the legends for the states are plotted.
 The default value \code{"auto"} (equivalent to \code{TRUE} and
 \code{"many"}) creates separate legends for each requested plot. Other
 possibilities are \code{"combined"} (all legends combined) and \code{FALSE}
@@ -57,6 +57,8 @@ from 0 to 1, with values summing to 1.}
 \item{cex.legend}{Expansion factor for setting the size of the font for the
 labels in the legend. The default value is 1. Values lesser than 1 will
 reduce the size of the font, values greater than 1 will increase the size.}
+
+\item{withlegend}{Deprecated. Use \code{with.legend} instead.}
 }
 \description{
 Function \code{gridplot} plots multiple \code{ssp} objects to a
@@ -93,14 +95,14 @@ ssp_m <- update(ssp_f, title = "Men",
        left_seq[biofam3c$covariates$sex == "man",]))
 
 # Plotting state distribution plots of observations for women and men in two columns
-gridplot(list(ssp_f, ssp_m), ncol = 2, withlegend = FALSE)
+gridplot(list(ssp_f, ssp_m), ncol = 2, with.legend = FALSE)
 
 # Preparing plots for women's state distributions
 ssp_f2 <- ssp(
   list(marr_seq[biofam3c$covariates$sex == "woman",],
        child_seq[biofam3c$covariates$sex == "woman",],
        left_seq[biofam3c$covariates$sex == "woman",]),
-  type = "d", border = NA, withlegend = FALSE,
+  type = "d", border = NA, with.legend = FALSE,
   title = "State distributions for women", title.n = FALSE, xtlab = 15:30,
   ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home"))
 
@@ -123,7 +125,7 @@ ssp_m3 <- update(
 # for women and men in two columns (+ one column for legends)
 gridplot(
   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 3, byrow = TRUE,
-  withlegend = "combined", legend.pos = "right", col.prop = c(0.35, 0.35, 0.3))
+  with.legend = "combined", legend.pos = "right", col.prop = c(0.35, 0.35, 0.3))
 
 # The same with different positioning and fixed cells for legends
 gridplot(
@@ -137,4 +139,3 @@ gridplot(
 \code{\link{ssp}} for defining the plot before using
   \code{gridplot}, and \code{\link{plot.ssp}} for plotting only one ssp object.
 }
-
