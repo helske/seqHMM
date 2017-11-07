@@ -159,8 +159,6 @@ the font, values greater than 1 will increase the size.}
 
 \item{...}{Other arguments to be passed on to
 \code{\link[TraMineR]{seqplot}}.}
-
-\item{withlegend}{Deprecated. Use \code{with.legend} instead.}
 }
 \description{
 Function \code{ssplot} plots stacked sequence plots of sequence object

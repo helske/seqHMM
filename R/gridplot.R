@@ -55,8 +55,6 @@
 #' @param col.prop Sets the proportion of the column heights of the grid. The default
 #'   value is \code{"auto"} for even column widths. Takes a vector of values
 #'   from 0 to 1, with values summing to 1.
-#'
-#' @param withlegend Deprecated. Use \code{with.legend} instead.
 #' 
 #' @examples
 #' \dontrun{

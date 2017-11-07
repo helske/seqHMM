@@ -148,8 +148,6 @@
 #' @param cex.axis Expansion factor for setting the size of the font for the x-axis
 #'   tick labels. The default value is 1. Values lesser than 1 will reduce the size of
 #'   the font, values greater than 1 will increase the size.
-#'
-#' @param withlegend Deprecated. Use \code{with.legend} instead.
 #' 
 #' @param ... Other arguments to be passed on to
 #'   \code{\link[TraMineR]{seqplot}}.

@@ -57,8 +57,6 @@ from 0 to 1, with values summing to 1.}
 \item{cex.legend}{Expansion factor for setting the size of the font for the
 labels in the legend. The default value is 1. Values lesser than 1 will
 reduce the size of the font, values greater than 1 will increase the size.}
-
-\item{withlegend}{Deprecated. Use \code{with.legend} instead.}
 }
 \description{
 Function \code{gridplot} plots multiple \code{ssp} objects to a
