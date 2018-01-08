@@ -797,7 +797,7 @@ Especially combined with the \pkg{TraMineR} package, \pkg{seqHMM} is designed to
 
 \section*{Acknowledgements}
 
-Satu Helske is grateful for support for this research from the John Fell Oxford University Press (OUP) Research Fund and the Department of Mathematics and Statistics at the University of Jyv{\"a}skyl{\"a}, Finland, and Jouni Helske for the Emil Aaltonen Foundation and the Academy of Finland (research grant 284513).
+Satu Helske is grateful for support for this research from the John Fell Oxford University Press (OUP) Research Fund and the Department of Mathematics and Statistics at the University of Jyv{\"a}skyl{\"a}, Finland, and Jouni Helske for the Emil Aaltonen Foundation and the Academy of Finland (research grants 284513 and 312605).
 
 We also wish to thank Mervi Eerola and Jukka Nyblom as well as the editor and two anonymous referees for their helpful comments and suggestions. Comments, suggestions, and bug reports from various users of \pkg{seqHMM} have also been highly appreciated.
 
