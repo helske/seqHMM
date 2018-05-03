@@ -1,8 +1,8 @@
 Package: seqHMM
 Title: Hidden Markov Models for Life Sequences and Other Multivariate,
     Multichannel Categorical Time Series
-Version: 1.0.8
-Date: 2017-11-07
+Version: 1.0.8-1
+Date: 2018-05-03
 Author: Jouni Helske, Satu Helske
 Maintainer: Jouni Helske <jouni.helske@iki.fi>
 Description: Designed for fitting hidden (latent) Markov models and mixture

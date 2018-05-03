@@ -1,3 +1,8 @@
+seqHMM 1.0.8-1 (Release date: 2018-05-03)
+==============
+* Fixed encoding issues in references.
+* Updated author affiliations.
+
 seqHMM 1.0.8 (Release date: 2017-11-07)
 ==============
 

@@ -19,8 +19,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% almost as usual
-\author{Satu Helske\\ University of Oxford, UK \And
-        Jouni Helske\\ University of Jyv{\"a}skyl{\"a}, Finland}
+\author{Satu Helske \And Jouni Helske\\ Link{\"o}ping University, Sweden}
 \title{Mixture Hidden Markov Models for Sequence Data: The \pkg{seqHMM} Package in \proglang{R}}
 
 %% for pretty printing and a nice hypersummary also set:
@@ -53,20 +52,18 @@ Good graphical presentations of data and models are useful during the whole anal
 %% in the following format:
 \Address{
   Satu Helske\\
-  Department of Sociology \\
-  University of Oxford \\
-  Manor Road Building \\
-  Manor Road \\
-  Oxford \\
-  OX1 3UQ \\
-  UK \\
-  E-mail: \email{satu.helske@sociology.ox.ac.uk}\\
+  Institute for Analytical Sociology \\
+  Link\"oping University \\
+  SE-60174 Norrk\"oping\\
+  Sweden \\
+  E-mail: \email{satu.helske@liu.se}\\
   
-Jouni Helske\\
-Department of Mathematics and Statistics\\
-University of Jyv\"askyl\"a\\
-40014 Jyv\"askyl\"a, Finland\\
-E-mail: \email{Jouni.Helske@jyu.fi}
+  Jouni Helske\\
+  Department of Science and Technology \\
+  Link\"oping University\\
+  SE-60174 Norrk\"oping\\
+  Sweden\\
+  E-mail: \email{Jouni.Helske@liu.se}
 }
 %% It is also possible to add a telephone and fax number
 %% before the e-mail in the following format:
@@ -80,6 +77,7 @@ E-mail: \email{Jouni.Helske@jyu.fi}
 
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
 <<setup, include=FALSE, cache=FALSE>>=
 library(knitr)
@@ -800,10 +798,6 @@ Especially combined with the \pkg{TraMineR} package, \pkg{seqHMM} is designed to
 Satu Helske is grateful for support for this research from the John Fell Oxford University Press (OUP) Research Fund and the Department of Mathematics and Statistics at the University of Jyv{\"a}skyl{\"a}, Finland, and Jouni Helske for the Emil Aaltonen Foundation and the Academy of Finland (research grant 284513).
 
 We also wish to thank Mervi Eerola and Jukka Nyblom as well as the editor and two anonymous referees for their helpful comments and suggestions. Comments, suggestions, and bug reports from various users of \pkg{seqHMM} have also been highly appreciated.
-
-
-% Jouni Helske has been supported by the Emil Aaltonen Foundation and the Academy of Finland research grant 284513.
-
 
 
 \appendix
