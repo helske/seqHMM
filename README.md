@@ -173,7 +173,7 @@ hmm$logLik
 
 # EM + 50 restarts with random starting values for emission probabilities
 hmm2 <- fit_model(bhmm, 
-  control_em = list(restart = list(times = 50, transition = FALSE, emission = TRUE))
+  control_em = list(restart = list(times = 50, transition = FALSE, emission = TRUE)))
 hmm2$logLik
 # -16854.16
 
