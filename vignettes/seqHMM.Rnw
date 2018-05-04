@@ -77,7 +77,6 @@ Good graphical presentations of data and models are useful during the whole anal
 
 
 \begin{document}
-\SweaveOpts{concordance=TRUE}
 
 <<setup, include=FALSE, cache=FALSE>>=
 library(knitr)
