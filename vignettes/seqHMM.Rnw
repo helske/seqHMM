@@ -83,7 +83,7 @@ Good graphical presentations of data and models are useful during the whole anal
 library(knitr)
 opts_chunk$set(concordance = TRUE, tidy = FALSE)
 options(prompt = "R> ", continue = "+  ", width = 76, useFancyQuotes = FALSE)
-render_sweave()
+
 @
 
 A CRAN-compliant modification of a manuscript submitted to \emph{Journal of Statistical Software}.
