@@ -2,8 +2,8 @@ language: r
 sudo: false
 cache: packages
 
+# don't test with oldrel as nloptr installation fails.
 r:
- - oldrel
  - release
  - devel
 
