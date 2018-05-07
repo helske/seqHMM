@@ -19,7 +19,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% almost as usual
-\author{Satu Helske \And Jouni Helske\\ Link{\"o}ping University, Sweden}
+\author{Satu Helske\\ Link\"oping University, Sweden\\ University of Oxford, UK\\ University of Jyv{\"a}skyl{\"a}, Finland \And
+        Jouni Helske\\ Link\"oping University, Sweden\\ University of Jyv{\"a}skyl{\"a}, Finland}
 \title{Mixture Hidden Markov Models for Sequence Data: The \pkg{seqHMM} Package in \proglang{R}}
 
 %% for pretty printing and a nice hypersummary also set:
@@ -85,7 +86,7 @@ options(prompt = "R> ", continue = "+  ", width = 76, useFancyQuotes = FALSE)
 
 @
 
-A CRAN-compliant modification of a manuscript submitted to \emph{Journal of Statistical Software}.
+A CRAN-compliant modification of a paper accepted to be published in \emph{Journal of Statistical Software}.
 
 \section{Introduction}
 

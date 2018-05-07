@@ -2,3 +2,9 @@ base
 knitr
 seqHMM
 igraph
+gridBase
+Matrix
+nloptr
+numDeriv
+Rcpp
+TraMineR

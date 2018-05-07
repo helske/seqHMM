@@ -9,9 +9,9 @@
 \contentsline {subsection}{\numberline {2.4}\texttt {mssplot}: ssp for mixture HMMs}{15}{subsection.2.4}
 \contentsline {section}{\numberline {3}Tools for hidden Markov models}{15}{section.3}
 \contentsline {subsection}{\numberline {3.1}\texttt {plot.hmm}: plotting hidden Markov models}{15}{subsection.3.1}
-\contentsline {subsection}{\numberline {3.2}\texttt {plot.mhmm}: plotting mixture hidden Markov models}{18}{subsection.3.2}
-\contentsline {section}{\numberline {4}Helper tools}{20}{section.4}
-\contentsline {subsection}{\numberline {4.1}\texttt {mc\_to\_sc\_data} and \texttt {mc\_to\_sc}: from multichannel to single-channel}{20}{subsection.4.1}
-\contentsline {subsection}{\numberline {4.2}\texttt {colorpalette}: ready-made colour palettes}{20}{subsection.4.2}
-\contentsline {subsection}{\numberline {4.3}\texttt {plot\_colors}: show colours of colour palettes}{20}{subsection.4.3}
-\contentsline {subsection}{\numberline {4.4}\texttt {separate\_mhmm}: reorganize MHMM into a list of HMMs}{21}{subsection.4.4}
+\contentsline {subsection}{\numberline {3.2}\texttt {plot.mhmm}: plotting mixture hidden Markov models}{17}{subsection.3.2}
+\contentsline {section}{\numberline {4}Helper tools}{19}{section.4}
+\contentsline {subsection}{\numberline {4.1}\texttt {mc\_to\_sc\_data} and \texttt {mc\_to\_sc}: from multichannel to single-channel}{19}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}\texttt {colorpalette}: ready-made colour palettes}{19}{subsection.4.2}
+\contentsline {subsection}{\numberline {4.3}\texttt {plot\_colors}: show colours of colour palettes}{19}{subsection.4.3}
+\contentsline {subsection}{\numberline {4.4}\texttt {separate\_mhmm}: reorganize MHMM into a list of HMMs}{20}{subsection.4.4}
