@@ -81,7 +81,7 @@ fit <- fit_model(model)
 sum(summary(fit$model)$most_probable_cluster == rep(c("Class 2", "Class 1"), times = c(500, 200)))
 
 ############################################################
-
+\dontrun{
 # LCM for longitudinal data
 
 # Define sequence data
@@ -147,6 +147,7 @@ model <- build_lcm(
 fit <- fit_model(model)
 summary(fit$model)
 summary(multinom(y ~ x1 + x2, data = data.frame(X[,-1])))
+}
 }
 \seealso{
 \code{\link{fit_model}} for estimating model parameters;

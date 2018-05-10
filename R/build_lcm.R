@@ -69,7 +69,7 @@
 #' sum(summary(fit$model)$most_probable_cluster == rep(c("Class 2", "Class 1"), times = c(500, 200)))
 #' 
 #' ############################################################
-#' 
+#' \dontrun{
 #' # LCM for longitudinal data
 #' 
 #' # Define sequence data
@@ -135,6 +135,7 @@
 #' fit <- fit_model(model)
 #' summary(fit$model)
 #' summary(multinom(y ~ x1 + x2, data = data.frame(X[,-1])))
+#' }
 build_lcm <- 
   function(observations, n_clusters, emission_probs, 
            formula, data, coefficients, cluster_names= NULL, channel_names = NULL){
