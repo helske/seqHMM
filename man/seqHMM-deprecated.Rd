@@ -5,21 +5,19 @@
 \alias{seqHMM-deprecated}
 \alias{fit_hmm}
 \alias{seqHMM-deprecated-package}
-\alias{seqHMM-deprecated}
 \alias{fit_mhmm}
-\alias{seqHMM-deprecated-package}
-\alias{seqHMM-deprecated}
 \alias{trim_hmm}
-\alias{seqHMM-deprecated-package}
 \title{Deprecated function(s) in the seqHMM package}
 \usage{
-fit_hmm(model, em_step = TRUE, global_step = FALSE, local_step = FALSE,
-  control_em = list(), control_global = list(), control_local = list(),
-  lb, ub, threads = 1, log_space = FALSE, ...)
+fit_hmm(model, em_step = TRUE, global_step = FALSE,
+  local_step = FALSE, control_em = list(), control_global = list(),
+  control_local = list(), lb, ub, threads = 1, log_space = FALSE,
+  ...)
 
-fit_mhmm(model, em_step = TRUE, global_step = FALSE, local_step = FALSE,
-  control_em = list(), control_global = list(), control_local = list(),
-  lb, ub, threads = 1, log_space = FALSE, ...)
+fit_mhmm(model, em_step = TRUE, global_step = FALSE,
+  local_step = FALSE, control_em = list(), control_global = list(),
+  control_local = list(), lb, ub, threads = 1, log_space = FALSE,
+  ...)
 
 trim_hmm(model, maxit = 0, return_loglik = FALSE, zerotol = 1e-08,
   verbose = TRUE, ...)
@@ -38,7 +36,9 @@ of the parameter estimation. The default is \code{TRUE}.}
 
 \item{control_em}{Optional list of control parameters for the EM algorithm.
 Possible arguments are \describe{
-\item{maxeval}{The maximum number of iterations, the default is 1000.}
+\item{maxeval}{The maximum number of iterations, the default is 1000. 
+Note that iteration counter starts with -1 so with \code{maxeval=1} you get already two iterations.
+This is for backward compatibility reasons.}
 \item{print_level}{The level of printing. Possible values are 0
 (prints nothing), 1 (prints information at the start and the end of the algorithm),
 2 (prints at every iteration),

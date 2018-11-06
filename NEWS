@@ -1,3 +1,12 @@
+seqHMM 1.0.9 (Release date: 2018-11-06)
+==============
+* Fixed a bug in backward and posterior probabilities of multivariate models stemming 
+  from changes in version 1.0.7, causing the incorrect scaling factors. Note that issue
+  was only in forward_backward and posterior_probs functions with log_scale = FALSE, 
+  internally the package still used correct implementations when calling fit_model.
+  Thanks for Silvia Bacci for noticing the issue.
+* Fixed OpenMP flags in Makevars.
+
 seqHMM 1.0.8-1 (Release date: 2018-05-03)
 ==============
 * Fixed encoding issues in references.

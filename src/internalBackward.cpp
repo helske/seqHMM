@@ -7,7 +7,7 @@ void internalBackward(const arma::mat& transition, const arma::cube& emission,
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
 default(none) shared(beta, scales, obs, emission,transition)
   for (unsigned int k = 0; k < obs.n_slices; k++) {
-    beta.slice(k).col(obs.n_cols - 1).fill(scales(obs.n_cols - 1));
+    beta.slice(k).col(obs.n_cols - 1).fill(scales(obs.n_cols - 1, k));
     for (int t = obs.n_cols - 2; t >= 0; t--) {
         arma::vec tmpbeta = beta.slice(k).col(t + 1);
         for (unsigned int r = 0; r < obs.n_rows; r++) {
@@ -25,7 +25,7 @@ void internalBackwardx(const arma::sp_mat& transition, const arma::cube& emissio
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(beta, scales, obs, emission,transition)
     for (unsigned int k = 0; k < obs.n_slices; k++) {
-      beta.slice(k).col(obs.n_cols - 1).fill(scales(obs.n_cols - 1));
+      beta.slice(k).col(obs.n_cols - 1).fill(scales(obs.n_cols - 1, k));
       for (int t = obs.n_cols - 2; t >= 0; t--) {
         arma::vec tmpbeta = beta.slice(k).col(t + 1);
         for (unsigned int r = 0; r < obs.n_rows; r++) {

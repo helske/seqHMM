@@ -4,13 +4,14 @@
 \alias{plot.hmm}
 \title{Plot hidden Markov models}
 \usage{
-\method{plot}{hmm}(x, layout = "horizontal", pie = TRUE, vertex.size = 40,
-  vertex.label = "initial.probs", vertex.label.dist = "auto",
-  vertex.label.pos = "bottom", vertex.label.family = "sans",
-  loops = FALSE, edge.curved = TRUE, edge.label = "auto",
-  edge.width = "auto", cex.edge.width = 1, edge.arrow.size = 1.5,
-  edge.label.family = "sans", label.signif = 2, label.scientific = FALSE,
-  label.max.length = 6, trim = 1e-15, combine.slices = 0.05,
+\method{plot}{hmm}(x, layout = "horizontal", pie = TRUE,
+  vertex.size = 40, vertex.label = "initial.probs",
+  vertex.label.dist = "auto", vertex.label.pos = "bottom",
+  vertex.label.family = "sans", loops = FALSE, edge.curved = TRUE,
+  edge.label = "auto", edge.width = "auto", cex.edge.width = 1,
+  edge.arrow.size = 1.5, edge.label.family = "sans",
+  label.signif = 2, label.scientific = FALSE, label.max.length = 6,
+  trim = 1e-15, combine.slices = 0.05,
   combined.slice.color = "white", combined.slice.label = "others",
   with.legend = "bottom", ltext = NULL, legend.prop = 0.5,
   cex.legend = 1, ncol.legend = "auto", cpal = "auto", main = NULL,

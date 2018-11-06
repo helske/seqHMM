@@ -5,9 +5,10 @@
 \title{Estimate Parameters of (Mixture) Hidden
 Markov Models and Their Restricted Variants}
 \usage{
-fit_model(model, em_step = TRUE, global_step = FALSE, local_step = FALSE,
-  control_em = list(), control_global = list(), control_local = list(),
-  lb, ub, threads = 1, log_space = FALSE, ...)
+fit_model(model, em_step = TRUE, global_step = FALSE,
+  local_step = FALSE, control_em = list(), control_global = list(),
+  control_local = list(), lb, ub, threads = 1, log_space = FALSE,
+  ...)
 }
 \arguments{
 \item{model}{An object of class \code{hmm} or \code{mhmm}.}
@@ -23,7 +24,9 @@ of the parameter estimation. The default is \code{TRUE}.}
 
 \item{control_em}{Optional list of control parameters for the EM algorithm.
 Possible arguments are \describe{
-\item{maxeval}{The maximum number of iterations, the default is 1000.}
+\item{maxeval}{The maximum number of iterations, the default is 1000. 
+Note that iteration counter starts with -1 so with \code{maxeval=1} you get already two iterations.
+This is for backward compatibility reasons.}
 \item{print_level}{The level of printing. Possible values are 0
 (prints nothing), 1 (prints information at the start and the end of the algorithm),
 2 (prints at every iteration),

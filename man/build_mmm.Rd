@@ -4,8 +4,8 @@
 \alias{build_mmm}
 \title{Build a Mixture Markov Model}
 \usage{
-build_mmm(observations, n_clusters, transition_probs, initial_probs, formula,
-  data, coefficients, cluster_names = NULL, ...)
+build_mmm(observations, n_clusters, transition_probs, initial_probs,
+  formula, data, coefficients, cluster_names = NULL, ...)
 }
 \arguments{
 \item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing

@@ -4,10 +4,11 @@
 \alias{gridplot}
 \title{Plot Multidimensional Sequence Plots in a Grid}
 \usage{
-gridplot(x, nrow = NA, ncol = NA, byrow = FALSE, with.legend = "auto",
-  legend.pos = "auto", legend.pos2 = "center", title.legend = "auto",
-  ncol.legend = "auto", with.missing.legend = "auto", row.prop = "auto",
-  col.prop = "auto", cex.legend = 1)
+gridplot(x, nrow = NA, ncol = NA, byrow = FALSE,
+  with.legend = "auto", legend.pos = "auto", legend.pos2 = "center",
+  title.legend = "auto", ncol.legend = "auto",
+  with.missing.legend = "auto", row.prop = "auto", col.prop = "auto",
+  cex.legend = 1)
 }
 \arguments{
 \item{x}{A list of \code{\link{ssp}} objects.}
