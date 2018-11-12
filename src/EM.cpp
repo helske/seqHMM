@@ -17,7 +17,7 @@ Rcpp::List EM(const arma::mat& transition_, const arma::cube& emission_, const a
   // EM-algorithm begins
   
   double change = tol + 1.0;
-  int iter = -1; //for backward compatibility
+  int iter = 0;
   double sumlogLik_new = 0;
   double sumlogLik = -1e150; //sum(ll);
   while ((change > tol) & (iter < itermax)) {
@@ -107,7 +107,7 @@ Rcpp::List EM(const arma::mat& transition_, const arma::cube& emission_, const a
       sumlogLik = sumlogLik_new;
 
       if (trace > 0) {
-        if(iter == 1) {
+        if(iter == 0) {
           Rcpp::Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
         } else {
           if (trace > 1) {

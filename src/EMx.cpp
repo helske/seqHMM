@@ -31,7 +31,7 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
   //  //EM-algorithm begins
   //
   double change = tol + 1.0;
-  int iter = -1; //for backward compatibility
+  int iter = 0;
   
   arma::uvec cumsumstate = arma::cumsum(numberOfStates);
   double sumlogLik_new = 0;
@@ -127,7 +127,7 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
       sumlogLik = sumlogLik_new;
       
       if (trace > 0) {
-        if(iter == 1) {
+        if(iter == 0) {
           Rcpp::Rcout << "Log-likelihood of initial model: " << sumlogLik << std::endl;
         } else {
           if (trace > 1) {

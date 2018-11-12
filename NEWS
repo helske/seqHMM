@@ -1,3 +1,9 @@
+seqHMM 1.1.0 (Release date: 2018-11-)
+==============
+* Fixed iteration counter for EM algorithm, now maxeval=1 actually does 
+  one iteration and not two. Similarly fixed the the corresponding printing of 
+  intermediate results.
+
 seqHMM 1.0.9 (Release date: 2018-11-06)
 ==============
 * Fixed a bug in backward and posterior probabilities of multivariate models stemming 
