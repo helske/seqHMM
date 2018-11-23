@@ -14,7 +14,7 @@
 #' @param observations An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 #' the sequences, or a list of such objects (one for each channel).
 #' @param n_states A scalar giving the number of hidden states (not used if starting values for model parameters
-#' are given with \code{initial_probs}, \code{transition_probs}, and \code{emission_probs}).
+#' are given with \code{initial_probs}, \code{transition_probs}, or \code{emission_probs}).
 #' @param transition_probs A matrix of transition probabilities. 
 #' @param emission_probs A matrix of emission probabilities or a list of such
 #' objects (one for each channel). Emission probabilities should follow the
@@ -156,7 +156,7 @@
 build_hmm <- function(observations, n_states, transition_probs, emission_probs, initial_probs,
                       state_names = NULL, channel_names = NULL, ...){
   
-  if (missing(n_states)) {
+  if (!missing(transition_probs) || !missing(initial_probs) || !missing(emission_probs)) {
     
     if (missing(transition_probs) || missing(initial_probs) || missing(emission_probs)) {
       stop(paste("Provide either n_states or all three of initial_probs, transition_probs, and emission_probs."))
@@ -269,7 +269,9 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
     
   # Simulate starting values  
   } else {
-    
+    if (missing(n_states)) {
+      stop(paste("Provide either n_states or all three of initial_probs, transition_probs, and emission_probs."))
+    }
     transition_probs <- simulate_transition_probs(n_states = n_states, n_clusters = 1, ...)
     
     if (is.null(state_names)) {

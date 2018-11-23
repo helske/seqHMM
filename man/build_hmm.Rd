@@ -12,7 +12,7 @@ build_hmm(observations, n_states, transition_probs, emission_probs,
 the sequences, or a list of such objects (one for each channel).}
 
 \item{n_states}{A scalar giving the number of hidden states (not used if starting values for model parameters
-are given with \code{initial_probs}, \code{transition_probs}, and \code{emission_probs}).}
+are given with \code{initial_probs}, \code{transition_probs}, or \code{emission_probs}).}
 
 \item{transition_probs}{A matrix of transition probabilities.}
 

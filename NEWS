@@ -3,6 +3,8 @@ seqHMM 1.1.0 (Release date: 2018-11-)
 * Fixed iteration counter for EM algorithm, now maxeval=1 actually does 
   one iteration and not two. Similarly fixed the the corresponding printing of 
   intermediate results.
+* build_hmm and build_hmm now ignore n_states argument if any of the initial values 
+  are provided.
 
 seqHMM 1.0.9 (Release date: 2018-11-06)
 ==============

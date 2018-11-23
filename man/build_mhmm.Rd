@@ -14,7 +14,7 @@ the sequences, or a list of such objects (one for each channel).}
 
 \item{n_states}{A numerical vector giving the number of hidden states in each submodel 
 (not used if starting values for model parameters are given with 
-\code{initial_probs}, \code{transition_probs}, and \code{emission_probs}).}
+\code{initial_probs}, \code{transition_probs}, or \code{emission_probs}).}
 
 \item{transition_probs}{A list of matrices of transition
 probabilities for the submodel of each cluster.}
