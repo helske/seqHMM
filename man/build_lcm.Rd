@@ -67,8 +67,8 @@ as a restricted case of an \code{mhmm} object.
 # Simulate observations from two classes
 set.seed(123)
 obs <- seqdef(rbind(
-  matrix(sample(letters[1:3], 5000, TRUE, prob = c(0.1, 0.6, 0.3)), 500, 10),
-  matrix(sample(letters[1:3], 2000, TRUE, prob = c(0.4, 0.4, 0.2)), 200, 10)))
+  matrix(sample(letters[1:3], 500, TRUE, prob = c(0.1, 0.6, 0.3)), 50, 10),
+  matrix(sample(letters[1:3], 200, TRUE, prob = c(0.4, 0.4, 0.2)), 20, 10)))
 
 # Initialize the model
 set.seed(9087)

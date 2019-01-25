@@ -49,7 +49,7 @@
 #' initial_probs_1 <- c(1, 0)
 #' initial_probs_2 <- c(1, 0)
 #' 
-#' n <- 50
+#' n <- 30
 #' set.seed(123)
 #' covariate_1 <- runif(n)
 #' covariate_2 <- sample(c("A", "B"), size = n, replace = TRUE, 
@@ -63,7 +63,7 @@
 #'   n = n, initial_probs = list(initial_probs_1, initial_probs_2), 
 #'   transition_probs = list(transition_probs_1, transition_probs_2), 
 #'   emission_probs = list(emission_probs_1, emission_probs_2), 
-#'   sequence_length = 25, formula = ~covariate_1 + covariate_2,
+#'   sequence_length = 20, formula = ~covariate_1 + covariate_2,
 #'   data = dataf, coefficients = coefs)
 #' 
 #' ssplot(sim$observations, hidden.paths = sim$states, plots = "both", 

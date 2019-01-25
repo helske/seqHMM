@@ -416,7 +416,7 @@ ssp <- function(x, hidden.paths = NULL,
   } else {
     ylab.pos <- rep(ylab.pos, length.out = nplots)
   }
-  if (type == "I" && ylab != FALSE && !is.na(ylab)) {
+  if (type == "I" && !isFALSE(ylab) && !is.na(ylab)) {
     ylab.pos <- ylab.pos + 0.5
   }
   

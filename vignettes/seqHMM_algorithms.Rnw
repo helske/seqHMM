@@ -12,7 +12,7 @@
  
 \newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 
-\author{Jouni Helske\\ University of Jyv{\"a}skyl{\"a}, Finland}
+\author{Jouni Helske\\ Link\"oping University, Sweden}
 \title{The main algorithms used in the \texttt{seqHMM} package}
 
 
@@ -32,13 +32,19 @@ Following \citet{Rabiner1989}, the \emph{forward variable}
   \alpha_{it}(s)=P(\mathbf{y}_{i1}, \ldots, \mathbf{y}_{it},z_t=s|\mathcal{M})
 \]
 is the joint probability of partial observation sequences for subject $i$ until time $t$ and the hidden state $s$ at time $t$ given the model $\mathcal{M}$. Let us denote $b_s(\mathbf{y}_{it})=b_s(y_{it1})\cdots b_s(y_{itC})$, the joint emission probability of observations at time $t$ in channels $1,\ldots,C$ given hidden state $s$. The forward variable can be solved recursively for subject $i=1,\ldots,N$:
-  \begin{enumerate}
+\begin{enumerate}
 \item Initialization: For $s=1,\ldots,S$, compute \\
-$\alpha_{i1}(s)=\pi_s b_s(\mathbf{y}_{i1})$
-  \item Recursion: For $t=1,\ldots,T-1$, and $r=1,\ldots,S$, compute \\
-$\alpha_{i(t+1)}(r) = \left[ \sum_{s=1}^S \alpha_{it}(s) a_{sr} \right] b_r(\mathbf{y}_{i(t+1)})$
-  \item Termination: Compute the likelihood \\
-$P(Y_i|\mathcal{M})= \sum_{s=1}^S \alpha_{iT}(s)$
+\begin{equation*}
+\alpha_{i1}(s)=\pi_s b_s(\mathbf{y}_{i1})
+\end{equation*}
+\item Recursion: For $t=1,\ldots,T-1$,  compute \\
+\begin{equation*}
+\alpha_{i(t+1)}(s) = \left[ \sum_{r=1}^S \alpha_{it}(r) a_{rs} \right] b_s(\mathbf{y}_{i(t+1)}), \quad s=1,\ldots,S
+\end{equation*}
+\item Termination: Compute the likelihood \\
+\begin{equation*}
+P(Y_i|\mathcal{M})= \sum_{s=1}^S \alpha_{iT}(s)
+\end{equation*}
   \end{enumerate}
 
 The \emph{backward variable}
@@ -48,51 +54,62 @@ The \emph{backward variable}
 is the joint probability of the partial observation sequence after time $t$ and hidden state $s$ at time $t$ given the model $\mathcal{M}$. For subject $i=1,\ldots,N$, the backward variable can be computed as
   \begin{enumerate}
 \item Initialization: For $s=1,\ldots,S$, set \\
-$\beta_{iT}(s) = 1$
-  \item Recursion: For $t=T-1,\ldots,1$, and $s=1,\ldots,S$, compute  \\
-$\beta_{it}(s)=\left[ \sum_{r=1}^S a_{sr} \right] b_s(\mathbf{y}_{i(t+1)}) \beta_{i(t+1)}(r)$
-  \end{enumerate}
+\begin{equation*}
+\beta_{iT}(s) = 1
+\end{equation*}
+\item Recursion: For $t=T-1,\ldots,1$, compute  \\
+\begin{equation*}
+\beta_{it}(s)=\sum_{r=1}^S \left[ a_{sr} b_r(\mathbf{y}_{i(t+1)}) \beta_{i(t+1)}(r)\right], \quad s=1,\ldots,S
+\end{equation*}
+\end{enumerate}
 
 In practice the forward-backward algorithm is prone to numerical instabilities. Typically we scale the forward and backward probabilities, as follows \citep{Rabiner1989}. For subject $i=1,\ldots,N$,
 
-  \begin{enumerate}
+\begin{enumerate}
 \item Initialization: For $s=1,\ldots,S$, compute  \\
-\begin{equation}
+\begin{equation*}
 \begin{aligned}
 \alpha_{i1}(s) &= \pi_s b_s(\mathbf{y}_{i1}), \\
-c_t &= 1 / \sum_{s=1}^S \alpha_{i1}(s),\\
-\hat \alpha_{i1}(s) &= c_t \alpha_{i1}(s)
+c_{i1} &= 1 / \sum_{s=1}^S \alpha_{i1}(s),\\
+\hat \alpha_{i1} &= c_{i1} \alpha_{i1}
 \end{aligned}
-\end{equation}
-  \item Recursion: For $t=1,\ldots,T-1$, and $r=1,\ldots,S$, compute \\
-\begin{equation}
+\end{equation*}
+\item Recursion: For $t=1,\ldots,T-1$, compute (as before) \\
+\begin{equation*}
 \begin{aligned}
-\alpha_{i(t+1)}(r) &=\left[ \sum_{s=1}^S \alpha_{it}(s) a_{sr} \right] b_r(\mathbf{y}_{i(t+1)})\\
-c_t &= 1 / \sum_{s=1}^S \alpha_{i(t+1)}(s),\\
-\hat \alpha_{i(t+1)}(s) &= c_t \alpha_{i(t+1)}(s)
+\alpha_{i(t+1)}(s) = \left[ \sum_{r=1}^S \alpha_{it}(r) a_{rs} \right] b_s(\mathbf{y}_{i(t+1)}), \quad s=1,\ldots,S
 \end{aligned}
-\end{equation}
+\end{equation*}
+and scale as
+\begin{equation*}
+\begin{aligned}
+c_{i(t+1)} &= 1 / \sum_{s=1}^S \alpha_{i(t+1)}(s),\\
+\hat \alpha_{i(t+1)} &= c_{i(t+1)} \alpha_{i(t+1)}
+\end{aligned}
+\end{equation*}
   \item Termination: Compute the log-likelihood \\
-$\textrm{log} P(Y_i|\mathcal{M})= -\sum_{t=1}^T c_{t}$
+  \begin{equation*}
+\textrm{log} P(Y_i|\mathcal{M})= -\sum_{t=1}^T c_{it}
+\end{equation*}
   \end{enumerate}
 
-The scaling factors $c_t$ from the forward algorithm are commonly used to scale also the backward variables, although other scaling schemes are possible as well. In \texttt{seqHMM}, the scaled backward variables for subject $i=1,\ldots,N$ are computed as
+The scaling factors $c_{it}$ from the forward algorithm are commonly used to scale also the backward variables, although other scaling schemes are possible as well. In \texttt{seqHMM}, the scaled backward variables for subject $i=1,\ldots,N$ are computed as
 
 \begin{enumerate}
 \item Initialization: For $s=1,\ldots,S$, compute  \\
-\begin{equation}
+\begin{equation*}
 \begin{aligned}
-\hat \beta_{iT}(s) &= 1
+\hat \beta_{iT}(s) &= c_{iT}
 \end{aligned}
-\end{equation}
-  \item Recursion: For $t=T-1,\ldots,1$, and $r=1,\ldots,S$, compute \\
-\begin{equation}
+\end{equation*}
+  \item Recursion: For $t=T-1,\ldots,1$, and $r=1,\ldots,S$, compute and scale \\
+\begin{equation*}
 \begin{aligned}
-\beta_{it}(s) &=\left[ \sum_{r=1}^S a_{sr} \right] b_s(\mathbf{y}_{i(t+1)}) \beta_{i(t+1)}(r),\\
-\hat \beta_{it}(s) &= c_{t} \beta_{it}(s)
+\beta_{it}(s)&=\sum_{r=1}^S \left[ a_{sr} b_r(\mathbf{y}_{i(t+1)}) \beta_{i(t+1)}(r)\right], \quad s=1,\ldots,S\\
+\hat \beta_{it}(s) &= c_{it} \beta_{it}(s)
 \end{aligned}
-\end{equation}
-  \end{enumerate}
+\end{equation*}
+\end{enumerate}
 
 Most of the times this scaling method described works well, but in some 
 ill-conditioned cases it is possible that the default scaling still produces underflow in backward algorithm. For these cases, \texttt{seqHMM} also supports the computation of the forward and backward variables in log-space. Although numerically more stable, the algorithm is somewhat slower due repeated use of log-sum-exp trick.

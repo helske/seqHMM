@@ -1,14 +1,21 @@
 c(
-  bibentry(
-    bibtype = "Article",
-    title = "Mixture hidden {Markov} models for sequence data: the {seqHMM} package in {R}",
-    author = "Satu Helske and Jouni Helske",
-    journal = "Accepted to Journal of Statistical Software",
-    note = "Available at ArXiv",
-    url = "http://arxiv.org/abs/1704.00543",
-    year = "2017",
-    key = "HelskeHelske2017"
-  ),
+bibentry(bibtype = "Article",
+  title        = "Mixture Hidden {M}arkov Models for Sequence Data: The {seqHMM} Package in {R}",
+  author       = c(person(given = "Satu",
+                          family = "Helske",
+                          email = "satu.helske@liu.se"),
+                   person(given = "Jouni",
+                          family = "Helske",
+                          email = "jouni.helske@liu.se")),
+  journal      = "Journal of Statistical Software",
+  year         = "2019",
+  volume       = "88",
+  number       = "3",
+  pages        = "1--32",
+  doi          = "10.18637/jss.v088.i03",
+
+  header       = "To cite seqHMM in publications use:"
+),
   bibentry(
     bibtype = "Manual",
     title = "Mixture hidden {Markov} models for sequence data: the {seqHMM} package in {R}",

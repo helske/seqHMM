@@ -1,10 +1,12 @@
-seqHMM 1.1.0 (Release date: 2018-11-)
+seqHMM 1.1.0 (Release date: 2019-01-25)
 ==============
 * Fixed iteration counter for EM algorithm, now maxeval=1 actually does 
   one iteration and not two. Similarly fixed the the corresponding printing of 
   intermediate results.
 * build_hmm and build_hmm now ignore n_states argument if any of the initial values 
   are provided.
+* Updated some formulas in the algorithms vignette to correspond to current forward-backward   variant.
+* Updated citation info due to the publication in JSS.
 
 seqHMM 1.0.9 (Release date: 2018-11-06)
 ==============
