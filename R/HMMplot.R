@@ -61,7 +61,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
   }
 
   # No slices -> no legends needed
-  if (pie == FALSE && with.legend != FALSE) {
+  if (isFALSE(pie) && !isFALSE(with.legend)) {
     with.legend <- FALSE
   }
 
@@ -122,13 +122,13 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
 
   # Vector of non-zero transition probabilities
   transitions <- transM
-  if (loops == FALSE && length(transitions) > 1) {
+  if (isFALSE(loops) && length(transitions) > 1) {
     diag(transitions) <- 0
   }
   transitions <- t(transitions)[t(transitions) > 0]
 
   # Edge labels
-  if (!is.na(edge.label) && edge.label != FALSE) {
+  if (!is.na(edge.label) && !isFALSE(edge.label)) {
     if (length(edge.label) == 1 && (edge.label == "auto" || edge.label == TRUE)) {
       edge.label <- sapply(transitions, labelprint, labs = label.scientific)
     } else if (length(edge.label) > 1 && length(edge.label) != length(transitions)) {
