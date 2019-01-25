@@ -416,15 +416,15 @@ ssp <- function(x, hidden.paths = NULL,
   } else {
     ylab.pos <- rep(ylab.pos, length.out = nplots)
   }
-  if (type == "I" && length(ylab) == 1 && !isFALSE(ylab) && !is.na(ylab)) {
+  if (type == "I" && !isFALSE(ylab) && !is.na(ylab)) {
     ylab.pos <- ylab.pos + 0.5
   }
   
   # Space for viewports (for each element of the plot)
-  if ((is.na(title) && isFALSE(title.n)) || isFALSE(title)) {
+  if ((is.na(title) && title.n == FALSE) || (!is.na(title) && title == FALSE)) {
     title.pos <- 0
   }
-  if (length(ylab) == 1 && (is.na(ylab) || isFALSE(ylab))) {
+  if (length(ylab) == 1 && (is.na(ylab) || ylab == FALSE)) {
     ylab.space <- 0
   } else if (max(ylab.pos) < -1) {
     ylab.space <- 0
@@ -435,11 +435,11 @@ ssp <- function(x, hidden.paths = NULL,
     ylab.space <- ylab.space + 1.5 + (type == "d")
     ylab.pos <- ylab.pos + 1.5 + (type == "d")
   }
-  if (is.na(xlab) || isFALSE(xlab)) {
+  if (is.na(xlab) || xlab == FALSE) {
     xlab.pos <- 0
   }
   xaxis.space <- ifelse(xaxis, 1, 0)
-  if (length(xtlab) == 1 && (is.null(xtlab) || is.na(xtlab) || isFALSE(xtlab))) {
+  if (length(xtlab) == 1 && (is.null(xtlab) || is.na(xtlab) || xtlab == FALSE)) {
     xt.space <- 0
   } else {
     xt.space <- 1
@@ -668,8 +668,8 @@ ssp <- function(x, hidden.paths = NULL,
   
   
   # Missing states in legends?
-  if (type == "d" && isFALSE(with.missing) && !isFALSE(with.missing.legend) &&
-      !isTRUE(with.missing.legend) && with.missing.legend == "auto") {
+  if (type == "d" && with.missing == FALSE && with.missing.legend != FALSE &&
+      with.missing.legend != TRUE && with.missing.legend == "auto") {
     with.missing.legend <- FALSE
   }
   

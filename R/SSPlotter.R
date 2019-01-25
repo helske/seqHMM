@@ -35,7 +35,7 @@ SSPlotter <- function(obs, nchannels, nplots,
 
   vpxaxis <- viewport(layout.pos.row = 3, layout.pos.col = 2, name = "vpxaxis")
 
-  if (isFALSE(with.legend)) {
+  if (with.legend == FALSE) {
     splot <- vpTree(top.vp, vpList(vptitle, vpylab, vpplot, vpxaxis))
   } else {
     splot <- vpTree(top.vp, vpList(vptitle, vpylab, vpplot, vplegend, vpxaxis))
