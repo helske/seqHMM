@@ -121,6 +121,9 @@
 #'   directed graphs; and \code{\link{mhmm_biofam}} and \code{\link{mhmm_mvad}} for
 #'   the models used in examples.
 #'
+#' @references Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
+#' Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
+#' 
 #' @examples
 #' # Loading mixture hidden Markov model (mhmm object)
 #' # of the biofam data

@@ -249,19 +249,18 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
     legend.pos <- "bottom"
   }
 
-
   # Legend titles
-  if (!is.na(with.legend) && with.legend != FALSE && !is.na(title.legend) &&
-      title.legend != FALSE && !is.null(title.legend)) {
+  if (length(title.legend) > 1 || (length(title.legend) == 1 && 
+      !is.na(with.legend) && with.legend != FALSE && !is.null(title.legend))) {
     # Wrong length for title.legend
     if (length(title.legend) > 1 || (length(title.legend) == 1 && title.legend != "auto")) {
       if (length(title.legend) != x[[1]]$nplots) {
         warning("The length of the vector provided for title.legend does not match the number of legends. Argument title.legend was set to \"auto\".")
-        title.legend == "auto"
+        title.legend <- "auto"
       }
     }
     # Automatic titles for legends (from the first ssp object)
-    if (length(title.legend == 1 && title.legend == "auto")) {
+    if (length(title.legend) == 1 && title.legend == "auto") {
       title.legend <- x[[1]]$ylab
     }
   }
@@ -392,7 +391,9 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         legend.nrow <- ceiling(x$n_states / ncol.legend)
       }
 
-      if(!is.na(title.legend) && title.legend != FALSE && !is.null(title.legend)){
+      if(length(title.legend) > 1 || 
+          (length(title.legend) == 1 && 
+              !is.na(title.legend) && title.legend != FALSE && !is.null(title.legend))){
         legend.nrow <- legend.nrow + 1
       }
     }

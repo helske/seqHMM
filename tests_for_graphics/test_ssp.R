@@ -201,13 +201,13 @@ ssplot(hmm_biofam, type = "I", sortv = "mds.hidden", plots = "hidden.paths")
 
 ### vector
 # Single-channel stslist
-ssplot(hmm_biofam$observations[[1]], type = "I", sortv = c(2000:1))
+ssplot(hmm_biofam$observations[[1]], type = "I", sortv = 2000:1)
 # Multiple stslists
-ssplot(hmm_biofam$observations, type = "I", sortv = c(2000:1))
+ssplot(hmm_biofam$observations, type = "I", sortv = 2000:1)
 # HMM
-ssplot(hmm_biofam, type = "I", sortv = c(2000:1))
-ssplot(hmm_biofam, type = "I", sortv = c(2000:1), plots = "both")
-ssplot(hmm_biofam, type = "I", sortv = c(2000:1), plots = "hidden.paths")
+ssplot(hmm_biofam, type = "I", sortv = 2000:1)
+ssplot(hmm_biofam, type = "I", sortv = 2000:1, plots = "both")
+ssplot(hmm_biofam, type = "I", sortv = 2000:1, plots = "hidden.paths")
 
 
 
