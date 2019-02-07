@@ -43,7 +43,7 @@ vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = FALSE
     obsArray <- array(0, c(model$n_sequences, model$length_of_sequences,
       model$n_channels))
     for(i in 1:model$n_channels){
-      obsArray[,,i] <- data.matrix(model$observations[[i]])-1
+      obsArray[,,i] <- sapply(model$observations[[i]], as.integer) - 1L 
       obsArray[,,i][obsArray[,,i]>model$n_symbols[i]] <- model$n_symbols[i]
     }
     obsArray <- aperm(obsArray)

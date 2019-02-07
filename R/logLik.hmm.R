@@ -28,7 +28,7 @@ logLik.hmm <- function(object, partials = FALSE, threads = 1, log_space = FALSE,
   
   obsArray<-array(0,c(object$n_sequences,object$length_of_sequences,object$n_channels))
   for(i in 1:object$n_channels){
-    obsArray[,,i]<-data.matrix(object$observations[[i]])-1
+    obsArray[,,i] <- sapply(object$observations[[i]], as.integer) - 1L 
     obsArray[,,i][obsArray[,,i]>object$n_symbols[i]]<-object$n_symbols[i]
   }       
   obsArray <- aperm(obsArray)

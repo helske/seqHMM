@@ -1,3 +1,10 @@
+seqHMM 1.1.1 (Release date: 2019-)
+==============
+* All functions relying on C++ are now slightly faster due to 
+  more efficient data transformations from factors to integers.
+* Model building functions and hidden_paths are faster do to the
+  modified seqdef function.
+
 seqHMM 1.1.0 (Release date: 2019-01-25)
 ==============
 * Fixed iteration counter for EM algorithm, now maxeval=1 actually does 
