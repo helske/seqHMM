@@ -559,6 +559,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
                                    edge.curved = edge.curved, edge.width = edge.width,
                                    edge.label = edge.label,
                                    edge.label.family = edge.label.family,
+                                   edge.arrow.size = edge.arrow.size,
                                    xlim = xlim, ylim = ylim, rescale = rescale,
                                    main = main), dots))
     } else {
@@ -570,6 +571,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
                                    edge.curved = edge.curved, edge.width = edge.width,
                                    edge.label = edge.label,
                                    edge.label.family = edge.label.family,
+                                   edge.arrow.size = edge.arrow.size,
                                    main = main), dots))
     }
   }
