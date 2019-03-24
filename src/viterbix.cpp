@@ -27,7 +27,7 @@ Rcpp::List viterbix(const arma::mat& transition, const arma::cube& emission,
 
     for (unsigned int t = 1; t < obs.n_cols; t++) {
       for (unsigned int j = 0; j < emission.n_rows; j++) {
-        (delta.col(t - 1) + transition.col(j)).max(phi(j, t));
+        phi(j, t) = (delta.col(t - 1) + transition.col(j)).index_max();
         delta(j, t) = delta(phi(j, t), t - 1) + transition(phi(j, t), j);
         for (unsigned int r = 0; r < emission.n_slices; r++) {
           delta(j, t) += emission(j, obs(r, t, k), r);
