@@ -17,6 +17,18 @@ forwardbackwardx <- function(transition, emission, init, obs, coef, X, numberOfS
     .Call(`_seqHMM_forwardbackwardx`, transition, emission, init, obs, coef, X, numberOfStates, forwardonly, threads)
 }
 
+logLikHMM <- function(transition, emission, init, obs, threads) {
+    .Call(`_seqHMM_logLikHMM`, transition, emission, init, obs, threads)
+}
+
+logLikMixHMM <- function(transition, emission, init, obs, coef, X, numberOfStates, threads) {
+    .Call(`_seqHMM_logLikMixHMM`, transition, emission, init, obs, coef, X, numberOfStates, threads)
+}
+
+logSumExp <- function(x) {
+    .Call(`_seqHMM_logSumExp`, x)
+}
+
 log_EM <- function(transition_, emission_, init_, obs, nSymbols, itermax, tol, trace, threads) {
     .Call(`_seqHMM_log_EM`, transition_, emission_, init_, obs, nSymbols, itermax, tol, trace, threads)
 }
@@ -47,18 +59,6 @@ log_objective <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbo
 
 log_objectivex <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads) {
     .Call(`_seqHMM_log_objectivex`, transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads)
-}
-
-logLikHMM <- function(transition, emission, init, obs, threads) {
-    .Call(`_seqHMM_logLikHMM`, transition, emission, init, obs, threads)
-}
-
-logLikMixHMM <- function(transition, emission, init, obs, coef, X, numberOfStates, threads) {
-    .Call(`_seqHMM_logLikMixHMM`, transition, emission, init, obs, coef, X, numberOfStates, threads)
-}
-
-logSumExp <- function(x) {
-    .Call(`_seqHMM_logSumExp`, x)
 }
 
 objective <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, threads) {

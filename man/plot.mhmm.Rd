@@ -198,6 +198,10 @@ if (interactive()) {
 }
 
 }
+\references{
+Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
+Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
+}
 \seealso{
 \code{\link{build_mhmm}} and \code{\link{fit_model}} for building and
   fitting mixture hidden Markov models; \code{\link{plot.igraph}} for plotting

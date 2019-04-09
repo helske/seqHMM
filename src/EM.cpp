@@ -32,7 +32,7 @@ Rcpp::List EM(const arma::mat& transition_, const arma::cube& emission_, const a
     unsigned int error_code = 0;
     
 #pragma omp parallel for if(obs.n_slices>=threads) schedule(static) reduction(+:sumlogLik_new) num_threads(threads) \
-    default(none) shared(init, transition, obs, emission, delta, ksii, gamma, nSymbols, error_code, max_sf)
+    default(shared) // gcc9 needs sharing of zeros, but doesn't work on earlier compilers..shared(init, transition, obs, emission, delta, ksii, gamma, nSymbols, error_code, max_sf, arma::fill::zeros)
       for (unsigned int k = 0; k < obs.n_slices; k++) {
         
         if (error_code == 0) {
@@ -79,19 +79,19 @@ Rcpp::List EM(const arma::mat& transition_, const arma::cube& emission_, const a
             }
           }
 
-#pragma omp critical
-{
-  if(!scales.is_finite()) {
-    error_code = 1;
-  }
-  if(!beta.is_finite()) {
-    error_code = 2;
-  }
-  max_sf = std::min(max_sf, scales.max());
-  delta += delta_k;
-  ksii += ksii_k;
-  gamma += gamma_k;
-}
+          #pragma omp critical
+          {
+            if(!scales.is_finite()) {
+              error_code = 1;
+            }
+            if(!beta.is_finite()) {
+              error_code = 2;
+            }
+            max_sf = std::min(max_sf, scales.max());
+            delta += delta_k;
+            ksii += ksii_k;
+            gamma += gamma_k;
+          }
         }
       }
       if(error_code == 1) {

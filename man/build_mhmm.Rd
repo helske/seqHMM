@@ -228,6 +228,10 @@ init_mhmm_bf2 <- build_mhmm(
                      paste("State", 1:6)))
 
 }
+\references{
+Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
+Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
+}
 \seealso{
 \code{\link{fit_model}} for fitting mixture Hidden Markov models;
 \code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for

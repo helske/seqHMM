@@ -446,6 +446,10 @@ mhmm_3$logLik # -12713.08
 }
 
 }
+\references{
+Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
+Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
+}
 \seealso{
 \code{\link{build_hmm}},  \code{\link{build_mhmm}},
 \code{\link{build_mm}},  \code{\link{build_mmm}}, and  \code{\link{build_lcm}}

@@ -35,6 +35,10 @@ attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 ssp1 <- ssp(list(child_seq, marr_seq, left_seq))
 plot(ssp1)
 }
+\references{
+Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
+Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
+}
 \seealso{
 \code{\link{ssp}} for more examples and information on defining the plot before using
   \code{plot.ssp}; \code{\link{ssplot}} for straight plotting of \code{ssp} objects;

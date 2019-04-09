@@ -50,7 +50,7 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
     unsigned int error_code = 0;
     
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) reduction(+:sumlogLik_new) num_threads(threads) \
-    default(none) shared(bsi, initk, transition, obs, emission, delta, ksii, gamma, nSymbols, error_code, max_sf)
+    default(shared) //shared(bsi, initk, transition, obs, emission, delta, ksii, gamma, nSymbols, error_code, max_sf, arma::fill::zeros)
       for (unsigned int k = 0; k < obs.n_slices; k++) {
         
         if (error_code == 0) {

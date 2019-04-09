@@ -1,9 +1,8 @@
-seqHMM 1.1.1 (Release date: 2019-)
+seqHMM 1.1.1 (Release date: 2019-04-09)
 ==============
 * All functions relying on C++ are now slightly faster due to 
   more efficient data transformations from factors to integers.
-* Model building functions and hidden_paths are faster do to the
-  modified seqdef function.
+* Fixed an OpenMP sharing issue due to upcoming GCC9.
 
 seqHMM 1.1.0 (Release date: 2019-01-25)
 ==============
@@ -33,7 +32,7 @@ seqHMM 1.0.8 (Release date: 2017-11-07)
 ==============
 
 * Fixed a bug in forward_backward function, which did not provide correct 
-  scaling factors for last time point and thus the backward variables weren't 
+  scaling factors for last time point and thus the backward variables weren't F
   scaled correctly.
 * Related to above bug, posterior_probs now provides proper probabilities 
   between 0 and 1.

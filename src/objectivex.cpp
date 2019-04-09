@@ -32,8 +32,8 @@ Rcpp::List objectivex(const arma::mat& transition, const arma::cube& emission,
   unsigned int error = 0;
   double ll = 0;
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) reduction(+:ll) num_threads(threads)       \
-  default(none) shared(q, grad, nSymbols, ANZ, BNZ, INZ,                                                         \
-          numberOfStates, cumsumstate, obs, init, initk, X, weights, transition, emission, error)
+  default(shared) //shared(q, grad, nSymbols, ANZ, BNZ, INZ,                                                         \
+         // numberOfStates, cumsumstate, obs, init, initk, X, weights, transition, emission, error, arma::fill::zeros)
     for (unsigned int k = 0; k < obs.n_slices; k++) {
       if (error == 0) {
         arma::mat alpha(emission.n_rows, obs.n_cols); //m,n
