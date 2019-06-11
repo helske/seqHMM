@@ -28,9 +28,7 @@ Rcpp::List log_objective(const arma::mat& transition, const arma::cube& emission
   arma::mat gradmat(arma::accu(ANZ) + arma::accu(BNZ) + arma::accu(INZ), obs.n_slices,
     arma::fill::zeros);
   
-#pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
-  default(none) shared(alpha, beta, gradmat, nSymbols, ANZ, BNZ, INZ,                      \
-    obs, init, ll, transition, emission, initLog, transitionLog, emissionLog)
+#pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) default(shared)
     for (unsigned int k = 0; k < obs.n_slices; k++) {
       int countgrad = 0;
       

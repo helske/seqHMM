@@ -1,10 +1,19 @@
-seqHMM 1.1.1 (Release date: 2019-04-09)
+seqHMM 1.0.12 (Release date: 2019-04-11)
+==============
+* Fixed a bug when calling plot.mhmm inside a function. Thanks to Ellen Graham for 
+  catching the issue.
+  
+seqHMM 1.0.12 (Release date: 2019-04-11)
+==============
+* Fixed an OpenMP sharing issue due to upcoming GCC9.
+
+seqHMM 1.0.11 (Release date: 2019-04-09)
 ==============
 * All functions relying on C++ are now slightly faster due to 
   more efficient data transformations from factors to integers.
 * Fixed an OpenMP sharing issue due to upcoming GCC9.
 
-seqHMM 1.1.0 (Release date: 2019-01-25)
+seqHMM 1.0.10 (Release date: 2019-01-25)
 ==============
 * Fixed iteration counter for EM algorithm, now maxeval=1 actually does 
   one iteration and not two. Similarly fixed the the corresponding printing of 

@@ -196,6 +196,7 @@ plot.mhmm <- function(x, interactive = TRUE,
   } else {
     args <- as.list(match.call())[-1]
     args$ask <- args$interactive <- NULL
+    args$x <- x
     do.call(mHMMplotgrid, args)
   }
 

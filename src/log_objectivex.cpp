@@ -49,10 +49,7 @@ Rcpp::List log_objectivex(const arma::mat& transition, const arma::cube& emissio
       obs.n_slices, arma::fill::zeros);
   
   
-#pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
-  default(none) shared(q, gradmat, nSymbols, ANZ, BNZ, INZ, ll,                            \
-    numberOfStates, cumsumstate, obs, init, X, weights, transition, emission,              \
-    initLog, transitionLog, emissionLog, initk, alpha, beta)
+#pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) default(shared)
     for (unsigned int k = 0; k < obs.n_slices; k++) {
       int countgrad = 0;
       
