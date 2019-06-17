@@ -8,7 +8,7 @@
 variables, and a separate data frame with 1 id variable, 8 covariates, and 2 weights variables.}
 \source{
 \code{\link[TraMineR]{biofam}} data constructed from the Swiss Household Panel
-\url{www.swisspanel.ch}
+\url{https://forscenter.ch/projects/swiss-household-panel/}
 }
 \description{
 Biofam data from the TraMineR package converted into three channels.

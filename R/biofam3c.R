@@ -70,7 +70,7 @@
 #' }
 #'
 #' @source \code{\link[TraMineR]{biofam}} data constructed from the Swiss Household Panel
-#' \url{www.swisspanel.ch}
+#' \url{https://forscenter.ch/projects/swiss-household-panel/}
 #'
 #' @references Müller, N. S., M. Studer, G. Ritschard (2007). Classification de
 #' parcours de vie à l'aide de l'optimal matching. In \emph{XIVe Rencontre de la Société

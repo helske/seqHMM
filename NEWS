@@ -1,4 +1,4 @@
-seqHMM 1.0.12 (Release date: 2019-04-11)
+seqHMM 1.0.13 (Release date: 2019-06-11)
 ==============
 * Fixed a bug when calling plot.mhmm inside a function. Thanks to Ellen Graham for 
   catching the issue.
