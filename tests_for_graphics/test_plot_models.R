@@ -18,6 +18,45 @@ plot(hmm_mvad, layout = layout_in_circle, label.signif = 2,
 plot(hmm_mvad, layout = layout_in_circle, label.signif = 3,
   label.scientific = TRUE, label.max.length = 6, with.legend = FALSE)
 
+# Test HMM with own legend
+
+# Check the alphabet of the (combined) observations
+alphabet(hmm_mvad$observations)
+# Finding 6 observed states
+
+# Set the alphabet
+alphabet(hmm_mvad$observations) <- c("SC", "FE", "HE", "TR", "JL", "EM")
+
+# Order by alphabet in observations
+plot(hmm_mvad, legend.order = FALSE)
+
+# New names, colours ordered by alphabet
+plot(hmm_mvad, ltext = c("employed", "FE", "HE", "jobless", "school", "training"), legend.order = FALSE)
+
+# New colours, names and order according to the alphabet
+plot(hmm_mvad, 
+     cpal = c("purple", "pink", "brown", "lightblue", "orange", "green"),
+     legend.order = FALSE)
+
+# New names and colours
+alphabet(hmm_mvad$observations)
+plot(hmm_mvad, 
+     # Colours in the pies (order by alphabet of observations)
+     cpal = c("purple", "pink", "brown", "lightblue", "orange", "green"),
+     # Colours in the legend (matching to ltext)
+     cpal.legend = c("orange", "pink", "brown", "green", "lightblue", "purple", "gray"), 
+     # Labels in the legend (matching to cpal.legend)
+     ltext = c("school", "further educ", "higher educ", "training", "jobless", "employed", "none"), legend.order = FALSE)
+
+# Too few colours and labels in the legend (is fine)
+plot(hmm_mvad, 
+     # Colours in the pies (order by alphabet of observations)
+     cpal = c("purple", "pink", "brown", "lightblue", "orange", "green"),
+     # Colours in the legend (matching to ltext)
+     cpal.legend = c("orange", "pink", "brown", "green", "lightblue"), 
+     # Labels in the legend (matching to cpal.legend)
+     ltext = c("school", "further educ", "higher educ", "training", "jobless"), legend.order = FALSE)
+
 
 
 # Markov model

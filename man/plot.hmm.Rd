@@ -14,8 +14,9 @@
   trim = 1e-15, combine.slices = 0.05,
   combined.slice.color = "white", combined.slice.label = "others",
   with.legend = "bottom", ltext = NULL, legend.prop = 0.5,
-  cex.legend = 1, ncol.legend = "auto", cpal = "auto", main = NULL,
-  withlegend, ...)
+  cex.legend = 1, ncol.legend = "auto", cpal = "auto",
+  cpal.legend = "auto", legend.order = TRUE, main = NULL, withlegend,
+  ...)
 }
 \arguments{
 \item{x}{A hidden Markov model object of class \code{hmm} created with
@@ -110,7 +111,7 @@ plotted. Possible values include \code{"bottom"} (the default),
 legend.}
 
 \item{ltext}{Optional description of (combined) observed states to appear
-in the legend. A vector of character strings. See \code{\link{seqplot}} for
+in the legend. A vector of character strings.  See \code{\link{seqplot}} for
 more information.}
 
 \item{legend.prop}{Proportion used for plotting the legend. A scalar between
@@ -128,6 +129,12 @@ The default value \code{"auto"} uses automatic color palette. Otherwise a
 vector of length \code{x$n_symbols} is given, i.e. the argument requires a color
 specified for all (combinations of) observed states even if they are not
 plotted (if the probability is less than \code{combine.slices}).}
+
+\item{cpal.legend}{Optional color palette for the legend, only considered when 
+legend.order is FALSE. Should match ltext.}
+
+\item{legend.order}{Whether to use the default order in the legend, i.e., order by appearance 
+(first by hidden state, then by emission probability). TRUE by default.}
 
 \item{main}{Main title for the plot. Omitted by default.}
 
@@ -220,8 +227,23 @@ plot(hmm_biofam,
 # Loading a hidden Markov model of the mvad data (hmm object)
 data("hmm_mvad")
 
-# Plotting HMM
+# Plotting the HMM
 plot(hmm_mvad)
+
+# Checking the order of observed states (needed for the next call)
+require(TraMineR)
+alphabet(hmm_mvad$observations)
+
+# Plotting the HMM with own legend (note: observation "none" nonexistent in the observations)
+plot(hmm_mvad, 
+         # Override the default order in the legend
+         legend.order = FALSE,
+         # Colours in the pies (ordered by the alphabet of observations)
+         cpal = c("purple", "pink", "brown", "lightblue", "orange", "green"),
+         # Colours in the legend (matching to ltext)
+         cpal.legend = c("orange", "pink", "brown", "green", "lightblue", "purple", "gray"), 
+         # Labels in the legend (matching to cpal.legend)
+         ltext = c("school", "further educ", "higher educ", "training", "jobless", "employed", "none"))
 
 require("igraph")
 plot(hmm_mvad,

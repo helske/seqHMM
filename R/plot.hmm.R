@@ -74,7 +74,7 @@
 #'   \code{"top"}, \code{"left"}, and \code{"right"}. \code{FALSE} omits the
 #'   legend.
 #' @param ltext Optional description of (combined) observed states to appear
-#'   in the legend. A vector of character strings. See \code{\link{seqplot}} for
+#'   in the legend. A vector of character strings.  See \code{\link{seqplot}} for
 #'   more information.
 #' @param legend.prop Proportion used for plotting the legend. A scalar between
 #'   0 and 1, defaults to 0.5.
@@ -88,6 +88,10 @@
 #'   vector of length \code{x$n_symbols} is given, i.e. the argument requires a color
 #'   specified for all (combinations of) observed states even if they are not
 #'   plotted (if the probability is less than \code{combine.slices}).
+#' @param cpal.legend Optional color palette for the legend, only considered when 
+#' legend.order is FALSE. Should match ltext.
+#' @param legend.order Whether to use the default order in the legend, i.e., order by appearance 
+#' (first by hidden state, then by emission probability). TRUE by default.
 #' @param main Main title for the plot. Omitted by default.
 #' @param withlegend Deprecated. Use \code{with.legend} instead.
 #' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as
@@ -180,8 +184,23 @@
 #' # Loading a hidden Markov model of the mvad data (hmm object)
 #' data("hmm_mvad")
 #'
-#' # Plotting HMM
+#' # Plotting the HMM
 #' plot(hmm_mvad)
+#'
+#' # Checking the order of observed states (needed for the next call)
+#' require(TraMineR)
+#' alphabet(hmm_mvad$observations)
+#' 
+#' # Plotting the HMM with own legend (note: observation "none" nonexistent in the observations)
+#' plot(hmm_mvad, 
+#'          # Override the default order in the legend
+#'          legend.order = FALSE,
+#'          # Colours in the pies (ordered by the alphabet of observations)
+#'          cpal = c("purple", "pink", "brown", "lightblue", "orange", "green"),
+#'          # Colours in the legend (matching to ltext)
+#'          cpal.legend = c("orange", "pink", "brown", "green", "lightblue", "purple", "gray"), 
+#'          # Labels in the legend (matching to cpal.legend)
+#'          ltext = c("school", "further educ", "higher educ", "training", "jobless", "employed", "none"))
 #'
 #' require("igraph")
 #' plot(hmm_mvad,
@@ -209,6 +228,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
                       combined.slice.label = "others",
                       with.legend = "bottom", ltext = NULL, legend.prop = 0.5,
                       cex.legend = 1, ncol.legend = "auto", cpal = "auto",
+                      cpal.legend = "auto", legend.order = TRUE,
                       main = NULL, withlegend, ...){
 
   
@@ -393,13 +413,44 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
 
   # Legend position and number of columns
   if (with.legend != FALSE && pie == TRUE) {
+    # Own labels in legend
     if (!is.null(ltext)) {
-      if (length(ltext) != x$n_symbols) {
-        stop("The length of the argument ltext does not match the number of (combined) observed states.")
+      # If order by appearance is used
+      if (legend.order) {
+        if(length(ltext) != x$n_symbols) {
+          stop(paste0("With legend.order = TRUE, the length of the argument ltext must match the number of (combined) observed states in the observed data (", x$n_symbols, ")."))
+        }
+        # No ordering by appearance
+      } else {
+        if((length(cpal) == 1 && cpal != "auto") && length(ltext) != length(cpal.legend)) {
+          stop(paste0("The number of colours in cpal.legend does not match the number of labels in ltext."))
+        }
+        ltext.orig <- ltext
+        # Default cpal
+        if (length(cpal) == 1 && cpal == "auto") {
+          # Default cpal.legend is the same as default cpal
+          if (length(cpal.legend) == 1 && cpal.legend == "auto") {
+          cpal.legend <- attr(x$observations, "cpal")
+          }
+        # If cpal set
+        } else {
+          if (length(cpal.legend) == 1 && cpal.legend == "auto") {
+            cpal.legend <- cpal
+          }
+        }
       }
-      # ltext = NULL
+      # Default labels
     } else {
-      ltext  <- x$symbol_names
+      ltext <- ltext.orig <- x$symbol_names
+      if (length(cpal) == 1 && cpal == "auto") {
+        # Default cpal.legend is the same as default cpal
+        if(length(cpal.legend) == 1 && cpal.legend == "auto") {
+          cpal.legend <- attr(x$observations, "cpal")
+        }
+        # If cpal set
+      } else {
+        cpal.legend <- cpal
+      }
     }
     if (with.legend == "bottom") {
       graphics::layout(matrix(1:2, nrow = 2), heights = c(1 - legend.prop, legend.prop))
@@ -579,9 +630,17 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
 
   # Plotting legend
   if (with.legend != FALSE && pie == TRUE) {
-    seqlegend(x$observations, cpal = pie.colors.l, ltext = ltext,
-              position = "center", cex = cex.legend, ncol = ncol.legend,
-              with.missing = FALSE)
+    # Order by appearance
+    if(legend.order) {
+      seqlegend(x$observations, cpal = pie.colors.l, ltext = ltext, 
+                position = "center", cex = cex.legend, ncol = ncol.legend, 
+                with.missing = FALSE)
+      # Original order (by alphabet in observations)
+    } else {
+      seqlegend(x$observations, cpal = cpal.legend, ltext = ltext.orig, 
+                position = "center", cex = cex.legend, ncol = ncol.legend, 
+                with.missing = FALSE)
+    }
   }
 
   par(mfrow = c(1, 1))

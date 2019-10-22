@@ -1,3 +1,7 @@
+seqHMM 1.0.14 (Release date: 2019-10-21)
+==============
+* Added an option for defining legend labels and colours manually in plot.hmm.
+
 seqHMM 1.0.13 (Release date: 2019-06-11)
 ==============
 * Fixed a bug when calling plot.mhmm inside a function. Thanks to Ellen Graham for 
