@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/helske/seqHMM.svg?branch=master)](https://travis-ci.org/helske/seqHMM)
-[![downloads](http://cranlogs.r-pkg.org/badges/seqHMM)](http://cranlogs.r-pkg.org/badges/seqHMM)
+[![R-CMD-check](https://github.com/helske/seqHMM/workflows/R-CMD-check/badge.svg)](https://github.com/helske/seqHMM/actions)
 [![cran version](http://www.r-pkg.org/badges/version/seqHMM)](http://cran.r-project.org/package=seqHMM)
+[![downloads](http://cranlogs.r-pkg.org/badges/seqHMM)](http://cranlogs.r-pkg.org/badges/seqHMM)
 
 seqHMM: Hidden Markov Models for Life Sequences and Other Multivariate, Multichannel Categorical Time Series
 ====================================================================================================

@@ -15,3 +15,4 @@ vignettes/*.synctex.gz
 vignettes/*.tex
 vignettes/*.pdf
 vignettes/*.bbl
+^\.github$
