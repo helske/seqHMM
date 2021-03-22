@@ -11,7 +11,7 @@ The package supports models for one or multiple subjects with one or multiple pa
 
 Maximum likelihood estimation via EM algorithm and direct numerical maximization with analytical gradients is supported. All main algorithms are written in C++ with parallel computation support via OpenMP.
 
-We would be happy to hear feedback! If you have any questions, comments, or wishes, please contact Satu Helske or Jouni Helske, firstname.lastname@liu.se. Or more preferably, you can also add a new issue here in GitHub.
+If you find bugs, please add a new issue here in GitHub. You can also contact Satu Helske (firstname.lastname@utu.fi) or Jouni Helske (firstname.lastname@jyu.fi). We would be happy to hear your feedback.
 
 The package is available on CRAN. Istall it via
 
