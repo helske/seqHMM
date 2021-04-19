@@ -4,9 +4,20 @@
 \alias{build_mhmm}
 \title{Build a Mixture Hidden Markov Model}
 \usage{
-build_mhmm(observations, n_states, transition_probs, emission_probs,
-  initial_probs, formula, data, coefficients, cluster_names = NULL,
-  state_names = NULL, channel_names = NULL, ...)
+build_mhmm(
+  observations,
+  n_states,
+  transition_probs,
+  emission_probs,
+  initial_probs,
+  formula,
+  data,
+  coefficients,
+  cluster_names = NULL,
+  state_names = NULL,
+  channel_names = NULL,
+  ...
+)
 }
 \arguments{
 \item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing

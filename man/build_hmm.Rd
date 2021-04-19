@@ -4,8 +4,16 @@
 \alias{build_hmm}
 \title{Build a Hidden Markov Model}
 \usage{
-build_hmm(observations, n_states, transition_probs, emission_probs,
-  initial_probs, state_names = NULL, channel_names = NULL, ...)
+build_hmm(
+  observations,
+  n_states,
+  transition_probs,
+  emission_probs,
+  initial_probs,
+  state_names = NULL,
+  channel_names = NULL,
+  ...
+)
 }
 \arguments{
 \item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing

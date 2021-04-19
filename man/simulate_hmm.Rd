@@ -4,8 +4,13 @@
 \alias{simulate_hmm}
 \title{Simulate hidden Markov models}
 \usage{
-simulate_hmm(n_sequences, initial_probs, transition_probs, emission_probs,
-  sequence_length)
+simulate_hmm(
+  n_sequences,
+  initial_probs,
+  transition_probs,
+  emission_probs,
+  sequence_length
+)
 }
 \arguments{
 \item{n_sequences}{Number of simulations.}

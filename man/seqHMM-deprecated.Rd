@@ -4,23 +4,48 @@
 \name{seqHMM-deprecated}
 \alias{seqHMM-deprecated}
 \alias{fit_hmm}
-\alias{seqHMM-deprecated-package}
 \alias{fit_mhmm}
 \alias{trim_hmm}
 \title{Deprecated function(s) in the seqHMM package}
 \usage{
-fit_hmm(model, em_step = TRUE, global_step = FALSE,
-  local_step = FALSE, control_em = list(), control_global = list(),
-  control_local = list(), lb, ub, threads = 1, log_space = FALSE,
-  ...)
+fit_hmm(
+  model,
+  em_step = TRUE,
+  global_step = FALSE,
+  local_step = FALSE,
+  control_em = list(),
+  control_global = list(),
+  control_local = list(),
+  lb,
+  ub,
+  threads = 1,
+  log_space = FALSE,
+  ...
+)
 
-fit_mhmm(model, em_step = TRUE, global_step = FALSE,
-  local_step = FALSE, control_em = list(), control_global = list(),
-  control_local = list(), lb, ub, threads = 1, log_space = FALSE,
-  ...)
+fit_mhmm(
+  model,
+  em_step = TRUE,
+  global_step = FALSE,
+  local_step = FALSE,
+  control_em = list(),
+  control_global = list(),
+  control_local = list(),
+  lb,
+  ub,
+  threads = 1,
+  log_space = FALSE,
+  ...
+)
 
-trim_hmm(model, maxit = 0, return_loglik = FALSE, zerotol = 1e-08,
-  verbose = TRUE, ...)
+trim_hmm(
+  model,
+  maxit = 0,
+  return_loglik = FALSE,
+  zerotol = 1e-08,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{model}{An object of class \code{hmm} or \code{mhmm}.}

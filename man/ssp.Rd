@@ -5,17 +5,41 @@
 \title{Define Arguments for Plotting Multichannel Sequences and/or Most Probable
 Paths from Hidden Markov Models}
 \usage{
-ssp(x, hidden.paths = NULL, plots = "obs", type = "d", tlim = 0,
-  sortv = NULL, sort.channel = 1, dist.method = "OM",
-  with.missing = FALSE, missing.color = NULL, title = NA,
-  title.n = TRUE, cex.title = 1, title.pos = 1,
-  with.legend = "auto", ncol.legend = "auto",
-  with.missing.legend = "auto", legend.prop = 0.3, cex.legend = 1,
-  hidden.states.colors = "auto", hidden.states.labels = "auto",
-  xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
-  ylab = "auto", hidden.states.title = "Hidden states",
-  yaxis = FALSE, ylab.pos = "auto", cex.lab = 1, cex.axis = 1,
-  withlegend, ...)
+ssp(
+  x,
+  hidden.paths = NULL,
+  plots = "obs",
+  type = "d",
+  tlim = 0,
+  sortv = NULL,
+  sort.channel = 1,
+  dist.method = "OM",
+  with.missing = FALSE,
+  missing.color = NULL,
+  title = NA,
+  title.n = TRUE,
+  cex.title = 1,
+  title.pos = 1,
+  with.legend = "auto",
+  ncol.legend = "auto",
+  with.missing.legend = "auto",
+  legend.prop = 0.3,
+  cex.legend = 1,
+  hidden.states.colors = "auto",
+  hidden.states.labels = "auto",
+  xaxis = TRUE,
+  xlab = NA,
+  xtlab = NULL,
+  xlab.pos = 1,
+  ylab = "auto",
+  hidden.states.title = "Hidden states",
+  yaxis = FALSE,
+  ylab.pos = "auto",
+  cex.lab = 1,
+  cex.axis = 1,
+  withlegend,
+  ...
+)
 }
 \arguments{
 \item{x}{Either a hidden Markov model object of class \code{hmm} or a state

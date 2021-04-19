@@ -193,14 +193,14 @@
 #' 
 #' # Plotting the HMM with own legend (note: observation "none" nonexistent in the observations)
 #' plot(hmm_mvad, 
-#'          # Override the default order in the legend
-#'          legend.order = FALSE,
-#'          # Colours in the pies (ordered by the alphabet of observations)
-#'          cpal = c("purple", "pink", "brown", "lightblue", "orange", "green"),
-#'          # Colours in the legend (matching to ltext)
-#'          cpal.legend = c("orange", "pink", "brown", "green", "lightblue", "purple", "gray"), 
-#'          # Labels in the legend (matching to cpal.legend)
-#'          ltext = c("school", "further educ", "higher educ", "training", "jobless", "employed", "none"))
+#'    # Override the default order in the legend
+#'    legend.order = FALSE,
+#'    # Colours in the pies (ordered by the alphabet of observations)
+#'    cpal = c("purple", "pink", "brown", "lightblue", "orange", "green"),
+#'    # Colours in the legend (matching to ltext)
+#'    cpal.legend = c("orange", "pink", "brown", "green", "lightblue", "purple", "gray"), 
+#'    # Labels in the legend (matching to cpal.legend)
+#'    ltext = c("school", "further educ", "higher educ", "training", "jobless", "employed", "none"))
 #'
 #' require("igraph")
 #' plot(hmm_mvad,

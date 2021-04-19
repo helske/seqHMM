@@ -4,19 +4,41 @@
 \alias{plot.hmm}
 \title{Plot hidden Markov models}
 \usage{
-\method{plot}{hmm}(x, layout = "horizontal", pie = TRUE,
-  vertex.size = 40, vertex.label = "initial.probs",
-  vertex.label.dist = "auto", vertex.label.pos = "bottom",
-  vertex.label.family = "sans", loops = FALSE, edge.curved = TRUE,
-  edge.label = "auto", edge.width = "auto", cex.edge.width = 1,
-  edge.arrow.size = 1.5, edge.label.family = "sans",
-  label.signif = 2, label.scientific = FALSE, label.max.length = 6,
-  trim = 1e-15, combine.slices = 0.05,
-  combined.slice.color = "white", combined.slice.label = "others",
-  with.legend = "bottom", ltext = NULL, legend.prop = 0.5,
-  cex.legend = 1, ncol.legend = "auto", cpal = "auto",
-  cpal.legend = "auto", legend.order = TRUE, main = NULL, withlegend,
-  ...)
+\method{plot}{hmm}(
+  x,
+  layout = "horizontal",
+  pie = TRUE,
+  vertex.size = 40,
+  vertex.label = "initial.probs",
+  vertex.label.dist = "auto",
+  vertex.label.pos = "bottom",
+  vertex.label.family = "sans",
+  loops = FALSE,
+  edge.curved = TRUE,
+  edge.label = "auto",
+  edge.width = "auto",
+  cex.edge.width = 1,
+  edge.arrow.size = 1.5,
+  edge.label.family = "sans",
+  label.signif = 2,
+  label.scientific = FALSE,
+  label.max.length = 6,
+  trim = 1e-15,
+  combine.slices = 0.05,
+  combined.slice.color = "white",
+  combined.slice.label = "others",
+  with.legend = "bottom",
+  ltext = NULL,
+  legend.prop = 0.5,
+  cex.legend = 1,
+  ncol.legend = "auto",
+  cpal = "auto",
+  cpal.legend = "auto",
+  legend.order = TRUE,
+  main = NULL,
+  withlegend,
+  ...
+)
 }
 \arguments{
 \item{x}{A hidden Markov model object of class \code{hmm} created with
@@ -236,14 +258,14 @@ alphabet(hmm_mvad$observations)
 
 # Plotting the HMM with own legend (note: observation "none" nonexistent in the observations)
 plot(hmm_mvad, 
-         # Override the default order in the legend
-         legend.order = FALSE,
-         # Colours in the pies (ordered by the alphabet of observations)
-         cpal = c("purple", "pink", "brown", "lightblue", "orange", "green"),
-         # Colours in the legend (matching to ltext)
-         cpal.legend = c("orange", "pink", "brown", "green", "lightblue", "purple", "gray"), 
-         # Labels in the legend (matching to cpal.legend)
-         ltext = c("school", "further educ", "higher educ", "training", "jobless", "employed", "none"))
+   # Override the default order in the legend
+   legend.order = FALSE,
+   # Colours in the pies (ordered by the alphabet of observations)
+   cpal = c("purple", "pink", "brown", "lightblue", "orange", "green"),
+   # Colours in the legend (matching to ltext)
+   cpal.legend = c("orange", "pink", "brown", "green", "lightblue", "purple", "gray"), 
+   # Labels in the legend (matching to cpal.legend)
+   ltext = c("school", "further educ", "higher educ", "training", "jobless", "employed", "none"))
 
 require("igraph")
 plot(hmm_mvad,

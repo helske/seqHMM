@@ -4,8 +4,7 @@
 \alias{vcov.mhmm}
 \title{Variance-Covariance Matrix for Coefficients of Covariates of Mixture Hidden Markov Model}
 \usage{
-\method{vcov}{mhmm}(object, conditional = TRUE, threads = 1,
-  log_space = FALSE, ...)
+\method{vcov}{mhmm}(object, conditional = TRUE, threads = 1, log_space = FALSE, ...)
 }
 \arguments{
 \item{object}{Object of class \code{mhmm}.}

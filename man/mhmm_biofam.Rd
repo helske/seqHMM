@@ -4,9 +4,11 @@
 \name{mhmm_biofam}
 \alias{mhmm_biofam}
 \title{Mixture hidden Markov model for the biofam data}
-\format{A mixture hidden Markov model of class \code{mhmm}:
+\format{
+A mixture hidden Markov model of class \code{mhmm}:
 three clusters with left-to-right models including 4, 4, and 6 hidden states.
-Two covariates, \code{sex} and \code{cohort}, explaining the cluster membership.}
+Two covariates, \code{sex} and \code{cohort}, explaining the cluster membership.
+}
 \description{
 A mixture hidden Markov model (MHMM) fitted for the \code{\link[TraMineR]{biofam}} data.
 }

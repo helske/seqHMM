@@ -4,8 +4,14 @@
 \alias{trim_model}
 \title{Trim Small Probabilities of Hidden Markov Model}
 \usage{
-trim_model(model, maxit = 0, return_loglik = FALSE, zerotol = 1e-08,
-  verbose = TRUE, ...)
+trim_model(
+  model,
+  maxit = 0,
+  return_loglik = FALSE,
+  zerotol = 1e-08,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{model}{Model of class \code{hmm} or \code{mhmm} for which

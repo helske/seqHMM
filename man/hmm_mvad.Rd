@@ -4,8 +4,10 @@
 \name{hmm_mvad}
 \alias{hmm_mvad}
 \title{Hidden Markov model for the mvad data}
-\format{A hidden Markov model of class \code{hmm};
-unrestricted model with six hidden states.}
+\format{
+A hidden Markov model of class \code{hmm};
+unrestricted model with six hidden states.
+}
 \description{
 A hidden Markov model (MMM) fitted for the \code{\link[TraMineR]{mvad}} data.
 }

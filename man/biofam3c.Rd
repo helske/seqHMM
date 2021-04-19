@@ -4,8 +4,10 @@
 \name{biofam3c}
 \alias{biofam3c}
 \title{Three-channel biofam data}
-\format{A list including three sequence data sets for 2000 individuals with 16 state
-variables, and a separate data frame with 1 id variable, 8 covariates, and 2 weights variables.}
+\format{
+A list including three sequence data sets for 2000 individuals with 16 state
+variables, and a separate data frame with 1 id variable, 8 covariates, and 2 weights variables.
+}
 \source{
 \code{\link[TraMineR]{biofam}} data constructed from the Swiss Household Panel
 \url{https://forscenter.ch/projects/swiss-household-panel/}
@@ -56,7 +58,7 @@ children[children == FALSE] <- "childless"
 # Divorced parents
 div <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 5) > 0) |
             (rowSums(bf == 7) > 0 & rowSums(bf == 6) > 0),]
-children[rownames(bf) %in% rownames(div) & bf == 7] <- "children"
+children[rownames(bf) \%in\% rownames(div) & bf == 7] <- "children"
 
 married[married == TRUE] <- "married"
 married[married == FALSE] <- "single"
@@ -71,7 +73,7 @@ wp <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 2) > 0 &
          (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 &
           rowSums(bf == 3) == 0 & rowSums(bf == 5) == 0 &
           rowSums(bf == 6) == 0), ]
-left[rownames(bf) %in% rownames(wp) & bf == 7] <- "with parents"
+left[rownames(bf) \%in\% rownames(wp) & bf == 7] <- "with parents"
 
 list("children" = children, "married" = married, "left" = left,
   "covariates" = biofam[, c(1:9, 26:27)])

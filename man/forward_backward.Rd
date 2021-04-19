@@ -4,8 +4,7 @@
 \alias{forward_backward}
 \title{Forward and Backward Probabilities for Hidden Markov Model}
 \usage{
-forward_backward(model, forward_only = FALSE, log_space = FALSE,
-  threads = 1)
+forward_backward(model, forward_only = FALSE, log_space = FALSE, threads = 1)
 }
 \arguments{
 \item{model}{Object of class \code{hmm} or \code{mhmm}.}

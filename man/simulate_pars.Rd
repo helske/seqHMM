@@ -8,8 +8,12 @@
 \usage{
 simulate_initial_probs(n_states, n_clusters = 1)
 
-simulate_transition_probs(n_states, n_clusters = 1, left_right = FALSE,
-  diag_c = 0)
+simulate_transition_probs(
+  n_states,
+  n_clusters = 1,
+  left_right = FALSE,
+  diag_c = 0
+)
 
 simulate_emission_probs(n_states, n_symbols, n_clusters = 1)
 }

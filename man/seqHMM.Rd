@@ -3,7 +3,6 @@
 \docType{package}
 \name{seqHMM}
 \alias{seqHMM}
-\alias{seqHMM-package}
 \title{The seqHMM package}
 \description{
 The seqHMM package is designed for fitting hidden (or latent) Markov models (HMMs) and 

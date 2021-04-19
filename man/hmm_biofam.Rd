@@ -4,8 +4,10 @@
 \name{hmm_biofam}
 \alias{hmm_biofam}
 \title{Hidden Markov model for the biofam data}
-\format{A hidden Markov model of class \code{hmm};
-a left-to-right model with four hidden states.}
+\format{
+A hidden Markov model of class \code{hmm};
+a left-to-right model with four hidden states.
+}
 \description{
 A five-state hidden Markov model (HMM) fitted for the \code{\link[TraMineR]{biofam}} data.
 }

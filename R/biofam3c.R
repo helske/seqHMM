@@ -47,7 +47,7 @@
 #' # Divorced parents
 #' div <- bf[(rowSums(bf == 7) > 0 & rowSums(bf == 5) > 0) |
 #'             (rowSums(bf == 7) > 0 & rowSums(bf == 6) > 0),]
-#' children[rownames(bf) %in% rownames(div) & bf == 7] <- "children"
+#' children[rownames(bf) \%in\% rownames(div) & bf == 7] <- "children"
 #'
 #' married[married == TRUE] <- "married"
 #' married[married == FALSE] <- "single"
@@ -62,7 +62,7 @@
 #'          (rowSums(bf == 7) > 0 & rowSums(bf == 4) > 0 &
 #'           rowSums(bf == 3) == 0 & rowSums(bf == 5) == 0 &
 #'           rowSums(bf == 6) == 0), ]
-#' left[rownames(bf) %in% rownames(wp) & bf == 7] <- "with parents"
+#' left[rownames(bf) \%in\% rownames(wp) & bf == 7] <- "with parents"
 #'
 #' list("children" = children, "married" = married, "left" = left,
 #'   "covariates" = biofam[, c(1:9, 26:27)])

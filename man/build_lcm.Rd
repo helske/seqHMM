@@ -4,8 +4,16 @@
 \alias{build_lcm}
 \title{Build a Latent Class Model}
 \usage{
-build_lcm(observations, n_clusters, emission_probs, formula, data,
-  coefficients, cluster_names = NULL, channel_names = NULL)
+build_lcm(
+  observations,
+  n_clusters,
+  emission_probs,
+  formula,
+  data,
+  coefficients,
+  cluster_names = NULL,
+  channel_names = NULL
+)
 }
 \arguments{
 \item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing

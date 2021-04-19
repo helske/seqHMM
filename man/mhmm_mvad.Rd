@@ -4,9 +4,11 @@
 \name{mhmm_mvad}
 \alias{mhmm_mvad}
 \title{Mixture hidden Markov model for the mvad data}
-\format{A mixture hidden Markov model of class \code{mhmm}:
+\format{
+A mixture hidden Markov model of class \code{mhmm}:
 two clusters including 3 and 4 hidden states.
-No covariates.}
+No covariates.
+}
 \description{
 A mixture hidden Markov model (MHMM) fitted for the \code{\link[TraMineR]{mvad}} data.
 }

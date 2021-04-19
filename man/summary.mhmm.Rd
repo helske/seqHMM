@@ -4,8 +4,13 @@
 \alias{summary.mhmm}
 \title{Summary method for mixture hidden Markov models}
 \usage{
-\method{summary}{mhmm}(object, parameters = FALSE,
-  conditional_se = TRUE, log_space = FALSE, ...)
+\method{summary}{mhmm}(
+  object,
+  parameters = FALSE,
+  conditional_se = TRUE,
+  log_space = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{Mixture hidden Markov model of class \code{mhmm}.}

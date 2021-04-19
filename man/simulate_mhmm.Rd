@@ -4,8 +4,16 @@
 \alias{simulate_mhmm}
 \title{Simulate Mixture Hidden Markov Models}
 \usage{
-simulate_mhmm(n_sequences, initial_probs, transition_probs, emission_probs,
-  sequence_length, formula, data, coefficients)
+simulate_mhmm(
+  n_sequences,
+  initial_probs,
+  transition_probs,
+  emission_probs,
+  sequence_length,
+  formula,
+  data,
+  coefficients
+)
 }
 \arguments{
 \item{n_sequences}{The number of simulations.}

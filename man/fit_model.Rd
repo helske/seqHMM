@@ -5,10 +5,20 @@
 \title{Estimate Parameters of (Mixture) Hidden
 Markov Models and Their Restricted Variants}
 \usage{
-fit_model(model, em_step = TRUE, global_step = FALSE,
-  local_step = FALSE, control_em = list(), control_global = list(),
-  control_local = list(), lb, ub, threads = 1, log_space = FALSE,
-  ...)
+fit_model(
+  model,
+  em_step = TRUE,
+  global_step = FALSE,
+  local_step = FALSE,
+  control_em = list(),
+  control_global = list(),
+  control_local = list(),
+  lb,
+  ub,
+  threads = 1,
+  log_space = FALSE,
+  ...
+)
 }
 \arguments{
 \item{model}{An object of class \code{hmm} or \code{mhmm}.}
