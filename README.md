@@ -11,6 +11,10 @@ The package supports models for one or multiple subjects with one or multiple pa
 
 Maximum likelihood estimation via EM algorithm and direct numerical maximization with analytical gradients is supported. All main algorithms are written in C++ with parallel computation support via OpenMP.
 
+When using the package, please cite:
+
+Helske, Satu and Helske, Jouni (2019). Mixture hidden Markov models for sequence data: the seqHMM package in R. *Journal of Statistical Software, 88*(3). [doi:10.18637/jss.v088.i03](http://dx.doi.org/10.18637/jss.v088.i03)
+
 If you find bugs, please add a new issue here in GitHub. You can also contact Satu Helske (firstname.lastname@utu.fi) or Jouni Helske (firstname.lastname@jyu.fi). We would be happy to hear your feedback.
 
 The package is available on CRAN. Istall it via
