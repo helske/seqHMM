@@ -468,6 +468,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
   for(i in 1:model$n_channels) {
     obsArray[,,i] <-  sapply(model$observations[[i]], as.integer) - 1L 
     obsArray[,,i][obsArray[,,i] > model$n_symbols[i]] <- model$n_symbols[i]
+    if(sum(obsArray[,,i] < model$n_symbols[i]) == 0) 
+      stop("One channel contains only missing values, model is degenerate.")
   }
   obsArray <- aperm(obsArray)
   

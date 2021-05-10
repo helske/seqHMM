@@ -1,6 +1,9 @@
 seqHMM 1.0.15 (Release date: 2021-)
 ==============
 * Fixed the documentation of biofam3c data.
+* Added a check for degenerate model for 'fit_model' 
+  where one channels contains only missing values.
+*
 
 seqHMM 1.0.14 (Release date: 2019-10-21)
 ==============
