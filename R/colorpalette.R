@@ -5,7 +5,7 @@
 #'
 #' @format A list with 200 color palettes.
 #'
-#' @source iWantHue web page \url{http://tools.medialab.sciences-po.fr/iwanthue/}
+#' @source iWantHue web page \url{https://tools.medialab.sciences-po.fr/iwanthue/}
 #'
 #' @seealso \code{\link{plot_colors}} for visualization of color palettes.
 #' Implementations of iWantHue for R:

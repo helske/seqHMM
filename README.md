@@ -1,6 +1,6 @@
 [![R-CMD-check](https://github.com/helske/seqHMM/workflows/R-CMD-check/badge.svg)](https://github.com/helske/seqHMM/actions)
-[![cran version](http://www.r-pkg.org/badges/version/seqHMM)](http://cran.r-project.org/package=seqHMM)
-[![downloads](http://cranlogs.r-pkg.org/badges/seqHMM)](http://cranlogs.r-pkg.org/badges/seqHMM)
+[![cran version](https://www.r-pkg.org/badges/version/seqHMM)](http://cran.r-project.org/package=seqHMM)
+[![downloads](https://cranlogs.r-pkg.org/badges/seqHMM)](http://cranlogs.r-pkg.org/badges/seqHMM)
 
 seqHMM: Hidden Markov Models for Life Sequences and Other Multivariate, Multichannel Categorical Time Series
 ====================================================================================================
@@ -13,7 +13,7 @@ Maximum likelihood estimation via EM algorithm and direct numerical maximization
 
 When using the package, please cite:
 
-Helske, Satu and Helske, Jouni (2019). Mixture hidden Markov models for sequence data: the seqHMM package in R. *Journal of Statistical Software, 88*(3). [doi:10.18637/jss.v088.i03](http://dx.doi.org/10.18637/jss.v088.i03)
+Helske, Satu and Helske, Jouni (2019). Mixture hidden Markov models for sequence data: the seqHMM package in R. *Journal of Statistical Software, 88*(3). [doi:10.18637/jss.v088.i03](https://dx.doi.org/10.18637/jss.v088.i03)
 
 If you find bugs, please add a new issue here in GitHub. You can also contact Satu Helske (firstname.lastname@utu.fi) or Jouni Helske (firstname.lastname@jyu.fi). We would be happy to hear your feedback.
 
