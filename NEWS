@@ -1,9 +1,9 @@
-seqHMM 1.0.15 (Release date: 2021-)
+seqHMM 1.1.0 (Release date: 2021-06-18)
 ==============
+* Added a feature which allows equality constraints for emission probability distributions.
 * Fixed the documentation of biofam3c data.
 * Added a check for degenerate model for 'fit_model' 
   where one channels contains only missing values.
-*
 
 seqHMM 1.0.14 (Release date: 2019-10-21)
 ==============

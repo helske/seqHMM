@@ -17,6 +17,7 @@ fit_model(
   ub,
   threads = 1,
   log_space = FALSE,
+  constraints = NULL,
   ...
 )
 }
@@ -96,6 +97,9 @@ Bounds are used only in the global optimization step.}
 \item{log_space}{Make computations using log-space instead of scaling for greater
 numerical stability at a cost of decreased computational performance. The default is \code{FALSE}.}
 
+\item{constraints}{Integer vector defining equality constraints for emission distributions. 
+Not supported for EM algorithm. See details.}
+
 \item{...}{Additional arguments to \code{nloptr}.}
 }
 \value{
@@ -154,10 +158,50 @@ The fitting function provides three estimation steps: 1) EM algorithm,
 
   Any algorithm available in the \code{nloptr} function can be used for the global and
   local steps.
+  
+  Equality constraints for emission distributions can be defined using the argument 
+  \code{constraints}. This should be a vector with length equal to the number of states, 
+  with numbers starting from 1 and increasing for each unique row of the emission probability matrix.
+  For example in case of five states with emissions of first and third states being equal, 
+  \code{constraints = c(1, 2, 1, 3, 4)}.
 }
 \examples{
 
-# Hidden Markov model
+# Left-to-right HMM with equality constraint:
+
+set.seed(1)
+
+# Transition matrix
+# Either stay or move to next state
+A <- diag(c(0.9, 0.95, 0.95, 1))
+A[1, 2] <- 0.1
+A[2, 3] <- 0.05
+A[3, 4] <- 0.05
+
+# Emission matrix, rows 1 and 3 equal
+B <- rbind(
+  c(0.4,0.2,0.3,0.1),
+  c(0.1,0.5,0.1,0.3),
+  c(0.4,0.2,0.3,0.1),
+  c(0, 0.2,0.4,0.4))
+  
+# Start from first state
+init <- c(1,0,0,0)
+
+# Simulate sequences
+sim <- simulate_hmm(n_sequences = 100, 
+  sequence_length = 20, init, A, B)
+
+# initial model, use true values as inits for faster estimation here   
+model <- build_hmm(sim$observations, init = init, trans = A, emiss = B)
+
+# estimate the model subject to constraints:
+# First and third row of emission matrix are equal (see details)
+fit <- fit_model(model, constraints = c(1, 2, 1, 3), 
+  em_step = FALSE, local_step = TRUE)
+fit$model
+
+# Hidden Markov model for mvad data
 
 data("mvad", package = "TraMineR")
 

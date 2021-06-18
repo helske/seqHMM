@@ -73,6 +73,8 @@
 #' @param threads Number of threads to use in parallel computing. The default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater
 #' numerical stability at a cost of decreased computational performance. The default is \code{FALSE}.
+#' @param constraints Integer vector defining equality constraints for emission distributions. 
+#' Not supported for EM algorithm. See details.
 #' @param ... Additional arguments to \code{nloptr}.
 #' @return \describe{
 #'   \item{logLik}{Log-likelihood of the estimated model. }
@@ -129,12 +131,52 @@
 #'   Any algorithm available in the \code{nloptr} function can be used for the global and
 #'   local steps.
 #'   
+#'   Equality constraints for emission distributions can be defined using the argument 
+#'   \code{constraints}. This should be a vector with length equal to the number of states, 
+#'   with numbers starting from 1 and increasing for each unique row of the emission probability matrix.
+#'   For example in case of five states with emissions of first and third states being equal, 
+#'   \code{constraints = c(1, 2, 1, 3, 4)}.
+#'   
 #' @references Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
 #' Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
 #' 
 #' @examples
+#' 
+#' # Left-to-right HMM with equality constraint:
+#' 
+#' set.seed(1)
+#' 
+#' # Transition matrix
+#' # Either stay or move to next state
+#' A <- diag(c(0.9, 0.95, 0.95, 1))
+#' A[1, 2] <- 0.1
+#' A[2, 3] <- 0.05
+#' A[3, 4] <- 0.05
+#' 
+#' # Emission matrix, rows 1 and 3 equal
+#' B <- rbind(
+#'   c(0.4,0.2,0.3,0.1),
+#'   c(0.1,0.5,0.1,0.3),
+#'   c(0.4,0.2,0.3,0.1),
+#'   c(0, 0.2,0.4,0.4))
+#'   
+#' # Start from first state
+#' init <- c(1,0,0,0)
+#' 
+#' # Simulate sequences
+#' sim <- simulate_hmm(n_sequences = 100, 
+#'   sequence_length = 20, init, A, B)
 #'
-#' # Hidden Markov model
+#' # initial model, use true values as inits for faster estimation here   
+#' model <- build_hmm(sim$observations, init = init, trans = A, emiss = B)
+#' 
+#' # estimate the model subject to constraints:
+#' # First and third row of emission matrix are equal (see details)
+#' fit <- fit_model(model, constraints = c(1, 2, 1, 3), 
+#'   em_step = FALSE, local_step = TRUE)
+#' fit$model
+#' 
+#' # Hidden Markov model for mvad data
 #'
 #' data("mvad", package = "TraMineR")
 #'
@@ -435,7 +477,7 @@
 
 fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = FALSE,
   control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1,
-  log_space = FALSE, ...){
+  log_space = FALSE, constraints = NULL, ...){
   
   
   if (!inherits(model, c("hmm", "mhmm"))){
@@ -448,7 +490,9 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
   if (threads < 1) {
     stop("Argument threads must be a positive integer.")
   }
-  
+  if(!is.null(constraints) && em_step) {
+    stop("EM algorithm does not support constraints. Use local and/or local steps only.")
+  }
   mhmm <- inherits(model, c("mhmm"))
   
   if (mhmm) {
@@ -695,14 +739,26 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     transNZ[maxTM] <- 0
     
     
+    n_states <- model$n_states
+    
+    if(!is.null(constraints)) {
+      if (!identical(length(constraints), model$n_states)) {
+        stop("Length of 'constraints' vector is not equal to the number of states. ")
+      }
+      original_emiss <- model$emission_probs
+      uniqs <- !duplicated(constraints)
+      model$emission_probs <- lapply(model$emission_probs, function(x) {
+        x[uniqs,]
+      })
+      n_states <- sum(uniqs)
+    }
     emissNZ <- lapply(model$emission_probs, function(i) {
       x <- which(i > 0, arr.ind = TRUE)
       x[order(x[, 1]), ]
     })
-    
-    if (model$n_states > 1) {
+    if (n_states > 1) {
       maxEM <- lapply(model$emission_probs, function(i){
-        cbind(1:model$n_states,max.col(i, ties.method = "first"))
+        cbind(1:n_states,max.col(i, ties.method = "first"))
       })
       paramEM <- lapply(1:model$n_channels,function(i) {
         x <- rbind(emissNZ[[i]],maxEM[[i]])
@@ -720,7 +776,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     maxEMvalue <- lapply(1:model$n_channels, function(i)
       apply(model$emission_probs[[i]],1,max))
     
-    emissNZ <- array(0, c(model$n_states,max(model$n_symbols), model$n_channels))
+    emissNZ <- array(0, c(n_states,max(model$n_symbols), model$n_channels))
     for (i in 1:model$n_channels) {
       emissNZ[,1:model$n_symbols[i],i]<-model$emission_probs[[i]] > 0
       emissNZ[,1:model$n_symbols[i],i][maxEM[[i]]]<-0
@@ -784,12 +840,26 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         model$transition_probs<-model$transition_probs/rowSums(model$transition_probs)
       }
       if(sum(npEM)>0){
-        for(i in 1:model$n_channels){
-          emissionArray[,1:model$n_symbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]
-          emissionArray[,1:model$n_symbols[i],i][paramEM[[i]]]<-
-            exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
-          emissionArray[,1:model$n_symbols[i],i]<-
-            emissionArray[,1:model$n_symbols[i],i]/rowSums(emissionArray[,1:model$n_symbols[i],i])
+        if(is.null(constraints)) {
+          for(i in 1:model$n_channels){
+            emissionArray[,1:model$n_symbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]
+            emissionArray[,1:model$n_symbols[i],i][paramEM[[i]]]<-
+              exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
+            emissionArray[,1:model$n_symbols[i],i]<-
+              emissionArray[,1:model$n_symbols[i],i]/rowSums(emissionArray[,1:model$n_symbols[i],i])
+          }
+        } else {
+          emArray <- emissionArray[uniqs, , , drop = FALSE]
+          for(i in 1:model$n_channels){
+            emArray[,1:model$n_symbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]
+            emArray[,1:model$n_symbols[i],i][paramEM[[i]]]<-
+              exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
+            emArray[,1:model$n_symbols[i],i]<-
+              emArray[,1:model$n_symbols[i],i]/rowSums(emArray[,1:model$n_symbols[i],i])
+          }
+          for(i in 1:n_states) {
+            emissionArray[constraints == i, , ] <- rep(emArray[i, , ], each = sum(constraints == i))
+          }
         }
       }
       for(m in 1:original_model$n_clusters){
@@ -846,6 +916,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         model$transition_probs<-model$transition_probs/rowSums(model$transition_probs)
       }
       if(sum(npEM)>0){
+        if(is.null(constraints)) {
         for(i in 1:model$n_channels){
           emissionArray[,1:model$n_symbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]
           emissionArray[,1:model$n_symbols[i],i][paramEM[[i]]]<-
@@ -853,8 +924,20 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
           emissionArray[,1:model$n_symbols[i],i]<-
             emissionArray[,1:model$n_symbols[i],i]/rowSums(emissionArray[,1:model$n_symbols[i],i, drop = FALSE])
         }
+        } else {
+          emArray <- emissionArray[uniqs, , , drop = FALSE]
+          for(i in 1:model$n_channels){
+            emArray[,1:model$n_symbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]
+            emArray[,1:model$n_symbols[i],i][paramEM[[i]]]<-
+              exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
+            emArray[,1:model$n_symbols[i],i]<-
+              emArray[,1:model$n_symbols[i],i]/rowSums(emArray[,1:model$n_symbols[i],i, drop = FALSE])
+          }
+          for(i in 1:n_states) {
+            emissionArray[constraints == i, , ] <- rep(emArray[i, , ], each = sum(constraints == i))
+          }
+        }
       }
-      
       if(npIP>0){
         model$initial_probs[maxIP]<-maxIPvalue
         model$initial_probs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])
@@ -883,6 +966,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         
       } else {
         if (sum(npEM) > 0) {
+          if(!is.null(constraints))
+            model$emission_probs <- original_emiss
           for (i in 1:model$n_channels) {
             model$emission_probs[[i]][] <- emissionArray[, 1:model$n_symbols[i], i]
           }
@@ -923,15 +1008,33 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         }
       }
       need_grad <- grepl("NLOPT_GD_",control_global$algorithm)
-      
-      if (mhmm) {
-        globalres <- nloptr(x0 = initialvalues, eval_f = objectivef_mhmm, lb = lb, ub = ub,
-          opts = control_global, model = model, estimate = TRUE, ...)
-        model <- objectivef_mhmm(globalres$solution, model, FALSE)
+      if(!is.null(constraints) && need_grad) {
+        need_grad <- FALSE # don't use analytical gradients
+        if (mhmm) {
+          gr <- function(x, model, estimate) nl.grad(x, objectivef_mhmm, 
+            model = model, estimate = estimate)
+          globalres <- nloptr(x0 = initialvalues, eval_f = objectivef_mhmm, lb = lb, ub = ub,
+            eval_grad_f = gr,
+            opts = control_global, model = model, estimate = TRUE, ...)
+          model <- objectivef_mhmm(globalres$solution, model, FALSE)
+        } else {
+          gr <- function(x, model, estimate) nl.grad(x, objectivef_hmm, 
+            model = model, estimate = estimate)
+          globalres <- nloptr(x0 = initialvalues, eval_f = objectivef_hmm, lb = lb, ub = ub,
+            eval_grad_f = gr,
+            opts = control_global, model = model, estimate = TRUE,  ...)
+          model <- objectivef_hmm(globalres$solution, model, FALSE)
+        }
       } else {
-        globalres <- nloptr(x0 = initialvalues, eval_f = objectivef_hmm, lb = lb, ub = ub,
-          opts = control_global, model = model, estimate = TRUE,  ...)
-        model <- objectivef_hmm(globalres$solution, model, FALSE)
+        if (mhmm) {
+          globalres <- nloptr(x0 = initialvalues, eval_f = objectivef_mhmm, lb = lb, ub = ub,
+            opts = control_global, model = model, estimate = TRUE, ...)
+          model <- objectivef_mhmm(globalres$solution, model, FALSE)
+        } else {
+          globalres <- nloptr(x0 = initialvalues, eval_f = objectivef_hmm, lb = lb, ub = ub,
+            opts = control_global, model = model, estimate = TRUE,  ...)
+          model <- objectivef_hmm(globalres$solution, model, FALSE)
+        }
       }
       
       if (globalres$status < 0) {
@@ -957,15 +1060,35 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       }
       
       need_grad <- grepl("NLOPT_LD_",control_local$algorithm)
-      if (mhmm) {
-        localres <- nloptr(x0 = initialvalues, eval_f = objectivef_mhmm,
-          opts = control_local, model = model, estimate = TRUE, ...)
-        model <- objectivef_mhmm(localres$solution, model, FALSE)
-        
+      if (!is.null(constraints) && need_grad) {
+        need_grad <- FALSE # don't use analytical gradients
+        if (mhmm) {
+          gr <- function(x, model, estimate) nl.grad(x, objectivef_mhmm, 
+            model = model, estimate = estimate)
+          localres <- nloptr(x0 = initialvalues, eval_f = objectivef_mhmm,
+            eval_grad_f = gr,
+            opts = control_local, model = model, estimate = TRUE, ...)
+          model <- objectivef_mhmm(localres$solution, model, FALSE)
+          
+        } else {
+          gr <- function(x, model, estimate) nl.grad(x, objectivef_hmm, 
+            model = model, estimate = estimate)
+          localres <- nloptr(x0 = initialvalues, eval_f = objectivef_hmm,
+            eval_grad_f = gr,
+            opts = control_local, model = model, estimate = TRUE, ...)
+          model <- objectivef_hmm(localres$solution, model, FALSE)
+        }
       } else {
-        localres <- nloptr(x0 = initialvalues, eval_f = objectivef_hmm,
-          opts = control_local, model = model, estimate = TRUE, ...)
-        model <- objectivef_hmm(localres$solution, model, FALSE)
+        if (mhmm) {
+          localres <- nloptr(x0 = initialvalues, eval_f = objectivef_mhmm,
+            opts = control_local, model = model, estimate = TRUE, ...)
+          model <- objectivef_mhmm(localres$solution, model, FALSE)
+          
+        } else {
+          localres <- nloptr(x0 = initialvalues, eval_f = objectivef_hmm,
+            opts = control_local, model = model, estimate = TRUE, ...)
+          model <- objectivef_hmm(localres$solution, model, FALSE)
+        }
       }
       if (localres$status < 0) {
         warning(paste("Local optimization terminated:", localres$message))
