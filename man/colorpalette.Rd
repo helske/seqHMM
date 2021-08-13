@@ -8,7 +8,7 @@
 A list with 200 color palettes.
 }
 \source{
-iWantHue web page \url{https://tools.medialab.sciences-po.fr/iwanthue/}
+iWantHue web page \url{https://medialab.github.io/iwanthue/}
 }
 \description{
 A list containing ready defined color palettes with distinct colors using

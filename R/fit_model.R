@@ -479,7 +479,11 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
   control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1,
   log_space = FALSE, constraints = NULL, ...){
   
-  
+  # check that the initial model is ok
+  if(!is.finite(logLik(model))) {
+    stop("Initial log-likelihood of the input model is nonfinite. Please adjust the initial values.")
+  }
+    
   if (!inherits(model, c("hmm", "mhmm"))){
     stop("Argument model must be an object of class 'hmm' or 'mhmm.")
   }
@@ -832,8 +836,13 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     
     objectivef_mhmm<-function(pars, model, estimate = TRUE){
       
-      if(any(!is.finite(exp(pars))) && estimate)
-        return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
+     if(any(!is.finite(exp(pars))) && estimate) {
+        if (need_grad) {
+          return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
+        } else {
+          Inf
+        }
+      }
       if(npTM>0){
         model$transition_probs[maxTM]<-maxTMvalue
         model$transition_probs[paramTM]<-exp(pars[1:npTM])
@@ -908,8 +917,14 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     
     objectivef_hmm <- function(pars, model, estimate = TRUE){
       
-      if(any(!is.finite(exp(pars))) && estimate)
-        return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
+      if(any(!is.finite(exp(pars))) && estimate) {
+        if (need_grad) {
+          return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
+        } else {
+          Inf
+        }
+      }
+        
       if(npTM>0){
         model$transition_probs[maxTM]<-maxTMvalue
         model$transition_probs[paramTM]<-exp(pars[1:npTM])

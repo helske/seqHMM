@@ -1,3 +1,10 @@
+seqHMM 1.1.1 (Release date: 2021-08-13)
+==============
+* Fixed a a case with the equality constraints which resulted an error during 
+  the estimation in case of (numerically) nonfinite parameter value.
+* Function fit_model now checks whether the initial model produces finite 
+  likelihood before proceeding further.
+  
 seqHMM 1.1.0 (Release date: 2021-06-18)
 ==============
 * Added a feature which allows equality constraints for emission probability distributions.
