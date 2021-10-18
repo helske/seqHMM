@@ -226,6 +226,14 @@ fit <- fit_model(model, constraints = c(1, 2, 1, 3),
   em_step = FALSE, local_step = TRUE)
 fit$model
 
+## Fix some emissions:
+
+fixB <- matrix(FALSE, 4, 4)
+fixB[2, 1] <- fixB[1, 3] <- TRUE # these are fixed to their initial values
+fit <- fit_model(model, fixed_emissions = fixB,
+  em_step = FALSE, local_step = TRUE)
+fit$model$emission_probs
+
 # Hidden Markov model for mvad data
 
 data("mvad", package = "TraMineR")

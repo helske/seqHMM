@@ -197,6 +197,14 @@
 #'   em_step = FALSE, local_step = TRUE)
 #' fit$model
 #' 
+#' ## Fix some emissions:
+#' 
+#' fixB <- matrix(FALSE, 4, 4)
+#' fixB[2, 1] <- fixB[1, 3] <- TRUE # these are fixed to their initial values
+#' fit <- fit_model(model, fixed_emissions = fixB,
+#'   em_step = FALSE, local_step = TRUE)
+#' fit$model$emission_probs
+#' 
 #' # Hidden Markov model for mvad data
 #'
 #' data("mvad", package = "TraMineR")
@@ -815,6 +823,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       model$emission_probs <- lapply(model$emission_probs, function(x) {
         x[uniqs,]
       })
+      
       n_states <- sum(uniqs)
     }
     
@@ -837,12 +846,15 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         }
       }
       for(i in 1:model$n_channels) mode(fixed_emissions[[i]]) <- "logical"
+      if (!is.null(constraints)) {
+        for(i in 1:model$n_channels) fixed_emissions[[i]] <- fixed_emissions[[i]][uniqs, ]
+      }
       emissNZ <- lapply(1:model$n_channels, function(i) {
         model$emission_probs[[i]] > 0 & !fixed_emissions[[i]]
       })
     }
     maxEM <- lapply(1:model$n_channels, function(i){
-      cbind(1:model$n_states, apply(model$emission_probs[[i]],1,which.max))
+      cbind(1:n_states, apply(model$emission_probs[[i]],1,which.max))
     })
     maxEMvalue <- lapply(1:model$n_channels, function(i){
       apply(model$emission_probs[[i]],1,max)
