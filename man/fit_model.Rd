@@ -18,6 +18,9 @@ fit_model(
   threads = 1,
   log_space = FALSE,
   constraints = NULL,
+  fixed_inits = NULL,
+  fixed_emissions = NULL,
+  fixed_transitions = NULL,
   ...
 )
 }
@@ -100,6 +103,21 @@ numerical stability at a cost of decreased computational performance. The defaul
 \item{constraints}{Integer vector defining equality constraints for emission distributions. 
 Not supported for EM algorithm. See details.}
 
+\item{fixed_inits}{Can be used to fix some of the probabilities to their initial values.
+Should have same structure as \code{model$initial_probs}, where each element 
+is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
+Not supported for EM algorithm. See details.}
+
+\item{fixed_emissions}{Can be used to fix some of the probabilities to their initial values.
+Should have same structure as \code{model$emission_probs}, where each element 
+is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
+Not supported for EM algorithm. See details.}
+
+\item{fixed_transitions}{Can be used to fix some of the probabilities to their initial values.
+Should have same structure as \code{model$transition_probs}, where each element 
+is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
+Not supported for EM algorithm. See details.}
+
 \item{...}{Additional arguments to \code{nloptr}.}
 }
 \value{
@@ -163,7 +181,14 @@ The fitting function provides three estimation steps: 1) EM algorithm,
   \code{constraints}. This should be a vector with length equal to the number of states, 
   with numbers starting from 1 and increasing for each unique row of the emission probability matrix.
   For example in case of five states with emissions of first and third states being equal, 
-  \code{constraints = c(1, 2, 1, 3, 4)}.
+  \code{constraints = c(1, 2, 1, 3, 4)}. Similarly, some of the model parameters can be fixed to their 
+  initial values by using arguments \code{fixed_inits}, \code{fixed_emissions}, 
+  and \code{fixed_transitions}, where the structure of the arguments should be 
+  same as the corresponding model components, so that TRUE value means that 
+  the parameter should be fixed and FALSE otherwise (it is still treated as fixed if it 
+  is zero though). For both types of constrains, only numerical optimisation
+  (local or global) is available, and currently the gradients are computed numerically 
+  (if needed) in these cases.
 }
 \examples{
 

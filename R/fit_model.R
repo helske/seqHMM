@@ -75,6 +75,18 @@
 #' numerical stability at a cost of decreased computational performance. The default is \code{FALSE}.
 #' @param constraints Integer vector defining equality constraints for emission distributions. 
 #' Not supported for EM algorithm. See details.
+#' @param fixed_inits Can be used to fix some of the probabilities to their initial values.
+#' Should have same structure as \code{model$initial_probs}, where each element 
+#' is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
+#' Not supported for EM algorithm. See details.
+#' @param fixed_emissions  Can be used to fix some of the probabilities to their initial values.
+#' Should have same structure as \code{model$emission_probs}, where each element 
+#' is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
+#' Not supported for EM algorithm. See details.
+#' @param fixed_transitions  Can be used to fix some of the probabilities to their initial values.
+#' Should have same structure as \code{model$transition_probs}, where each element 
+#' is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
+#' Not supported for EM algorithm. See details.
 #' @param ... Additional arguments to \code{nloptr}.
 #' @return \describe{
 #'   \item{logLik}{Log-likelihood of the estimated model. }
@@ -135,7 +147,16 @@
 #'   \code{constraints}. This should be a vector with length equal to the number of states, 
 #'   with numbers starting from 1 and increasing for each unique row of the emission probability matrix.
 #'   For example in case of five states with emissions of first and third states being equal, 
-#'   \code{constraints = c(1, 2, 1, 3, 4)}.
+#'   \code{constraints = c(1, 2, 1, 3, 4)}. Similarly, some of the model parameters can be fixed to their 
+#'   initial values by using arguments \code{fixed_inits}, \code{fixed_emissions}, 
+#'   and \code{fixed_transitions}, where the structure of the arguments should be 
+#'   same as the corresponding model components, so that TRUE value means that 
+#'   the parameter should be fixed and FALSE otherwise (it is still treated as fixed if it 
+#'   is zero though). For both types of constrains, only numerical optimisation
+#'   (local or global) is available, and currently the gradients are computed numerically 
+#'   (if needed) in these cases. 
+#'   
+#'   
 #'   
 #' @references Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
 #' Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
@@ -474,16 +495,16 @@
 #' mhmm_3$logLik # -12713.08
 #' }
 #'
-
 fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = FALSE,
   control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1,
-  log_space = FALSE, constraints = NULL, ...){
+  log_space = FALSE, constraints = NULL, fixed_inits = NULL, 
+  fixed_emissions = NULL, fixed_transitions = NULL, ...){
   
   # check that the initial model is ok
   if(!is.finite(logLik(model))) {
     stop("Initial log-likelihood of the input model is nonfinite. Please adjust the initial values.")
   }
-    
+  
   if (!inherits(model, c("hmm", "mhmm"))){
     stop("Argument model must be an object of class 'hmm' or 'mhmm.")
   }
@@ -497,6 +518,11 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
   if(!is.null(constraints) && em_step) {
     stop("EM algorithm does not support constraints. Use local and/or local steps only.")
   }
+  fixed <- !is.null(fixed_inits) | !is.null(fixed_emissions) | !is.null(fixed_transitions)
+  if(fixed && em_step) {
+    stop("EM algorithm does not support fixed probabilities (except zeros). Use local and/or local steps only.")
+  }
+  
   mhmm <- inherits(model, c("mhmm"))
   
   if (mhmm) {
@@ -731,59 +757,115 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
   
   if (global_step || local_step){
     
-    # Largest transition probabilities (for each row)
-    x <- which(model$transition_probs > 0, arr.ind = TRUE)
-    transNZ <- x[order(x[,1]),]
-    maxTM <- cbind(1:model$n_states, max.col(model$transition_probs, ties.method = "first"))
-    maxTMvalue <- apply(model$transition_probs,1,max)
-    paramTM <- rbind(transNZ,maxTM)
-    paramTM <- paramTM[!(duplicated(paramTM) | duplicated(paramTM, fromLast = TRUE)), , drop = FALSE]
-    npTM <- nrow(paramTM)
-    transNZ <- model$transition_probs > 0
-    transNZ[maxTM] <- 0
     
+    # if (is.null(fixed_transitions)) {
+    #   x <- which(model$transition_probs > 0, arr.ind = TRUE)
+    # } else {
+    #   if (mhmm) {
+    #     fixed_transitions <- as.matrix(.bdiag(fixed_transitions))
+    #   }
+    #   x <- which(model$transition_probs > 0 & !fixed_transitions, arr.ind = TRUE)
+    # }
+    # transNZ <- x[order(x[,1]),]
+    # # Largest transition probabilities (for each row)
+    # maxTM <- cbind(1:model$n_states, max.col(model$transition_probs, ties.method = "first"))
+    # maxTMvalue <- apply(model$transition_probs,1,max)
+    # paramTM <- rbind(transNZ,maxTM)
+    # paramTM <- paramTM[!(duplicated(paramTM) | duplicated(paramTM, fromLast = TRUE)), , drop = FALSE]
+    # npTM <- nrow(paramTM)
+    # if (is.null(fixed_transitions)) {
+    #   transNZ <- model$transition_probs > 0
+    # } else {
+    #   transNZ <- model$transition_probs > 0 & !fixed_transitions
+    # }
+    # #transNZ <- model$transition_probs > 0
+    # transNZ[maxTM] <- 0
+    # npTM <- nrow(paramTM)
+    # browser()
+    if (is.null(fixed_transitions)) {
+      transNZ <- model$transition_probs > 0
+    } else {
+      if (mhmm) {
+        fixed_transitions <- as.matrix(.bdiag(fixed_transitions))
+      }
+      mode(fixed_transitions) <- "logical"
+      transNZ <- model$transition_probs > 0 & !fixed_transitions
+    }
+    # single value per row => nothing to estimate
+    transNZ[rowSums(transNZ) == 1, ] <- 0
+    # Largest transition probabilities (for each row)
+    
+    maxTM <- cbind(1:model$n_states, apply(model$transition_probs, 1, which.max))
+    maxTMvalue <-  model$transition_probs[maxTM]
+    transNZ[maxTM] <- 0
+    paramTM <- which(transNZ == 1, arr.ind = TRUE)
+    paramTM <- paramTM[order(paramTM[,1]),]
+    npTM <- nrow(paramTM)
     
     n_states <- model$n_states
     
+    original_emiss <- model$emission_probs
+    original_trans <- model$transition_probs
     if(!is.null(constraints)) {
       if (!identical(length(constraints), model$n_states)) {
         stop("Length of 'constraints' vector is not equal to the number of states. ")
       }
-      original_emiss <- model$emission_probs
+      
       uniqs <- !duplicated(constraints)
       model$emission_probs <- lapply(model$emission_probs, function(x) {
         x[uniqs,]
       })
       n_states <- sum(uniqs)
     }
-    emissNZ <- lapply(model$emission_probs, function(i) {
-      x <- which(i > 0, arr.ind = TRUE)
-      x[order(x[, 1]), ]
-    })
-    if (n_states > 1) {
-      maxEM <- lapply(model$emission_probs, function(i){
-        cbind(1:n_states,max.col(i, ties.method = "first"))
-      })
-      paramEM <- lapply(1:model$n_channels,function(i) {
-        x <- rbind(emissNZ[[i]],maxEM[[i]])
-        x[!(duplicated(x)|duplicated(x,fromLast = TRUE)), , drop = FALSE]
-      })
-      npEM <- sapply(paramEM,nrow)
-    } else {
-      maxEM <- lapply(model$emission_probs,function(i) max.col(i,ties.method = "first"))
-      paramEM <- lapply(1:model$n_channels,function(i) {
-        x <- rbind(emissNZ[[i]],c(1,maxEM[[i]]))
-        x[!(duplicated(x)|duplicated(x,fromLast = TRUE)),2]
-      })
-      npEM <- sapply(paramEM, length)
-    }
-    maxEMvalue <- lapply(1:model$n_channels, function(i)
-      apply(model$emission_probs[[i]],1,max))
     
+    if (is.null(fixed_emissions)) {
+      emissNZ <- lapply(model$emission_probs, function(i) {
+        i > 0
+      })
+    } else {
+      if (mhmm) {
+        if(model$n_channels > 1){
+          fixed_emissions <- lapply(1:model$n_channels, function(i){
+            do.call("rbind",sapply(fixed_emissions, "[", i))
+          })
+        } else {
+          fixed_emissions <- list(do.call("rbind", fixed_emissions))
+        }
+      } else {
+        if (model$n_channels == 1) {
+          fixed_emissions <- list(fixed_emissions)
+        }
+      }
+      for(i in 1:model$n_channels) mode(fixed_emissions[[i]]) <- "logical"
+      emissNZ <- lapply(1:model$n_channels, function(i) {
+        model$emission_probs[[i]] > 0 & !fixed_emissions[[i]]
+      })
+    }
+    maxEM <- lapply(1:model$n_channels, function(i){
+      cbind(1:model$n_states, apply(model$emission_probs[[i]],1,which.max))
+    })
+    maxEMvalue <- lapply(1:model$n_channels, function(i){
+      apply(model$emission_probs[[i]],1,max)
+    })
     emissNZ <- array(0, c(n_states,max(model$n_symbols), model$n_channels))
-    for (i in 1:model$n_channels) {
-      emissNZ[,1:model$n_symbols[i],i]<-model$emission_probs[[i]] > 0
-      emissNZ[,1:model$n_symbols[i],i][maxEM[[i]]]<-0
+    npEM <- numeric(model$n_channels)
+    paramEM <- vector("list", model$n_channels)
+    if (is.null(fixed_emissions)) {
+      for (i in 1:model$n_channels) {
+        emissNZ[,1:model$n_symbols[i],i]<-model$emission_probs[[i]] > 0
+        emissNZ[,1:model$n_symbols[i],i][maxEM[[i]]]<-0
+        paramEM[[i]] <- which(emissNZ[,1:model$n_symbols[i],i] == 1, arr.ind = TRUE)
+        paramEM[[i]] <- paramEM[[i]][order(paramEM[[i]][,1]),]
+        npEM[i] <- nrow(paramEM[[i]])
+      }
+    } else {
+      for (i in 1:model$n_channels) {
+        emissNZ[,1:model$n_symbols[i],i] <- model$emission_probs[[i]] > 0 & !fixed_emissions[[i]]
+        emissNZ[,1:model$n_symbols[i],i][maxEM[[i]]]<-0
+        paramEM[[i]] <- which(emissNZ[,1:model$n_symbols[i],i] == 1, arr.ind = TRUE)
+        paramEM[[i]] <- paramEM[[i]][order(paramEM[[i]][,1]),]
+        npEM[i] <- nrow(paramEM[[i]])
+      }
     }
     
     if (mhmm) {
@@ -795,10 +877,14 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
         # Value of largest initial probability
         maxIPvalue[m] <- original_model$initial_probs[[m]][maxIP[m]]
         # Rest of non-zero probs
-        paramIP[[m]] <- setdiff(which(original_model$initial_probs[[m]]>0),maxIP[m])
-        npIP[m] <- length(paramIP[[m]])
-        initNZ[[m]]<-original_model$initial_probs[[m]] > 0
+        if (is.null(fixed_inits)) {
+          initNZ[[m]]<-original_model$initial_probs[[m]] > 0
+        } else {
+          initNZ[[m]]<-original_model$initial_probs[[m]] > 0 & !fixed_inits[[m]]
+        }
         initNZ[[m]][maxIP[m]] <- 0
+        paramIP[[m]] <- which(initNZ[[m]] == 1)
+        npIP[m] <- length(paramIP[[m]])
       }
       initNZ<-unlist(initNZ)
       npIPAll <- sum(unlist(npIP))
@@ -819,11 +905,15 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     } else {
       maxIP <- which.max(model$initial_probs)
       maxIPvalue <- model$initial_probs[maxIP]
-      paramIP <- setdiff(which(model$initial_probs > 0), maxIP)
+      if (is.null(fixed_inits)) {
+        initNZ <- model$initial_probs > 0
+      } else {
+        initNZ <- model$initial_probs > 0 & !fixed_inits
+      }
+      initNZ[maxIP] <- 0
+      paramIP <- which(initNZ == 1)
       
       npIP <- length(paramIP)
-      initNZ <- model$initial_probs > 0
-      initNZ[maxIP] <- 0
       
       initialvalues<-c(if((npTM+sum(npEM)+npIP)>0) log(c(
         if(npTM>0) model$transition_probs[paramTM],
@@ -834,9 +924,14 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     }
     
     
+    scalerows <- function(x, fixed) {
+      x[!fixed] <- x[!fixed] * (1 - sum(x[fixed])) / sum(x[!fixed])
+      x
+    }
+    
     objectivef_mhmm<-function(pars, model, estimate = TRUE){
       
-     if(any(!is.finite(exp(pars))) && estimate) {
+      if(any(!is.finite(exp(pars))) && estimate) {
         if (need_grad) {
           return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
         } else {
@@ -846,7 +941,20 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       if(npTM>0){
         model$transition_probs[maxTM]<-maxTMvalue
         model$transition_probs[paramTM]<-exp(pars[1:npTM])
-        model$transition_probs<-model$transition_probs/rowSums(model$transition_probs)
+        if (is.null(fixed_transitions)) {
+          model$transition_probs[]<- 
+            model$transition_probs / rowSums(model$transition_probs)
+        } else {
+          for(i in 1:nrow(model$transition_probs)) {
+            cols <- fixed_transitions[i, ]
+            if (any(cols)) {
+              model$transition_probs[i, ] <- scalerows(model$transition_probs[i, ], cols)
+            } else {
+              model$transition_probs[i, ] <- 
+                model$transition_probs[i,] / sum(model$transition_probs[i, ])
+            }
+          }
+        }
       }
       if(sum(npEM)>0){
         if(is.null(constraints)) {
@@ -854,6 +962,22 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
             emissionArray[,1:model$n_symbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]
             emissionArray[,1:model$n_symbols[i],i][paramEM[[i]]]<-
               exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
+            
+            if (is.null(fixed_emissions)) {
+              emissionArray[,1:model$n_symbols[i],i]<-
+                emissionArray[,1:model$n_symbols[i],i]/rowSums(emissionArray[,1:model$n_symbols[i],i, drop = FALSE])
+            } else {
+              for(j in 1:nrow(model$transition_probs)) {
+                cols <- fixed_emissions[[i]][j, ]
+                if (any(cols)) {
+                  emissionArray[j, 1:model$n_symbols[i], i] <- scalerows(emissionArray[j, 1:model$n_symbols[i], i], cols)
+                } else {
+                  emissionArray[j,1:model$n_symbols[i],i]<-
+                    emissionArray[j,1:model$n_symbols[i],i]/sum(emissionArray[j,1:model$n_symbols[i],i, drop = FALSE])
+                }
+              }
+            }
+            
             emissionArray[,1:model$n_symbols[i],i]<-
               emissionArray[,1:model$n_symbols[i],i]/rowSums(emissionArray[,1:model$n_symbols[i],i])
           }
@@ -863,8 +987,21 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
             emArray[,1:model$n_symbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]
             emArray[,1:model$n_symbols[i],i][paramEM[[i]]]<-
               exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
-            emArray[,1:model$n_symbols[i],i]<-
-              emArray[,1:model$n_symbols[i],i]/rowSums(emArray[,1:model$n_symbols[i],i])
+            
+            if (is.null(fixed_emissions)) {
+              emArray[,1:model$n_symbols[i],i]<-
+                emArray[,1:model$n_symbols[i],i]/rowSums(emArray[,1:model$n_symbols[i],i, drop = FALSE])
+            } else {
+              for(j in 1:nrow(model$transition_probs)) {
+                cols <- fixed_emissions[[i]][j, ]
+                if (any(cols)) {
+                  emArray[j, 1:model$n_symbols[i], i] <- scalerows(emArray[j, 1:model$n_symbols[i], i], cols)
+                } else {
+                  emArray[j,1:model$n_symbols[i],i]<-
+                    emArray[j,1:model$n_symbols[i],i]/sum(emArray[j,1:model$n_symbols[i],i, drop = FALSE])
+                }
+              }
+            }
           }
           for(i in 1:n_states) {
             emissionArray[constraints == i, , ] <- rep(emArray[i, , ], each = sum(constraints == i))
@@ -876,8 +1013,12 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
           original_model$initial_probs[[m]][maxIP[[m]]] <- maxIPvalue[[m]]
           original_model$initial_probs[[m]][paramIP[[m]]] <- exp(pars[npTM+sum(npEM)+c(0,cumsum(npIP))[m]+
               1:npIP[m]])
-          original_model$initial_probs[[m]][] <-
-            original_model$initial_probs[[m]]/sum(original_model$initial_probs[[m]])
+          
+          if (is.null(fixed_inits)) {
+            original_model$initial_probs[[m]][]<-original_model$initial_probs[[m]]/sum(original_model$initial_probs[[m]])
+          } else {
+            original_model$initial_probs[[m]][] <- scalerows(original_model$initial_probs[[m]], fixed_inits[[m]])
+          }
         }
       }
       model$initial_probs <- unlist(original_model$initial_probs)
@@ -924,29 +1065,70 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
           Inf
         }
       }
-        
+      
       if(npTM>0){
-        model$transition_probs[maxTM]<-maxTMvalue
-        model$transition_probs[paramTM]<-exp(pars[1:npTM])
-        model$transition_probs<-model$transition_probs/rowSums(model$transition_probs)
+        model$transition_probs[] <- original_trans
+        model$transition_probs[paramTM] <- exp(pars[1:npTM])
+        if (is.null(fixed_transitions)) {
+          model$transition_probs[]<- 
+            model$transition_probs / rowSums(model$transition_probs)
+        } else {
+          for(i in 1:nrow(model$transition_probs)) {
+            cols <- fixed_transitions[i, ]
+            if (any(cols)) {
+              model$transition_probs[i, ] <- scalerows(model$transition_probs[i, ], cols)
+            } else {
+              model$transition_probs[i, ] <- 
+                model$transition_probs[i,] / sum(model$transition_probs[i, ])
+            }
+          }
+        }
       }
+      
       if(sum(npEM)>0){
         if(is.null(constraints)) {
-        for(i in 1:model$n_channels){
-          emissionArray[,1:model$n_symbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]
-          emissionArray[,1:model$n_symbols[i],i][paramEM[[i]]]<-
-            exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
-          emissionArray[,1:model$n_symbols[i],i]<-
-            emissionArray[,1:model$n_symbols[i],i]/rowSums(emissionArray[,1:model$n_symbols[i],i, drop = FALSE])
-        }
+          for(i in 1:model$n_channels){
+            emissionArray[,1:model$n_symbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]
+            emissionArray[,1:model$n_symbols[i],i][paramEM[[i]]]<-
+              exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
+            
+            if (is.null(fixed_emissions)) {
+              emissionArray[,1:model$n_symbols[i],i]<-
+                emissionArray[,1:model$n_symbols[i],i]/rowSums(emissionArray[,1:model$n_symbols[i],i, drop = FALSE])
+            } else {
+              for(j in 1:nrow(model$transition_probs)) {
+                cols <- fixed_emissions[[i]][j, ]
+                if (any(cols)) {
+                  emissionArray[j, 1:model$n_symbols[i], i] <- scalerows(emissionArray[j, 1:model$n_symbols[i], i], cols)
+                } else {
+                  emissionArray[j,1:model$n_symbols[i],i]<-
+                    emissionArray[j,1:model$n_symbols[i],i]/sum(emissionArray[j,1:model$n_symbols[i],i, drop = FALSE])
+                }
+              }
+            }
+            
+          }
         } else {
           emArray <- emissionArray[uniqs, , , drop = FALSE]
           for(i in 1:model$n_channels){
             emArray[,1:model$n_symbols[i],i][maxEM[[i]]]<-maxEMvalue[[i]]
             emArray[,1:model$n_symbols[i],i][paramEM[[i]]]<-
               exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
-            emArray[,1:model$n_symbols[i],i]<-
-              emArray[,1:model$n_symbols[i],i]/rowSums(emArray[,1:model$n_symbols[i],i, drop = FALSE])
+            
+            if (is.null(fixed_emissions)) {
+              emArray[,1:model$n_symbols[i],i]<-
+                emArray[,1:model$n_symbols[i],i]/rowSums(emArray[,1:model$n_symbols[i],i, drop = FALSE])
+            } else {
+              for(j in 1:nrow(model$transition_probs)) {
+                cols <- fixed_emissions[[i]][j, ]
+                if (any(cols)) {
+                  emArray[j, 1:model$n_symbols[i], i] <- scalerows(emArray[j, 1:model$n_symbols[i], i], cols)
+                } else {
+                  emArray[j,1:model$n_symbols[i],i]<-
+                    emArray[j,1:model$n_symbols[i],i]/sum(emArray[j,1:model$n_symbols[i],i, drop = FALSE])
+                }
+              }
+            }
           }
           for(i in 1:n_states) {
             emissionArray[constraints == i, , ] <- rep(emArray[i, , ], each = sum(constraints == i))
@@ -956,7 +1138,11 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       if(npIP>0){
         model$initial_probs[maxIP]<-maxIPvalue
         model$initial_probs[paramIP]<-exp(pars[(npTM+sum(npEM)+1):(npTM+sum(npEM)+npIP)])
-        model$initial_probs[]<-model$initial_probs/sum(model$initial_probs)
+        if (is.null(fixed_inits)) {
+          model$initial_probs[]<-model$initial_probs/sum(model$initial_probs)
+        } else {
+          model$initial_probs[] <- scalerows(model$initial_probs, fixed_inits) 
+        }
       }
       
       
@@ -1075,8 +1261,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       }
       
       need_grad <- grepl("NLOPT_LD_",control_local$algorithm)
-      if (!is.null(constraints) && need_grad) {
-        need_grad <- FALSE # don't use analytical gradients
+      if ((!is.null(constraints)  | fixed) && need_grad) {
+        need_grad <- FALSE # don't use analytical gradients (do not take account constraints)
         if (mhmm) {
           gr <- function(x, model, estimate) nl.grad(x, objectivef_mhmm, 
             model = model, estimate = estimate)

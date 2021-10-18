@@ -1,3 +1,9 @@
+seqHMM 1.2.0 (Release date: 2021-10-18)
+==============
+* seqHMM now supports fixed values in initial, transition, and emission 
+  probabilities when performing model estimation.
+  
+
 seqHMM 1.1.1 (Release date: 2021-08-13)
 ==============
 * Fixed a a case with the equality constraints which resulted an error during 
