@@ -524,11 +524,11 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
     stop("Argument threads must be a positive integer.")
   }
   if(!is.null(constraints) && em_step) {
-    stop("EM algorithm does not support constraints. Use local and/or local steps only.")
+    stop("EM algorithm does not support constraints. Use local and/or global steps only.")
   }
   fixed <- !is.null(fixed_inits) | !is.null(fixed_emissions) | !is.null(fixed_transitions)
   if(fixed && em_step) {
-    stop("EM algorithm does not support fixed probabilities (except zeros). Use local and/or local steps only.")
+    stop("EM algorithm does not support fixed probabilities (except zeros). Use local and/or global steps only.")
   }
   
   mhmm <- inherits(model, c("mhmm"))
