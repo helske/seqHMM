@@ -37,7 +37,7 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
   double sumlogLik_new = 0;
   double sumlogLik = -1e150;
   
-  while ((change > tol) & (iter < itermax)) {
+  while ((change > tol) && (iter < itermax)) {
     iter++;
     
     arma::mat ksii(emission.n_rows, emission.n_rows, arma::fill::zeros);

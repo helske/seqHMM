@@ -1,6 +1,7 @@
 seqHMM 1.2.1 (Release date: )
 ==============
 * Fixed the scaling of initial probabilities to 1 in build_mm.
+* 
 
 seqHMM 1.2.0 (Release date: 2021-10-18)
 ==============

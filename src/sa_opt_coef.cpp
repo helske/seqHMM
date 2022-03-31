@@ -50,7 +50,7 @@ Rcpp::List estimate_coefs(const arma::mat& transition, const arma::cube& emissio
 
   arma::uvec cumsumstate = arma::cumsum(numberOfStates);
 
-  while ((change > tol) & (iter < itermax)) {
+  while ((change > tol) && (iter < itermax)) {
     iter++;
   //
   // unsigned int error = optCoef(weights, obs, emission, initk, beta, scales, coef, X, cumsumstate,
