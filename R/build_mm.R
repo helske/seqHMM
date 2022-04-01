@@ -60,7 +60,8 @@ build_mm <- function(observations){
   
   transition_probs <- suppressMessages(TraMineR::seqtrate(observations))
   
-  initial_probs <- suppressMessages(TraMineR::seqstatf(seqdef(observations[, 1], alphabet = state_names)))[, 2] / n_states
+  first_timepoint <- suppressMessages(seqdef(observations[observations[, 1] %in% state_names, 1], alphabet = state_names))
+  initial_probs <- TraMineR::seqstatf(first_timepoint)[, 2] / n_states
 
   dimnames(transition_probs) <- list(from = state_names, to = state_names)
 
