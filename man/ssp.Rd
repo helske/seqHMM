@@ -38,7 +38,7 @@ ssp(
   cex.lab = 1,
   cex.axis = 1,
   withlegend,
-  respect_void = respect_void,
+  respect_void = TRUE,
   ...
 )
 }
