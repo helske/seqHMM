@@ -6,6 +6,9 @@
 #' @export
 #' @param model A hidden Markov model of class \code{hmm} or
 #'  a mixture HMM of class \code{mhmm}.
+#' @param respect_void If \code{TRUE} (default), states at the time points 
+#' corresponding to TraMineR's void in the observed sequences are set to void 
+#' in the hidden state sequences as well.
 #' 
 #' @return The most probable paths of hidden states as an \code{stslist} object
 #' (see \code{\link{seqdef}}). The log-probability is included as an attribute \code{log_prob}.
@@ -34,7 +37,7 @@
 #'   for plotting hidden paths.
 #'   
 
-hidden_paths <- function(model){
+hidden_paths <- function(model, respect_void = TRUE){
   
   if(!inherits(model, c("hmm", "mhmm")))
     stop("Argument model must be an object of class 'hmm' or 'mhmm.")
@@ -81,11 +84,23 @@ hidden_paths <- function(model){
   }else{
     mpp <- apply(out$q+1,2,function(x) model$state_names[x])
   }
+  
+  void_symbol <- attr(model$observations[[1]], "void")
+  if (respect_void) {
+    voids <- vector("list", model$n_channels)
+    for(i in 1:model$n_channels) {
+      voids[[i]] <- which(model$observations[[i]] == void_symbol)
+    }
+    
+    mpp[unique(unlist(voids))] <- NA
+  }
   mpp <- suppressWarnings(
     suppressMessages(
       seqdef(
-        mpp,alphabet=model$state_names, id=rownames(model$obs[[1]]),
-        start=attr(model$obs[[1]],"start"), xtstep=attr(model$obs[[1]],"xtstep")
+        mpp, alphabet = model$state_names, id = rownames(model$obs[[1]]),
+        start=attr(model$obs[[1]], "start"), 
+        xtstep = attr(model$obs[[1]], "xtstep"),
+        void = void_symbol
       )
     )
   )

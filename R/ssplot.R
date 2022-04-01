@@ -147,6 +147,9 @@
 #' @param cex.axis Expansion factor for setting the size of the font for the x-axis
 #'   tick labels. The default value is 1. Values lesser than 1 will reduce the size of
 #'   the font, values greater than 1 will increase the size.
+#' @param respect_void  If \code{TRUE} (default), states at the time points 
+#' corresponding to TraMineR's void in the observed sequences are set to void 
+#' in the hidden state sequences as well.
 #' 
 #' @param ... Other arguments to be passed on to
 #'   \code{\link[TraMineR]{seqplot}}.
@@ -232,9 +235,9 @@ ssplot <- function(x, hidden.paths = NULL,
                 xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
                 ylab = "auto", hidden.states.title = "Hidden states",
                 yaxis = FALSE, ylab.pos = "auto",
-                cex.lab = 1, cex.axis = 1, ...){
+                cex.lab = 1, cex.axis = 1, respect_void = TRUE, ...){
   
-    check_deprecated_args(match.call())
+  check_deprecated_args(match.call())
   
   args <- as.list(match.call())[-1]
   args[[1]] <- eval(args[[1]], envir = parent.frame())

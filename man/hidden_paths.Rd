@@ -4,11 +4,15 @@
 \alias{hidden_paths}
 \title{Most Probable Paths of Hidden States}
 \usage{
-hidden_paths(model)
+hidden_paths(model, respect_void = TRUE)
 }
 \arguments{
 \item{model}{A hidden Markov model of class \code{hmm} or
 a mixture HMM of class \code{mhmm}.}
+
+\item{respect_void}{If \code{TRUE} (default), states at the time points 
+corresponding to TraMineR's void in the observed sequences are set to void 
+in the hidden state sequences as well.}
 }
 \value{
 The most probable paths of hidden states as an \code{stslist} object
