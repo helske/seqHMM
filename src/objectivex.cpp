@@ -155,7 +155,7 @@ Rcpp::List objectivex(const arma::mat& transition, const arma::cube& emission,
             for (unsigned int r = 0; r < obs.n_rows; r++) {
               tmp *= emission(j, obs(r, 0, k), r);
             }
-            if ((j >= ind_jj) & (j < cumsumstate(jj))) {
+            if ((j >= ind_jj) && (j < cumsumstate(jj))) {
               grad_k.subvec(countgrad + q * (jj - 1), countgrad + q * jj - 1) += tmp
               * beta(j, 0) * initk(j, k) * X.row(k).t() * (1.0 - weights(jj, k));
             } else {

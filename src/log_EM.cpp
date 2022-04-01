@@ -38,7 +38,7 @@ Rcpp::List log_EM(const arma::mat& transition_, const arma::cube& emission_,
   double change = tol + 1.0;
   int iter = 0;
 
-  while ((change > tol) & (iter < itermax)) {
+  while ((change > tol) && (iter < itermax)) {
     iter++;
 
     arma::mat ksii(emission.n_rows, emission.n_rows, arma::fill::zeros);

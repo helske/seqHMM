@@ -165,7 +165,7 @@ Rcpp::List log_objectivex(const arma::mat& transition, const arma::cube& emissio
           for (unsigned int r = 0; r < obs.n_rows; r++) {
             tmp += emissionLog(j, obs(r, 0, k), r);
           }
-          if ((j >= ind_jj) & (j < cumsumstate(jj))) {
+          if ((j >= ind_jj) && (j < cumsumstate(jj))) {
             gradmat.col(k).subvec(countgrad + q * (jj - 1), countgrad + q * jj - 1) += exp(
               tmp + beta(j, 0, k) - ll(k) + initk(j, k)) * X.row(k).t()
             * (1.0 - exp(weights(jj, k)));
