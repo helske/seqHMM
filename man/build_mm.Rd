@@ -33,9 +33,10 @@ constructing a Markov model as a restricted case of an \code{hmm} object.
 }
 \details{
 Unlike the other build functions in \code{seqHMM}, the \code{build_mm} function
-automatically estimates the model parameters. As initial and transition probabilities can be
-directly estimated from the observed initial state probabilities and transition counts, there
-is no need for starting values or further estimation with the \code{\link{fit_model}} function.
+automatically estimates the model parameters. In case of no missing values, 
+initial and transition probabilities are
+directly estimated from the observed initial state probabilities and transition counts.
+In ase of missing values, the EM algorithm is run once.
 }
 \examples{
 # Construct sequence data

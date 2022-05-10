@@ -38,6 +38,7 @@ ssp(
   cex.lab = 1,
   cex.axis = 1,
   withlegend,
+  respect_void = TRUE,
   ...
 )
 }
@@ -185,6 +186,10 @@ tick labels. The default value is 1. Values lesser than 1 will reduce the size o
 the font, values greater than 1 will increase the size.}
 
 \item{withlegend}{Deprecated. Use \code{with.legend} instead.}
+
+\item{respect_void}{If \code{TRUE} (default), states at the time points 
+corresponding to TraMineR's void in the observed sequences are set to void 
+in the hidden state sequences as well.}
 
 \item{...}{Other arguments to be passed on to \code{\link[TraMineR]{seqplot}}.}
 }

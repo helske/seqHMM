@@ -22,9 +22,10 @@
 #'}
 #'
 #' @details Unlike the other build functions in \code{seqHMM}, the \code{build_mm} function
-#' automatically estimates the model parameters. As initial and transition probabilities can be
-#' directly estimated from the observed initial state probabilities and transition counts, there
-#' is no need for starting values or further estimation with the \code{\link{fit_model}} function.
+#' automatically estimates the model parameters. In case of no missing values, 
+#' initial and transition probabilities are
+#' directly estimated from the observed initial state probabilities and transition counts.
+#' In ase of missing values, the EM algorithm is run once.
 #'
 #' @seealso \code{\link{plot.hmm}} for plotting the model.
 #' 
@@ -48,43 +49,51 @@
 #'
 
 build_mm <- function(observations){
-
+  
   if(!inherits(observations, "stslist")){
     stop("The build_mm function can only be used for single-channel sequence data (as an stslist object). Use the mc_to_sc_data function to convert multiple stslist into single-channel state sequences.")
   }
-
+  
   n_sequences <- nrow(observations)
   length_of_sequences <- ncol(observations)
   state_names <- alphabet(observations)
   n_states <- length(state_names)
+  nobs <- sum(!(observations == attr(observations, "nr") |
+                  observations == attr(observations, "void") |
+                  is.na(observations)))
   
-  transition_probs <- suppressMessages(TraMineR::seqtrate(observations))
-  
-  initial_probs <- suppressMessages(TraMineR::seqstatf(seqdef(observations[, 1], alphabet = state_names)))[, 2] / n_states
 
-  dimnames(transition_probs) <- list(from = state_names, to = state_names)
-
+  if (nobs < prod(dim(observations))) {
+    model <- fit_model(build_hmm(observations, 
+                                            transition_probs = matrix(1/n_states, n_states, n_states), 
+                                            emission_probs = diag(n_states),
+                                            initial_probs = rep(1 / n_states, n_states)))$model
+    warning("Sequences contain missing/void values, initial and transition probabilities estimated via EM. ")
+    initial_probs <- model$initial_probs
+    transition_probs <- model$transition_probs
+  } else {
+    first_timepoint <- suppressMessages(seqdef(observations[observations[, 1] %in% state_names, 1], alphabet = state_names))
+    initial_probs <- TraMineR::seqstatf(first_timepoint)[, 2] / 100
+    transition_probs <- suppressMessages(TraMineR::seqtrate(observations))
+  }
   names(initial_probs) <- state_names
-
-    nobs <- sum(!(observations == attr(observations, "nr") |
-        observations == attr(observations, "void") |
-        is.na(observations)))
-
-    emission_probs <- diag(n_states)
-    dimnames(emission_probs) <- dimnames(transition_probs)
-
-    model <- structure(list(observations=observations,
-                            transition_probs=transition_probs,
-      emission_probs=emission_probs,initial_probs=initial_probs,
-      state_names=state_names,
-      symbol_names=state_names, channel_names=NULL,
-      length_of_sequences=length_of_sequences,
-      n_sequences=n_sequences,
-      n_symbols=n_states,n_states=n_states,
-      n_channels=1), class = "hmm",
-      nobs = nobs,
-      df = sum(initial_probs > 0) - 1 + sum(transition_probs > 0) - n_states,
-      type = "mm")
-
+  dimnames(transition_probs) <- list(from = state_names, to = state_names)
+  
+  emission_probs <- diag(n_states)
+  dimnames(emission_probs) <- dimnames(transition_probs)
+  
+  model <- structure(list(observations=observations,
+                          transition_probs=transition_probs,
+                          emission_probs=emission_probs,initial_probs=initial_probs,
+                          state_names=state_names,
+                          symbol_names=state_names, channel_names=NULL,
+                          length_of_sequences=length_of_sequences,
+                          n_sequences=n_sequences,
+                          n_symbols=n_states,n_states=n_states,
+                          n_channels=1), class = "hmm",
+                     nobs = nobs,
+                     df = sum(initial_probs > 0) - 1 + sum(transition_probs > 0) - n_states,
+                     type = "mm")
+  
   model
 }

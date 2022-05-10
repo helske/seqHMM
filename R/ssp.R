@@ -150,7 +150,9 @@
 #'   the font, values greater than 1 will increase the size.
 #'
 #' @param withlegend Deprecated. Use \code{with.legend} instead.
-#' 
+#' @param respect_void If \code{TRUE} (default), states at the time points 
+#' corresponding to TraMineR's void in the observed sequences are set to void 
+#' in the hidden state sequences as well.
 #' @param ... Other arguments to be passed on to \code{\link[TraMineR]{seqplot}}.
 #'
 #' @return Object of class \code{ssp}.
@@ -244,7 +246,7 @@ ssp <- function(x, hidden.paths = NULL,
   xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
   ylab = "auto", hidden.states.title = "Hidden states",
   yaxis = FALSE, ylab.pos = "auto",
-  cex.lab = 1, cex.axis = 1, withlegend, ...){
+  cex.lab = 1, cex.axis = 1, withlegend, respect_void = TRUE, ...){
   
   check_deprecated_args(match.call())
   
@@ -507,7 +509,7 @@ ssp <- function(x, hidden.paths = NULL,
     }
     # Hidden paths not provided (compute)
     if (is.null(hidden.paths)) {
-      hidden.paths <- suppressMessages(hidden_paths(x))
+      hidden.paths <- suppressMessages(hidden_paths(x, respect_void = respect_void))
       # No labels
       if (length(hidden.states.labels) == 1 && is.null(hidden.states.labels)) {
         hidden.states.labels <- rep("", length(alphabet(hidden.paths)))

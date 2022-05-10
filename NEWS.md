@@ -1,9 +1,11 @@
 seqHMM 1.2.1 (Release date: 2022-05-11)
 ==============
+* Added argument respect_void to hidden_paths function leading to the 
+  propagation of void values of observed sequences to the hidden state sequences.
 * Fixed the scaling of initial probabilities to 1 in build_mm.
-* Added argument respect_void to hidden_paths so that the lengths of the hidden 
-  path sequences match with observed sequences.
-  
+* Fixed the computation of the initial state probability vector for Markov 
+  models in case of missing data.
+
 seqHMM 1.2.0 (Release date: 2021-10-18)
 ==============
 * seqHMM now supports fixed values in initial, transition, and emission 
