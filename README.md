@@ -64,6 +64,7 @@ attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 ```
 
 ### Plotting multichannel sequence data
+3
 Multichannel sequence data are easily plotted using the `ssplot` function (ssplot for Stacked Sequence Plot). It can plot two types of plots: sequences themselves (index plots) or state distributions at each time point. Plotting index plots with large sequence data can take time, especially if the sequences are also sorted at the same time, so by default the function plots states distributions.
 
 ```
