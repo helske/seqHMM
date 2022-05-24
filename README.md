@@ -1,6 +1,6 @@
 [![R-CMD-check](https://github.com/helske/seqHMM/workflows/R-CMD-check/badge.svg)](https://github.com/helske/seqHMM/actions)
-[![cran version](https://www.r-pkg.org/badges/version/seqHMM)](http://cran.r-project.org/package=seqHMM)
-[![downloads](https://cranlogs.r-pkg.org/badges/seqHMM)](http://cranlogs.r-pkg.org/badges/seqHMM)
+[![cran version](https://www.r-pkg.org/badges/version/seqHMM)](https://CRAN.R-project.org/package=seqHMM)
+[![downloads](https://cranlogs.r-pkg.org/badges/seqHMM)](https://cranlogs.r-pkg.org/badges/seqHMM)
 
 seqHMM: Hidden Markov Models for Life Sequences and Other Multivariate, Multichannel Categorical Time Series
 ====================================================================================================
@@ -17,7 +17,7 @@ Helske, Satu and Helske, Jouni (2019). Mixture hidden Markov models for sequence
 
 If you find bugs, please add a new issue here in GitHub. You can also contact Satu Helske (firstname.lastname@utu.fi) or Jouni Helske (firstname.lastname@jyu.fi). We would be happy to hear your feedback.
 
-The package is available on CRAN. Istall it via
+The package is available on CRAN. Install it via
 
 ```R
 install.packages("seqHMM")
@@ -121,7 +121,7 @@ When estimating hidden Markov models (HMMs) or mixture hidden Markov models, you
 2. give user defined starting values for initial, transition, and emission matrices for faster estimation process (recommended for more complex models).
 
 See the [Examples and tips for estimating Markovian
-models with seqHMM](https://cran.r-project.org/web/packages/seqHMM/vignettes/seqHMM_estimation.pdf) vignette for tips and suggestions on model estimation and setting starting values.
+models with seqHMM](https://CRAN.R-project.org/package=seqHMM/vignettes/seqHMM_estimation.pdf) vignette for tips and suggestions on model estimation and setting starting values.
 
 Build functions check that the data and matrices are of the right form and create an object of class `hmm` (for HMMs and MMs) or `mhmm` (for MHMMs, MMMs, and LCMs). For the latter, covariates can be omitted or added with the usual `formula` argument using symbolic formulas familiar from e.g. the `lm` function. Even though missing observations are allowed in sequence data, covariates must be completely observed.
 

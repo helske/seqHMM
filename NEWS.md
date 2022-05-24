@@ -1,4 +1,4 @@
-seqHMM 1.2.1 (Release date: 2022-05-11)
+seqHMM 1.2.1-1 (Release date: 2022-05-24)
 ==============
 * Added argument respect_void to hidden_paths function leading to the 
   propagation of void values of observed sequences to the hidden state sequences.

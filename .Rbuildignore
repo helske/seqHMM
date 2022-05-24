@@ -1,10 +1,7 @@
-.lue
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^.*\.git$
 ^.*\.project
-^\.travis\.yml$
-^README.md$
 Examples
 manual
 tests_for_graphics
@@ -15,4 +12,6 @@ vignettes/*.synctex.gz
 vignettes/*.tex
 vignettes/*.pdf
 vignettes/*.bbl
+vignettes/jss.bst
+vignettes/jss.cls
 ^\.github$

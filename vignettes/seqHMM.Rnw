@@ -53,18 +53,18 @@ Good graphical presentations of data and models are useful during the whole anal
 %% in the following format:
 \Address{
   Satu Helske\\
-  Institute for Analytical Sociology \\
-  Link\"oping University \\
-  SE-60174 Norrk\"oping\\
-  Sweden \\
-  E-mail: \email{satu.helske@liu.se}\\
+  Department of Social Research \\
+  University of Turku\\
+  20500 Turku\\
+  Finland \\
+  E-mail: \email{satu.helske@utu.fi}\\
   
   Jouni Helske\\
-  Department of Science and Technology \\
-  Link\"oping University\\
-  SE-60174 Norrk\"oping\\
-  Sweden\\
-  E-mail: \email{Jouni.Helske@liu.se}
+  Department of Mathematics and Statistics\\
+  University of Jyv\"askyl\"a\\
+  FI-40014 \\
+  Finland\\
+  E-mail: \email{Jouni.Helske@jyu.fi}
 }
 %% It is also possible to add a telephone and fax number
 %% before the e-mail in the following format:
@@ -613,9 +613,13 @@ sc_initmod <- build_hmm(observations = biofam_seq, initial_probs = sc_init,
   transition_probs = sc_trans, emission_probs = sc_emiss)
 @
 We then use the \code{fit\_model} function for parameter estimation. Here we estimate the model using the default options of the EM step.
-<<code_sc_fitHMM, cache=FALSE>>=
+<<code_sc_fitHMM, cache=FALSE, eval=FALSE>>=
 sc_fit <- fit_model(sc_initmod)
 @
+<<load_sc_fit, cache=FALSE, echo=FALSE>>=
+sc_fit <- readRDS("sc_fit.rds")
+@
+
 The fitting function returns the estimated model, its log-likelihood, and information on the optimization steps.
 <<code_sc_results1, cache=FALSE>>=
 sc_fit$logLik
@@ -676,7 +680,7 @@ When fitting mixture hidden Markov models, the starting values are given as list
 
 We fit a model using 100 random restarts of the EM algorithm followed by the local L-BFGS method. Again we use parallel computation.
 
-<<code_MHMM, cache=FALSE, echo = TRUE, eval = TRUE, warning=TRUE>>=
+<<code_MHMM, cache=FALSE, echo = TRUE, eval = FALSE, warning=TRUE>>=
 mc_init2 <- c(0.9, 0.05, 0.03, 0.02)
 
 mc_trans2 <- matrix(c(0.85, 0.05, 0.05, 0.05, 0, 0.90, 0.05, 0.05, 0, 0, 
@@ -711,11 +715,13 @@ init_mhmm <- build_mhmm(observations = mc_obs, initial_probs = mhmm_init,
 
 # vignette: less restarts and no parallelization
 set.seed(1011)
-mhmm_fit <- fit_model(init_mhmm, local_step = TRUE, threads = 1,
+mhmm_fit <- fit_model(init_mhmm, local_step = TRUE, threads = 2,
   control_em = list(restart = list(times = 10)))
 mhmm <- mhmm_fit$model
 @
-
+<<load_mhmm, cache=FALSE, echo=FALSE>>=
+mhmm <- readRDS("mhmm.rds")
+@
 The \code{summary} method automatically computes some features for an MHMM, e.g., standard errors for covariates and prior and posterior cluster probabilities for subjects. A \code{print} method shows some summaries of these: estimates and standard errors for covariates (see Section \ref{sec:MHMM}), log-likelihood and BIC, and information on most probable clusters and prior probabilities. Parameter estimates for transitions, emissions, and initial probabilities are omitted by default. The classification table shows mean probabilities of belonging to each cluster by the most probable cluster (defined from posterior cluster probabilities). A good model should have values close to 1 on the diagonal.
 
 <<code_summaryMHMM, cache=FALSE>>=
