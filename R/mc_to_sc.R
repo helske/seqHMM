@@ -155,7 +155,7 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE, cpal){
       modelx$n_symbols <- ncol(modelx$emission_probs[[1]])
     }
   }
-  if (missing(cpal)) {
+  if (missing(cpal) || cpal == "auto") {
     if (modelx$n_symbols <= 200) {
       cpal <- seqHMM::colorpalette[[modelx$n_symbols]]
     } else {

@@ -89,7 +89,7 @@ mc_to_sc_data <- function(data, combine_missing = TRUE, all_combinations = FALSE
           is.na(x)))]<-NA
   }
 
-  if (missing(cpal)) {
+  if (missing(cpal) || cpal == "auto") {
     if (length(alph) <= 200) {
       cpal <- seqHMM::colorpalette[[length(alph)]]
     } else {

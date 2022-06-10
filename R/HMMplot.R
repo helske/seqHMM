@@ -57,7 +57,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
 
   # Convert multichannel models to single-channel
   if (x$n_channels > 1) {
-    x <- mc_to_sc(x)
+    x <- mc_to_sc(x, cpal = cpal)
   }
 
   # No slices -> no legends needed
