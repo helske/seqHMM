@@ -397,7 +397,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
 
 
   # Colors for the (combinations of) observed states
-  if (length(cpal) == 1 && cpal == "auto") {
+  if (identical(cpal, "auto")) {
     pie.colors  <- attr(x$observations, "cpal")
   } else if(length(cpal) != ncol(x$emiss)) {
     if(ncol(x$emiss) <= 200) {
@@ -433,14 +433,14 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
         }
         ltext.orig <- ltext
         # Default cpal
-        if (length(cpal) == 1 && cpal == "auto") {
+        if (identical(cpal, "auto")) {
           # Default cpal.legend is the same as default cpal
-          if (length(cpal.legend) == 1 && cpal.legend == "auto") {
+          if (identical(cpal.legend, "auto")) {
           cpal.legend <- attr(x$observations, "cpal")
           }
         # If cpal set
         } else {
-          if (length(cpal.legend) == 1 && cpal.legend == "auto") {
+          if (identical(cpal.legend, "auto")) {
             cpal.legend <- cpal
           }
         }
@@ -448,9 +448,9 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
       # Default labels
     } else {
       ltext <- ltext.orig <- x$symbol_names
-      if (length(cpal) == 1 && cpal == "auto") {
+      if (identical(cpal, "auto")) {
         # Default cpal.legend is the same as default cpal
-        if(length(cpal.legend) == 1 && cpal.legend == "auto") {
+        if(identical(cpal.legend, "auto")) {
           cpal.legend <- attr(x$observations, "cpal")
         }
         # If cpal set

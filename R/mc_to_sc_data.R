@@ -89,7 +89,7 @@ mc_to_sc_data <- function(data, combine_missing = TRUE, all_combinations = FALSE
           is.na(x)))]<-NA
   }
 
-  if (missing(cpal) || cpal == "auto") {
+  if (missing(cpal) || identical(cpal, "auto")) {
     if (length(alph) <= 200) {
       cpal <- seqHMM::colorpalette[[length(alph)]]
     } else {
@@ -99,7 +99,7 @@ mc_to_sc_data <- function(data, combine_missing = TRUE, all_combinations = FALSE
     }
   }
   if(length(alph) != length(cpal)) {
-    stop("The number of observed states is ", modelx$n_symbols, 
+    stop("The number of observed states is ", length(alph), 
          " but the supplied color palette contains only ", length(cpal),
          "colours.")
   }
