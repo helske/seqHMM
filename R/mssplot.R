@@ -245,22 +245,23 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
     hidden.pathslabs[[i]] <- hidden.states.labels[(k+1):(k+x$n_states[i])]
     k <- k+x$n_states[i]
   }
-
-  if(!("hidden.states.colors" %in% names(args))){
-    if (length(alphabet(hidden.paths)) <= 200) {
-      hidden.states.colors <- seqHMM::colorpalette[[length(alphabet(hidden.paths))]]
+  
+  n_alphabet <- length(alphabet(hidden.paths))
+  if (!("hidden.states.colors" %in% names(args))) {
+    if (n_alphabet <= 200) {
+      hidden.states.colors <- seqHMM::colorpalette[[n_alphabet]]
     } else {
-      cp <- NULL
-      k <- 200
-      p <- 0
-      while(length(alphabet(hidden.paths)) - p > 0){
-        cp <- c(cp, seqHMM::colorpalette[[k]])
-        p <- p + k
-        k <- k - 1
-      }
-      cpal <- cp[1:length(alphabet(hidden.paths))]
+      stop("Model contains ", n_alphabet, " hidden states, which ", 
+           " is more than supported by the default color palette. Specify your ", 
+           " own color palette with the argument 'hidden.states.colors'.")
     }
   }
+  if(n_alphabet != length(hidden.states.colors)) {
+    stop("The number of hidden states is ", n_alphabet, 
+         " but the supplied color palette contains only ", 
+         length(hidden.states.colors), "colours.")
+  }
+
   hidden.pathscols <- list()
   k <- 0
   for(i in 1:x$n_clusters){

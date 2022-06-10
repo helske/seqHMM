@@ -4,7 +4,7 @@
 \alias{mc_to_sc_data}
 \title{Merge Multiple Sequence Objects into One (from Multichannel to Single Channel Data)}
 \usage{
-mc_to_sc_data(data, combine_missing = TRUE, all_combinations = FALSE)
+mc_to_sc_data(data, combine_missing = TRUE, all_combinations = FALSE, cpal)
 }
 \arguments{
 \item{data}{A list of state sequence objects (\code{stslist}s) 
@@ -21,6 +21,10 @@ where the observation in channel 3 is missing.}
 observed states are included in the single channel representation or 
 only combinations that are found in the data. Defaults to \code{FALSE}, 
 i.e. only actual observations are included.}
+
+\item{cpal}{The color palette used for the new combined symbols. Optional in 
+a case where the number of symbols is less or equal to 200 (in which case 
+the \code{seqHMM::colorpalette} is used).}
 }
 \description{
 Function \code{mc_to_sc_data} combines observed states of multiple 

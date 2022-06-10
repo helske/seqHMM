@@ -22,7 +22,9 @@
 #'   observed states are included in the single channel representation or only
 #'   combinations that are found in the data. Defaults to \code{FALSE}, i.e.
 #'   only actual observations are included.
-#'
+#' @param cpal The color palette used for the new combined symbols. Optional in 
+#'   a case where the number of symbols is less or equal to 200 (in which case 
+#'   the \code{seqHMM::colorpalette} is used).
 #' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building and
 #'   fitting Hidden Markov models; and \code{\link{hmm_biofam}} for information on
 #'   the model used in the example.
@@ -39,7 +41,7 @@
 #' logLik(sc)
 #' logLik(hmm_biofam)
 
-mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
+mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE, cpal){
 
   if (!inherits(model, "hmm") && !inherits(model, "mhmm")){
     stop("Provide a model of class hmm or mhmm.")
@@ -86,22 +88,6 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
             x==attr(model$observations[[1]], "void") |
             is.na(x)))]<-NA
     }
-
-    if (modelx$n_symbols <= 200) {
-      cpal <- seqHMM::colorpalette[[modelx$n_symbols]]
-    } else {
-      cp <- NULL
-      k <- 200
-      p <- 0
-      while(modelx$n_symbols - p > 0){
-        cp <- c(cp, seqHMM::colorpalette[[k]])
-        p <- p + k
-        k <- k - 1
-      }
-      cpal <- cp[1:modelx$n_symbols]
-    }
-
-
     if (all_combinations == TRUE) {
       modelx$observations <- suppressWarnings(suppressMessages(seqdef(modelx$observations, alphabet=modelx$symbol_names)))
     } else {
@@ -159,19 +145,6 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
 
     if (all_combinations == TRUE) {
       modelx$observations <- suppressWarnings(suppressMessages(seqdef(modelx$observations, alphabet=modelx$symbol_names)))
-      if (modelx$n_symbols <= 200) {
-        cpal <- seqHMM::colorpalette[[length(modelx$symbol_names)]]
-      } else {
-        cp <- NULL
-        k <- 200
-        p <- 0
-        while(length(modelx$symbol_names) - p > 0){
-          cp <- c(cp, seqHMM::colorpalette[[k]])
-          p <- p + k
-          k <- k - 1
-        }
-        cpal <- cp[1:length(modelx$symbol_names)]
-      }
     } else {
       modelx$observations <- suppressWarnings(suppressMessages((seqdef(modelx$observations))))
       for (m in 1:model$n_clusters){
@@ -180,22 +153,22 @@ mc_to_sc<-function(model, combine_missing=TRUE, all_combinations=FALSE){
       }
       modelx$symbol_names <- colnames(modelx$emission_probs[[1]])
       modelx$n_symbols <- ncol(modelx$emission_probs[[1]])
-      if (modelx$n_symbols <= 200) {
-        cpal <- seqHMM::colorpalette[[modelx$n_symbols]]
-      } else {
-        cp <- NULL
-        k <- 200
-        p <- 0
-        while(modelx$n_symbols - p > 0){
-          cp <- c(cp, seqHMM::colorpalette[[k]])
-          p <- p + k
-          k <- k - 1
-        }
-        cpal <- cp[1:modelx$n_symbols]
-      }
     }
   }
-
+  if (missing(cpal)) {
+    if (modelx$n_symbols <= 200) {
+      cpal <- seqHMM::colorpalette[[modelx$n_symbols]]
+    } else {
+      stop("Model contains ", modelx$n_symbols, " observed states, which ", 
+           " is more than supported by the default color palette. Specify your ", 
+           " own color palette with the argument 'cpal'.")
+    }
+  }
+  if(modelx$n_symbols != length(cpal)) {
+    stop("The number of observed states is ", modelx$n_symbols, 
+         " but the supplied color palette contains only ", length(cpal),
+         "colours.")
+  }
   attr(modelx$observations, "xtstep") <- attr(model$observations[[1]], "xtstep")
   attr(modelx$observations, "missing.color") <- attr(model$observations[[1]], "missing.color")
   attr(modelx$observations, "nr") <- attr(model$observations[[1]], "nr")

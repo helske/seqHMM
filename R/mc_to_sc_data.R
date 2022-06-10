@@ -16,7 +16,9 @@
 #'   observed states are included in the single channel representation or 
 #'   only combinations that are found in the data. Defaults to \code{FALSE}, 
 #'   i.e. only actual observations are included.
-#'
+#' @param cpal The color palette used for the new combined symbols. Optional in 
+#'   a case where the number of symbols is less or equal to 200 (in which case 
+#'   the \code{seqHMM::colorpalette} is used).
 #' @seealso \code{\link{mc_to_sc}} for transforming multichannel \code{hmm} 
 #'   or \code{mhmm} objects into single-channel representations; 
 #'   \code{\link{ssplot}} for plotting multiple sequence data sets in the
@@ -62,7 +64,7 @@
 #' seqstatf(sc_data_all)
 #' 
 
-mc_to_sc_data <- function(data, combine_missing = TRUE, all_combinations = FALSE){
+mc_to_sc_data <- function(data, combine_missing = TRUE, all_combinations = FALSE, cpal){
   
   if (length(unique(sapply(data, nrow))) > 1) {
     stop("The number of subjects (rows) is not the same in all channels.")
@@ -87,20 +89,21 @@ mc_to_sc_data <- function(data, combine_missing = TRUE, all_combinations = FALSE
           is.na(x)))]<-NA
   }
 
-  if (length(alph) <= 200) {
-    cpal <- seqHMM::colorpalette[[length(alph)]]
-  } else {
-    cp <- NULL
-    k <- 200
-    p <- 0
-    while(length(alph) - p > 0){
-      cp <- c(cp, seqHMM::colorpalette[[k]])
-      p <- p + k
-      k <- k - 1
+  if (missing(cpal)) {
+    if (length(alph) <= 200) {
+      cpal <- seqHMM::colorpalette[[length(alph)]]
+    } else {
+      stop("The number of observed states is ", length(alph),
+           " which is more than supported by the default color palette. ", 
+           "Specify your own color palette with the argument 'cpal'.")
     }
-    cpal <- cp[1:length(alph)]
   }
-
+  if(length(alph) != length(cpal)) {
+    stop("The number of observed states is ", modelx$n_symbols, 
+         " but the supplied color palette contains only ", length(cpal),
+         "colours.")
+  }
+  
 
   if(all_combinations==TRUE){
     datax <- suppressWarnings(suppressMessages(seqdef(datax, alphabet=alph)))

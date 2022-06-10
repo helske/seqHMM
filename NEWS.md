@@ -1,3 +1,8 @@
+seqHMM 1.2.2 (Release date: 2022-)
+==============
+* Fixed the handling of models with more than 200 symbols in mc_to_sc, 
+  mc_to_sc_data, and plotting functions.
+  
 seqHMM 1.2.1-1 (Release date: 2022-05-24)
 ==============
 * Added argument respect_void to hidden_paths function leading to the 
