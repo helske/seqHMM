@@ -404,7 +404,8 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
       warning("The length of the vector provided for argument cpal does not match the number of observed states. Automatic color palette was used.")
       pie.colors  <- attr(x$observations, "cpal")
     } else {
-      stop("Not enough colours in the colour palette. Argument 'cpal' should be of length ", ncol(x$emiss), ".")
+      stop("Not enough colours in the colour palette. Argument 'cpal' should be of length ", 
+           ncol(x$emiss), " (number of observed states).")
     }
   } else if(!all(isColor(cpal))) {
     stop("Please provide a vector of colors for argument cpal or use value \"auto\" for automatic color palette.")
@@ -415,7 +416,8 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
     pie.colors.l  <- pie.colors
   }
   if (length(pie.colors) != ncol(x$emiss)) {
-    stop("Not enough colours in the default colour palette. Argument 'cpal' should be of length ", ncol(x$emiss), ".")
+    stop("Not enough colours in the default colour palette. Argument 'cpal' should be of length ", 
+         ncol(x$emiss), " (number of observed states).")
   }
   # Legend position and number of columns
   if (with.legend != FALSE && pie == TRUE) {
