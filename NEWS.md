@@ -1,7 +1,8 @@
-seqHMM 1.2.2 (Release date: 2022-)
+seqHMM 1.2.2 (Release date: 2022-12-01)
 ==============
 * Fixed the handling of models with more than 200 symbols in mc_to_sc, 
   mc_to_sc_data, and plotting functions.
+* Removed duplicate xaxis argument in interal SSPlotter function.
   
 seqHMM 1.2.1-1 (Release date: 2022-05-24)
 ==============

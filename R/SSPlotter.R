@@ -145,7 +145,7 @@ SSPlotter <- function(obs, nchannels, nplots,
         }
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
         par(plt = gridPLT(), new = TRUE)
-        seqplot(obs[[nchannels]], type = "d", with.legend = FALSE, xaxis = plotxaxis,
+        seqplot(obs[[nchannels]], type = "d", with.legend = FALSE, 
           use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
           with.missing = with.missing, xtlab = xtlab, cex.axis = cex.axis, 
           missing.color = missing.color, ...)
@@ -153,7 +153,7 @@ SSPlotter <- function(obs, nchannels, nplots,
       } else {
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
         par(plt = gridPLT(), new = TRUE)
-        seqplot(obs, type = "d", with.legend = FALSE, xaxis = plotxaxis,
+        seqplot(obs, type = "d", with.legend = FALSE,
           use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
           with.missing = with.missing, xtlab = xtlab, cex.axis = cex.axis, 
           missing.color = missing.color, ...)

@@ -111,14 +111,7 @@ points for the permutations. Otherwise permute the results of the first EM run.}
  \item{maxeval}{\code{10000} (maximum number of iterations)}
 }}
 
-\item{lb}{Lower and upper bounds for parameters in Softmax parameterization.
-The default interval is \eqn{[pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)]},
-except for gamma coefficients,
-where the scale of covariates is taken into account.
-Note that it might still be a good idea to scale covariates around unit scale.
-Bounds are used only in the global optimization step.}
-
-\item{ub}{Lower and upper bounds for parameters in Softmax parameterization.
+\item{lb, ub}{Lower and upper bounds for parameters in Softmax parameterization.
 The default interval is \eqn{[pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)]},
 except for gamma coefficients,
 where the scale of covariates is taken into account.
