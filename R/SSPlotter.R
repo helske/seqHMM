@@ -58,7 +58,7 @@ SSPlotter <- function(obs, nchannels, nplots,
             pushViewport(viewport(layout.pos.col = 1, layout.pos.row = i))
             par(plt = gridPLT(), new = TRUE)
             seqplot(obs[[i]], type = "I", with.legend = FALSE,
-              use.layout = FALSE, yaxis = yaxis, axes = FALSE, ylab = NA,
+              use.layout = FALSE, yaxis = yaxis, xaxis = FALSE, ylab = NA,
               xtlab = xtlab, missing.color = missing.color, ...)
             popViewport()
           }
@@ -83,7 +83,7 @@ SSPlotter <- function(obs, nchannels, nplots,
             pushViewport(viewport(layout.pos.col = 1, layout.pos.row = i))
             par(plt = gridPLT(), new = TRUE)
             seqplot(obs[[i]][orderv,], type = "I", with.legend = FALSE,
-              use.layout = FALSE, yaxis = yaxis, axes = FALSE, ylab = NA,
+              use.layout = FALSE, yaxis = yaxis, xaxis = FALSE, ylab = NA,
               xtlab = xtlab, missing.color = missing.color, ...)
             popViewport()
           }
@@ -109,7 +109,7 @@ SSPlotter <- function(obs, nchannels, nplots,
             pushViewport(viewport(layout.pos.col = 1, layout.pos.row = i))
             par(plt = gridPLT(), new = TRUE)
             seqplot(obs[[i]], type = "I", sortv = sortv, with.legend = FALSE,
-              use.layout = FALSE, yaxis = yaxis, axes = FALSE, ylab = NA,
+              use.layout = FALSE, yaxis = yaxis, xaxis = FALSE, ylab = NA,
               xtlab = xtlab, missing.color = missing.color, ...)
             popViewport()
           }
@@ -139,7 +139,7 @@ SSPlotter <- function(obs, nchannels, nplots,
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = i))
           par(plt = gridPLT(), new = TRUE)
           seqplot(obs[[i]], type = "d", with.legend = FALSE,
-            use.layout = FALSE, yaxis = yaxis, axes = FALSE, ylab = NA,
+            use.layout = FALSE, yaxis = yaxis, xaxis = FALSE, ylab = NA,
             with.missing = with.missing, xtlab = xtlab, missing.color = missing.color, ...)
           popViewport()
         }
@@ -174,21 +174,21 @@ SSPlotter <- function(obs, nchannels, nplots,
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nplots))
         par(plt = gridPLT(), new = TRUE)
         seqplot(hidden.paths, type = type, sortv = sortv, with.legend = FALSE,
-          use.layout = FALSE, yaxis = yaxis, axes = xaxis, ylab = NA,
+          use.layout = FALSE, yaxis = yaxis, xaxis = xaxis, ylab = NA,
           xtlab = xtlab, cex.axis = cex.axis, missing.color = missing.color, ...)
         popViewport()
       } else if (length(sortv) == 1 && (sortv == "from.start" || sortv == "from.end")) {
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nplots))
         par(plt = gridPLT(), new = TRUE)
         seqplot(hidden.paths[orderv,], type = type, with.legend = FALSE,
-          use.layout = FALSE, yaxis = yaxis, axes = xaxis, ylab = NA,
+          use.layout = FALSE, yaxis = yaxis, xaxis = xaxis, ylab = NA,
           xtlab = xtlab, cex.axis = cex.axis, missing.color = missing.color, ...)
         popViewport()
       } else if(length(sortv) > 1) {
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nplots))
         par(plt = gridPLT(), new = TRUE)
         seqplot(hidden.paths, type = type, sortv = sortv, with.legend = FALSE,
-          use.layout = FALSE, yaxis = yaxis, axes = xaxis, ylab = NA,
+          use.layout = FALSE, yaxis = yaxis, xaxis = xaxis, ylab = NA,
           xtlab = xtlab, cex.axis = cex.axis, missing.color = missing.color, ...)
         popViewport()
       }
@@ -196,7 +196,7 @@ SSPlotter <- function(obs, nchannels, nplots,
       pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nplots))
       par(plt = gridPLT(), new = TRUE)
       seqplot(hidden.paths, type = type, with.legend = FALSE,
-        use.layout = FALSE, yaxis = yaxis, axes = xaxis, ylab = NA,
+        use.layout = FALSE, yaxis = yaxis, xaxis = xaxis, ylab = NA,
         xtlab = xtlab, cex.axis = cex.axis, missing.color = missing.color, ...)
       popViewport()
     }

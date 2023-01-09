@@ -1,7 +1,7 @@
 Package: seqHMM
 Title: Mixture Hidden Markov Models for Social Sequence Data and Other Multivariate, Multichannel Categorical Time Series
-Version: 1.2.2
-Date: 2022-12-01
+Version: 1.2.3
+Date: 2022-12-13
 Authors@R: 
     c(person(given = "Jouni",
            family = "Helske",
@@ -52,4 +52,4 @@ License: GPL (>= 2)
 Encoding: UTF-8
 BugReports: https://github.com/helske/seqHMM/issues
 VignetteBuilder: knitr
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.2

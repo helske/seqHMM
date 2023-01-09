@@ -1,3 +1,8 @@
+seqHMM 1.2.3 (Release date: 2022-12-13)
+==============
+ * Changed the internal seqplot axes argument to xaxis as axes is now 
+   deprecated in TraMineR.
+   
 seqHMM 1.2.2 (Release date: 2022-12-01)
 ==============
 * Fixed the handling of models with more than 200 symbols in mc_to_sc, 
