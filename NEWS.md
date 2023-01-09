@@ -1,3 +1,11 @@
+seqHMM 1.2.4 (Release date: 2023-01-09)
+==============
+ * Fixed the issue with the initial transition matrix construction in build_mm 
+   when there is a symbol which is only present in last time points.
+ * Related to above, if a state x with no transitions from is encountered during 
+   the EM algorithm, the corresponding row of the transition matrix A is then 
+   normalized so that is such a A[x,x]=1 i.e. the state is set as absorbing.
+ 
 seqHMM 1.2.3 (Release date: 2022-12-13)
 ==============
  * Changed the internal seqplot axes argument to xaxis as axes is now 

@@ -145,7 +145,13 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
         }
         
         if (obs.n_cols > 1) {
-          ksii.each_col() /= sum(ksii, 1);
+          arma::vec rsums = sum(ksii, 1);
+          for (unsigned int kk = 0; kk < ksii.n_rows; kk++) {
+            if (rsums(kk) == 0) {
+              rsums(kk) = 1;
+            }
+          }
+          ksii.each_col() /= rsums;
           transition = ksii;
         }
         for (unsigned int r = 0; r < emission.n_slices; r++) {

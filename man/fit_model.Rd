@@ -188,7 +188,11 @@ The fitting function provides three estimation steps: 1) EM algorithm,
   the parameter should be fixed and FALSE otherwise (it is still treated as fixed if it 
   is zero though). For both types of constrains, only numerical optimisation
   (local or global) is available, and currently the gradients are computed numerically 
-  (if needed) in these cases.
+  (if needed) in these cases. 
+  
+  In a case where the is no transitions from one state to anywhere (even to 
+  itself), the state is defined as absorbing in a way that probability of 
+  staying in this state is fixed to 1. See also `build_mm` function.
 }
 \examples{
 

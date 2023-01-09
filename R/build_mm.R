@@ -25,7 +25,13 @@
 #' automatically estimates the model parameters. In case of no missing values, 
 #' initial and transition probabilities are
 #' directly estimated from the observed initial state probabilities and transition counts.
-#' In ase of missing values, the EM algorithm is run once.
+#' In case of missing values, the EM algorithm is run once.
+#' 
+#' Note that it is possible that the data contains a symbol from which there are 
+#' no transitions anywhere (even to itself), which would lead to a row in 
+#' transition matrix full of zeros. In this case the `build_mm` 
+#' (as well as the EM algorithm) assumes that the 
+#' the state is absorbing in a way that probability of staying in this state is 1.
 #'
 #' @seealso \code{\link{plot.hmm}} for plotting the model.
 #' 
@@ -75,6 +81,11 @@ build_mm <- function(observations){
     first_timepoint <- suppressMessages(seqdef(observations[observations[, 1] %in% state_names, 1], alphabet = state_names))
     initial_probs <- TraMineR::seqstatf(first_timepoint)[, 2] / 100
     transition_probs <- suppressMessages(TraMineR::seqtrate(observations))
+    zeros <- which(rowSums(transition_probs) == 0)
+    if (length(zeros) > 0) {
+      warning("There are no observed transitions from some of the symbols.")
+    }
+    diag(transition_probs)[zeros] <- 1
   }
   names(initial_probs) <- state_names
   dimnames(transition_probs) <- list(from = state_names, to = state_names)

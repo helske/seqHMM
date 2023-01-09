@@ -156,7 +156,9 @@
 #'   (local or global) is available, and currently the gradients are computed numerically 
 #'   (if needed) in these cases. 
 #'   
-#'   
+#'   In a case where the is no transitions from one state to anywhere (even to 
+#'   itself), the state is defined as absorbing in a way that probability of 
+#'   staying in this state is fixed to 1. See also `build_mm` function.   
 #'   
 #' @references Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
 #' Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03

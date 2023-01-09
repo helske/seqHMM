@@ -36,7 +36,13 @@ Unlike the other build functions in \code{seqHMM}, the \code{build_mm} function
 automatically estimates the model parameters. In case of no missing values, 
 initial and transition probabilities are
 directly estimated from the observed initial state probabilities and transition counts.
-In ase of missing values, the EM algorithm is run once.
+In case of missing values, the EM algorithm is run once.
+
+Note that it is possible that the data contains a symbol from which there are 
+no transitions anywhere (even to itself), which would lead to a row in 
+transition matrix full of zeros. In this case the `build_mm` 
+(as well as the EM algorithm) assumes that the 
+the state is absorbing in a way that probability of staying in this state is 1.
 }
 \examples{
 # Construct sequence data
