@@ -955,6 +955,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       if(npTM>0){
         model$transition_probs[maxTM]<-maxTMvalue
         model$transition_probs[paramTM]<-exp(pars[1:npTM])
+        zeros <- which(rowSums(model$transition_probs) == 0)
+        diag(model$transition_probs)[zeros] <- 1
         if (is.null(fixed_transitions)) {
           model$transition_probs[]<- 
             model$transition_probs / rowSums(model$transition_probs)
@@ -969,6 +971,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
             }
           }
         }
+
       }
       if(sum(npEM)>0){
         if(is.null(constraints)) {
@@ -1083,6 +1086,8 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
       if(npTM>0){
         model$transition_probs[] <- original_trans
         model$transition_probs[paramTM] <- exp(pars[1:npTM])
+        zeros <- which(rowSums(model$transition_probs) == 0)
+        diag(model$transition_probs)[zeros] <- 1
         if (is.null(fixed_transitions)) {
           model$transition_probs[]<- 
             model$transition_probs / rowSums(model$transition_probs)
@@ -1097,6 +1102,7 @@ fit_model <- function(model, em_step = TRUE, global_step = FALSE, local_step = F
             }
           }
         }
+
       }
       
       if(sum(npEM)>0){
