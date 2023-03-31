@@ -150,8 +150,8 @@
 #'   the font, values greater than 1 will increase the size.
 #'
 #' @param withlegend Deprecated. Use \code{with.legend} instead.
-#' @param respect_void If \code{TRUE} (default), states at the time points 
-#' corresponding to TraMineR's void in the observed sequences are set to void 
+#' @param respect_void If \code{TRUE} (default), states at the time points
+#' corresponding to TraMineR's void in the observed sequences are set to void
 #' in the hidden state sequences as well.
 #' @param ... Other arguments to be passed on to \code{\link[TraMineR]{seqplot}}.
 #'
@@ -247,24 +247,24 @@ ssp <- function(x, hidden.paths = NULL,
   ylab = "auto", hidden.states.title = "Hidden states",
   yaxis = FALSE, ylab.pos = "auto",
   cex.lab = 1, cex.axis = 1, withlegend, respect_void = TRUE, ...){
-  
+
   check_deprecated_args(match.call())
-  
+
   arguments <- list()
-  
+
   # Check the type of the plot
   plots <- match.arg(plots, c("both", "obs", "hidden.paths"))
-  
+
   # Hidden paths available?
   if (!inherits(x, "hmm") && (plots != "obs") && is.null(hidden.paths)) {
     stop(paste("For plotting the most probable paths, you need to add the argument hidden.paths or give an object of class hmm to x."))
   }
-  
+
   # hidden.paths must be given as stslist
   if (!is.null(hidden.paths) && !inherits(hidden.paths, "stslist")) {
     stop(paste("Object for argument hidden.paths is not a state sequence object. Use seqdef to create one."))
   }
-  
+
   # Checking with.legend
   choices <- c(TRUE, FALSE, "auto", "right", "right.combined",
     "bottom", "bottom.combined")
@@ -276,10 +276,10 @@ ssp <- function(x, hidden.paths = NULL,
   if (with.legend %in% c(TRUE, "auto")){
     with.legend <- "right"
   }
-  
-  
+
+
   type <- match.arg(type, c("I", "d"))
-  
+
   if (type == "I" && !is.numeric(sortv) && !is.null(sortv)) {
     choices <- c("from.start", "from.end", "mds.obs", "mds.hidden")
     ind <- pmatch(sortv, choices)
@@ -288,24 +288,24 @@ ssp <- function(x, hidden.paths = NULL,
     }
     sortv <- choices[ind]
   }
-  
+
   if (!is.numeric(ncol.legend) && ncol.legend != "auto") {
     warning("Argument ncol.legend only accepts values \"auto\" or a numerical vector.")
     ncol.legend <- "auto"
   }
-  
+
   if (!is.numeric(ylab.pos) && ylab.pos != "auto") {
     warning("Argument ylab.pos only accepts values \"auto\" or a numerical vector.")
     ylab.pos <- "auto"
   }
-  
+
   if (legend.prop < 0 || legend.prop > 1) {
     warning("Argument legend.prop only accepts values between 0 and 1. Proportion was set to 0.3.")
     legend.prop <- 0.3
   }
-  
+
   dist.method <- match.arg(dist.method, c("OM", "LCP", "RLCP", "LCS", "HAM", "DHD"))
-  
+
   # Channel names and labels
   # HMM objects
   if (inherits(x, "hmm")) {
@@ -356,7 +356,7 @@ ssp <- function(x, hidden.paths = NULL,
       }
     }
   }
-  
+
   # Check the number of sequences
   if (!inherits(x, "hmm") && nchannels > 1){
     if (length(unique(sapply(obs, nrow))) > 1) {
@@ -383,7 +383,7 @@ ssp <- function(x, hidden.paths = NULL,
       }
     }
   }
-  
+
   # Checking the number of sequences for title.n
   if (length(tlim) == 1 && tlim == 0) {
     if(nchannels == 1){
@@ -394,8 +394,8 @@ ssp <- function(x, hidden.paths = NULL,
   } else {
     n.seq <- length(tlim)
   }
-  
-  
+
+
   # Legend proportions
   legend.c.prop <- legend.r.prop <- 0
   if (with.legend == "right" || with.legend == "right.combined") {
@@ -403,7 +403,7 @@ ssp <- function(x, hidden.paths = NULL,
   } else if (with.legend == "bottom" || with.legend == "bottom.combined") {
     legend.r.prop <- legend.prop
   }
-  
+
   # Number of plots and positions of y labels
   nplots <- switch(plots,
     both = nchannels + 1,
@@ -421,7 +421,7 @@ ssp <- function(x, hidden.paths = NULL,
   if (type == "I" && length(ylab) == 1 && ylab != FALSE && !is.na(ylab)) {
     ylab.pos <- ylab.pos + 0.5
   }
-  
+
   # Space for viewports (for each element of the plot)
   if ((is.na(title) && title.n == FALSE) || (!is.na(title) && title == FALSE)) {
     title.pos <- 0
@@ -446,7 +446,7 @@ ssp <- function(x, hidden.paths = NULL,
   } else {
     xt.space <- 1
   }
-  
+
   # Select subjects based on tlim
   if (length(tlim) > 1 || length(tlim) == 1 && tlim > 0) {
     if (nchannels == 1) {
@@ -463,11 +463,11 @@ ssp <- function(x, hidden.paths = NULL,
       }
     }
   }
-  
+
   arguments <- list(obs = obs, nchannels = nchannels, nplots = nplots,
     legend.c.prop = legend.c.prop, legend.r.prop = legend.r.prop,
     ylab.space = ylab.space, xaxis.space = xaxis.space, xt.space = xt.space)
-  
+
   # Columns for legends
   if (length(ncol.legend) == 1 && ncol.legend == "auto") {
     ncol.legend <- switch(with.legend,
@@ -481,10 +481,10 @@ ssp <- function(x, hidden.paths = NULL,
       length(ncol.legend) > 1) {
     ncol.legend <- ncol.legend[1]
   }
-  
-  
-  
-  
+
+
+
+
   # Most probable paths of hidden states
   if (plots == "both" || plots == "hidden.paths" || (plots == "obs" && !is.null(hidden.paths)) ||
       (plots == "obs" && is.null(hidden.paths) && inherits(x, "hmm") && (sort.channel == 0 || (!is.null(sortv) && sortv == "mds.hidden")))) {
@@ -524,7 +524,7 @@ ssp <- function(x, hidden.paths = NULL,
         hidden.states.labels <- alphabet(hidden.paths)
       }
     }
-    
+
     # Color palette for hidden.paths
     # Automatic color palette
     if (length(hidden.states.colors) > 1 || hidden.states.colors != "auto") {
@@ -540,7 +540,7 @@ ssp <- function(x, hidden.paths = NULL,
         stop(paste("Please provide a vector of colors for argument hidden.states.colors or use value \"auto\" to automatically determine a color palette."))
       }
     }
-    
+
     # Sort sequences according to multidimensional scaling score of hidden.paths
     if (!is.null(sortv) && length(sortv) == 1 && sortv == "mds.hidden") {
       dist.hidden.paths <- suppressWarnings(suppressMessages(seqdist(hidden.paths, method = dist.method,
@@ -548,15 +548,28 @@ ssp <- function(x, hidden.paths = NULL,
       sortv <- cmdscale(dist.hidden.paths, k = 1)
     }
   }
-  
+
   # Order sequences for sortv
   if (type == "I" && !is.null(sortv)) {
     # Multichannel data
     if (nchannels > 1) {
       # Multidimensional scaling on observations
       if (length(sortv) == 1 && sortv == "mds.obs") {
-        dist.obs <- suppressWarnings(suppressMessages(seqdistmc(obs, method = dist.method,
-          sm = "TRATE", with.missing = TRUE)))
+        if (utils::packageVersion("TraMineR") >= "2.2-7") {
+          dist.obs <- suppressWarnings(suppressMessages(
+            seqMD(obs,
+                  method = dist.method,
+                  sm = "TRATE", what = "diss", with.missing = NULL
+            )
+          ))
+        } else {
+          dist.obs <- suppressWarnings(suppressMessages(
+            seqdistmc(obs,
+                      method = dist.method,
+                      sm = "TRATE", what = "diss", with.missing = TRUE
+            )
+          ))
+        }
         sortv <- cmdscale(dist.obs, k = 1)
       }
       # Sorting from start or end (extended version of the same feature in TraMineR:::plot.stslist)
@@ -660,21 +673,21 @@ ssp <- function(x, hidden.paths = NULL,
       stop("Sorting according to hidden paths is not possible since they were not provided.")
     }
   }
-  
+
   # Plot x-axis?
   if (plots == "obs" && xaxis == TRUE) {
     plotxaxis <- TRUE
   } else {
     plotxaxis <- FALSE
   }
-  
-  
+
+
   # Missing states in legends?
   if (type == "d" && with.missing == FALSE && with.missing.legend != FALSE &&
       with.missing.legend != TRUE && with.missing.legend == "auto") {
     with.missing.legend <- FALSE
   }
-  
+
   if (length(list(...)) == 0) {
     arguments <- c(arguments, list(hidden.paths = hidden.paths, plots = plots, type = type,
       n.seq = n.seq,
@@ -705,8 +718,8 @@ ssp <- function(x, hidden.paths = NULL,
       cex.lab = cex.lab, cex.axis = cex.axis, call = match.call()),
       list(...))
   }
-  
+
   class(arguments) <- "ssp"
   arguments
-  
+
 }

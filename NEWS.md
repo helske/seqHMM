@@ -1,3 +1,9 @@
+seqHMM 1.2.5 (Release date: 2023-04-03)
+==============
+  * Modified internals of `ssp` to be compatible with the latest versions of 
+    TraMineR.
+  * Added unit tests using testthat.
+
 seqHMM 1.2.4 (Release date: 2023-01-09)
 ==============
  * Fixed the issue with the initial transition matrix construction in build_mm 
