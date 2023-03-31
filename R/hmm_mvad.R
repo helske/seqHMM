@@ -60,6 +60,3 @@
 #' plot(hmm_mvad)
 #'
 NULL
-
-
-

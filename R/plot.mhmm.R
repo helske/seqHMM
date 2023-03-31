@@ -123,7 +123,7 @@
 #'
 #' @references Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
 #' Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
-#' 
+#'
 #' @examples
 #' # Loading mixture hidden Markov model (mhmm object)
 #' # of the biofam data
@@ -145,17 +145,16 @@
 #'   # Plotting models in the same graph (in a grid)
 #'   # Note: the plotting window must be high enough!
 #'   set.seed(123)
-#'   plot(mhmm_mvad, interactive = FALSE,
+#'   plot(mhmm_mvad,
+#'     interactive = FALSE,
 #'     # automatic layout, legend on the right-hand side
 #'     layout = layout_nicely, with.legend = "right",
 #'     # Smaller and less curved edges
 #'     edge.curved = 0.2, cex.edge.width = 0.5, edge.arrow.size = 0.7,
-#'     vertex.label.pos = -4 * pi / 5, vertex.label.dist = 5)
+#'     vertex.label.pos = -4 * pi / 5, vertex.label.dist = 5
+#'   )
 #' }
 #'
-
-
-
 plot.mhmm <- function(x, interactive = TRUE,
                       ask = FALSE, which.plots = NULL,
                       nrow = NA, ncol = NA, byrow = FALSE,
@@ -173,31 +172,31 @@ plot.mhmm <- function(x, interactive = TRUE,
                       combined.slice.label = "others",
                       with.legend = "bottom", ltext = NULL, legend.prop = 0.5,
                       cex.legend = 1, ncol.legend = "auto", cpal = "auto",
-                      main = "auto", withlegend, ...){
-  
+                      main = "auto", withlegend, ...) {
   check_deprecated_args(match.call())
 
   if (interactive) {
-    do.call(mHMMplotint, c(list(x = x, ask = ask, which.plots = which.plots, layout = layout, pie = pie,
-                                vertex.size = vertex.size, vertex.label = vertex.label,
-                                vertex.label.dist = vertex.label.dist, vertex.label.pos = vertex.label.pos,
-                                vertex.label.family = vertex.label.family,
-                                loops = loops, edge.curved = edge.curved, edge.label = edge.label,
-                                edge.width = edge.width, cex.edge.width = cex.edge.width,
-                                edge.arrow.size = edge.arrow.size, edge.label.family = edge.label.family,
-                                label.signif = label.signif, label.scientific = label.scientific,
-                                label.max.length = label.max.length,
-                                trim = trim,
-                                combine.slices = combine.slices, combined.slice.color = combined.slice.color,
-                                combined.slice.label = combined.slice.label,
-                                with.legend = with.legend, ltext = ltext, legend.prop = legend.prop,
-                                cex.legend = cex.legend, ncol.legend = ncol.legend, cpal = cpal,
-                                main = main), list(...)))
+    do.call(mHMMplotint, c(list(
+      x = x, ask = ask, which.plots = which.plots, layout = layout, pie = pie,
+      vertex.size = vertex.size, vertex.label = vertex.label,
+      vertex.label.dist = vertex.label.dist, vertex.label.pos = vertex.label.pos,
+      vertex.label.family = vertex.label.family,
+      loops = loops, edge.curved = edge.curved, edge.label = edge.label,
+      edge.width = edge.width, cex.edge.width = cex.edge.width,
+      edge.arrow.size = edge.arrow.size, edge.label.family = edge.label.family,
+      label.signif = label.signif, label.scientific = label.scientific,
+      label.max.length = label.max.length,
+      trim = trim,
+      combine.slices = combine.slices, combined.slice.color = combined.slice.color,
+      combined.slice.label = combined.slice.label,
+      with.legend = with.legend, ltext = ltext, legend.prop = legend.prop,
+      cex.legend = cex.legend, ncol.legend = ncol.legend, cpal = cpal,
+      main = main
+    ), list(...)))
   } else {
     args <- as.list(match.call())[-1]
     args$ask <- args$interactive <- NULL
     args$x <- x
     do.call(mHMMplotgrid, args)
   }
-
 }

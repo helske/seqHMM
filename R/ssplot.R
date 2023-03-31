@@ -52,11 +52,11 @@
 #'
 #' @param with.missing Controls whether missing states are included in state
 #'   distribution plots (\code{type = "d"}). The default is \code{FALSE}.
-#'  
-#' @param missing.color Alternative color for representing missing values 
-#'   in the sequences. By default, this color is taken from the \code{missing.color} 
+#'
+#' @param missing.color Alternative color for representing missing values
+#'   in the sequences. By default, this color is taken from the \code{missing.color}
 #'   attribute of the sequence object.
-#'   
+#'
 #' @param title Main title for the graphic. The default is \code{NA}: if
 #'   \code{title.n = TRUE}, only the number of subjects is plotted. \code{FALSE}
 #'   prints no title, even when \code{title.n = TRUE}.
@@ -147,10 +147,10 @@
 #' @param cex.axis Expansion factor for setting the size of the font for the x-axis
 #'   tick labels. The default value is 1. Values lesser than 1 will reduce the size of
 #'   the font, values greater than 1 will increase the size.
-#' @param respect_void  If \code{TRUE} (default), states at the time points 
-#' corresponding to TraMineR's void in the observed sequences are set to void 
+#' @param respect_void  If \code{TRUE} (default), states at the time points
+#' corresponding to TraMineR's void in the observed sequences are set to void
 #' in the hidden state sequences as well.
-#' 
+#'
 #' @param ... Other arguments to be passed on to
 #'   \code{\link[TraMineR]{seqplot}}.
 #'
@@ -169,19 +169,23 @@
 #'
 #'
 #' # Plotting state distribution plots of observations
-#' ssplot(list("Children" = child_seq, "Marriage" = marr_seq,
-#' "Residence" = left_seq))
+#' ssplot(list(
+#'   "Children" = child_seq, "Marriage" = marr_seq,
+#'   "Residence" = left_seq
+#' ))
 #'
 #' \dontrun{
 #' # Plotting sequence index plots of observations
 #' ssplot(
-#'   list(child_seq, marr_seq, left_seq), type = "I",
+#'   list(child_seq, marr_seq, left_seq),
+#'   type = "I",
 #'   # Sorting subjects according to the beginning of the 2nd channel (marr_seq)
 #'   sortv = "from.start", sort.channel = 2,
 #'   # Controlling the size, positions, and names for channel labels
 #'   ylab.pos = c(1, 2, 1), cex.lab = 1, ylab = c("Children", "Married", "Residence"),
 #'   # Plotting without legend
-#'   with.legend = FALSE)
+#'   with.legend = FALSE
+#' )
 #'
 #' # Plotting hidden Markov models
 #'
@@ -190,14 +194,16 @@
 #'
 #' # Plotting observations and hidden states paths
 #' ssplot(
-#'   hmm_biofam, type = "I", plots = "both",
+#'   hmm_biofam,
+#'   type = "I", plots = "both",
 #'   # Sorting according to multidimensional scaling of hidden states paths
 #'   sortv = "mds.hidden",
 #'   ylab = c("Children", "Married", "Left home"),
 #'   # Controlling title
 #'   title = "Biofam", cex.title = 1.5,
 #'   # Labels for x axis and tick marks
-#'   xtlab = 15:30, xlab = "Age")
+#'   xtlab = 15:30, xlab = "Age"
+#' )
 #'
 #' # Computing the most probable paths of hidden states
 #' hidden.paths <- hidden_paths(hmm_biofam)
@@ -205,7 +211,8 @@
 #'
 #' # Plotting observations and hidden state paths
 #' ssplot(
-#'   hmm_biofam, type = "I", plots = "hidden.paths",
+#'   hmm_biofam,
+#'   type = "I", plots = "hidden.paths",
 #'   # Sequence object of most probable paths
 #'   hidden.paths = hidden.paths_seq,
 #'   # Sorting according to the end of hidden state paths
@@ -213,8 +220,9 @@
 #'   # Contolling legend position, type, and proportion
 #'   with.legend = "bottom", legend.prop = 0.15,
 #'   # Plotting without title and y label
-#'   title = FALSE, ylab = FALSE)
-#'   }
+#'   title = FALSE, ylab = FALSE
+#' )
+#' }
 #' @seealso \code{\link{ssp}} for creating \code{ssp} objects and \code{\link{plot.ssp}}
 #' and \code{\link{gridplot}} for plotting these;
 #' \code{\link{build_hmm}} and \code{\link{fit_model}} for building and
@@ -224,21 +232,20 @@
 
 
 ssplot <- function(x, hidden.paths = NULL,
-                plots = "obs", type = "d", tlim = 0,
-                sortv = NULL, sort.channel = 1, dist.method = "OM",
-                with.missing = FALSE, missing.color = NULL,
-                title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
-                with.legend = "auto", ncol.legend = "auto",
-                with.missing.legend = "auto",
-                legend.prop = 0.3, cex.legend = 1,
-                hidden.states.colors = "auto", hidden.states.labels = "auto",
-                xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
-                ylab = "auto", hidden.states.title = "Hidden states",
-                yaxis = FALSE, ylab.pos = "auto",
-                cex.lab = 1, cex.axis = 1, respect_void = TRUE, ...){
-  
+                   plots = "obs", type = "d", tlim = 0,
+                   sortv = NULL, sort.channel = 1, dist.method = "OM",
+                   with.missing = FALSE, missing.color = NULL,
+                   title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
+                   with.legend = "auto", ncol.legend = "auto",
+                   with.missing.legend = "auto",
+                   legend.prop = 0.3, cex.legend = 1,
+                   hidden.states.colors = "auto", hidden.states.labels = "auto",
+                   xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
+                   ylab = "auto", hidden.states.title = "Hidden states",
+                   yaxis = FALSE, ylab.pos = "auto",
+                   cex.lab = 1, cex.axis = 1, respect_void = TRUE, ...) {
   check_deprecated_args(match.call())
-  
+
   args <- as.list(match.call())[-1]
   args[[1]] <- eval(args[[1]], envir = parent.frame())
   sspargs <- do.call(ssp, args = args)

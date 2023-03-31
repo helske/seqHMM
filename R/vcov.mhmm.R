@@ -24,149 +24,166 @@
 #' @return Matrix containing the variance-covariance matrix of coefficients.
 #' @export
 #'
-vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = FALSE, ...){
-
+vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = FALSE, ...) {
   if (conditional) {
     vcovm <- varcoef(object$coefficients, object$X)
   } else {
-    if (threads < 1) stop ("Argument threads must be a positive integer.")
+    if (threads < 1) stop("Argument threads must be a positive integer.")
     # copied from fit_model
     #
     original_model <- object
     model <- combine_models(object)
 
-    if(model$n_channels ==  1){
+    if (model$n_channels == 1) {
       model$observations <- list(model$observations)
       model$emission_probs <- list(model$emission_probs)
     }
 
-    obsArray <- array(0, c(model$n_sequences, model$length_of_sequences,
-      model$n_channels))
-    for(i in 1:model$n_channels){
-      obsArray[,,i] <- sapply(model$observations[[i]], as.integer) - 1L 
-      obsArray[,,i][obsArray[,,i]>model$n_symbols[i]] <- model$n_symbols[i]
+    obsArray <- array(0, c(
+      model$n_sequences, model$length_of_sequences,
+      model$n_channels
+    ))
+    for (i in 1:model$n_channels) {
+      obsArray[, , i] <- sapply(model$observations[[i]], as.integer) - 1L
+      obsArray[, , i][obsArray[, , i] > model$n_symbols[i]] <- model$n_symbols[i]
     }
     obsArray <- aperm(obsArray)
 
-    emissionArray <- array(1,c(model$n_states,max(model$n_symbols)+1,model$n_channels))
-    for(i in 1:model$n_channels)
-      emissionArray[,1:model$n_symbols[i],i] <- model$emission_probs[[i]]
+    emissionArray <- array(1, c(model$n_states, max(model$n_symbols) + 1, model$n_channels))
+    for (i in 1:model$n_channels) {
+      emissionArray[, 1:model$n_symbols[i], i] <- model$emission_probs[[i]]
+    }
 
     maxIP <- maxIPvalue <- npIP <- numeric(original_model$n_clusters)
-    paramIP <- initNZ <- vector("list",original_model$n_clusters)
-    for(m in 1:original_model$n_clusters){
+    paramIP <- initNZ <- vector("list", original_model$n_clusters)
+    for (m in 1:original_model$n_clusters) {
       # Index of largest initial probability
       maxIP[m] <- which.max(original_model$initial_probs[[m]])
       # Value of largest initial probability
       maxIPvalue[m] <- original_model$initial_probs[[m]][maxIP[m]]
       # Rest of non-zero probs
-      paramIP[[m]] <- setdiff(which(original_model$initial_probs[[m]]>0),maxIP[m])
+      paramIP[[m]] <- setdiff(which(original_model$initial_probs[[m]] > 0), maxIP[m])
       npIP[m] <- length(paramIP[[m]])
-      initNZ[[m]] <- original_model$initial_probs[[m]]>0
+      initNZ[[m]] <- original_model$initial_probs[[m]] > 0
       initNZ[[m]][maxIP[m]] <- 0
     }
     initNZ <- unlist(initNZ)
     npIPAll <- sum(unlist(npIP))
     # Largest transition probabilities (for each row)
-    x <- which(model$transition_probs>0,arr.ind = TRUE)
-    transNZ <- x[order(x[,1]),]
-    maxTM <- cbind(1:model$n_states,max.col(model$transition_probs,ties.method = "first"))
-    maxTMvalue <- apply(model$transition_probs,1,max)
-    paramTM <- rbind(transNZ,maxTM)
-    paramTM <- paramTM[!(duplicated(paramTM)|duplicated(paramTM,fromLast = TRUE)),,drop = FALSE]
+    x <- which(model$transition_probs > 0, arr.ind = TRUE)
+    transNZ <- x[order(x[, 1]), ]
+    maxTM <- cbind(1:model$n_states, max.col(model$transition_probs, ties.method = "first"))
+    maxTMvalue <- apply(model$transition_probs, 1, max)
+    paramTM <- rbind(transNZ, maxTM)
+    paramTM <- paramTM[!(duplicated(paramTM) | duplicated(paramTM, fromLast = TRUE)), , drop = FALSE]
     npTM <- nrow(paramTM)
-    transNZ <- model$transition_probs>0
+    transNZ <- model$transition_probs > 0
     transNZ[maxTM] <- 0
 
-    npCoef <- length(model$coefficients[,-1])
-    model$coefficients[,1] <- 0
+    npCoef <- length(model$coefficients[, -1])
+    model$coefficients[, 1] <- 0
 
 
-    emissNZ <- lapply(model$emission_probs,function(i){
-      x <- which(i>0,arr.ind = TRUE)
-      x[order(x[,1]),]
+    emissNZ <- lapply(model$emission_probs, function(i) {
+      x <- which(i > 0, arr.ind = TRUE)
+      x[order(x[, 1]), ]
     })
 
-    if(model$n_states > 1){
-      maxEM <- lapply(model$emission_probs,function(i) cbind(1:model$n_states,max.col(i,ties.method = "first")))
-      paramEM <- lapply(1:model$n_channels,function(i) {
-        x <- rbind(emissNZ[[i]],maxEM[[i]])
-        x[!(duplicated(x)|duplicated(x,fromLast = TRUE)),,drop = FALSE]
+    if (model$n_states > 1) {
+      maxEM <- lapply(model$emission_probs, function(i) cbind(1:model$n_states, max.col(i, ties.method = "first")))
+      paramEM <- lapply(1:model$n_channels, function(i) {
+        x <- rbind(emissNZ[[i]], maxEM[[i]])
+        x[!(duplicated(x) | duplicated(x, fromLast = TRUE)), , drop = FALSE]
       })
-      npEM <- sapply(paramEM,nrow)
+      npEM <- sapply(paramEM, nrow)
     } else {
-      maxEM <- lapply(model$emission_probs,function(i) max.col(i,ties.method = "first"))
-      paramEM <- lapply(1:model$n_channels,function(i) {
-        x <- rbind(emissNZ[[i]],c(1,maxEM[[i]]))
-        x[!(duplicated(x)|duplicated(x,fromLast = TRUE))][2]
+      maxEM <- lapply(model$emission_probs, function(i) max.col(i, ties.method = "first"))
+      paramEM <- lapply(1:model$n_channels, function(i) {
+        x <- rbind(emissNZ[[i]], c(1, maxEM[[i]]))
+        x[!(duplicated(x) | duplicated(x, fromLast = TRUE))][2]
       })
       npEM <- length(unlist(paramEM))
     }
 
-    maxEMvalue <- lapply(1:model$n_channels, function(i)
-      apply(model$emission_probs[[i]],1,max))
+    maxEMvalue <- lapply(1:model$n_channels, function(i) {
+      apply(model$emission_probs[[i]], 1, max)
+    })
 
 
-    emissNZ <- array(0,c(model$n_states,max(model$n_symbols),model$n_channels))
-    for(i in 1:model$n_channels){
-      emissNZ[,1:model$n_symbols[i],i] <- model$emission_probs[[i]] > 0
-      emissNZ[,1:model$n_symbols[i],i][maxEM[[i]]] <- 0
-
+    emissNZ <- array(0, c(model$n_states, max(model$n_symbols), model$n_channels))
+    for (i in 1:model$n_channels) {
+      emissNZ[, 1:model$n_symbols[i], i] <- model$emission_probs[[i]] > 0
+      emissNZ[, 1:model$n_symbols[i], i][maxEM[[i]]] <- 0
     }
 
-    initialvalues <- c(if((npTM+sum(npEM)+npIPAll)>0) log(c(
-      if(npTM>0) model$transition_probs[paramTM],
-      if(sum(npEM)>0) unlist(sapply(1:model$n_channels,
-        function(x) model$emission_probs[[x]][paramEM[[x]]])),
-      if(npIPAll>0) unlist(sapply(1:original_model$n_clusters,function(m)
-        if(npIP[m]>0) original_model$initial_probs[[m]][paramIP[[m]]]))
-    )),
-      model$coefficients[,-1]
+    initialvalues <- c(
+      if ((npTM + sum(npEM) + npIPAll) > 0) {
+        log(c(
+          if (npTM > 0) model$transition_probs[paramTM],
+          if (sum(npEM) > 0) {
+            unlist(sapply(
+              1:model$n_channels,
+              function(x) model$emission_probs[[x]][paramEM[[x]]]
+            ))
+          },
+          if (npIPAll > 0) {
+            unlist(sapply(1:original_model$n_clusters, function(m) {
+              if (npIP[m] > 0) original_model$initial_probs[[m]][paramIP[[m]]]
+            }))
+          }
+        ))
+      },
+      model$coefficients[, -1]
     )
 
-    coef_ind <- npTM+sum(npEM)+npIPAll+1:npCoef
+    coef_ind <- npTM + sum(npEM) + npIPAll + 1:npCoef
 
-    objectivef <- function(pars,model){
-
-      if(npTM>0){
+    objectivef <- function(pars, model) {
+      if (npTM > 0) {
         model$transition_probs[maxTM] <- maxTMvalue
         model$transition_probs[paramTM] <- exp(pars[1:npTM])
-        model$transition_probs <- model$transition_probs/rowSums(model$transition_probs)
+        model$transition_probs <- model$transition_probs / rowSums(model$transition_probs)
       }
-      if(sum(npEM)>0){
-        for(i in 1:model$n_channels){
-          emissionArray[,1:model$n_symbols[i],i][maxEM[[i]]] <- maxEMvalue[[i]]
-          emissionArray[,1:model$n_symbols[i],i][paramEM[[i]]] <- 
-            exp(pars[(npTM+1+c(0,cumsum(npEM))[i]):(npTM+cumsum(npEM)[i])])
-          emissionArray[,1:model$n_symbols[i],i] <- 
-            emissionArray[,1:model$n_symbols[i],i]/rowSums(emissionArray[,1:model$n_symbols[i],i])
+      if (sum(npEM) > 0) {
+        for (i in 1:model$n_channels) {
+          emissionArray[, 1:model$n_symbols[i], i][maxEM[[i]]] <- maxEMvalue[[i]]
+          emissionArray[, 1:model$n_symbols[i], i][paramEM[[i]]] <-
+            exp(pars[(npTM + 1 + c(0, cumsum(npEM))[i]):(npTM + cumsum(npEM)[i])])
+          emissionArray[, 1:model$n_symbols[i], i] <-
+            emissionArray[, 1:model$n_symbols[i], i] / rowSums(emissionArray[, 1:model$n_symbols[i], i])
         }
       }
-      for(m in 1:original_model$n_clusters){
-        if(npIP[m]>0){
+      for (m in 1:original_model$n_clusters) {
+        if (npIP[m] > 0) {
           original_model$initial_probs[[m]][maxIP[[m]]] <- maxIPvalue[[m]] # Not needed?
-          original_model$initial_probs[[m]][paramIP[[m]]] <- exp(pars[npTM+sum(npEM)+c(0,cumsum(npIP))[m]+
-              1:npIP[m]])
-          original_model$initial_probs[[m]][] <- original_model$initial_probs[[m]]/sum(original_model$initial_probs[[m]])
+          original_model$initial_probs[[m]][paramIP[[m]]] <- exp(pars[npTM + sum(npEM) + c(0, cumsum(npIP))[m] +
+            1:npIP[m]])
+          original_model$initial_probs[[m]][] <- original_model$initial_probs[[m]] / sum(original_model$initial_probs[[m]])
         }
       }
       model$initial_probs <- unlist(original_model$initial_probs)
-      model$coefficients[,-1] <- pars[coef_ind]
+      model$coefficients[, -1] <- pars[coef_ind]
 
       if (!log_space) {
-        objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray,
+        objectivex(
+          model$transition_probs, emissionArray, model$initial_probs, obsArray,
           transNZ, emissNZ, initNZ, model$n_symbols,
-          model$coefficients, model$X, model$n_states_in_clusters, threads)$gradient
+          model$coefficients, model$X, model$n_states_in_clusters, threads
+        )$gradient
       } else {
-        log_objectivex(model$transition_probs, emissionArray, model$initial_probs, obsArray,
+        log_objectivex(
+          model$transition_probs, emissionArray, model$initial_probs, obsArray,
           transNZ, emissNZ, initNZ, model$n_symbols,
-          model$coefficients, model$X, model$n_states_in_clusters, threads)$gradient
+          model$coefficients, model$X, model$n_states_in_clusters, threads
+        )$gradient
       }
     }
     vcovm <- solve(jacobian(objectivef, initialvalues, model = model, ...))[coef_ind, coef_ind]
   }
   rownames(vcovm) <- colnames(vcovm) <- paste(
     rep(object$cluster_names[-1], each = object$n_covariates),
-    rownames(object$coefficients), sep = ": ")
+    rownames(object$coefficients),
+    sep = ": "
+  )
   vcovm
 }

@@ -60,7 +60,7 @@
 #'   attribute of the sequence object.
 #'
 #' @param title A vector of main titles for the graphics. The default is \code{NA}: if
-#'   \code{title.n = TRUE}, the name of the cluster and the number of subjects is plotted. 
+#'   \code{title.n = TRUE}, the name of the cluster and the number of subjects is plotted.
 #'   \code{FALSE} prints no titles, even when \code{title.n = TRUE}.
 #'
 #' @param title.n Controls whether the number of subjects is printed in the main
@@ -148,10 +148,10 @@
 #' @param cex.axis Expansion factor for setting the size of the font for the x-axis
 #'   tick labels. The default value is 1. Values lesser than 1 will reduce the size of
 #'   the font, values greater than 1 will increase the size.
-#' @param respect_void  If \code{TRUE} (default), states at the time points 
-#' corresponding to TraMineR's void in the observed sequences are set to void 
+#' @param respect_void  If \code{TRUE} (default), states at the time points
+#' corresponding to TraMineR's void in the observed sequences are set to void
 #' in the hidden state sequences as well.
-#' 
+#'
 #' @param ... Other arguments to be passed on to
 #'   \code{\link[TraMineR]{seqplot}}.
 #'
@@ -168,31 +168,30 @@
 #'   mssplot(mhmm_biofam)
 #' }
 #'
-#'
 #' @seealso \code{\link{build_mhmm}} and \code{\link{fit_model}} for building and
 #'   fitting mixture hidden Markov models, \code{\link{hidden_paths}} for
 #'   computing the most probable paths (Viterbi paths) of hidden states,
 #'   \code{\link{plot.mhmm}} for plotting \code{mhmm} objects as directed graphs, and
 #'   \code{\link{colorpalette}} for default colors.
-#'   
-mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
-  plots = "obs", type = "d", tlim = 0,
-  sortv = NULL, sort.channel = 1, dist.method = "OM",
-  with.missing = FALSE, missing.color = NULL,
-  title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
-  with.legend = "auto", ncol.legend = "auto",
-  with.missing.legend = "auto",
-  legend.prop = 0.3, cex.legend = 1,
-  hidden.states.colors = "auto", hidden.states.labels = "auto",
-  xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
-  ylab = "auto", hidden.states.title = "Hidden states",
-  yaxis = FALSE, ylab.pos = "auto",
-  cex.lab = 1, cex.axis = 1, respect_void = TRUE, ...){
-  
+#'
+mssplot <- function(
+    x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
+    plots = "obs", type = "d", tlim = 0,
+    sortv = NULL, sort.channel = 1, dist.method = "OM",
+    with.missing = FALSE, missing.color = NULL,
+    title = NA, title.n = TRUE, cex.title = 1, title.pos = 1,
+    with.legend = "auto", ncol.legend = "auto",
+    with.missing.legend = "auto",
+    legend.prop = 0.3, cex.legend = 1,
+    hidden.states.colors = "auto", hidden.states.labels = "auto",
+    xaxis = TRUE, xlab = NA, xtlab = NULL, xlab.pos = 1,
+    ylab = "auto", hidden.states.title = "Hidden states",
+    yaxis = FALSE, ylab.pos = "auto",
+    cex.lab = 1, cex.axis = 1, respect_void = TRUE, ...) {
   check_deprecated_args(match.call())
-  
+
   # Checking for class of x
-  if(!inherits(x, "mhmm")){
+  if (!inherits(x, "mhmm")) {
     stop("Your object x is not a mhmm object. Use build_mhmm to create one.")
   }
 
@@ -206,21 +205,21 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
 
   # ssp arguments (besides mhmm object and hidden.paths)
   args <- as.list(match.call())[-(1:2)]
-  if("ask" %in% names(args)){
+  if ("ask" %in% names(args)) {
     args <- args[-which(names(args) == "ask")]
   }
-  if("which.plots" %in% names(args)){
+  if ("which.plots" %in% names(args)) {
     args <- args[-which(names(args) == "which.plots")]
   }
-  if("hidden.paths" %in% names(args)){
+  if ("hidden.paths" %in% names(args)) {
     args <- args[-which(names(args) == "hidden.paths")]
   }
-  if(!("title" %in% names(args))){
+  if (!("title" %in% names(args))) {
     titles <- x$cluster_names
-  }else{
+  } else {
     if (length(title) == 1 && (is.na(title) || !title)) {
       titles <- rep(title, x$n_clusters)
-    }else if (length(title) != x$n_clusters) {
+    } else if (length(title) != x$n_clusters) {
       warning("The length of the vector provided for the title argument does not match the number of clusters. Automatic titles were used instead.")
       titles <- x$cluster_names
     } else {
@@ -228,45 +227,49 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
     }
     args <- args[-which(names(args) == "title")]
   }
-  if(length(ylab) == 1 && ylab == "auto"){
+  if (length(ylab) == 1 && ylab == "auto") {
     args$ylab <- x$channel_names
   }
 
-  if(is.null(hidden.paths)){
+  if (is.null(hidden.paths)) {
     hidden.paths <- suppressWarnings(suppressMessages(hidden_paths(x, respect_void = respect_void)))
   }
 
-  if(!("hidden.states.labels" %in% names(args))){
+  if (!("hidden.states.labels" %in% names(args))) {
     hidden.states.labels <- unlist(x$state_names)
   }
   hidden.pathslabs <- list()
   k <- 0
-  for(i in 1:x$n_clusters){
-    hidden.pathslabs[[i]] <- hidden.states.labels[(k+1):(k+x$n_states[i])]
-    k <- k+x$n_states[i]
+  for (i in 1:x$n_clusters) {
+    hidden.pathslabs[[i]] <- hidden.states.labels[(k + 1):(k + x$n_states[i])]
+    k <- k + x$n_states[i]
   }
-  
+
   n_alphabet <- length(alphabet(hidden.paths))
   if (!("hidden.states.colors" %in% names(args))) {
     if (n_alphabet <= 200) {
       hidden.states.colors <- seqHMM::colorpalette[[n_alphabet]]
     } else {
-      stop("Model contains ", n_alphabet, " hidden states, which ", 
-           " is more than supported by the default color palette. Specify your ", 
-           " own color palette with the argument 'hidden.states.colors'.")
+      stop(
+        "Model contains ", n_alphabet, " hidden states, which ",
+        " is more than supported by the default color palette. Specify your ",
+        " own color palette with the argument 'hidden.states.colors'."
+      )
     }
   }
-  if(n_alphabet != length(hidden.states.colors)) {
-    stop("The number of hidden states is ", n_alphabet, 
-         " but the supplied color palette contains only ", 
-         length(hidden.states.colors), "colours.")
+  if (n_alphabet != length(hidden.states.colors)) {
+    stop(
+      "The number of hidden states is ", n_alphabet,
+      " but the supplied color palette contains only ",
+      length(hidden.states.colors), "colours."
+    )
   }
 
   hidden.pathscols <- list()
   k <- 0
-  for(i in 1:x$n_clusters){
-    hidden.pathscols[[i]] <- hidden.states.colors[(k+1):(k+x$n_states[i])]
-    k <- k+unname(x$n_states[i])
+  for (i in 1:x$n_clusters) {
+    hidden.pathscols[[i]] <- hidden.states.colors[(k + 1):(k + x$n_states[i])]
+    k <- k + unname(x$n_states[i])
   }
 
 
@@ -292,21 +295,21 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
   }
 
 
-  if(!is.null(which.plots)){
-    if(any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$n_clusters))){
+  if (!is.null(which.plots)) {
+    if (any(!is.numeric(which.plots)) || any(!(which.plots %in% 1:x$n_clusters))) {
       stop(paste0("The which.plot argument only accepts numerical values between 1 and ", x$n_clusters, "."))
-    }else if(any(which.plots %in% mm)){
+    } else if (any(which.plots %in% mm)) {
       warning("You requested cluster(s) with no subjects. Plotting only relevant clusters.")
       which.plots <- setdiff(which.plots, mm)
     }
-  }else if(!ask && is.null(which.plots)){
+  } else if (!ask && is.null(which.plots)) {
     which.plots <- 1:x$n_clusters
     # removing clusters with no subjects (according to hidden.paths)
     which.plots <- setdiff(which.plots, mm)
   }
 
 
-  if(x$n_channels == 1){
+  if (x$n_channels == 1) {
     x$observations <- list(x$observations)
   }
   if (ask && is.null(which.plots)) {
@@ -316,15 +319,17 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
     plot.new()
     repeat {
       pick <- menu(tmenunames, title = "\n Select cluster (or 0 to exit):\n")
-      if(pick == 0){
+      if (pick == 0) {
         return(invisible())
-      }else{
+      } else {
         args$x <- lapply(x$observations, function(y) y[hp_by_cluster_logic[[pick]], ])
-        if(plots != "obs"){
+        if (plots != "obs") {
           args$hidden.states.labels <- hidden.pathslabs[[pick]]
           args$hidden.paths <- suppressWarnings(suppressMessages(
             seqdef(hp_by_cluster[[pick]],
-              labels = args$hidden.states.labels)))
+              labels = args$hidden.states.labels
+            )
+          ))
           args$hidden.states.colors <- hidden.pathscols[[pick]]
           if (!is.null(sortv) && sortv == "mds.hidden") {
             if (length(args$hidden.states.labels) == 1) {
@@ -335,24 +340,26 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
           }
         }
         args$title <- titles[tmenu[pick]]
-        do.call(ssplotM,args = args)
+        do.call(ssplotM, args = args)
       }
     }
-  }else if (ask && !is.null(which.plots)) {
+  } else if (ask && !is.null(which.plots)) {
     tmenu <- which.plots
     tmenunames <- x$cluster_names[which.plots]
     plot.new()
     repeat {
       pick <- menu(tmenunames, title = "\n Select cluster (or 0 to exit):\n")
-      if(pick == 0){
+      if (pick == 0) {
         return(invisible())
-      }else{
+      } else {
         args$x <- lapply(x$observations, function(y) y[hp_by_cluster_logic[[pick]], ])
-        if(plots != "obs"){
+        if (plots != "obs") {
           args$hidden.states.labels <- hidden.pathslabs[[pick]]
           args$hidden.paths <- suppressWarnings(suppressMessages(
             seqdef(hp_by_cluster[[pick]],
-              labels = args$hidden.states.labels)))
+              labels = args$hidden.states.labels
+            )
+          ))
           args$hidden.states.colors <- hidden.pathscols[[pick]]
           if (!is.null(sortv) && sortv == "mds.hidden") {
             if (length(args$hidden.states.labels) == 1) {
@@ -363,19 +370,21 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
           }
         }
         args$title <- titles[tmenu[pick]]
-        do.call(ssplotM,args = args)
+        do.call(ssplotM, args = args)
       }
     }
-  }else{
+  } else {
     ask <- length(which.plots) > 1
     plot.new()
     for (i in which.plots) {
       args$x <- lapply(x$observations, function(y) y[hp_by_cluster_logic[[i]], ])
-      if(plots != "obs"){
+      if (plots != "obs") {
         args$hidden.states.labels <- hidden.pathslabs[[i]]
         args$hidden.paths <- suppressWarnings(suppressMessages(
           seqdef(hp_by_cluster[[i]],
-            labels = args$hidden.states.labels)))
+            labels = args$hidden.states.labels
+          )
+        ))
         args$hidden.states.colors <- hidden.pathscols[[i]]
         if (!is.null(sortv) && sortv == "mds.hidden") {
           if (length(args$hidden.states.labels) == 1) {
@@ -386,7 +395,7 @@ mssplot <- function(x, ask = FALSE, which.plots = NULL, hidden.paths = NULL,
         }
       }
       args$title <- titles[i]
-      do.call(ssplotM,args = args)
+      do.call(ssplotM, args = args)
       if (ask) {
         op <- par(ask = TRUE)
       }

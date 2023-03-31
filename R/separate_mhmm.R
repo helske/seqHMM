@@ -21,20 +21,19 @@
 #'
 #' # Separate models for clusters
 #' sep_hmm <- separate_mhmm(mhmm_biofam)
-#' 
+#'
 #' # Plotting the model for the first cluster
 #' plot(sep_hmm[[1]])
-
-
-separate_mhmm <- function(model){
-
+separate_mhmm <- function(model) {
   divmodels <- replicate(model$n_clusters, list())
 
-  for(i in 1:model$n_clusters){
-    divmodels[[i]] <- build_hmm(observations=model$observations,
-                                transition_probs=model$transition_probs[[i]],
-                                emission_probs=model$emission_probs[[i]],
-                                initial_probs=model$initial_probs[[i]])
+  for (i in 1:model$n_clusters) {
+    divmodels[[i]] <- build_hmm(
+      observations = model$observations,
+      transition_probs = model$transition_probs[[i]],
+      emission_probs = model$emission_probs[[i]],
+      initial_probs = model$initial_probs[[i]]
+    )
   }
   divmodels
 }

@@ -88,9 +88,9 @@
 #'   vector of length \code{x$n_symbols} is given, i.e. the argument requires a color
 #'   specified for all (combinations of) observed states even if they are not
 #'   plotted (if the probability is less than \code{combine.slices}).
-#' @param cpal.legend Optional color palette for the legend, only considered when 
+#' @param cpal.legend Optional color palette for the legend, only considered when
 #' legend.order is FALSE. Should match ltext.
-#' @param legend.order Whether to use the default order in the legend, i.e., order by appearance 
+#' @param legend.order Whether to use the default order in the legend, i.e., order by appearance
 #' (first by hidden state, then by emission probability). TRUE by default.
 #' @param main Main title for the plot. Omitted by default.
 #' @param withlegend Deprecated. Use \code{with.legend} instead.
@@ -120,15 +120,18 @@
 #'   # legend with two columns and less space
 #'   ncol.legend = 2, legend.prop = 0.4,
 #'   # new label for combined slice
-#'   combined.slice.label = "States with probability < 0.05")
+#'   combined.slice.label = "States with probability < 0.05"
+#' )
 #'
 #' # Plotting HMM with given coordinates
 #' plot(hmm_biofam,
 #'   # layout given in 2x5 matrix
 #'   # x coordinates in the first column
 #'   # y coordinates in the second column
-#'   layout = matrix(c(1, 3, 3, 5,  3,
-#'                     0, 0, 1, 0, -1), ncol = 2),
+#'   layout = matrix(c(
+#'     1, 3, 3, 5, 3,
+#'     0, 0, 1, 0, -1
+#'   ), ncol = 2),
 #'   # larger vertices
 #'   vertex.size = 50,
 #'   # straight edges
@@ -136,7 +139,7 @@
 #'   # thinner edges and arrows
 #'   cex.edge.width = 0.5, edge.arrow.size = 1,
 #'   # varying positions for vertex labels (initial probabilities)
-#'   vertex.label.pos = c(pi, pi/2, -pi/2, 0, pi/2),
+#'   vertex.label.pos = c(pi, pi / 2, -pi / 2, 0, pi / 2),
 #'   # different legend properties
 #'   with.legend = "top", legend.prop = 0.3, cex.legend = 1.1,
 #'   # Fix axes to the right scale
@@ -144,14 +147,17 @@
 #'   # all states (not combining states with small probabilities)
 #'   combine.slices = 0,
 #'   # legend with two columns
-#'   ncol.legend = 2)
+#'   ncol.legend = 2
+#' )
 #'
 #' # Plotting HMM with own color palette
-#' plot(hmm_biofam, cpal = 1:10,
+#' plot(hmm_biofam,
+#'   cpal = 1:10,
 #'   # States with emission probability less than 0.2 removed
 #'   combine.slices = 0.2,
 #'   # legend with two columns
-#'   ncol.legend = 2)
+#'   ncol.legend = 2
+#' )
 #'
 #' # Plotting HMM without pie graph and with a layout function
 #' require("igraph")
@@ -176,7 +182,8 @@
 #'   # Labels insidde vertices
 #'   vertex.label.dist = 0,
 #'   # Fix x-axis (more space on the right-hand side)
-#'   xlim = c(-1, 1.3))
+#'   xlim = c(-1, 1.3)
+#' )
 #'
 #'
 #' # Single-channel data, unrestricted model
@@ -190,17 +197,18 @@
 #' # Checking the order of observed states (needed for the next call)
 #' require(TraMineR)
 #' alphabet(hmm_mvad$observations)
-#' 
+#'
 #' # Plotting the HMM with own legend (note: observation "none" nonexistent in the observations)
-#' plot(hmm_mvad, 
-#'    # Override the default order in the legend
-#'    legend.order = FALSE,
-#'    # Colours in the pies (ordered by the alphabet of observations)
-#'    cpal = c("purple", "pink", "brown", "lightblue", "orange", "green"),
-#'    # Colours in the legend (matching to ltext)
-#'    cpal.legend = c("orange", "pink", "brown", "green", "lightblue", "purple", "gray"), 
-#'    # Labels in the legend (matching to cpal.legend)
-#'    ltext = c("school", "further educ", "higher educ", "training", "jobless", "employed", "none"))
+#' plot(hmm_mvad,
+#'   # Override the default order in the legend
+#'   legend.order = FALSE,
+#'   # Colours in the pies (ordered by the alphabet of observations)
+#'   cpal = c("purple", "pink", "brown", "lightblue", "orange", "green"),
+#'   # Colours in the legend (matching to ltext)
+#'   cpal.legend = c("orange", "pink", "brown", "green", "lightblue", "purple", "gray"),
+#'   # Labels in the legend (matching to cpal.legend)
+#'   ltext = c("school", "further educ", "higher educ", "training", "jobless", "employed", "none")
+#' )
 #'
 #' require("igraph")
 #' plot(hmm_mvad,
@@ -211,31 +219,27 @@
 #'   # Positioning vertex labels (initial probabilities)
 #'   vertex.label.pos = c("right", "right", "left", "left", "right"),
 #'   # Less space for the legend
-#'   legend.prop = 0.3)
-
-
-
-plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
-                      vertex.size = 40, vertex.label = "initial.probs",
-                      vertex.label.dist = "auto", vertex.label.pos = "bottom",
-                      vertex.label.family = "sans",
-                      loops = FALSE, edge.curved = TRUE, edge.label = "auto",
-                      edge.width = "auto", cex.edge.width = 1,
-                      edge.arrow.size = 1.5, edge.label.family = "sans",
-                      label.signif = 2, label.scientific = FALSE, label.max.length = 6,
-                      trim = 1e-15,
-                      combine.slices = 0.05, combined.slice.color = "white",
-                      combined.slice.label = "others",
-                      with.legend = "bottom", ltext = NULL, legend.prop = 0.5,
-                      cex.legend = 1, ncol.legend = "auto", cpal = "auto",
-                      cpal.legend = "auto", legend.order = TRUE,
-                      main = NULL, withlegend, ...){
-
-  
+#'   legend.prop = 0.3
+#' )
+plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
+                     vertex.size = 40, vertex.label = "initial.probs",
+                     vertex.label.dist = "auto", vertex.label.pos = "bottom",
+                     vertex.label.family = "sans",
+                     loops = FALSE, edge.curved = TRUE, edge.label = "auto",
+                     edge.width = "auto", cex.edge.width = 1,
+                     edge.arrow.size = 1.5, edge.label.family = "sans",
+                     label.signif = 2, label.scientific = FALSE, label.max.length = 6,
+                     trim = 1e-15,
+                     combine.slices = 0.05, combined.slice.color = "white",
+                     combined.slice.label = "others",
+                     with.legend = "bottom", ltext = NULL, legend.prop = 0.5,
+                     cex.legend = 1, ncol.legend = "auto", cpal = "auto",
+                     cpal.legend = "auto", legend.order = TRUE,
+                     main = NULL, withlegend, ...) {
   check_deprecated_args(match.call())
-  
+
   # Saving and changing marginals
-  oldPar  <- par(no.readonly = TRUE)
+  oldPar <- par(no.readonly = TRUE)
 
   if (is.null(main)) {
     par(mar = c(0.5, 0.5, 0.5, 0.5))
@@ -245,16 +249,16 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
   on.exit(par(oldPar), add = TRUE)
   on.exit(par(mfrow = c(1, 1)), add = TRUE)
 
-  dots  <- list(...)
+  dots <- list(...)
 
-  labelprint  <- function(z, labs) {
+  labelprint <- function(z, labs) {
     if (labs == TRUE && (z > 0.001 || z == 0)) {
-      labs  <- FALSE
+      labs <- FALSE
     }
-    if (z < 10 ^ -(label.max.length)) {
-      z  <- prettyNum(signif(round(z, digits = label.max.length), digits = label.signif), scientific = labs)
+    if (z < 10^-(label.max.length)) {
+      z <- prettyNum(signif(round(z, digits = label.max.length), digits = label.signif), scientific = labs)
     } else {
-      z  <- prettyNum(signif(z, digits = label.signif), scientific = labs)
+      z <- prettyNum(signif(z, digits = label.signif), scientific = labs)
     }
   }
 
@@ -279,34 +283,34 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
     stop("Argument with.legend must be one of TRUE, FALSE, \"bottom\", \"right\", \"top\", or \"left\".")
   }
   with.legend <- choices[ind]
-  if (with.legend %in% c(TRUE, "auto")){
+  if (with.legend %in% c(TRUE, "auto")) {
     with.legend <- "bottom"
   }
 
 
   # Convert multichannel models to single-channel
   if (x$n_channels > 1) {
-    x  <- mc_to_sc(x, cpal = cpal)
+    x <- mc_to_sc(x, cpal = cpal)
   }
 
   # No slices -> no legends needed
   if (pie == FALSE && with.legend != FALSE) {
-    with.legend  <- FALSE
+    with.legend <- FALSE
   }
 
 
   # Positions of vertex labels
   if (!is.numeric(vertex.label.pos)) {
     vpos <- numeric(length(vertex.label.pos))
-    for(i in 1:length(vertex.label.pos)){
+    for (i in 1:length(vertex.label.pos)) {
       if (vertex.label.pos[i] == "bottom") {
-        vpos[i]  <- pi/2
-      } else if(vertex.label.pos[i] == "top") {
-        vpos[i]  <- -pi/2
-      } else if(vertex.label.pos[i] == "left") {
-        vpos[i]  <- pi
+        vpos[i] <- pi / 2
+      } else if (vertex.label.pos[i] == "top") {
+        vpos[i] <- -pi / 2
+      } else if (vertex.label.pos[i] == "left") {
+        vpos[i] <- pi
       } else {
-        vpos[i]  <- 0
+        vpos[i] <- 0
       }
     }
     vertex.label.pos <- vpos
@@ -315,13 +319,13 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
   # Vertex labels
   if (length(vertex.label) == 1 && !is.na(vertex.label) && vertex.label != FALSE) {
     if (vertex.label == "initial.probs") {
-      vertex.label  <- sapply(x$initial_probs, labelprint, labs = label.scientific)
-    } else if(vertex.label == "names") {
-      vertex.label  <- x$state_names
+      vertex.label <- sapply(x$initial_probs, labelprint, labs = label.scientific)
+    } else if (vertex.label == "names") {
+      vertex.label <- x$state_names
     }
   } else if (length(vertex.label) != length(x$state_names)) {
     warning("The length of the vector provided for the argument \"vertex.label\" does not match the number of hidden states.")
-    vertex.label  <- rep(vertex.label, length.out = length(x$state_names))
+    vertex.label <- rep(vertex.label, length.out = length(x$state_names))
   }
 
   # Vertex label distances
@@ -330,39 +334,39 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
     if (is.na(ind)) {
       stop("Argument vertex.label.dist only accepts the value \"auto\" or a numerical vector.")
     }
-    vertex.label.dist  <- vertex.size * 0.4 / 3.5
-  } else if (length(vertex.label.dist) > 1 && length(vertex.label.dist) != x$n_states){
+    vertex.label.dist <- vertex.size * 0.4 / 3.5
+  } else if (length(vertex.label.dist) > 1 && length(vertex.label.dist) != x$n_states) {
     warning("The length of the vector provided for the argument \"vertex.label.dist\" does not match the number of edges.")
-    vertex.label.dist  <- rep(vertex.label.dist, length.out = length(x$n_states))
+    vertex.label.dist <- rep(vertex.label.dist, length.out = length(x$n_states))
   }
 
 
   # Trimming (remove small transition probablities from plot)
-  transM  <- x$transition_probs
-  transM[transM < trim]  <- 0
+  transM <- x$transition_probs
+  transM[transM < trim] <- 0
 
   # Adjacency matrix (which edges to plot)
-  edges  <- transM
-  edges[edges > 0]  <- 1
+  edges <- transM
+  edges[edges > 0] <- 1
   # Remove transitions back to the same state
-  if(!loops){
-    diag(edges)  <- 0
+  if (!loops) {
+    diag(edges) <- 0
   }
 
   # Vector of non-zero transition probabilities
-  transitions  <- transM
+  transitions <- transM
   if (loops == FALSE && length(transitions) > 1) {
-    diag(transitions)  <- 0
+    diag(transitions) <- 0
   }
-  transitions  <- t(transitions)[t(transitions) > 0]
+  transitions <- t(transitions)[t(transitions) > 0]
 
   # Edge labels
   if (!is.na(edge.label) && edge.label != FALSE) {
     if (length(edge.label) == 1 && (edge.label == "auto" || edge.label == TRUE)) {
-      edge.label  <- sapply(transitions, labelprint, labs = label.scientific)
+      edge.label <- sapply(transitions, labelprint, labs = label.scientific)
     } else if (length(edge.label) > 1 && length(edge.label) != length(transitions)) {
       warning("The length of the vector provided for the argument \"edge.label\" does not match the number of edges.")
-      edge.label  <- rep(edge.label, length.out = length(transitions))
+      edge.label <- rep(edge.label, length.out = length(transitions))
     }
   }
 
@@ -373,51 +377,55 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
     if (is.na(ind)) {
       stop("Argument edge.width only accepts the value \"auto\" or a numerical vector.")
     }
-    edge.width  <- transitions * (7 / max(transitions)) * cex.edge.width
+    edge.width <- transitions * (7 / max(transitions)) * cex.edge.width
   } else if (length(edge.width) > 1 && edge.width != length(transitions)) {
     warning("The length of the vector provided for the argument \"edge.width\" does not match the number of edges.")
-    edge.width  <- rep(edge.width, length.out = length(transitions))
+    edge.width <- rep(edge.width, length.out = length(transitions))
   }
 
   # Defining the graph structure
-  g1  <- graph.adjacency(edges, mode = "directed")
+  g1 <- graph.adjacency(edges, mode = "directed")
 
   # Layout of the graph
   if (is.function(layout)) {
-    glayout  <- layout(g1)
+    glayout <- layout(g1)
   } else if (is.matrix(layout)) {
-    glayout  <- layout
+    glayout <- layout
   } else {
     if (layout == "horizontal") {
-      glayout  <- layout_on_grid(g1, width = x$n_states)
-    } else if(layout == "vertical") {
-      glayout  <- layout_on_grid(g1, width = 1)
+      glayout <- layout_on_grid(g1, width = x$n_states)
+    } else if (layout == "vertical") {
+      glayout <- layout_on_grid(g1, width = 1)
     }
   }
 
 
   # Colors for the (combinations of) observed states
   if (identical(cpal, "auto")) {
-    pie.colors  <- attr(x$observations, "cpal")
-  } else if(length(cpal) != ncol(x$emiss)) {
-    if(ncol(x$emiss) <= 200) {
+    pie.colors <- attr(x$observations, "cpal")
+  } else if (length(cpal) != ncol(x$emiss)) {
+    if (ncol(x$emiss) <= 200) {
       warning("The length of the vector provided for argument cpal does not match the number of observed states. Automatic color palette was used.")
-      pie.colors  <- attr(x$observations, "cpal")
+      pie.colors <- attr(x$observations, "cpal")
     } else {
-      stop("Not enough colours in the colour palette. Argument 'cpal' should be of length ", 
-           ncol(x$emiss), " (number of observed states).")
+      stop(
+        "Not enough colours in the colour palette. Argument 'cpal' should be of length ",
+        ncol(x$emiss), " (number of observed states)."
+      )
     }
-  } else if(!all(isColor(cpal))) {
+  } else if (!all(isColor(cpal))) {
     stop("Please provide a vector of colors for argument cpal or use value \"auto\" for automatic color palette.")
   } else {
-    pie.colors  <- cpal
+    pie.colors <- cpal
   }
   if (with.legend != FALSE) {
-    pie.colors.l  <- pie.colors
+    pie.colors.l <- pie.colors
   }
   if (length(pie.colors) != ncol(x$emiss)) {
-    stop("Not enough colours in the default colour palette. Argument 'cpal' should be of length ", 
-         ncol(x$emiss), " (number of observed states).")
+    stop(
+      "Not enough colours in the default colour palette. Argument 'cpal' should be of length ",
+      ncol(x$emiss), " (number of observed states)."
+    )
   }
   # Legend position and number of columns
   if (with.legend != FALSE && pie == TRUE) {
@@ -425,12 +433,12 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
     if (!is.null(ltext)) {
       # If order by appearance is used
       if (legend.order) {
-        if(length(ltext) != x$n_symbols) {
+        if (length(ltext) != x$n_symbols) {
           stop(paste0("With legend.order = TRUE, the length of the argument ltext must match the number of (combined) observed states in the observed data (", x$n_symbols, ")."))
         }
         # No ordering by appearance
       } else {
-        if((length(cpal) == 1 && cpal != "auto") && length(ltext) != length(cpal.legend)) {
+        if ((length(cpal) == 1 && cpal != "auto") && length(ltext) != length(cpal.legend)) {
           stop(paste0("The number of colours in cpal.legend does not match the number of labels in ltext."))
         }
         ltext.orig <- ltext
@@ -438,9 +446,9 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
         if (identical(cpal, "auto")) {
           # Default cpal.legend is the same as default cpal
           if (identical(cpal.legend, "auto")) {
-          cpal.legend <- attr(x$observations, "cpal")
+            cpal.legend <- attr(x$observations, "cpal")
           }
-        # If cpal set
+          # If cpal set
         } else {
           if (identical(cpal.legend, "auto")) {
             cpal.legend <- cpal
@@ -452,7 +460,7 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
       ltext <- ltext.orig <- x$symbol_names
       if (identical(cpal, "auto")) {
         # Default cpal.legend is the same as default cpal
-        if(identical(cpal.legend, "auto")) {
+        if (identical(cpal.legend, "auto")) {
           cpal.legend <- attr(x$observations, "cpal")
         }
         # If cpal set
@@ -476,94 +484,94 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
   if (!is.matrix(layout) && !is.function(layout)) {
     if (layout == "horizontal") {
       if (hasArg(rescale)) {
-        rescale  <- dots$rescale
+        rescale <- dots$rescale
       } else {
         rescale <- FALSE
       }
       if (hasArg(xlim)) {
-        xlim  <- dots$xlim
+        xlim <- dots$xlim
       } else {
         if (rescale == TRUE) {
-          xlim  <- c(-1, 1)
+          xlim <- c(-1, 1)
         } else {
-          xlim  <- c(-0.1, ncol(transM) - 1 + 0.1)
+          xlim <- c(-0.1, ncol(transM) - 1 + 0.1)
         }
       }
       if (hasArg(ylim)) {
-        ylim  <- dots$ylim
+        ylim <- dots$ylim
       } else {
         if (rescale == TRUE) {
-          ylim  <- c(-1, 1)
+          ylim <- c(-1, 1)
         } else {
-          ylim  <- c(-0.5, 0.5)
+          ylim <- c(-0.5, 0.5)
         }
       }
-      dots[["xlim"]]  <- NULL
-      dots[["ylim"]]  <- NULL
-      dots[["rescale"]]  <- NULL
+      dots[["xlim"]] <- NULL
+      dots[["ylim"]] <- NULL
+      dots[["rescale"]] <- NULL
     } else if (layout == "vertical") {
       if (hasArg(rescale)) {
-        rescale  <- dots$rescale
+        rescale <- dots$rescale
       } else {
         rescale <- FALSE
       }
       if (hasArg(xlim)) {
-        xlim  <- dots$xlim
+        xlim <- dots$xlim
       } else {
         if (rescale == TRUE) {
-          xlim  <- c(-1, 1)
+          xlim <- c(-1, 1)
         } else {
-          xlim  <- c(-0.5, 0.5)
+          xlim <- c(-0.5, 0.5)
         }
       }
       if (hasArg(ylim)) {
-        ylim  <- dots$ylim
+        ylim <- dots$ylim
       } else {
         if (rescale == TRUE) {
-          ylim  <- c(-1, 1)
+          ylim <- c(-1, 1)
         } else {
-          ylim  <- c(-0.1, ncol(transM) - 1 + 0.1)
+          ylim <- c(-0.1, ncol(transM) - 1 + 0.1)
         }
       }
-      dots[["xlim"]]  <- NULL
-      dots[["ylim"]]  <- NULL
-      dots[["rescale"]]  <- NULL
+      dots[["xlim"]] <- NULL
+      dots[["ylim"]] <- NULL
+      dots[["rescale"]] <- NULL
     }
   }
 
 
   # Plotting graph
   if (pie == TRUE) {
-    pie.values  <- lapply(seq_len(nrow(transM)), function(i) x$emission_probs[i,])
+    pie.values <- lapply(seq_len(nrow(transM)), function(i) x$emission_probs[i, ])
     # If slices are combined
     if (combine.slices > 0 &&
-        !all(unlist(pie.values)[unlist(pie.values) > 0] > combine.slices)) {
+      !all(unlist(pie.values)[unlist(pie.values) > 0] > combine.slices)) {
       if (with.legend != FALSE) {
-        pie.colors.l  <- NULL
-        lt  <- NULL
+        pie.colors.l <- NULL
+        lt <- NULL
       }
       for (i in 1:x$n_states) {
         # How much probability for combined slice
-        cs.prob  <- sum(pie.values[[i]][pie.values[[i]] < combine.slices])
+        cs.prob <- sum(pie.values[[i]][pie.values[[i]] < combine.slices])
         # Remove small probabilities form pies
-        pie.values[[i]][pie.values[[i]] < combine.slices]  <- 0
+        pie.values[[i]][pie.values[[i]] < combine.slices] <- 0
         # Colors and labels for large slices
-        pie.values[[i]]  <- c(pie.values[[i]], cs.prob)
+        pie.values[[i]] <- c(pie.values[[i]], cs.prob)
         # Texts and colors for legends
         if (with.legend != FALSE) {
-          pie.colors.l  <- c(pie.colors.l, pie.colors[pie.values[[i]][1:(length(pie.values[[i]]) - 1)] >= combine.slices])
-          lt  <- c(lt, ltext[pie.values[[i]][1:(length(pie.values[[i]]) - 1)] >= combine.slices])
+          pie.colors.l <- c(pie.colors.l, pie.colors[pie.values[[i]][1:(length(pie.values[[i]]) - 1)] >= combine.slices])
+          lt <- c(lt, ltext[pie.values[[i]][1:(length(pie.values[[i]]) - 1)] >= combine.slices])
         }
       }
       if (with.legend != FALSE) {
-        ltext  <- c(unique(lt), combined.slice.label)
-        pie.colors.l  <- c(unique(pie.colors.l), combined.slice.color)
+        ltext <- c(unique(lt), combined.slice.label)
+        pie.colors.l <- c(unique(pie.colors.l), combined.slice.color)
       }
       if (ncol.legend == "auto") {
         if (with.legend == "bottom" || with.legend == "top") {
-          ncol.legend  <- ceiling(length(pie.colors) / 4)
+          ncol.legend <- ceiling(length(pie.colors) / 4)
         } else {
-          ncol.legend  <- 1
+          ncol.legend <- 1
         }
       }
       pie.colors <- c(pie.colors, combined.slice.color)
@@ -571,67 +579,75 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
     } else {
       if (ncol.legend == "auto") {
         if (with.legend == "bottom" || with.legend == "top") {
-          ncol.legend  <- ceiling(ncol(x$emission_probs) / 4)
+          ncol.legend <- ceiling(ncol(x$emission_probs) / 4)
         } else {
-          ncol.legend  <- 1
+          ncol.legend <- 1
         }
       }
     }
 
     if (!is.matrix(layout) && !is.function(layout) &&
-        (layout == "horizontal" || layout == "vertical")) {
-      do.call(plot.igraph, c(list(g1, layout = glayout,
-                                   vertex.shape = "pie", vertex.pie = pie.values,
-                                   vertex.pie.color = list(pie.colors),
-                                   vertex.size = vertex.size,
-                                   vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-                                   vertex.label.degree = vertex.label.pos,
-                                   vertex.label.family = vertex.label.family,
-                                   edge.curved = edge.curved, edge.width = edge.width,
-                                   edge.label = edge.label,
-                                   edge.label.family = edge.label.family,
-                                   edge.arrow.size = edge.arrow.size,
-                                   xlim = xlim, ylim = ylim, rescale = rescale,
-                                   main = main), dots))
+      (layout == "horizontal" || layout == "vertical")) {
+      do.call(plot.igraph, c(list(g1,
+        layout = glayout,
+        vertex.shape = "pie", vertex.pie = pie.values,
+        vertex.pie.color = list(pie.colors),
+        vertex.size = vertex.size,
+        vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+        vertex.label.degree = vertex.label.pos,
+        vertex.label.family = vertex.label.family,
+        edge.curved = edge.curved, edge.width = edge.width,
+        edge.label = edge.label,
+        edge.label.family = edge.label.family,
+        edge.arrow.size = edge.arrow.size,
+        xlim = xlim, ylim = ylim, rescale = rescale,
+        main = main
+      ), dots))
     } else {
-      do.call(plot.igraph, c(list(g1, layout = glayout,
-                                   vertex.shape = "pie", vertex.pie = pie.values,
-                                   vertex.pie.color = list(pie.colors),
-                                   vertex.size = vertex.size,
-                                   vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-                                   vertex.label.degree = vertex.label.pos,
-                                   vertex.label.family = vertex.label.family,
-                                   edge.curved = edge.curved, edge.width = edge.width,
-                                   edge.label = edge.label,
-                                   edge.label.family = edge.label.family,
-                                   edge.arrow.size = edge.arrow.size,
-                                   main = main), dots))
+      do.call(plot.igraph, c(list(g1,
+        layout = glayout,
+        vertex.shape = "pie", vertex.pie = pie.values,
+        vertex.pie.color = list(pie.colors),
+        vertex.size = vertex.size,
+        vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+        vertex.label.degree = vertex.label.pos,
+        vertex.label.family = vertex.label.family,
+        edge.curved = edge.curved, edge.width = edge.width,
+        edge.label = edge.label,
+        edge.label.family = edge.label.family,
+        edge.arrow.size = edge.arrow.size,
+        main = main
+      ), dots))
     }
-  # pie = FALSE
+    # pie = FALSE
   } else {
-    if(!is.matrix(layout) && !is.function(layout) && (layout == "horizontal" || layout == "vertical")){
-      do.call(plot.igraph, c(list(g1, layout = glayout,
-                                   vertex.size = vertex.size,
-                                   vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-                                   vertex.label.degree = vertex.label.pos,
-                                   vertex.label.family = vertex.label.family,
-                                   edge.curved = edge.curved, edge.width = edge.width,
-                                   edge.label = edge.label,
-                                   edge.label.family = edge.label.family,
-                                   edge.arrow.size = edge.arrow.size,
-                                   xlim = xlim, ylim = ylim, rescale = rescale,
-                                   main = main), dots))
+    if (!is.matrix(layout) && !is.function(layout) && (layout == "horizontal" || layout == "vertical")) {
+      do.call(plot.igraph, c(list(g1,
+        layout = glayout,
+        vertex.size = vertex.size,
+        vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+        vertex.label.degree = vertex.label.pos,
+        vertex.label.family = vertex.label.family,
+        edge.curved = edge.curved, edge.width = edge.width,
+        edge.label = edge.label,
+        edge.label.family = edge.label.family,
+        edge.arrow.size = edge.arrow.size,
+        xlim = xlim, ylim = ylim, rescale = rescale,
+        main = main
+      ), dots))
     } else {
-      do.call(plot.igraph, c(list(g1, layout = glayout,
-                                   vertex.size = vertex.size,
-                                   vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-                                   vertex.label.degree = vertex.label.pos,
-                                   vertex.label.family = vertex.label.family,
-                                   edge.curved = edge.curved, edge.width = edge.width,
-                                   edge.label = edge.label,
-                                   edge.label.family = edge.label.family,
-                                   edge.arrow.size = edge.arrow.size,
-                                   main = main), dots))
+      do.call(plot.igraph, c(list(g1,
+        layout = glayout,
+        vertex.size = vertex.size,
+        vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+        vertex.label.degree = vertex.label.pos,
+        vertex.label.family = vertex.label.family,
+        edge.curved = edge.curved, edge.width = edge.width,
+        edge.label = edge.label,
+        edge.label.family = edge.label.family,
+        edge.arrow.size = edge.arrow.size,
+        main = main
+      ), dots))
     }
   }
 
@@ -639,15 +655,19 @@ plot.hmm  <- function(x, layout = "horizontal", pie = TRUE,
   # Plotting legend
   if (with.legend != FALSE && pie == TRUE) {
     # Order by appearance
-    if(legend.order) {
-      seqlegend(x$observations, cpal = pie.colors.l, ltext = ltext, 
-                position = "center", cex = cex.legend, ncol = ncol.legend, 
-                with.missing = FALSE)
+    if (legend.order) {
+      seqlegend(x$observations,
+        cpal = pie.colors.l, ltext = ltext,
+        position = "center", cex = cex.legend, ncol = ncol.legend,
+        with.missing = FALSE
+      )
       # Original order (by alphabet in observations)
     } else {
-      seqlegend(x$observations, cpal = cpal.legend, ltext = ltext.orig, 
-                position = "center", cex = cex.legend, ncol = ncol.legend, 
-                with.missing = FALSE)
+      seqlegend(x$observations,
+        cpal = cpal.legend, ltext = ltext.orig,
+        position = "center", cex = cex.legend, ncol = ncol.legend,
+        with.missing = FALSE
+      )
     }
   }
 

@@ -24,6 +24,3 @@
 #' colorpalette[[24]]
 #'
 NULL
-
-
-

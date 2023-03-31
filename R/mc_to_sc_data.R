@@ -1,40 +1,46 @@
 #' Merge Multiple Sequence Objects into One (from Multichannel to Single Channel Data)
 #'
-#' Function \code{mc_to_sc_data} combines observed states of multiple 
+#' Function \code{mc_to_sc_data} combines observed states of multiple
 #'   sequence objects into one, time point by time point.
 #'
 #' @export
-#' @param data A list of state sequence objects (\code{stslist}s) 
+#' @param data A list of state sequence objects (\code{stslist}s)
 #'   created with the \code{\link{seqdef}} function.
-#' @param combine_missing Controls whether combined states of observations 
-#'   at time t are coded missing (coded with * in \code{stslist}s) 
-#'   if one or more of the channels include missing information at time t. 
+#' @param combine_missing Controls whether combined states of observations
+#'   at time t are coded missing (coded with * in \code{stslist}s)
+#'   if one or more of the channels include missing information at time t.
 #'   Defaults to \code{TRUE}. \code{FALSE} keeps missing states
-#'   as they are, producing more states in data; e.g. single/childless/* 
-#'   where the observation in channel 3 is missing. 
+#'   as they are, producing more states in data; e.g. single/childless/*
+#'   where the observation in channel 3 is missing.
 #' @param all_combinations Controls whether all possible combinations of
-#'   observed states are included in the single channel representation or 
-#'   only combinations that are found in the data. Defaults to \code{FALSE}, 
+#'   observed states are included in the single channel representation or
+#'   only combinations that are found in the data. Defaults to \code{FALSE},
 #'   i.e. only actual observations are included.
-#' @param cpal The color palette used for the new combined symbols. Optional in 
-#'   a case where the number of symbols is less or equal to 200 (in which case 
+#' @param cpal The color palette used for the new combined symbols. Optional in
+#'   a case where the number of symbols is less or equal to 200 (in which case
 #'   the \code{seqHMM::colorpalette} is used).
-#' @seealso \code{\link{mc_to_sc}} for transforming multichannel \code{hmm} 
-#'   or \code{mhmm} objects into single-channel representations; 
+#' @seealso \code{\link{mc_to_sc}} for transforming multichannel \code{hmm}
+#'   or \code{mhmm} objects into single-channel representations;
 #'   \code{\link{ssplot}} for plotting multiple sequence data sets in the
 #'   same plot; and \code{\link{seqdef}} for creating state sequence objects.
-#' 
+#'
 #' @examples
 #' # Load three-channel sequence data
 #' data("biofam3c")
-#' 
+#'
 #' # Building sequence objects
-#' marr_seq <- seqdef(biofam3c$married, start = 15,
-#'   alphabet = c("single", "married", "divorced"))
-#' child_seq <- seqdef(biofam3c$children, start = 15,
-#'   alphabet = c("childless", "children"))
-#' left_seq <- seqdef(biofam3c$left, start = 15,
-#'   alphabet = c("with parents", "left home"))
+#' marr_seq <- seqdef(biofam3c$married,
+#'   start = 15,
+#'   alphabet = c("single", "married", "divorced")
+#' )
+#' child_seq <- seqdef(biofam3c$children,
+#'   start = 15,
+#'   alphabet = c("childless", "children")
+#' )
+#' left_seq <- seqdef(biofam3c$left,
+#'   start = 15,
+#'   alphabet = c("with parents", "left home")
+#' )
 #'
 #' # Define colors
 #' attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
@@ -43,29 +49,33 @@
 #'
 #' # Converting multichannel data to single-channel data
 #' sc_data <- mc_to_sc_data(list(marr_seq, child_seq, left_seq))
-#' 
+#'
 #' # 10 combined states
 #' alphabet(sc_data)
-#' 
+#'
 #' # Colors for combined states
 #' attr(sc_data, "cpal") <- colorpalette[[14]][1:10]
 #'
 #' # Plotting sequences for the first 10 subjects
-#' ssplot(list("Marriage" = marr_seq, "Parenthood" = child_seq, 
-#'   "Residence" = left_seq, "Combined" = sc_data), type = "I",
-#'   tlim = 1:10)
-#' 
-#' 
+#' ssplot(
+#'   list(
+#'     "Marriage" = marr_seq, "Parenthood" = child_seq,
+#'     "Residence" = left_seq, "Combined" = sc_data
+#'   ),
+#'   type = "I",
+#'   tlim = 1:10
+#' )
+#'
+#'
 #' # Including all combinations (whether or not available in data)
 #' sc_data_all <- mc_to_sc_data(list(marr_seq, child_seq, left_seq),
-#'   all_combinations = TRUE)
-#' 
+#'   all_combinations = TRUE
+#' )
+#'
 #' # 12 combined states, 2 with no observations in data
 #' seqstatf(sc_data_all)
-#' 
-
-mc_to_sc_data <- function(data, combine_missing = TRUE, all_combinations = FALSE, cpal){
-  
+#'
+mc_to_sc_data <- function(data, combine_missing = TRUE, all_combinations = FALSE, cpal) {
   if (length(unique(sapply(data, nrow))) > 1) {
     stop("The number of subjects (rows) is not the same in all channels.")
   }
@@ -73,42 +83,52 @@ mc_to_sc_data <- function(data, combine_missing = TRUE, all_combinations = FALSE
     stop("The length of the sequences (number of columns) is not the same in all channels.")
   }
 
-  alph <- apply(expand.grid(lapply(data,alphabet)), 1, paste0, collapse = "/")
+  alph <- apply(expand.grid(lapply(data, alphabet)), 1, paste0, collapse = "/")
 
   datax <- data[[1]]
-  for(i in 2:length(data))
+  for (i in 2:length(data)) {
     datax <- as.data.frame(mapply(paste, datax,
-      data[[i]], USE.NAMES=FALSE,SIMPLIFY=FALSE,
-      MoreArgs=list(sep="/")))
+      data[[i]],
+      USE.NAMES = FALSE, SIMPLIFY = FALSE,
+      MoreArgs = list(sep = "/")
+    ))
+  }
   names(datax) <- names(data[[1]])
-  if(combine_missing==TRUE){
-    datax[Reduce("|", lapply(data,
-        function(x)
-          x==attr(data[[1]], "nr") |
-          x==attr(data[[1]], "void") |
-          is.na(x)))]<-NA
+  if (combine_missing == TRUE) {
+    datax[Reduce("|", lapply(
+      data,
+      function(x) {
+        x == attr(data[[1]], "nr") |
+          x == attr(data[[1]], "void") |
+          is.na(x)
+      }
+    ))] <- NA
   }
 
   if (missing(cpal) || identical(cpal, "auto")) {
     if (length(alph) <= 200) {
       cpal <- seqHMM::colorpalette[[length(alph)]]
     } else {
-      stop("The number of observed states is ", length(alph),
-           " which is more than supported by the default color palette. ", 
-           "Specify your own color palette with the argument 'cpal'.")
+      stop(
+        "The number of observed states is ", length(alph),
+        " which is more than supported by the default color palette. ",
+        "Specify your own color palette with the argument 'cpal'."
+      )
     }
   }
-  if(length(alph) != length(cpal)) {
-    stop("The number of observed states is ", length(alph), 
-         " but the supplied color palette contains only ", length(cpal),
-         "colours.")
+  if (length(alph) != length(cpal)) {
+    stop(
+      "The number of observed states is ", length(alph),
+      " but the supplied color palette contains only ", length(cpal),
+      "colours."
+    )
   }
-  
 
-  if(all_combinations==TRUE){
-    datax <- suppressWarnings(suppressMessages(seqdef(datax, alphabet=alph)))
-  }else{
-    datax<-suppressWarnings(suppressMessages((seqdef(datax))))
+
+  if (all_combinations == TRUE) {
+    datax <- suppressWarnings(suppressMessages(seqdef(datax, alphabet = alph)))
+  } else {
+    datax <- suppressWarnings(suppressMessages((seqdef(datax))))
   }
 
 

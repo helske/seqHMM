@@ -84,6 +84,3 @@
 #' plot(hmm_biofam)
 #'
 NULL
-
-
-
