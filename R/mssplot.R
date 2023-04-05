@@ -195,7 +195,6 @@ mssplot <- function(
     stop("Your object x is not a mhmm object. Use build_mhmm to create one.")
   }
 
-
   oldPar <- par(no.readonly = TRUE)
   on.exit(par(oldPar), add = TRUE)
 
@@ -244,7 +243,6 @@ mssplot <- function(
     hidden.pathslabs[[i]] <- hidden.states.labels[(k + 1):(k + x$n_states[i])]
     k <- k + x$n_states[i]
   }
-
   n_alphabet <- length(alphabet(hidden.paths))
   if (!("hidden.states.colors" %in% names(args))) {
     if (n_alphabet <= 200) {
@@ -325,11 +323,24 @@ mssplot <- function(
         args$x <- lapply(x$observations, function(y) y[hp_by_cluster_logic[[pick]], ])
         if (plots != "obs") {
           args$hidden.states.labels <- hidden.pathslabs[[pick]]
-          args$hidden.paths <- suppressWarnings(suppressMessages(
-            seqdef(hp_by_cluster[[pick]],
-              labels = args$hidden.states.labels
-            )
-          ))
+          args$hidden.paths <- hp_by_cluster[[pick]]
+          states <- paste(
+            x$cluster_names[pick],
+            x$state_names[[pick]],
+            sep = ":"
+          )
+          attr(args$hidden.paths, "alphabet") <- states
+          if (attr(args$hidden.paths, "nr") %in% levels(args$hidden.paths[[1]])) {
+            states <- c(states, attr(args$hidden.paths, "nr"))
+          }
+          if (attr(args$hidden.paths, "void") %in% levels(args$hidden.paths[[1]])) {
+            states <- c(states, attr(args$hidden.paths, "void"))
+          }
+          args$hidden.paths[] <- lapply(
+            args$hidden.paths, factor, levels = states
+          )
+          attr(args$hidden.paths, "labels") <- args$hidden.states.labels
+          attr(args$hidden.paths, "cpal") <- hidden.pathscols[[pick]]
           args$hidden.states.colors <- hidden.pathscols[[pick]]
           if (!is.null(sortv) && sortv == "mds.hidden") {
             if (length(args$hidden.states.labels) == 1) {
@@ -355,11 +366,24 @@ mssplot <- function(
         args$x <- lapply(x$observations, function(y) y[hp_by_cluster_logic[[pick]], ])
         if (plots != "obs") {
           args$hidden.states.labels <- hidden.pathslabs[[pick]]
-          args$hidden.paths <- suppressWarnings(suppressMessages(
-            seqdef(hp_by_cluster[[pick]],
-              labels = args$hidden.states.labels
-            )
-          ))
+          args$hidden.paths <- hp_by_cluster[[pick]]
+          states <- paste(
+            x$cluster_names[pick],
+            x$state_names[[pick]],
+            sep = ":"
+          )
+          attr(args$hidden.paths, "alphabet") <- states
+          if (attr(args$hidden.paths, "nr") %in% levels(args$hidden.paths[[1]])) {
+            states <- c(states, attr(args$hidden.paths, "nr"))
+          }
+          if (attr(args$hidden.paths, "void") %in% levels(args$hidden.paths[[1]])) {
+            states <- c(states, attr(args$hidden.paths, "void"))
+          }
+          args$hidden.paths[] <- lapply(
+            args$hidden.paths, factor, levels = states
+          )
+          attr(args$hidden.paths, "labels") <- args$hidden.states.labels
+          attr(args$hidden.paths, "cpal") <- hidden.pathscols[[pick]]
           args$hidden.states.colors <- hidden.pathscols[[pick]]
           if (!is.null(sortv) && sortv == "mds.hidden") {
             if (length(args$hidden.states.labels) == 1) {
@@ -379,12 +403,25 @@ mssplot <- function(
     for (i in which.plots) {
       args$x <- lapply(x$observations, function(y) y[hp_by_cluster_logic[[i]], ])
       if (plots != "obs") {
+        args$hidden.paths <- hp_by_cluster[[i]]
+        states <- paste(
+          x$cluster_names[i],
+          x$state_names[[i]],
+          sep = ":"
+        )
+        attr(args$hidden.paths, "alphabet") <- states
+        if (attr(args$hidden.paths, "nr") %in% levels(args$hidden.paths[[1]])) {
+          states <- c(states, attr(args$hidden.paths, "nr"))
+        }
+        if (attr(args$hidden.paths, "void") %in% levels(args$hidden.paths[[1]])) {
+          states <- c(states, attr(args$hidden.paths, "void"))
+        }
+        args$hidden.paths[] <- lapply(
+          args$hidden.paths, factor, levels = states
+        )
         args$hidden.states.labels <- hidden.pathslabs[[i]]
-        args$hidden.paths <- suppressWarnings(suppressMessages(
-          seqdef(hp_by_cluster[[i]],
-            labels = args$hidden.states.labels
-          )
-        ))
+        attr(args$hidden.paths, "labels") <- args$hidden.states.labels
+        attr(args$hidden.paths, "cpal") <- hidden.pathscols[[i]]
         args$hidden.states.colors <- hidden.pathscols[[i]]
         if (!is.null(sortv) && sortv == "mds.hidden") {
           if (length(args$hidden.states.labels) == 1) {
