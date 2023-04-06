@@ -61,7 +61,7 @@ of the parameter estimation. The default is \code{TRUE}.}
 
 \item{control_em}{Optional list of control parameters for the EM algorithm.
 Possible arguments are \describe{
-\item{maxeval}{The maximum number of iterations, the default is 1000. 
+\item{maxeval}{The maximum number of iterations, the default is 1000.
 Note that iteration counter starts with -1 so with \code{maxeval=1} you get already two iterations.
 This is for backward compatibility reasons.}
 \item{print_level}{The level of printing. Possible values are 0
@@ -87,7 +87,7 @@ and \code{maxeval} at the end of the EM step.}
 \item{n_optimum}{Save the log-likelihood values of the \code{n_optimum} best
 models (from all estimated models including the the first EM run.).
 The default is \code{min(times + 1, 25)}.}
-\item{use_original}{If \code{TRUE}. Use the initial values of the input model as starting 
+\item{use_original}{If \code{TRUE}. Use the initial values of the input model as starting
 points for the permutations. Otherwise permute the results of the first EM run.}
 }
 }

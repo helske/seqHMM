@@ -10,8 +10,8 @@ hidden_paths(model, respect_void = TRUE)
 \item{model}{A hidden Markov model of class \code{hmm} or
 a mixture HMM of class \code{mhmm}.}
 
-\item{respect_void}{If \code{TRUE} (default), states at the time points 
-corresponding to TraMineR's void in the observed sequences are set to void 
+\item{respect_void}{If \code{TRUE} (default), states at the time points
+corresponding to TraMineR's void in the observed sequences are set to void
 in the hidden state sequences as well.}
 }
 \value{
@@ -32,9 +32,9 @@ mpp <- hidden_paths(hmm_biofam)
 # Plot hidden paths for the first 100 individuals
 ssplot(mpp, type = "I", tlim = 1:100)
 
-# Because the model structure is so sparse that the posterior probabilities are 
-# mostly peaked to single state at each time point, the joint probability of 
-# observations and most probable paths of hidden states is almost identical to 
+# Because the model structure is so sparse that the posterior probabilities are
+# mostly peaked to single state at each time point, the joint probability of
+# observations and most probable paths of hidden states is almost identical to
 # log-likelihood:
 
 sum(attr(mpp, "log_prob"))

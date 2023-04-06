@@ -9,9 +9,9 @@ build_mmm(
   n_clusters,
   transition_probs,
   initial_probs,
-  formula,
-  data,
-  coefficients,
+  formula = NULL,
+  data = NULL,
+  coefficients = NULL,
   cluster_names = NULL,
   ...
 )
@@ -20,8 +20,8 @@ build_mmm(
 \item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences.}
 
-\item{n_clusters}{A scalar giving the number of clusters/submodels 
-(not used if starting values for model parameters are given with 
+\item{n_clusters}{A scalar giving the number of clusters/submodels
+(not used if starting values for model parameters are given with
 \code{initial_probs} and \code{transition_probs}).}
 
 \item{transition_probs}{A list of matrices of transition
@@ -30,15 +30,14 @@ probabilities for submodels of each cluster.}
 \item{initial_probs}{A list which contains vectors of initial state
 probabilities for submodels of each cluster.}
 
-\item{formula}{Covariates as an object of class \code{\link{formula}},
-left side omitted.}
+\item{formula}{Optional formula of class \code{\link{formula}} for the
+mixture probabilities. Left side omitted.}
 
-\item{data}{An optional data frame, list or environment containing the variables
-in the model. If not found in data, the variables are taken from
-\code{environment(formula)}.}
+\item{data}{A data frame containing the variables used in the formula.
+Ignored if no formula is provided.}
 
-\item{coefficients}{An optional \eqn{k x l} matrix of regression coefficients for 
-time-constant covariates for mixture probabilities, where \eqn{l} is the number 
+\item{coefficients}{An optional \eqn{k x l} matrix of regression coefficients for
+time-constant covariates for mixture probabilities, where \eqn{l} is the number
 of clusters and \eqn{k} is the number of covariates. A logit-link is used for
 mixture probabilities. The first column is set to zero.}
 
@@ -77,19 +76,27 @@ model as a restricted case of an \code{mhmm} object.
 
 # Define sequence data
 data("mvad", package = "TraMineR")
-mvad_alphabet <- c("employment", "FE", "HE", "joblessness", "school",
-  "training")
-mvad_labels <- c("employment", "further education", "higher education",
-  "joblessness", "school", "training")
+mvad_alphabet <- c(
+  "employment", "FE", "HE", "joblessness", "school",
+  "training"
+)
+mvad_labels <- c(
+  "employment", "further education", "higher education",
+  "joblessness", "school", "training"
+)
 mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet, states = mvad_scodes,
-  labels = mvad_labels, xtstep = 6)
+mvad_seq <- seqdef(mvad, 17:86,
+  alphabet = mvad_alphabet, states = mvad_scodes,
+  labels = mvad_labels, xtstep = 6
+)
 
 # Initialize the MMM
 set.seed(123)
-mmm_mvad <- build_mmm(observations = mvad_seq,
+mmm_mvad <- build_mmm(
+  observations = mvad_seq,
   n_clusters = 2,
-  formula = ~male, data = mvad)
+  formula = ~male, data = mvad
+)
 
 \dontrun{
 # Estimate model parameters
@@ -97,7 +104,8 @@ mmm_mvad <- fit_model(mmm_mvad)$model
 
 # Plot model (both clusters in the same plot)
 require(igraph)
-plot(mmm_mvad, interactive = FALSE,
+plot(mmm_mvad,
+  interactive = FALSE,
   # Modify legend position and properties
   with.legend = "right", legend.prop = 0.3, cex.legend = 1.2,
   # Define vertex layout
@@ -105,16 +113,17 @@ plot(mmm_mvad, interactive = FALSE,
   # Modify edge properties
   edge.label = NA, edge.arrow.size = 0.8, edge.curved = 0.2,
   # Modify vertex label positions (initial probabilities)
-  vertex.label.pos = c("left", "right", "right", "left", "left", "right"))
-  
+  vertex.label.pos = c("left", "right", "right", "left", "left", "right")
+)
+
 # Summary of the MMM
 summary(mmm_mvad)
 }
 }
 \seealso{
 \code{\link{fit_model}} for estimating model parameters;
-\code{\link{summary.mhmm}} for a summary of a mixture model; 
-\code{\link{separate_mhmm}} for organizing an \code{mhmm} object into a list of 
-separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting 
+\code{\link{summary.mhmm}} for a summary of a mixture model;
+\code{\link{separate_mhmm}} for organizing an \code{mhmm} object into a list of
+separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting
 mixture models.
 }

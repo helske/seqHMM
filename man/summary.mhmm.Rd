@@ -59,7 +59,6 @@ data("mhmm_biofam")
 # Model summary
 summary(mhmm_biofam)
 
-
 }
 \seealso{
 \code{\link{build_mhmm}} and \code{\link{fit_model}} for building and

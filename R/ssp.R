@@ -572,14 +572,14 @@ ssp <- function(
       if (length(sortv) == 1 && sortv == "mds.obs") {
         if (utils::packageVersion("TraMineR") >= "2.2-7") {
           dist.obs <- suppressWarnings(suppressMessages(
-            seqMD(obs,
+            TraMineR::seqMD(obs,
               method = dist.method,
               sm = "TRATE", what = "diss", with.missing = NULL
             )
           ))
         } else {
           dist.obs <- suppressWarnings(suppressMessages(
-            seqdistmc(obs,
+            TraMineR::seqdistmc(obs,
               method = dist.method,
               sm = "TRATE", what = "diss", with.missing = TRUE
             )

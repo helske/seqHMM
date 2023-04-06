@@ -10,9 +10,9 @@ build_mhmm(
   transition_probs,
   emission_probs,
   initial_probs,
-  formula,
-  data,
-  coefficients,
+  formula = NULL,
+  data = NULL,
+  coefficients = NULL,
   cluster_names = NULL,
   state_names = NULL,
   channel_names = NULL,
@@ -23,8 +23,8 @@ build_mhmm(
 \item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences, or a list of such objects (one for each channel).}
 
-\item{n_states}{A numerical vector giving the number of hidden states in each submodel 
-(not used if starting values for model parameters are given with 
+\item{n_states}{A numerical vector giving the number of hidden states in each submodel
+(not used if starting values for model parameters are given with
 \code{initial_probs}, \code{transition_probs}, or \code{emission_probs}).}
 
 \item{transition_probs}{A list of matrices of transition
@@ -40,15 +40,14 @@ observations (\code{alphabet(observations)}, returned as \code{symbol_names}).}
 \item{initial_probs}{A list which contains vectors of initial state
 probabilities for the submodel of each cluster.}
 
-\item{formula}{Covariates as an object of class \code{\link{formula}},
-left side omitted.}
+\item{formula}{Optional formula of class \code{\link{formula}} for the
+mixture probabilities. Left side omitted.}
 
-\item{data}{An optional data frame, list or environment containing the variables
-in the model. If not found in data, the variables are taken from
-\code{environment(formula)}.}
+\item{data}{A data frame containing the variables used in the formula.
+Ignored if no formula is provided.}
 
-\item{coefficients}{An optional \eqn{k x l} matrix of regression coefficients for 
-time-constant covariates for mixture probabilities, where \eqn{l} is the number 
+\item{coefficients}{An optional \eqn{k x l} matrix of regression coefficients for
+time-constant covariates for mixture probabilities, where \eqn{l} is the number
 of clusters and \eqn{k} is the number of covariates. A logit-link is used for
 mixture probabilities. The first column is set to zero.}
 
@@ -91,10 +90,10 @@ Function \code{build_mhmm} constructs a mixture hidden Markov model object of cl
 The returned model contains some attributes such as \code{nobs} and \code{df},
 which define the number of observations in the  model and the number of estimable
 model parameters, used in computing BIC.
-When computing \code{nobs} for a multichannel model with \eqn{C} channels, 
-each observed value in a single channel amounts to \eqn{1/C} observation, 
-i.e. a fully observed time point for a single sequence amounts to one observation. 
-For the degrees of freedom \code{df}, zero probabilities of the initial model are 
+When computing \code{nobs} for a multichannel model with \eqn{C} channels,
+each observed value in a single channel amounts to \eqn{1/C} observation,
+i.e. a fully observed time point for a single sequence amounts to one observation.
+For the degrees of freedom \code{df}, zero probabilities of the initial model are
 defined as structural zeroes.
 }
 \examples{
@@ -102,12 +101,18 @@ defined as structural zeroes.
 data("biofam3c")
 
 ## Building sequence objects
-marr_seq <- seqdef(biofam3c$married, start = 15,
-  alphabet = c("single", "married", "divorced"))
-child_seq <- seqdef(biofam3c$children, start = 15,
-  alphabet = c("childless", "children"))
-left_seq <- seqdef(biofam3c$left, start = 15,
-  alphabet = c("with parents", "left home"))
+marr_seq <- seqdef(biofam3c$married,
+  start = 15,
+  alphabet = c("single", "married", "divorced")
+)
+child_seq <- seqdef(biofam3c$children,
+  start = 15,
+  alphabet = c("childless", "children")
+)
+left_seq <- seqdef(biofam3c$left,
+  start = 15,
+  alphabet = c("with parents", "left home")
+)
 
 ## Choosing colors
 attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
@@ -119,101 +124,135 @@ set.seed(468)
 init_mhmm_bf1 <- build_mhmm(
   observations = list(marr_seq, child_seq, left_seq),
   n_states = c(4, 4, 6),
-  channel_names = c("Marriage", "Parenthood", "Residence"))
-  
-  
+  channel_names = c("Marriage", "Parenthood", "Residence")
+)
+
+
 ## Starting values for emission probabilities
 
 # Cluster 1
 B1_marr <- matrix(
-  c(0.8, 0.1, 0.1, # High probability for single
+  c(
+    0.8, 0.1, 0.1, # High probability for single
     0.8, 0.1, 0.1,
     0.3, 0.6, 0.1, # High probability for married
-    0.3, 0.3, 0.4), # High probability for divorced
-  nrow = 4, ncol = 3, byrow = TRUE)
+    0.3, 0.3, 0.4
+  ), # High probability for divorced
+  nrow = 4, ncol = 3, byrow = TRUE
+)
 
 B1_child <- matrix(
-  c(0.9, 0.1, # High probability for childless
+  c(
+    0.9, 0.1, # High probability for childless
     0.9, 0.1,
     0.9, 0.1,
-    0.9, 0.1),
-  nrow = 4, ncol = 2, byrow = TRUE)
+    0.9, 0.1
+  ),
+  nrow = 4, ncol = 2, byrow = TRUE
+)
 
 B1_left <- matrix(
-  c(0.9, 0.1, # High probability for living with parents
+  c(
+    0.9, 0.1, # High probability for living with parents
     0.1, 0.9, # High probability for having left home
     0.1, 0.9,
-    0.1, 0.9),
-  nrow = 4, ncol = 2, byrow = TRUE)
+    0.1, 0.9
+  ),
+  nrow = 4, ncol = 2, byrow = TRUE
+)
 
 # Cluster 2
 
 B2_marr <- matrix(
-  c(0.8, 0.1, 0.1, # High probability for single
+  c(
+    0.8, 0.1, 0.1, # High probability for single
     0.8, 0.1, 0.1,
     0.1, 0.8, 0.1, # High probability for married
-    0.7, 0.2, 0.1),
-  nrow = 4, ncol = 3, byrow = TRUE)
+    0.7, 0.2, 0.1
+  ),
+  nrow = 4, ncol = 3, byrow = TRUE
+)
 
 B2_child <- matrix(
-  c(0.9, 0.1, # High probability for childless
+  c(
+    0.9, 0.1, # High probability for childless
     0.9, 0.1,
     0.9, 0.1,
-    0.1, 0.9),
-  nrow = 4, ncol = 2, byrow = TRUE)
+    0.1, 0.9
+  ),
+  nrow = 4, ncol = 2, byrow = TRUE
+)
 
 B2_left <- matrix(
-  c(0.9, 0.1, # High probability for living with parents
+  c(
+    0.9, 0.1, # High probability for living with parents
     0.1, 0.9,
     0.1, 0.9,
-    0.1, 0.9),
-  nrow = 4, ncol = 2, byrow = TRUE)
+    0.1, 0.9
+  ),
+  nrow = 4, ncol = 2, byrow = TRUE
+)
 
 # Cluster 3
 B3_marr <- matrix(
-  c(0.8, 0.1, 0.1, # High probability for single
+  c(
+    0.8, 0.1, 0.1, # High probability for single
     0.8, 0.1, 0.1,
     0.8, 0.1, 0.1,
     0.1, 0.8, 0.1, # High probability for married
     0.3, 0.4, 0.3,
-    0.1, 0.1, 0.8), # High probability for divorced
-  nrow = 6, ncol = 3, byrow = TRUE)
+    0.1, 0.1, 0.8
+  ), # High probability for divorced
+  nrow = 6, ncol = 3, byrow = TRUE
+)
 
 B3_child <- matrix(
-  c(0.9, 0.1, # High probability for childless
+  c(
+    0.9, 0.1, # High probability for childless
     0.9, 0.1,
     0.5, 0.5,
     0.5, 0.5,
     0.5, 0.5,
-    0.1, 0.9),
-  nrow = 6, ncol = 2, byrow = TRUE)
+    0.1, 0.9
+  ),
+  nrow = 6, ncol = 2, byrow = TRUE
+)
 
 
 B3_left <- matrix(
-  c(0.9, 0.1, # High probability for living with parents
+  c(
+    0.9, 0.1, # High probability for living with parents
     0.1, 0.9,
     0.5, 0.5,
     0.5, 0.5,
     0.1, 0.9,
-    0.1, 0.9),
-  nrow = 6, ncol = 2, byrow = TRUE)
+    0.1, 0.9
+  ),
+  nrow = 6, ncol = 2, byrow = TRUE
+)
 
 # Starting values for transition matrices
 A1 <- matrix(
-  c(0.80, 0.16, 0.03, 0.01,
-    0,    0.90, 0.07, 0.03,
-    0,    0,    0.90, 0.10,
-    0,    0,    0,       1),
-  nrow = 4, ncol = 4, byrow = TRUE)
+  c(
+    0.80, 0.16, 0.03, 0.01,
+    0, 0.90, 0.07, 0.03,
+    0, 0, 0.90, 0.10,
+    0, 0, 0, 1
+  ),
+  nrow = 4, ncol = 4, byrow = TRUE
+)
 
 A2 <- matrix(
-  c(0.80, 0.10, 0.05, 0.03, 0.01, 0.01,
-    0,    0.70, 0.10, 0.10, 0.05, 0.05,
-    0,    0,    0.85, 0.01, 0.10, 0.04,
-    0,    0,    0,    0.90, 0.05, 0.05,
-    0,    0,    0,    0,    0.90, 0.10,
-    0,    0,    0,    0,    0,       1),
-  nrow = 6, ncol = 6, byrow = TRUE)
+  c(
+    0.80, 0.10, 0.05, 0.03, 0.01, 0.01,
+    0, 0.70, 0.10, 0.10, 0.05, 0.05,
+    0, 0, 0.85, 0.01, 0.10, 0.04,
+    0, 0, 0, 0.90, 0.05, 0.05,
+    0, 0, 0, 0, 0.90, 0.10,
+    0, 0, 0, 0, 0, 1
+  ),
+  nrow = 6, ncol = 6, byrow = TRUE
+)
 
 # Starting values for initial state probabilities
 initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
@@ -222,21 +261,28 @@ initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 # Birth cohort
 biofam3c$covariates$cohort <- cut(biofam3c$covariates$birthyr, c(1908, 1935, 1945, 1957))
 biofam3c$covariates$cohort <- factor(
-  biofam3c$covariates$cohort, labels=c("1909-1935", "1936-1945", "1946-1957"))
+  biofam3c$covariates$cohort,
+  labels = c("1909-1935", "1936-1945", "1946-1957")
+)
 
 ## MHMM with own starting values and covariates
 init_mhmm_bf2 <- build_mhmm(
   observations = list(marr_seq, child_seq, left_seq),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
   transition_probs = list(A1, A1, A2),
-  emission_probs = list(list(B1_marr, B1_child, B1_left),
+  emission_probs = list(
+    list(B1_marr, B1_child, B1_left),
     list(B2_marr, B2_child, B2_left),
-    list(B3_marr, B3_child, B3_left)),
-  formula = ~sex + cohort, data = biofam3c$covariates,
+    list(B3_marr, B3_child, B3_left)
+  ),
+  formula = ~ sex + cohort, data = biofam3c$covariates,
   cluster_names = c("Cluster 1", "Cluster 2", "Cluster 3"),
   channel_names = c("Marriage", "Parenthood", "Residence"),
-  state_names = list(paste("State", 1:4), paste("State", 1:4),
-                     paste("State", 1:6)))
+  state_names = list(
+    paste("State", 1:4), paste("State", 1:4),
+    paste("State", 1:6)
+  )
+)
 
 }
 \references{

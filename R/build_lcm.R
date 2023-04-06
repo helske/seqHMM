@@ -14,11 +14,10 @@
 #'   latent classes and s is the number of unique symbols (observed states) in the
 #'   data. Emission probabilities should follow the ordering of the alphabet of
 #'   observations (\code{alphabet(observations)}, returned as \code{symbol_names}).
-#' @param formula Covariates as an object of class \code{\link{formula}},
-#' left side omitted.
-#' @param data An optional data frame, list or environment containing the variables
-#' in the model. If not found in data, the variables are taken from
-#' \code{environment(formula)}.
+#' @param formula Optional formula of class \code{\link{formula}} for the
+#' mixture probabilities. Left side omitted.
+#' @param data A data frame containing the variables used in the formula.
+#' Ignored if no formula is provided.
 #' @param coefficients An optional \eqn{k x l} matrix of regression coefficients for
 #'   time-constant covariates for mixture probabilities, where \eqn{l} is the number
 #'   of clusters and \eqn{k} is the number of covariates. A logit-link is used for
@@ -150,272 +149,72 @@
 #' summary(fit$model)
 #' summary(multinom(y ~ x1 + x2, data = data.frame(X[, -1])))
 #' }
-build_lcm <-
-  function(observations, n_clusters, emission_probs,
-           formula, data, coefficients, cluster_names = NULL, channel_names = NULL) {
-    if (missing(n_clusters)) {
-      if (missing(emission_probs)) {
-        stop(paste("Provide either n_clusters or emission_probs."))
-      }
-
-
-      if (is.list(emission_probs)) {
-        n_channels <- length(emission_probs)
-        n_clusters <- nrow(emission_probs[[1]])
-        for (i in 1:n_channels) {
-          if (nrow(emission_probs[[i]]) != n_clusters) {
-            stop("Different number of rows in emission_probs.")
-          }
-        }
-      } else {
-        n_channels <- 1
-        n_clusters <- nrow(emission_probs)
-      }
-
-      if (is.null(cluster_names)) {
-        state_names <- cluster_names <- paste("Class", 1:n_clusters)
-      } else if (length(cluster_names) != n_clusters) {
-        warning("The length of argument cluster_names does not match the number of clusters. Names were not used.")
-        state_names <- cluster_names <- paste("Class", 1:n_clusters)
-      }
-
-      # States
-      n_states <- rep(1, n_clusters)
-      initial_probs <- replicate(n_clusters, 1, simplify = FALSE)
-
-      # Single channel but observations is a list
-      if (is.list(observations) && !inherits(observations, "stslist") && length(observations) == 1) {
-        observations <- observations[[1]]
-      }
-
-
-      if (n_channels > 1) {
-        if (length(observations) != n_channels) {
-          stop("Number of channels defined by emission_probs differs from the one defined by observations. Give emission_probs as a matrix with n_cluster rows and n_symbol columns (for single-channel data) or a list of such matrices (for multichannel data).")
-        }
-
-        if (length(unique(sapply(observations, nrow))) > 1) {
-          stop("The number of subjects (rows) is not the same in all channels.")
-        }
-        if (length(unique(sapply(observations, ncol))) > 1) {
-          stop("The length of the sequences (number of columns) is not the same in all channels.")
-        }
-
-        n_sequences <- nrow(observations[[1]])
-        length_of_sequences <- ncol(observations[[1]])
-
-        emission_probs_list <- vector("list", n_clusters)
-        for (i in 1:n_clusters) {
-          emission_probs_list[[i]] <- vector("list", n_channels)
-          for (j in 1:n_channels) {
-            emission_probs_list[[i]][[j]] <- emission_probs[[j]][i, , drop = FALSE]
-          }
-        }
-        emission_probs <- emission_probs_list
-        symbol_names <- lapply(observations, alphabet)
-        n_symbols <- lengths(symbol_names)
-        for (i in 1:n_clusters) {
-          if (any(n_symbols != sapply(emission_probs[[i]], ncol))) {
-            stop(paste("Number of columns in emission_probs of cluster", i, "is not equal to the number of symbols."))
-          }
-          if (!isTRUE(all.equal(c(sapply(emission_probs[[i]], rowSums)),
-            rep(1, n_channels * n_states[i]),
-            check.attributes = FALSE
-          ))) {
-            stop(paste("Emission probabilities in emission_probs of cluster", i, "do not sum to one."))
-          }
-          if (is.null(channel_names)) {
-            if (is.null(channel_names <- names(observations))) {
-              channel_names <- paste("Channel", 1:n_channels)
-            }
-          } else if (length(channel_names) != n_channels) {
-            warning("The length of argument channel_names does not match the number of channels. Names were not used.")
-            channel_names <- paste("Channel", 1:n_channels)
-          }
-          for (j in 1:n_channels) {
-            dimnames(emission_probs[[i]][[j]]) <- list(state_names = state_names[[i]], symbol_names = symbol_names[[j]])
-          }
-          names(emission_probs[[i]]) <- channel_names
-        }
-      } else {
-        if (is.null(channel_names)) {
-          channel_names <- "Observations"
-        }
-        n_sequences <- nrow(observations)
-        length_of_sequences <- ncol(observations)
-        symbol_names <- alphabet(observations)
-        n_symbols <- length(symbol_names)
-
-        emission_probs_list <- vector("list", n_clusters)
-        for (i in 1:n_clusters) {
-          emission_probs_list[[i]] <- emission_probs[i, , drop = FALSE]
-        }
-        emission_probs <- emission_probs_list
-
-        for (i in 1:n_clusters) {
-          if (n_symbols != ncol(emission_probs[[i]])) {
-            stop(paste("Number of columns in emission_probs of cluster", i, "is not equal to the number of symbols."))
-          }
-          if (!isTRUE(all.equal(rep(1, n_states[i]), rowSums(emission_probs[[i]]), check.attributes = FALSE))) {
-            stop(paste("Emission probabilities in emission_probs of cluster", i, "do not sum to one."))
-          }
-          dimnames(emission_probs[[i]]) <- list(state_names = state_names[[i]], symbol_names = symbol_names)
-          names(initial_probs[[i]]) <- state_names[[i]]
-        }
-      }
-    } else {
-      # States
-      n_states <- rep(1, n_clusters)
-      if (is.null(cluster_names)) {
-        state_names <- cluster_names <- paste("Class", 1:n_clusters)
-      } else if (length(cluster_names) != n_clusters) {
-        warning("The length of argument cluster_names does not match the number of clusters. Names were not used.")
-        state_names <- cluster_names <- paste("Class", 1:n_clusters)
-      }
-
-      initial_probs <- replicate(n_clusters, 1, simplify = FALSE)
-
-      if (inherits(observations, "stslist")) {
-        n_channels <- 1
-
-        n_sequences <- nrow(observations)
-        length_of_sequences <- ncol(observations)
-
-        symbol_names <- alphabet(observations)
-        n_symbols <- length(symbol_names)
-
-        if (is.null(channel_names)) {
-          channel_names <- "Observations"
-        }
-
-        emission_probs <- vector("list", n_clusters)
-        for (k in 1:n_clusters) {
-          emission_probs[[k]] <- simulate_emission_probs(n_states = n_states[k], n_symbols = n_symbols)
-          dimnames(emission_probs[[k]]) <- list(state_names = state_names[[k]], symbol_names = symbol_names)
-          names(initial_probs[[k]]) <- state_names[[k]]
-        }
-      } else if (is.list(observations) && !inherits(observations, "stslist") &&
-        length(observations) == 1) {
-        n_channels <- 1
-
-        observations <- observations[[1]]
-        if (is.null(channel_names)) {
-          channel_names <- "Observations"
-        }
-
-        n_sequences <- nrow(observations)
-        length_of_sequences <- ncol(observations)
-
-        symbol_names <- alphabet(observations)
-        n_symbols <- length(symbol_names)
-
-
-        emission_probs <- vector("list", n_clusters)
-        for (k in 1:n_clusters) {
-          emission_probs[[k]] <- simulate_emission_probs(n_states = n_states[k], n_symbols = n_symbols)
-          dimnames(emission_probs[[k]]) <- list(state_names = state_names[[k]], symbol_names = symbol_names)
-          names(initial_probs[[k]]) <- state_names[[k]]
-        }
-      } else {
-        n_channels <- length(observations)
-
-        n_sequences <- nrow(observations[[1]])
-        length_of_sequences <- ncol(observations[[1]])
-
-        symbol_names <- lapply(observations, alphabet)
-        n_symbols <- lengths(symbol_names)
-
-        if (is.null(channel_names)) {
-          if (is.null(channel_names <- names(observations))) {
-            channel_names <- paste("Channel", 1:n_channels)
-          }
-        } else if (length(channel_names) != n_channels) {
-          warning("The length of argument channel_names does not match the number of channels. Names were not used.")
-          channel_names <- paste("Channel", 1:n_channels)
-        }
-
-        emission_probs <- vector("list", n_clusters)
-        for (k in 1:n_clusters) {
-          emission_probs[[k]] <- vector("list", n_channels)
-          for (c in 1:n_channels) {
-            emission_probs[[k]][[c]] <- simulate_emission_probs(n_states = n_states[k], n_symbols = n_symbols[c])
-            dimnames(emission_probs[[k]][[c]]) <- list(state_names = state_names[[k]], symbol_names = symbol_names[[c]])
-          }
-          names(emission_probs[[k]]) <- channel_names
-          names(initial_probs[[k]]) <- state_names[[k]]
-        }
-      }
-    }
-
-
-    if (missing(formula)) {
-      formula <- stats::formula(rep(1, n_sequences) ~ 1)
-    }
-    if (missing(data)) {
-      data <- environment(formula)
-    }
-    if (inherits(formula, "formula")) {
-      X <- model.matrix(formula, data)
-      if (nrow(X) != n_sequences) {
-        if (length(all.vars(formula)) > 0 && sum(!complete.cases(data[all.vars(formula)])) > 0) {
-          stop("Missing cases are not allowed in covariates. Use e.g. the complete.cases function to detect them, then fix, impute, or remove.")
-        } else {
-          stop("Number of subjects in data for covariates does not match the number of subjects in the sequence data.")
-        }
-      }
-      n_covariates <- ncol(X)
-    } else {
-      stop("Object given for argument formula is not of class formula.")
-    }
-    if (missing(coefficients)) {
-      coefficients <- matrix(0, n_covariates, n_clusters)
-    } else {
-      if (ncol(coefficients) != n_clusters | nrow(coefficients) != n_covariates) {
-        stop("Wrong dimensions of coefficients.")
-      }
-      coefficients[, 1] <- 0
-    }
-
-
-    rownames(coefficients) <- colnames(X)
-    colnames(coefficients) <- cluster_names
-
-    transition_probs <- replicate(n_clusters, matrix(1), simplify = FALSE)
-    names(transition_probs) <- names(emission_probs) <- names(initial_probs) <- cluster_names
-
-    for (i in 1:n_clusters) {
-      names(initial_probs[[i]]) <- rownames(transition_probs[[i]]) <-
-        colnames(transition_probs[[i]]) <- state_names[[i]]
-    }
-
-    if (n_channels > 1) {
-      nobs <- sum(sapply(observations, function(x) {
-        sum(!(x == attr(observations[[1]], "nr") |
-          x == attr(observations[[1]], "void") |
-          is.na(x)))
-      })) / n_channels
-    } else {
-      nobs <- sum(!(observations == attr(observations, "nr") |
-        observations == attr(observations, "void") |
-        is.na(observations)))
-    }
-    model <- structure(
-      list(
-        observations = observations, transition_probs = transition_probs,
-        emission_probs = emission_probs, initial_probs = initial_probs,
-        coefficients = coefficients, X = X, cluster_names = cluster_names, state_names = state_names,
-        symbol_names = symbol_names, channel_names = channel_names,
-        length_of_sequences = length_of_sequences,
-        n_sequences = n_sequences, n_clusters = n_clusters,
-        n_symbols = n_symbols, n_states = n_states,
-        n_channels = n_channels,
-        n_covariates = n_covariates, formula = formula
-      ),
-      class = "mhmm",
-      nobs = nobs,
-      df = sum(unlist(emission_probs) > 0) - sum(n_states) * n_channels +
-        n_covariates * (n_clusters - 1),
-      type = "lcm"
-    )
-    model
+build_lcm <- function(observations, n_clusters, emission_probs,
+                      formula = NULL, data = NULL, coefficients = NULL,
+                      cluster_names = NULL, channel_names = NULL) {
+  if (missing(n_clusters) && missing(emission_probs)) {
+    stop("Provide either 'n_clusters' or 'emission_probs'.")
   }
+  multichannel <- is_multichannel(observations)
+  # Single channel but observations is a list
+  if (is.list(observations) && !inherits(observations, "stslist") && length(observations) == 1) {
+    observations <- observations[[1]]
+    multichannel <- FALSE
+  }
+  n_channels <- ifelse(multichannel, length(observations), 1L)
+
+  if (missing(emission_probs)) {
+    if (multichannel) {
+      symbol_names <- lapply(observations, alphabet)
+      n_symbols <- lengths(symbol_names)
+    } else {
+      symbol_names <- alphabet(observations)
+      n_symbols <- length(symbol_names)
+    }
+    emission_probs <- simulate_emission_probs(1, n_symbols, n_clusters)
+  } else {
+    if (multichannel) {
+      n_clusters <- nrow(emission_probs[[1]])
+      emission_probs_list <- vector("list", n_clusters)
+      for (i in 1:n_channels) {
+        if (nrow(emission_probs[[i]]) != n_clusters) {
+          stop("Different number of rows in 'emission_probs'.")
+        }
+      }
+      for (i in 1:n_clusters) {
+        emission_probs_list[[i]] <- vector("list", n_channels)
+        for (j in 1:n_channels) {
+          emission_probs_list[[i]][[j]] <- emission_probs[[j]][i, , drop = FALSE]
+        }
+      }
+    } else {
+      n_clusters <- nrow(emission_probs)
+      emission_probs_list <- vector("list", n_clusters)
+      for (i in 1:n_clusters) {
+        emission_probs_list[[i]] <- emission_probs[i, , drop = FALSE]
+      }
+    }
+    emission_probs <- emission_probs_list
+  }
+  n_states <- rep(1, n_clusters)
+  initial_probs <- replicate(n_clusters, 1, simplify = FALSE)
+
+  if (is.null(cluster_names)) {
+    cluster_names <- paste("Class", 1:n_clusters)
+  } else if (length(cluster_names) != n_clusters) {
+    warning("The length of argument cluster_names does not match the number of clusters. Names were not used.")
+    cluster_names <- paste("Class", 1:n_clusters)
+  }
+
+  transition_probs <- replicate(n_clusters, matrix(1), simplify = FALSE)
+  names(transition_probs) <- names(emission_probs) <- names(initial_probs) <- cluster_names
+
+  model <- build_mhmm(
+    observations = observations, transition_probs = transition_probs,
+    emission_probs = emission_probs, initial_probs = initial_probs,
+    formula = formula, data = data, coefficients = coefficients,
+    cluster_names = cluster_names, state_names = cluster_names,
+    channel_names = channel_names)
+  attr(model, "type") <- "lcm"
+  model
+}

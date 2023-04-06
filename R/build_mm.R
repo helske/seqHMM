@@ -58,61 +58,55 @@
 #' mm_mvad <- build_mm(observations = mvad_seq)
 #'
 build_mm <- function(observations) {
-  if (!inherits(observations, "stslist")) {
-    stop("The build_mm function can only be used for single-channel sequence data (as an stslist object). Use the mc_to_sc_data function to convert multiple stslist into single-channel state sequences.")
-  }
 
-  n_sequences <- nrow(observations)
-  length_of_sequences <- ncol(observations)
+  multichannel <- is_multichannel(observations)
+  # Single channel but observations is a list
+  if (is.list(observations) && !inherits(observations, "stslist") && length(observations) == 1) {
+    observations <- observations[[1]]
+    multichannel <- FALSE
+  }
+  if (multichannel) {
+    stop(
+      paste0("The 'build_mm' function can only be used for single-channel ",
+             "sequence data (as an stslist object). Use the ",
+             "'mc_to_sc_data' function to convert data into single-channel ",
+             "state sequences."
+      )
+    )
+  }
   state_names <- alphabet(observations)
   n_states <- length(state_names)
+
   nobs <- sum(!(observations == attr(observations, "nr") |
-    observations == attr(observations, "void") |
-    is.na(observations)))
+                  observations == attr(observations, "void") |
+                  is.na(observations)))
 
 
   if (nobs < prod(dim(observations))) {
-    model <- fit_model(build_hmm(observations,
+    model <- build_hmm(
+      observations,
       transition_probs = matrix(1 / n_states, n_states, n_states),
       emission_probs = diag(n_states),
-      initial_probs = rep(1 / n_states, n_states)
-    ))$model
-    warning("Sequences contain missing/void values, initial and transition probabilities estimated via EM. ")
-    initial_probs <- model$initial_probs
-    transition_probs <- model$transition_probs
+      initial_probs = rep(1 / n_states, n_states),
+      state_names = state_names)
+    model <- fit_model(model)$model
+    message("Sequences contain missing/void values, initial and transition probabilities estimated via EM. ")
   } else {
     first_timepoint <- suppressMessages(seqdef(observations[observations[, 1] %in% state_names, 1], alphabet = state_names))
     initial_probs <- TraMineR::seqstatf(first_timepoint)[, 2] / 100
     transition_probs <- suppressMessages(TraMineR::seqtrate(observations))
     zeros <- which(rowSums(transition_probs) == 0)
+    diag(transition_probs)[zeros] <- 1
     if (length(zeros) > 0) {
       warning("There are no observed transitions from some of the symbols.")
     }
-    diag(transition_probs)[zeros] <- 1
-  }
-  names(initial_probs) <- state_names
-  dimnames(transition_probs) <- list(from = state_names, to = state_names)
-
-  emission_probs <- diag(n_states)
-  dimnames(emission_probs) <- dimnames(transition_probs)
-
-  model <- structure(
-    list(
-      observations = observations,
+    model <- build_hmm(
+      observations,
       transition_probs = transition_probs,
-      emission_probs = emission_probs, initial_probs = initial_probs,
-      state_names = state_names,
-      symbol_names = state_names, channel_names = NULL,
-      length_of_sequences = length_of_sequences,
-      n_sequences = n_sequences,
-      n_symbols = n_states, n_states = n_states,
-      n_channels = 1
-    ),
-    class = "hmm",
-    nobs = nobs,
-    df = sum(initial_probs > 0) - 1 + sum(transition_probs > 0) - n_states,
-    type = "mm"
-  )
-
+      emission_probs = diag(n_states),
+      initial_probs = initial_probs,
+      state_names = state_names)
+  }
+  attr(model, "type") <- "mm"
   model
 }

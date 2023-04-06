@@ -88,8 +88,8 @@ Transition rates are used for defining substitution costs if needed. See
 \item{with.missing}{Controls whether missing states are included in state
 distribution plots (\code{type = "d"}). The default is \code{FALSE}.}
 
-\item{missing.color}{Alternative color for representing missing values 
-in the sequences. By default, this color is taken from the \code{missing.color} 
+\item{missing.color}{Alternative color for representing missing values
+in the sequences. By default, this color is taken from the \code{missing.color}
 attribute of the sequence object.}
 
 \item{title}{Main title for the graphic. The default is \code{NA}: if
@@ -183,8 +183,8 @@ of the font, values greater than 1 will increase the size.}
 tick labels. The default value is 1. Values lesser than 1 will reduce the size of
 the font, values greater than 1 will increase the size.}
 
-\item{respect_void}{If \code{TRUE} (default), states at the time points 
-corresponding to TraMineR's void in the observed sequences are set to void 
+\item{respect_void}{If \code{TRUE} (default), states at the time points
+corresponding to TraMineR's void in the observed sequences are set to void
 in the hidden state sequences as well.}
 
 \item{...}{Other arguments to be passed on to
@@ -210,19 +210,23 @@ attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 
 # Plotting state distribution plots of observations
-ssplot(list("Children" = child_seq, "Marriage" = marr_seq,
-"Residence" = left_seq))
+ssplot(list(
+  "Children" = child_seq, "Marriage" = marr_seq,
+  "Residence" = left_seq
+))
 
 \dontrun{
 # Plotting sequence index plots of observations
 ssplot(
-  list(child_seq, marr_seq, left_seq), type = "I",
+  list(child_seq, marr_seq, left_seq),
+  type = "I",
   # Sorting subjects according to the beginning of the 2nd channel (marr_seq)
   sortv = "from.start", sort.channel = 2,
   # Controlling the size, positions, and names for channel labels
   ylab.pos = c(1, 2, 1), cex.lab = 1, ylab = c("Children", "Married", "Residence"),
   # Plotting without legend
-  with.legend = FALSE)
+  with.legend = FALSE
+)
 
 # Plotting hidden Markov models
 
@@ -231,14 +235,16 @@ data("hmm_biofam")
 
 # Plotting observations and hidden states paths
 ssplot(
-  hmm_biofam, type = "I", plots = "both",
+  hmm_biofam,
+  type = "I", plots = "both",
   # Sorting according to multidimensional scaling of hidden states paths
   sortv = "mds.hidden",
   ylab = c("Children", "Married", "Left home"),
   # Controlling title
   title = "Biofam", cex.title = 1.5,
   # Labels for x axis and tick marks
-  xtlab = 15:30, xlab = "Age")
+  xtlab = 15:30, xlab = "Age"
+)
 
 # Computing the most probable paths of hidden states
 hidden.paths <- hidden_paths(hmm_biofam)
@@ -246,7 +252,8 @@ hidden.paths_seq <- seqdef(hidden.paths, labels = paste("Hidden state", 1:5))
 
 # Plotting observations and hidden state paths
 ssplot(
-  hmm_biofam, type = "I", plots = "hidden.paths",
+  hmm_biofam,
+  type = "I", plots = "hidden.paths",
   # Sequence object of most probable paths
   hidden.paths = hidden.paths_seq,
   # Sorting according to the end of hidden state paths
@@ -254,8 +261,9 @@ ssplot(
   # Contolling legend position, type, and proportion
   with.legend = "bottom", legend.prop = 0.15,
   # Plotting without title and y label
-  title = FALSE, ylab = FALSE)
-  }
+  title = FALSE, ylab = FALSE
+)
+}
 }
 \seealso{
 \code{\link{ssp}} for creating \code{ssp} objects and \code{\link{plot.ssp}}

@@ -28,20 +28,20 @@ Object of class \code{hmm} with following elements:
 }
 }
 \description{
-Function \code{build_mm} builds and automatically estimates a Markov model. It is also a shortcut for 
+Function \code{build_mm} builds and automatically estimates a Markov model. It is also a shortcut for
 constructing a Markov model as a restricted case of an \code{hmm} object.
 }
 \details{
 Unlike the other build functions in \code{seqHMM}, the \code{build_mm} function
-automatically estimates the model parameters. In case of no missing values, 
+automatically estimates the model parameters. In case of no missing values,
 initial and transition probabilities are
 directly estimated from the observed initial state probabilities and transition counts.
 In case of missing values, the EM algorithm is run once.
 
-Note that it is possible that the data contains a symbol from which there are 
-no transitions anywhere (even to itself), which would lead to a row in 
-transition matrix full of zeros. In this case the `build_mm` 
-(as well as the EM algorithm) assumes that the 
+Note that it is possible that the data contains a symbol from which there are
+no transitions anywhere (even to itself), which would lead to a row in
+transition matrix full of zeros. In this case the `build_mm`
+(as well as the EM algorithm) assumes that the
 the state is absorbing in a way that probability of staying in this state is 1.
 }
 \examples{
@@ -50,11 +50,15 @@ data("mvad", package = "TraMineR")
 
 mvad_alphabet <-
   c("employment", "FE", "HE", "joblessness", "school", "training")
-mvad_labels <- c("employment", "further education", "higher education",
-  "joblessness", "school", "training")
+mvad_labels <- c(
+  "employment", "further education", "higher education",
+  "joblessness", "school", "training"
+)
 mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet,
-  states = mvad_scodes, labels = mvad_labels, xtstep = 6)
+mvad_seq <- seqdef(mvad, 17:86,
+  alphabet = mvad_alphabet,
+  states = mvad_scodes, labels = mvad_labels, xtstep = 6
+)
 
 # Define a color palette for the sequence data
 attr(mvad_seq, "cpal") <- colorpalette[[6]]

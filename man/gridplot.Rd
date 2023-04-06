@@ -90,58 +90,80 @@ attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 # Preparing plot for state distribution plots of observations for women
 ssp_f <- ssp(
-  list(child_seq[biofam3c$covariates$sex == "woman",],
-       marr_seq[biofam3c$covariates$sex == "woman",],
-       left_seq[biofam3c$covariates$sex == "woman",]),
+  list(
+    child_seq[biofam3c$covariates$sex == "woman", ],
+    marr_seq[biofam3c$covariates$sex == "woman", ],
+    left_seq[biofam3c$covariates$sex == "woman", ]
+  ),
   type = "d", plots = "obs", title = "Women",
-  ylab = c("Children", "Married", "Left home"))
+  ylab = c("Children", "Married", "Left home")
+)
 
 # Preparing plot for state distribution plots of observations for men
 # (Updating the previous plot, only arguments that change values)
-ssp_m <- update(ssp_f, title = "Men",
-  x = list(child_seq[biofam3c$covariates$sex == "man",],
-       marr_seq[biofam3c$covariates$sex == "man",],
-       left_seq[biofam3c$covariates$sex == "man",]))
+ssp_m <- update(ssp_f,
+  title = "Men",
+  x = list(
+    child_seq[biofam3c$covariates$sex == "man", ],
+    marr_seq[biofam3c$covariates$sex == "man", ],
+    left_seq[biofam3c$covariates$sex == "man", ]
+  )
+)
 
 # Plotting state distribution plots of observations for women and men in two columns
 gridplot(list(ssp_f, ssp_m), ncol = 2, with.legend = FALSE)
 
 # Preparing plots for women's state distributions
 ssp_f2 <- ssp(
-  list(marr_seq[biofam3c$covariates$sex == "woman",],
-       child_seq[biofam3c$covariates$sex == "woman",],
-       left_seq[biofam3c$covariates$sex == "woman",]),
+  list(
+    marr_seq[biofam3c$covariates$sex == "woman", ],
+    child_seq[biofam3c$covariates$sex == "woman", ],
+    left_seq[biofam3c$covariates$sex == "woman", ]
+  ),
   type = "d", border = NA, with.legend = FALSE,
   title = "State distributions for women", title.n = FALSE, xtlab = 15:30,
-  ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home"))
+  ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home")
+)
 
 # The same plot with sequences instead of state distributions
 ssp_f3 <- update(
-  ssp_f2, type = "I", sortv = "mds.obs", title = "Sequences for women")
+  ssp_f2,
+  type = "I", sortv = "mds.obs", title = "Sequences for women"
+)
 
 # State distributions with men's data
 ssp_m2 <- update(
-  ssp_f2, title = "State distributions for men",
-  x = list(marr_seq[biofam3c$covariates$sex == "man",],
-           child_seq[biofam3c$covariates$sex == "man",],
-           left_seq[biofam3c$covariates$sex == "man",]))
+  ssp_f2,
+  title = "State distributions for men",
+  x = list(
+    marr_seq[biofam3c$covariates$sex == "man", ],
+    child_seq[biofam3c$covariates$sex == "man", ],
+    left_seq[biofam3c$covariates$sex == "man", ]
+  )
+)
 
 # Men's sequences
 ssp_m3 <- update(
-  ssp_m2, type = "I", sortv = "mds.obs", title = "Sequences for men")
+  ssp_m2,
+  type = "I", sortv = "mds.obs", title = "Sequences for men"
+)
 
 # Plotting state distributions and index plots of observations
 # for women and men in two columns (+ one column for legends)
 gridplot(
-  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 3, byrow = TRUE,
-  with.legend = "combined", legend.pos = "right", col.prop = c(0.35, 0.35, 0.3))
+  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3),
+  ncol = 3, byrow = TRUE,
+  with.legend = "combined", legend.pos = "right", col.prop = c(0.35, 0.35, 0.3)
+)
 
 # The same with different positioning and fixed cells for legends
 gridplot(
-  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3), ncol = 2, nrow = 3, byrow = TRUE,
+  list(ssp_f2, ssp_f3, ssp_m2, ssp_m3),
+  ncol = 2, nrow = 3, byrow = TRUE,
   # defining the legend positions by the cell numbers
-  legend.pos = 3:4)
- }
+  legend.pos = 3:4
+)
+}
 
 }
 \seealso{

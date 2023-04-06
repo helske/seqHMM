@@ -9,25 +9,25 @@
 \arguments{
 \item{object}{A  hidden Markov model of class \code{hmm}.}
 
-\item{partials}{Return a vector containing the individual contributions of each sequence to the total log-likelihood. 
+\item{partials}{Return a vector containing the individual contributions of each sequence to the total log-likelihood.
 The default is \code{FALSE}, which returns the sum of all log-likelihood components.}
 
 \item{threads}{Number of threads to use in parallel computing. The default is 1.}
 
-\item{log_space}{Make computations using log-space instead of scaling for greater 
-numerical stability at the cost of decreased computational performance. 
+\item{log_space}{Make computations using log-space instead of scaling for greater
+numerical stability at the cost of decreased computational performance.
   The default is \code{TRUE}.}
 
 \item{...}{Ignored.}
 }
 \value{
-Log-likelihood of the hidden Markov model. This is an object of class 
+Log-likelihood of the hidden Markov model. This is an object of class
 \code{logLik} with attributes \code{nobs} and \code{df} inherited from the model object.
 }
 \description{
 Function \code{logLik.hmm} computes the log-likelihood value of a hidden Markov model.
 }
 \seealso{
-\code{\link{build_hmm}} and \code{\link{fit_model}} for building and 
+\code{\link{build_hmm}} and \code{\link{fit_model}} for building and
   fitting Hidden Markov models.
 }

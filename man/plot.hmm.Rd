@@ -152,10 +152,10 @@ vector of length \code{x$n_symbols} is given, i.e. the argument requires a color
 specified for all (combinations of) observed states even if they are not
 plotted (if the probability is less than \code{combine.slices}).}
 
-\item{cpal.legend}{Optional color palette for the legend, only considered when 
+\item{cpal.legend}{Optional color palette for the legend, only considered when
 legend.order is FALSE. Should match ltext.}
 
-\item{legend.order}{Whether to use the default order in the legend, i.e., order by appearance 
+\item{legend.order}{Whether to use the default order in the legend, i.e., order by appearance
 (first by hidden state, then by emission probability). TRUE by default.}
 
 \item{main}{Main title for the plot. Omitted by default.}
@@ -185,15 +185,18 @@ plot(hmm_biofam,
   # legend with two columns and less space
   ncol.legend = 2, legend.prop = 0.4,
   # new label for combined slice
-  combined.slice.label = "States with probability < 0.05")
+  combined.slice.label = "States with probability < 0.05"
+)
 
 # Plotting HMM with given coordinates
 plot(hmm_biofam,
   # layout given in 2x5 matrix
   # x coordinates in the first column
   # y coordinates in the second column
-  layout = matrix(c(1, 3, 3, 5,  3,
-                    0, 0, 1, 0, -1), ncol = 2),
+  layout = matrix(c(
+    1, 3, 3, 5, 3,
+    0, 0, 1, 0, -1
+  ), ncol = 2),
   # larger vertices
   vertex.size = 50,
   # straight edges
@@ -201,7 +204,7 @@ plot(hmm_biofam,
   # thinner edges and arrows
   cex.edge.width = 0.5, edge.arrow.size = 1,
   # varying positions for vertex labels (initial probabilities)
-  vertex.label.pos = c(pi, pi/2, -pi/2, 0, pi/2),
+  vertex.label.pos = c(pi, pi / 2, -pi / 2, 0, pi / 2),
   # different legend properties
   with.legend = "top", legend.prop = 0.3, cex.legend = 1.1,
   # Fix axes to the right scale
@@ -209,14 +212,17 @@ plot(hmm_biofam,
   # all states (not combining states with small probabilities)
   combine.slices = 0,
   # legend with two columns
-  ncol.legend = 2)
+  ncol.legend = 2
+)
 
 # Plotting HMM with own color palette
-plot(hmm_biofam, cpal = 1:10,
+plot(hmm_biofam,
+  cpal = 1:10,
   # States with emission probability less than 0.2 removed
   combine.slices = 0.2,
   # legend with two columns
-  ncol.legend = 2)
+  ncol.legend = 2
+)
 
 # Plotting HMM without pie graph and with a layout function
 require("igraph")
@@ -241,7 +247,8 @@ plot(hmm_biofam,
   # Labels insidde vertices
   vertex.label.dist = 0,
   # Fix x-axis (more space on the right-hand side)
-  xlim = c(-1, 1.3))
+  xlim = c(-1, 1.3)
+)
 
 
 # Single-channel data, unrestricted model
@@ -257,15 +264,16 @@ require(TraMineR)
 alphabet(hmm_mvad$observations)
 
 # Plotting the HMM with own legend (note: observation "none" nonexistent in the observations)
-plot(hmm_mvad, 
-   # Override the default order in the legend
-   legend.order = FALSE,
-   # Colours in the pies (ordered by the alphabet of observations)
-   cpal = c("purple", "pink", "brown", "lightblue", "orange", "green"),
-   # Colours in the legend (matching to ltext)
-   cpal.legend = c("orange", "pink", "brown", "green", "lightblue", "purple", "gray"), 
-   # Labels in the legend (matching to cpal.legend)
-   ltext = c("school", "further educ", "higher educ", "training", "jobless", "employed", "none"))
+plot(hmm_mvad,
+  # Override the default order in the legend
+  legend.order = FALSE,
+  # Colours in the pies (ordered by the alphabet of observations)
+  cpal = c("purple", "pink", "brown", "lightblue", "orange", "green"),
+  # Colours in the legend (matching to ltext)
+  cpal.legend = c("orange", "pink", "brown", "green", "lightblue", "purple", "gray"),
+  # Labels in the legend (matching to cpal.legend)
+  ltext = c("school", "further educ", "higher educ", "training", "jobless", "employed", "none")
+)
 
 require("igraph")
 plot(hmm_mvad,
@@ -276,7 +284,8 @@ plot(hmm_mvad,
   # Positioning vertex labels (initial probabilities)
   vertex.label.pos = c("right", "right", "left", "left", "right"),
   # Less space for the legend
-  legend.prop = 0.3)
+  legend.prop = 0.3
+)
 }
 \seealso{
 \code{\link{build_hmm}} and \code{\link{fit_model}} for building and

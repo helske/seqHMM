@@ -24,7 +24,7 @@
 #' @importFrom Rcpp evalCpp
 #' @importFrom Matrix .bdiag
 #' @importFrom stats logLik cmdscale complete.cases model.matrix BIC rnorm runif vcov
-#' @importFrom TraMineR alphabet seqstatf seqdef seqlegend seqdist seqdistmc seqplot seqlength
+#' @importFrom TraMineR alphabet seqstatf seqdef seqlegend seqdist seqdistmc seqplot seqlength is.stslist
 #' @importFrom grDevices col2rgb rainbow
 #' @importFrom graphics barplot par plot plot.new polygon strwidth text
 #' @importFrom methods hasArg

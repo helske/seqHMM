@@ -19,8 +19,8 @@ build_hmm(
 \item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences, or a list of such objects (one for each channel).}
 
-\item{n_states}{A scalar giving the number of hidden states (not used if starting values for model parameters
-are given with \code{initial_probs}, \code{transition_probs}, or \code{emission_probs}).}
+\item{n_states}{A scalar giving the number of hidden states. Not used if starting values for model parameters
+are given with \code{initial_probs}, \code{transition_probs}, or \code{emission_probs}.}
 
 \item{transition_probs}{A matrix of transition probabilities.}
 
@@ -62,10 +62,10 @@ Function \code{build_hmm} constructs a hidden Markov model object of class \code
 The returned model contains some attributes such as \code{nobs} and \code{df},
 which define the number of observations in the  model and the number of estimable
 model parameters, used in computing BIC.
-When computing \code{nobs} for a multichannel model with \eqn{C} channels, 
-each observed value in a single channel amounts to \eqn{1/C} observation, 
-i.e. a fully observed time point for a single sequence amounts to one observation. 
-For the degrees of freedom \code{df}, zero probabilities of the initial model are 
+When computing \code{nobs} for a multichannel model with \eqn{C} channels,
+each observed value in a single channel amounts to \eqn{1/C} observation,
+i.e. a fully observed time point for a single sequence amounts to one observation.
+For the degrees of freedom \code{df}, zero probabilities of the initial model are
 defined as structural zeroes.
 }
 \examples{
@@ -74,33 +74,42 @@ defined as structural zeroes.
 
 data("mvad", package = "TraMineR")
 
-mvad_alphabet <- c("employment", "FE", "HE", "joblessness", "school",
-                   "training")
-mvad_labels <- c("employment", "further education", "higher education",
-                 "joblessness", "school", "training")
+mvad_alphabet <- c(
+  "employment", "FE", "HE", "joblessness", "school",
+  "training"
+)
+mvad_labels <- c(
+  "employment", "further education", "higher education",
+  "joblessness", "school", "training"
+)
 mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet, states = mvad_scodes,
-                   labels = mvad_labels, xtstep = 6)
+mvad_seq <- seqdef(mvad, 17:86,
+  alphabet = mvad_alphabet, states = mvad_scodes,
+  labels = mvad_labels, xtstep = 6
+)
 
-# Initializing an HMM with 4 hidden states, random starting values                   
+# Initializing an HMM with 4 hidden states, random starting values
 init_hmm_mvad1 <- build_hmm(observations = mvad_seq, n_states = 4)
 
 # Starting values for the emission matrix
 emiss <- matrix(NA, nrow = 4, ncol = 6)
-emiss[1,] <- seqstatf(mvad_seq[, 1:12])[, 2] + 1
-emiss[2,] <- seqstatf(mvad_seq[, 13:24])[, 2] + 1
-emiss[3,] <- seqstatf(mvad_seq[, 25:48])[, 2] + 1
-emiss[4,] <- seqstatf(mvad_seq[, 49:70])[, 2] + 1
+emiss[1, ] <- seqstatf(mvad_seq[, 1:12])[, 2] + 1
+emiss[2, ] <- seqstatf(mvad_seq[, 13:24])[, 2] + 1
+emiss[3, ] <- seqstatf(mvad_seq[, 25:48])[, 2] + 1
+emiss[4, ] <- seqstatf(mvad_seq[, 49:70])[, 2] + 1
 emiss <- emiss / rowSums(emiss)
 
 # Starting values for the transition matrix
 
 tr <- matrix(
-  c(0.80, 0.10, 0.05, 0.05,
+  c(
+    0.80, 0.10, 0.05, 0.05,
     0.05, 0.80, 0.10, 0.05,
     0.05, 0.05, 0.80, 0.10,
-    0.05, 0.05, 0.10, 0.80),
-  nrow=4, ncol=4, byrow=TRUE)
+    0.05, 0.05, 0.10, 0.80
+  ),
+  nrow = 4, ncol = 4, byrow = TRUE
+)
 
 # Starting values for initial state probabilities
 init <- c(0.3, 0.3, 0.2, 0.2)
@@ -108,7 +117,8 @@ init <- c(0.3, 0.3, 0.2, 0.2)
 # HMM with own starting values
 init_hmm_mvad2 <- build_hmm(
   observations = mvad_seq, transition_probs = tr,
-  emission_probs = emiss, initial_probs = init)
+  emission_probs = emiss, initial_probs = init
+)
 
 #########################################
 
@@ -121,12 +131,18 @@ init_hmm_mvad2 <- build_hmm(
 data("biofam3c")
 
 # Building sequence objects
-marr_seq <- seqdef(biofam3c$married, start = 15,
-  alphabet = c("single", "married", "divorced"))
-child_seq <- seqdef(biofam3c$children, start = 15,
-  alphabet = c("childless", "children"))
-left_seq <- seqdef(biofam3c$left, start = 15,
-  alphabet = c("with parents", "left home"))
+marr_seq <- seqdef(biofam3c$married,
+  start = 15,
+  alphabet = c("single", "married", "divorced")
+)
+child_seq <- seqdef(biofam3c$children,
+  start = 15,
+  alphabet = c("childless", "children")
+)
+left_seq <- seqdef(biofam3c$left,
+  start = 15,
+  alphabet = c("with parents", "left home")
+)
 
 # Define colors
 attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
@@ -136,35 +152,40 @@ attr(left_seq, "cpal") <- c("lightblue", "red3")
 # Left-to-right HMM with 3 hidden states and random starting values
 set.seed(1010)
 init_hmm_bf1 <- build_hmm(
-  observations = list(marr_seq, child_seq, left_seq), 
-  n_states = 3, left_right = TRUE, diag_c = 2)
+  observations = list(marr_seq, child_seq, left_seq),
+  n_states = 3, left_right = TRUE, diag_c = 2
+)
 
 
 # Starting values for emission matrices
 
 emiss_marr <- matrix(NA, nrow = 3, ncol = 3)
-emiss_marr[1,] <- seqstatf(marr_seq[, 1:5])[, 2] + 1
-emiss_marr[2,] <- seqstatf(marr_seq[, 6:10])[, 2] + 1
-emiss_marr[3,] <- seqstatf(marr_seq[, 11:16])[, 2] + 1
+emiss_marr[1, ] <- seqstatf(marr_seq[, 1:5])[, 2] + 1
+emiss_marr[2, ] <- seqstatf(marr_seq[, 6:10])[, 2] + 1
+emiss_marr[3, ] <- seqstatf(marr_seq[, 11:16])[, 2] + 1
 emiss_marr <- emiss_marr / rowSums(emiss_marr)
 
 emiss_child <- matrix(NA, nrow = 3, ncol = 2)
-emiss_child[1,] <- seqstatf(child_seq[, 1:5])[, 2] + 1
-emiss_child[2,] <- seqstatf(child_seq[, 6:10])[, 2] + 1
-emiss_child[3,] <- seqstatf(child_seq[, 11:16])[, 2] + 1
+emiss_child[1, ] <- seqstatf(child_seq[, 1:5])[, 2] + 1
+emiss_child[2, ] <- seqstatf(child_seq[, 6:10])[, 2] + 1
+emiss_child[3, ] <- seqstatf(child_seq[, 11:16])[, 2] + 1
 emiss_child <- emiss_child / rowSums(emiss_child)
 
 emiss_left <- matrix(NA, nrow = 3, ncol = 2)
-emiss_left[1,] <- seqstatf(left_seq[, 1:5])[, 2] + 1
-emiss_left[2,] <- seqstatf(left_seq[, 6:10])[, 2] + 1
-emiss_left[3,] <- seqstatf(left_seq[, 11:16])[, 2] + 1
+emiss_left[1, ] <- seqstatf(left_seq[, 1:5])[, 2] + 1
+emiss_left[2, ] <- seqstatf(left_seq[, 6:10])[, 2] + 1
+emiss_left[3, ] <- seqstatf(left_seq[, 11:16])[, 2] + 1
 emiss_left <- emiss_left / rowSums(emiss_left)
 
 # Starting values for transition matrix
-trans <- matrix(c(0.9, 0.07, 0.03,
-                  0,    0.9,  0.1,
-                  0,      0,    1), 
-  nrow = 3, ncol = 3, byrow = TRUE)
+trans <- matrix(
+  c(
+    0.9, 0.07, 0.03,
+    0, 0.9, 0.1,
+    0, 0, 1
+  ),
+  nrow = 3, ncol = 3, byrow = TRUE
+)
 
 # Starting values for initial state probabilities
 inits <- c(0.9, 0.09, 0.01)
@@ -174,10 +195,11 @@ init_hmm_bf2 <- build_hmm(
   observations = list(marr_seq, child_seq, left_seq),
   transition_probs = trans,
   emission_probs = list(emiss_marr, emiss_child, emiss_left),
-  initial_probs = inits)
+  initial_probs = inits
+)
 
 }
 \seealso{
-\code{\link{fit_model}} for estimating model parameters; and 
+\code{\link{fit_model}} for estimating model parameters; and
   \code{\link{plot.hmm}} for plotting \code{hmm} objects.
 }

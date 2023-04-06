@@ -32,7 +32,7 @@ Simulate sequences of observed and hidden states given parameters of a hidden Ma
 \examples{
 # Parameters for the HMM
 emission_probs <- matrix(c(0.5, 0.2, 0.5, 0.8), 2, 2)
-transition_probs <- matrix(c(5/6, 1/6, 1/6, 5/6), 2, 2)
+transition_probs <- matrix(c(5 / 6, 1 / 6, 1 / 6, 5 / 6), 2, 2)
 initial_probs <- c(1, 0)
 
 # Setting the seed for simulation
@@ -40,16 +40,17 @@ set.seed(1)
 
 # Simulating sequences
 sim <- simulate_hmm(
-  n_sequences = 10, initial_probs = initial_probs, 
-  transition_probs = transition_probs, 
-  emission_probs = emission_probs, 
-  sequence_length = 20)
-  
+  n_sequences = 10, initial_probs = initial_probs,
+  transition_probs = transition_probs,
+  emission_probs = emission_probs,
+  sequence_length = 20
+)
+
 ssplot(sim, sortv = "mds.obs", type = "I")
 }
 \seealso{
-\code{\link{build_hmm}} and \code{\link{fit_model}} for building 
-and fitting hidden Markov models; \code{\link{ssplot}} for plotting 
+\code{\link{build_hmm}} and \code{\link{fit_model}} for building
+and fitting hidden Markov models; \code{\link{ssplot}} for plotting
 multiple sequence data sets; \code{\link{seqdef}} for more
 information on state sequence objects; and \code{\link{simulate_mhmm}}
 for simulating mixture hidden Markov models.

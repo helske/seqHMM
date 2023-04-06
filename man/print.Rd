@@ -24,6 +24,6 @@
 Prints the parameters of a (mixture) hidden Markov model.
 }
 \seealso{
-\code{\link{build_hmm}} and \code{\link{fit_model}} for building and 
+\code{\link{build_hmm}} and \code{\link{fit_model}} for building and
   fitting hidden Markov models.
 }

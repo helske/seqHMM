@@ -12,7 +12,7 @@ plot_colors(x, labels = NULL)
 \item{labels}{A vector of labels for colors. If omitted, given color names are used.}
 }
 \description{
-Function \code{plot_colors} plots colors and their labels for easy 
+Function \code{plot_colors} plots colors and their labels for easy
 visualization of a colorpalette.
 }
 \examples{
@@ -27,6 +27,6 @@ plot_colors(c("yellow", "orange", "red", "purple", "blue", "green"))
 plot_colors(rainbow(15))
 }
 \seealso{
-See e.g. the \code{\link{colorpalette}} data and \code{RColorBrewer} 
+See e.g. the \code{\link{colorpalette}} data and \code{RColorBrewer}
 package for ready-made color palettes.
 }

@@ -13,8 +13,8 @@
 #' @export
 #' @param observations An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 #' the sequences, or a list of such objects (one for each channel).
-#' @param n_states A scalar giving the number of hidden states (not used if starting values for model parameters
-#' are given with \code{initial_probs}, \code{transition_probs}, or \code{emission_probs}).
+#' @param n_states A scalar giving the number of hidden states. Not used if starting values for model parameters
+#' are given with \code{initial_probs}, \code{transition_probs}, or \code{emission_probs}.
 #' @param transition_probs A matrix of transition probabilities.
 #' @param emission_probs A matrix of emission probabilities or a list of such
 #' objects (one for each channel). Emission probabilities should follow the
@@ -176,25 +176,35 @@
 #'
 build_hmm <- function(observations, n_states, transition_probs, emission_probs, initial_probs,
                       state_names = NULL, channel_names = NULL, ...) {
+
+  multichannel <- is_multichannel(observations)
+  # Single channel but observations is a list
+  if (is.list(observations) && !inherits(observations, "stslist") && length(observations) == 1) {
+    observations <- observations[[1]]
+    multichannel <- FALSE
+  }
+  n_channels <- ifelse(multichannel, length(observations), 1L)
+
   if (!missing(transition_probs) || !missing(initial_probs) || !missing(emission_probs)) {
     if (missing(transition_probs) || missing(initial_probs) || missing(emission_probs)) {
-      stop(paste("Provide either n_states or all three of initial_probs, transition_probs, and emission_probs."))
+      stop(paste0("Provide either n_states or all three of 'initial_probs', ",
+                  "'transition_probs', and 'emission_probs'."))
     }
 
     if (!is.matrix(transition_probs)) {
-      stop(paste("Object provided for transition_probs is not a matrix."))
+      stop(paste("Object provided for 'transition_probs' is not a matrix."))
     }
     if (!is.vector(initial_probs)) {
       stop(paste("Object provided for initial_probs is not a vector."))
     }
 
     if (dim(transition_probs)[1] != dim(transition_probs)[2]) {
-      stop("Transition_probs must be a square matrix.")
+      stop("Argument 'transition_probs' must be a square matrix.")
     }
     n_states <- nrow(transition_probs)
 
     if (length(initial_probs) != n_states) {
-      stop(paste("Length of initial_probs is not equal to the number of states."))
+      stop(paste("Length of 'initial_probs' is not equal to the number of states."))
     }
 
     if (is.null(state_names)) {
@@ -203,37 +213,25 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
       }
     } else {
       if (length(state_names) != n_states) {
-        stop("Length of state_names is not equal to the number of hidden states.")
+        stop("Length of 'state_names' is not equal to the number of hidden states.")
       }
     }
-
     if (!isTRUE(all.equal(rowSums(transition_probs), rep(1, dim(transition_probs)[1]), check.attributes = FALSE))) {
-      stop("Transition probabilities in transition_probs do not sum to one.")
+      stop("Transition probabilities in 'transition_probs' do not sum to one.")
     }
-
-
     dimnames(transition_probs) <- list(from = state_names, to = state_names)
-
     if (is.list(emission_probs) && length(emission_probs) == 1) {
       emission_probs <- emission_probs[[1]]
     }
-    if (is.list(observations) && !inherits(observations, "stslist") && length(observations) == 1) {
-      observations <- observations[[1]]
-    }
-
-
-
     if (is.list(emission_probs)) {
       if (length(observations) != length(emission_probs)) {
-        stop("Number of channels defined by emission_probs differs from one defined by observations.")
+        stop("Number of channels defined by 'emission_probs' differs from one defined by observations.")
       }
-      n_channels <- length(emission_probs)
       for (j in 1:n_channels) {
         if (!is.matrix(emission_probs[[j]])) {
-          stop(paste("Object provided in emission_probs for channel", j, "is not a matrix."))
+          stop(paste("Object provided in 'emission_probs' for channel", j, "is not a matrix."))
         }
       }
-
       if (length(unique(sapply(observations, nrow))) > 1) {
         stop("The number of subjects (rows) is not the same in all channels.")
       }
@@ -248,13 +246,13 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
       n_symbols <- lengths(symbol_names)
 
       if (any(sapply(emission_probs, nrow) != n_states)) {
-        stop("Number of rows in emission_probs is not equal to the number of states.")
+        stop("Number of rows in 'emission_probs' is not equal to the number of states.")
       }
       if (any(n_symbols != sapply(emission_probs, ncol))) {
-        stop("Number of columns in emission_probs is not equal to the number of symbols.")
+        stop("Number of columns in 'emission_probs' is not equal to the number of symbols.")
       }
       if (!isTRUE(all.equal(c(sapply(emission_probs, rowSums)), rep(1, n_channels * n_states), check.attributes = FALSE))) {
-        stop("Emission probabilities in emission_probs do not sum to one.")
+        stop("Emission probabilities in 'emission_probs' do not sum to one.")
       }
 
       if (is.null(channel_names)) {
@@ -262,7 +260,7 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
           channel_names <- paste("Channel", 1:n_channels)
         }
       } else if (length(channel_names) != n_channels) {
-        warning("The length of argument channel_names does not match the number of channels. Names were not used.")
+        warning("The length of argument 'channel_names' does not match the number of channels. Names were not used.")
         channel_names <- paste("Channel", 1:n_channels)
       }
       for (i in 1:n_channels) {
@@ -270,9 +268,8 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
       }
       names(emission_probs) <- channel_names
     } else {
-      n_channels <- 1
       if (!is.matrix(emission_probs)) {
-        stop(paste("Object provided for emission_probs is not a matrix."))
+        stop(paste("Object provided for 'emission_probs' is not a matrix."))
       }
       if (is.null(channel_names)) {
         channel_names <- "Observations"
@@ -283,13 +280,13 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
       n_symbols <- length(symbol_names)
 
       if (n_states != dim(emission_probs)[1]) {
-        stop("Number of rows in emission_probs is not equal to the number of states.")
+        stop("Number of rows in 'emission_probs' is not equal to the number of states.")
       }
       if (n_symbols != dim(emission_probs)[2]) {
-        stop("Number of columns in emission_probs is not equal to the number of symbols.")
+        stop("Number of columns in 'emission_probs' is not equal to the number of symbols.")
       }
       if (!isTRUE(all.equal(rep(1, n_states), rowSums(emission_probs), check.attributes = FALSE))) {
-        stop("Emission probabilities in emission_probs do not sum to one.")
+        stop("Emission probabilities in 'emission_probs' do not sum to one.")
       }
       dimnames(emission_probs) <- list(state_names = state_names, symbol_names = symbol_names)
     }
@@ -310,9 +307,7 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
 
     initial_probs <- simulate_initial_probs(n_states = n_states, n_clusters = 1)
 
-
-    if (inherits(observations, "stslist")) {
-      n_channels <- 1
+    if (!multichannel) {
 
       n_sequences <- nrow(observations)
       length_of_sequences <- ncol(observations)
@@ -323,28 +318,10 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
       if (is.null(channel_names)) {
         channel_names <- "Observations"
       }
-
-      emission_probs <- simulate_emission_probs(n_states = n_states, n_symbols = n_symbols)
-      dimnames(emission_probs) <- list(state_names = state_names, symbol_names = symbol_names)
-    } else if (is.list(observations) && !inherits(observations, "stslist") && length(observations) == 1) {
-      n_channels <- 1
-
-      observations <- observations[[1]]
-      if (is.null(channel_names)) {
-        channel_names <- "Observations"
-      }
-
-      n_sequences <- nrow(observations)
-      length_of_sequences <- ncol(observations)
-
-      symbol_names <- alphabet(observations)
-      n_symbols <- length(symbol_names)
 
       emission_probs <- simulate_emission_probs(n_states = n_states, n_symbols = n_symbols)
       dimnames(emission_probs) <- list(state_names = state_names, symbol_names = symbol_names)
     } else {
-      n_channels <- length(observations)
-
       n_sequences <- nrow(observations[[1]])
       length_of_sequences <- ncol(observations[[1]])
 
@@ -368,19 +345,18 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
       names(emission_probs) <- channel_names
     }
   }
-
   names(initial_probs) <- state_names
 
-  if (n_channels > 1) {
+  if (multichannel) {
     nobs <- sum(sapply(observations, function(x) {
       sum(!(x == attr(observations[[1]], "nr") |
-        x == attr(observations[[1]], "void") |
-        is.na(x)))
+              x == attr(observations[[1]], "void") |
+              is.na(x)))
     })) / n_channels
   } else {
     nobs <- sum(!(observations == attr(observations, "nr") |
-      observations == attr(observations, "void") |
-      is.na(observations)))
+                    observations == attr(observations, "void") |
+                    is.na(observations)))
   }
 
   model <- structure(

@@ -8,9 +8,9 @@ build_lcm(
   observations,
   n_clusters,
   emission_probs,
-  formula,
-  data,
-  coefficients,
+  formula = NULL,
+  data = NULL,
+  coefficients = NULL,
   cluster_names = NULL,
   channel_names = NULL
 )
@@ -19,25 +19,24 @@ build_lcm(
 \item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
 the sequences, or a list of such objects (one for each channel).}
 
-\item{n_clusters}{A scalar giving the number of clusters/submodels 
+\item{n_clusters}{A scalar giving the number of clusters/submodels
 (not used if starting values for model parameters are given with \code{emission_probs}).}
 
-\item{emission_probs}{A matrix containing emission probabilities for each class by rows, 
-or in case of multichannel data a list of such matrices. 
-Note that the matrices must have dimensions k x s where k is the number of 
-latent classes and s is the number of unique symbols (observed states) in the 
-data. Emission probabilities should follow the ordering of the alphabet of 
+\item{emission_probs}{A matrix containing emission probabilities for each class by rows,
+or in case of multichannel data a list of such matrices.
+Note that the matrices must have dimensions k x s where k is the number of
+latent classes and s is the number of unique symbols (observed states) in the
+data. Emission probabilities should follow the ordering of the alphabet of
 observations (\code{alphabet(observations)}, returned as \code{symbol_names}).}
 
-\item{formula}{Covariates as an object of class \code{\link{formula}}, 
-left side omitted.}
+\item{formula}{Optional formula of class \code{\link{formula}} for the
+mixture probabilities. Left side omitted.}
 
-\item{data}{An optional data frame, list or environment containing the variables 
-in the model. If not found in data, the variables are taken from 
-\code{environment(formula)}.}
+\item{data}{A data frame containing the variables used in the formula.
+Ignored if no formula is provided.}
 
-\item{coefficients}{An optional \eqn{k x l} matrix of regression coefficients for 
-time-constant covariates for mixture probabilities, where \eqn{l} is the number 
+\item{coefficients}{An optional \eqn{k x l} matrix of regression coefficients for
+time-constant covariates for mixture probabilities, where \eqn{l} is the number
 of clusters and \eqn{k} is the number of covariates. A logit-link is used for
 mixture probabilities. The first column is set to zero.}
 
@@ -68,7 +67,7 @@ Object of class \code{mhmm} with the following elements:
 }
 }
 \description{
-Function \code{build_lcm} is a shortcut for constructing a latent class model 
+Function \code{build_lcm} is a shortcut for constructing a latent class model
 as a restricted case of an \code{mhmm} object.
 }
 \examples{
@@ -76,7 +75,8 @@ as a restricted case of an \code{mhmm} object.
 set.seed(123)
 obs <- seqdef(rbind(
   matrix(sample(letters[1:3], 500, TRUE, prob = c(0.1, 0.6, 0.3)), 50, 10),
-  matrix(sample(letters[1:3], 200, TRUE, prob = c(0.4, 0.4, 0.2)), 20, 10)))
+  matrix(sample(letters[1:3], 200, TRUE, prob = c(0.4, 0.4, 0.2)), 20, 10)
+))
 
 # Initialize the model
 set.seed(9087)
@@ -94,29 +94,40 @@ sum(summary(fit$model)$most_probable_cluster == rep(c("Class 2", "Class 1"), tim
 
 # Define sequence data
 data("mvad", package = "TraMineR")
-mvad_alphabet <- c("employment", "FE", "HE", "joblessness", "school",
-  "training")
-mvad_labels <- c("employment", "further education", "higher education",
-  "joblessness", "school", "training")
+mvad_alphabet <- c(
+  "employment", "FE", "HE", "joblessness", "school",
+  "training"
+)
+mvad_labels <- c(
+  "employment", "further education", "higher education",
+  "joblessness", "school", "training"
+)
 mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet, states = mvad_scodes,
-  labels = mvad_labels, xtstep = 6)
-  
+mvad_seq <- seqdef(mvad, 17:86,
+  alphabet = mvad_alphabet, states = mvad_scodes,
+  labels = mvad_labels, xtstep = 6
+)
+
 # Initialize the LCM with random starting values
 set.seed(7654)
-init_lcm_mvad1 <- build_lcm(observations = mvad_seq,
-  n_clusters = 2, formula = ~male, data = mvad)
+init_lcm_mvad1 <- build_lcm(
+  observations = mvad_seq,
+  n_clusters = 2, formula = ~male, data = mvad
+)
 
 # Own starting values for emission probabilities
-emiss <- rbind(rep(1/6, 6), rep(1/6, 6))
+emiss <- rbind(rep(1 / 6, 6), rep(1 / 6, 6))
 
 # LCM with own starting values
-init_lcm_mvad2 <- build_lcm(observations = mvad_seq,
-  emission_probs = emiss, formula = ~male, data = mvad)
+init_lcm_mvad2 <- build_lcm(
+  observations = mvad_seq,
+  emission_probs = emiss, formula = ~male, data = mvad
+)
 
 # Estimate model parameters (EM algorithm with random restarts)
-lcm_mvad <- fit_model(init_lcm_mvad1, 
-  control_em = list(restart = list(times = 5)))$model
+lcm_mvad <- fit_model(init_lcm_mvad1,
+  control_em = list(restart = list(times = 5))
+)$model
 
 # Plot the LCM
 plot(lcm_mvad, interactive = FALSE, ncol = 2)
@@ -129,8 +140,9 @@ require("MASS")
 data("birthwt")
 
 model <- build_lcm(
-  observations = seqdef(birthwt$low), emission_probs = diag(2), 
-  formula = ~age + lwt + smoke + ht, data = birthwt)
+  observations = seqdef(birthwt$low), emission_probs = diag(2),
+  formula = ~ age + lwt + smoke + ht, data = birthwt
+)
 fit <- fit_model(model)
 summary(fit$model)
 summary(glm(low ~ age + lwt + smoke + ht, binomial, data = birthwt))
@@ -142,25 +154,26 @@ require("nnet")
 
 set.seed(123)
 n <- 100
-X <- cbind(1, x1 = runif(n, 0, 1), x2 =  runif(n, 0, 1))
-coefs <- cbind(0,c(-2, 5, -2), c(0, -2, 2))
-pr <- exp(X \%*\% coefs)  + rnorm(n*3)
-pr <- pr/rowSums(pr)
+X <- cbind(1, x1 = runif(n, 0, 1), x2 = runif(n, 0, 1))
+coefs <- cbind(0, c(-2, 5, -2), c(0, -2, 2))
+pr <- exp(X \%*\% coefs) + rnorm(n * 3)
+pr <- pr / rowSums(pr)
 y <- apply(pr, 1, which.max)
 table(y)
 
 model <- build_lcm(
-  observations = seqdef(y), emission_probs = diag(3), 
-  formula = ~x1 + x2,  data = data.frame(X[, -1]))
+  observations = seqdef(y), emission_probs = diag(3),
+  formula = ~ x1 + x2, data = data.frame(X[, -1])
+)
 fit <- fit_model(model)
 summary(fit$model)
-summary(multinom(y ~ x1 + x2, data = data.frame(X[,-1])))
+summary(multinom(y ~ x1 + x2, data = data.frame(X[, -1])))
 }
 }
 \seealso{
 \code{\link{fit_model}} for estimating model parameters;
-\code{\link{summary.mhmm}} for a summary of a mixture model; 
-\code{\link{separate_mhmm}} for organizing an \code{mhmm} object into a list of 
-separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting 
+\code{\link{summary.mhmm}} for a summary of a mixture model;
+\code{\link{separate_mhmm}} for organizing an \code{mhmm} object into a list of
+separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting
 mixture models.
 }

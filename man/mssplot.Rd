@@ -97,7 +97,7 @@ in the sequences. By default, this color is taken from the \code{missing.color}
 attribute of the sequence object.}
 
 \item{title}{A vector of main titles for the graphics. The default is \code{NA}: if
-\code{title.n = TRUE}, the name of the cluster and the number of subjects is plotted. 
+\code{title.n = TRUE}, the name of the cluster and the number of subjects is plotted.
 \code{FALSE} prints no titles, even when \code{title.n = TRUE}.}
 
 \item{title.n}{Controls whether the number of subjects is printed in the main
@@ -186,8 +186,8 @@ of the font, values greater than 1 will increase the size.}
 tick labels. The default value is 1. Values lesser than 1 will reduce the size of
 the font, values greater than 1 will increase the size.}
 
-\item{respect_void}{If \code{TRUE} (default), states at the time points 
-corresponding to TraMineR's void in the observed sequences are set to void 
+\item{respect_void}{If \code{TRUE} (default), states at the time points
+corresponding to TraMineR's void in the observed sequences are set to void
 in the hidden state sequences as well.}
 
 \item{...}{Other arguments to be passed on to
@@ -210,7 +210,6 @@ if (interactive()) {
   # Interactive plot
   mssplot(mhmm_biofam)
 }
-
 
 }
 \seealso{

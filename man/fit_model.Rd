@@ -38,7 +38,7 @@ of the parameter estimation. The default is \code{TRUE}.}
 
 \item{control_em}{Optional list of control parameters for the EM algorithm.
 Possible arguments are \describe{
-\item{maxeval}{The maximum number of iterations, the default is 1000. 
+\item{maxeval}{The maximum number of iterations, the default is 1000.
 Note that iteration counter starts with -1 so with \code{maxeval=1} you get already two iterations.
 This is for backward compatibility reasons.}
 \item{print_level}{The level of printing. Possible values are 0
@@ -64,7 +64,7 @@ and \code{maxeval} at the end of the EM step.}
 \item{n_optimum}{Save the log-likelihood values of the \code{n_optimum} best
 models (from all estimated models including the the first EM run.).
 The default is \code{min(times + 1, 25)}.}
-\item{use_original}{If \code{TRUE}. Use the initial values of the input model as starting 
+\item{use_original}{If \code{TRUE}. Use the initial values of the input model as starting
 points for the permutations. Otherwise permute the results of the first EM run.}
 }
 }
@@ -100,21 +100,21 @@ Bounds are used only in the global optimization step.}
 \item{log_space}{Make computations using log-space instead of scaling for greater
 numerical stability at a cost of decreased computational performance. The default is \code{FALSE}.}
 
-\item{constraints}{Integer vector defining equality constraints for emission distributions. 
+\item{constraints}{Integer vector defining equality constraints for emission distributions.
 Not supported for EM algorithm. See details.}
 
 \item{fixed_inits}{Can be used to fix some of the probabilities to their initial values.
-Should have same structure as \code{model$initial_probs}, where each element 
+Should have same structure as \code{model$initial_probs}, where each element
 is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
 Not supported for EM algorithm. See details.}
 
 \item{fixed_emissions}{Can be used to fix some of the probabilities to their initial values.
-Should have same structure as \code{model$emission_probs}, where each element 
+Should have same structure as \code{model$emission_probs}, where each element
 is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
 Not supported for EM algorithm. See details.}
 
 \item{fixed_transitions}{Can be used to fix some of the probabilities to their initial values.
-Should have same structure as \code{model$transition_probs}, where each element 
+Should have same structure as \code{model$transition_probs}, where each element
 is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
 Not supported for EM algorithm. See details.}
 
@@ -176,22 +176,22 @@ The fitting function provides three estimation steps: 1) EM algorithm,
 
   Any algorithm available in the \code{nloptr} function can be used for the global and
   local steps.
-  
-  Equality constraints for emission distributions can be defined using the argument 
-  \code{constraints}. This should be a vector with length equal to the number of states, 
+
+  Equality constraints for emission distributions can be defined using the argument
+  \code{constraints}. This should be a vector with length equal to the number of states,
   with numbers starting from 1 and increasing for each unique row of the emission probability matrix.
-  For example in case of five states with emissions of first and third states being equal, 
-  \code{constraints = c(1, 2, 1, 3, 4)}. Similarly, some of the model parameters can be fixed to their 
-  initial values by using arguments \code{fixed_inits}, \code{fixed_emissions}, 
-  and \code{fixed_transitions}, where the structure of the arguments should be 
-  same as the corresponding model components, so that TRUE value means that 
-  the parameter should be fixed and FALSE otherwise (it is still treated as fixed if it 
+  For example in case of five states with emissions of first and third states being equal,
+  \code{constraints = c(1, 2, 1, 3, 4)}. Similarly, some of the model parameters can be fixed to their
+  initial values by using arguments \code{fixed_inits}, \code{fixed_emissions},
+  and \code{fixed_transitions}, where the structure of the arguments should be
+  same as the corresponding model components, so that TRUE value means that
+  the parameter should be fixed and FALSE otherwise (it is still treated as fixed if it
   is zero though). For both types of constrains, only numerical optimisation
-  (local or global) is available, and currently the gradients are computed numerically 
-  (if needed) in these cases. 
-  
-  In a case where the is no transitions from one state to anywhere (even to 
-  itself), the state is defined as absorbing in a way that probability of 
+  (local or global) is available, and currently the gradients are computed numerically
+  (if needed) in these cases.
+
+  In a case where the is no transitions from one state to anywhere (even to
+  itself), the state is defined as absorbing in a way that probability of
   staying in this state is fixed to 1. See also `build_mm` function.
 }
 \examples{
@@ -209,33 +209,40 @@ A[3, 4] <- 0.05
 
 # Emission matrix, rows 1 and 3 equal
 B <- rbind(
-  c(0.4,0.2,0.3,0.1),
-  c(0.1,0.5,0.1,0.3),
-  c(0.4,0.2,0.3,0.1),
-  c(0, 0.2,0.4,0.4))
-  
+  c(0.4, 0.2, 0.3, 0.1),
+  c(0.1, 0.5, 0.1, 0.3),
+  c(0.4, 0.2, 0.3, 0.1),
+  c(0, 0.2, 0.4, 0.4)
+)
+
 # Start from first state
-init <- c(1,0,0,0)
+init <- c(1, 0, 0, 0)
 
 # Simulate sequences
-sim <- simulate_hmm(n_sequences = 100, 
-  sequence_length = 20, init, A, B)
+sim <- simulate_hmm(
+  n_sequences = 100,
+  sequence_length = 20, init, A, B
+)
 
-# initial model, use true values as inits for faster estimation here   
+# initial model, use true values as inits for faster estimation here
 model <- build_hmm(sim$observations, init = init, trans = A, emiss = B)
 
 # estimate the model subject to constraints:
 # First and third row of emission matrix are equal (see details)
-fit <- fit_model(model, constraints = c(1, 2, 1, 3), 
-  em_step = FALSE, local_step = TRUE)
+fit <- fit_model(model,
+  constraints = c(1, 2, 1, 3),
+  em_step = FALSE, local_step = TRUE
+)
 fit$model
 
 ## Fix some emissions:
 
 fixB <- matrix(FALSE, 4, 4)
 fixB[2, 1] <- fixB[1, 3] <- TRUE # these are fixed to their initial values
-fit <- fit_model(model, fixed_emissions = fixB,
-  em_step = FALSE, local_step = TRUE)
+fit <- fit_model(model,
+  fixed_emissions = fixB,
+  em_step = FALSE, local_step = TRUE
+)
 fit$model$emission_probs
 
 # Hidden Markov model for mvad data
@@ -244,22 +251,29 @@ data("mvad", package = "TraMineR")
 
 mvad_alphabet <-
   c("employment", "FE", "HE", "joblessness", "school", "training")
-mvad_labels <- c("employment", "further education", "higher education",
-  "joblessness", "school", "training")
+mvad_labels <- c(
+  "employment", "further education", "higher education",
+  "joblessness", "school", "training"
+)
 mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet,
-  states = mvad_scodes, labels = mvad_labels, xtstep = 6)
+mvad_seq <- seqdef(mvad, 17:86,
+  alphabet = mvad_alphabet,
+  states = mvad_scodes, labels = mvad_labels, xtstep = 6
+)
 
 attr(mvad_seq, "cpal") <- colorpalette[[6]]
 
 # Starting values for the emission matrix
 emiss <- matrix(
-  c(0.05, 0.05, 0.05, 0.05, 0.75, 0.05, # SC
+  c(
+    0.05, 0.05, 0.05, 0.05, 0.75, 0.05, # SC
     0.05, 0.75, 0.05, 0.05, 0.05, 0.05, # FE
-    0.05, 0.05, 0.05, 0.4,  0.05, 0.4,  # JL, TR
+    0.05, 0.05, 0.05, 0.4, 0.05, 0.4, # JL, TR
     0.05, 0.05, 0.75, 0.05, 0.05, 0.05, # HE
-    0.75, 0.05, 0.05, 0.05, 0.05, 0.05),# EM
-  nrow = 5, ncol = 6, byrow = TRUE)
+    0.75, 0.05, 0.05, 0.05, 0.05, 0.05
+  ), # EM
+  nrow = 5, ncol = 6, byrow = TRUE
+)
 
 # Starting values for the transition matrix
 trans <- matrix(0.025, 5, 5)
@@ -269,9 +283,11 @@ diag(trans) <- 0.9
 initial_probs <- c(0.2, 0.2, 0.2, 0.2, 0.2)
 
 # Building a hidden Markov model
-init_hmm_mvad <- build_hmm(observations = mvad_seq,
+init_hmm_mvad <- build_hmm(
+  observations = mvad_seq,
   transition_probs = trans, emission_probs = emiss,
-  initial_probs = initial_probs)
+  initial_probs = initial_probs
+)
 
 \dontrun{
 set.seed(21)
@@ -293,11 +309,13 @@ logLik(hmm_mvad)
 logLik(mm_mvad)
 
 \dontrun{
-require("igraph") #for layout_in_circle
+require("igraph") # for layout_in_circle
 
-plot(mm_mvad, layout = layout_in_circle, legend.prop = 0.3,
+plot(mm_mvad,
+  layout = layout_in_circle, legend.prop = 0.3,
   edge.curved = 0.3, edge.label = NA,
-  vertex.label.pos = c(0, 0, pi, pi, pi, 0))
+  vertex.label.pos = c(0, 0, pi, pi, pi, 0)
+)
 
 ##############################################################
 
@@ -308,12 +326,18 @@ plot(mm_mvad, layout = layout_in_circle, legend.prop = 0.3,
 data("biofam3c")
 
 # Building sequence objects
-marr_seq <- seqdef(biofam3c$married, start = 15,
-  alphabet = c("single", "married", "divorced"))
-child_seq <- seqdef(biofam3c$children, start = 15,
-  alphabet = c("childless", "children"))
-left_seq <- seqdef(biofam3c$left, start = 15,
-  alphabet = c("with parents", "left home"))
+marr_seq <- seqdef(biofam3c$married,
+  start = 15,
+  alphabet = c("single", "married", "divorced")
+)
+child_seq <- seqdef(biofam3c$children,
+  start = 15,
+  alphabet = c("childless", "children")
+)
+left_seq <- seqdef(biofam3c$left,
+  start = 15,
+  alphabet = c("with parents", "left home")
+)
 
 # Define colors
 attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
@@ -323,27 +347,29 @@ attr(left_seq, "cpal") <- c("lightblue", "red3")
 # Starting values for emission matrices
 
 emiss_marr <- matrix(NA, nrow = 3, ncol = 3)
-emiss_marr[1,] <- seqstatf(marr_seq[, 1:5])[, 2] + 1
-emiss_marr[2,] <- seqstatf(marr_seq[, 6:10])[, 2] + 1
-emiss_marr[3,] <- seqstatf(marr_seq[, 11:16])[, 2] + 1
+emiss_marr[1, ] <- seqstatf(marr_seq[, 1:5])[, 2] + 1
+emiss_marr[2, ] <- seqstatf(marr_seq[, 6:10])[, 2] + 1
+emiss_marr[3, ] <- seqstatf(marr_seq[, 11:16])[, 2] + 1
 emiss_marr <- emiss_marr / rowSums(emiss_marr)
 
 emiss_child <- matrix(NA, nrow = 3, ncol = 2)
-emiss_child[1,] <- seqstatf(child_seq[, 1:5])[, 2] + 1
-emiss_child[2,] <- seqstatf(child_seq[, 6:10])[, 2] + 1
-emiss_child[3,] <- seqstatf(child_seq[, 11:16])[, 2] + 1
+emiss_child[1, ] <- seqstatf(child_seq[, 1:5])[, 2] + 1
+emiss_child[2, ] <- seqstatf(child_seq[, 6:10])[, 2] + 1
+emiss_child[3, ] <- seqstatf(child_seq[, 11:16])[, 2] + 1
 emiss_child <- emiss_child / rowSums(emiss_child)
 
 emiss_left <- matrix(NA, nrow = 3, ncol = 2)
-emiss_left[1,] <- seqstatf(left_seq[, 1:5])[, 2] + 1
-emiss_left[2,] <- seqstatf(left_seq[, 6:10])[, 2] + 1
-emiss_left[3,] <- seqstatf(left_seq[, 11:16])[, 2] + 1
+emiss_left[1, ] <- seqstatf(left_seq[, 1:5])[, 2] + 1
+emiss_left[2, ] <- seqstatf(left_seq[, 6:10])[, 2] + 1
+emiss_left[3, ] <- seqstatf(left_seq[, 11:16])[, 2] + 1
 emiss_left <- emiss_left / rowSums(emiss_left)
 
 # Starting values for transition matrix
-trans <- matrix(c(0.9, 0.07, 0.03,
-                0,  0.9,  0.1,
-                0,    0,    1), nrow = 3, ncol = 3, byrow = TRUE)
+trans <- matrix(c(
+  0.9, 0.07, 0.03,
+  0, 0.9, 0.1,
+  0, 0, 1
+), nrow = 3, ncol = 3, byrow = TRUE)
 
 # Starting values for initial state probabilities
 inits <- c(0.9, 0.09, 0.01)
@@ -353,7 +379,8 @@ init_hmm_bf <- build_hmm(
   observations = list(marr_seq, child_seq, left_seq),
   transition_probs = trans,
   emission_probs = list(emiss_marr, emiss_child, emiss_left),
-  initial_probs = inits)
+  initial_probs = inits
+)
 
 # Fitting the model with different optimization schemes
 
@@ -369,8 +396,10 @@ hmm_2$logLik # -22267.75
 # This can be slow, use parallel computing by adjusting threads argument
 # (here threads = 1 for portability issues)
 hmm_3 <- fit_model(
-  init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE,
-  control_global = list(maxeval = 5000, maxtime = 0), threads = 1)
+  init_hmm_bf,
+  em_step = FALSE, global_step = TRUE, local_step = TRUE,
+  control_global = list(maxeval = 5000, maxtime = 0), threads = 1
+)
 hmm_3$logLik # -21675.42
 
 # EM with restarts, much faster than MLSL
@@ -383,9 +412,13 @@ hmm_4$logLik # -21675.4
 # (here threads = 1 for portability issues)
 set.seed(123)
 hmm_5 <- fit_model(
-   init_hmm_bf, em_step = FALSE, global_step = TRUE, local_step = TRUE, 
-   lb = -50, ub = 50, control_global = list(algorithm = "NLOPT_GD_STOGO", 
-   maxeval = 2500, maxtime = 0), threads = 1)
+  init_hmm_bf,
+  em_step = FALSE, global_step = TRUE, local_step = TRUE,
+  lb = -50, ub = 50, control_global = list(
+    algorithm = "NLOPT_GD_STOGO",
+    maxeval = 2500, maxtime = 0
+  ), threads = 1
+)
 hmm_5$logLik # -21675.4
 
 ##############################################################
@@ -395,12 +428,18 @@ hmm_5$logLik # -21675.4
 data("biofam3c")
 
 ## Building sequence objects
-marr_seq <- seqdef(biofam3c$married, start = 15,
-  alphabet = c("single", "married", "divorced"))
-child_seq <- seqdef(biofam3c$children, start = 15,
-  alphabet = c("childless", "children"))
-left_seq <- seqdef(biofam3c$left, start = 15,
-  alphabet = c("with parents", "left home"))
+marr_seq <- seqdef(biofam3c$married,
+  start = 15,
+  alphabet = c("single", "married", "divorced")
+)
+child_seq <- seqdef(biofam3c$children,
+  start = 15,
+  alphabet = c("childless", "children")
+)
+left_seq <- seqdef(biofam3c$left,
+  start = 15,
+  alphabet = c("with parents", "left home")
+)
 
 ## Choosing colors
 attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
@@ -410,94 +449,127 @@ attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 ## Starting values for emission probabilities
 # Cluster 1
 B1_marr <- matrix(
-  c(0.8, 0.1, 0.1, # High probability for single
+  c(
+    0.8, 0.1, 0.1, # High probability for single
     0.8, 0.1, 0.1,
     0.3, 0.6, 0.1, # High probability for married
-    0.3, 0.3, 0.4), # High probability for divorced
-  nrow = 4, ncol = 3, byrow = TRUE)
+    0.3, 0.3, 0.4
+  ), # High probability for divorced
+  nrow = 4, ncol = 3, byrow = TRUE
+)
 
 B1_child <- matrix(
-  c(0.9, 0.1, # High probability for childless
+  c(
+    0.9, 0.1, # High probability for childless
     0.9, 0.1,
     0.9, 0.1,
-    0.9, 0.1),
-  nrow = 4, ncol = 2, byrow = TRUE)
+    0.9, 0.1
+  ),
+  nrow = 4, ncol = 2, byrow = TRUE
+)
 
 B1_left <- matrix(
-  c(0.9, 0.1, # High probability for living with parents
+  c(
+    0.9, 0.1, # High probability for living with parents
     0.1, 0.9, # High probability for having left home
     0.1, 0.9,
-    0.1, 0.9),
-  nrow = 4, ncol = 2, byrow = TRUE)
+    0.1, 0.9
+  ),
+  nrow = 4, ncol = 2, byrow = TRUE
+)
 
 # Cluster 2
 
 B2_marr <- matrix(
-  c(0.8, 0.1, 0.1, # High probability for single
+  c(
+    0.8, 0.1, 0.1, # High probability for single
     0.8, 0.1, 0.1,
     0.1, 0.8, 0.1, # High probability for married
-    0.7, 0.2, 0.1),
-  nrow = 4, ncol = 3, byrow = TRUE)
+    0.7, 0.2, 0.1
+  ),
+  nrow = 4, ncol = 3, byrow = TRUE
+)
 
 B2_child <- matrix(
-  c(0.9, 0.1, # High probability for childless
+  c(
+    0.9, 0.1, # High probability for childless
     0.9, 0.1,
     0.9, 0.1,
-    0.1, 0.9),
-  nrow = 4, ncol = 2, byrow = TRUE)
+    0.1, 0.9
+  ),
+  nrow = 4, ncol = 2, byrow = TRUE
+)
 
 B2_left <- matrix(
-  c(0.9, 0.1, # High probability for living with parents
+  c(
+    0.9, 0.1, # High probability for living with parents
     0.1, 0.9,
     0.1, 0.9,
-    0.1, 0.9),
-  nrow = 4, ncol = 2, byrow = TRUE)
+    0.1, 0.9
+  ),
+  nrow = 4, ncol = 2, byrow = TRUE
+)
 
 # Cluster 3
 B3_marr <- matrix(
-  c(0.8, 0.1, 0.1, # High probability for single
+  c(
+    0.8, 0.1, 0.1, # High probability for single
     0.8, 0.1, 0.1,
     0.8, 0.1, 0.1,
     0.1, 0.8, 0.1, # High probability for married
     0.3, 0.4, 0.3,
-    0.1, 0.1, 0.8), # High probability for divorced
-  nrow = 6, ncol = 3, byrow = TRUE)
+    0.1, 0.1, 0.8
+  ), # High probability for divorced
+  nrow = 6, ncol = 3, byrow = TRUE
+)
 
 B3_child <- matrix(
-  c(0.9, 0.1, # High probability for childless
+  c(
+    0.9, 0.1, # High probability for childless
     0.9, 0.1,
     0.5, 0.5,
     0.5, 0.5,
     0.5, 0.5,
-    0.1, 0.9),
-  nrow = 6, ncol = 2, byrow = TRUE)
+    0.1, 0.9
+  ),
+  nrow = 6, ncol = 2, byrow = TRUE
+)
 
 
 B3_left <- matrix(
-  c(0.9, 0.1, # High probability for living with parents
+  c(
+    0.9, 0.1, # High probability for living with parents
     0.1, 0.9,
     0.5, 0.5,
     0.5, 0.5,
     0.1, 0.9,
-    0.1, 0.9),
-  nrow = 6, ncol = 2, byrow = TRUE)
+    0.1, 0.9
+  ),
+  nrow = 6, ncol = 2, byrow = TRUE
+)
 
 # Starting values for transition matrices
 A1 <- matrix(
-  c(0.80, 0.16, 0.03, 0.01,
-    0,    0.90, 0.07, 0.03,
-    0,    0,    0.90, 0.10,
-    0,    0,    0,       1),
-  nrow = 4, ncol = 4, byrow = TRUE)
+  c(
+    0.80, 0.16, 0.03, 0.01,
+    0, 0.90, 0.07, 0.03,
+    0, 0, 0.90, 0.10,
+    0, 0, 0, 1
+  ),
+  nrow = 4, ncol = 4, byrow = TRUE
+)
 
 A2 <- matrix(
-  c(0.80, 0.10, 0.05, 0.03, 0.01, 0.01,
-    0,    0.70, 0.10, 0.10, 0.05, 0.05,
-    0,    0,    0.85, 0.01, 0.10, 0.04,
-    0,    0,    0,    0.90, 0.05, 0.05,
-    0,    0,    0,    0,    0.90, 0.10,
-    0,    0,    0,    0,    0,       1),
-  nrow = 6, ncol = 6, byrow = TRUE)
+  c(
+    0.80, 0.10, 0.05, 0.03, 0.01, 0.01,
+    0, 0.70, 0.10, 0.10, 0.05, 0.05,
+    0, 0, 0.85, 0.01, 0.10, 0.04,
+    0, 0, 0, 0.90, 0.05, 0.05,
+    0, 0, 0, 0, 0.90, 0.10,
+    0, 0, 0, 0, 0, 1
+  ),
+  nrow = 6, ncol = 6, byrow = TRUE
+)
 
 # Starting values for initial state probabilities
 initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
@@ -506,18 +578,23 @@ initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 # Birth cohort
 biofam3c$covariates$cohort <- cut(biofam3c$covariates$birthyr, c(1908, 1935, 1945, 1957))
 biofam3c$covariates$cohort <- factor(
-  biofam3c$covariates$cohort, labels=c("1909-1935", "1936-1945", "1946-1957"))
+  biofam3c$covariates$cohort,
+  labels = c("1909-1935", "1936-1945", "1946-1957")
+)
 
 # Build mixture HMM
 init_mhmm_bf <- build_mhmm(
   observations = list(marr_seq, child_seq, left_seq),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
   transition_probs = list(A1, A1, A2),
-  emission_probs = list(list(B1_marr, B1_child, B1_left),
+  emission_probs = list(
+    list(B1_marr, B1_child, B1_left),
     list(B2_marr, B2_child, B2_left),
-    list(B3_marr, B3_child, B3_left)),
-  formula = ~sex + cohort, data = biofam3c$covariates,
-  channel_names = c("Marriage", "Parenthood", "Residence"))
+    list(B3_marr, B3_child, B3_left)
+  ),
+  formula = ~ sex + cohort, data = biofam3c$covariates,
+  channel_names = c("Marriage", "Parenthood", "Residence")
+)
 
 
 # Fitting the model with different settings

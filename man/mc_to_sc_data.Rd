@@ -7,27 +7,27 @@
 mc_to_sc_data(data, combine_missing = TRUE, all_combinations = FALSE, cpal)
 }
 \arguments{
-\item{data}{A list of state sequence objects (\code{stslist}s) 
+\item{data}{A list of state sequence objects (\code{stslist}s)
 created with the \code{\link{seqdef}} function.}
 
-\item{combine_missing}{Controls whether combined states of observations 
-at time t are coded missing (coded with * in \code{stslist}s) 
-if one or more of the channels include missing information at time t. 
+\item{combine_missing}{Controls whether combined states of observations
+at time t are coded missing (coded with * in \code{stslist}s)
+if one or more of the channels include missing information at time t.
 Defaults to \code{TRUE}. \code{FALSE} keeps missing states
-as they are, producing more states in data; e.g. single/childless/* 
+as they are, producing more states in data; e.g. single/childless/*
 where the observation in channel 3 is missing.}
 
 \item{all_combinations}{Controls whether all possible combinations of
-observed states are included in the single channel representation or 
-only combinations that are found in the data. Defaults to \code{FALSE}, 
+observed states are included in the single channel representation or
+only combinations that are found in the data. Defaults to \code{FALSE},
 i.e. only actual observations are included.}
 
-\item{cpal}{The color palette used for the new combined symbols. Optional in 
-a case where the number of symbols is less or equal to 200 (in which case 
+\item{cpal}{The color palette used for the new combined symbols. Optional in
+a case where the number of symbols is less or equal to 200 (in which case
 the \code{seqHMM::colorpalette} is used).}
 }
 \description{
-Function \code{mc_to_sc_data} combines observed states of multiple 
+Function \code{mc_to_sc_data} combines observed states of multiple
   sequence objects into one, time point by time point.
 }
 \examples{
@@ -35,12 +35,18 @@ Function \code{mc_to_sc_data} combines observed states of multiple
 data("biofam3c")
 
 # Building sequence objects
-marr_seq <- seqdef(biofam3c$married, start = 15,
-  alphabet = c("single", "married", "divorced"))
-child_seq <- seqdef(biofam3c$children, start = 15,
-  alphabet = c("childless", "children"))
-left_seq <- seqdef(biofam3c$left, start = 15,
-  alphabet = c("with parents", "left home"))
+marr_seq <- seqdef(biofam3c$married,
+  start = 15,
+  alphabet = c("single", "married", "divorced")
+)
+child_seq <- seqdef(biofam3c$children,
+  start = 15,
+  alphabet = c("childless", "children")
+)
+left_seq <- seqdef(biofam3c$left,
+  start = 15,
+  alphabet = c("with parents", "left home")
+)
 
 # Define colors
 attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
@@ -57,22 +63,28 @@ alphabet(sc_data)
 attr(sc_data, "cpal") <- colorpalette[[14]][1:10]
 
 # Plotting sequences for the first 10 subjects
-ssplot(list("Marriage" = marr_seq, "Parenthood" = child_seq, 
-  "Residence" = left_seq, "Combined" = sc_data), type = "I",
-  tlim = 1:10)
+ssplot(
+  list(
+    "Marriage" = marr_seq, "Parenthood" = child_seq,
+    "Residence" = left_seq, "Combined" = sc_data
+  ),
+  type = "I",
+  tlim = 1:10
+)
 
 
 # Including all combinations (whether or not available in data)
 sc_data_all <- mc_to_sc_data(list(marr_seq, child_seq, left_seq),
-  all_combinations = TRUE)
+  all_combinations = TRUE
+)
 
 # 12 combined states, 2 with no observations in data
 seqstatf(sc_data_all)
 
 }
 \seealso{
-\code{\link{mc_to_sc}} for transforming multichannel \code{hmm} 
-  or \code{mhmm} objects into single-channel representations; 
+\code{\link{mc_to_sc}} for transforming multichannel \code{hmm}
+  or \code{mhmm} objects into single-channel representations;
   \code{\link{ssplot}} for plotting multiple sequence data sets in the
   same plot; and \code{\link{seqdef}} for creating state sequence objects.
 }

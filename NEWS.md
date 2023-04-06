@@ -1,7 +1,10 @@
 seqHMM 1.2.5 (Release date: 2023-04-03)
 ==============
+  * Fixed a bug in `mssplot` which caused error with `respect_void = TRUE`.
   * Modified internals of `ssp` to be compatible with the latest versions of 
     TraMineR.
+  * The `data` argument is no longer optional if `formula` is used in 
+    `build_mhmm`, `build_mmm` and `build_lcm` functions.
   * Added unit tests using testthat.
 
 seqHMM 1.2.4 (Release date: 2023-01-09)

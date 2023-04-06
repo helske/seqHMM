@@ -187,8 +187,8 @@ the font, values greater than 1 will increase the size.}
 
 \item{withlegend}{Deprecated. Use \code{with.legend} instead.}
 
-\item{respect_void}{If \code{TRUE} (default), states at the time points 
-corresponding to TraMineR's void in the observed sequences are set to void 
+\item{respect_void}{If \code{TRUE} (default), states at the time points
+corresponding to TraMineR's void in the observed sequences are set to void
 in the hidden state sequences as well.}
 
 \item{...}{Other arguments to be passed on to \code{\link[TraMineR]{seqplot}}.}
@@ -215,21 +215,25 @@ attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 
 # Defining the plot for state distribution plots of observations
-ssp1 <- ssp(list("Parenthood" = child_seq, "Marriage" = marr_seq,
-                 "Residence" = left_seq))
+ssp1 <- ssp(list(
+  "Parenthood" = child_seq, "Marriage" = marr_seq,
+  "Residence" = left_seq
+))
 # Plotting ssp1
 plot(ssp1)
 
 \dontrun{
 # Defining the plot for sequence index plots of observations
 ssp2 <- ssp(
-  list(child_seq, marr_seq, left_seq), type = "I", plots = "obs",
+  list(child_seq, marr_seq, left_seq),
+  type = "I", plots = "obs",
   # Sorting subjects according to the beginning of the 2nd channel (marr_seq)
   sortv = "from.start", sort.channel = 2,
   # Controlling the size, positions, and names for channel labels
   ylab.pos = c(1, 2, 1), cex.lab = 1, ylab = c("Children", "Married", "Residence"),
   # Plotting without legend
-  with.legend = FALSE)
+  with.legend = FALSE
+)
 plot(ssp2)
 
 # Plotting hidden Markov models
@@ -239,13 +243,15 @@ data("hmm_biofam")
 
 # Plotting observations and most probable hidden states paths
 ssp3 <- ssp(
-  hmm_biofam, type = "I", plots = "both",
+  hmm_biofam,
+  type = "I", plots = "both",
   # Sorting according to multidimensional scaling of hidden states paths
   sortv = "mds.hidden",
   # Controlling title
   title = "Biofam", cex.title = 1.5,
   # Labels for x axis and tick marks
-  xtlab = 15:30, xlab = "Age")
+  xtlab = 15:30, xlab = "Age"
+)
 plot(ssp3)
 
 # Computing the most probable paths of hidden states
@@ -256,7 +262,8 @@ alphabet(hid) <- paste("Hidden state", 1:5)
 
 # Plotting observations and hidden state paths
 ssp4 <- ssp(
-  hmm_biofam, type = "I", plots = "hidden.paths",
+  hmm_biofam,
+  type = "I", plots = "hidden.paths",
   # Sequence object of most probable paths
   hidden.paths = hid,
   # Sorting according to the end of hidden state paths
@@ -264,7 +271,8 @@ ssp4 <- ssp(
   # Contolling legend position, type, and proportion
   with.legend = "bottom.combined", legend.prop = 0.15,
   # Plotting without title and y label
-  title = FALSE, ylab = FALSE)
+  title = FALSE, ylab = FALSE
+)
 plot(ssp4)
 }
 }

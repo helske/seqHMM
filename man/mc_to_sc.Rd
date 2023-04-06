@@ -9,11 +9,11 @@ mc_to_sc(model, combine_missing = TRUE, all_combinations = FALSE, cpal)
 \arguments{
 \item{model}{An object of class \code{hmm} or \code{mhmm}.}
 
-\item{combine_missing}{Controls whether combined states of observations 
-at time \eqn{t} are coded missing (coded with \eqn{*} in \code{stslist}s) 
-if one or more of the channels include missing information at time \eqn{t}. 
+\item{combine_missing}{Controls whether combined states of observations
+at time \eqn{t} are coded missing (coded with \eqn{*} in \code{stslist}s)
+if one or more of the channels include missing information at time \eqn{t}.
 Defaults to \code{TRUE}. \code{FALSE} keeps missing states
-as they are, producing more states in data; e.g. \eqn{single/childless/*} 
+as they are, producing more states in data; e.g. \eqn{single/childless/*}
 where the observation in channel 3 is missing.}
 
 \item{all_combinations}{Controls whether all possible combinations of
@@ -21,19 +21,19 @@ observed states are included in the single channel representation or only
 combinations that are found in the data. Defaults to \code{FALSE}, i.e.
 only actual observations are included.}
 
-\item{cpal}{The color palette used for the new combined symbols. Optional in 
-a case where the number of symbols is less or equal to 200 (in which case 
+\item{cpal}{The color palette used for the new combined symbols. Optional in
+a case where the number of symbols is less or equal to 200 (in which case
 the \code{seqHMM::colorpalette} is used).}
 }
 \description{
-Transforms data and parameters of a multichannel model into a single 
-channel model. Observed states (symbols) are combined and parameters 
+Transforms data and parameters of a multichannel model into a single
+channel model. Observed states (symbols) are combined and parameters
 multiplied across channels.
 }
 \details{
-Note that in case of no missing observations, the log-likelihood of 
-the original and transformed models are identical but the AIC and BIC 
-can be different as the model attribute \code{df} is recomputed based 
+Note that in case of no missing observations, the log-likelihood of
+the original and transformed models are identical but the AIC and BIC
+can be different as the model attribute \code{df} is recomputed based
 on the single channel representation.
 }
 \examples{
