@@ -120,7 +120,7 @@ simulate_mhmm <- function(
     channel_names <- 1:n_channels
   }
   if (n_sequences < 2) {
-    stop("Number of simulations (n_sequences) must be at least 2 for a mixture model.")
+    stop("Number of sequences ('n_sequences') must be at least 2 for a mixture model.")
   }
 
   if (missing(formula)) {
@@ -134,14 +134,14 @@ simulate_mhmm <- function(
     if (nrow(X) != n_sequences) {
       if (length(all.vars(formula)) > 0 &&
         sum(!complete.cases(data[all.vars(formula)])) > 0) {
-        stop("Missing cases are not allowed in covariates. Use e.g. the complete.cases function to detect them, then fix, impute, or remove.")
+        stop("Missing cases are not allowed in covariates. Use e.g. the 'complete.cases' function to detect them, then fix, impute, or remove.")
       } else {
         stop("Number of subjects in data for covariates does not match the number of subjects in the sequence data.")
       }
     }
     n_covariates <- ncol(X)
   } else {
-    stop("Object given for argument formula is not of class formula.")
+    stop("Object given for argument 'formula' is not of class formula.")
   }
   if (missing(coefficients)) {
     coefficients <- matrix(0, n_covariates, n_clusters)
@@ -164,7 +164,7 @@ simulate_mhmm <- function(
   }
 
   obs <- lapply(1:n_channels, function(i) {
-    suppressWarnings(suppressMessages(seqdef(matrix(NA, n_sequences, sequence_length),
+    suppressWarnings(suppressMessages(seqdef(matrix(symbol_names[[i]][1], n_sequences, sequence_length),
       alphabet = symbol_names[[i]]
     )))
   })
@@ -191,14 +191,16 @@ simulate_mhmm <- function(
         colnames(transition_probs[[i]])
     }
   }
-
-
+  obs <- lapply(1:n_channels, function(i) {
+    suppressWarnings(suppressMessages(seqdef(matrix(symbol_names[[i]][1], n_sequences, sequence_length),
+                                             alphabet = symbol_names[[i]]
+    )))
+  })
 
   states <- suppressWarnings(suppressMessages(seqdef(matrix(
-    NA,
+    v_state_names[1],
     n_sequences, sequence_length
   ), alphabet = v_state_names)))
-
   clusters <- numeric(n_sequences)
   for (i in 1:n_sequences) {
     clusters[i] <- sample(cluster_names, size = 1, prob = pr[i, ])
@@ -219,8 +221,6 @@ simulate_mhmm <- function(
       states[clusters == cluster_names[i], ] <- sim$states
     }
   }
-
-
   p <- 0
   if (length(unlist(symbol_names)) <= 200) {
     for (i in 1:n_channels) {
@@ -274,9 +274,6 @@ simulate_mhmm <- function(
       attr(states, "cpal") <- cp[1:length(alphabet(states))]
     }
   }
-
   if (n_channels == 1) obs <- obs[[1]]
-
-
   list(observations = obs, states = states)
 }

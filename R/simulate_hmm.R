@@ -94,10 +94,7 @@ simulate_hmm <- function(
   obs <- suppressMessages(lapply(1:n_channels, function(i) {
     seqdef(matrix(obs[, , i], nrow = n_sequences), alphabet = symbol_names[[i]])
   }))
-
-
   states <- suppressMessages(seqdef(states, alphabet = state_names))
-
 
   p <- 0
   if (length(unlist(symbol_names)) <= 200) {
@@ -122,7 +119,6 @@ simulate_hmm <- function(
       p <- 1
     }
   }
-
 
   if (length(unlist(symbol_names)) != length(alphabet(states))) {
     if (length(alphabet(states)) <= 200) {
@@ -153,8 +149,6 @@ simulate_hmm <- function(
       attr(states, "cpal") <- cp[1:length(alphabet(states))]
     }
   }
-
   if (n_channels == 1) obs <- obs[[1]]
-
   list(observations = obs, states = states)
 }

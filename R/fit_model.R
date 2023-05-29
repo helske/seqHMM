@@ -1,5 +1,5 @@
-#' Estimate Parameters of (Mixture) Hidden
-#' Markov Models and Their Restricted Variants
+#' Estimate Parameters of (Mixture) Hidden Markov Models and Their Restricted
+#' Variants
 #'
 #' Function \code{fit_model} estimates the parameters of mixture hidden
 #' Markov models and its restricted variants using maximimum likelihood.
@@ -165,55 +165,6 @@
 #'
 #' @examples
 #'
-#' # Left-to-right HMM with equality constraint:
-#'
-#' set.seed(1)
-#'
-#' # Transition matrix
-#' # Either stay or move to next state
-#' A <- diag(c(0.9, 0.95, 0.95, 1))
-#' A[1, 2] <- 0.1
-#' A[2, 3] <- 0.05
-#' A[3, 4] <- 0.05
-#'
-#' # Emission matrix, rows 1 and 3 equal
-#' B <- rbind(
-#'   c(0.4, 0.2, 0.3, 0.1),
-#'   c(0.1, 0.5, 0.1, 0.3),
-#'   c(0.4, 0.2, 0.3, 0.1),
-#'   c(0, 0.2, 0.4, 0.4)
-#' )
-#'
-#' # Start from first state
-#' init <- c(1, 0, 0, 0)
-#'
-#' # Simulate sequences
-#' sim <- simulate_hmm(
-#'   n_sequences = 100,
-#'   sequence_length = 20, init, A, B
-#' )
-#'
-#' # initial model, use true values as inits for faster estimation here
-#' model <- build_hmm(sim$observations, init = init, trans = A, emiss = B)
-#'
-#' # estimate the model subject to constraints:
-#' # First and third row of emission matrix are equal (see details)
-#' fit <- fit_model(model,
-#'   constraints = c(1, 2, 1, 3),
-#'   em_step = FALSE, local_step = TRUE
-#' )
-#' fit$model
-#'
-#' ## Fix some emissions:
-#'
-#' fixB <- matrix(FALSE, 4, 4)
-#' fixB[2, 1] <- fixB[1, 3] <- TRUE # these are fixed to their initial values
-#' fit <- fit_model(model,
-#'   fixed_emissions = fixB,
-#'   em_step = FALSE, local_step = TRUE
-#' )
-#' fit$model$emission_probs
-#'
 #' # Hidden Markov model for mvad data
 #'
 #' data("mvad", package = "TraMineR")
@@ -269,7 +220,7 @@
 #'
 #' # Markov model
 #' # Note: build_mm estimates model parameters from observations,
-#' # no need for estimating with fit_model
+#' # no need for estimating with fit_model unless there are missing observations
 #'
 #' mm_mvad <- build_mm(observations = mvad_seq)
 #'
@@ -582,6 +533,54 @@
 #' mhmm_3$logLik # -12713.08
 #' }
 #'
+#' # Left-to-right HMM with equality constraint:
+#'
+#' set.seed(1)
+#'
+#' # Transition matrix
+#' # Either stay or move to next state
+#' A <- diag(c(0.9, 0.95, 0.95, 1))
+#' A[1, 2] <- 0.1
+#' A[2, 3] <- 0.05
+#' A[3, 4] <- 0.05
+#'
+#' # Emission matrix, rows 1 and 3 equal
+#' B <- rbind(
+#'   c(0.4, 0.2, 0.3, 0.1),
+#'   c(0.1, 0.5, 0.1, 0.3),
+#'   c(0.4, 0.2, 0.3, 0.1),
+#'   c(0, 0.2, 0.4, 0.4)
+#' )
+#'
+#' # Start from first state
+#' init <- c(1, 0, 0, 0)
+#'
+#' # Simulate sequences
+#' sim <- simulate_hmm(
+#'   n_sequences = 100,
+#'   sequence_length = 20, init, A, B
+#' )
+#'
+#' # initial model, use true values as inits for faster estimation here
+#' model <- build_hmm(sim$observations, init = init, trans = A, emiss = B)
+#'
+#' # estimate the model subject to constraints:
+#' # First and third row of emission matrix are equal (see details)
+#' fit <- fit_model(model,
+#'   constraints = c(1, 2, 1, 3),
+#'   em_step = FALSE, local_step = TRUE
+#' )
+#' fit$model
+#'
+#' ## Fix some emissions:
+#'
+#' fixB <- matrix(FALSE, 4, 4)
+#' fixB[2, 1] <- fixB[1, 3] <- TRUE # these are fixed to their initial values
+#' fit <- fit_model(model,
+#'   fixed_emissions = fixB,
+#'   em_step = FALSE, local_step = TRUE
+#' )
+#' fit$model$emission_probs
 fit_model <- function(
     model, em_step = TRUE, global_step = FALSE, local_step = FALSE,
     control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1,

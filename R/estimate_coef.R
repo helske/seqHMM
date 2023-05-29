@@ -1,5 +1,4 @@
-#' Estimate Regression Coefficients of Mixture Hidden
-#' Markov Models
+#' Estimate Regression Coefficients of Mixture Hidden Markov Models
 #'
 #' Function \code{estimate_coef} estimates the regression coefficients of mixture hidden
 #' Markov models and its restricted variants while keeping other parameters fixed.

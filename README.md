@@ -1,4 +1,5 @@
 [![R-CMD-check](https://github.com/helske/seqHMM/workflows/R-CMD-check/badge.svg)](https://github.com/helske/seqHMM/actions)
+[![Codecov test coverage](https://codecov.io/gh/helske/seqHMM/branch/main/graph/badge.svg)](https://app.codecov.io/gh/helske/seqHMM?branch=main)
 [![cran version](https://www.r-pkg.org/badges/version/seqHMM)](https://CRAN.R-project.org/package=seqHMM)
 [![downloads](https://cranlogs.r-pkg.org/badges/seqHMM)](https://cranlogs.r-pkg.org/badges/seqHMM)
 

@@ -2,8 +2,7 @@
 % Please edit documentation in R/estimate_coef.R
 \name{estimate_coef}
 \alias{estimate_coef}
-\title{Estimate Regression Coefficients of Mixture Hidden
-Markov Models}
+\title{Estimate Regression Coefficients of Mixture Hidden Markov Models}
 \usage{
 estimate_coef(model, threads = 1)
 }

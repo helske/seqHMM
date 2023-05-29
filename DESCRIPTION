@@ -47,7 +47,8 @@ Suggests:
     MASS,
     nnet,
     knitr,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    covr
 SystemRequirements: C++11
 License: GPL (>= 2)
 Encoding: UTF-8
