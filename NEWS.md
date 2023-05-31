@@ -1,5 +1,7 @@
 seqHMM 1.2.5 (Release date: 2023-05-30)
 ==============
+  * New methods `state_names` and `cluster_names` for getting and setting state 
+    and cluster names of the model objects.
   * Fixed a bug in `mssplot` which caused error with `respect_void = TRUE`.
   * Fixed a bug in `simulate_mhmm` which resulted NA colnames in the simulated 
     `stslist` objects.

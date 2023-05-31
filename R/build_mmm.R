@@ -119,7 +119,6 @@ build_mmm <- function(observations, n_clusters, transition_probs, initial_probs,
   symbol_names <- alphabet(observations)
   n_symbols <- length(symbol_names)
 
-
   if (!missing(transition_probs) && !missing(initial_probs)) {
     if (is.list(transition_probs)) {
       n_clusters <- length(transition_probs)

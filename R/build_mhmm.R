@@ -339,6 +339,7 @@ build_mhmm <- function(observations,
         }
       }
     }
+    names(state_names) <- cluster_names
     for (i in 1:n_clusters) {
       if (!isTRUE(all.equal(rowSums(transition_probs[[i]]),
                             rep(1, n_states[i]),
