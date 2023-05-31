@@ -76,8 +76,6 @@ simulate_hmm <- function(
       )
     }
   }
-
-
   if (sequence_length > 1) {
     for (i in 1:n_sequences) {
       for (t in 2:sequence_length) {
@@ -94,6 +92,7 @@ simulate_hmm <- function(
   obs <- suppressMessages(lapply(1:n_channels, function(i) {
     seqdef(matrix(obs[, , i], nrow = n_sequences), alphabet = symbol_names[[i]])
   }))
+  names(obs) <- channel_names
   states <- suppressMessages(seqdef(states, alphabet = state_names))
 
   p <- 0

@@ -168,7 +168,6 @@ simulate_mhmm <- function(
       alphabet = symbol_names[[i]]
     )))
   })
-
   names(obs) <- channel_names
 
   n_states <- sapply(transition_probs, nrow)
@@ -191,16 +190,13 @@ simulate_mhmm <- function(
         colnames(transition_probs[[i]])
     }
   }
-  obs <- lapply(1:n_channels, function(i) {
-    suppressWarnings(suppressMessages(seqdef(matrix(symbol_names[[i]][1], n_sequences, sequence_length),
-                                             alphabet = symbol_names[[i]]
-    )))
-  })
 
-  states <- suppressWarnings(suppressMessages(seqdef(matrix(
-    v_state_names[1],
-    n_sequences, sequence_length
-  ), alphabet = v_state_names)))
+  states <- suppressWarnings(suppressMessages(
+    seqdef(matrix(
+      v_state_names[1],
+      n_sequences, sequence_length
+    ), alphabet = v_state_names)
+  ))
   clusters <- numeric(n_sequences)
   for (i in 1:n_sequences) {
     clusters[i] <- sample(cluster_names, size = 1, prob = pr[i, ])
