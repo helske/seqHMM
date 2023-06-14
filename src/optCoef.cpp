@@ -11,7 +11,8 @@ unsigned int optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cub
   while ((change > 1e-10) && (iter < 100)) {
     arma::vec tmpvec(X.n_cols * (weights.n_rows - 1));
     bool solve_ok = arma::solve(tmpvec, hCoef(weights, X),
-        gCoef(obs, bsi, emission, weights, X, cumsumstate, numberOfStates));
+        gCoef(obs, bsi, emission, weights, X, cumsumstate, numberOfStates),
+        arma::solve_opts::no_approx);
     if (solve_ok == false) {
       return (4);
     }

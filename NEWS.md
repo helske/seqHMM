@@ -1,3 +1,8 @@
+seqHMM 1.2.6 (Release date: )
+==============
+  * Armadillo solver now fails directly instead of trying approximate solution 
+    in case of numerical issues when estimating the regression coefficients.
+    
 seqHMM 1.2.5 (Release date: 2023-05-30)
 ==============
   * New methods `state_names` and `cluster_names` for getting and setting state 

@@ -13,7 +13,8 @@ unsigned int log_optCoef(arma::mat& weights, const arma::ucube& obs, const arma:
   while ((change > 1e-10) && (iter < 100)) {
     arma::vec tmpvec(X.n_cols * (weights.n_rows - 1));
     bool solve_ok = arma::solve(tmpvec, hCoef(weights, X),
-        log_gCoef(obs, beta, emission, initk, weights, ll, X, cumsumstate, numberOfStates));
+        log_gCoef(obs, beta, emission, initk, weights, ll, X, cumsumstate, numberOfStates),
+                  arma::solve_opts::no_approx);
 
     if (solve_ok == false) {
       return (4);
