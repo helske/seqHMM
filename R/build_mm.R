@@ -77,12 +77,7 @@ build_mm <- function(observations) {
   state_names <- alphabet(observations)
   n_states <- length(state_names)
 
-  nobs <- sum(!(observations == attr(observations, "nr") |
-                  observations == attr(observations, "void") |
-                  is.na(observations)))
-
-
-  if (nobs < prod(dim(observations))) {
+  if (any(observations == attr(observations, "nr"))) {
     model <- build_hmm(
       observations,
       transition_probs = matrix(1 / n_states, n_states, n_states),
@@ -90,7 +85,7 @@ build_mm <- function(observations) {
       initial_probs = rep(1 / n_states, n_states),
       state_names = state_names)
     model <- fit_model(model)$model
-    message("Sequences contain missing/void values, initial and transition probabilities estimated via EM. ")
+    message("Sequences contain missing values, initial and transition probabilities estimated via EM. ")
   } else {
     first_timepoint <- suppressMessages(seqdef(observations[observations[, 1] %in% state_names, 1], alphabet = state_names))
     initial_probs <- TraMineR::seqstatf(first_timepoint)[, 2] / 100

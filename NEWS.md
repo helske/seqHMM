@@ -1,9 +1,11 @@
-seqHMM 1.2.6 (Release date: )
+seqHMM 1.2.6 (Release date: 2023-06-07)
 ==============
   * Armadillo solver now fails directly instead of trying approximate solution 
     in case of numerical issues when estimating the regression coefficients.
+  * `build_mm` now correctly runs EM algorithm only in case of real missing 
+    observations in data, i.e. it correctly handles void values.
     
-seqHMM 1.2.5 (Release date: 2023-05-30)
+seqHMM 1.2.5 (Release date: 2023-06-13)
 ==============
   * New methods `state_names` and `cluster_names` for getting and setting state 
     and cluster names of the model objects.
