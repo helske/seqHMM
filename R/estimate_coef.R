@@ -8,7 +8,7 @@
 #' @param threads Number of threads to use in parallel computing. The default is 1.
 estimate_coef <- function(model, threads = 1) {
   if (!inherits(model, c("hmm", "mhmm"))) {
-    stop("Argument model must be an object of class 'hmm' or 'mhmm.")
+    stop("Argument 'model' must be an object of class 'hmm' or 'mhmm.")
   }
 
   if (threads < 1) {

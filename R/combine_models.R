@@ -9,7 +9,7 @@ combine_models <- function(model) {
   dimnames(transition_probs) <- replicate(2, state_names, simplify = FALSE)
 
   if (model$n_channels > 1) {
-    emission_probs <- lapply(1:model$n_channels, function(i) {
+    emission_probs <- lapply(seq_len(model$n_channels), function(i) {
       x <- do.call("rbind", sapply(model$emission_probs, "[", i))
       rownames(x) <- state_names
       x

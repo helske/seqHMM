@@ -1,7 +1,7 @@
 Package: seqHMM
 Title: Mixture Hidden Markov Models for Social Sequence Data and Other Multivariate, Multichannel Categorical Time Series
-Version: 1.2.6
-Date: 2023-06-7
+Version: 1.3.0
+Date: 2024-08-01
 Authors@R: 
     c(person(given = "Jouni",
            family = "Helske",
@@ -18,40 +18,56 @@ Description: Designed for fitting hidden (latent) Markov models and mixture
     models, mixture Markov models, and latent class models. The package supports
     models for one or multiple subjects with one or multiple parallel sequences
     (channels). External covariates can be added to explain cluster membership in
-    mixture models. The package provides functions for evaluating and comparing
+    mixture models as well as transition and emission probabilities. The package 
+    provides functions for evaluating and comparing
     models, as well as functions for visualizing of multichannel sequence data and
     hidden Markov models. Models are estimated using maximum likelihood via the EM
-    algorithm and/or direct numerical maximization with analytical gradients. All
-    main algorithms are written in C++ with support for parallel computation. 
-    Documentation is available via several vignettes in this page, and the  
-    paper by Helske and Helske (2019, <doi:10.18637/jss.v088.i03>).
+    algorithm, direct numerical maximization with analytical gradients or 
+    automatic differentiation. All main algorithms are written in C++ with 
+    support for parallel computation. Documentation is available via several 
+    vignettes, and the paper by Helske and Helske (2019, <doi:10.18637/jss.v088.i03>).
 LazyData: true
-LinkingTo: Rcpp, RcppArmadillo
+LinkingTo: 
+    BH (>= 1.66.0),
+    Rcpp (>= 0.12.0),
+    RcppArmadillo,
+    RcppEigen (>= 0.3.3.3.0),
+    RcppParallel (>= 5.0.1),
+    rstan (>= 2.18.1),
+    StanHeaders (>= 2.18.0)
 Depends:
     R (>= 3.5.0)
 Imports:
-    gridBase,
-    igraph,
-    Matrix,
-    nloptr,
-    numDeriv,
-    Rcpp (>= 0.11.3),
-    TraMineR (>= 1.8-8),
+    future,
+    future.apply,
     graphics,
     grDevices,
     grid,
+    gridBase,
+    igraph,
+    Matrix,
     methods,
+    nloptr,
+    numDeriv,
+    posterior,
+    Rcpp (>= 0.12.0),
+    RcppParallel (>= 5.0.1),
+    rstan (>= 2.18.1),
+    rstantools (>= 2.4.0),
     stats,
+    TraMineR (>= 1.8-8),
     utils
 Suggests:
+    covr,
+    knitr,
     MASS,
     nnet,
-    knitr,
     testthat (>= 3.0.0),
-    covr
 License: GPL (>= 2)
 Encoding: UTF-8
 BugReports: https://github.com/helske/seqHMM/issues
 VignetteBuilder: knitr
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Config/testthat/edition: 3
+SystemRequirements: GNU make
+Biarch: true

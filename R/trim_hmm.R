@@ -26,6 +26,9 @@
 #' # leads to improved log-likelihood.
 #' hmm_trim <- trim_model(hmm_biofam, zerotol = 1e-03, maxit = 10)
 trim_model <- function(model, maxit = 0, return_loglik = FALSE, zerotol = 1e-8, verbose = TRUE, ...) {
+  if (!inherits(object, c("hmm", "mhmm"))) {
+    stop("Argument 'model' must be an object of class 'hmm' or 'mhmm.")
+  }
   ll_original <- logLik(model)
   model_original <- model
 
@@ -274,11 +277,7 @@ trim_model <- function(model, maxit = 0, return_loglik = FALSE, zerotol = 1e-8, 
         }
       }
     }
-  } else {
-    stop("An object of class hmm or mhmm required.")
   }
-
-
   if (verbose) {
     if (maxit > 0) {
       print(paste(ii, "iteration(s) used."))
@@ -288,7 +287,6 @@ trim_model <- function(model, maxit = 0, return_loglik = FALSE, zerotol = 1e-8, 
       print(paste("Trimming improved log-likelihood, ll_trim-ll_orig =", signif(ll0 - ll_original, 3)))
     }
   }
-
 
   if (return_loglik) {
     list(model = model, loglik = ll0)

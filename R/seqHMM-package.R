@@ -14,14 +14,22 @@
 #' Parallel computation is implemented via OpenMP.
 #'
 #' @docType package
-#' @name seqHMM
+#' @name seqHMM-package
 #' @aliases seqHMM
 #' @useDynLib seqHMM, .registration = TRUE
 #' @import igraph
 #' @import gridBase
 #' @import grid
 #' @import nloptr
-#' @importFrom Rcpp evalCpp
+#' @import methods
+#' @import Rcpp
+#' @importFrom future plan sequential multisession
+#' @importFrom future.apply future_lapply
+#' @importFrom posterior as_draws_rvars draws_of
+#' @importFrom rstan optimizing
+#' @importFrom rstantools rstan_config
+#' @importFrom RcppParallel RcppParallelLibs CxxFlags
+#' @importFrom Rcpp loadModule evalCpp
 #' @importFrom Matrix .bdiag
 #' @importFrom stats logLik cmdscale complete.cases model.matrix BIC rnorm runif vcov
 #' @importFrom TraMineR alphabet seqstatf seqdef seqlegend seqdist seqdistmc seqplot seqlength is.stslist
@@ -31,5 +39,4 @@
 #' @importFrom utils menu
 #' @references Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
 #' Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
-#'
-NULL
+"_PACKAGE"

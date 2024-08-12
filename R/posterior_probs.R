@@ -18,6 +18,9 @@
 #' # Locally most probable states for the first subject:
 #' pb[, , 1]
 posterior_probs <- function(model, log_space = FALSE) {
+  if (!inherits(object, c("hmm", "mhmm"))) {
+    stop("Argument 'model' must be an object of class 'hmm' or 'mhmm.")
+  }
   fb <- forward_backward(model, log_space = log_space)
   if (!log_space) {
     fb$forward_probs * fb$backward_probs /

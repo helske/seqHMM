@@ -59,13 +59,9 @@
 #'
 build_mm <- function(observations) {
 
-  multichannel <- is_multichannel(observations)
-  # Single channel but observations is a list
-  if (is.list(observations) && !inherits(observations, "stslist") && length(observations) == 1) {
-    observations <- observations[[1]]
-    multichannel <- FALSE
-  }
-  if (multichannel) {
+  observations <- check_observations(observations, channel_names)
+  n_channels <- attr(observations, "n_channels")
+  if (n_channels > 1L) {
     stop(
       paste0("The 'build_mm' function can only be used for single-channel ",
              "sequence data (as an stslist object). Use the ",

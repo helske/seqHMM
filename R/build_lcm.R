@@ -152,28 +152,19 @@
 build_lcm <- function(observations, n_clusters, emission_probs,
                       formula = NULL, data = NULL, coefficients = NULL,
                       cluster_names = NULL, channel_names = NULL) {
+  
   if (missing(n_clusters) && missing(emission_probs)) {
     stop("Provide either 'n_clusters' or 'emission_probs'.")
   }
-  multichannel <- is_multichannel(observations)
-  # Single channel but observations is a list
-  if (is.list(observations) && !inherits(observations, "stslist") && length(observations) == 1) {
-    observations <- observations[[1]]
-    multichannel <- FALSE
-  }
-  n_channels <- ifelse(multichannel, length(observations), 1L)
-
+  observations <- check_observations(observations, channel_names)
+  n_channels <- attr(observations, "n_channels")
+  n_symbols <- attr(observations, "n_symbols")
+  channel_names <- attr(observations, "channel_names")
+  
   if (missing(emission_probs)) {
-    if (multichannel) {
-      symbol_names <- lapply(observations, alphabet)
-      n_symbols <- lengths(symbol_names)
-    } else {
-      symbol_names <- alphabet(observations)
-      n_symbols <- length(symbol_names)
-    }
-    emission_probs <- simulate_emission_probs(1, n_symbols, n_clusters)
+    emission_probs <- simulate_emission_probs(1L, n_symbols, n_clusters)
   } else {
-    if (multichannel) {
+    if (n_channels > 1L) {
       n_clusters <- nrow(emission_probs[[1]])
       emission_probs_list <- vector("list", n_clusters)
       for (i in 1:n_channels) {
@@ -181,9 +172,9 @@ build_lcm <- function(observations, n_clusters, emission_probs,
           stop("Different number of rows in 'emission_probs'.")
         }
       }
-      for (i in 1:n_clusters) {
+      for (i in seq_len(n_clusters)) {
         emission_probs_list[[i]] <- vector("list", n_channels)
-        for (j in 1:n_channels) {
+        for (j in seq_len(n_channels)) {
           emission_probs_list[[i]][[j]] <- emission_probs[[j]][i, , drop = FALSE]
         }
       }
@@ -196,18 +187,16 @@ build_lcm <- function(observations, n_clusters, emission_probs,
     }
     emission_probs <- emission_probs_list
   }
+  if (is.null(cluster_names)) {
+    cluster_names <- paste("Class", seq_len(n_clusters))
+  } else if (length(cluster_names) != n_clusters) {
+    warning(paste0("The length of argument 'cluster_names' does not match ", 
+                   "the number of clusters. Names were not used."))
+    cluster_names <- paste("Class", seq_len(n_clusters))
+  }
   n_states <- rep(1, n_clusters)
   initial_probs <- replicate(n_clusters, 1, simplify = FALSE)
-
-  if (is.null(cluster_names)) {
-    cluster_names <- paste("Class", 1:n_clusters)
-  } else if (length(cluster_names) != n_clusters) {
-    warning("The length of argument cluster_names does not match the number of clusters. Names were not used.")
-    cluster_names <- paste("Class", 1:n_clusters)
-  }
-
   transition_probs <- replicate(n_clusters, matrix(1), simplify = FALSE)
-  names(transition_probs) <- names(emission_probs) <- names(initial_probs) <- cluster_names
 
   model <- build_mhmm(
     observations = observations, transition_probs = transition_probs,

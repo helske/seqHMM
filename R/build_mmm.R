@@ -100,13 +100,9 @@
 build_mmm <- function(observations, n_clusters, transition_probs, initial_probs,
                       formula = NULL, data = NULL, coefficients = NULL,
                       cluster_names = NULL, ...) {
-  multichannel <- is_multichannel(observations)
-  # Single channel but observations is a list
-  if (is.list(observations) && !inherits(observations, "stslist") && length(observations) == 1) {
-    observations <- observations[[1]]
-    multichannel <- FALSE
-  }
-  if (multichannel) {
+  observations <- check_observations(observations, channel_names)
+  n_channels <- attr(observations, "n_channels")
+  if (n_channels > 1) {
     stop(
       paste0("The 'build_mmm' function can only be used for single-channel ",
              "sequence data (as an stslist object). Use the 'mc_to_sc_data' function ",
@@ -114,10 +110,8 @@ build_mmm <- function(observations, n_clusters, transition_probs, initial_probs,
       )
     )
   }
-  n_sequences <- nrow(observations)
-  length_of_sequences <- ncol(observations)
-  symbol_names <- alphabet(observations)
-  n_symbols <- length(symbol_names)
+  n_symbols <- attr(observations, "n_symbols")
+  symbol_names <- attr(observations, "symbol_names")
 
   if (!missing(transition_probs) && !missing(initial_probs)) {
     if (is.list(transition_probs)) {
