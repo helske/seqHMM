@@ -245,7 +245,7 @@ ssplot <- function(x, hidden.paths = NULL,
                    yaxis = FALSE, ylab.pos = "auto",
                    cex.lab = 1, cex.axis = 1, respect_void = TRUE, ...) {
   check_deprecated_args(match.call())
-
+  
   args <- as.list(match.call())[-1]
   args[[1]] <- eval(args[[1]], envir = parent.frame())
   sspargs <- do.call(ssp, args = args)
@@ -255,4 +255,100 @@ ssplot <- function(x, hidden.paths = NULL,
   on.exit(savepar, add = TRUE)
   do.call(SSPlotter, args = sspargs)
   par(savepar)
+}
+
+#' @export
+stacked_sequence_plot <- function(
+    x, plots = "obs", type = "d", ids,
+    sort_by, sort_channel, dist_method = "OM", group = NULL, ...) {
+  
+  plots <- match.arg(plots, c("obs", "hidden_paths", "both"))
+  
+  if (inherits(x, c("hmm", "nhmm", "mhmm", "mnhmm"))) {
+    if (is.null(group) && inherits(x, c("mhmm", "mnhmm"))) {
+      hp <- hidden_paths(x)
+      group <- factor(
+        most_probable_cluster(x, type = "viterbi", hp = hp),
+        levels = x$cluster_names
+      )
+    } else {
+      if (plots != "obs") {
+        hp <- hidden_paths(x)
+      }
+    }
+    if (plots == "both") {
+      y <- c(x$observations, list(hp))
+      channel_names <- c(x$channel_names, "Hidden states")
+      n_channels <- x$n_channels + 1
+    }
+    if (plots == "hidden_paths") {
+      y <- hp
+      channel_names <- "Hidden states"
+      n_channels <- 1
+    }
+    if (plots == "obs") {
+      y <- x$observations
+      channel_names <- x$channel_names
+      n_channels <- x$n_channels
+    }
+  } else {
+    if (plots != "obs") stop("error")
+    y <- x$observations
+    if (inherits(y, "stslist")) {
+      n_channels <- 1
+      channel_names <- "Observations"
+    } else {
+      n_channels <- length(y)
+      if (channel_names <- is.null(channel_names)) {
+        channel_names <- paste("Channel", seq_len(n_channels))
+      }
+    }
+  }
+  if (!missing(ids)) {
+    if (n_channels == 1) {
+      y <- y[ids, ]
+    } else {
+      for (i in seq_len(n_channels)) {
+        y[[i]] <- y[[i]][ids, ]
+      }
+    }
+  }
+  if (!missing(sort_by)) {
+    sort_by <- match.arg(sort_by, c("start", "end", "mds"))
+    sort_channel <- match.arg(sort_channel, channel_names)
+    y <- sort_sequences(y, sort_channel, dist_method)
+  }
+  if (identical(group, NA)) group <- NULL
+  
+  type <- match.arg(type, c("distribution", "index"))
+  if (n_channels == 1) {
+    if (type == "distribution") {
+      p <- ggseqplot::ggseqdplot(y, group = group, ...) + 
+        theme(legend.position = "right") +
+        ylab(channel_names)
+    }
+    if (type == "index") {
+      p <- ggseqplot::ggseqiplot(y, group = group, ...) + 
+        theme(legend.position = "right") +
+        ylab(channel_names)
+    }
+  } else {
+    p <- vector("list", n_channels)
+    if (type == "distribution") {
+      for (i in seq_len(n_channels)) {
+        p[[i]] <- ggseqplot::ggseqdplot(y[[i]], group = group, ...) + 
+          theme(legend.position = "right") +
+          ylab(channel_names[i])
+      }
+    }
+    if (type == "index") {
+      for (i in seq_len(n_channels)) {
+        p[[i]] <- ggseqplot::ggseqiplot(y[[i]], group = group, ...) + 
+          theme(legend.position = "right") +
+          ylab(channel_names[i])
+      }
+    }
+    p <- patchwork::wrap_plots(p, ncol = 1, ...)
+  }
+  p
 }

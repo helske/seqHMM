@@ -196,7 +196,8 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
     state_names <- rownames(transition_probs)
     initial_probs <- check_initial_probs(initial_probs, n_states, state_names)
     emission_probs <- check_emission_probs(
-      emission_probs, n_states, n_channels, n_symbols, state_names, symbol_names
+      emission_probs, n_states, n_channels, n_symbols, state_names, 
+      symbol_names, channel_names
     )
   } else {
     # Simulate starting values
@@ -212,7 +213,8 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
     state_names <- rownames(transition_probs)
     initial_probs <- check_initial_probs(initial_probs, n_states, state_names)
     emission_probs <- check_emission_probs(
-      emission_probs, n_states, n_channels, n_symbols, state_names, symbol_names
+      emission_probs, n_states, n_channels, n_symbols, state_names, 
+      symbol_names, channel_names
     )
   }
   

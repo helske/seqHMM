@@ -112,7 +112,8 @@ check_initial_probs <- function(initial_probs, n_states, state_names = NULL) {
 }
 
 check_emission_probs <- function(
-    emission_probs, n_states, n_channels, n_symbols, state_names, symbol_names) {
+    emission_probs, n_states, n_channels, n_symbols, state_names, symbol_names,
+    channel_names = NULL) {
   
   if (is.list(emission_probs) && length(emission_probs) == 1L) {
     emission_probs <- emission_probs[[1]]
