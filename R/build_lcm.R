@@ -153,24 +153,28 @@ build_lcm <- function(observations, n_clusters, emission_probs,
                       formula = NULL, data = NULL, coefficients = NULL,
                       cluster_names = NULL, channel_names = NULL) {
   
-  if (missing(n_clusters) && missing(emission_probs)) {
-    stop("Provide either 'n_clusters' or 'emission_probs'.")
-  }
+  n_clusters_given <- !missing(n_clusters)
+  emission_probs_given <- !missing(emission_probs)
+  stopifnot_(
+    n_clusters_given || emission_probs_given,
+    "Provide either {.arg emission_probs} or {.arg n_clusters}."
+  )
   observations <- check_observations(observations, channel_names)
   n_channels <- attr(observations, "n_channels")
   n_symbols <- attr(observations, "n_symbols")
   channel_names <- attr(observations, "channel_names")
   
-  if (missing(emission_probs)) {
+  if (emission_probs_given) {
     emission_probs <- simulate_emission_probs(1L, n_symbols, n_clusters)
   } else {
     if (n_channels > 1L) {
       n_clusters <- nrow(emission_probs[[1]])
       emission_probs_list <- vector("list", n_clusters)
       for (i in 1:n_channels) {
-        if (nrow(emission_probs[[i]]) != n_clusters) {
-          stop("Different number of rows in 'emission_probs'.")
-        }
+        stopifnot_(
+          nrow(emission_probs[[i]]) != n_clusters,
+          "Different number of rows in the list components of {.arg emission_probs}."
+        )
       }
       for (i in seq_len(n_clusters)) {
         emission_probs_list[[i]] <- vector("list", n_channels)
@@ -190,8 +194,10 @@ build_lcm <- function(observations, n_clusters, emission_probs,
   if (is.null(cluster_names)) {
     cluster_names <- paste("Class", seq_len(n_clusters))
   } else if (length(cluster_names) != n_clusters) {
-    warning(paste0("The length of argument 'cluster_names' does not match ", 
-                   "the number of clusters. Names were not used."))
+    warning_(
+      "The length of {.arg cluster_names} does not match the number of clusters.
+      Names were not used."
+      )
     cluster_names <- paste("Class", seq_len(n_clusters))
   }
   n_states <- rep(1, n_clusters)

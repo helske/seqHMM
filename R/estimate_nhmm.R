@@ -45,8 +45,8 @@
 #' set.seed(1)
 #' fit <- estimate_nhmm(mvad_seq, n_states = 3)
 estimate_nhmm <- function(
-    observations, n_states, initial_formula = NULL, 
-    transition_formula = NULL, emission_formula = NULL, 
+    observations, n_states, initial_formula = ~1, 
+    transition_formula = ~1, emission_formula = ~1, 
     data = NULL, data0 = NULL, state_names = NULL, channel_names = NULL, 
     restarts = 1L, threads = 1L, ...) {
   

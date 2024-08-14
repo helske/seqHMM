@@ -1,1 +1,1 @@
-log_Pi = log_softmax(alpha_i + beta_i * X_i[i]);
+log_Pi = log_softmax(beta_i * X_i[i]);

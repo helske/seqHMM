@@ -1,7 +1,7 @@
 #' Estimate Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_nhmm <- function(model, restarts = 1L, threads = 1L, ...) {
+fit_nhmm <- function(model, restarts, threads, ...) {
   
   obs <- t(sapply(model$observations, as.integer))
   obs[obs > model$n_symbols] <- 0L # missing values to zero
@@ -21,12 +21,12 @@ fit_nhmm <- function(model, restarts = 1L, threads = 1L, ...) {
           M = model$n_symbols,
           S = model$n_states,
           C = model$n_channels,
-          K_i = dim(model$X_i)[2],
-          K_s = dim(model$K_s)[3],
-          K_o = dim(model$K_o)[3],
-          X_i = model$X_i,
-          X_s = model$X_s,
-          X_o = model$X_o,
+          K_i = dim(model$X_initial)[2],
+          K_s = dim(model$X_transition)[3],
+          K_o = dim(model$X_emission)[3],
+          X_i = model$X_initial,
+          X_s = model$X_transition,
+          X_o = model$X_emission,
           obs = obs),
         check_data = FALSE,
         as_vector = FALSE,
@@ -53,12 +53,12 @@ fit_nhmm <- function(model, restarts = 1L, threads = 1L, ...) {
       M = model$n_symbols,
       S = model$n_states,
       C = model$n_channels,
-      K_i = dim(model$X_i)[2],
-      K_s = dim(model$K_s)[3],
-      K_o = dim(model$K_o)[3],
-      X_i = model$X_i,
-      X_s = model$X_s,
-      X_o = model$X_o,
+      K_i = dim(model$X_initial)[2],
+      K_s = dim(model$X_transition)[3],
+      K_o = dim(model$X_emission)[3],
+      X_i = model$X_initial,
+      X_s = model$X_transition,
+      X_o = model$X_emission,
       obs = obs), 
     check_data = FALSE,
     as_vector = FALSE,

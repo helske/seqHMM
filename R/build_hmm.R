@@ -183,13 +183,14 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
   channel_names <- attr(observations, "channel_names")
   symbol_names <- attr(observations, "symbol_names")
   
-  if (!missing(transition_probs) || !missing(initial_probs) || !missing(emission_probs)) {
-    
-    if (missing(transition_probs) || missing(initial_probs) || missing(emission_probs)) {
-      stop(paste0("Provide either 'n_states' or all three of 'initial_probs', ",
-                  "'transition_probs', and 'emission_probs'."))
-    }
-    
+  inits_given <- !missing(transition_probs) || !missing(initial_probs) || !missing(emission_probs)
+  n_states_given <- !missing(n_states)
+  stopifnot_(
+    inits_given || n_states_given,
+    "Provide either {.arg n_states} or all three of {.arg initial_probs}, ",
+    "{.arg transition_probs}, and {.arg emission_probs}."
+    )
+  if (inits_given) {
     transition_probs <- check_transition_probs(transition_probs, state_names)
     n_states <- nrow(transition_probs)
     state_names <- rownames(transition_probs)
@@ -197,12 +198,8 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
     emission_probs <- check_emission_probs(
       emission_probs, n_states, n_channels, n_symbols, state_names, symbol_names
     )
-    # Simulate starting values
   } else {
-    if (missing(n_states)) {
-      stop(paste0("Provide either 'n_states' or all three of 'initial_probs', ",
-                  "'transition_probs', and 'emission_probs'."))
-    }
+    # Simulate starting values
     transition_probs <- simulate_transition_probs(
       n_states = n_states, 
       n_clusters = 1, ...

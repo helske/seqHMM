@@ -4,20 +4,18 @@ functions {
 }
 data {
   #include /include/data_multichannel.stan
-  #include /include/data_B_varying.stan
+  #include /include/data_covariates.stan
+}
+transformed data {
+  #include /include/transformed_data.stan
 }
 parameters {
-  #include /include/parameters_pi_constant.stan
-  #include /include/parameters_A_constant.stan
-  #include /include/parameters_B_varying_multichannel.stan
+  #include /include/parameters_multichannel.stan
 }
 transformed parameters {
-  real log_lik_;
-  real prior_ = 0.0;
-  #include /include/transformed_parameters_B_varying_multichannel.stan
-  #include /include/prior_pi_constant.stan
-  #include /include/prior_A_constant.stan
-  #include /include/prior_B_varying_multichannel.stan
+  real log_lik;
+  #include /include/transformed_parameters_multichannel.stan
+  #include /include/priors_multichannel.stan
   {
     vector[N] ll;
     vector[S] log_Pi;
@@ -39,14 +37,10 @@ transformed parameters {
       }
       ll[i] = loglik(log_Pi, log_A, log_py);
     }
-    log_lik_ = sum(ll);
+     log_lik = sum(ll);
   }
 }
 model {
-  target += prior_;
-  target += log_lik_;
-}
-generated quantities {
-  real prior = prior_;
-  real log_lik = log_lik_;
+  target += prior;
+  target += log_lik;
 }

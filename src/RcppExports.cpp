@@ -53,6 +53,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// fast_quantiles
+arma::mat fast_quantiles(const arma::mat& X, const arma::vec& probs);
+RcppExport SEXP _seqHMM_fast_quantiles(SEXP XSEXP, SEXP probsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
+    rcpp_result_gen = Rcpp::wrap(fast_quantiles(X, probs));
+    return rcpp_result_gen;
+END_RCPP
+}
 // forwardbackward
 Rcpp::List forwardbackward(const arma::mat& transition, const arma::cube& emission, const arma::vec& init, const arma::ucube& obs, bool forwardonly, unsigned int threads);
 RcppExport SEXP _seqHMM_forwardbackward(SEXP transitionSEXP, SEXP emissionSEXP, SEXP initSEXP, SEXP obsSEXP, SEXP forwardonlySEXP, SEXP threadsSEXP) {
@@ -85,6 +97,42 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type forwardonly(forwardonlySEXP);
     Rcpp::traits::input_parameter< unsigned int >::type threads(threadsSEXP);
     rcpp_result_gen = Rcpp::wrap(forwardbackwardx(transition, emission, init, obs, coef, X, numberOfStates, forwardonly, threads));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_pi
+arma::mat get_pi(const arma::mat& beta_raw, const arma::mat& X);
+RcppExport SEXP _seqHMM_get_pi(SEXP beta_rawSEXP, SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type beta_raw(beta_rawSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_pi(beta_raw, X));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_A
+arma::field<arma::cube> get_A(const arma::cube& beta_raw, const arma::cube& X);
+RcppExport SEXP _seqHMM_get_A(SEXP beta_rawSEXP, SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::cube& >::type beta_raw(beta_rawSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_A(beta_raw, X));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_B
+arma::field<arma::cube> get_B(const arma::cube& beta_raw, const arma::cube& X);
+RcppExport SEXP _seqHMM_get_B(SEXP beta_rawSEXP, SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::cube& >::type beta_raw(beta_rawSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_B(beta_raw, X));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -129,6 +177,17 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
     rcpp_result_gen = Rcpp::wrap(logSumExp(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// softmax
+arma::vec softmax(const arma::vec& x);
+RcppExport SEXP _seqHMM_softmax(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(softmax(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -409,11 +468,16 @@ RcppExport SEXP _rcpp_module_boot_stan_fit4nhmm_vvv_mod();
 static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_EM", (DL_FUNC) &_seqHMM_EM, 9},
     {"_seqHMM_EMx", (DL_FUNC) &_seqHMM_EMx, 12},
+    {"_seqHMM_fast_quantiles", (DL_FUNC) &_seqHMM_fast_quantiles, 2},
     {"_seqHMM_forwardbackward", (DL_FUNC) &_seqHMM_forwardbackward, 6},
     {"_seqHMM_forwardbackwardx", (DL_FUNC) &_seqHMM_forwardbackwardx, 9},
+    {"_seqHMM_get_pi", (DL_FUNC) &_seqHMM_get_pi, 2},
+    {"_seqHMM_get_A", (DL_FUNC) &_seqHMM_get_A, 2},
+    {"_seqHMM_get_B", (DL_FUNC) &_seqHMM_get_B, 2},
     {"_seqHMM_logLikHMM", (DL_FUNC) &_seqHMM_logLikHMM, 5},
     {"_seqHMM_logLikMixHMM", (DL_FUNC) &_seqHMM_logLikMixHMM, 8},
     {"_seqHMM_logSumExp", (DL_FUNC) &_seqHMM_logSumExp, 1},
+    {"_seqHMM_softmax", (DL_FUNC) &_seqHMM_softmax, 1},
     {"_seqHMM_log_EM", (DL_FUNC) &_seqHMM_log_EM, 9},
     {"_seqHMM_log_EMx", (DL_FUNC) &_seqHMM_log_EMx, 12},
     {"_seqHMM_log_forwardbackward", (DL_FUNC) &_seqHMM_log_forwardbackward, 6},

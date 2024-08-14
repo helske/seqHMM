@@ -275,56 +275,70 @@ build_mhmm <- function(observations,
   channel_names <- attr(observations, "channel_names")
   symbol_names <- attr(observations, "symbol_names")
   
+  inits_given <- !missing(transition_probs) || !missing(initial_probs) || !missing(emission_probs)
+  n_states_given <- !missing(n_states)
+  stopifnot_(
+    inits_given || n_states_given,
+    "Provide either {.arg n_states} or all three of {.arg initial_probs}, ",
+    "{.arg transition_probs}, and {.arg emission_probs}."
+  )
+  
   # if any initial values are given, ignore n_states and use these
-  if (!missing(transition_probs) || !missing(initial_probs) || !missing(emission_probs)) {
-    
-    if (missing(transition_probs) || missing(initial_probs) || missing(emission_probs)) {
-      stop(paste0("Provide either 'n_states' or all three of 'initial_probs', ",
-                  "'transition_probs', and 'emission_probs'."))
-    }
-    
-    if (is.list(transition_probs)) {
-      n_clusters <- length(transition_probs)
-      if (identical(n_clusters, 1L)) {
-        stop(paste0("Argument 'transition_probs' is a list of length 1, ",
-                    "leading to an ordinary HMM. Please use 'build_hmm' instead."))
-      }
-    } else {
-      stop("'Transition_probs' is not a list.")
-    }
-    if (!is.list(emission_probs)) {
-      stop("'Emission_probs' is not a list.")
-    }
-    if (!is.list(initial_probs)) {
-      stop("'initial_probs' is not a list.")
-    }
-    if (length(emission_probs) != n_clusters || length(initial_probs) != n_clusters) {
-      stop("Unequal list lengths of 'transition_probs', 'emission_probs' and 'initial_probs'.")
-    }
-    
+  if (inits_given) {
+    stopifnot_(
+      is.list(transition_probs),
+      "{.arg transition_probs} is not a {.cls list}."
+    )
+    stopifnot_(
+      is.list(emission_probs),
+      "{.arg emission_probs} is not a {.cls list}."
+    )
+    stopifnot_(
+      is.list(initial_probs),
+      "{.arg initial_probs} is not a {.cls list}."
+    )
+    n_clusters <- length(transition_probs)
+    stopifnot_(
+      n_clusters > 1L,
+      "{.arg transition_probs} is a list of length 1 leading to an
+        ordinary HMM. Please use {.fn build_hmm} instead."
+    )
+    stopifnot_(
+      length(emission_probs) == n_clusters,
+      "Length of a {.arg emission_probs} does not match with the length of
+      {.arg transition_probs}."
+    )
+    stopifnot_(
+      length(initial_probs) == n_clusters,
+      "Length of a {.arg initial_probs} does not match with the length of
+      {.arg transition_probs}."
+    )
     if (is.null(cluster_names)) {
       cluster_names <- paste("Cluster", seq_len(n_clusters))
-    } else if (length(cluster_names) != n_clusters) {
-      warning(paste0("The length of argument 'cluster_names' does not match ", 
-                     "the number of clusters. Names were not used."))
+    } else {
+      if (!identical(length(cluster_names), n_clusters)) {
+        warning_(
+          "The length of {.arg cluster_names} does not match the number of
+          clusters. Names were not used."
+        )
+      }
       cluster_names <- paste("Cluster", seq_len(n_clusters))
     }
     n_states <- integer(n_clusters)
     for (i in seq_len(n_clusters)) {
-      transition_probs[[i]] <- check_transition_probs(transition_probs[[i]], state_names[[i]])
+      transition_probs[[i]] <- 
+        check_transition_probs(transition_probs[[i]], state_names[[i]])
       n_states[i] <- nrow(transition_probs[[i]])
       state_names[[i]] <- rownames(transition_probs[[i]])
-      initial_probs[[i]] <- check_initial_probs(initial_probs[[i]], n_states[i], state_names[[i]])
+      initial_probs[[i]] <- 
+        check_initial_probs(initial_probs[[i]], n_states[i], state_names[[i]])
       emission_probs <- check_emission_probs(
-        emission_probs[[i]], n_states[i], n_channels, n_symbols[i], state_names[[i]], symbol_names[[i]]
+        emission_probs[[i]], n_states[i], n_channels, n_symbols[i], 
+        state_names[[i]], symbol_names[[i]]
       )
     }
   } else {
     # Simulate starting values
-    if (missing(n_states)) {
-      stop(paste0("Provide either 'n_states' or all three of 'initial_probs', ",
-                  "'transition_probs', and 'emission_probs'."))
-    }
     n_clusters <- length(n_states)
     if (identical(n_clusters, 1L)) {
       stop(paste0("Argument 'n_states' is of length 1, leading to ordinary ", 

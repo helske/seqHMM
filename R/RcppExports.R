@@ -9,12 +9,28 @@ EMx <- function(transition_, emission_, init_, obs, nSymbols, coef_, X, numberOf
     .Call(`_seqHMM_EMx`, transition_, emission_, init_, obs, nSymbols, coef_, X, numberOfStates, itermax, tol, trace, threads)
 }
 
+fast_quantiles <- function(X, probs) {
+    .Call(`_seqHMM_fast_quantiles`, X, probs)
+}
+
 forwardbackward <- function(transition, emission, init, obs, forwardonly, threads) {
     .Call(`_seqHMM_forwardbackward`, transition, emission, init, obs, forwardonly, threads)
 }
 
 forwardbackwardx <- function(transition, emission, init, obs, coef, X, numberOfStates, forwardonly, threads) {
     .Call(`_seqHMM_forwardbackwardx`, transition, emission, init, obs, coef, X, numberOfStates, forwardonly, threads)
+}
+
+get_pi <- function(beta_raw, X) {
+    .Call(`_seqHMM_get_pi`, beta_raw, X)
+}
+
+get_A <- function(beta_raw, X) {
+    .Call(`_seqHMM_get_A`, beta_raw, X)
+}
+
+get_B <- function(beta_raw, X) {
+    .Call(`_seqHMM_get_B`, beta_raw, X)
 }
 
 logLikHMM <- function(transition, emission, init, obs, threads) {
@@ -27,6 +43,10 @@ logLikMixHMM <- function(transition, emission, init, obs, coef, X, numberOfState
 
 logSumExp <- function(x) {
     .Call(`_seqHMM_logSumExp`, x)
+}
+
+softmax <- function(x) {
+    .Call(`_seqHMM_softmax`, x)
 }
 
 log_EM <- function(transition_, emission_, init_, obs, nSymbols, itermax, tol, trace, threads) {

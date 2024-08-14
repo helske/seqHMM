@@ -3,10 +3,7 @@
 #' Function \code{gridplot} plots multiple \code{ssp} objects to a
 #' grid.
 #'
-#'
-#'
 #' @export
-
 #'
 #' @param x A list of \code{\link{ssp}} objects.
 #'
@@ -438,7 +435,6 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
     warning("The length of the vector provided for col.prop does not match the number of columns in the plot. Argument col.prop was changed to \"auto\".")
     col.prop <- rep(1 / gridncol, gridncol)
   }
-
 
   if (!byrow) {
     plotnrow <- rep(c(1:gridnrow), times = gridncol)

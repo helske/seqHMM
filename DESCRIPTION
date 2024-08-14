@@ -38,6 +38,7 @@ LinkingTo:
 Depends:
     R (>= 3.5.0)
 Imports:
+    cli,
     future,
     future.apply,
     graphics,
@@ -52,6 +53,7 @@ Imports:
     posterior,
     Rcpp (>= 0.12.0),
     RcppParallel (>= 5.0.1),
+    rlang,
     rstan (>= 2.18.1),
     rstantools (>= 2.4.0),
     stats,

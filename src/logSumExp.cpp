@@ -1,4 +1,4 @@
-//log-sum-exp trick
+//log-sum-exp trick and softmax functions
 #include "logsumexp.h"
 
 #ifdef HAVE_LONG_DOUBLE
@@ -24,4 +24,12 @@ double logSumExp(const arma::vec& x) {
   }
   
   return maxv + log1p(cumsum);
+}
+
+// [[Rcpp::export]]
+arma::vec softmax(const arma::vec& x) {
+  double x_max = arma::max(x);
+  arma::vec result = arma::exp(x - x_max);
+  result = result / sum(result);
+  return result;
 }
