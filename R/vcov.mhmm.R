@@ -33,27 +33,8 @@ vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = FALSE
     #
     original_model <- object
     model <- combine_models(object)
-
-    if (model$n_channels == 1) {
-      model$observations <- list(model$observations)
-      model$emission_probs <- list(model$emission_probs)
-    }
-
-    obsArray <- array(0, c(
-      model$n_sequences, model$length_of_sequences,
-      model$n_channels
-    ))
-    for (i in 1:model$n_channels) {
-      obsArray[, , i] <- sapply(model$observations[[i]], as.integer) - 1L
-      obsArray[, , i][obsArray[, , i] > model$n_symbols[i]] <- model$n_symbols[i]
-    }
-    obsArray <- aperm(obsArray)
-
-    emissionArray <- array(1, c(model$n_states, max(model$n_symbols) + 1, model$n_channels))
-    for (i in 1:model$n_channels) {
-      emissionArray[, 1:model$n_symbols[i], i] <- model$emission_probs[[i]]
-    }
-
+    obsArray <- create_obsArray(model)
+    emissionArray <- create_emissionArray(model)
     maxIP <- maxIPvalue <- npIP <- numeric(original_model$n_clusters)
     paramIP <- initNZ <- vector("list", original_model$n_clusters)
     for (m in 1:original_model$n_clusters) {

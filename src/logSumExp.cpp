@@ -27,9 +27,16 @@ double logSumExp(const arma::vec& x) {
 }
 
 // [[Rcpp::export]]
-arma::vec softmax(const arma::vec& x) {
-  double x_max = arma::max(x);
-  arma::vec result = arma::exp(x - x_max);
-  result = result / sum(result);
+arma::vec softmax(const arma::vec& x, const int logspace) {
+  arma::vec result;
+  if (logspace == 0) {
+    double x_max = arma::max(x);
+    result = arma::exp(x - x_max);
+    result = result / sum(result);
+  } else {
+    double x_max = arma::max(x);
+    result = x - x_max;
+    result = result - logSumExp(result);
+  }
   return result;
 }

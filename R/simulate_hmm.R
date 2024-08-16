@@ -10,7 +10,7 @@
 #'
 #' @return A list of state sequence objects of class \code{stslist}.
 #' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building
-#' and fitting hidden Markov models; \code{\link{ssplot}} for plotting
+#' and fitting hidden Markov models; \code{\link{stacked_sequence_plot}} for plotting
 #' multiple sequence data sets; \code{\link{seqdef}} for more
 #' information on state sequence objects; and \code{\link{simulate_mhmm}}
 #' for simulating mixture hidden Markov models.
@@ -33,7 +33,7 @@
 #'   sequence_length = 20
 #' )
 #'
-#' ssplot(sim, sortv = "mds.obs", type = "I")
+#' stacked_sequence_plot(sim, sort_by = "mds", type = "i")
 simulate_hmm <- function(
     n_sequences, initial_probs, transition_probs, emission_probs,
     sequence_length) {

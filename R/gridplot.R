@@ -154,6 +154,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
                      ncol.legend = "auto",
                      with.missing.legend = "auto",
                      row.prop = "auto", col.prop = "auto", cex.legend = 1) {
+  .Deprecated(msg = "'gridplot' is deprecated. Use 'stacked_sequence_plot' and patchwork package instead.")
   check_deprecated_args(match.call())
 
   grid.newpage()

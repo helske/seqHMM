@@ -7,9 +7,9 @@
 estimate_nhmm(
   observations,
   n_states,
-  initial_formula = NULL,
-  transition_formula = NULL,
-  emission_formula = NULL,
+  initial_formula = ~1,
+  transition_formula = ~1,
+  emission_formula = ~1,
   data = NULL,
   data0 = NULL,
   state_names = NULL,
@@ -63,4 +63,19 @@ Object of class \code{nhmm}.
 Function \code{estimate_nhmm} estimates a hidden Markov model object of class 
 \code{nhmm} where initial, transition and emission probabilities 
 (potentially) depend on covariates.
+}
+\examples{
+data("mvad", package = "TraMineR")
+
+mvad_alphabet <-
+  c("employment", "FE", "HE", "joblessness", "school", "training")
+mvad_labels <- c("employment", "further education", "higher education",
+                 "joblessness", "school", "training")
+mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
+mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet,
+                   states = mvad_scodes, labels = mvad_labels, xtstep = 6,
+                   cpal = unname(colorpalette[[6]]))
+
+set.seed(1)
+fit <- estimate_nhmm(mvad_seq, n_states = 3)
 }

@@ -12,9 +12,9 @@ cluster_names.mhmm <- function(object) {
   object$cluster_names
 }
 
-#' Set cluster names for mhmm object
+#' Set Cluster Names for Mixture Models
 #'
-#' @param object An object of class `mhmm`.
+#' @param object An object of class `mhmm` or `mnhmm`.
 #' @param value A character vector containing the new cluster names.
 #' @return The modified object with updated cluster names.
 #' @export
@@ -22,6 +22,21 @@ cluster_names.mhmm <- function(object) {
   UseMethod("cluster_names<-")
 }
 
+#' @export
+`cluster_names<-.mnhmm` <- function(object, value) {
+  if (length(value) != object$n_clusters) {
+    stop(
+      paste0(
+        "New cluster names should be a vector of length",
+        object$n_clusters, "."
+      )
+    )
+  } else {
+    object$cluster_names <- value
+    names(object$state_names) <- value
+  }
+  object
+}
 #' @export
 `cluster_names<-.mhmm` <- function(object, value) {
   if (length(value) != object$n_clusters) {

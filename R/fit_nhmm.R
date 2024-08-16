@@ -3,9 +3,10 @@
 #' @noRd
 fit_nhmm <- function(model, restarts, threads, ...) {
   
-  obs <- t(sapply(model$observations, as.integer))
-  obs[obs > model$n_symbols] <- 0L # missing values to zero
-  
+  obs <- create_obsArray(model) + 1L
+  if (model$n_channels == 1) {
+    obs <- obs[1, ,]
+  }
   if (restarts > 1L) {
     if (threads > 1L) {
       plan(multisession, workers = threads)

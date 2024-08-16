@@ -21,16 +21,20 @@ forwardbackwardx <- function(transition, emission, init, obs, coef, X, numberOfS
     .Call(`_seqHMM_forwardbackwardx`, transition, emission, init, obs, coef, X, numberOfStates, forwardonly, threads)
 }
 
-get_pi <- function(beta_raw, X) {
-    .Call(`_seqHMM_get_pi`, beta_raw, X)
+get_pi <- function(beta_raw, X, logspace) {
+    .Call(`_seqHMM_get_pi`, beta_raw, X, logspace)
 }
 
-get_A <- function(beta_raw, X) {
-    .Call(`_seqHMM_get_A`, beta_raw, X)
+get_A <- function(beta_raw, X, logspace) {
+    .Call(`_seqHMM_get_A`, beta_raw, X, logspace)
 }
 
-get_B <- function(beta_raw, X) {
-    .Call(`_seqHMM_get_B`, beta_raw, X)
+get_B <- function(beta_raw, X, logspace) {
+    .Call(`_seqHMM_get_B`, beta_raw, X, logspace)
+}
+
+get_multichannel_B <- function(beta_raw, X, S, C, M, logspace) {
+    .Call(`_seqHMM_get_multichannel_B`, beta_raw, X, S, C, M, logspace)
 }
 
 logLikHMM <- function(transition, emission, init, obs, threads) {
@@ -45,8 +49,8 @@ logSumExp <- function(x) {
     .Call(`_seqHMM_logSumExp`, x)
 }
 
-softmax <- function(x) {
-    .Call(`_seqHMM_softmax`, x)
+softmax <- function(x, logspace) {
+    .Call(`_seqHMM_softmax`, x, logspace)
 }
 
 log_EM <- function(transition_, emission_, init_, obs, nSymbols, itermax, tol, trace, threads) {
@@ -99,6 +103,14 @@ varcoef <- function(coef, X) {
 
 viterbi <- function(transition, emission, init, obs) {
     .Call(`_seqHMM_viterbi`, transition, emission, init, obs)
+}
+
+viterbi_nhmm_singlechannel <- function(beta_i_raw, X_i, beta_s_raw, X_s, beta_o_raw, X_o, obs) {
+    .Call(`_seqHMM_viterbi_nhmm_singlechannel`, beta_i_raw, X_i, beta_s_raw, X_s, beta_o_raw, X_o, obs)
+}
+
+viterbi_nhmm_multichannel <- function(beta_i_raw, X_i, beta_s_raw, X_s, beta_o_raw, X_o, obs, M) {
+    .Call(`_seqHMM_viterbi_nhmm_multichannel`, beta_i_raw, X_i, beta_s_raw, X_s, beta_o_raw, X_o, obs, M)
 }
 
 viterbix <- function(transition, emission, init, obs, coef, X, numberOfStates) {

@@ -8,47 +8,55 @@
 #' `c(0.025, 0.975)`.
 #' @export
 get_probs <- function(model, nsim = 0, probs = c(0.025, 0.975)) {
-  
-  chol_precision <- chol(-model$estimation$hessian)
+ 
   beta_i_raw <- model$estimation_results$parameters$beta_i_raw
-  beta_s_raw <- model$estimation_results$parameters$beta_s_raw
-  beta_o_raw <- model$estimation_results$parameters$beta_o_raw
+  beta_s_raw <- aperm(
+    model$estimation_results$parameters$beta_s_raw, 
+    c(2, 3, 1)
+  )
+  beta_o_raw <- aperm(
+    model$estimation_results$parameters$beta_o_raw, 
+    c(2, 3, 1)
+  )
   if (intercept_only(model$initial_formula)) {
-    X_initial <- model$X_initial[1, , drop = FALSE]
+    X_initial <- t(model$X_initial[1, , drop = FALSE])
     ids_pi <- "all"
   } else {
-    X_initial <- model$X_initial
+    X_initial <- t(model$X_initial)
     ids_pi <- seq_len(model$n_sequences)
   }
   if (intercept_only(model$transition_formula)) {
-    X_transition <- aperm(model$X_transition[1, 1, , drop = FALSE])
+    X_transition <- aperm(model$X_transition[1, 1, , drop = FALSE], c(3, 1, 2))
     ids_A <- "all"
     times_A <- "all"
   } else {
-    X_transition <- aperm(model$X_transition)
+    X_transition <- aperm(model$X_transition, c(3, 1, 2))
     ids_A <- seq_len(model$n_sequences)
     times_A <- colnames(model$observations)
   }
   if (intercept_only(model$emission_formula)) {
-    X_emission <- aperm(model$X_emission[1, 1, , drop = FALSE])
+    X_emission <- aperm(model$X_emission[1, 1, , drop = FALSE], c(3, 1, 2))
     ids_B <- "all"
     times_B <- "all"
   } else {
-    X_emission <- aperm(model$X_emission)
+    X_emission <- aperm(model$X_emission, c(3, 1, 2))
     ids_B <- seq_len(model$n_sequences)
     times_B <- colnames(model$observations)
   }
   initial_probs <- get_pi(
     beta_i_raw, 
-    X_initial
+    X_initial,
+    0
   )
   transition_probs <- get_A(
-    aperm(beta_s_raw, c(2, 3, 1)), 
-    X_transition
+    beta_s_raw, 
+    X_transition,
+    0
   )
   emission_probs <- get_B(
-    aperm(beta_o_raw, c(2, 3, 1)), 
-    X_emission
+    beta_o_raw, 
+    X_emission,
+    0
   )
   S <- model$n_states
   initial_probs <- data.frame(
@@ -72,6 +80,7 @@ get_probs <- function(model, nsim = 0, probs = c(0.025, 0.975)) {
     estimate = unlist(emission_probs)
   )
   if (nsim > 0) {
+    chol_precision <- chol(-model$estimation$hessian)
     U <- backsolve(chol_precision, diag(ncol(chol_precision)))
     x <- matrix(rnorm(nsim * ncol(U)), nrow = nsim) %*% U
     x <- t(sweep(x, 2, c(beta_i_raw, beta_s_raw, beta_o_raw), "+"))

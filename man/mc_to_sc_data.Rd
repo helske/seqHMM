@@ -63,13 +63,13 @@ alphabet(sc_data)
 attr(sc_data, "cpal") <- colorpalette[[14]][1:10]
 
 # Plotting sequences for the first 10 subjects
-ssplot(
+stacked_sequence_plot(
   list(
     "Marriage" = marr_seq, "Parenthood" = child_seq,
     "Residence" = left_seq, "Combined" = sc_data
   ),
-  type = "I",
-  tlim = 1:10
+  type = "i",
+  ids = 1:10
 )
 
 
@@ -84,7 +84,7 @@ seqstatf(sc_data_all)
 }
 \seealso{
 \code{\link{mc_to_sc}} for transforming multichannel \code{hmm}
-  or \code{mhmm} objects into single-channel representations;
-  \code{\link{ssplot}} for plotting multiple sequence data sets in the
-  same plot; and \code{\link{seqdef}} for creating state sequence objects.
+or \code{mhmm} objects into single-channel representations;
+[stacked_sequence_plot] for plotting multiple sequence data sets in the
+same plot; and \code{\link{seqdef}} for creating state sequence objects.
 }

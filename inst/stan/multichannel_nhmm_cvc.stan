@@ -8,6 +8,8 @@ data {
 }
 transformed data {
   #include /include/transformed_data.stan
+  matrix[M, K_o] zeros_mat_M_K_o = rep_matrix(0, M, K_o);
+  array[C + 1] int cumsum_M = append_array({0}, cumulative_sum(n_M));
 }
 parameters {
   #include /include/parameters_multichannel.stan
@@ -19,7 +21,7 @@ transformed parameters {
   {
     vector[N] ll;
     vector[S] log_Pi;
-    array[C] matrix[S, M] log_B;
+    array[C] matrix[S, M + 1] log_B;
     matrix[S, T] log_py;
     array[T] matrix[S, S] log_A;
     #include /include/model_pi_constant.stan
@@ -30,9 +32,7 @@ transformed parameters {
         #include /include/model_A_varying.stan
         log_py[, t] = zeros;
         for(c in 1:C) {
-          if(obs[c, t, i] > 0) {
-            log_py[, t] += log_B[c, , obs[c, t, i]];
-          }
+          log_py[, t] += log_B[c, , obs[c, t, i]];
         }
       }
       ll[i] = loglik(log_Pi, log_A, log_py);

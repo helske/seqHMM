@@ -23,25 +23,9 @@ logLik.mhmm <- function(object, partials = FALSE, threads = 1, log_space = FALSE
   nobs <- attr(object, "nobs")
 
   object <- combine_models(object)
-
-  if (object$n_channels == 1) {
-    object$observations <- list(object$observations)
-    object$emission_probs <- list(object$emission_probs)
-  }
-
-
-  obsArray <- array(0, c(object$n_sequences, object$length_of_sequences, object$n_channels))
-  for (i in 1:object$n_channels) {
-    obsArray[, , i] <- sapply(object$observations[[i]], as.integer) - 1L
-    obsArray[, , i][obsArray[, , i] > object$n_symbols[i]] <- object$n_symbols[i]
-  }
-  obsArray <- aperm(obsArray)
-
-  emissionArray <- array(1, c(object$n_states, max(object$n_symbols) + 1, object$n_channels))
-  for (i in 1:object$n_channels) {
-    emissionArray[, 1:object$n_symbols[i], i] <- object$emission_probs[[i]]
-  }
-
+  obsArray <- create_obsArray(object)
+  emissionArray <- create_emissionArray(object)
+  
   if (!log_space) {
     ll <- logLikMixHMM(
       object$transition_probs, emissionArray, object$initial_probs, obsArray,

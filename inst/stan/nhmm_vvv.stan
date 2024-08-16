@@ -19,7 +19,7 @@ transformed parameters {
   {
     vector[N] ll;
     vector[S] log_Pi;
-    matrix[S, M] log_B;
+    matrix[S, M + 1] log_B;
     matrix[S, T] log_py;
     array[T] matrix[S, S] log_A;
     for(i in 1:N) {
@@ -27,11 +27,7 @@ transformed parameters {
       for(t in 1:T) {
         #include /include/model_A_varying.stan
         #include /include/model_B_varying.stan
-        if(obs[t, i]  == 0) {
-          log_py[, t] = rep_vector(0, S);
-        } else {
-          log_py[, t] = log_B[, obs[t, i]];
-        }
+        log_py[, t] = log_B[, obs[t, i]];
       }
       ll[i] = loglik(log_Pi, log_A, log_py);
     }

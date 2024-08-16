@@ -6,7 +6,7 @@ check_observations <- function(observations, channel_names = NULL) {
   multichannel <- is_multichannel(observations)
   # Single channel but observations is a list
   if (is.list(observations) && 
-      !inherits(observations, "stslist") && 
+      !TraMineR::is.stslist(observations) && 
       length(observations) == 1) {
     observations <- observations[[1]]
     multichannel <- FALSE
@@ -19,13 +19,6 @@ check_observations <- function(observations, channel_names = NULL) {
     symbol_names <- lapply(observations, alphabet)
     n_symbols <- lengths(symbol_names)
     
-    if (length(unique(sapply(observations, nrow))) > 1L) {
-      stop("The number of subjects (rows) is not the same in all channels.")
-    }
-    if (length(unique(sapply(observations, ncol))) > 1L) {
-      stop(paste0("The length of the sequences (number of columns) is not the ",
-                  "same in all channels."))
-    }
     if (is.null(channel_names)) {
       if (is.null(channel_names <- names(observations))) {
         channel_names <- paste("Channel", seq_len(n_channels))

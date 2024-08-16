@@ -1,3 +1,9 @@
+#' Combine mixture HMM for a single HMM
+#'
+#' This function is used internally within various functions dealing with `mhmm` 
+#' objects (e.g., [fit_model()]).
+#' 
+#' @noRd
 combine_models <- function(model) {
   n_states_in_clusters <- model$n_states
   n_states <- sum(model$n_states)

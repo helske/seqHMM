@@ -188,6 +188,7 @@ mssplot <- function(
     ylab = "auto", hidden.states.title = "Hidden states",
     yaxis = FALSE, ylab.pos = "auto",
     cex.lab = 1, cex.axis = 1, respect_void = TRUE, ...) {
+  .Deprecated("stacked_sequence_plot")
   check_deprecated_args(match.call())
 
   # Checking for class of x
