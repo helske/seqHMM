@@ -20,26 +20,26 @@ estimate_nhmm(
 )
 }
 \arguments{
-\item{observations}{An \code{stslist} object 
-(see \code{\link[TraMineR]{seqdef}}) containing the sequences.}
+\item{observations}{An \code{stslist} object
+(see \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}}) containing the sequences.}
 
 \item{n_states}{A positive integer defining the number of hidden states.}
 
-\item{initial_formula}{of class \code{\link{formula}} for the
+\item{initial_formula}{of class \code{\link[=formula]{formula()}} for the
 initial state probabilities.}
 
-\item{transition_formula}{of class \code{\link{formula}} for the
+\item{transition_formula}{of class \code{\link[=formula]{formula()}} for the
 state transition probabilities.}
 
-\item{emission_formula}{of class \code{\link{formula}} for the
+\item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
 state emission probabilities.}
 
-\item{data}{A data frame containing the variables used in the transition and 
-emission formulas. Data should be sorted so the first T rows corresponds to 
+\item{data}{A data frame containing the variables used in the transition and
+emission formulas. Data should be sorted so the first T rows corresponds to
 observations of the first sequence and so forth.}
 
-\item{data0}{A data frame containing the variables used in the initial 
-state formula. Data should be sorted so that the first row corresponds to 
+\item{data0}{A data frame containing the variables used in the initial
+state formula. Data should be sorted so that the first row corresponds to
 covariates of the first sequence and so forth.}
 
 \item{state_names}{A vector of optional labels for the hidden states. If this
@@ -48,20 +48,20 @@ is \code{NULL} (the default), numbered states are used.}
 \item{channel_names}{A vector of optional names for the channels. If this
 is \code{NULL} (the default), numbered channels are used.}
 
-\item{restarts}{Number of times to run optimization using random starting 
+\item{restarts}{Number of times to run optimization using random starting
 values. Default is 1.}
 
-\item{threads}{Number of parallel threads for optimization with restarts. 
+\item{threads}{Number of parallel threads for optimization with restarts.
 Default is 1.}
 
-\item{...}{Additional arguments to \code{\link{rstan::optimizing}}.}
+\item{...}{Additional arguments to \code{\link[rstan:stanmodel-method-optimizing]{rstan::optimizing()}}.}
 }
 \value{
 Object of class \code{nhmm}.
 }
 \description{
-Function \code{estimate_nhmm} estimates a hidden Markov model object of class 
-\code{nhmm} where initial, transition and emission probabilities 
+Function \code{estimate_nhmm} estimates a hidden Markov model object of class
+\code{nhmm} where initial, transition and emission probabilities
 (potentially) depend on covariates.
 }
 \examples{

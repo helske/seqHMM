@@ -1,23 +1,23 @@
 #' Log-likelihood of the Mixture Hidden Markov Model
 #'
-#' Function \code{logLik.mhmm} computes the log-likelihood value of a mixture hidden Markov model.
+#' Function `logLik.mhmm` computes the log-likelihood value of a mixture hidden Markov model.
 #'
 #'
 #' @export
-#' @param object A mixture hidden Markov model of class \code{mhmm}.
+#' @param object A mixture hidden Markov model of class `mhmm`.
 #' @param partials Return a vector containing the individual contributions of each sequence to the total log-likelihood.
-#'   The default is \code{FALSE}, which returns the sum of all log-likelihood components.
+#'   The default is `FALSE`, which returns the sum of all log-likelihood components.
 #' @param threads Number of threads to use in parallel computing. The default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater
 #' numerical stability at the cost of decreased computational performance.
-#'   The default is \code{TRUE}.
+#'   The default is `TRUE`.
 #' @param ... Ignored.
 #' @return Log-likelihood of the mixture hidden Markov model. This is an object of class
-#' \code{logLik} with attributes \code{nobs} and \code{df} inherited from the model object.
-#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_model}} for building and
+#' `logLik` with attributes `nobs` and `df` inherited from the model object.
+#' @seealso [build_mhmm()] and [fit_model()] for building and
 #'   fitting mixture Hidden Markov models.
 logLik.mhmm <- function(object, partials = FALSE, threads = 1, log_space = FALSE, ...) {
-  if (threads < 1) stop("Argument threads must be a positive integer.")
+  check_positive_integer(threads)
 
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")

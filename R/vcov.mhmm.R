@@ -14,13 +14,13 @@
 #' the Jacobian of analytical gradients is computed using finite difference approximation.
 #'
 #' @importFrom numDeriv jacobian
-#' @param object Object of class \code{mhmm}.
-#' @param conditional If \code{TRUE} (default), the standard errors are
+#' @param object Object of class `mhmm`.
+#' @param conditional If `TRUE` (default), the standard errors are
 #' computed conditional on other model parameters. See details.
 #' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater
-#' numerical stability at cost of decreased computational performance. Default is \code{FALSE}.
-#' @param ... Additional arguments to function \code{jacobian} of \code{numDeriv} package.
+#' numerical stability at cost of decreased computational performance. Default is `FALSE`.
+#' @param ... Additional arguments to function `jacobian` of `numDeriv` package.
 #' @return Matrix containing the variance-covariance matrix of coefficients.
 #' @export
 #'
@@ -28,7 +28,7 @@ vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = FALSE
   if (conditional) {
     vcovm <- varcoef(object$coefficients, object$X)
   } else {
-    if (threads < 1) stop("Argument threads must be a positive integer.")
+    check_positive_integer(threads)
     # copied from fit_model
     #
     original_model <- object

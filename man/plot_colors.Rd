@@ -27,6 +27,6 @@ plot_colors(c("yellow", "orange", "red", "purple", "blue", "green"))
 plot_colors(rainbow(15))
 }
 \seealso{
-See e.g. the \code{\link{colorpalette}} data and \code{RColorBrewer}
+See e.g. the \code{\link[=colorpalette]{colorpalette()}} data and \code{RColorBrewer}
 package for ready-made color palettes.
 }

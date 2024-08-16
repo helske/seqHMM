@@ -15,22 +15,22 @@
 #'   and \eqn{m} is the number of unique symbols (observed states) in the
 #'   data.
 #' @param sequence_length The length of the simulated sequences.
-#' @param formula Covariates as an object of class \code{\link{formula}},
+#' @param formula Covariates as an object of class [formula()],
 #'   left side omitted.
 #' @param data An optional data frame, a list or an environment containing
 #'   the variables in the model. If not found in data, the variables are
-#'   taken from \code{environment(formula)}.
+#'   taken from `environment(formula)`.
 #' @param coefficients An optional \eqn{k x l} matrix of regression
 #'   coefficients for time-constant covariates for mixture probabilities,
 #'   where \eqn{l} is the number of clusters and \eqn{k} is the number of
 #'   covariates. A logit-link is used for mixture probabilities. The first
 #'   column is set to zero.
 #'
-#' @return A list of state sequence objects of class \code{stslist}.
-#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_model}} for building
-#' and fitting mixture hidden Markov models; \code{\link{ssplot}} for plotting
-#' multiple sequence data sets; \code{\link{seqdef}} for more
-#' information on state sequence objects; and \code{\link{simulate_hmm}}
+#' @return A list of state sequence objects of class `stslist`.
+#' @seealso [build_mhmm()] and [fit_model()] for building
+#' and fitting mixture hidden Markov models; [ssplot()] for plotting
+#' multiple sequence data sets; [seqdef()] for more
+#' information on state sequence objects; and [simulate_hmm()]
 #' for simulating hidden Markov models.
 #' @export
 #' @examples
@@ -96,18 +96,37 @@
 simulate_mhmm <- function(
     n_sequences, initial_probs, transition_probs,
     emission_probs, sequence_length, formula, data, coefficients) {
-  if (is.list(transition_probs)) {
-    n_clusters <- length(transition_probs)
-  } else {
-    stop("transition_probs is not a list.")
-  }
-  if (length(emission_probs) != n_clusters || length(initial_probs) != n_clusters) {
-    stop("Unequal list lengths of transition_probs, emission_probs and initial_probs.")
-  }
-  if (is.null(cluster_names <- names(transition_probs))) {
-    cluster_names <- paste("Cluster", 1:n_clusters)
-  }
-
+  transition_probs <- check_transition_probs(transition_probs)
+  
+  stopifnot_(
+    is.list(transition_probs),
+    "{.arg transition_probs} is not a {.cls list}."
+  )
+  stopifnot_(
+    is.list(emission_probs),
+    "{.arg emission_probs} is not a {.cls list}."
+  )
+  stopifnot_(
+    is.list(initial_probs),
+    "{.arg initial_probs} is not a {.cls list}."
+  )
+  n_clusters <- length(transition_probs)
+  stopifnot_(
+    n_clusters > 1L,
+    "{.arg transition_probs} is a list of length 1 leading to an
+        ordinary HMM. Please use {.fn simulate_hmm} instead."
+  )
+  stopifnot_(
+    length(emission_probs) == n_clusters,
+    "Length of a {.arg emission_probs} does not match with the length of
+      {.arg transition_probs}."
+  )
+  stopifnot_(
+    length(initial_probs) == n_clusters,
+    "Length of a {.arg initial_probs} does not match with the length of
+      {.arg transition_probs}."
+  )
+  
   if (is.list(emission_probs[[1]])) {
     n_channels <- length(emission_probs[[1]])
   } else {
@@ -120,83 +139,103 @@ simulate_mhmm <- function(
     channel_names <- 1:n_channels
   }
   if (n_sequences < 2) {
-    stop("Number of sequences ('n_sequences') must be at least 2 for a mixture model.")
+    stop_("{.arg n_sequences} must be at least 2 for a mixture model.")
   }
-
-  if (missing(formula)) {
-    formula <- stats::formula(rep(1, n_sequences) ~ 1)
-  }
-  if (missing(data)) {
-    data <- environment(formula)
-  }
-  if (inherits(formula, "formula")) {
-    X <- model.matrix(formula, data)
-    if (nrow(X) != n_sequences) {
-      if (length(all.vars(formula)) > 0 &&
-        sum(!complete.cases(data[all.vars(formula)])) > 0) {
-        stop("Missing cases are not allowed in covariates. Use e.g. the 'complete.cases' function to detect them, then fix, impute, or remove.")
-      } else {
-        stop("Number of subjects in data for covariates does not match the number of subjects in the sequence data.")
-      }
-    }
-    n_covariates <- ncol(X)
-  } else {
-    stop("Object given for argument 'formula' is not of class formula.")
-  }
-  if (missing(coefficients)) {
-    coefficients <- matrix(0, n_covariates, n_clusters)
-  } else {
-    if (ncol(coefficients) != n_clusters | nrow(coefficients) != n_covariates) {
-      stop("Wrong dimensions of coefficients")
-    }
-    coefficients[, 1] <- 0
-  }
-
-  pr <- exp(X %*% coefficients)
-  pr <- pr / rowSums(pr)
-
-
   n_symbols <- sapply(emission_probs[[1]], ncol)
   if (is.null(colnames(emission_probs[[1]][[1]]))) {
-    symbol_names <- lapply(1:n_channels, function(i) 1:n_symbols[i])
+    symbol_names <- lapply(1:n_channels, function(i) seq_len(n_symbols[i]))
   } else {
     symbol_names <- lapply(1:n_channels, function(i) colnames(emission_probs[[1]][[i]]))
   }
-
+  
   obs <- lapply(1:n_channels, function(i) {
-    suppressWarnings(suppressMessages(seqdef(matrix(symbol_names[[i]][1], n_sequences, sequence_length),
-      alphabet = symbol_names[[i]]
-    )))
+    suppressWarnings(suppressMessages(
+      seqdef(matrix(symbol_names[[i]], n_sequences, sequence_length),
+             alphabet = symbol_names[[i]]
+      )))
   })
   names(obs) <- channel_names
-
   n_states <- sapply(transition_probs, nrow)
   if (is.null(rownames(transition_probs[[1]]))) {
-    state_names <- lapply(1:n_clusters, function(i) 1:n_states[i])
+    state_names <- lapply(seq_len(n_clusters), function(i) seq_len(n_states[i]))
   } else {
-    state_names <- lapply(1:n_clusters, function(i) rownames(transition_probs[[i]]))
+    state_names <- lapply(seq_len(n_clusters), function(i) rownames(transition_probs[[i]]))
   }
   v_state_names <- unlist(state_names)
   if (length(unique(v_state_names)) != length(v_state_names)) {
-    for (i in 1:n_clusters) {
-      colnames(transition_probs[[i]]) <- rownames(transition_probs[[i]]) <-
-        paste(cluster_names[i], state_names[[i]], sep = ":")
+    for (i in seq_len(n_clusters)) {
+      transition_probs[[i]] <- 
+        check_transition_probs(
+          transition_probs[[i]], 
+          paste(cluster_names[i], state_names[[i]], sep = ":"))
     }
     v_state_names <- paste(rep(cluster_names, n_states), v_state_names, sep = ":")
-  }
-  for (i in 1:n_clusters) {
-    for (j in 1:n_channels) {
-      rownames(emission_probs[[i]][[j]]) <-
-        colnames(transition_probs[[i]])
+  } else {
+    for (i in seq_len(n_clusters)) {
+      transition_probs[[i]] <- 
+        check_transition_probs(transition_probs[[i]], state_names[[i]])
     }
   }
-
   states <- suppressWarnings(suppressMessages(
     seqdef(matrix(
       v_state_names[1],
       n_sequences, sequence_length
     ), alphabet = v_state_names)
   ))
+  for (i in seq_len(n_clusters)) {
+    initial_probs[[i]] <- 
+      check_initial_probs(initial_probs[[i]], n_states[i], state_names[[i]])
+    emission_probs <- check_emission_probs(
+      emission_probs[[i]], n_states[i], n_channels, n_symbols, 
+      state_names[[i]], symbol_names
+    )
+  }
+  
+  if (is.null(formula)) {
+    formula <- stats::formula(~ 1)
+    X <- model.matrix(formula, data = data.frame(y = rep(1, n_sequences)))
+    n_covariates <- 1L
+  } else {
+    stopifnot_(
+      inherits(formula, "formula"), 
+      "Argument {.arg formula} must be a {.cls formula} object.")
+    stopifnot_(
+      is.data.frame(data),
+      "If {.arg formula} is provided, {.arg data} must be a {.cls data.frame} 
+      object."
+    )
+    X <- model.matrix(formula, data)
+    if (nrow(X) != n_sequences) {
+      if (length(all.vars(formula)) > 0 && 
+          sum(!complete.cases(data[all.vars(formula)])) > 0) {
+        stop_(
+          "Missing cases are not allowed in covariates. Use e.g. the 
+                {.fn complete.cases} to detect them, then fix, impute, or 
+                remove."
+        )
+      } else {
+        stop_(
+          "Number of subjects in data for covariates does not match the 
+            number of subjects in the sequence data."
+        )
+      }
+    }
+    n_covariates <- ncol(X)
+  }
+  if (is.null(coefficients)) {
+    coefficients <- matrix(0, n_covariates, n_clusters)
+  } else {
+    if (ncol(coefficients) != n_clusters | nrow(coefficients) != n_covariates) {
+      stop_(
+        "Wrong dimensions of {.arg coefficients}. Should be 
+        {n_clusters} x {n_covariates}"
+      )
+    }
+    coefficients[, 1] <- 0
+  }
+  pr <- exp(X %*% coefficients)
+  pr <- pr / rowSums(pr)
+  
   clusters <- numeric(n_sequences)
   for (i in 1:n_sequences) {
     clusters[i] <- sample(cluster_names, size = 1, prob = pr[i, ])
@@ -240,7 +279,7 @@ simulate_mhmm <- function(
       p <- p + n_symbols[[i]]
     }
   }
-
+  
   if (length(unlist(symbol_names)) != length(alphabet(states))) {
     if (length(alphabet(states)) <= 200) {
       attr(states, "cpal") <- seqHMM::colorpalette[[length(alphabet(states))]]

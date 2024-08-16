@@ -5,10 +5,10 @@
 #' @export
 #' @rdname print
 #' @method print hmm
-#' @param x Hidden Markov model of class \code{hmm} or \code{mhmm}.
+#' @param x Hidden Markov model of class `hmm` or `mhmm`.
 #' @param digits Minimum number of significant digits to print.
-#' @param ... Further arguments to \code{print.default}.
-#' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building and
+#' @param ... Further arguments to `print.default`.
+#' @seealso [build_hmm()] and [fit_model()] for building and
 #'   fitting hidden Markov models.
 print.hmm <- function(x, digits = 3, ...) {
   if (x$n_channels == 1) {

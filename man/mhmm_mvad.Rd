@@ -10,7 +10,7 @@ two clusters including 3 and 4 hidden states.
 No covariates.
 }
 \description{
-A mixture hidden Markov model (MHMM) fitted for the \code{\link[TraMineR]{mvad}} data.
+A mixture hidden Markov model (MHMM) fitted for the \code{\link[TraMineR:mvad]{TraMineR::mvad()}} data.
 }
 \details{
 The model is loaded by calling \code{data(mhmm_mvad)}. It was created with the
@@ -85,7 +85,7 @@ if (interactive()) {
 
 }
 \seealso{
-Examples of building and fitting MHMMs in \code{\link{build_mhmm}} and
-\code{\link{fit_model}}; and \code{\link[TraMineR]{mvad}} for more information on the data.
+Examples of building and fitting MHMMs in \code{\link[=build_mhmm]{build_mhmm()}} and
+\code{\link[=fit_model]{fit_model()}}; and \code{\link[TraMineR:mvad]{TraMineR::mvad()}} for more information on the data.
 }
 \keyword{datasets}

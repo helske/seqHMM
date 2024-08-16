@@ -7,10 +7,10 @@
 state_names(object) <- value
 }
 \arguments{
-\item{object}{An object of class `hmm` or `mhmm`.}
+\item{object}{An object of class \code{hmm} or \code{mhmm}.}
 
 \item{value}{A character vector containing the new state names, or a list of
-such vectors in `mhmm` case.}
+such vectors in \code{mhmm} case.}
 }
 \value{
 The modified object with updated state names.

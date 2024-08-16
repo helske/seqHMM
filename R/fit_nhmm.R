@@ -2,7 +2,7 @@
 #'
 #' @noRd
 fit_nhmm <- function(model, restarts, threads, ...) {
-  
+  check_positive_integer(threads)
   obs <- create_obsArray(model) + 1L
   if (model$n_channels == 1) {
     obs <- obs[1, ,]

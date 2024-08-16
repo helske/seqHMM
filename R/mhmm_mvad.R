@@ -1,14 +1,14 @@
 #' Mixture hidden Markov model for the mvad data
 #'
-#' A mixture hidden Markov model (MHMM) fitted for the \code{\link[TraMineR]{mvad}} data.
+#' A mixture hidden Markov model (MHMM) fitted for the [TraMineR::mvad()] data.
 #'
-#' @format A mixture hidden Markov model of class \code{mhmm}:
+#' @format A mixture hidden Markov model of class `mhmm`:
 #' two clusters including 3 and 4 hidden states.
 #' No covariates.
 #'
 #'
 #' @details
-#' The model is loaded by calling \code{data(mhmm_mvad)}. It was created with the
+#' The model is loaded by calling `data(mhmm_mvad)`. It was created with the
 #' following code:
 #' \preformatted{
 #' data("mvad", package = "TraMineR")
@@ -68,8 +68,8 @@
 #'
 #' }
 #'
-#' @seealso Examples of building and fitting MHMMs in \code{\link{build_mhmm}} and
-#' \code{\link{fit_model}}; and \code{\link[TraMineR]{mvad}} for more information on the data.
+#' @seealso Examples of building and fitting MHMMs in [build_mhmm()] and
+#' [fit_model()]; and [TraMineR::mvad()] for more information on the data.
 #'
 #' @docType data
 #' @keywords datasets

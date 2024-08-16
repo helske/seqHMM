@@ -8,7 +8,7 @@ mc_to_sc_data(data, combine_missing = TRUE, all_combinations = FALSE, cpal)
 }
 \arguments{
 \item{data}{A list of state sequence objects (\code{stslist}s)
-created with the \code{\link{seqdef}} function.}
+created with the \code{\link[=seqdef]{seqdef()}} function.}
 
 \item{combine_missing}{Controls whether combined states of observations
 at time t are coded missing (coded with * in \code{stslist}s)
@@ -28,7 +28,7 @@ the \code{seqHMM::colorpalette} is used).}
 }
 \description{
 Function \code{mc_to_sc_data} combines observed states of multiple
-  sequence objects into one, time point by time point.
+sequence objects into one, time point by time point.
 }
 \examples{
 # Load three-channel sequence data
@@ -83,8 +83,8 @@ seqstatf(sc_data_all)
 
 }
 \seealso{
-\code{\link{mc_to_sc}} for transforming multichannel \code{hmm}
+\code{\link[=mc_to_sc]{mc_to_sc()}} for transforming multichannel \code{hmm}
 or \code{mhmm} objects into single-channel representations;
-[stacked_sequence_plot] for plotting multiple sequence data sets in the
-same plot; and \code{\link{seqdef}} for creating state sequence objects.
+\link{stacked_sequence_plot} for plotting multiple sequence data sets in the
+same plot; and \code{\link[=seqdef]{seqdef()}} for creating state sequence objects.
 }

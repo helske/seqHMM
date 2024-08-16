@@ -1,8 +1,8 @@
-#' Imported Functions from \code{TraMineR}
+#' Imported Functions from `TraMineR`
 #'
 #' @description Imported functions for convinience. For details, see
-#'   the corresponding help pages of \code{\link[TraMineR]{seqstatf}},
-#'   \code{\link[TraMineR]{alphabet}} and \code{\link[TraMineR]{seqdef}}.
+#'   the corresponding help pages of [TraMineR::seqstatf()],
+#'   [TraMineR::alphabet()] and [TraMineR::seqdef()].
 #'
 #' @name seqdef
 #' @export

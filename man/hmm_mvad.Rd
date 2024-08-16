@@ -9,7 +9,7 @@ A hidden Markov model of class \code{hmm};
 unrestricted model with six hidden states.
 }
 \description{
-A hidden Markov model (MMM) fitted for the \code{\link[TraMineR]{mvad}} data.
+A hidden Markov model (MMM) fitted for the \code{\link[TraMineR:mvad]{TraMineR::mvad()}} data.
 }
 \details{
 Model was created with the following code:
@@ -61,7 +61,7 @@ plot(hmm_mvad)
 
 }
 \seealso{
-Examples of building and fitting HMMs in \code{\link{build_hmm}} and
-\code{\link{fit_model}}; and \code{\link[TraMineR]{mvad}} for more information on the data.
+Examples of building and fitting HMMs in \code{\link[=build_hmm]{build_hmm()}} and
+\code{\link[=fit_model]{fit_model()}}; and \code{\link[TraMineR:mvad]{TraMineR::mvad()}} for more information on the data.
 }
 \keyword{datasets}

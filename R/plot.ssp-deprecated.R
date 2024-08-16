@@ -1,16 +1,16 @@
 #' Stack Multichannel Sequence Plots and/or Most Probable Paths Plots from Hidden Markov
 #' Models
 #'
-#' Function \code{plot.ssp} plots stacked sequence plots from \code{ssp} objects defined with
-#' \code{\link{ssp}}.
+#' Function `plot.ssp` plots stacked sequence plots from `ssp` objects defined with
+#' [ssp()].
 #'
 #' @export
-#' @param x An \code{ssp} object.
+#' @param x An `ssp` object.
 #' @param ... Ignored.
 #'
-#' @seealso \code{\link{ssp}} for more examples and information on defining the plot before using
-#'   \code{plot.ssp}; \code{\link{ssplot}} for straight plotting of \code{ssp} objects;
-#'   and \code{\link{gridplot}} for plotting multiple \code{ssp} objects.
+#' @seealso [ssp()] for more examples and information on defining the plot before using
+#'   `plot.ssp`; [ssplot()] for straight plotting of `ssp` objects;
+#'   and [gridplot()] for plotting multiple `ssp` objects.
 #'
 #' @references Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
 #' Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03

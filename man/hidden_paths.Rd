@@ -18,14 +18,14 @@ hidden_paths(model, ...)
 \arguments{
 \item{model}{A hidden Markov model.}
 
-\item{respect_void}{If `TRUE` (default), states at the time points
-corresponding to `TraMineR`'s void in the observed sequences are set to void
+\item{respect_void}{If \code{TRUE} (default), states at the time points
+corresponding to \code{TraMineR}'s void in the observed sequences are set to void
 in the hidden state sequences as well.}
 }
 \value{
-The most probable paths of hidden states as an `stslist` object
-(see \code{\link{seqdef}}). The log-probability is included as an attribute 
-`log_prop`.
+The most probable paths of hidden states as an \code{stslist} object
+(see \code{\link[=seqdef]{seqdef()}}). The log-probability is included as an attribute
+\code{log_prop}.
 }
 \description{
 Function \code{hidden_paths} computes the most probable path of
@@ -51,7 +51,7 @@ logLik(hmm_biofam)
 
 }
 \seealso{
-[hmm_biofam] for information on the model used in the example;
-and [ggseqplot::ggseqiplot()] and [stacked_sequence_plot()]
+\link{hmm_biofam} for information on the model used in the example;
+and \code{\link[ggseqplot:ggseqiplot]{ggseqplot::ggseqiplot()}} and \code{\link[=stacked_sequence_plot]{stacked_sequence_plot()}}
 for plotting hidden paths.
 }

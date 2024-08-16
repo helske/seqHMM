@@ -8,11 +8,11 @@
 #' @param emission_probs A matrix of emission probabilities or a list of such objects (one for each channel).
 #' @param sequence_length Length for simulated sequences.
 #'
-#' @return A list of state sequence objects of class \code{stslist}.
-#' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building
-#' and fitting hidden Markov models; \code{\link{stacked_sequence_plot}} for plotting
-#' multiple sequence data sets; \code{\link{seqdef}} for more
-#' information on state sequence objects; and \code{\link{simulate_mhmm}}
+#' @return A list of state sequence objects of class `stslist`.
+#' @seealso [build_hmm()] and [fit_model()] for building
+#' and fitting hidden Markov models; [stacked_sequence_plot()] for plotting
+#' multiple sequence data sets; [seqdef()] for more
+#' information on state sequence objects; and [simulate_mhmm()]
 #' for simulating mixture hidden Markov models.
 #' @export
 #'

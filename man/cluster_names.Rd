@@ -7,7 +7,7 @@
 cluster_names(object)
 }
 \arguments{
-\item{object}{An object of class `mhmm`.}
+\item{object}{An object of class \code{mhmm}.}
 }
 \value{
 A character vector containing the cluster names.

@@ -19,59 +19,57 @@ stacked_sequence_plot(
 )
 }
 \arguments{
-\item{x}{Either a hidden Markov model object of class `hmm`, `mhmm`, `nhmm`, 
-or `mnhmm`, a sequence object of class `stslist` (created with the 
-[TraMineR::seqdef()] function) or a list of `stslist` objects.}
+\item{x}{Either a hidden Markov model object of class \code{hmm}, \code{mhmm}, \code{nhmm},
+or \code{mnhmm}, a sequence object of class \code{stslist} (created with the
+\code{\link[TraMineR:seqdef]{TraMineR::seqdef()}} function) or a list of \code{stslist} objects.}
 
-\item{plots}{What to plot. One of `"obs"` for observations (the default),
-`"hidden_paths"` for most probable paths of hidden states,
-or `"both"` for observations and hidden paths together. Latter two options 
+\item{plots}{What to plot. One of \code{"obs"} for observations (the default),
+\code{"hidden_paths"} for most probable paths of hidden states,
+or \code{"both"} for observations and hidden paths together. Latter two options
 are only possible for model objects.}
 
-\item{type}{The type of the plot. Available types are `"index"` for sequence 
-index plots and `"distribution"` for state distribution plots (the default). 
-See [ggseqplot::ggseqiplot()] and [ggseqplot::ggseqdplot()] for details.}
+\item{type}{The type of the plot. Available types are \code{"index"} for sequence
+index plots and \code{"distribution"} for state distribution plots (the default).
+See \code{\link[ggseqplot:ggseqiplot]{ggseqplot::ggseqiplot()}} and \code{\link[ggseqplot:ggseqdplot]{ggseqplot::ggseqdplot()}} for details.}
 
-\item{ids}{Indexes of the subjects to be plotted (the default is all). For 
-example, `ids = c(1:10, 15) plots the first ten subjects and subject 15 in 
+\item{ids}{Indexes of the subjects to be plotted (the default is all). For
+example, `ids = c(1:10, 15) plots the first ten subjects and subject 15 in
 the data.}
 
-\item{sort_by}{A sorting variable or a sort method (one of `"start"`,
-`"end"`, or `"mds"` for `type = "index"`. Option `"mds"` arranges the 
-sequences according to the scores of multidimensional scaling (using 
-[stats::cmdscale()]). Default is no sorting. Numberic vectors are passed to 
-`sortv` argument of [ggseqplot::ggseqiplot()].}
+\item{sort_by}{A sorting variable or a sort method (one of \code{"start"},
+\code{"end"}, or \code{"mds"} for \code{type = "index"}. Option \code{"mds"} arranges the
+sequences according to the scores of multidimensional scaling (using
+\code{\link[stats:cmdscale]{stats::cmdscale()}}). Default is no sorting. Numberic vectors are passed to
+\code{sortv} argument of \code{\link[ggseqplot:ggseqiplot]{ggseqplot::ggseqiplot()}}.}
 
-\item{sort_channel}{Name of the channel which should be used for the 
-sorting. Alternatively value `"Hidden states"` uses the hidden state 
+\item{sort_channel}{Name of the channel which should be used for the
+sorting. Alternatively value \code{"Hidden states"} uses the hidden state
 sequences for sorting.}
 
 \item{dist_method}{The metric to be used for computing the distances of the
-sequences if multidimensional scaling is used for sorting. One of `"OM"`
-(optimal matching, the default), `"LCP"` (longest common prefix), `"RLCP"`
-(reversed LCP, i.e. longest common suffix), `"LCS"` (longest common
-subsequence), `"HAM"` (Hamming distance), and `"DHD"` (dynamic Hamming 
-distance). Transition rates are used for defining substitution costs if 
-needed. See [TraMineR::seqdef()] for more information on the metrics.}
+sequences if multidimensional scaling is used for sorting. One of \code{"OM"}
+(optimal matching, the default), \code{"LCP"} (longest common prefix), \code{"RLCP"}
+(reversed LCP, i.e. longest common suffix), \code{"LCS"} (longest common
+subsequence), \code{"HAM"} (Hamming distance), and \code{"DHD"} (dynamic Hamming
+distance). Transition rates are used for defining substitution costs if
+needed. See \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}} for more information on the metrics.}
 
-\item{group}{Variable used for grouping the sequences in each channel, which 
-is passed to [ggseqplot::ggseqiplot()] and [ggseqplot::ggseqdplot()]. By 
-default, no grouping is done, except for mixture models where the grouping 
-is based on most probable clusters (defined by the most probable hidden 
-paths). Grouping by clusters can be overloaded by supplying variable for 
-`group` or by setting `group = NA`.}
+\item{group}{Variable used for grouping the sequences in each channel, which
+is passed to \code{\link[ggseqplot:ggseqiplot]{ggseqplot::ggseqiplot()}} and \code{\link[ggseqplot:ggseqdplot]{ggseqplot::ggseqdplot()}}. By
+default, no grouping is done, except for mixture models where the grouping
+is based on most probable clusters (defined by the most probable hidden
+paths). Grouping by clusters can be overloaded by supplying variable for
+\code{group} or by setting \code{group = NA}.}
 
-\item{legend_position}{Position of legend for each channel, 
-passed to `legend.position` argument of [ggplot2::theme()]. Either a vector 
+\item{legend_position}{Position of legend for each channel,
+passed to \code{legend.position} argument of \code{\link[ggplot2:theme]{ggplot2::theme()}}. Either a vector
 of length 1, or of length matching the number of channels to be plotted.}
 
-\item{...}{Other arguments to [ggseqplot::ggseqiplot()] or 
-[ggseqplot::ggseqdplot()].}
+\item{...}{Other arguments to \code{\link[ggseqplot:ggseqiplot]{ggseqplot::ggseqiplot()}} or
+\code{\link[ggseqplot:ggseqdplot]{ggseqplot::ggseqdplot()}}.}
 }
 \description{
-Function `stacked_sequence_plot draws stacked sequence plots of sequence 
-object created with the [TraMineR::seqdef] function or observations and/or most
-probable paths of model objects of `seqHMM` (e.g., `hmm` and `mhmm`).
+Function \verb{stacked_sequence_plot draws stacked sequence plots of sequence  object created with the [TraMineR::seqdef] function or observations and/or most probable paths of model objects of }seqHMM\verb{(e.g.,}hmm\code{and}mhmm`).
 }
 \examples{
 p <- stacked_sequence_plot(

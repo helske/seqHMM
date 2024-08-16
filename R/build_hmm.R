@@ -1,49 +1,46 @@
 #' Build a Hidden Markov Model
 #'
-#' Function \code{build_hmm} constructs a hidden Markov model object of class \code{hmm}.
+#' Function `build_hmm` constructs a hidden Markov model object of class `hmm`.
 #'
-#' The returned model contains some attributes such as \code{nobs} and \code{df},
+#' The returned model contains some attributes such as `nobs` and `df`,
 #' which define the number of observations in the  model and the number of estimable
 #' model parameters, used in computing BIC.
-#' When computing \code{nobs} for a multichannel model with \eqn{C} channels,
+#' When computing `nobs` for a multichannel model with \eqn{C} channels,
 #' each observed value in a single channel amounts to \eqn{1/C} observation,
 #' i.e. a fully observed time point for a single sequence amounts to one observation.
-#' For the degrees of freedom \code{df}, zero probabilities of the initial model are
+#' For the degrees of freedom `df`, zero probabilities of the initial model are
 #' defined as structural zeroes.
 #' @export
-#' @param observations An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
+#' @param observations An `stslist` object (see [TraMineR::seqdef()]) containing
 #' the sequences, or a list of such objects (one for each channel).
 #' @param n_states A scalar giving the number of hidden states. Not used if starting values for model parameters
-#' are given with \code{initial_probs}, \code{transition_probs}, or \code{emission_probs}.
+#' are given with `initial_probs`, `transition_probs`, or `emission_probs`.
 #' @param transition_probs A matrix of transition probabilities.
 #' @param emission_probs A matrix of emission probabilities or a list of such
 #' objects (one for each channel). Emission probabilities should follow the
-#' ordering of the alphabet of observations (\code{alphabet(observations)}, returned as \code{symbol_names}).
+#' ordering of the alphabet of observations (`alphabet(observations)`, returned as `symbol_names`).
 #' @param initial_probs A vector of initial state probabilities.
-#' @param state_names A list of optional labels for the hidden states. If \code{NULL},
+#' @param state_names A list of optional labels for the hidden states. If `NULL`,
 #' the state names are taken from the row names of the transition matrix. If this is
-#' also \code{NULL}, numbered states are used.
+#' also `NULL`, numbered states are used.
 #' @param channel_names A vector of optional names for the channels.
-#' @param ... Additional arguments to \code{simulate_transition_probs}.
+#' @param ... Additional arguments to [simulate_transition_probs()].#'
+#' @return Object of class `hmm` with the following elements:
+#' * `observations`\cr State sequence object or a list of such objects containing the data.
+#' * `transition_probs`\cr A matrix of transition probabilities.
+#' * `emission_probs`\cr A matrix or a list of matrices of emission probabilities.
+#' * `initial_probs`\cr A vector of initial probabilities.
+#' * `state_names`\cr Names for hidden states.
+#' * `symbol_names`\cr Names for observed states.
+#' * `channel_names`\cr Names for channels of sequence data.
+#' * `length_of_sequences`\cr (Maximum) length of sequences.
+#' * `n_sequences`\cr Number of sequences.
+#' * `n_symbols`\cr Number of observed states (in each channel).
+#' * `n_states`\cr Number of hidden states.
+#' * `n_channels`\cr Number of channels.
 #'
-#' @return Object of class \code{hmm} with the following elements:
-#' \describe{
-#'    \item{\code{observations}}{State sequence object or a list of such objects containing the data.}
-#'    \item{\code{transition_probs}}{A matrix of transition probabilities.}
-#'    \item{\code{emission_probs}}{A matrix or a list of matrices of emission probabilities.}
-#'    \item{\code{initial_probs}}{A vector of initial probabilities.}
-#'    \item{\code{state_names}}{Names for hidden states.}
-#'    \item{\code{symbol_names}}{Names for observed states.}
-#'    \item{\code{channel_names}}{Names for channels of sequence data.}
-#'    \item{\code{length_of_sequences}}{(Maximum) length of sequences.}
-#'    \item{\code{n_sequences}}{Number of sequences.}
-#'    \item{\code{n_symbols}}{Number of observed states (in each channel).}
-#'    \item{\code{n_states}}{Number of hidden states.}
-#'    \item{\code{n_channels}}{Number of channels.}
-#' }
-#'
-#' @seealso \code{\link{fit_model}} for estimating model parameters; and
-#'   \code{\link{plot.hmm}} for plotting \code{hmm} objects.
+#' @seealso [fit_model()] for estimating model parameters; and
+#'   [plot.hmm()] for plotting `hmm` objects.
 #' @examples
 #'
 #' # Single-channel data

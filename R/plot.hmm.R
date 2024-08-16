@@ -1,53 +1,53 @@
 #' Plot hidden Markov models
 #'
-#' Function \code{plot.hmm} plots a directed graph with pie charts of
+#' Function `plot.hmm` plots a directed graph with pie charts of
 #' emission probabilities as vertices/nodes.
 #'
 #' @export
-#' @param x A hidden Markov model object of class \code{hmm} created with
-#'   \code{\link{build_hmm}} (or \code{\link{build_mm}}). Multichannel
-#'   \code{hmm} objects are automatically transformed into single-channel objects.
-#'   See function \code{\link{mc_to_sc}} for more information on the
+#' @param x A hidden Markov model object of class `hmm` created with
+#'   [build_hmm()] (or [build_mm()]). Multichannel
+#'   `hmm` objects are automatically transformed into single-channel objects.
+#'   See function [mc_to_sc()] for more information on the
 #'   transformation.
 #' @param layout specifies the layout of vertices (nodes). Accepts a
-#'   numerical matrix, a \code{\link[igraph]{layout_}} function (without quotation marks),
-#'   or either of the predefined options \code{"horizontal"} (the
-#'   default) and \code{"vertical"}. Options \code{"horizontal"} and
-#'   \code{"vertical"} position vertices at the same horizontal or vertical
+#'   numerical matrix, a [igraph::layout_()] function (without quotation marks),
+#'   or either of the predefined options `"horizontal"` (the
+#'   default) and `"vertical"`. Options `"horizontal"` and
+#'   `"vertical"` position vertices at the same horizontal or vertical
 #'   line. A two-column numerical matrix can be used to give x and y coordinates of
-#'   the vertices. The \code{\link[igraph]{layout_}} functions available in the
-#'   \code{igraph} package offer other automatic layouts for graphs.
+#'   the vertices. The [igraph::layout_()] functions available in the
+#'   `igraph` package offer other automatic layouts for graphs.
 #' @param pie Are vertices plotted as pie charts of emission probabilities?
 #'   Defaults to TRUE.
 #' @param vertex.size Size of vertices, given as a scalar or numerical
 #'   vector. The default value is 40.
 #' @param vertex.label Labels for vertices. Possible options include
-#'   \code{"initial.probs"}, \code{"names"}, \code{NA}, and a character or
-#'   numerical vector. The default \code{"initial.probs"} prints the initial
-#'   probabilities of the model and \code{"names"} prints the names of the
-#'   hidden states as labels. \code{NA} prints no labels.
+#'   `"initial.probs"`, `"names"`, `NA`, and a character or
+#'   numerical vector. The default `"initial.probs"` prints the initial
+#'   probabilities of the model and `"names"` prints the names of the
+#'   hidden states as labels. `NA` prints no labels.
 #' @param vertex.label.dist Distance of the label of the vertex from its
-#'   center. The default value \code{"auto"} places the label outside the
+#'   center. The default value `"auto"` places the label outside the
 #'   vertex.
 #' @param vertex.label.pos Positions of vertex labels, relative to
 #'   the center of the vertex. A scalar or numerical vector giving
-#'   position(s) as radians or one of \code{"bottom"} (\code{pi/2} as radians),
-#'   \code{"top"} (\code{-pi/2}), \code{"left"} (\code{pi}), or
-#'   \code{"right"} (\code{0}).
+#'   position(s) as radians or one of `"bottom"` (`pi/2` as radians),
+#'   `"top"` (`-pi/2`), `"left"` (`pi`), or
+#'   `"right"` (`0`).
 #' @param vertex.label.family,edge.label.family Font family to be used for
-#'   vertex/edge labels. See argument \code{family} in \code{\link{par}} for
+#'   vertex/edge labels. See argument `family` in [par()] for
 #'   more information.
 #' @param loops Defines whether transitions back to same states are plotted.
 #' @param edge.curved Defines whether to plot curved edges (arcs, arrows)
 #'   between vertices. A logical or numerical vector or scalar. Numerical
-#'   values specify curvatures of edges. The default value \code{TRUE}
-#'   gives curvature of 0.5 to all edges. See \code{\link{igraph.plotting}} for
+#'   values specify curvatures of edges. The default value `TRUE`
+#'   gives curvature of 0.5 to all edges. See [igraph.plotting()] for
 #'   more information.
 #' @param edge.label Labels for edges. Possible options include
-#'   \code{"auto"}, \code{NA}, and a character or numerical vector. The
-#'   default \code{"auto"} prints transition probabilities as edge labels.
-#'   \code{NA} prints no labels.
-#' @param edge.width Width(s) for edges. The default \code{"auto"} determines
+#'   `"auto"`, `NA`, and a character or numerical vector. The
+#'   default `"auto"` prints transition probabilities as edge labels.
+#'   `NA` prints no labels.
+#' @param edge.width Width(s) for edges. The default `"auto"` determines
 #'   widths according to transition probabilities between hidden states.
 #'   Other possibilities are a scalar or a numerical vector of widths.
 #' @param cex.edge.width An expansion factor for edge widths. Defaults to 1.
@@ -55,7 +55,7 @@
 #' @param label.signif Rounds labels of model parameters to specified number
 #'   of significant digits, 2 by default. Ignored for user-given labels.
 #' @param label.scientific Defines if scientific notation should be used to
-#'   describe small numbers. Defaults to \code{FALSE}, e.g. 0.0001 instead of
+#'   describe small numbers. Defaults to `FALSE`, e.g. 0.0001 instead of
 #'   1e-04. Ignored for user-given labels.
 #' @param label.max.length Maximum number of digits in labels of model
 #'   parameters. Ignored for user-given labels.
@@ -66,15 +66,15 @@
 #'   value is 0.05.
 #' @param combined.slice.color Color of the combined slice that includes
 #'   the smallest emission probabilities (only if argument
-#'   \code{"combine.slices"} is greater than 0). The default color is white.
+#'   `"combine.slices"` is greater than 0). The default color is white.
 #' @param combined.slice.label The label for combined states (when argument
-#'   \code{"combine.slices"} is greater than 0) to appear in the legend.
+#'   `"combine.slices"` is greater than 0) to appear in the legend.
 #' @param with.legend Defines if and where the legend of state colors is
-#'   plotted. Possible values include \code{"bottom"} (the default),
-#'   \code{"top"}, \code{"left"}, and \code{"right"}. \code{FALSE} omits the
+#'   plotted. Possible values include `"bottom"` (the default),
+#'   `"top"`, `"left"`, and `"right"`. `FALSE` omits the
 #'   legend.
 #' @param ltext Optional description of (combined) observed states to appear
-#'   in the legend. A vector of character strings.  See \code{\link{seqplot}} for
+#'   in the legend. A vector of character strings.  See [seqplot()] for
 #'   more information.
 #' @param legend.prop Proportion used for plotting the legend. A scalar between
 #'   0 and 1, defaults to 0.5.
@@ -82,27 +82,27 @@
 #'   labels in the legend. The default value is 1. Values lesser than 1 will
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #' @param ncol.legend The number of columns for the legend. The default value
-#'   \code{"auto"} sets the number of columns automatically.
+#'   `"auto"` sets the number of columns automatically.
 #' @param cpal Optional color palette for (combinations of) observed states.
-#'   The default value \code{"auto"} uses automatic color palette. Otherwise a
-#'   vector of length \code{x$n_symbols} is given, i.e. the argument requires a color
+#'   The default value `"auto"` uses automatic color palette. Otherwise a
+#'   vector of length `x$n_symbols` is given, i.e. the argument requires a color
 #'   specified for all (combinations of) observed states even if they are not
-#'   plotted (if the probability is less than \code{combine.slices}).
+#'   plotted (if the probability is less than `combine.slices`).
 #' @param cpal.legend Optional color palette for the legend, only considered when
 #' legend.order is FALSE. Should match ltext.
 #' @param legend.order Whether to use the default order in the legend, i.e., order by appearance
 #' (first by hidden state, then by emission probability). TRUE by default.
 #' @param main Main title for the plot. Omitted by default.
-#' @param withlegend Deprecated. Use \code{with.legend} instead.
-#' @param ... Other parameters passed on to \code{\link{plot.igraph}} such as
-#'   \code{vertex.color}, \code{vertex.label.cex}, or \code{edge.lty}.
+#' @param withlegend Deprecated. Use `with.legend` instead.
+#' @param ... Other parameters passed on to [plot.igraph()] such as
+#'   `vertex.color`, `vertex.label.cex`, or `edge.lty`.
 #'
-#' @seealso \code{\link{build_hmm}} and \code{\link{fit_model}} for building and
-#'   fitting Hidden Markov models, \code{\link{mc_to_sc}} for transforming
-#'   multistate \code{hmm} objects into single-channel objects,
-#'   \code{\link{hmm_biofam}} and \code{\link{hmm_mvad}} for information on the models
+#' @seealso [build_hmm()] and [fit_model()] for building and
+#'   fitting Hidden Markov models, [mc_to_sc()] for transforming
+#'   multistate `hmm` objects into single-channel objects,
+#'   [hmm_biofam()] and [hmm_mvad()] for information on the models
 #'   used in the examples, and
-#'   \code{\link{plot.igraph}} for the general plotting function of directed graphs.
+#'   [plot.igraph()] for the general plotting function of directed graphs.
 #'
 #' @examples
 #' # Multichannel data, left-to-right model
@@ -236,11 +236,10 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
                      cex.legend = 1, ncol.legend = "auto", cpal = "auto",
                      cpal.legend = "auto", legend.order = TRUE,
                      main = NULL, withlegend, ...) {
-  check_deprecated_args(match.call())
-
+  
   # Saving and changing marginals
   oldPar <- par(no.readonly = TRUE)
-
+  
   if (is.null(main)) {
     par(mar = c(0.5, 0.5, 0.5, 0.5))
   } else {
@@ -248,9 +247,9 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
   }
   on.exit(par(oldPar), add = TRUE)
   on.exit(par(mfrow = c(1, 1)), add = TRUE)
-
+  
   dots <- list(...)
-
+  
   labelprint <- function(z, labs) {
     if (labs == TRUE && (z > 0.001 || z == 0)) {
       labs <- FALSE
@@ -261,44 +260,43 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
       z <- prettyNum(signif(z, digits = label.signif), scientific = labs)
     }
   }
-
-  if (!is.matrix(layout) && !is.function(layout)) {
-    if (!(layout %in% c("horizontal", "vertical"))) {
-      stop("Argument layout only accepts numerical matrices, igraph layout functions, or strings \"horizontal\" and \"vertical\".")
-    }
-  }
-
+  
+  stopifnot_(
+    is.matrix(layout) || is.function(layout) || 
+      layout %in% c("horizontal", "vertical"),
+    "{.arg layout} only accepts numerical matrices, igraph layout functions, 
+    or strings {.val 'horizontal'} and {.val 'vertical'}."
+  )
   if (!is.numeric(vertex.label.pos)) {
     choices <- c("bottom", "top", "left", "right")
     ind <- pmatch(vertex.label.pos, choices, duplicates.ok = TRUE)
-    if (any(is.na(ind))) {
-      stop("Argument vertex.label.pos only accepts values \"bottom\", \"top\", \"left\", \"right\" or a numerical vector.")
-    }
+    stopifnot_(
+      !any(is.na(ind)),
+      "{.arg vertex.label.pos} only accepts values {.val 'bottom'}, 
+      {.val 'top'},{.val 'left'}, {.val 'right'} or numerical vector."
+    )
     vertex.label.pos <- choices[ind]
   }
-
+  
   choices <- c(TRUE, FALSE, "bottom", "top", "left", "right")
   ind <- pmatch(with.legend, choices)
-  if (is.na(ind)) {
-    stop("Argument with.legend must be one of TRUE, FALSE, \"bottom\", \"right\", \"top\", or \"left\".")
-  }
+  stopifnot_(
+    !is.na(ind),
+    "{.arg  with.legend} only accepts values {.val 'TRUE'}, {.val 'FALSE'}, 
+    {.val 'bottom'}, {.val 'top'},{.val 'left'}, or {.val 'right'}."
+  )
   with.legend <- choices[ind]
   if (with.legend %in% c(TRUE, "auto")) {
     with.legend <- "bottom"
   }
-
-
   # Convert multichannel models to single-channel
   if (x$n_channels > 1) {
     x <- mc_to_sc(x, cpal = cpal)
   }
-
   # No slices -> no legends needed
   if (pie == FALSE && with.legend != FALSE) {
     with.legend <- FALSE
   }
-
-
   # Positions of vertex labels
   if (!is.numeric(vertex.label.pos)) {
     vpos <- numeric(length(vertex.label.pos))
@@ -315,7 +313,6 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
     }
     vertex.label.pos <- vpos
   }
-
   # Vertex labels
   if (length(vertex.label) == 1 && !is.na(vertex.label) && vertex.label != FALSE) {
     if (vertex.label == "initial.probs") {
@@ -324,27 +321,27 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
       vertex.label <- x$state_names
     }
   } else if (length(vertex.label) != length(x$state_names)) {
-    warning("The length of the vector provided for the argument \"vertex.label\" does not match the number of hidden states.")
+    warning_("The length of {.arg vertex.label} does not match the number of 
+             hidden states.")
     vertex.label <- rep(vertex.label, length.out = length(x$state_names))
   }
-
   # Vertex label distances
   if (is.character(vertex.label.dist)) {
     ind <- pmatch(vertex.label.dist, "auto")
-    if (is.na(ind)) {
-      stop("Argument vertex.label.dist only accepts the value \"auto\" or a numerical vector.")
-    }
+    stopifnot(
+      !is.na(ind),
+      "{.arg vertex.label.dist} only accepts the value {.val 'auto'} or a 
+      numerical vector."
+    )
     vertex.label.dist <- vertex.size * 0.4 / 3.5
   } else if (length(vertex.label.dist) > 1 && length(vertex.label.dist) != x$n_states) {
-    warning("The length of the vector provided for the argument \"vertex.label.dist\" does not match the number of edges.")
+    warning_("The length of {.arg 'vertex.label.dist'} does not match the 
+             number of edges.")
     vertex.label.dist <- rep(vertex.label.dist, length.out = length(x$n_states))
   }
-
-
   # Trimming (remove small transition probablities from plot)
   transM <- x$transition_probs
   transM[transM < trim] <- 0
-
   # Adjacency matrix (which edges to plot)
   edges <- transM
   edges[edges > 0] <- 1
@@ -352,40 +349,38 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
   if (!loops) {
     diag(edges) <- 0
   }
-
   # Vector of non-zero transition probabilities
   transitions <- transM
   if (loops == FALSE && length(transitions) > 1) {
     diag(transitions) <- 0
   }
   transitions <- t(transitions)[t(transitions) > 0]
-
   # Edge labels
   if (!is.na(edge.label) && edge.label != FALSE) {
     if (length(edge.label) == 1 && (edge.label == "auto" || edge.label == TRUE)) {
       edge.label <- sapply(transitions, labelprint, labs = label.scientific)
     } else if (length(edge.label) > 1 && length(edge.label) != length(transitions)) {
-      warning("The length of the vector provided for the argument \"edge.label\" does not match the number of edges.")
+      warning_("The length {.arg 'edge.label'} does not match the number of 
+               edges.")
       edge.label <- rep(edge.label, length.out = length(transitions))
     }
   }
-
-
   # Edge widths
   if (is.character(edge.width)) {
     ind <- pmatch(edge.width, "auto")
-    if (is.na(ind)) {
-      stop("Argument edge.width only accepts the value \"auto\" or a numerical vector.")
-    }
+    stopifnot_(
+      !is.na(ind),
+      "{.arg edge.width} only accepts the value {.val 'auto'} or a numerical 
+      vector."
+    )
     edge.width <- transitions * (7 / max(transitions)) * cex.edge.width
   } else if (length(edge.width) > 1 && edge.width != length(transitions)) {
-    warning("The length of the vector provided for the argument \"edge.width\" does not match the number of edges.")
+    warning_("The length of {.arg edge.width} does not match the number of 
+             edges.")
     edge.width <- rep(edge.width, length.out = length(transitions))
   }
-
   # Defining the graph structure
   g1 <- graph.adjacency(edges, mode = "directed")
-
   # Layout of the graph
   if (is.function(layout)) {
     glayout <- layout(g1)
@@ -398,23 +393,23 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
       glayout <- layout_on_grid(g1, width = 1)
     }
   }
-
-
   # Colors for the (combinations of) observed states
   if (identical(cpal, "auto")) {
     pie.colors <- attr(x$observations, "cpal")
   } else if (length(cpal) != ncol(x$emiss)) {
     if (ncol(x$emiss) <= 200) {
-      warning("The length of the vector provided for argument cpal does not match the number of observed states. Automatic color palette was used.")
+      warning_("The length of {.arg cpal} does not match the number of observed 
+               states. Automatic color palette was used.")
       pie.colors <- attr(x$observations, "cpal")
     } else {
-      stop(
-        "Not enough colours in the colour palette. Argument 'cpal' should be of length ",
-        ncol(x$emiss), " (number of observed states)."
+      stop_(
+        "Not enough colours in the colour palette. {.val cpal} should be of 
+        length {ncol(x$emiss)} (number of observed states)."
       )
     }
   } else if (!all(isColor(cpal))) {
-    stop("Please provide a vector of colors for argument cpal or use value \"auto\" for automatic color palette.")
+    stop_("Please provide a vector of colors for {.arg cpal} or use value 
+          {.val 'auto'} for automatic color palette.")
   } else {
     pie.colors <- cpal
   }
@@ -422,9 +417,9 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
     pie.colors.l <- pie.colors
   }
   if (length(pie.colors) != ncol(x$emiss)) {
-    stop(
-      "Not enough colours in the default colour palette. Argument 'cpal' should be of length ",
-      ncol(x$emiss), " (number of observed states)."
+    stop_(
+      "Not enough colours in the colour palette. {.val cpal} should be of 
+        length {ncol(x$emiss)} (number of observed states)."
     )
   }
   # Legend position and number of columns
@@ -433,13 +428,17 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
     if (!is.null(ltext)) {
       # If order by appearance is used
       if (legend.order) {
-        if (length(ltext) != x$n_symbols) {
-          stop(paste0("With legend.order = TRUE, the length of the argument ltext must match the number of (combined) observed states in the observed data (", x$n_symbols, ")."))
-        }
+        stopifnot_(
+          length(ltext) == x$n_symbols,
+          "With {.val legend.order = TRUE}, the length of {.arg ltext} must 
+          match the number of (combined) observed states in the observed 
+          data ({x$n_symbols})."
+        )
         # No ordering by appearance
       } else {
         if ((length(cpal) == 1 && cpal != "auto") && length(ltext) != length(cpal.legend)) {
-          stop(paste0("The number of colours in cpal.legend does not match the number of labels in ltext."))
+          stop_("The number of colours in {.arg cpal.legend} does not match the 
+                number of labels in {.arg ltext}.")
         }
         ltext.orig <- ltext
         # Default cpal
@@ -479,7 +478,7 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
     }
     par(cex = 1)
   }
-
+  
   # Defining rescale, xlim, ylim if not given
   if (!is.matrix(layout) && !is.function(layout)) {
     if (layout == "horizontal") {
@@ -538,14 +537,14 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
       dots[["rescale"]] <- NULL
     }
   }
-
-
+  
+  
   # Plotting graph
   if (pie == TRUE) {
     pie.values <- lapply(seq_len(nrow(transM)), function(i) x$emission_probs[i, ])
     # If slices are combined
     if (combine.slices > 0 &&
-      !all(unlist(pie.values)[unlist(pie.values) > 0] > combine.slices)) {
+        !all(unlist(pie.values)[unlist(pie.values) > 0] > combine.slices)) {
       if (with.legend != FALSE) {
         pie.colors.l <- NULL
         lt <- NULL
@@ -585,91 +584,91 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
         }
       }
     }
-
+    
     if (!is.matrix(layout) && !is.function(layout) &&
-      (layout == "horizontal" || layout == "vertical")) {
+        (layout == "horizontal" || layout == "vertical")) {
       do.call(plot.igraph, c(list(g1,
-        layout = glayout,
-        vertex.shape = "pie", vertex.pie = pie.values,
-        vertex.pie.color = list(pie.colors),
-        vertex.size = vertex.size,
-        vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-        vertex.label.degree = vertex.label.pos,
-        vertex.label.family = vertex.label.family,
-        edge.curved = edge.curved, edge.width = edge.width,
-        edge.label = edge.label,
-        edge.label.family = edge.label.family,
-        edge.arrow.size = edge.arrow.size,
-        xlim = xlim, ylim = ylim, rescale = rescale,
-        main = main
+                                  layout = glayout,
+                                  vertex.shape = "pie", vertex.pie = pie.values,
+                                  vertex.pie.color = list(pie.colors),
+                                  vertex.size = vertex.size,
+                                  vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+                                  vertex.label.degree = vertex.label.pos,
+                                  vertex.label.family = vertex.label.family,
+                                  edge.curved = edge.curved, edge.width = edge.width,
+                                  edge.label = edge.label,
+                                  edge.label.family = edge.label.family,
+                                  edge.arrow.size = edge.arrow.size,
+                                  xlim = xlim, ylim = ylim, rescale = rescale,
+                                  main = main
       ), dots))
     } else {
       do.call(plot.igraph, c(list(g1,
-        layout = glayout,
-        vertex.shape = "pie", vertex.pie = pie.values,
-        vertex.pie.color = list(pie.colors),
-        vertex.size = vertex.size,
-        vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-        vertex.label.degree = vertex.label.pos,
-        vertex.label.family = vertex.label.family,
-        edge.curved = edge.curved, edge.width = edge.width,
-        edge.label = edge.label,
-        edge.label.family = edge.label.family,
-        edge.arrow.size = edge.arrow.size,
-        main = main
+                                  layout = glayout,
+                                  vertex.shape = "pie", vertex.pie = pie.values,
+                                  vertex.pie.color = list(pie.colors),
+                                  vertex.size = vertex.size,
+                                  vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+                                  vertex.label.degree = vertex.label.pos,
+                                  vertex.label.family = vertex.label.family,
+                                  edge.curved = edge.curved, edge.width = edge.width,
+                                  edge.label = edge.label,
+                                  edge.label.family = edge.label.family,
+                                  edge.arrow.size = edge.arrow.size,
+                                  main = main
       ), dots))
     }
     # pie = FALSE
   } else {
     if (!is.matrix(layout) && !is.function(layout) && (layout == "horizontal" || layout == "vertical")) {
       do.call(plot.igraph, c(list(g1,
-        layout = glayout,
-        vertex.size = vertex.size,
-        vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-        vertex.label.degree = vertex.label.pos,
-        vertex.label.family = vertex.label.family,
-        edge.curved = edge.curved, edge.width = edge.width,
-        edge.label = edge.label,
-        edge.label.family = edge.label.family,
-        edge.arrow.size = edge.arrow.size,
-        xlim = xlim, ylim = ylim, rescale = rescale,
-        main = main
+                                  layout = glayout,
+                                  vertex.size = vertex.size,
+                                  vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+                                  vertex.label.degree = vertex.label.pos,
+                                  vertex.label.family = vertex.label.family,
+                                  edge.curved = edge.curved, edge.width = edge.width,
+                                  edge.label = edge.label,
+                                  edge.label.family = edge.label.family,
+                                  edge.arrow.size = edge.arrow.size,
+                                  xlim = xlim, ylim = ylim, rescale = rescale,
+                                  main = main
       ), dots))
     } else {
       do.call(plot.igraph, c(list(g1,
-        layout = glayout,
-        vertex.size = vertex.size,
-        vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-        vertex.label.degree = vertex.label.pos,
-        vertex.label.family = vertex.label.family,
-        edge.curved = edge.curved, edge.width = edge.width,
-        edge.label = edge.label,
-        edge.label.family = edge.label.family,
-        edge.arrow.size = edge.arrow.size,
-        main = main
+                                  layout = glayout,
+                                  vertex.size = vertex.size,
+                                  vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+                                  vertex.label.degree = vertex.label.pos,
+                                  vertex.label.family = vertex.label.family,
+                                  edge.curved = edge.curved, edge.width = edge.width,
+                                  edge.label = edge.label,
+                                  edge.label.family = edge.label.family,
+                                  edge.arrow.size = edge.arrow.size,
+                                  main = main
       ), dots))
     }
   }
-
-
+  
+  
   # Plotting legend
   if (with.legend != FALSE && pie == TRUE) {
     # Order by appearance
     if (legend.order) {
       seqlegend(x$observations,
-        cpal = pie.colors.l, ltext = ltext,
-        position = "center", cex = cex.legend, ncol = ncol.legend,
-        with.missing = FALSE
+                cpal = pie.colors.l, ltext = ltext,
+                position = "center", cex = cex.legend, ncol = ncol.legend,
+                with.missing = FALSE
       )
       # Original order (by alphabet in observations)
     } else {
       seqlegend(x$observations,
-        cpal = cpal.legend, ltext = ltext.orig,
-        position = "center", cex = cex.legend, ncol = ncol.legend,
-        with.missing = FALSE
+                cpal = cpal.legend, ltext = ltext.orig,
+                position = "center", cex = cex.legend, ncol = ncol.legend,
+                with.missing = FALSE
       )
     }
   }
-
+  
   par(mfrow = c(1, 1))
 }

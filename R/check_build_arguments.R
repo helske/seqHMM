@@ -24,8 +24,8 @@ check_observations <- function(observations, channel_names = NULL) {
         channel_names <- paste("Channel", seq_len(n_channels))
       }
     } else if (length(channel_names) != n_channels) {
-      warning(paste0("The length of argument 'channel_names' does not match the ",
-                     "number of channels. Names were not used."))
+      warning_("The length of {.arg channel_names} does not match the number 
+               of channels. Names were not used.")
       channel_names <- paste("Channel", seq_len(n_channels))
     }
   } else {
@@ -64,42 +64,51 @@ check_observations <- function(observations, channel_names = NULL) {
 }
 
 check_transition_probs <- function(transition_probs, state_names = NULL) {
-  if (!is.matrix(transition_probs)) {
-    stop(paste("Object provided for 'transition_probs' is not a matrix."))
-  }
-  if (dim(transition_probs)[1] != dim(transition_probs)[2]) {
-    stop("Object 'transition_probs' must be a square matrix.")
-  }
+  stopifnot_(
+    is.matrix(transition_probs),
+    "{.arg transition_probs} is not a {.cls matrix}."
+  )
+  stopifnot_(
+    dim(transition_probs)[1] == dim(transition_probs)[2],
+    "{.arg transition_probs} is not a square {.cls matrix}."
+  )
   n_states <- nrow(transition_probs)
   if (is.null(state_names)) {
     if (is.null(state_names <- rownames(transition_probs))) {
       state_names <- paste("State", seq_len(n_states))
     }
   } else {
-    if (length(state_names) != n_states) {
-      stop("Length of 'state_names' is not equal to the number of hidden states.")
-    }
+    stopifnot_(
+      length(state_names) == n_states,
+      "Length of {.arg state_names} is not equal to the number of hidden 
+      states."
+    )
   }
-  if (!isTRUE(all.equal(
-    rowSums(transition_probs), 
-    rep(1, dim(transition_probs)[1]), check.attributes = FALSE))
-  ) {
-    stop("Transition probabilities in 'transition_probs' do not sum to one.")
-  }
+  stopifnot_(
+    isTRUE(all.equal(
+      rowSums(transition_probs), 
+      rep(1, dim(transition_probs)[1]), check.attributes = FALSE)),
+    "Transition probabilities in {.arg transition_probs} do not sum to one."
+  )
   dimnames(transition_probs) <- list(from = state_names, to = state_names)
   transition_probs
 }
 
 check_initial_probs <- function(initial_probs, n_states, state_names = NULL) {
-  if (!is.vector(initial_probs)) {
-    stop(paste("Object provided for 'initial_probs' is not a vector."))
-  }
-  if (length(initial_probs) != n_states) {
-    stop(paste("Length of 'initial_probs' is not equal to the number of states."))
-  }
-  if (!isTRUE(all.equal(sum(initial_probs), 1, check.attributes = FALSE))) {
-    stop("Initial state probabilities in 'initial_probs' do not sum to one.")
-  }
+  stopifnot_(
+    is.vector(initial_probs),
+    "{.arg initial_probs} is not a {.cls vector}."
+  )
+  stopifnot_(
+    length(initial_probs) == n_states,
+    "Length of {.arg initial_probs} is not equal to the number of hidden 
+      states."
+  )
+  
+  stopifnot_(
+    isTRUE(all.equal(sum(initial_probs), 1, check.attributes = FALSE)),
+    "Initial state probabilities in {.arg initial_probs} do not sum to one."
+  )
   names(initial_probs) <- state_names
   initial_probs
 }
@@ -108,66 +117,59 @@ check_emission_probs <- function(
     emission_probs, n_states, n_channels, n_symbols, state_names, symbol_names,
     channel_names = NULL) {
   
-  if (is.list(emission_probs) && length(emission_probs) == 1L) {
-    emission_probs <- emission_probs[[1]]
+  if (n_channels == 1) {
+    emission_probs <- list(emission_probs)
   }
-  if (is.list(emission_probs)) {
-    if (length(emission_probs) != n_channels) {
-      stop(paste0("Number of channels defined by 'emission_probs' differs ",
-                  "from one defined by observations."))
-    }
-    for (j in seq_len(n_channels)) {
-      if (!is.matrix(emission_probs[[j]])) {
-        stop(paste0("Object provided in 'emission_probs' for channel ", j, 
-                    " is not a matrix."))
-      }
-      if (!isTRUE(all.equal(
+  stopifnot_(
+    length(emission_probs) == n_channels,
+    "Number of channels defined by {.arg emission_probs} differs from one 
+    defined by observations."
+  )
+  for (j in seq_len(n_channels)) {
+    z <- if (n_channels > 1) paste0(" for channel ", j) else ""
+    stopifnot_(
+      is.matrix(emission_probs[[j]]),
+      "{.arg emission_probs}{z} is not a {.cls matrix}." 
+    )
+    stopifnot_(
+      isTRUE(all.equal(
         rowSums(emission_probs[[j]]), 
         rep(1, n_states), 
-        check.attributes = FALSE))) {
-        stop("Emission probabilities in 'emission_probs' for channel ", j, 
-             "do not sum to one.")
-      }
-      if (nrow(emission_probs[[j]]) != n_states) {
-        stop(paste0("Number of rows in 'emission_probs' for channel ", j, 
-                    " is not equal to the number of states."))
-      }
-      if (ncol(emission_probs[[j]]) != n_symbols[j]) {
-        stop(paste0("Number of columns in 'emission_probs' for channel ", j, 
-                    " is not equal to the number of symbols."))
-      }
-      
-    }
-    if (is.null(channel_names)) {
-      if (is.null(channel_names <- names(observations))) {
-        channel_names <- paste("Channel", 1:n_channels)
-      }
-    } else if (length(channel_names) != n_channels) {
-      warning(paste0("The length of argument 'channel_names' does not match ", 
-                     "the number of channels. Names were not used."))
+        check.attributes = FALSE)
+      ),
+      "{.arg emission_probs}{z} do not sum to one."
+    )
+    stopifnot_(
+      nrow(emission_probs[[j]]) == n_states,
+      "Number of rows in {.arg emission_probs}{z} is not equal to the number of 
+      states."
+    )
+    stopifnot_(
+      ncol(emission_probs[[j]]) == n_symbols[j],
+      "Number of columns in {.arg emission_probs}{z} is not equal to the 
+      number of symbols."
+    )
+  }
+  
+  if (is.null(channel_names)) {
+    if (is.null(channel_names <- names(observations))) {
       channel_names <- paste("Channel", 1:n_channels)
     }
-    for (i in seq_len(n_channels)) {
-      dimnames(emission_probs[[i]]) <- 
-        list(state_names = state_names, symbol_names = symbol_names[[i]])
-    }
-    names(emission_probs) <- channel_names
-  } else {
-    if (!is.matrix(emission_probs)) {
-      stop(paste("Object provided for 'emission_probs' is not a matrix."))
-    }
-    if (n_states != nrow(emission_probs)) {
-      stop("Number of rows in 'emission_probs' is not equal to the number of states.")
-    }
-    if (n_symbols != ncol(emission_probs)) {
-      stop("Number of columns in 'emission_probs' is not equal to the number of symbols.")
-    }
-    if (!isTRUE(all.equal(rowSums(emission_probs), rep(1, n_states), 
-                          check.attributes = FALSE))) {
-      stop("Emission probabilities in 'emission_probs' do not sum to one.")
-    }
-    dimnames(emission_probs) <- 
-      list(state_names = state_names, symbol_names = symbol_names)
+  }
+  if (length(channel_names) != n_channels) {
+    warning_(
+      "The length of {.arg channel_names} does not match the number of 
+      channels. Names were not used."
+    )
+    channel_names <- paste("Channel", 1:n_channels)
+  }
+  for (i in seq_len(n_channels)) {
+    dimnames(emission_probs[[i]]) <- 
+      list(state_names = state_names, symbol_names = symbol_names[[i]])
+  }
+  names(emission_probs) <- channel_names
+  if (is.list(emission_probs) && length(emission_probs) == 1L) {
+    emission_probs <- emission_probs[[1]]
   }
   emission_probs
 }

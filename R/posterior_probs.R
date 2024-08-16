@@ -1,11 +1,11 @@
 #' Posterior Probabilities for (Mixture) Hidden Markov Models
 #'
-#' Function \code{posterior_probs} computes the posterior probabilities of hidden states of
+#' Function `posterior_probs` computes the posterior probabilities of hidden states of
 #' a (mixture) hidden Markov model.
 #'
 #' @export
-#' @param model A (mixture) hidden Markov model of class \code{hmm} or \code{mhmm}.
-#' @param log_space Compute posterior probabilities in logarithmic scale. The default is \code{FALSE}.
+#' @param model A (mixture) hidden Markov model of class `hmm` or `mhmm`.
+#' @param log_space Compute posterior probabilities in logarithmic scale. The default is `FALSE`.
 #' @return Posterior probabilities. In case of multiple observations,
 #' these are computed independentlsy for each sequence.
 #' @examples

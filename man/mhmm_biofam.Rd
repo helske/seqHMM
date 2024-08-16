@@ -10,7 +10,7 @@ three clusters with left-to-right models including 4, 4, and 6 hidden states.
 Two covariates, \code{sex} and \code{cohort}, explaining the cluster membership.
 }
 \description{
-A mixture hidden Markov model (MHMM) fitted for the \code{\link[TraMineR]{biofam}} data.
+A mixture hidden Markov model (MHMM) fitted for the \code{\link[TraMineR:biofam]{TraMineR::biofam()}} data.
 }
 \details{
 The model was created with the  following code:
@@ -159,8 +159,8 @@ if (interactive()) {
 
 }
 \seealso{
-Examples of building and fitting MHMMs in \code{\link{build_mhmm}} and
-\code{\link{fit_model}}; and \code{\link[TraMineR]{biofam}} for the original data and
-\code{\link{biofam3c}} for the three-channel version used in this model.
+Examples of building and fitting MHMMs in \code{\link[=build_mhmm]{build_mhmm()}} and
+\code{\link[=fit_model]{fit_model()}}; and \code{\link[TraMineR:biofam]{TraMineR::biofam()}} for the original data and
+\code{\link[=biofam3c]{biofam3c()}} for the three-channel version used in this model.
 }
 \keyword{datasets}

@@ -2,12 +2,12 @@
 % Please edit documentation in R/cluster_names.R
 \name{cluster_names<-}
 \alias{cluster_names<-}
-\title{Set cluster names for mhmm object}
+\title{Set Cluster Names for Mixture Models}
 \usage{
 cluster_names(object) <- value
 }
 \arguments{
-\item{object}{An object of class `mhmm`.}
+\item{object}{An object of class \code{mhmm} or \code{mnhmm}.}
 
 \item{value}{A character vector containing the new cluster names.}
 }
@@ -15,5 +15,5 @@ cluster_names(object) <- value
 The modified object with updated cluster names.
 }
 \description{
-Set cluster names for mhmm object
+Set Cluster Names for Mixture Models
 }

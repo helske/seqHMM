@@ -24,34 +24,24 @@ cluster_names.mhmm <- function(object) {
 
 #' @export
 `cluster_names<-.mnhmm` <- function(object, value) {
-  if (length(value) != object$n_clusters) {
-    stop(
-      paste0(
-        "New cluster names should be a vector of length",
-        object$n_clusters, "."
-      )
-    )
-  } else {
-    object$cluster_names <- value
-    names(object$state_names) <- value
-  }
+  stopifnot_(
+    length(Value) == object$n_clusters,
+    "New cluster names should be a vector of length {object$n_clusters}."
+  )
+  object$cluster_names <- value
+  names(object$state_names) <- value
   object
 }
 #' @export
 `cluster_names<-.mhmm` <- function(object, value) {
-  if (length(value) != object$n_clusters) {
-    stop(
-      paste0(
-        "New cluster names should be a vector of length",
-        object$n_clusters, "."
-      )
-    )
-  } else {
-    object$cluster_names <- value
-    names(object$state_names) <- value
-    colnames(object$coefficients) <- value
-    names(object$transition_probs) <- names(object$emission_probs) <-
-      names(object$initial_probs) <- value
-  }
+  stopifnot_(
+    length(Value) == object$n_clusters,
+    "New cluster names should be a vector of length {object$n_clusters}."
+  )
+  object$cluster_names <- value
+  names(object$state_names) <- value
+  colnames(object$coefficients) <- value
+  names(object$transition_probs) <- names(object$emission_probs) <-
+    names(object$initial_probs) <- value
   object
 }

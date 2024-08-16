@@ -9,12 +9,12 @@
 #' @param n_states Number of states in each cluster.
 #' @param n_clusters Number of clusters.
 #' @param left_right Constrain the transition probabilities to upper triangular.
-#' Default is \code{FALSE}.
+#' Default is `FALSE`.
 #' @param diag_c A constant value to be added to diagonal of transition matrices before scaling.
 #' @param n_symbols Number of distinct symbols in each channel.
 #' @rdname simulate_pars
-#' @seealso \code{\link{build_hmm}}, \code{\link{build_mhmm}},
-#'   \code{\link{build_mm}}, \code{\link{build_mmm}}, and  \code{\link{build_lcm}}
+#' @seealso [build_hmm()], [build_mhmm()],
+#'   [build_mm()], [build_mmm()], and  [build_lcm()]
 #'   for constructing different types of models.
 simulate_initial_probs <- function(n_states, n_clusters = 1) {
   n_states <- rep(n_states, length = n_clusters)

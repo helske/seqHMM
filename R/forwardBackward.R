@@ -1,22 +1,27 @@
 #' Forward and Backward Probabilities for Hidden Markov Model
 #'
-#' The \code{forward_backward} function computes scaled forward and backward probabilities of a hidden Markov model.
+#' The `forward_backward` function computes scaled forward and backward 
+#' probabilities of a hidden Markov model.
 #'
 #' @export
-#' @param model Object of class \code{hmm} or \code{mhmm}.
-#' @param forward_only If \code{TRUE}, only forward probabilities are computed. The default is \code{FALSE}.
-#' @param log_space Compute forward and backward probabilities in logarithmic scale instead of scaling.
-#'  The default is \code{FALSE}.
-#' @param threads Number of threads used in parallel computing. The default is 1.
+#' @param model Object of class `hmm` or `mhmm`.
+#' @param forward_only If `TRUE`, only forward probabilities are computed. The 
+#' default is `FALSE`.
+#' @param log_space Compute forward and backward probabilities in logarithmic 
+#' scale instead of scaling.
+#'  The default is `FALSE`.
+#' @param threads Number of threads used in parallel computing. The default 
+#' is `1`.
 #' @return List with components
-#'   \item{forward_probs}{If \code{log_space = FALSE}, scaled forward probabilities, i.e. probability of state given
-#'   observations up to that time point. If \code{log_space = TRUE},
-#'   logarithms of non-scaled forward probabilities. }
-#'   \item{backward_probs}{Scaled backward probabilities (\code{log_space = FALSE}),
-#'   or logarithms of non-scaled backward probabilities(\code{log_space = TRUE}). }
-#'   \item{scaling_factors}{Sum of non-scaled forward probabilities at each time point.
-#'   Only computed if \code{log_space = FALSE}.}
-#'   In case of multiple observations, these are computed independently for each sequence.
+#' * forward_probs\cr If `log_space = FALSE`, scaled forward probabilities, 
+#'   i.e. probability of state given observations up to that time point. 
+#'   If `log_space = TRUE`, logarithms of non-scaled forward probabilities.
+#' * backward_probs\cr Scaled backward probabilities (`log_space = FALSE`),
+#'   or logarithms of non-scaled backward probabilities(`log_space = TRUE`).
+#' * scaling_factors\cr Sum of non-scaled forward probabilities at each time 
+#'   point. Only computed if `log_space = FALSE`.
+#' In case of multiple observations, these are computed independently for each 
+#' sequence.
 #' @examples
 #' # Load a pre-defined MHMM
 #' data("mhmm_biofam")
@@ -29,17 +34,16 @@
 #' apply(fb$forward_probs[, , 1], 2, which.max)
 #'
 forward_backward <- function(model, forward_only = FALSE, log_space = FALSE, threads = 1) {
+  check_positive_integer(threads)
   if (!inherits(model, c("hmm", "mhmm"))) {
     stop("Argument model must be an object of class 'hmm' or 'mhmm.")
   }
-
   if (inherits(model, "mhmm")) {
     mix <- TRUE
     model <- combine_models(model)
   } else {
     mix <- FALSE
   }
-
   obsArray <- create_obsArray(model)
   emissionArray <- create_emissionArray(model)
 

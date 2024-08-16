@@ -9,7 +9,7 @@ A hidden Markov model of class \code{hmm};
 a left-to-right model with four hidden states.
 }
 \description{
-A five-state hidden Markov model (HMM) fitted for the \code{\link[TraMineR]{biofam}} data.
+A five-state hidden Markov model (HMM) fitted for the \code{\link[TraMineR:biofam]{TraMineR::biofam()}} data.
 }
 \details{
 The model is loaded by calling \code{data(hmm_biofam)}. It was created with the
@@ -84,8 +84,8 @@ plot(hmm_biofam)
 
 }
 \seealso{
-Examples of building and fitting HMMs in \code{\link{build_hmm}} and
-\code{\link{fit_model}}; and \code{\link[TraMineR]{biofam}} for the original data and
-\code{\link{biofam3c}} for the three-channel version used in this model.
+Examples of building and fitting HMMs in \code{\link[=build_hmm]{build_hmm()}} and
+\code{\link[=fit_model]{fit_model()}}; and \code{\link[TraMineR:biofam]{TraMineR::biofam()}} for the original data and
+\code{\link[=biofam3c]{biofam3c()}} for the three-channel version used in this model.
 }
 \keyword{datasets}

@@ -1,22 +1,22 @@
 #' Build a Mixture Hidden Markov Model
 #'
-#' Function \code{build_mhmm} constructs a mixture hidden Markov model object of class \code{mhmm}.
+#' Function `build_mhmm` constructs a mixture hidden Markov model object of class `mhmm`.
 #'
-#' The returned model contains some attributes such as \code{nobs} and \code{df},
+#' The returned model contains some attributes such as `nobs` and `df`,
 #' which define the number of observations in the  model and the number of estimable
 #' model parameters, used in computing BIC.
-#' When computing \code{nobs} for a multichannel model with \eqn{C} channels,
+#' When computing `nobs` for a multichannel model with \eqn{C} channels,
 #' each observed value in a single channel amounts to \eqn{1/C} observation,
 #' i.e. a fully observed time point for a single sequence amounts to one observation.
-#' For the degrees of freedom \code{df}, zero probabilities of the initial model are
+#' For the degrees of freedom `df`, zero probabilities of the initial model are
 #' defined as structural zeroes.
 #'
 #' @export
-#' @param observations An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
+#' @param observations An `stslist` object (see [TraMineR::seqdef()]) containing
 #'   the sequences, or a list of such objects (one for each channel).
 #' @param n_states A numerical vector giving the number of hidden states in each submodel
 #' (not used if starting values for model parameters are given with
-#' \code{initial_probs}, \code{transition_probs}, or \code{emission_probs}).
+#' `initial_probs`, `transition_probs`, or `emission_probs`).
 #' @param transition_probs A list of matrices of transition
 #'   probabilities for the submodel of each cluster.
 #' @param emission_probs A list which contains matrices of emission probabilities or
@@ -24,10 +24,10 @@
 #'   Note that the matrices must have dimensions \eqn{m x s} where \eqn{m} is the number of
 #'   hidden states and \eqn{s} is the number of unique symbols (observed states) in the
 #'   data. Emission probabilities should follow the ordering of the alphabet of
-#'   observations (\code{alphabet(observations)}, returned as \code{symbol_names}).
+#'   observations (`alphabet(observations)`, returned as `symbol_names`).
 #' @param initial_probs A list which contains vectors of initial state
 #'   probabilities for the submodel of each cluster.
-#' @param formula Optional formula of class \code{\link{formula}} for the
+#' @param formula Optional formula of class [formula()] for the
 #' mixture probabilities. Left side omitted.
 #' @param data A data frame containing the variables used in the formula.
 #' Ignored if no formula is provided.
@@ -36,35 +36,34 @@
 #'   of clusters and \eqn{k} is the number of covariates. A logit-link is used for
 #'   mixture probabilities. The first column is set to zero.
 #' @param cluster_names A vector of optional names for the clusters.
-#' @param state_names A list of optional labels for the hidden states. If \code{NULL},
-#' the state names are taken as row names of transition matrices. If this is also \code{NULL},
+#' @param state_names A list of optional labels for the hidden states. If `NULL`,
+#' the state names are taken as row names of transition matrices. If this is also `NULL`,
 #' numbered states are used.
 #' @param channel_names A vector of optional names for the channels.
-#' @param ... Additional arguments to \code{simulate_transition_probs}.
-#' @return Object of class \code{mhmm} with following elements:
-#' \describe{
-#'    \item{\code{observations}}{State sequence object or a list of such containing the data.}
-#'    \item{\code{transition_probs}}{A matrix of transition probabilities.}
-#'    \item{\code{emission_probs}}{A matrix or a list of matrices of emission probabilities.}
-#'    \item{\code{initial_probs}}{A vector of initial probabilities.}
-#'    \item{\code{coefficients}}{A matrix of parameter coefficients for covariates (covariates in rows, clusters in columns).}
-#'    \item{\code{X}}{Covariate values for each subject.}
-#'    \item{\code{cluster_names}}{Names for clusters.}
-#'    \item{\code{state_names}}{Names for hidden states.}
-#'    \item{\code{symbol_names}}{Names for observed states.}
-#'    \item{\code{channel_names}}{Names for channels of sequence data}
-#'    \item{\code{length_of_sequences}}{(Maximum) length of sequences.}
-#'    \item{\code{n_sequences}}{Number of sequences.}
-#'    \item{\code{n_symbols}}{Number of observed states (in each channel).}
-#'    \item{\code{n_states}}{Number of hidden states.}
-#'    \item{\code{n_channels}}{Number of channels.}
-#'    \item{\code{n_covariates}}{Number of covariates.}
-#'    \item{\code{n_clusters}}{Number of clusters.}
-#' }
-#' @seealso \code{\link{fit_model}} for fitting mixture Hidden Markov models;
-#' \code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for
+#' @param ... Additional arguments to `simulate_transition_probs`.
+#' @return Object of class `mhmm` with following elements:
+#' * `observations`\cr State sequence object or a list of such containing the data.
+#' * `transition_probs`\cr A matrix of transition probabilities.
+#' * `emission_probs`\cr A matrix or a list of matrices of emission probabilities.
+#' * `initial_probs`\cr A vector of initial probabilities.
+#' * `coefficients`\cr A matrix of parameter coefficients for covariates (covariates in rows, clusters in columns).
+#' * `X`\cr Covariate values for each subject.
+#' * `cluster_names`\cr Names for clusters.
+#' * `state_names`\cr Names for hidden states.
+#' * `symbol_names`\cr Names for observed states.
+#' * `channel_names`\cr Names for channels of sequence data
+#' * `length_of_sequences`\cr (Maximum) length of sequences.
+#' * `n_sequences`\cr Number of sequences.
+#' * `n_symbols`\cr Number of observed states (in each channel).
+#' * `n_states`\cr Number of hidden states.
+#' * `n_channels`\cr Number of channels.
+#' * `n_covariates`\cr Number of covariates.
+#' * `n_clusters`\cr Number of clusters.
+#' 
+#' @seealso [fit_model()] for fitting mixture Hidden Markov models;
+#' [summary.mhmm()] for a summary of a MHMM; [separate_mhmm()] for
 #' reorganizing a MHMM into a list of separate hidden Markov models; and
-#' \code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
+#' [plot.mhmm()] for plotting `mhmm` objects.
 #'
 #' @references Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
 #' Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
@@ -333,22 +332,25 @@ build_mhmm <- function(observations,
       initial_probs[[i]] <- 
         check_initial_probs(initial_probs[[i]], n_states[i], state_names[[i]])
       emission_probs <- check_emission_probs(
-        emission_probs[[i]], n_states[i], n_channels, n_symbols[i], 
-        state_names[[i]], symbol_names[[i]], channel_names
+        emission_probs[[i]], n_states[i], n_channels, n_symbols, 
+        state_names[[i]], symbol_names, channel_names
       )
     }
   } else {
     # Simulate starting values
     n_clusters <- length(n_states)
-    if (identical(n_clusters, 1L)) {
-      stop(paste0("Argument 'n_states' is of length 1, leading to ordinary ", 
-                  "HMM. Please use 'build_hmm' instead."))
-    }
+    stopifnot_(
+      n_clusters > 1,
+      "{.arg n_states} is of length 1, leading to an ordinary HMM. Please use 
+      {.fn build_hmm} instead."
+    )
     if (is.null(cluster_names)) {
       cluster_names <- paste("Cluster", seq_len(n_clusters))
     } else if (length(cluster_names) != n_clusters) {
-      warning(paste0("The length of argument cluster_names does not match ", 
-                     "the number of clusters. Names were not used."))
+      warning_(
+        "The length of {.arg cluster_names} does not match the number of 
+        clusters. Names were not used."
+      )
       cluster_names <- paste("Cluster", seq_len(n_clusters))
     }
     
@@ -371,8 +373,8 @@ build_mhmm <- function(observations,
         initial_probs[[i]], n_states[i], state_names[[i]]
       )
       emission_probs <- check_emission_probs(
-        emission_probs[[i]], n_states[i], n_channels, n_symbols[i], 
-        state_names[[i]], symbol_names[[i]],channel_names
+        emission_probs[[i]], n_states[i], n_channels, n_symbols, 
+        state_names[[i]], symbol_names,channel_names
       )
     }
   }
@@ -382,38 +384,40 @@ build_mhmm <- function(observations,
     X <- model.matrix(formula, data = data.frame(y = rep(1, n_sequences)))
     n_covariates <- 1L
   } else {
-    if (inherits(formula, "formula")) {
-      if (is.null(data)) {
-        stop("Argument 'data' is missing, but 'formula' was provided.")
+    stopifnot_(
+      inherits(formula, "formula"), 
+      "Argument {.arg formula} must be a {.cls formula} object.")
+    stopifnot_(
+      is.data.frame(data),
+      "If {.arg formula} is provided, {.arg data} must be a {.cls data.frame} 
+      object."
+    )
+    X <- model.matrix(formula, data)
+    if (nrow(X) != n_sequences) {
+      if (length(all.vars(formula)) > 0 && 
+          sum(!complete.cases(data[all.vars(formula)])) > 0) {
+        stop_(
+          "Missing cases are not allowed in covariates. Use e.g. the 
+                {.fn complete.cases} to detect them, then fix, impute, or 
+                remove."
+        )
+      } else {
+        stop_(
+          "Number of subjects in data for covariates does not match the 
+            number of subjects in the sequence data."
+        )
       }
-      X <- model.matrix(formula, data)
-      if (nrow(X) != n_sequences) {
-        if (length(all.vars(formula)) > 0 && sum(!complete.cases(data[all.vars(formula)])) > 0) {
-          stop(
-            paste0(
-              "Missing cases are not allowed in covariates. Use e.g. the ",
-              "'complete.cases' function to detect them, then fix, impute, or remove."
-            )
-          )
-        } else {
-          stop(
-            paste0(
-              "Number of subjects in data for covariates does not match the ",
-              "number of subjects in the sequence data."
-            )
-          )
-        }
-      }
-      n_covariates <- ncol(X)
-    } else {
-      stop("Object given for argument formula is not of class formula.")
     }
+    n_covariates <- ncol(X)
   }
   if (is.null(coefficients)) {
     coefficients <- matrix(0, n_covariates, n_clusters)
   } else {
     if (ncol(coefficients) != n_clusters | nrow(coefficients) != n_covariates) {
-      stop("Wrong dimensions of coefficients.")
+      stop_(
+        "Wrong dimensions of {.arg coefficients}. Should be 
+        {n_clusters} x {n_covariates}"
+      )
     }
     coefficients[, 1] <- 0
   }

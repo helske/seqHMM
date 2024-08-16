@@ -1,3 +1,16 @@
+seqHMM 1.3.0
+==============
+  * Rewrote sequence visualization functions using `ggseqplot` and `patchwork` 
+  packages. Old plotting functions are deprecated and will be removed in the 
+  future.
+  * Added support for non-homogeneous HMMs where initial, transition, and 
+  emission probabilities can depend on individual-specific covariates. 
+  Penalized maximum likelihood estimation of these models is based on 
+  L-BFGS-B with automatic differentiation with `Stan`.
+  * Warning and error messages were rewritten using `cli` package.
+  * Added automatic tests using `testthat` package.
+  * Internally switched from Rd syntax to Markdown in Roxygen documentation.
+
 seqHMM 1.2.6 (Release date: 2023-06-07)
 ==============
   * Armadillo solver now fails directly instead of trying approximate solution 

@@ -16,7 +16,7 @@ build_hmm(
 )
 }
 \arguments{
-\item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
+\item{observations}{An \code{stslist} object (see \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}}) containing
 the sequences, or a list of such objects (one for each channel).}
 
 \item{n_states}{A scalar giving the number of hidden states. Not used if starting values for model parameters
@@ -36,23 +36,23 @@ also \code{NULL}, numbered states are used.}
 
 \item{channel_names}{A vector of optional names for the channels.}
 
-\item{...}{Additional arguments to \code{simulate_transition_probs}.}
+\item{...}{Additional arguments to \code{\link[=simulate_transition_probs]{simulate_transition_probs()}}.#'}
 }
 \value{
 Object of class \code{hmm} with the following elements:
-\describe{
-   \item{\code{observations}}{State sequence object or a list of such objects containing the data.}
-   \item{\code{transition_probs}}{A matrix of transition probabilities.}
-   \item{\code{emission_probs}}{A matrix or a list of matrices of emission probabilities.}
-   \item{\code{initial_probs}}{A vector of initial probabilities.}
-   \item{\code{state_names}}{Names for hidden states.}
-   \item{\code{symbol_names}}{Names for observed states.}
-   \item{\code{channel_names}}{Names for channels of sequence data.}
-   \item{\code{length_of_sequences}}{(Maximum) length of sequences.}
-   \item{\code{n_sequences}}{Number of sequences.}
-   \item{\code{n_symbols}}{Number of observed states (in each channel).}
-   \item{\code{n_states}}{Number of hidden states.}
-   \item{\code{n_channels}}{Number of channels.}
+\itemize{
+\item \code{observations}\cr State sequence object or a list of such objects containing the data.
+\item \code{transition_probs}\cr A matrix of transition probabilities.
+\item \code{emission_probs}\cr A matrix or a list of matrices of emission probabilities.
+\item \code{initial_probs}\cr A vector of initial probabilities.
+\item \code{state_names}\cr Names for hidden states.
+\item \code{symbol_names}\cr Names for observed states.
+\item \code{channel_names}\cr Names for channels of sequence data.
+\item \code{length_of_sequences}\cr (Maximum) length of sequences.
+\item \code{n_sequences}\cr Number of sequences.
+\item \code{n_symbols}\cr Number of observed states (in each channel).
+\item \code{n_states}\cr Number of hidden states.
+\item \code{n_channels}\cr Number of channels.
 }
 }
 \description{
@@ -200,6 +200,6 @@ init_hmm_bf2 <- build_hmm(
 
 }
 \seealso{
-\code{\link{fit_model}} for estimating model parameters; and
-  \code{\link{plot.hmm}} for plotting \code{hmm} objects.
+\code{\link[=fit_model]{fit_model()}} for estimating model parameters; and
+\code{\link[=plot.hmm]{plot.hmm()}} for plotting \code{hmm} objects.
 }

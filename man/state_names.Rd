@@ -7,11 +7,11 @@
 state_names(object)
 }
 \arguments{
-\item{object}{An object of class `hmm` or `mhmm`.}
+\item{object}{An object of class \code{hmm} or \code{mhmm}.}
 }
 \value{
 A character vector containing the state names, or a list of such
-  vectors in `mhmm` case.
+vectors in \code{mhmm} case.
 }
 \description{
 Get state names from hmm or mhmm object

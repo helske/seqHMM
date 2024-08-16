@@ -1,109 +1,114 @@
 #' Estimate Parameters of (Mixture) Hidden Markov Models and Their Restricted
 #' Variants
 #'
-#' Function \code{fit_model} estimates the parameters of mixture hidden
+#' Function `fit_model` estimates the parameters of mixture hidden
 #' Markov models and its restricted variants using maximimum likelihood.
 #' Initial values for estimation are taken from the corresponding components
 #' of the model with preservation of original zero probabilities.
 #'
 #' @export
-#' @param model An object of class \code{hmm} or \code{mhmm}.
+#' @param model An object of class `hmm` or `mhmm`.
 #' @param em_step Logical. Whether or not to use the EM algorithm at the start
-#'   of the parameter estimation. The default is \code{TRUE}.
+#'   of the parameter estimation. The default is `TRUE`.
 #' @param global_step Logical. Whether or not to use global optimization via
-#'   \code{\link{nloptr}} (possibly after the EM step). The default is \code{FALSE}.
+#'   [nloptr()] (possibly after the EM step). The default is `FALSE`.
 #' @param local_step Logical. Whether or not to use local optimization via
-#'   \code{\link{nloptr}} (possibly after the EM and/or global steps). The default is \code{FALSE}.
+#'   [nloptr()] (possibly after the EM and/or global steps). The default is `FALSE`.
 #' @param control_em Optional list of control parameters for the EM algorithm.
-#'   Possible arguments are \describe{
-#'   \item{maxeval}{The maximum number of iterations, the default is 1000.
-#'   Note that iteration counter starts with -1 so with \code{maxeval=1} you get already two iterations.
-#'   This is for backward compatibility reasons.}
-#'   \item{print_level}{The level of printing. Possible values are 0
-#'   (prints nothing), 1 (prints information at the start and the end of the algorithm),
-#'   2 (prints at every iteration),
-#'   and for mixture models 3 (print also during optimization of coefficients).}
-#'   \item{reltol}{Relative tolerance for convergence defined as
-#'   \eqn{(logLik_new - logLik_old)/(abs(logLik_old) + 0.1)}.
-#'   The default is 1e-10.}
-#'   \item{restart}{A list containing options for possible EM restarts with the
-#'     following components:
-#'   \describe{
-#'   \item{times}{Number of restarts of the EM algorithm using random initial values. The default is 0, i.e. no restarts. }
-#'   \item{transition}{Logical. Should the original transition probabilities be varied? The default is \code{TRUE}. }
-#'   \item{emission}{Logical. Should the original emission probabilities be varied? The default is \code{TRUE}. }
-#'   \item{sd}{Standard deviation for \code{rnorm} used in randomization. The default is 0.25.}
-#'   \item{maxeval}{Maximum number of iterations, the default is \code{control_em$maxeval}}
-#'   \item{print_level}{Level of printing in restarted EM steps. The default is \code{control_em$print_level}. }
-#'   \item{reltol}{Relative tolerance for convergence at restarted EM steps. The default is \code{control_em$reltol}.
-#'   If the relative change of the final model of the restart phase is larger than the tolerance
-#'   for the original EM phase, the final model is re-estimated with the original \code{reltol}
-#'   and \code{maxeval} at the end of the EM step.}
-#'   \item{n_optimum}{Save the log-likelihood values of the \code{n_optimum} best
-#'   models (from all estimated models including the the first EM run.).
-#'   The default is \code{min(times + 1, 25)}.}
-#'   \item{use_original}{If \code{TRUE}. Use the initial values of the input model as starting
-#'   points for the permutations. Otherwise permute the results of the first EM run.}
-#'   }
-#'   }
-#'   }
-#' @param control_global Optional list of additional arguments for
-#'   \code{\link{nloptr}} argument \code{opts}. The default values are
-#'   \describe{
-#'    \item{algorithm}{\code{"NLOPT_GD_MLSL_LDS"}}
-#'    \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS", ftol_rel = 1e-6, xtol_rel = 1e-4)}}
-#'    \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm.)}
-#'    \item{maxtime}{\code{60} (maximum time for global optimization. Set to 0 for unlimited time.)}
-#' }
-#' @param lb,ub Lower and upper bounds for parameters in Softmax parameterization.
-#' The default interval is \eqn{[pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)]},
-#' except for gamma coefficients,
-#' where the scale of covariates is taken into account.
-#' Note that it might still be a good idea to scale covariates around unit scale.
-#' Bounds are used only in the global optimization step.
-#'
+#' Possible arguments are 
+#' * The maximum number of iterations, the default is 1000. Note that iteration 
+#'   counter starts with -1 so with `maxeval = 1` you get already two iterations.
+#'   This is for backward compatibility reasons.
+#' * `print_level`\cr The level of printing. Possible values are 0
+#'   (prints nothing), 1 (prints information at the start and the end of the 
+#'   algorithm), 2 (prints at every iteration), and for mixture models 3 
+#'   (print also during optimization of coefficients).
+#' * `reltol`\cr Relative tolerance for convergence defined as 
+#'   \eqn{(logLik_new - logLik_old)/(abs(logLik_old) + 0.1)}. The default is 1e-10.
+#' * `restart`\cr A list containing options for possible EM restarts with the
+#'   following components:
+#'   * `times`\cr Number of restarts of the EM algorithm using random initial 
+#'     values. The default is `0`, i.e. no restarts.
+#'   * `transition`\cr Logical. Should the original transition probabilities be 
+#'     varied? The default is `TRUE`.
+#'   * `emission`\cr Logical. Should the original emission probabilities be 
+#'     varied? The default is `TRUE`.
+#'   * `sd`\cr Standard deviation for [rnorm()] used in randomization. The 
+#'     default is 0.25.
+#'   * `maxeval`\cr Maximum number of iterations, the default is 
+#'     `control_em$maxeval`
+#'   * print_level\cr Level of printing in restarted EM steps. The default is 
+#'     `control_em$print_level`.
+#'   * `reltol`\cr Relative tolerance for convergence at restarted EM steps. 
+#'     The default is `control_em$reltol`. If the relative change of the final 
+#'     model of the restart phase is larger than the tolerance for the original 
+#'     EM phase, the final model is re-estimated with the original `reltol`
+#'     and `maxeval` at the end of the EM step.
+#'   * `n_optimum`\cr Save the log-likelihood values of the `n_optimum` best
+#'     models (from all estimated models including the the first EM run.).
+#'     The default is `min(times + 1, 25)`.
+#'   * `use_original`\cr If `TRUE`, use the initial values of the input model as 
+#'     starting points for the permutations. Otherwise permute the results of 
+#'     the first EM run.
+#' @param control_global Optional list of additional arguments for 
+#' [nloptr()] argument `opts`. The default values are
+#'  * `algorithm`\cr `"NLOPT_GD_MLSL_LDS"`
+#'  * `local_opts`\cr `list(algorithm = "NLOPT_LD_LBFGS", ftol_rel = 1e-6, xtol_rel = 1e-4)`
+#'  * `maxeval`\cr `10000` (maximum number of iterations in global 
+#'    optimization algorithm.)
+#'  * `maxtime`\cr `60` (maximum time for global optimization. Set to 0 for 
+#'    unlimited time.)
+#' @param lb,ub Lower and upper bounds for parameters in Softmax 
+#' parameterization.The default interval is 
+#' `c(pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues))`, except for gamma 
+#' coefficients,where the scale of covariates is taken into account.
+#' Note that it might still be a good idea to scale covariates around unit 
+#' scale. Bounds are used only in the global optimization step.
 #' @param control_local Optional list of additional arguments for
-#'   \code{\link{nloptr}} argument \code{opts}. The default values are
-#'   \describe{
-#'    \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
-#'    \item{ftol_rel}{\code{1e-10}}
-#'    \item{xtol_rel}{\code{1e-8}}
-#'    \item{maxeval}{\code{10000} (maximum number of iterations)}
-#'   }
-#' @param threads Number of threads to use in parallel computing. The default is 1.
-#' @param log_space Make computations using log-space instead of scaling for greater
-#' numerical stability at a cost of decreased computational performance. The default is \code{FALSE}.
-#' @param constraints Integer vector defining equality constraints for emission distributions.
-#' Not supported for EM algorithm. See details.
-#' @param fixed_inits Can be used to fix some of the probabilities to their initial values.
-#' Should have same structure as \code{model$initial_probs}, where each element
-#' is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
-#' Not supported for EM algorithm. See details.
-#' @param fixed_emissions  Can be used to fix some of the probabilities to their initial values.
-#' Should have same structure as \code{model$emission_probs}, where each element
-#' is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
-#' Not supported for EM algorithm. See details.
-#' @param fixed_transitions  Can be used to fix some of the probabilities to their initial values.
-#' Should have same structure as \code{model$transition_probs}, where each element
-#' is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
-#' Not supported for EM algorithm. See details.
-#' @param ... Additional arguments to \code{nloptr}.
-#' @return \describe{
-#'   \item{logLik}{Log-likelihood of the estimated model. }
-#'   \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
-#'   (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
-#'   the log-likelihoods of the \code{n_optimum} best models after the EM step (\code{best_opt_restart}). }
-#'   \item{global_results}{Results after the global step. }
-#'   \item{local_results}{Results after the local step. }
-#'   \item{call}{The matched function call. }
-#'   }
-#' @seealso \code{\link{build_hmm}},  \code{\link{build_mhmm}},
-#' \code{\link{build_mm}},  \code{\link{build_mmm}}, and  \code{\link{build_lcm}}
-#'   for constructing different types of models; \code{\link{summary.mhmm}}
-#'   for a summary of a MHMM; \code{\link{separate_mhmm}} for reorganizing a MHMM into
-#'   a list of separate hidden Markov models; \code{\link{plot.hmm}} and \code{\link{plot.mhmm}}
-#'   for plotting model objects; and \code{\link{ssplot}} and \code{\link{mssplot}} for plotting
-#'   stacked sequence plots of \code{hmm} and \code{mhmm} objects.
+#'   [nloptr()] argument `opts`. The default values are
+#'  * `algorithm`\cr `"NLOPT_LD_LBFGS"`
+#'  * `ftol_rel`\cr `1e-10`
+#'  * `xtol_rel`\cr `1e-8`
+#'  * `maxeval`\cr `10000` (maximum number of iterations)
+#' @param threads Number of threads to use in parallel computing. The default 
+#' is `1`.
+#' @param log_space Make computations using log-space instead of scaling for 
+#' greater numerical stability at a cost of decreased computational performance. 
+#' The default is `FALSE`.
+#' @param constraints Integer vector defining equality constraints for emission 
+#' distributions. Not supported for EM algorithm. See details.
+#' @param fixed_inits Can be used to fix some of the probabilities to their 
+#' initial values.Should have same structure as `model$initial_probs`, where 
+#' each element is either `TRUE` (fixed) or `FALSE` (to be estimated). Note that 
+#' zero probabilities are always fixed to 0. Not supported for EM algorithm. 
+#' See details.
+#' @param fixed_emissions  Can be used to fix some of the probabilities to 
+#' their initial values. Should have same structure as `model$emission_probs`, 
+#' where each element is either `TRUE` (fixed) or `FALSE` (to be estimated). Note 
+#' that zero probabilities are always fixed to 0. Not supported for EM 
+#' algorithm. See details.
+#' @param fixed_transitions  Can be used to fix some of the probabilities to 
+#' their initial values. Should have same structure as `model$transition_probs`, 
+#' where each element is either `TRUE` (fixed) or `FALSE` (to be estimated). 
+#' Note that zero probabilities are always fixed to 0. Not supported for EM 
+#' algorithm. See details.
+#' @param ... Additional arguments to `nloptr`.
+#' @return
+#' * logLik\cr Log-likelihood of the estimated model.
+#' * em_results\cr Results after the EM step: log-likelihood (`logLik`), 
+#'   number of iterations (`iterations`), relative change in log-likelihoods 
+#'   between the last two iterations (`change`), and the log-likelihoods of 
+#'   the `n_optimum` best models after the EM step (`best_opt_restart`).
+#' * global_results\cr Results after the global step.
+#' * local_results\cr Results after the local step.
+#' * call\cr The matched function call.
+#' @seealso [build_hmm()],  [build_mhmm()],
+#' [build_mm()],  [build_mmm()], and  [build_lcm()]
+#'   for constructing different types of models; [summary.mhmm()]
+#'   for a summary of a MHMM; [separate_mhmm()] for reorganizing a MHMM into
+#'   a list of separate hidden Markov models; [plot.hmm()] and [plot.mhmm()]
+#'   for plotting model objects; and [ssplot()] and [mssplot()] for plotting
+#'   stacked sequence plots of `hmm` and `mhmm` objects.
 #' @details The fitting function provides three estimation steps: 1) EM algorithm,
 #'   2) global optimization, and 3) local optimization. The user can call for one method
 #'   or any combination of these steps, but should note that they are preformed in the
@@ -113,13 +118,13 @@
 #'
 #'   It is possible to rerun the EM algorithm automatically using random starting
 #'   values based on the first run of EM. Number of restarts is defined by
-#'   the \code{restart} argument in \code{control_em}. As the EM algorithm is
+#'   the `restart` argument in `control_em`. As the EM algorithm is
 #'   relatively fast, this method might be preferred option compared to the proper
 #'   global optimization strategy of step 2.
 #'
-#'   The default global optimization method (triggered via \code{global_step = TRUE}) is
-#'   the multilevel single-linkage method (MLSL) with the LDS modification (\code{NLOPT_GD_MLSL_LDS} as
-#'   \code{algorithm} in \code{control_global}), with L-BFGS as the local optimizer.
+#'   The default global optimization method (triggered via `global_step = TRUE`) is
+#'   the multilevel single-linkage method (MLSL) with the LDS modification (`NLOPT_GD_MLSL_LDS` as
+#'   `algorithm` in `control_global`), with L-BFGS as the local optimizer.
 #'   The MLSL method draws random starting points and performs a local optimization
 #'   from each. The LDS modification uses low-discrepancy sequences instead of
 #'   pseudo-random numbers as starting points and should improve the convergence rate.
@@ -140,16 +145,16 @@
 #'   By default, the estimation time is limited to 60 seconds in global optimization step, so it is
 #'   advisable to change the default settings for the proper global optimization.
 #'
-#'   Any algorithm available in the \code{nloptr} function can be used for the global and
+#'   Any algorithm available in the `nloptr` function can be used for the global and
 #'   local steps.
 #'
 #'   Equality constraints for emission distributions can be defined using the argument
-#'   \code{constraints}. This should be a vector with length equal to the number of states,
+#'   `constraints`. This should be a vector with length equal to the number of states,
 #'   with numbers starting from 1 and increasing for each unique row of the emission probability matrix.
 #'   For example in case of five states with emissions of first and third states being equal,
-#'   \code{constraints = c(1, 2, 1, 3, 4)}. Similarly, some of the model parameters can be fixed to their
-#'   initial values by using arguments \code{fixed_inits}, \code{fixed_emissions},
-#'   and \code{fixed_transitions}, where the structure of the arguments should be
+#'   `constraints = c(1, 2, 1, 3, 4)`. Similarly, some of the model parameters can be fixed to their
+#'   initial values by using arguments `fixed_inits`, `fixed_emissions`,
+#'   and `fixed_transitions`, where the structure of the arguments should be
 #'   same as the corresponding model components, so that TRUE value means that
 #'   the parameter should be fixed and FALSE otherwise (it is still treated as fixed if it
 #'   is zero though). For both types of constrains, only numerical optimisation
@@ -586,31 +591,36 @@ fit_model <- function(
     control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1,
     log_space = FALSE, constraints = NULL, fixed_inits = NULL,
     fixed_emissions = NULL, fixed_transitions = NULL, ...) {
+  
+  check_positive_integer(threads)
   # check that the initial model is ok
-  if (!is.finite(logLik(model))) {
-    stop("Initial log-likelihood of the input model is nonfinite. Please adjust the initial values.")
-  }
-
-  if (!inherits(model, c("hmm", "mhmm"))) {
-    stop("Argument model must be an object of class 'hmm' or 'mhmm.")
-  }
-
-  if (!em_step && !global_step && !local_step) {
-    stop("No method chosen for estimation. Choose at least one from em_step, global_step, and local_step.")
-  }
-  if (threads < 1) {
-    stop("Argument threads must be a positive integer.")
-  }
-  if (!is.null(constraints) && em_step) {
-    stop("EM algorithm does not support constraints. Use local and/or global steps only.")
-  }
+  stopifnot_(
+    is.finite(logLik(model)),
+    "Initial log-likelihood of the input model is nonfinite. Please adjust the 
+    initial values."
+  )
+  stopifnot_(
+    inherits(model, c("hmm", "mhmm")),
+    "{.arg model} {.cls hmm} or {.cls mhmm} object."
+  )
+  stopifnot_(
+    em_step || global_step || local_step,
+    "No method chosen for estimation. Choose at least one from `em_step`, 
+          `global_step`, and `local_step`."
+  )
+  stopifnot_(
+    is.null(constraints) || !em_step,
+    "EM algorithm does not support constraints. Use local and/or global 
+    steps only."
+  )
+  
   fixed <- !is.null(fixed_inits) | !is.null(fixed_emissions) | !is.null(fixed_transitions)
-  if (fixed && em_step) {
-    stop("EM algorithm does not support fixed probabilities (except zeros). Use local and/or global steps only.")
-  }
-
+  stopifnot_(
+    !fixed || !em_step,
+    "EM algorithm does not support fixed probabilities (except zeros). Use 
+    local and/or global steps only."
+  )
   mhmm <- inherits(model, c("mhmm"))
-
   if (mhmm) {
     df <- attr(model, "df")
     nobs <- attr(model, "nobs")
@@ -625,10 +635,9 @@ fit_model <- function(
     nmsC <- names(em.con)
     em.con[(namc <- names(control_em))] <- control_em
     if (length(noNms <- namc[!namc %in% nmsC])) {
-      warning("Unknown names in control_em: ", paste(noNms, collapse = ", "))
+      warning_("Unknown names in {.arg control_em}: ", 
+               paste(noNms, collapse = ", "))
     }
-
-
     if (!log_space) {
       if (mhmm) {
         resEM <- EMx(
@@ -656,27 +665,27 @@ fit_model <- function(
         )
       }
     }
-
-
+    
+    
     if (resEM$error != 0) {
       err_msg <- switch(resEM$error,
-        "Scaling factors contain non-finite values.",
-        "Backward probabilities contain non-finite values.",
-        "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
-        "Estimation of gamma coefficients failed due to singular Hessian.",
-        "Estimation of gamma coefficients failed due to non-finite cluster probabilities.",
-        "Non-finite log-likelihood"
+                        "Scaling factors contain non-finite values.",
+                        "Backward probabilities contain non-finite values.",
+                        "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
+                        "Estimation of gamma coefficients failed due to singular Hessian.",
+                        "Estimation of gamma coefficients failed due to non-finite cluster probabilities.",
+                        "Non-finite log-likelihood"
       )
       if (!global_step && !local_step &&
-        (is.null(control_em$restart$times) || control_em$restart$times == 0)) {
-        stop(paste("EM algorithm failed:", err_msg))
+          (is.null(control_em$restart$times) || control_em$restart$times == 0)) {
+        stop_(paste("EM algorithm failed:", err_msg))
       } else {
-        warning(paste("EM algorithm failed:", err_msg))
+        warning_(paste("EM algorithm failed:", err_msg))
       }
       resEM$logLik <- -Inf
     }
-
-
+    
+    
     if (!is.null(em.con$restart)) {
       restart.con <- list(
         times = 0, print_level = em.con$print_level,
@@ -687,17 +696,16 @@ fit_model <- function(
       nmsC <- names(restart.con)
       restart.con[(namc <- names(control_em$restart))] <- control_em$restart
       if (length(noNms <- namc[!namc %in% nmsC])) {
-        warning("Unknown names in control_em$restart: ", paste(noNms, collapse = ", "))
+        warning_("Unknown names in {.arg control_em$restart}: 
+                 {paste(noNms, collapse = ", ")}")
       }
       restart.con$n_optimum <- min(restart.con$n_optimum, restart.con$times + 1)
     }
-
-
     if (!is.null(em.con$restart) && restart.con$times > 0 &&
-      (restart.con$transition | restart.con$emission)) {
+        (restart.con$transition | restart.con$emission)) {
       opt_restart <- numeric(restart.con$times + 1)
       opt_restart[1] <- resEM$logLik
-
+      
       if (restart.con$use_original) {
         random_emiss <- emissionArray
         random_trans <- model$transition_probs
@@ -717,13 +725,13 @@ fit_model <- function(
         np_emiss <- sum(nz_emiss)
         base_emiss <- random_emiss[nz_emiss]
       }
-
+      
       if (restart.con$coef) {
         base_coef <- random_coef
         coef_scale <- max(abs(base_coef))
         n_coef <- length(base_coef)
       }
-
+      
       for (i in 1:restart.con$times) {
         if (restart.con$transition) {
           random_trans[nz_trans] <- abs(base_trans + rnorm(np_trans, sd = restart.con$sd))
@@ -741,7 +749,7 @@ fit_model <- function(
         if (restart.con$coef) {
           random_coef[] <- rnorm(n_coef, base_coef, sd = coef_scale)
         }
-
+        
         if (!log_space) {
           if (mhmm) {
             resEMi <- EMx(
@@ -769,19 +777,19 @@ fit_model <- function(
             )
           }
         }
-
-
+        
+        
         if (resEMi$error != 0) {
           opt_restart[i + 1] <- -Inf
           err_msg <- switch(resEMi$error,
-            "Scaling factors contain non-finite values.",
-            "Backward probabilities contain non-finite values.",
-            "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
-            "Estimation of gamma coefficients failed due to singular Hessian.",
-            "Estimation of gamma coefficients failed due to non-finite cluster probabilities.",
-            "Non-finite log-likelihood"
+                            "Scaling factors contain non-finite values.",
+                            "Backward probabilities contain non-finite values.",
+                            "Initial values of coefficients of covariates gives non-finite cluster probabilities.",
+                            "Estimation of gamma coefficients failed due to singular Hessian.",
+                            "Estimation of gamma coefficients failed due to non-finite cluster probabilities.",
+                            "Non-finite log-likelihood"
           )
-          warning(paste("EM algorithm failed:", err_msg))
+          warning_(paste("EM algorithm failed:", err_msg))
         } else {
           opt_restart[i + 1] <- resEMi$logLik
           if (is.finite(resEMi$logLik) && resEMi$logLik > resEM$logLik) {
@@ -789,9 +797,9 @@ fit_model <- function(
           }
         }
       }
-
+      
       opts <- sort(opt_restart, decreasing = TRUE)[1:restart.con$n_optimum]
-
+      
       if (em.con$reltol < resEM$change) {
         if (!log_space) {
           if (mhmm) {
@@ -824,17 +832,17 @@ fit_model <- function(
     } else {
       opts <- resEM$logLik
     }
-
+    
     if (resEM$error == 0) {
       if (resEM$change < -em.con$reltol) {
-        warning("EM algorithm stopped due to decreasing log-likelihood. ")
+        warning_("EM algorithm stopped due to decreasing log-likelihood.")
       }
-
+      
       emissionArray <- resEM$emissionArray
       for (i in 1:model$n_channels) {
         model$emission_probs[[i]][] <- emissionArray[, 1:model$n_symbols[i], i]
       }
-
+      
       if (mhmm && (global_step || local_step)) {
         k <- 0
         for (m in 1:model$n_clusters) {
@@ -845,7 +853,7 @@ fit_model <- function(
       } else {
         model$initial_probs[] <- resEM$initialProbs
       }
-
+      
       resEM$best_opt_restart <- opts
       model$transition_probs[] <- resEM$transitionMatrix
       model$coefficients[] <- resEM$coefficients
@@ -857,32 +865,8 @@ fit_model <- function(
   } else {
     resEM <- NULL
   }
-
+  
   if (global_step || local_step) {
-    # if (is.null(fixed_transitions)) {
-    #   x <- which(model$transition_probs > 0, arr.ind = TRUE)
-    # } else {
-    #   if (mhmm) {
-    #     fixed_transitions <- as.matrix(.bdiag(fixed_transitions))
-    #   }
-    #   x <- which(model$transition_probs > 0 & !fixed_transitions, arr.ind = TRUE)
-    # }
-    # transNZ <- x[order(x[,1]),]
-    # # Largest transition probabilities (for each row)
-    # maxTM <- cbind(1:model$n_states, max.col(model$transition_probs, ties.method = "first"))
-    # maxTMvalue <- apply(model$transition_probs,1,max)
-    # paramTM <- rbind(transNZ,maxTM)
-    # paramTM <- paramTM[!(duplicated(paramTM) | duplicated(paramTM, fromLast = TRUE)), , drop = FALSE]
-    # npTM <- nrow(paramTM)
-    # if (is.null(fixed_transitions)) {
-    #   transNZ <- model$transition_probs > 0
-    # } else {
-    #   transNZ <- model$transition_probs > 0 & !fixed_transitions
-    # }
-    # #transNZ <- model$transition_probs > 0
-    # transNZ[maxTM] <- 0
-    # npTM <- nrow(paramTM)
-    # browser()
     if (is.null(fixed_transitions)) {
       transNZ <- model$transition_probs > 0
     } else {
@@ -895,31 +879,26 @@ fit_model <- function(
     # single value per row => nothing to estimate
     transNZ[rowSums(transNZ) == 1, ] <- 0
     # Largest transition probabilities (for each row)
-
     maxTM <- cbind(1:model$n_states, apply(model$transition_probs, 1, which.max))
     maxTMvalue <- model$transition_probs[maxTM]
     transNZ[maxTM] <- 0
     paramTM <- which(transNZ == 1, arr.ind = TRUE)
     paramTM <- paramTM[order(paramTM[, 1]), ]
     npTM <- nrow(paramTM)
-
     n_states <- model$n_states
-
     original_emiss <- model$emission_probs
     original_trans <- model$transition_probs
     if (!is.null(constraints)) {
-      if (!identical(length(constraints), model$n_states)) {
-        stop("Length of 'constraints' vector is not equal to the number of states. ")
-      }
-
+      stopifnot_(
+        identical(length(constraints), model$n_states),
+        "Length of {.arg constraints} is not equal to the number of states."
+      )
       uniqs <- !duplicated(constraints)
       model$emission_probs <- lapply(model$emission_probs, function(x) {
         x[uniqs, ]
       })
-
       n_states <- sum(uniqs)
     }
-
     if (is.null(fixed_emissions)) {
       emissNZ <- lapply(model$emission_probs, function(i) {
         i > 0
@@ -972,7 +951,7 @@ fit_model <- function(
         npEM[i] <- nrow(paramEM[[i]])
       }
     }
-
+    
     if (mhmm) {
       maxIP <- maxIPvalue <- npIP <- numeric(original_model$n_clusters)
       paramIP <- initNZ <- vector("list", original_model$n_clusters)
@@ -993,10 +972,10 @@ fit_model <- function(
       }
       initNZ <- unlist(initNZ)
       npIPAll <- sum(unlist(npIP))
-
+      
       npCoef <- length(model$coefficients[, -1])
       model$coefficients[, 1] <- 0
-
+      
       initialvalues <- c(
         if ((npTM + sum(npEM) + npIPAll) > 0) {
           log(c(
@@ -1026,9 +1005,9 @@ fit_model <- function(
       }
       initNZ[maxIP] <- 0
       paramIP <- which(initNZ == 1)
-
+      
       npIP <- length(paramIP)
-
+      
       initialvalues <- c(if ((npTM + sum(npEM) + npIP) > 0) {
         log(c(
           if (npTM > 0) model$transition_probs[paramTM],
@@ -1042,13 +1021,13 @@ fit_model <- function(
         ))
       })
     }
-
-
+    
+    
     scalerows <- function(x, fixed) {
       x[!fixed] <- x[!fixed] * (1 - sum(x[fixed])) / sum(x[!fixed])
       x
     }
-
+    
     objectivef_mhmm <- function(pars, model, estimate = TRUE) {
       if (any(!is.finite(exp(pars))) && estimate) {
         if (need_grad) {
@@ -1083,7 +1062,7 @@ fit_model <- function(
             emissionArray[, 1:model$n_symbols[i], i][maxEM[[i]]] <- maxEMvalue[[i]]
             emissionArray[, 1:model$n_symbols[i], i][paramEM[[i]]] <-
               exp(pars[(npTM + 1 + c(0, cumsum(npEM))[i]):(npTM + cumsum(npEM)[i])])
-
+            
             if (is.null(fixed_emissions)) {
               emissionArray[, 1:model$n_symbols[i], i] <-
                 emissionArray[, 1:model$n_symbols[i], i] / rowSums(emissionArray[, 1:model$n_symbols[i], i, drop = FALSE])
@@ -1098,7 +1077,7 @@ fit_model <- function(
                 }
               }
             }
-
+            
             emissionArray[, 1:model$n_symbols[i], i] <-
               emissionArray[, 1:model$n_symbols[i], i] / rowSums(emissionArray[, 1:model$n_symbols[i], i])
           }
@@ -1108,7 +1087,7 @@ fit_model <- function(
             emArray[, 1:model$n_symbols[i], i][maxEM[[i]]] <- maxEMvalue[[i]]
             emArray[, 1:model$n_symbols[i], i][paramEM[[i]]] <-
               exp(pars[(npTM + 1 + c(0, cumsum(npEM))[i]):(npTM + cumsum(npEM)[i])])
-
+            
             if (is.null(fixed_emissions)) {
               emArray[, 1:model$n_symbols[i], i] <-
                 emArray[, 1:model$n_symbols[i], i] / rowSums(emArray[, 1:model$n_symbols[i], i, drop = FALSE])
@@ -1133,8 +1112,8 @@ fit_model <- function(
         if (npIP[m] > 0) {
           original_model$initial_probs[[m]][maxIP[[m]]] <- maxIPvalue[[m]]
           original_model$initial_probs[[m]][paramIP[[m]]] <- exp(pars[npTM + sum(npEM) + c(0, cumsum(npIP))[m] +
-            1:npIP[m]])
-
+                                                                        1:npIP[m]])
+          
           if (is.null(fixed_inits)) {
             original_model$initial_probs[[m]][] <- original_model$initial_probs[[m]] / sum(original_model$initial_probs[[m]])
           } else {
@@ -1144,7 +1123,7 @@ fit_model <- function(
       }
       model$initial_probs <- unlist(original_model$initial_probs)
       model$coefficients[, -1] <- pars[npTM + sum(npEM) + npIPAll + 1:npCoef]
-
+      
       if (estimate) {
         if (!log_space) {
           if (need_grad) {
@@ -1182,7 +1161,7 @@ fit_model <- function(
         model
       }
     }
-
+    
     objectivef_hmm <- function(pars, model, estimate = TRUE) {
       if (any(!is.finite(exp(pars))) && estimate) {
         if (need_grad) {
@@ -1191,7 +1170,7 @@ fit_model <- function(
           Inf
         }
       }
-
+      
       if (npTM > 0) {
         model$transition_probs[] <- original_trans
         model$transition_probs[paramTM] <- exp(pars[1:npTM])
@@ -1212,14 +1191,14 @@ fit_model <- function(
           }
         }
       }
-
+      
       if (sum(npEM) > 0) {
         if (is.null(constraints)) {
           for (i in 1:model$n_channels) {
             emissionArray[, 1:model$n_symbols[i], i][maxEM[[i]]] <- maxEMvalue[[i]]
             emissionArray[, 1:model$n_symbols[i], i][paramEM[[i]]] <-
               exp(pars[(npTM + 1 + c(0, cumsum(npEM))[i]):(npTM + cumsum(npEM)[i])])
-
+            
             if (is.null(fixed_emissions)) {
               emissionArray[, 1:model$n_symbols[i], i] <-
                 emissionArray[, 1:model$n_symbols[i], i] / rowSums(emissionArray[, 1:model$n_symbols[i], i, drop = FALSE])
@@ -1241,7 +1220,7 @@ fit_model <- function(
             emArray[, 1:model$n_symbols[i], i][maxEM[[i]]] <- maxEMvalue[[i]]
             emArray[, 1:model$n_symbols[i], i][paramEM[[i]]] <-
               exp(pars[(npTM + 1 + c(0, cumsum(npEM))[i]):(npTM + cumsum(npEM)[i])])
-
+            
             if (is.null(fixed_emissions)) {
               emArray[, 1:model$n_symbols[i], i] <-
                 emArray[, 1:model$n_symbols[i], i] / rowSums(emArray[, 1:model$n_symbols[i], i, drop = FALSE])
@@ -1271,8 +1250,8 @@ fit_model <- function(
           model$initial_probs[] <- scalerows(model$initial_probs, fixed_inits)
         }
       }
-
-
+      
+      
       if (estimate) {
         if (!log_space) {
           if (need_grad) {
@@ -1311,7 +1290,7 @@ fit_model <- function(
         model
       }
     }
-
+    
     if (global_step) {
       if (missing(lb)) {
         if (mhmm) {
@@ -1335,7 +1314,7 @@ fit_model <- function(
         }
       }
       ub <- pmin(pmax(ub, 2 * initialvalues), 500)
-
+      
       if (is.null(control_global$maxeval)) {
         control_global$maxeval <- 10000
       }
@@ -1357,7 +1336,7 @@ fit_model <- function(
         if (mhmm) {
           gr <- function(x, model, estimate) {
             nl.grad(x, objectivef_mhmm,
-              model = model, estimate = estimate
+                    model = model, estimate = estimate
             )
           }
           globalres <- nloptr(
@@ -1369,7 +1348,7 @@ fit_model <- function(
         } else {
           gr <- function(x, model, estimate) {
             nl.grad(x, objectivef_hmm,
-              model = model, estimate = estimate
+                    model = model, estimate = estimate
             )
           }
           globalres <- nloptr(
@@ -1394,16 +1373,16 @@ fit_model <- function(
           model <- objectivef_hmm(globalres$solution, model, FALSE)
         }
       }
-
+      
       if (globalres$status < 0) {
-        warning(paste("Global optimization terminated:", globalres$message))
+        warning_(paste("Global optimization terminated:", globalres$message))
       }
       initialvalues <- globalres$solution
       ll <- -globalres$objective
     } else {
       globalres <- NULL
     }
-
+    
     if (local_step) {
       if (is.null(control_local$maxeval)) {
         control_local$maxeval <- 10000
@@ -1417,14 +1396,14 @@ fit_model <- function(
       if (is.null(control_local$ftol_rel)) {
         control_local$ftol_rel <- 1e-10
       }
-
+      
       need_grad <- grepl("NLOPT_LD_", control_local$algorithm)
       if ((!is.null(constraints) | fixed) && need_grad) {
         need_grad <- FALSE # don't use analytical gradients (do not take account constraints)
         if (mhmm) {
           gr <- function(x, model, estimate) {
             nl.grad(x, objectivef_mhmm,
-              model = model, estimate = estimate
+                    model = model, estimate = estimate
             )
           }
           localres <- nloptr(
@@ -1436,7 +1415,7 @@ fit_model <- function(
         } else {
           gr <- function(x, model, estimate) {
             nl.grad(x, objectivef_hmm,
-              model = model, estimate = estimate
+                    model = model, estimate = estimate
             )
           }
           localres <- nloptr(
@@ -1462,13 +1441,13 @@ fit_model <- function(
         }
       }
       if (localres$status < 0) {
-        warning(paste("Local optimization terminated:", localres$message))
+        warning_(paste("Local optimization terminated:", localres$message))
       }
       ll <- -localres$objective
     } else {
       localres <- NULL
     }
-
+    
     if (mhmm) {
       rownames(model$coefficients) <- colnames(model$X)
       colnames(model$coefficients) <- model$cluster_names
@@ -1476,18 +1455,18 @@ fit_model <- function(
   } else {
     globalres <- localres <- NULL
   }
-
+  
   if (model$n_channels == 1) {
     model$observations <- model$observations[[1]]
     model$emission_probs <- model$emission_probs[[1]]
   }
-
+  
   if (mhmm) {
     model <- spread_models(model)
     attr(model, "df") <- df
     attr(model, "nobs") <- nobs
     attr(model, "type") <- attr(original_model, "type")
-
+    
     for (i in 1:model$n_clusters) {
       dimnames(model$transition_probs[[i]]) <- dimnames(original_model$transition_probs[[i]])
       for (j in 1:model$n_channels) {
@@ -1495,7 +1474,7 @@ fit_model <- function(
       }
     }
   }
-
+  
   suppressWarnings(try(model <- trim_model(model, verbose = FALSE), silent = TRUE))
   list(
     model = model,

@@ -43,10 +43,10 @@ ssplot(
 }
 \arguments{
 \item{x}{Either a hidden Markov model object of class \code{hmm} or a state
-sequence object of class \code{stslist} (created with the \code{\link[TraMineR]{seqdef}})
+sequence object of class \code{stslist} (created with the \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}})
 function) or a list of state sequence objects.}
 
-\item{hidden.paths}{Output from \code{\link{hidden_paths}} function. Optional, if
+\item{hidden.paths}{Output from \code{\link[=hidden_paths]{hidden_paths()}} function. Optional, if
 \code{x} is a \code{hmm} object or if \code{type = "obs"}.}
 
 \item{plots}{What to plot. One of \code{"obs"} for observations (the default),
@@ -55,7 +55,7 @@ or \code{"both"} for observations and hidden paths together.}
 
 \item{type}{The type of the plot. Available types are \code{"I"} for sequence index
 plots and \code{"d"} for state distribution plots (the default). See
-\code{\link{seqplot}} for details.}
+\code{\link[=seqplot]{seqplot()}} for details.}
 
 \item{tlim}{Indexes of the subjects to be plotted (the default is 0,
 i.e. all subjects are plotted). For example, \code{tlim = 1:10} plots
@@ -66,10 +66,10 @@ the first ten subjects in data.}
 \code{type = "I"}. The value \code{"mds.hidden"} is only available when
 hidden paths are available. Options \code{"mds.obs"} and
 \code{"mds.hidden"} automatically arrange the sequences according to the
-scores of multidimensional scaling (using \code{\link{cmdscale}}) for the
+scores of multidimensional scaling (using \code{\link[=cmdscale]{cmdscale()}}) for the
 observed data or hidden states paths.
 MDS scores are computed from distances/dissimilarities using a metric
-defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for
+defined in argument \code{dist.method}. See \code{\link[=plot.stslist]{plot.stslist()}} for
 more details on \code{"from.start"} and \code{"from.end"}.}
 
 \item{sort.channel}{The number of the channel according to which the
@@ -83,7 +83,7 @@ sequences if multidimensional scaling is used for sorting. One of "OM"
 (reversed LCP, i.e. longest common suffix), "LCS" (longest common
 subsequence), "HAM" (Hamming distance), and "DHD" (dynamic Hamming distance).
 Transition rates are used for defining substitution costs if needed. See
-\code{\link[TraMineR]{seqdef}} for more information on the metrics.}
+\code{\link[TraMineR:seqdef]{TraMineR::seqdef()}} for more information on the metrics.}
 
 \item{with.missing}{Controls whether missing states are included in state
 distribution plots (\code{type = "d"}). The default is \code{FALSE}.}
@@ -137,8 +137,8 @@ reduce the size of the font, values greater than 1 will increase the size.}
 
 \item{hidden.states.colors}{A vector of colors assigned to hidden states. The default
 value \code{"auto"} uses the colors assigned to the \code{stslist} object (created
-with \code{\link[TraMineR]{seqdef}}) if \code{hidden.paths} is given; otherwise colors from
-\code{\link{colorpalette}} are automatically used.}
+with \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}}) if \code{hidden.paths} is given; otherwise colors from
+\code{\link[=colorpalette]{colorpalette()}} are automatically used.}
 
 \item{hidden.states.labels}{Labels for the hidden states. The default value
 \code{"auto"} uses the names provided in \code{x$state_names} if \code{x} is
@@ -152,7 +152,7 @@ is drawn.}
 
 \item{xtlab}{Optional labels for the x-axis tick labels.  If unspecified, the
 column names of the \code{seqdata} sequence object are used (see
-\code{\link[TraMineR]{seqdef}}).}
+\code{\link[TraMineR:seqdef]{TraMineR::seqdef()}}).}
 
 \item{xlab.pos}{Controls the position of the x-axis label. The default value
 is 1. Values greater than 1 will place the label further away from the plot.}
@@ -188,15 +188,15 @@ corresponding to TraMineR's void in the observed sequences are set to void
 in the hidden state sequences as well.}
 
 \item{...}{Other arguments to be passed on to
-\code{\link[TraMineR]{seqplot}}.}
+\code{\link[TraMineR:seqplot]{TraMineR::seqplot()}}.}
 }
 \description{
 Function \code{ssplot} plots stacked sequence plots of sequence object
-created with the \code{\link{seqdef}} function or observations and/or most
+created with the \code{\link[=seqdef]{seqdef()}} function or observations and/or most
 probable paths of \code{hmm} objects.
 }
 \details{
-This function is deprecated and will be removed in future versions of `seqHMM`.
+This function is deprecated and will be removed in future versions of \code{seqHMM}.
 }
 \examples{
 data("biofam3c")
@@ -269,10 +269,10 @@ ssplot(
 }
 }
 \seealso{
-\code{\link{ssp}} for creating \code{ssp} objects and \code{\link{plot.ssp}}
-and \code{\link{gridplot}} for plotting these;
-\code{\link{build_hmm}} and \code{\link{fit_model}} for building and
-fitting hidden Markov models; \code{\link{hidden_paths}} for
-computing the most probable paths of hidden states; and \code{\link{biofam3c}}
-\code{\link{hmm_biofam}} for information on the data and model used in the example.
+\code{\link[=ssp]{ssp()}} for creating \code{ssp} objects and \code{\link[=plot.ssp]{plot.ssp()}}
+and \code{\link[=gridplot]{gridplot()}} for plotting these;
+\code{\link[=build_hmm]{build_hmm()}} and \code{\link[=fit_model]{fit_model()}} for building and
+fitting hidden Markov models; \code{\link[=hidden_paths]{hidden_paths()}} for
+computing the most probable paths of hidden states; and \code{\link[=biofam3c]{biofam3c()}}
+\code{\link[=hmm_biofam]{hmm_biofam()}} for information on the data and model used in the example.
 }

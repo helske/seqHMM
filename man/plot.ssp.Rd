@@ -14,7 +14,7 @@ Models}
 }
 \description{
 Function \code{plot.ssp} plots stacked sequence plots from \code{ssp} objects defined with
-\code{\link{ssp}}.
+\code{\link[=ssp]{ssp()}}.
 }
 \examples{
 
@@ -40,7 +40,7 @@ Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: 
 Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
 }
 \seealso{
-\code{\link{ssp}} for more examples and information on defining the plot before using
-  \code{plot.ssp}; \code{\link{ssplot}} for straight plotting of \code{ssp} objects;
-  and \code{\link{gridplot}} for plotting multiple \code{ssp} objects.
+\code{\link[=ssp]{ssp()}} for more examples and information on defining the plot before using
+\code{plot.ssp}; \code{\link[=ssplot]{ssplot()}} for straight plotting of \code{ssp} objects;
+and \code{\link[=gridplot]{gridplot()}} for plotting multiple \code{ssp} objects.
 }

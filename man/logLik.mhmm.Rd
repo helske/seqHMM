@@ -16,7 +16,7 @@ The default is \code{FALSE}, which returns the sum of all log-likelihood compone
 
 \item{log_space}{Make computations using log-space instead of scaling for greater
 numerical stability at the cost of decreased computational performance.
-  The default is \code{TRUE}.}
+The default is \code{TRUE}.}
 
 \item{...}{Ignored.}
 }
@@ -28,6 +28,6 @@ Log-likelihood of the mixture hidden Markov model. This is an object of class
 Function \code{logLik.mhmm} computes the log-likelihood value of a mixture hidden Markov model.
 }
 \seealso{
-\code{\link{build_mhmm}} and \code{\link{fit_model}} for building and
-  fitting mixture Hidden Markov models.
+\code{\link[=build_mhmm]{build_mhmm()}} and \code{\link[=fit_model]{fit_model()}} for building and
+fitting mixture Hidden Markov models.
 }

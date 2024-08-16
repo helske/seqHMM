@@ -1,111 +1,161 @@
 #' Build a Hidden Markov Model with Covariates
 #'
-#' Function \code{build_nhmm} constructs a non-homogenous hidden Markov model object of class \code{mnhmm}.
+#' Function `build_nhmm` constructs a non-homogenous hidden Markov model object of class `mnhmm`.
 #'
-#' The returned model contains some attributes such as \code{nobs} and \code{df},
+#' The returned model contains some attributes such as `nobs` and `df`,
 #' which define the number of observations in the  model and the number of estimable
 #' model parameters, used in computing BIC.
-#' When computing \code{nobs} for a multichannel model with \eqn{C} channels,
+#' When computing `nobs` for a multichannel model with \eqn{C} channels,
 #' each observed value in a single channel amounts to \eqn{1/C} observation,
 #' i.e. a fully observed time point for a single sequence amounts to one observation.
-#' For the degrees of freedom \code{df}, zero probabilities of the initial model are
+#' For the degrees of freedom `df`, zero probabilities of the initial model are
 #' defined as structural zeroes.
 #' @export
-#' @param observations An \code{stslist} object 
-#' (see \code{\link[TraMineR]{seqdef}}) containing the sequences.
+#' @param observations An `stslist` object 
+#' (see [TraMineR::seqdef()]) containing the sequences.
 #' @param id_variable Name of the grouping variable in the data.
 #' @param time_variable Name of the time index variable in the data.
-#' @param initial_formula of class \code{\link{formula}} for the
+#' @param initial_formula of class [formula()] for the
 #' initial state probabilities.
-#' @param transition_formula of class \code{\link{formula}} for the
+#' @param transition_formula of class [formula()] for the
 #' state transition probabilities.
-#' @param emission_formula of class \code{\link{formula}} for the
+#' @param emission_formula of class [formula()] for the
 #' state emission probabilities.
 #' @param data A data frame containing the variables used in the transition and 
 #' emission formulas.
 #' @param init_data A data frame containing the variables used in the initial 
 #' state formula.
 #'
-#' @return Object of class \code{mnhmm}.
+#' @return Object of class `mnhmm`.
 #' @examples
 
 build_mnhmm <- function(
     observations, n_states, n_clusters, initial_formula, 
-    transition_formula, emission_formula, data = NULL, 
-    data0 = NULL,
-    state_names = NULL, channel_names = NULL) {
+    transition_formula, emission_formula, mixture_formula, data = NULL, 
+    data0 = NULL, state_names = NULL, channel_names = NULL, 
+    cluster_names = NULL) {
+  
+  stopifnot_(
+    inherits(initial_formula, "formula"), 
+    "Argument {.arg initial_formula} must be a {.cls formula} object.")
+  stopifnot_(
+    inherits(transition_formula, "formula"), 
+    "Argument {.arg transition_formula} must be a {.cls formula} object.")
+  stopifnot_(
+    inherits(emission_formula, "formula"), 
+    "Argument {.arg emission_formula} must be a {.cls formula} object.")
   
   observations <- check_observations(observations, channel_names)
+  channel_names <- attr(observations, "channel_names")
   n_channels <- attr(observations, "n_channels")
   n_sequences <- attr(observations, "n_sequences")
   length_of_sequences <- attr(observations, "length_of_sequences")
   n_symbols <- attr(observations, "n_symbols")
-  
+  n_states <- as.integer(n_states)
   if (is.null(state_names)) {
     state_names <- paste("State", seq_len(n_states))
   } else {
-    if (length(state_names) != n_states) {
-      stop("Length of 'state_names' is not equal to the number of hidden states.")
-    }
+    stopifnot_(
+      length(state_names) == n_states,
+      "Length of {.arg state_names} is not equal to the number of hidden 
+      states."
+    )
   }
-  vars <- c("alpha_i", "beta_i", "beta_s", "beta_o", "rho", "A", "B")
-  # this could be optimized so to avoid duplicate variables 
-  # (i.e. use one common X in Stan with suitable subsetting of columns)
-  if (is.null(init_data)) {
-    X_i <- matrix(0, n_sequences, 0L)
+  if (intercept_only(initial_formula)) {
+    init_type <- "c"
+    vars <- "pi"
+    n_pars <- n_states - 1L
+    X_i <- matrix(1, n_sequences, 1)
+    coef_names_initial <- "(Intercept)"
   } else {
-    X_i <- model.matrix.lm(initial_formula, data = init_data, na.action = na.pass)
+    stopifnot_(
+      is.data.frame(data0), 
+      "If {.arg initial_formula} is provided, {.arg data0} must be a 
+      {.cls data.frame} object."
+    )
+    # ensure there is an intercept for which we define ordering constraint
+    X_i <- model.matrix.lm(
+      initial_formula, data = data0, na.action = na.pass
+    )
+    coef_names_initial <- colnames(X_i)
     X_i[is.na(X_i)] <- 0
-    if (ncol(X_i) < 1L) {
-      stop("Initial state probability formula should contain at least one term.")
-    }
-    cnames <- colnames(X_i)
-    if ("(Intercept)" %in% cnames) {
-      X_i <- X_i[, cnames != "(Intercept)", drop = FALSE]
-    }
+    init_type <- "v"
+    vars <- c("alpha_i", "beta_i")
+    n_pars <- (n_states - 1L) * ncol(X_i)
   }
-  K_i <- ncol(X_i)
-  X_i <- t(X_i)
-  if (K_i == 0L) vars <- vars[-2L]
-  if (is.null(data)) {
-    X_s <- X_o <- array(1, c(length_of_sequences, 1, n_sequences))
-    K_s <- K_o <- 1L
+  
+  if (intercept_only(transition_formula)) {
+    A_type <- "c"
+    vars <- "A"
+    n_pars <- n_pars + n_states * (n_states - 1L)
+    X_s <- array(1, c(length_of_sequences, n_sequences, 1L))
+    coef_names_transition <- "(Intercept)"
   } else {
-    X_s <- model.matrix.lm(transition_formula, data = data, na.action = na.pass)
+    stopifnot_(
+      is.data.frame(data),
+      "If {.arg transition_formula} is provided, {.arg data} must be a 
+      {.cls data.frame} object."
+    )
+    X_s <- model.matrix.lm(
+      transition_formula, data = data, na.action = na.pass
+    )
+    coef_names_transition <- colnames(X_s)
     X_s[is.na(X_s)] <- 0
-    if (ncol(X_s) < 1L) {
-      stop("State transition probability formula should contain at least one term.")
-    }
-    K_s <- ncol(X_s)
-    X_s <- t(X_s)
-    dim(X_s) <- c(length_of_sequences, K_s, n_sequences)
-    
-    X_o <- model.matrix.lm(transition_formula, data = data, na.action = na.pass)
-    X_o[is.na(X_o)] <- 0
-    cnames <- colnames(X_o)
-    if (ncol(X_o) < 1L) {
-      stop("Emission probability formula should at least one term.")
-    }
-    K_o <- ncol(X_o)
-    X_o <- t(X_o)
-    dim(X_o) <- c(length_of_sequences, K_o, n_sequences)
+    dim(X_s) <- c(length_of_sequences, n_sequences, ncol(X_s))
+    A_type <- "v"
+    vars <- c(vars, "beta_s")
+    n_pars <- n_pars + n_states * (n_states - 1L) * dim(X_s)[3]
   }
+  
+  if (intercept_only(emission_formula)) {
+    B_type <- "c"
+    vars <- "B"
+    n_pars <- n_pars + n_channels * n_states * (n_symbols - 1L)
+    X_o <- array(1, c(length_of_sequences, n_sequences, 1L))
+    coef_names_emission <- "(Intercept)"
+  } else {
+    stopifnot_(
+      is.data.frame(data), 
+      "If {.arg emission_formula} is provided, {.arg data} must be a 
+      {.cls data.frame} object."
+    )
+    X_o <- model.matrix.lm(
+      emission_formula, data = data, na.action = na.pass
+    )
+    coef_names_emission <- colnames(X_i)
+    X_o[is.na(X_o)] <- 0
+    dim(X_o) <- c(length_of_sequences, n_sequences, ncol(X_o))
+    B_type <- "v"
+    vars <- c(vars, "beta_o")
+    n_pars <- n_pars + n_channels * n_states * (n_symbols - 1L) * dim(X_o)[3]
+  }
+  n_pars <- n_clusters * n_pars
+  multichannel <- ifelse(n_channels > 1, "multichannel", "")
   structure(
     list(
       observations = observations, 
-      X_initial = X_i, X_transition = X_s, X_emission = X_o,
+      X_initial = X_i, X_transition = X_s, X_emission = X_o, X_mixture = X_m,
+      initial_formula = initial_formula, 
+      transition_formula = transition_formula,
+      emission_formula = emission_formula,
+      mixture_formula = mixture_formula,
       state_names = state_names,
       symbol_names = attr(observations, "symbol_names"),
       channel_names = channel_names,
       length_of_sequences = length_of_sequences,
       n_sequences = n_sequences,
-      n_symbols = n_symbols, 
+      n_symbols = n_symbols,
       n_states = n_states,
-      n_channels = n_channels
+      n_channels = n_channels,
+      n_clusters = n_clusters,
+      coef_names_initial = coef_names_initial,
+      coef_names_transition = coef_names_transition,
+      coef_names_emission = coef_names_emission,
+      coef_names_mixture = coef_names_mixture,
     ),
     class = "mnhmm",
     nobs = attr(observations, "nobs"),
-    df = n_states^2 - 1L + n_symbols * (n_states - 1),
-    type = "mnhmm"
+    df = n_pars,
+    type = paste0(multichannel, "nhmm_", init_type, A_type, B_type)
   )
 }

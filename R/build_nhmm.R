@@ -26,9 +26,11 @@ build_nhmm <- function(
   if (is.null(state_names)) {
     state_names <- paste("State", seq_len(n_states))
   } else {
-    if (length(state_names) != n_states) {
-      stop("Length of 'state_names' is not equal to the number of hidden states.")
-    }
+    stopifnot_(
+      length(state_names) == n_states,
+      "Length of {.arg state_names} is not equal to the number of hidden 
+      states."
+    )
   }
   if (intercept_only(initial_formula)) {
     init_type <- "c"
@@ -39,7 +41,8 @@ build_nhmm <- function(
   } else {
     stopifnot_(
       is.data.frame(data0), 
-      "Argument {.arg data0} must be a {.cls data.frame} object."
+      "If {.arg initial_formula} is provided, {.arg data0} must be a 
+      {.cls data.frame} object."
     )
     # ensure there is an intercept for which we define ordering constraint
     X_i <- model.matrix.lm(
@@ -61,7 +64,8 @@ build_nhmm <- function(
   } else {
     stopifnot_(
       is.data.frame(data),
-      "Argument {.arg data} must be a {.cls data.frame} object."
+      "If {.arg transition_formula} is provided, {.arg data} must be a 
+      {.cls data.frame} object."
     )
     X_s <- model.matrix.lm(
       transition_formula, data = data, na.action = na.pass
@@ -83,7 +87,8 @@ build_nhmm <- function(
   } else {
     stopifnot_(
       is.data.frame(data), 
-      "Argument {.arg data} must be a {.cls data.frame} object."
+      "If {.arg emission_formula} is provided, {.arg data} must be a 
+      {.cls data.frame} object."
     )
     X_o <- model.matrix.lm(
       emission_formula, data = data, na.action = na.pass

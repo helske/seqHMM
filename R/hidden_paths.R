@@ -1,6 +1,6 @@
 #' Most Probable Paths of Hidden States
 #'
-#' Function \code{hidden_paths} computes the most probable path of
+#' Function `hidden_paths` computes the most probable path of
 #' hidden states of a (mixture) hidden Markov model given the observed sequences.
 #'
 #' @export
@@ -10,7 +10,7 @@
 #' in the hidden state sequences as well.
 #'
 #' @return The most probable paths of hidden states as an `stslist` object
-#' (see \code{\link{seqdef}}). The log-probability is included as an attribute 
+#' (see [seqdef()]). The log-probability is included as an attribute 
 #' `log_prop`.
 #'
 #' @examples

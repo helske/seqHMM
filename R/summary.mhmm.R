@@ -1,41 +1,41 @@
 #' Summary method for mixture hidden Markov models
 #'
-#' Function \code{summary.mhmm} gives a summary of a mixture hidden Markov model.
+#' Function `summary.mhmm` gives a summary of a mixture hidden Markov model.
 #'
 #' @export
 #' @method summary mhmm
-#' @param object Mixture hidden Markov model of class \code{mhmm}.
+#' @param object Mixture hidden Markov model of class `mhmm`.
 #' @param parameters Whether or not to return transition, emission, and
-#' initial probabilities. \code{FALSE} by default.
+#' initial probabilities. `FALSE` by default.
 #' @param conditional_se Return conditional standard errors of coefficients.
-#' See \code{\link{vcov.mhmm}} for details. \code{TRUE} by default.
+#' See [vcov.mhmm()] for details. `TRUE` by default.
 #' @param log_space Make computations using log-space instead of scaling for greater
-#' numerical stability at cost of decreased computational performance. Default is \code{FALSE}.
-#' @param ... Further arguments to \code{\link{vcov.mhmm}}.
+#' numerical stability at cost of decreased computational performance. Default is `FALSE`.
+#' @param ... Further arguments to [vcov.mhmm()].
 #'
-#' @details The \code{summary.mhmm} function computes features from a mixture hidden Markov
-#' model and stores them as a list. A \code{print} method prints summaries of these:
+#' @details The `summary.mhmm` function computes features from a mixture hidden Markov
+#' model and stores them as a list. A `print` method prints summaries of these:
 #' log-likelihood and BIC, coefficients and standard errors of covariates, means of prior
 #' cluster probabilities, and information on most probable clusters.
 #'
-#' @return \describe{
-#'    \item{transition_probs}{Transition probabilities. Only returned if \code{parameters = TRUE}.}
-#'    \item{emission_probs}{Emission probabilities. Only returned if \code{parameters = TRUE}.}
-#'    \item{initial_probs}{Initial state probabilities. Only returned if \code{parameters = TRUE}.}
-#'    \item{logLik}{Log-likelihood.}
-#'    \item{BIC}{Bayesian information criterion.}
-#'    \item{most_probable_cluster}{The most probable cluster according to posterior probabilities.}
-#'    \item{coefficients}{Coefficients of covariates.}
-#'    \item{vcov}{Variance-covariance matrix of coefficients.}
-#'    \item{prior_cluster_probabilities}{Prior cluster probabilities
-#'    (mixing proportions) given the covariates.}
-#'    \item{posterior_cluster_probabilities}{Posterior cluster membership probabilities.}
-#'    \item{classification_table}{Cluster probabilities (columns) by the most probable cluster (rows).}
-#'   }
+#' @return
+#' * transition_probs\cr Transition probabilities. Only returned if `parameters = TRUE`.
+#' * emission_probs\cr Emission probabilities. Only returned if `parameters = TRUE`.
+#' * initial_probs\cr Initial state probabilities. Only returned if `parameters = TRUE`.
+#' * logLik\cr Log-likelihood.
+#' * BIC\cr Bayesian information criterion.
+#' * most_probable_cluster\cr The most probable cluster according to posterior probabilities.
+#' * coefficients\cr Coefficients of covariates.
+#' * vcov\cr Variance-covariance matrix of coefficients.
+#' * prior_cluster_probabilities\cr Prior cluster probabilities
+#'    (mixing proportions) given the covariates.
+#' * posterior_cluster_probabilities\cr Posterior cluster membership probabilities.
+#' * classification_table\cr Cluster probabilities (columns) by the most probable cluster (rows).
 #'
-#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_model}} for building and
+#'
+#' @seealso [build_mhmm()] and [fit_model()] for building and
 #'   fitting mixture hidden Markov models; and
-#'   \code{\link{mhmm_biofam}} for information on the model used in examples.
+#'   [mhmm_biofam()] for information on the model used in examples.
 #'
 #' @examples
 #' # Loading mixture hidden Markov model (mhmm object)

@@ -33,7 +33,7 @@ data.}
 
 \item{sequence_length}{The length of the simulated sequences.}
 
-\item{formula}{Covariates as an object of class \code{\link{formula}},
+\item{formula}{Covariates as an object of class \code{\link[=formula]{formula()}},
 left side omitted.}
 
 \item{data}{An optional data frame, a list or an environment containing
@@ -115,9 +115,9 @@ ssplot(list(estimates = paths, true = sim$states),
 
 }
 \seealso{
-\code{\link{build_mhmm}} and \code{\link{fit_model}} for building
-and fitting mixture hidden Markov models; \code{\link{ssplot}} for plotting
-multiple sequence data sets; \code{\link{seqdef}} for more
-information on state sequence objects; and \code{\link{simulate_hmm}}
+\code{\link[=build_mhmm]{build_mhmm()}} and \code{\link[=fit_model]{fit_model()}} for building
+and fitting mixture hidden Markov models; \code{\link[=ssplot]{ssplot()}} for plotting
+multiple sequence data sets; \code{\link[=seqdef]{seqdef()}} for more
+information on state sequence objects; and \code{\link[=simulate_hmm]{simulate_hmm()}}
 for simulating hidden Markov models.
 }

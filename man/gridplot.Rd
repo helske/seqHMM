@@ -21,7 +21,7 @@ gridplot(
 )
 }
 \arguments{
-\item{x}{A list of \code{\link{ssp}} objects.}
+\item{x}{A list of \code{\link[=ssp]{ssp()}} objects.}
 
 \item{nrow, ncol}{Optional arguments to arrange plots.}
 
@@ -167,6 +167,6 @@ gridplot(
 
 }
 \seealso{
-\code{\link{ssp}} for defining the plot before using
-  \code{gridplot}, and \code{\link{plot.ssp}} for plotting only one ssp object.
+\code{\link[=ssp]{ssp()}} for defining the plot before using
+\code{gridplot}, and \code{\link[=plot.ssp]{plot.ssp()}} for plotting only one ssp object.
 }

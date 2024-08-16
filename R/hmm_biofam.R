@@ -1,12 +1,12 @@
 #' Hidden Markov model for the biofam data
 #'
-#' A five-state hidden Markov model (HMM) fitted for the \code{\link[TraMineR]{biofam}} data.
+#' A five-state hidden Markov model (HMM) fitted for the [TraMineR::biofam()] data.
 #'
-#' @format A hidden Markov model of class \code{hmm};
+#' @format A hidden Markov model of class `hmm`;
 #' a left-to-right model with four hidden states.
 #'
 #' @details
-#' The model is loaded by calling \code{data(hmm_biofam)}. It was created with the
+#' The model is loaded by calling `data(hmm_biofam)`. It was created with the
 #' following code:
 #' \preformatted{
 #' data("biofam3c")
@@ -71,9 +71,9 @@
 #' hmm_biofam <- fit_biofam$model
 #' }
 #'
-#' @seealso Examples of building and fitting HMMs in \code{\link{build_hmm}} and
-#' \code{\link{fit_model}}; and \code{\link[TraMineR]{biofam}} for the original data and
-#' \code{\link{biofam3c}} for the three-channel version used in this model.
+#' @seealso Examples of building and fitting HMMs in [build_hmm()] and
+#' [fit_model()]; and [TraMineR::biofam()] for the original data and
+#' [biofam3c()] for the three-channel version used in this model.
 #'
 #' @docType data
 #' @keywords datasets

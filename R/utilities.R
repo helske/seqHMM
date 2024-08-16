@@ -11,6 +11,16 @@ stopifnot_ <- function (cond, message, ..., call = rlang::caller_env()) {
     cli::cli_abort(message, ..., .envir = parent.frame(), call = call)
   }
 }
+#' Give a Informational Message
+#' 
+#' Function copied from the `dynamite` package.
+#' 
+#' @param message See [cli::cli_inform()].
+#' @param ... See [cli::cli_inform()].
+#' @noRd
+message_ <- function(message, ...) {
+  cli::cli_inform(message, ..., .envir = parent.frame())
+}
 #' Issue a Warning
 #' 
 #' Function copied from the `dynamite` package.
@@ -21,13 +31,30 @@ stopifnot_ <- function (cond, message, ..., call = rlang::caller_env()) {
 warning_ <- function (message, ...) {
   cli::cli_warn(message, ..., .envir = parent.frame())
 }
-
+#' Issue an Error
+#' 
+#' Function copied from the `dynamite` package.
+#' 
+#' @param message See [cli::cli_abort()].
+#' @param ... See [cli::cli_abort()].
+#' @param call See [cli::cli_abort()].
+#' @noRd
+stop_ <- function (message, ..., call = rlang::caller_env()) {
+  cli::cli_abort(message, ..., .envir = parent.frame(), call = call)
+}
 #' Checks Whether the Formula Contains Only the Intercept Term
 #' 
 #' @param f A formula object.
 #' @noRd
 intercept_only <- function(f) {
   identical(deparse(update(f, 0 ~ .)), "0 ~ 1")
+}
+#' @noRd
+check_positive_integer <- function(x, name = "threads") {
+  stopifnot_(
+    x > 0 && x == as.integer(x),
+    "{.arg {name}} must be a positive integer."
+  )
 }
 #' Create obsArray for Various C++ functions
 #' 

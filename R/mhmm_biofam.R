@@ -1,10 +1,10 @@
 #' Mixture hidden Markov model for the biofam data
 #'
-#' A mixture hidden Markov model (MHMM) fitted for the \code{\link[TraMineR]{biofam}} data.
+#' A mixture hidden Markov model (MHMM) fitted for the [TraMineR::biofam()] data.
 #'
-#' @format A mixture hidden Markov model of class \code{mhmm}:
+#' @format A mixture hidden Markov model of class `mhmm`:
 #' three clusters with left-to-right models including 4, 4, and 6 hidden states.
-#' Two covariates, \code{sex} and \code{cohort}, explaining the cluster membership.
+#' Two covariates, `sex` and `cohort`, explaining the cluster membership.
 #'
 #'
 #' @details
@@ -140,9 +140,9 @@
 #' mhmm_biofam <- fit_model(init_mhmm_bf)$model
 #' }
 #'
-#' @seealso Examples of building and fitting MHMMs in \code{\link{build_mhmm}} and
-#' \code{\link{fit_model}}; and \code{\link[TraMineR]{biofam}} for the original data and
-#' \code{\link{biofam3c}} for the three-channel version used in this model.
+#' @seealso Examples of building and fitting MHMMs in [build_mhmm()] and
+#' [fit_model()]; and [TraMineR::biofam()] for the original data and
+#' [biofam3c()] for the three-channel version used in this model.
 #'
 #' @docType data
 #' @keywords datasets

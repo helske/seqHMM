@@ -1,56 +1,56 @@
 #' Plot Multidimensional Sequence Plots in a Grid
 #'
-#' Function \code{gridplot} plots multiple \code{ssp} objects to a
+#' Function `gridplot` plots multiple `ssp` objects to a
 #' grid.
 #'
 #' @export
 #'
-#' @param x A list of \code{\link{ssp}} objects.
+#' @param x A list of [ssp()] objects.
 #'
 #' @param nrow,ncol Optional arguments to arrange plots.
 #'
-#' @param byrow Controls the order of plotting. Defaults to \code{FALSE}, i.e. plots
+#' @param byrow Controls the order of plotting. Defaults to `FALSE`, i.e. plots
 #'   are arranged column-wise.
 #'
 #' @param with.legend Defines if and how the legends for the states are plotted.
-#'   The default value \code{"auto"} (equivalent to \code{TRUE} and
-#'   \code{"many"}) creates separate legends for each requested plot. Other
-#'   possibilities are \code{"combined"} (all legends combined) and \code{FALSE}
+#'   The default value `"auto"` (equivalent to `TRUE` and
+#'   `"many"`) creates separate legends for each requested plot. Other
+#'   possibilities are `"combined"` (all legends combined) and `FALSE`
 #'   (no legend).
 #'
 #' @param legend.pos Defines the positions of the legend boxes relative to the
-#'   whole plot. Either one of \code{"bottom"} (equivalent to \code{"auto"}) or
-#'   \code{"right"}, or a numerical vector of grid cells (by order) to print the
+#'   whole plot. Either one of `"bottom"` (equivalent to `"auto"`) or
+#'   `"right"`, or a numerical vector of grid cells (by order) to print the
 #'   legends to (the cells must be in one row/column).
 #'
 #' @param legend.pos2 Defines the positions of the legend boxes relative to the
-#'   cell(s). One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"},
-#'   \code{"left"}, \code{"topleft"}, \code{"top"} (the default), \code{"topright"},
-#'   \code{"right"} and \code{"center"}.
+#'   cell(s). One of `"bottomright"`, `"bottom"`, `"bottomleft"`,
+#'   `"left"`, `"topleft"`, `"top"` (the default), `"topright"`,
+#'   `"right"` and `"center"`.
 #'
-#' @param title.legend The titles for the legend boxes. The default \code{"auto"} takes
-#'   the titles from the channel labels provided by the first object in \code{x}.
-#'   \code{NA} prints no title.
+#' @param title.legend The titles for the legend boxes. The default `"auto"` takes
+#'   the titles from the channel labels provided by the first object in `x`.
+#'   `NA` prints no title.
 #'
 #' @param ncol.legend (A vector of) the number of columns for the legend(s). The
-#'   default \code{"auto"} creates one column for each legend.
+#'   default `"auto"` creates one column for each legend.
 #'
-#' @param with.missing.legend If set to \code{"auto"} (the default), a legend
+#' @param with.missing.legend If set to `"auto"` (the default), a legend
 #'   for the missing state is added automatically if one or more of the
-#'   sequences in data contain missing states. With the value \code{TRUE} a
+#'   sequences in data contain missing states. With the value `TRUE` a
 #'   legend for the missing state is added in any case; equivalently
-#'   \code{FALSE} omits the legend for the missing state.
+#'   `FALSE` omits the legend for the missing state.
 #'
 #' @param cex.legend Expansion factor for setting the size of the font for the
 #'   labels in the legend. The default value is 1. Values lesser than 1 will
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #'
 #' @param row.prop Sets the proportions of the row heights of the grid. The default
-#'   value is \code{"auto"} for even row heights. Takes a vector of values from
+#'   value is `"auto"` for even row heights. Takes a vector of values from
 #'   0 to 1, with values summing to 1.
 #'
 #' @param col.prop Sets the proportion of the column heights of the grid. The default
-#'   value is \code{"auto"} for even column widths. Takes a vector of values
+#'   value is `"auto"` for even column widths. Takes a vector of values
 #'   from 0 to 1, with values summing to 1.
 #'
 #' @examples
@@ -145,8 +145,8 @@
 #' )
 #' }
 #'
-#' @seealso \code{\link{ssp}} for defining the plot before using
-#'   \code{gridplot}, and \code{\link{plot.ssp}} for plotting only one ssp object.
+#' @seealso [ssp()] for defining the plot before using
+#'   `gridplot`, and [plot.ssp()] for plotting only one ssp object.
 
 gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
                      with.legend = "auto", legend.pos = "auto",
@@ -155,8 +155,6 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
                      with.missing.legend = "auto",
                      row.prop = "auto", col.prop = "auto", cex.legend = 1) {
   .Deprecated(msg = "'gridplot' is deprecated. Use 'stacked_sequence_plot' and patchwork package instead.")
-  check_deprecated_args(match.call())
-
   grid.newpage()
   plot.new()
   opar <- par(no.readonly = TRUE)

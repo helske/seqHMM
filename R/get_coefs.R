@@ -7,7 +7,7 @@
 #' @param probs Vector defining the quantiles of interest. Default is 
 #' `c(0.025, 0.975)`.
 #' @export
-coef <- function(object, nsim = 0, probs = c(0.025, 0.975)) {
+coef.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.975)) {
   
   S <- object$n_states
   M <- object$n_symbols

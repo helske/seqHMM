@@ -27,43 +27,41 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
     }
   }
 
-  if (!is.matrix(layout) && !is.function(layout)) {
-    if (!(layout %in% c("horizontal", "vertical"))) {
-      stop("Argument layout only accepts numerical matrices, igraph layout functions, or strings \"horizontal\" and \"vertical\".")
-    }
-  }
-
+  stopifnot_(
+    is.matrix(layout) || is.function(layout) || 
+      layout %in% c("horizontal", "vertical"),
+    "{.arg layout} only accepts numerical matrices, igraph layout functions, 
+    or strings {.val 'horizontal'} and {.val 'vertical'}."
+  )
   if (!is.numeric(vertex.label.pos)) {
     choices <- c("bottom", "top", "left", "right")
     ind <- pmatch(vertex.label.pos, choices, duplicates.ok = TRUE)
-    if (any(is.na(ind))) {
-      stop("Argument vertex.label.pos only accepts values \"bottom\", \"top\", \"left\", \"right\" or a numerical vector.")
-    }
+    stopifnot_(
+      !any(is.na(ind)),
+      "{.arg vertex.label.pos} only accepts values {.val 'bottom'}, 
+      {.val 'top'},{.val 'left'}, {.val 'right'} or numerical vector."
+    )
     vertex.label.pos <- choices[ind]
   }
-
   choices <- c(TRUE, FALSE, "bottom", "top", "left", "right")
   ind <- pmatch(with.legend, choices)
-  if (is.na(ind)) {
-    stop("Argument with.legend must be one of TRUE, FALSE, \"bottom\", \"right\", \"top\", or \"left\".")
-  }
+  stopifnot_(
+    !is.na(ind),
+    "{.arg  with.legend} only accepts values {.val 'TRUE'}, {.val 'FALSE'}, 
+    {.val 'bottom'}, {.val 'top'},{.val 'left'}, or {.val 'right'}."
+  )
   with.legend <- choices[ind]
   if (with.legend %in% c(TRUE, "auto")) {
     with.legend <- "bottom"
   }
-
-
   # Convert multichannel models to single-channel
   if (x$n_channels > 1) {
     x <- mc_to_sc(x, cpal = cpal)
   }
-
   # No slices -> no legends needed
   if (pie == FALSE && with.legend != FALSE) {
     with.legend <- FALSE
   }
-
-
   # Positions of vertex labels
   if (!is.numeric(vertex.label.pos)) {
     vpos <- numeric(length(vertex.label.pos))
@@ -89,19 +87,23 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
       vertex.label <- x$state_names
     }
   } else if (length(vertex.label) != length(x$state_names)) {
-    warning("The length of the vector provided for the argument \"vertex.label\" does not match the number of hidden states.")
+    warning_("The length of {.arg vertex.label} does not match the number of 
+             hidden states.")
     vertex.label <- rep(vertex.label, length.out = length(x$state_names))
   }
 
   # Vertex label distances
   if (is.character(vertex.label.dist)) {
     ind <- pmatch(vertex.label.dist, "auto")
-    if (is.na(ind)) {
-      stop("Argument vertex.label.dist only accepts the value \"auto\" or a numerical vector.")
-    }
+    stopifnot(
+      !is.na(ind),
+      "{.arg vertex.label.dist} only accepts the value {.val 'auto'} or a 
+      numerical vector."
+    )
     vertex.label.dist <- vertex.size * 0.4 / 3.5
   } else if (length(vertex.label.dist) > 1 && length(vertex.label.dist) != x$n_states) {
-    warning("The length of the vector provided for the argument \"vertex.label.dist\" does not match the number of edges.")
+    warning_("The length of {.arg vertex.label.dist} does not match the number 
+             of edges.")
     vertex.label.dist <- rep(vertex.label.dist, length.out = length(x$n_states))
   }
 
@@ -130,7 +132,8 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
     if (length(edge.label) == 1 && (edge.label == "auto" || edge.label == TRUE)) {
       edge.label <- sapply(transitions, labelprint, labs = label.scientific)
     } else if (length(edge.label) > 1 && length(edge.label) != length(transitions)) {
-      warning("The length of the vector provided for the argument \"edge.label\" does not match the number of edges.")
+      warning_("The length of {.arg edge.label} does not match the number of 
+               edges.")
       edge.label <- rep(edge.label, length.out = length(transitions))
     }
   }
@@ -139,12 +142,15 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
   # Edge widths
   if (is.character(edge.width)) {
     ind <- pmatch(edge.width, "auto")
-    if (is.na(ind)) {
-      stop("Argument edge.width only accepts the value \"auto\" or a numerical vector.")
-    }
+    stopifnot_(
+      !is.na(ind),
+      "{.arg edge.width} only accepts the value {.val 'auto'} or a numerical 
+      vector."
+    )
     edge.width <- transitions * (7 / max(transitions)) * cex.edge.width
   } else if (length(edge.width) > 1 && edge.width != length(transitions)) {
-    warning("The length of the vector provided for the argument \"edge.width\" does not match the number of edges.")
+    warning_("The length of {.arg edge.width} does not match the number of 
+             edges.")
     edge.width <- rep(edge.width, length.out = length(transitions))
   }
 
@@ -169,10 +175,12 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
   if (identical(cpal, "auto")) {
     pie.colors <- attr(x$observations, "cpal")
   } else if (length(cpal) != ncol(x$emiss)) {
-    warning("The length of the vector provided for argument cpal does not match the number of observed states. Automatic color palette was used.")
+    warning_("The length of {.arg cpal} does not match the number of observed 
+             states. Automatic color palette was used.")
     pie.colors <- attr(x$observations, "cpal")
   } else if (!all(isColor(cpal))) {
-    stop(paste("Please provide a vector of colors for argument cpal or use value \"auto\" for automatic color palette."))
+    stop_("Please provide a vector of colors for {.arg cpal} or use value 
+          {.val 'auto'} for automatic color palette.")
   } else {
     pie.colors <- cpal
   }
@@ -183,10 +191,11 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
   # Legend position and number of columns
   if (with.legend != FALSE && pie == TRUE) {
     if (!is.null(ltext)) {
-      if (length(ltext) != x$n_symbols) {
-        stop("The length of the argument ltext does not match the number of (combined) observed states.")
-      }
-      # ltext = NULL
+      stopifnot_(
+        length(ltext) == x$n_symbols,
+        "The length of {.arg ltext} does not match the number of (combined) 
+        observed states in the observed data ({x$n_symbols})."
+      )
     } else {
       ltext <- x$symbol_names
     }

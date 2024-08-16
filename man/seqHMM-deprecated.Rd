@@ -4,10 +4,12 @@
 \alias{seqHMM-deprecated}
 \title{Deprecated function(s) in the seqHMM package}
 \description{
-These functions still work but will be removed (defunct) in the next version 
-of `seqHMM`.
+These functions still work but will be removed (defunct) in the next version
+of \code{seqHMM}.
 }
 \details{
-* `ssplot`, `ssp`, `mssplot`, `plot.ssp`. Use [stacked_sequence_plot()] instead.
-* `gridplot` Use [stacked_sequence_plot()] and `patchwork` package instead.
+\itemize{
+\item \code{ssplot}, \code{ssp}, \code{mssplot}, \code{plot.ssp}. Use \code{\link[=stacked_sequence_plot]{stacked_sequence_plot()}} instead.
+\item \code{gridplot} Use \code{\link[=stacked_sequence_plot]{stacked_sequence_plot()}} and \code{patchwork} package instead.
+}
 }

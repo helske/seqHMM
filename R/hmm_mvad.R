@@ -1,8 +1,8 @@
 #' Hidden Markov model for the mvad data
 #'
-#' A hidden Markov model (MMM) fitted for the \code{\link[TraMineR]{mvad}} data.
+#' A hidden Markov model (MMM) fitted for the [TraMineR::mvad()] data.
 #'
-#' @format A hidden Markov model of class \code{hmm};
+#' @format A hidden Markov model of class `hmm`;
 #' unrestricted model with six hidden states.
 #'
 #' @details
@@ -47,8 +47,8 @@
 #' hmm_mvad <- fit_hmm_mvad$model
 #' }
 #'
-#' @seealso Examples of building and fitting HMMs in \code{\link{build_hmm}} and
-#' \code{\link{fit_model}}; and \code{\link[TraMineR]{mvad}} for more information on the data.
+#' @seealso Examples of building and fitting HMMs in [build_hmm()] and
+#' [fit_model()]; and [TraMineR::mvad()] for more information on the data.
 #'
 #' @docType data
 #' @keywords datasets

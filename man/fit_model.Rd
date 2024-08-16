@@ -31,105 +31,120 @@ fit_model(
 of the parameter estimation. The default is \code{TRUE}.}
 
 \item{global_step}{Logical. Whether or not to use global optimization via
-\code{\link{nloptr}} (possibly after the EM step). The default is \code{FALSE}.}
+\code{\link[=nloptr]{nloptr()}} (possibly after the EM step). The default is \code{FALSE}.}
 
 \item{local_step}{Logical. Whether or not to use local optimization via
-\code{\link{nloptr}} (possibly after the EM and/or global steps). The default is \code{FALSE}.}
+\code{\link[=nloptr]{nloptr()}} (possibly after the EM and/or global steps). The default is \code{FALSE}.}
 
 \item{control_em}{Optional list of control parameters for the EM algorithm.
-Possible arguments are \describe{
-\item{maxeval}{The maximum number of iterations, the default is 1000.
-Note that iteration counter starts with -1 so with \code{maxeval=1} you get already two iterations.
-This is for backward compatibility reasons.}
-\item{print_level}{The level of printing. Possible values are 0
-(prints nothing), 1 (prints information at the start and the end of the algorithm),
-2 (prints at every iteration),
-and for mixture models 3 (print also during optimization of coefficients).}
-\item{reltol}{Relative tolerance for convergence defined as
-\eqn{(logLik_new - logLik_old)/(abs(logLik_old) + 0.1)}.
-The default is 1e-10.}
-\item{restart}{A list containing options for possible EM restarts with the
-  following components:
-\describe{
-\item{times}{Number of restarts of the EM algorithm using random initial values. The default is 0, i.e. no restarts. }
-\item{transition}{Logical. Should the original transition probabilities be varied? The default is \code{TRUE}. }
-\item{emission}{Logical. Should the original emission probabilities be varied? The default is \code{TRUE}. }
-\item{sd}{Standard deviation for \code{rnorm} used in randomization. The default is 0.25.}
-\item{maxeval}{Maximum number of iterations, the default is \code{control_em$maxeval}}
-\item{print_level}{Level of printing in restarted EM steps. The default is \code{control_em$print_level}. }
-\item{reltol}{Relative tolerance for convergence at restarted EM steps. The default is \code{control_em$reltol}.
-If the relative change of the final model of the restart phase is larger than the tolerance
-for the original EM phase, the final model is re-estimated with the original \code{reltol}
-and \code{maxeval} at the end of the EM step.}
-\item{n_optimum}{Save the log-likelihood values of the \code{n_optimum} best
+Possible arguments are
+\itemize{
+\item The maximum number of iterations, the default is 1000. Note that iteration
+counter starts with -1 so with \code{maxeval = 1} you get already two iterations.
+This is for backward compatibility reasons.
+\item \code{print_level}\cr The level of printing. Possible values are 0
+(prints nothing), 1 (prints information at the start and the end of the
+algorithm), 2 (prints at every iteration), and for mixture models 3
+(print also during optimization of coefficients).
+\item \code{reltol}\cr Relative tolerance for convergence defined as
+\eqn{(logLik_new - logLik_old)/(abs(logLik_old) + 0.1)}. The default is 1e-10.
+\item \code{restart}\cr A list containing options for possible EM restarts with the
+following components:
+\itemize{
+\item \code{times}\cr Number of restarts of the EM algorithm using random initial
+values. The default is \code{0}, i.e. no restarts.
+\item \code{transition}\cr Logical. Should the original transition probabilities be
+varied? The default is \code{TRUE}.
+\item \code{emission}\cr Logical. Should the original emission probabilities be
+varied? The default is \code{TRUE}.
+\item \code{sd}\cr Standard deviation for \code{\link[=rnorm]{rnorm()}} used in randomization. The
+default is 0.25.
+\item \code{maxeval}\cr Maximum number of iterations, the default is
+\code{control_em$maxeval}
+\item print_level\cr Level of printing in restarted EM steps. The default is
+\code{control_em$print_level}.
+\item \code{reltol}\cr Relative tolerance for convergence at restarted EM steps.
+The default is \code{control_em$reltol}. If the relative change of the final
+model of the restart phase is larger than the tolerance for the original
+EM phase, the final model is re-estimated with the original \code{reltol}
+and \code{maxeval} at the end of the EM step.
+\item \code{n_optimum}\cr Save the log-likelihood values of the \code{n_optimum} best
 models (from all estimated models including the the first EM run.).
-The default is \code{min(times + 1, 25)}.}
-\item{use_original}{If \code{TRUE}. Use the initial values of the input model as starting
-points for the permutations. Otherwise permute the results of the first EM run.}
-}
+The default is \code{min(times + 1, 25)}.
+\item \code{use_original}\cr If \code{TRUE}, use the initial values of the input model as
+starting points for the permutations. Otherwise permute the results of
+the first EM run.
 }
 }}
 
 \item{control_global}{Optional list of additional arguments for
-  \code{\link{nloptr}} argument \code{opts}. The default values are
-  \describe{
-   \item{algorithm}{\code{"NLOPT_GD_MLSL_LDS"}}
-   \item{local_opts}{\code{list(algorithm = "NLOPT_LD_LBFGS", ftol_rel = 1e-6, xtol_rel = 1e-4)}}
-   \item{maxeval}{\code{10000} (maximum number of iterations in global optimization algorithm.)}
-   \item{maxtime}{\code{60} (maximum time for global optimization. Set to 0 for unlimited time.)}
+\code{\link[=nloptr]{nloptr()}} argument \code{opts}. The default values are
+\itemize{
+\item \code{algorithm}\cr \code{"NLOPT_GD_MLSL_LDS"}
+\item \code{local_opts}\cr \code{list(algorithm = "NLOPT_LD_LBFGS", ftol_rel = 1e-6, xtol_rel = 1e-4)}
+\item \code{maxeval}\cr \code{10000} (maximum number of iterations in global
+optimization algorithm.)
+\item \code{maxtime}\cr \code{60} (maximum time for global optimization. Set to 0 for
+unlimited time.)
 }}
 
 \item{control_local}{Optional list of additional arguments for
-\code{\link{nloptr}} argument \code{opts}. The default values are
-\describe{
- \item{algorithm}{\code{"NLOPT_LD_LBFGS"}}
- \item{ftol_rel}{\code{1e-10}}
- \item{xtol_rel}{\code{1e-8}}
- \item{maxeval}{\code{10000} (maximum number of iterations)}
+\code{\link[=nloptr]{nloptr()}} argument \code{opts}. The default values are
+\itemize{
+\item \code{algorithm}\cr \code{"NLOPT_LD_LBFGS"}
+\item \code{ftol_rel}\cr \code{1e-10}
+\item \code{xtol_rel}\cr \code{1e-8}
+\item \code{maxeval}\cr \code{10000} (maximum number of iterations)
 }}
 
-\item{lb, ub}{Lower and upper bounds for parameters in Softmax parameterization.
-The default interval is \eqn{[pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues)]},
-except for gamma coefficients,
-where the scale of covariates is taken into account.
-Note that it might still be a good idea to scale covariates around unit scale.
-Bounds are used only in the global optimization step.}
+\item{lb, ub}{Lower and upper bounds for parameters in Softmax
+parameterization.The default interval is
+\code{c(pmin(-25, 2*initialvalues), pmax(25, 2*initialvalues))}, except for gamma
+coefficients,where the scale of covariates is taken into account.
+Note that it might still be a good idea to scale covariates around unit
+scale. Bounds are used only in the global optimization step.}
 
-\item{threads}{Number of threads to use in parallel computing. The default is 1.}
+\item{threads}{Number of threads to use in parallel computing. The default
+is \code{1}.}
 
-\item{log_space}{Make computations using log-space instead of scaling for greater
-numerical stability at a cost of decreased computational performance. The default is \code{FALSE}.}
+\item{log_space}{Make computations using log-space instead of scaling for
+greater numerical stability at a cost of decreased computational performance.
+The default is \code{FALSE}.}
 
-\item{constraints}{Integer vector defining equality constraints for emission distributions.
-Not supported for EM algorithm. See details.}
+\item{constraints}{Integer vector defining equality constraints for emission
+distributions. Not supported for EM algorithm. See details.}
 
-\item{fixed_inits}{Can be used to fix some of the probabilities to their initial values.
-Should have same structure as \code{model$initial_probs}, where each element
-is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
-Not supported for EM algorithm. See details.}
+\item{fixed_inits}{Can be used to fix some of the probabilities to their
+initial values.Should have same structure as \code{model$initial_probs}, where
+each element is either \code{TRUE} (fixed) or \code{FALSE} (to be estimated). Note that
+zero probabilities are always fixed to 0. Not supported for EM algorithm.
+See details.}
 
-\item{fixed_emissions}{Can be used to fix some of the probabilities to their initial values.
-Should have same structure as \code{model$emission_probs}, where each element
-is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
-Not supported for EM algorithm. See details.}
+\item{fixed_emissions}{Can be used to fix some of the probabilities to
+their initial values. Should have same structure as \code{model$emission_probs},
+where each element is either \code{TRUE} (fixed) or \code{FALSE} (to be estimated). Note
+that zero probabilities are always fixed to 0. Not supported for EM
+algorithm. See details.}
 
-\item{fixed_transitions}{Can be used to fix some of the probabilities to their initial values.
-Should have same structure as \code{model$transition_probs}, where each element
-is either TRUE (fixed) or FALSE (to be estimated). Note that zero probabilities are always fixed to 0.
-Not supported for EM algorithm. See details.}
+\item{fixed_transitions}{Can be used to fix some of the probabilities to
+their initial values. Should have same structure as \code{model$transition_probs},
+where each element is either \code{TRUE} (fixed) or \code{FALSE} (to be estimated).
+Note that zero probabilities are always fixed to 0. Not supported for EM
+algorithm. See details.}
 
 \item{...}{Additional arguments to \code{nloptr}.}
 }
 \value{
-\describe{
-  \item{logLik}{Log-likelihood of the estimated model. }
-  \item{em_results}{Results after the EM step: log-likelihood (\code{logLik}), number of iterations
-  (\code{iterations}), relative change in log-likelihoods between the last two iterations (\code{change}), and
-  the log-likelihoods of the \code{n_optimum} best models after the EM step (\code{best_opt_restart}). }
-  \item{global_results}{Results after the global step. }
-  \item{local_results}{Results after the local step. }
-  \item{call}{The matched function call. }
-  }
+\itemize{
+\item logLik\cr Log-likelihood of the estimated model.
+\item em_results\cr Results after the EM step: log-likelihood (\code{logLik}),
+number of iterations (\code{iterations}), relative change in log-likelihoods
+between the last two iterations (\code{change}), and the log-likelihoods of
+the \code{n_optimum} best models after the EM step (\code{best_opt_restart}).
+\item global_results\cr Results after the global step.
+\item local_results\cr Results after the local step.
+\item call\cr The matched function call.
+}
 }
 \description{
 Function \code{fit_model} estimates the parameters of mixture hidden
@@ -139,60 +154,60 @@ of the model with preservation of original zero probabilities.
 }
 \details{
 The fitting function provides three estimation steps: 1) EM algorithm,
-  2) global optimization, and 3) local optimization. The user can call for one method
-  or any combination of these steps, but should note that they are preformed in the
-  above-mentioned order. The results from a former step are used as starting values
-  in a latter, except for some of global optimization algorithms (such as MLSL and StoGO)
-  which only use initial values for setting up the boundaries for the optimization.
+2) global optimization, and 3) local optimization. The user can call for one method
+or any combination of these steps, but should note that they are preformed in the
+above-mentioned order. The results from a former step are used as starting values
+in a latter, except for some of global optimization algorithms (such as MLSL and StoGO)
+which only use initial values for setting up the boundaries for the optimization.
 
-  It is possible to rerun the EM algorithm automatically using random starting
-  values based on the first run of EM. Number of restarts is defined by
-  the \code{restart} argument in \code{control_em}. As the EM algorithm is
-  relatively fast, this method might be preferred option compared to the proper
-  global optimization strategy of step 2.
+It is possible to rerun the EM algorithm automatically using random starting
+values based on the first run of EM. Number of restarts is defined by
+the \code{restart} argument in \code{control_em}. As the EM algorithm is
+relatively fast, this method might be preferred option compared to the proper
+global optimization strategy of step 2.
 
-  The default global optimization method (triggered via \code{global_step = TRUE}) is
-  the multilevel single-linkage method (MLSL) with the LDS modification (\code{NLOPT_GD_MLSL_LDS} as
-  \code{algorithm} in \code{control_global}), with L-BFGS as the local optimizer.
-  The MLSL method draws random starting points and performs a local optimization
-  from each. The LDS modification uses low-discrepancy sequences instead of
-  pseudo-random numbers as starting points and should improve the convergence rate.
-  In order to reduce the computation time spent on non-global optima, the
-  convergence tolerance of the local optimizer is set relatively large. At step 3,
-  a local optimization (L-BFGS by default) is run with a lower tolerance to find the
-  optimum with high precision.
+The default global optimization method (triggered via \code{global_step = TRUE}) is
+the multilevel single-linkage method (MLSL) with the LDS modification (\code{NLOPT_GD_MLSL_LDS} as
+\code{algorithm} in \code{control_global}), with L-BFGS as the local optimizer.
+The MLSL method draws random starting points and performs a local optimization
+from each. The LDS modification uses low-discrepancy sequences instead of
+pseudo-random numbers as starting points and should improve the convergence rate.
+In order to reduce the computation time spent on non-global optima, the
+convergence tolerance of the local optimizer is set relatively large. At step 3,
+a local optimization (L-BFGS by default) is run with a lower tolerance to find the
+optimum with high precision.
 
-  There are some theoretical guarantees that the MLSL method used as the default
-  optimizer in step 2 shoud find all local optima in a finite number of local
-  optimizations. Of course, it might not always succeed in a reasonable time.
-  The EM algorithm can help in finding good boundaries for the search, especially
-  with good starting values, but in some cases it can mislead. A good strategy is to
-  try a couple of different fitting options with different combinations of the methods:
-  e.g. all steps, only global and local steps, and a few evaluations of EM followed by
-  global and local optimization.
+There are some theoretical guarantees that the MLSL method used as the default
+optimizer in step 2 shoud find all local optima in a finite number of local
+optimizations. Of course, it might not always succeed in a reasonable time.
+The EM algorithm can help in finding good boundaries for the search, especially
+with good starting values, but in some cases it can mislead. A good strategy is to
+try a couple of different fitting options with different combinations of the methods:
+e.g. all steps, only global and local steps, and a few evaluations of EM followed by
+global and local optimization.
 
-  By default, the estimation time is limited to 60 seconds in global optimization step, so it is
-  advisable to change the default settings for the proper global optimization.
+By default, the estimation time is limited to 60 seconds in global optimization step, so it is
+advisable to change the default settings for the proper global optimization.
 
-  Any algorithm available in the \code{nloptr} function can be used for the global and
-  local steps.
+Any algorithm available in the \code{nloptr} function can be used for the global and
+local steps.
 
-  Equality constraints for emission distributions can be defined using the argument
-  \code{constraints}. This should be a vector with length equal to the number of states,
-  with numbers starting from 1 and increasing for each unique row of the emission probability matrix.
-  For example in case of five states with emissions of first and third states being equal,
-  \code{constraints = c(1, 2, 1, 3, 4)}. Similarly, some of the model parameters can be fixed to their
-  initial values by using arguments \code{fixed_inits}, \code{fixed_emissions},
-  and \code{fixed_transitions}, where the structure of the arguments should be
-  same as the corresponding model components, so that TRUE value means that
-  the parameter should be fixed and FALSE otherwise (it is still treated as fixed if it
-  is zero though). For both types of constrains, only numerical optimisation
-  (local or global) is available, and currently the gradients are computed numerically
-  (if needed) in these cases.
+Equality constraints for emission distributions can be defined using the argument
+\code{constraints}. This should be a vector with length equal to the number of states,
+with numbers starting from 1 and increasing for each unique row of the emission probability matrix.
+For example in case of five states with emissions of first and third states being equal,
+\code{constraints = c(1, 2, 1, 3, 4)}. Similarly, some of the model parameters can be fixed to their
+initial values by using arguments \code{fixed_inits}, \code{fixed_emissions},
+and \code{fixed_transitions}, where the structure of the arguments should be
+same as the corresponding model components, so that TRUE value means that
+the parameter should be fixed and FALSE otherwise (it is still treated as fixed if it
+is zero though). For both types of constrains, only numerical optimisation
+(local or global) is available, and currently the gradients are computed numerically
+(if needed) in these cases.
 
-  In a case where the is no transitions from one state to anywhere (even to
-  itself), the state is defined as absorbing in a way that probability of
-  staying in this state is fixed to 1. See also `build_mm` function.
+In a case where the is no transitions from one state to anywhere (even to
+itself), the state is defined as absorbing in a way that probability of
+staying in this state is fixed to 1. See also \code{build_mm} function.
 }
 \examples{
 
@@ -618,11 +633,11 @@ Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: 
 Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
 }
 \seealso{
-\code{\link{build_hmm}},  \code{\link{build_mhmm}},
-\code{\link{build_mm}},  \code{\link{build_mmm}}, and  \code{\link{build_lcm}}
-  for constructing different types of models; \code{\link{summary.mhmm}}
-  for a summary of a MHMM; \code{\link{separate_mhmm}} for reorganizing a MHMM into
-  a list of separate hidden Markov models; \code{\link{plot.hmm}} and \code{\link{plot.mhmm}}
-  for plotting model objects; and \code{\link{ssplot}} and \code{\link{mssplot}} for plotting
-  stacked sequence plots of \code{hmm} and \code{mhmm} objects.
+\code{\link[=build_hmm]{build_hmm()}},  \code{\link[=build_mhmm]{build_mhmm()}},
+\code{\link[=build_mm]{build_mm()}},  \code{\link[=build_mmm]{build_mmm()}}, and  \code{\link[=build_lcm]{build_lcm()}}
+for constructing different types of models; \code{\link[=summary.mhmm]{summary.mhmm()}}
+for a summary of a MHMM; \code{\link[=separate_mhmm]{separate_mhmm()}} for reorganizing a MHMM into
+a list of separate hidden Markov models; \code{\link[=plot.hmm]{plot.hmm()}} and \code{\link[=plot.mhmm]{plot.mhmm()}}
+for plotting model objects; and \code{\link[=ssplot]{ssplot()}} and \code{\link[=mssplot]{mssplot()}} for plotting
+stacked sequence plots of \code{hmm} and \code{mhmm} objects.
 }

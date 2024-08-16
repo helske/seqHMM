@@ -7,14 +7,14 @@
 get_probs(model, nsim = 0, probs = c(0.025, 0.975))
 }
 \arguments{
-\item{model}{An object of class `nhmm`.}
+\item{model}{An object of class \code{nhmm}.}
 
-\item{nsim}{Non-negative integer defining the number of samples used in 
-constructing confidence intervals. If `0`, only point estimates are 
+\item{nsim}{Non-negative integer defining the number of samples used in
+constructing confidence intervals. If \code{0}, only point estimates are
 returned.}
 
-\item{probs}{Vector defining the quantiles of interest. Default is 
-`c(0.025, 0.975)`.}
+\item{probs}{Vector defining the quantiles of interest. Default is
+\code{c(0.025, 0.975)}.}
 }
 \description{
 Get the Estimated Initial, Transition, and Emission Probabilities for NHMM

@@ -1,20 +1,20 @@
 #' Build a Latent Class Model
 #'
-#' Function \code{build_lcm} is a shortcut for constructing a latent class model
-#' as a restricted case of an \code{mhmm} object.
+#' Function `build_lcm` is a shortcut for constructing a latent class model
+#' as a restricted case of an `mhmm` object.
 #'
 #' @export
-#' @param observations An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
+#' @param observations An `stslist` object (see [TraMineR::seqdef()]) containing
 #'   the sequences, or a list of such objects (one for each channel).
 #' @param n_clusters A scalar giving the number of clusters/submodels
-#' (not used if starting values for model parameters are given with \code{emission_probs}).
+#' (not used if starting values for model parameters are given with `emission_probs`).
 #' @param emission_probs A matrix containing emission probabilities for each class by rows,
 #'   or in case of multichannel data a list of such matrices.
 #'   Note that the matrices must have dimensions k x s where k is the number of
 #'   latent classes and s is the number of unique symbols (observed states) in the
 #'   data. Emission probabilities should follow the ordering of the alphabet of
-#'   observations (\code{alphabet(observations)}, returned as \code{symbol_names}).
-#' @param formula Optional formula of class \code{\link{formula}} for the
+#'   observations (`alphabet(observations)`, returned as `symbol_names`).
+#' @param formula Optional formula of class [formula()] for the
 #' mixture probabilities. Left side omitted.
 #' @param data A data frame containing the variables used in the formula.
 #' Ignored if no formula is provided.
@@ -24,30 +24,29 @@
 #'   mixture probabilities. The first column is set to zero.
 #' @param cluster_names A vector of optional names for the classes/clusters.
 #' @param channel_names A vector of optional names for the channels.
-#' @return Object of class \code{mhmm} with the following elements:
-#' \describe{
-#'    \item{\code{observations}}{State sequence object or a list of such containing the data.}
-#'    \item{\code{transition_probs}}{A matrix of transition probabilities.}
-#'    \item{\code{emission_probs}}{A matrix or a list of matrices of emission probabilities.}
-#'    \item{\code{initial_probs}}{A vector of initial probabilities.}
-#'    \item{\code{coefficients}}{A matrix of parameter coefficients for covariates (covariates in rows, clusters in columns).}
-#'    \item{\code{X}}{Covariate values for each subject.}
-#'    \item{\code{cluster_names}}{Names for clusters.}
-#'    \item{\code{state_names}}{Names for hidden states.}
-#'    \item{\code{symbol_names}}{Names for observed states.}
-#'    \item{\code{channel_names}}{Names for channels of sequence data}
-#'    \item{\code{length_of_sequences}}{(Maximum) length of sequences.}
-#'    \item{\code{n_sequences}}{Number of sequences.}
-#'    \item{\code{n_symbols}}{Number of observed states (in each channel).}
-#'    \item{\code{n_states}}{Number of hidden states.}
-#'    \item{\code{n_channels}}{Number of channels.}
-#'    \item{\code{n_covariates}}{Number of covariates.}
-#'    \item{\code{n_clusters}}{Number of clusters.}
-#' }
-#' @seealso \code{\link{fit_model}} for estimating model parameters;
-#' \code{\link{summary.mhmm}} for a summary of a mixture model;
-#' \code{\link{separate_mhmm}} for organizing an \code{mhmm} object into a list of
-#' separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting
+#' @return Object of class `mhmm` with the following elements:
+#' * `observations`\cr State sequence object or a list of such containing the data.
+#' * `transition_probs`\cr A matrix of transition probabilities.
+#' * `emission_probs`\cr A matrix or a list of matrices of emission probabilities.
+#' * `initial_probs`\cr A vector of initial probabilities.
+#' * `coefficients`\cr A matrix of parameter coefficients for covariates (covariates in rows, clusters in columns).
+#' * `X`\cr Covariate values for each subject.
+#' * `cluster_names`\cr Names for clusters.
+#' * `state_names`\cr Names for hidden states.
+#' * `symbol_names`\cr Names for observed states.
+#' * `channel_names`\cr Names for channels of sequence data
+#' * `length_of_sequences`\cr (Maximum) length of sequences.
+#' * `n_sequences`\cr Number of sequences.
+#' * `n_symbols`\cr Number of observed states (in each channel).
+#' * `n_states`\cr Number of hidden states.
+#' * `n_channels`\cr Number of channels.
+#' * `n_covariates`\cr Number of covariates.
+#' * `n_clusters`\cr Number of clusters.
+#' 
+#' @seealso [fit_model()] for estimating model parameters;
+#' [summary.mhmm()] for a summary of a mixture model;
+#' [separate_mhmm()] for organizing an `mhmm` object into a list of
+#' separate `hmm` objects; and [plot.mhmm()] for plotting
 #' mixture models.
 #'
 #' @examples
@@ -164,7 +163,7 @@ build_lcm <- function(observations, n_clusters, emission_probs,
   n_symbols <- attr(observations, "n_symbols")
   channel_names <- attr(observations, "channel_names")
   
-  if (emission_probs_given) {
+  if (!emission_probs_given) {
     emission_probs <- simulate_emission_probs(1L, n_symbols, n_clusters)
   } else {
     if (n_channels > 1L) {

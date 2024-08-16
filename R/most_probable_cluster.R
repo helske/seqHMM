@@ -18,20 +18,16 @@ most_probable_cluster <- function(x, type = "viterbi", hp) {
       }
     }
     if (length(mm) > 0) {
-      warning(paste0(
-        "When computing the most probable paths, no subjects were assigned to following clusters: ", 
-        paste(x$cluster_names[mm], collapse = ", ")))
+      warning_(
+        "When computing the most probable paths, no subjects were assigned to 
+        clusters {x$cluster_names[mm]}")
     }
   } else {
     partial_ll <- logLik(object, partials = TRUE, log_space = log_space)
     fw <- forward_backward(object, forward_only = TRUE, log_space = log_space)$forward_probs[, object$length_of_sequences, ]
-    
     pr <- exp(object$X %*% object$coefficients)
     prior_cluster_probabilities <- pr / rowSums(pr)
-    
-    
     posterior_cluster_probabilities <- array(0, dim = dim(pr))
-    
     if (!log_space) {
       p <- 0
       for (i in 1:object$n_clusters) {

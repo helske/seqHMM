@@ -11,33 +11,35 @@ build_mnhmm(
   initial_formula,
   transition_formula,
   emission_formula,
+  mixture_formula,
   data = NULL,
   data0 = NULL,
   state_names = NULL,
-  channel_names = NULL
+  channel_names = NULL,
+  cluster_names = NULL
 )
 }
 \arguments{
-\item{observations}{An \code{stslist} object 
-(see \code{\link[TraMineR]{seqdef}}) containing the sequences.}
+\item{observations}{An \code{stslist} object
+(see \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}}) containing the sequences.}
 
-\item{initial_formula}{of class \code{\link{formula}} for the
+\item{initial_formula}{of class \code{\link[=formula]{formula()}} for the
 initial state probabilities.}
 
-\item{transition_formula}{of class \code{\link{formula}} for the
+\item{transition_formula}{of class \code{\link[=formula]{formula()}} for the
 state transition probabilities.}
 
-\item{emission_formula}{of class \code{\link{formula}} for the
+\item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
 state emission probabilities.}
 
-\item{data}{A data frame containing the variables used in the transition and 
+\item{data}{A data frame containing the variables used in the transition and
 emission formulas.}
 
 \item{id_variable}{Name of the grouping variable in the data.}
 
 \item{time_variable}{Name of the time index variable in the data.}
 
-\item{init_data}{A data frame containing the variables used in the initial 
+\item{init_data}{A data frame containing the variables used in the initial
 state formula.}
 }
 \value{

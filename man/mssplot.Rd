@@ -46,11 +46,11 @@ mssplot(
 \arguments{
 \item{x}{Mixture hidden Markov model object of class \code{mhmm}.}
 
-\item{ask}{If \code{TRUE} and \code{which.plots} is NULL, \code{plot.mhmm} operates in interactive mode, via \code{\link{menu}}. Defaults to \code{FALSE}.}
+\item{ask}{If \code{TRUE} and \code{which.plots} is NULL, \code{plot.mhmm} operates in interactive mode, via \code{\link[=menu]{menu()}}. Defaults to \code{FALSE}.}
 
 \item{which.plots}{The number(s) of the requested model(s) as an integer vector. The default \code{NULL} produces all plots.}
 
-\item{hidden.paths}{Output from the \code{\link{hidden_paths}} function. The
+\item{hidden.paths}{Output from the \code{\link[=hidden_paths]{hidden_paths()}} function. The
 default value \code{NULL} computes hidden paths automatically, if needed.}
 
 \item{plots}{What to plot. One of \code{"obs"} for observations (the default),
@@ -59,7 +59,7 @@ or \code{"both"} for observations and hidden paths together.}
 
 \item{type}{The type of the plot. Available types are \code{"I"} for index
 plots and \code{"d"} for state distribution plots (the default). See
-\code{\link{seqplot}} for details.}
+\code{\link[=seqplot]{seqplot()}} for details.}
 
 \item{tlim}{Indexes of the subjects to be plotted (the default is 0,
 i.e. all subjects are plotted). For example, \code{tlim = 1:10} plots
@@ -70,10 +70,10 @@ the first ten subjects in data.}
 \code{type = "I"}. The value \code{"mds.hidden"} is only available when
 \code{which = "both"} and \code{which = "hidden.paths"}. Options \code{"mds.obs"} and
 \code{"mds.hidden"} automatically arrange the sequences according to the
-scores of multidimensional scaling (using \code{\link{cmdscale}}) for the
+scores of multidimensional scaling (using \code{\link[=cmdscale]{cmdscale()}}) for the
 observed data or hidden states paths.
 MDS scores are computed from distances/dissimilarities using a metric
-defined in argument \code{dist.method}. See \code{\link{plot.stslist}} for
+defined in argument \code{dist.method}. See \code{\link[=plot.stslist]{plot.stslist()}} for
 more details on \code{"from.start"} and \code{"from.end"}.}
 
 \item{sort.channel}{The number of the channel according to which the
@@ -87,7 +87,7 @@ sequences if multidimensional scaling is used for sorting. One of "OM"
 (reversed LCP, i.e. longest common suffix), "LCS" (longest common
 subsequence), "HAM" (Hamming distance), and "DHD" (dynamic Hamming distance).
 Transition rates are used for defining substitution costs if needed. See
-\code{\link[TraMineR]{seqdef}} for more information on the metrics.}
+\code{\link[TraMineR:seqdef]{TraMineR::seqdef()}} for more information on the metrics.}
 
 \item{with.missing}{Controls whether missing states are included in state
 distribution plots (\code{type = "d"}). The default is \code{FALSE}.}
@@ -140,8 +140,8 @@ reduce the size of the font, values greater than 1 will increase the size.}
 
 \item{hidden.states.colors}{A vector of colors assigned to hidden states. The default
 value \code{"auto"} uses the colors assigned to the \code{stslist} object (created
-with \code{\link[TraMineR]{seqdef}}) if \code{hidden.paths} is given; otherwise colors from
-\code{\link{colorpalette}} are automatically used.}
+with \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}}) if \code{hidden.paths} is given; otherwise colors from
+\code{\link[=colorpalette]{colorpalette()}} are automatically used.}
 
 \item{hidden.states.labels}{Labels for the hidden states. The default value
 \code{"auto"} uses the names provided in \code{x$state_names} if \code{x} is
@@ -155,7 +155,7 @@ is drawn.}
 
 \item{xtlab}{Optional labels for the x-axis tick labels.  If unspecified, the
 column names of the \code{seqdata} sequence object are used (see
-\code{\link[TraMineR]{seqdef}}).}
+\code{\link[TraMineR:seqdef]{TraMineR::seqdef()}}).}
 
 \item{xlab.pos}{Controls the position of the x-axis label. The default value
 is 1. Values greater than 1 will place the label further away from the plot.}
@@ -191,7 +191,7 @@ corresponding to TraMineR's void in the observed sequences are set to void
 in the hidden state sequences as well.}
 
 \item{...}{Other arguments to be passed on to
-\code{\link[TraMineR]{seqplot}}.}
+\code{\link[TraMineR:seqplot]{TraMineR::seqplot()}}.}
 }
 \description{
 Function \code{mssplot} plots stacked sequence plots of observation sequences
@@ -213,9 +213,9 @@ if (interactive()) {
 
 }
 \seealso{
-\code{\link{build_mhmm}} and \code{\link{fit_model}} for building and
-  fitting mixture hidden Markov models, \code{\link{hidden_paths}} for
-  computing the most probable paths (Viterbi paths) of hidden states,
-  \code{\link{plot.mhmm}} for plotting \code{mhmm} objects as directed graphs, and
-  \code{\link{colorpalette}} for default colors.
+\code{\link[=build_mhmm]{build_mhmm()}} and \code{\link[=fit_model]{fit_model()}} for building and
+fitting mixture hidden Markov models, \code{\link[=hidden_paths]{hidden_paths()}} for
+computing the most probable paths (Viterbi paths) of hidden states,
+\code{\link[=plot.mhmm]{plot.mhmm()}} for plotting \code{mhmm} objects as directed graphs, and
+\code{\link[=colorpalette]{colorpalette()}} for default colors.
 }
