@@ -32,7 +32,7 @@ vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = FALSE
     # copied from fit_model
     #
     original_model <- object
-    model <- combine_models(object)
+    model <- .combine_models(object)
     obsArray <- create_obsArray(model)
     emissionArray <- create_emissionArray(model)
     maxIP <- maxIPvalue <- npIP <- numeric(original_model$n_clusters)

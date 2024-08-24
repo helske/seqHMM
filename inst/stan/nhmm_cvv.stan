@@ -7,7 +7,7 @@ data {
   #include /include/data_covariates.stan
 }
 transformed data {
-  #include /include/transformed_data.stan
+#include /include/transformed_data_singlechannel.stan
 }
 parameters {
   #include /include/parameters_singlechannel.stan

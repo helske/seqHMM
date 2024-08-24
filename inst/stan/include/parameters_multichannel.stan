@@ -3,4 +3,4 @@
   // parameters for the transition probabilities
   array[S] matrix[S - 1, K_s] beta_s_raw; // first row is zero
   // parameters for the emissions probabilities
-  row_vector[S * (sum(n_M) - C) * K_o] beta_o_raw; // first row is zero
+  row_vector[S * (sum(M) - C) * K_o] beta_o_raw; // first row is zero

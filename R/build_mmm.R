@@ -99,7 +99,7 @@
 build_mmm <- function(observations, n_clusters, transition_probs, initial_probs,
                       formula = NULL, data = NULL, coefficients = NULL,
                       cluster_names = NULL, ...) {
-  observations <- check_observations(observations, channel_names)
+  observations <- .check_observations(observations, channel_names)
   n_channels <- attr(observations, "n_channels")
   stopifnot_(
     n_channels == 1,
@@ -117,15 +117,15 @@ build_mmm <- function(observations, n_clusters, transition_probs, initial_probs,
       "{.arg transition_probs} is not a {.cls list}."
     )
     stopifnot_(
-      is.list(check_initial_probs),
-      "{.arg check_initial_probs} is not a {.cls list}."
+      is.list(.check_initial_probs),
+      "{.arg .check_initial_probs} is not a {.cls list}."
     )
     n_clusters <- length(transition_probs)
     for (i in seq_len(n_clusters)) {
-      transition_probs[[i]] <- check_transition_probs(
+      transition_probs[[i]] <- .check_transition_probs(
         transition_probs[[i]],
         state_names)
-      initial_probs[[i]] <- check_initial_probs(
+      initial_probs[[i]] <- .check_initial_probs(
         initial_probs[[i]], 
         n_states,
         state_names

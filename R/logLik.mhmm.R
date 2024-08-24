@@ -22,7 +22,7 @@ logLik.mhmm <- function(object, partials = FALSE, threads = 1, log_space = FALSE
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")
 
-  object <- combine_models(object)
+  object <- .combine_models(object)
   obsArray <- create_obsArray(object)
   emissionArray <- create_emissionArray(object)
   

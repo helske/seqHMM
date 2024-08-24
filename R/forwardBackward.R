@@ -1,6 +1,6 @@
 #' Forward and Backward Probabilities for Hidden Markov Model
 #'
-#' The `forward_backward` function computes scaled forward and backward 
+#' The `forward_backward` function computes forward and backward 
 #' probabilities of a hidden Markov model.
 #'
 #' @export
@@ -8,8 +8,7 @@
 #' @param forward_only If `TRUE`, only forward probabilities are computed. The 
 #' default is `FALSE`.
 #' @param log_space Compute forward and backward probabilities in logarithmic 
-#' scale instead of scaling.
-#'  The default is `FALSE`.
+#' scale instead of scaling. The default is `FALSE`.
 #' @param threads Number of threads used in parallel computing. The default 
 #' is `1`.
 #' @return List with components
@@ -40,7 +39,7 @@ forward_backward <- function(model, forward_only = FALSE, log_space = FALSE, thr
   }
   if (inherits(model, "mhmm")) {
     mix <- TRUE
-    model <- combine_models(model)
+    model <- .combine_models(model)
   } else {
     mix <- FALSE
   }

@@ -56,7 +56,7 @@ hidden_paths.hmm <- function(model, respect_void = TRUE) {
 #' @rdname hidden_paths
 #' @export
 hidden_paths.mhmm <- function(model, respect_void = TRUE) {
-  model <- combine_models(model)
+  model <- .combine_models(model)
   model$initial_probs <- log(model$initial_probs)
   model$transition_probs <- log(model$transition_probs)
   obsArray <- create_obsArray(model)
@@ -97,6 +97,44 @@ hidden_paths.nhmm <- function(model, respect_void = TRUE) {
       beta_i_raw, X_initial,
       beta_s_raw, X_transition,
       beta_o_raw, X_emission,
+      obsArray, model$n_symbols)
+  }
+  create_mpp_seq(out, model, respect_void)
+}
+#' @rdname hidden_paths
+#' @export
+hidden_paths.mnhmm <- function(model, respect_void = TRUE) {
+  
+  X_initial <- t(model$X_initial)
+  X_transition <- aperm(model$X_transition, c(3, 1, 2))
+  X_emission <- aperm(model$X_emission, c(3, 1, 2))
+  X_cluster <- t(model$X_cluster)
+  
+  obsArray <- create_obsArray(model)
+  beta_i_raw <- model$estimation_results$parameters$beta_i_raw
+  beta_s_raw <- aperm(
+    model$estimation_results$parameters$beta_s_raw, 
+    c(2, 3, 1)
+  )
+  theta_raw <- model$estimation_results$parameters$theta_raw
+  if (model$n_channels == 1) {
+    beta_o_raw <- aperm(
+      model$estimation_results$parameters$beta_o_raw, 
+      c(2, 3, 1)
+    )
+    out <- viterbi_mnhmm_singlechannel(
+      beta_i_raw, X_initial,
+      beta_s_raw, X_transition,
+      beta_o_raw, X_emission,
+      theta_raw, X_cluster,
+      obsArray[1, , ])
+  } else {
+    beta_o_raw <- model$estimation_results$parameters$beta_o_raw
+    out <- viterbi_mnhmm_multichannel(
+      beta_i_raw, X_initial,
+      beta_s_raw, X_transition,
+      beta_o_raw, X_emission,
+      theta_raw, X_cluster,
       obsArray, model$n_symbols)
   }
   create_mpp_seq(out, model, respect_void)

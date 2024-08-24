@@ -268,11 +268,12 @@ build_mhmm <- function(observations,
                        state_names = NULL,
                        channel_names = NULL, ...) {
   
-  observations <- check_observations(observations, channel_names)
+  observations <- .check_observations(observations, channel_names)
   n_channels <- attr(observations, "n_channels")
   n_symbols <- attr(observations, "n_symbols")
   channel_names <- attr(observations, "channel_names")
   symbol_names <- attr(observations, "symbol_names")
+  n_sequences <- attr(observations, "n_sequences")
   
   inits_given <- !missing(transition_probs) || !missing(initial_probs) || !missing(emission_probs)
   n_states_given <- !missing(n_states)
@@ -324,14 +325,17 @@ build_mhmm <- function(observations,
       cluster_names <- paste("Cluster", seq_len(n_clusters))
     }
     n_states <- integer(n_clusters)
+    if (is.null(state_names)) {
+      state_names <- vector("list", n_clusters)
+    }
     for (i in seq_len(n_clusters)) {
       transition_probs[[i]] <- 
-        check_transition_probs(transition_probs[[i]], state_names[[i]])
+        .check_transition_probs(transition_probs[[i]], state_names[[i]])
       n_states[i] <- nrow(transition_probs[[i]])
       state_names[[i]] <- rownames(transition_probs[[i]])
       initial_probs[[i]] <- 
-        check_initial_probs(initial_probs[[i]], n_states[i], state_names[[i]])
-      emission_probs <- check_emission_probs(
+        .check_initial_probs(initial_probs[[i]], n_states[i], state_names[[i]])
+      emission_probs[[i]] <- .check_emission_probs(
         emission_probs[[i]], n_states[i], n_channels, n_symbols, 
         state_names[[i]], symbol_names, channel_names
       )
@@ -364,15 +368,15 @@ build_mhmm <- function(observations,
       n_states = n_states, n_symbols = n_symbols, n_clusters = n_clusters
     )
     for (i in seq_len(n_clusters)) {
-      transition_probs[[i]] <- check_transition_probs(
+      transition_probs[[i]] <- .check_transition_probs(
         transition_probs[[i]], 
         state_names[[i]]
       )
       state_names[[i]] <- rownames(transition_probs[[i]])
-      initial_probs[[i]] <- check_initial_probs(
+      initial_probs[[i]] <- .check_initial_probs(
         initial_probs[[i]], n_states[i], state_names[[i]]
       )
-      emission_probs <- check_emission_probs(
+      emission_probs <- .check_emission_probs(
         emission_probs[[i]], n_states[i], n_channels, n_symbols, 
         state_names[[i]], symbol_names,channel_names
       )
@@ -431,7 +435,7 @@ build_mhmm <- function(observations,
       emission_probs = emission_probs, initial_probs = initial_probs,
       coefficients = coefficients, X = X, cluster_names = cluster_names, state_names = state_names,
       symbol_names = symbol_names, channel_names = channel_names,
-      length_of_sequences = length_of_sequences,
+      length_of_sequences = attr(observations, "length_of_sequences"),
       n_sequences = n_sequences, n_clusters = n_clusters,
       n_symbols = n_symbols, n_states = n_states,
       n_channels = n_channels,

@@ -29,7 +29,8 @@ Rcpp::List log_forwardbackwardx(const arma::mat& transition_,
   } else {
     arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
     log_internalBackward(transition, emission, obs, beta, threads);
-    return Rcpp::List::create(Rcpp::Named("forward_probs") = Rcpp::wrap(alpha), Rcpp::Named("backward_probs") = Rcpp::wrap(beta));
+    return Rcpp::List::create(Rcpp::Named("forward_probs") = Rcpp::wrap(alpha), 
+                              Rcpp::Named("backward_probs") = Rcpp::wrap(beta));
   }
 
   return Rcpp::wrap(alpha);

@@ -94,9 +94,8 @@
 #' )
 #'
 simulate_mhmm <- function(
-    n_sequences, initial_probs, transition_probs,
-    emission_probs, sequence_length, formula, data, coefficients) {
-  transition_probs <- check_transition_probs(transition_probs)
+    n_sequences, initial_probs, transition_probs, emission_probs, 
+    sequence_length, formula = NULL, data = NULL, coefficients = NULL) {
   
   stopifnot_(
     is.list(transition_probs),
@@ -136,7 +135,7 @@ simulate_mhmm <- function(
     }
   }
   if (is.null(channel_names <- names(emission_probs[[1]]))) {
-    channel_names <- 1:n_channels
+    channel_names <- paste("Channel", 1:n_channels)
   }
   if (n_sequences < 2) {
     stop_("{.arg n_sequences} must be at least 2 for a mixture model.")
@@ -157,15 +156,23 @@ simulate_mhmm <- function(
   names(obs) <- channel_names
   n_states <- sapply(transition_probs, nrow)
   if (is.null(rownames(transition_probs[[1]]))) {
-    state_names <- lapply(seq_len(n_clusters), function(i) seq_len(n_states[i]))
+    state_names <- lapply(seq_len(n_clusters), function(i) {
+      paste("State", seq_len(n_states[i]))
+    })
   } else {
-    state_names <- lapply(seq_len(n_clusters), function(i) rownames(transition_probs[[i]]))
+    state_names <- lapply(seq_len(n_clusters), function(i) {
+      rownames(transition_probs[[i]])
+    }
+    )
+  }
+  if (is.null(cluster_names <- names(transition_probs))) {
+    cluster_names <- paste0("Cluster ", seq_len(n_clusters))
   }
   v_state_names <- unlist(state_names)
   if (length(unique(v_state_names)) != length(v_state_names)) {
     for (i in seq_len(n_clusters)) {
       transition_probs[[i]] <- 
-        check_transition_probs(
+        .check_transition_probs(
           transition_probs[[i]], 
           paste(cluster_names[i], state_names[[i]], sep = ":"))
     }
@@ -173,7 +180,7 @@ simulate_mhmm <- function(
   } else {
     for (i in seq_len(n_clusters)) {
       transition_probs[[i]] <- 
-        check_transition_probs(transition_probs[[i]], state_names[[i]])
+        .check_transition_probs(transition_probs[[i]], state_names[[i]])
     }
   }
   states <- suppressWarnings(suppressMessages(
@@ -184,8 +191,8 @@ simulate_mhmm <- function(
   ))
   for (i in seq_len(n_clusters)) {
     initial_probs[[i]] <- 
-      check_initial_probs(initial_probs[[i]], n_states[i], state_names[[i]])
-    emission_probs <- check_emission_probs(
+      .check_initial_probs(initial_probs[[i]], n_states[i], state_names[[i]])
+    emission_probs[[i]] <- .check_emission_probs(
       emission_probs[[i]], n_states[i], n_channels, n_symbols, 
       state_names[[i]], symbol_names
     )

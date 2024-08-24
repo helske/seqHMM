@@ -4,7 +4,7 @@
 #' objects (e.g., [fit_model()]).
 #' 
 #' @noRd
-combine_models <- function(model) {
+.combine_models <- function(model) {
   n_states_in_clusters <- model$n_states
   n_states <- sum(model$n_states)
   transition_probs <- as.matrix(.bdiag(model$transition_probs))

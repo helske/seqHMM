@@ -24,6 +24,12 @@
 #' is `NULL` (the default), numbered states are used.
 #' @param channel_names A vector of optional names for the channels. If this
 #' is `NULL` (the default), numbered channels are used.
+#' @param inits Optional initial values for the initial state, transition, 
+#' emission, and mixture probabilities. Either a list with `initial_probs`, 
+#' `emission_probs`, `transition_probs`, `cluster_probs`, or `"random"`.
+#' @param init_sd Standard deviation of the normal distribution used to generate
+#' random initial values. Default is `2`. If you want to fix the initial values 
+#' of the regression coefficients to zero, use `init_sd = 0`.
 #' @param restarts Number of times to run optimization using random starting 
 #' values. Default is 1.
 #' @param threads Number of parallel threads for optimization with restarts. 
@@ -49,12 +55,12 @@ estimate_nhmm <- function(
     observations, n_states, initial_formula = ~1, 
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, data0 = NULL, state_names = NULL, channel_names = NULL, 
-    restarts = 1L, threads = 1L, ...) {
+    inits = "random", init_sd = 2, restarts = 1L, threads = 1L, ...) {
   
   model <- build_nhmm(
     observations, n_states, initial_formula, 
     transition_formula, emission_formula, data, data0, state_names, 
     channel_names
     )
-  fit_nhmm(model, restarts, threads, ...)
+  fit_nhmm(model, inits, init_sd, restarts, threads, ...)
 }

@@ -1,14 +1,17 @@
-#' Get cluster names from mhmm object
+#' Get Cluster Names from Mixture HMMs
 #'
-#' @param object An object of class `mhmm`.
+#' @param object An object of class `mhmm` or `mnhmm`.
 #' @return A character vector containing the cluster names.
 #' @export
 cluster_names <- function(object) {
   UseMethod("cluster_names")
 }
-
 #' @export
 cluster_names.mhmm <- function(object) {
+  object$cluster_names
+}
+#' @export
+cluster_names.mnhmm <- function(object) {
   object$cluster_names
 }
 

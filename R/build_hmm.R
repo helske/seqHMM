@@ -174,7 +174,7 @@
 build_hmm <- function(observations, n_states, transition_probs, emission_probs, initial_probs,
                       state_names = NULL, channel_names = NULL, ...) {
   
-  observations <- check_observations(observations, channel_names)
+  observations <- .check_observations(observations, channel_names)
   n_channels <- attr(observations, "n_channels")
   n_symbols <- attr(observations, "n_symbols")
   channel_names <- attr(observations, "channel_names")
@@ -188,11 +188,11 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
     "{.arg transition_probs}, and {.arg emission_probs}."
     )
   if (inits_given) {
-    transition_probs <- check_transition_probs(transition_probs, state_names)
+    transition_probs <- .check_transition_probs(transition_probs, state_names)
     n_states <- nrow(transition_probs)
     state_names <- rownames(transition_probs)
-    initial_probs <- check_initial_probs(initial_probs, n_states, state_names)
-    emission_probs <- check_emission_probs(
+    initial_probs <- .check_initial_probs(initial_probs, n_states, state_names)
+    emission_probs <- .check_emission_probs(
       emission_probs, n_states, n_channels, n_symbols, state_names, 
       symbol_names, channel_names
     )
@@ -206,10 +206,10 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
     emission_probs <- simulate_emission_probs(
       n_states = n_states, n_symbols = n_symbols, n_clusters = 1
     )
-    transition_probs <- check_transition_probs(transition_probs, state_names)
+    transition_probs <- .check_transition_probs(transition_probs, state_names)
     state_names <- rownames(transition_probs)
-    initial_probs <- check_initial_probs(initial_probs, n_states, state_names)
-    emission_probs <- check_emission_probs(
+    initial_probs <- .check_initial_probs(initial_probs, n_states, state_names)
+    emission_probs <- .check_emission_probs(
       emission_probs, n_states, n_channels, n_symbols, state_names, 
       symbol_names, channel_names
     )

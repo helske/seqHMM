@@ -9,7 +9,7 @@
     log_alpha = log_Pi + log_py[, 1];
     for (t in 2:T) {
       for (k in 1:S) {
-        log_alpha_new[k] = log_sum_exp(log_alpha + log_A[t, , k] + log_py[k, t]);
+        log_alpha_new[k] = log_sum_exp(log_alpha + log_A[t - 1, , k] + log_py[k, t]);
       }
       log_alpha = log_alpha_new;
     }

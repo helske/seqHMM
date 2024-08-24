@@ -57,7 +57,7 @@
 #'
 build_mm <- function(observations) {
 
-  observations <- check_observations(observations, channel_names)
+  observations <- .check_observations(observations, channel_names)
   n_channels <- attr(observations, "n_channels")
   stopifnot_(
     n_channels == 1,

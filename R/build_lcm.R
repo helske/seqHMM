@@ -158,7 +158,7 @@ build_lcm <- function(observations, n_clusters, emission_probs,
     n_clusters_given || emission_probs_given,
     "Provide either {.arg emission_probs} or {.arg n_clusters}."
   )
-  observations <- check_observations(observations, channel_names)
+  observations <- .check_observations(observations, channel_names)
   n_channels <- attr(observations, "n_channels")
   n_symbols <- attr(observations, "n_symbols")
   channel_names <- attr(observations, "channel_names")

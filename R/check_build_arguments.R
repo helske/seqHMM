@@ -2,7 +2,7 @@
 #' 
 #'@noRd
 #'
-check_observations <- function(observations, channel_names = NULL) {
+.check_observations <- function(observations, channel_names = NULL) {
   multichannel <- is_multichannel(observations)
   # Single channel but observations is a list
   if (is.list(observations) && 
@@ -18,7 +18,7 @@ check_observations <- function(observations, channel_names = NULL) {
     
     symbol_names <- lapply(observations, alphabet)
     n_symbols <- lengths(symbol_names)
-    
+    dim(n_symbols) <- length(n_symbols)
     if (is.null(channel_names)) {
       if (is.null(channel_names <- names(observations))) {
         channel_names <- paste("Channel", seq_len(n_channels))
@@ -63,7 +63,7 @@ check_observations <- function(observations, channel_names = NULL) {
   observations
 }
 
-check_transition_probs <- function(transition_probs, state_names = NULL) {
+.check_transition_probs <- function(transition_probs, state_names = NULL) {
   stopifnot_(
     is.matrix(transition_probs),
     "{.arg transition_probs} is not a {.cls matrix}."
@@ -94,7 +94,7 @@ check_transition_probs <- function(transition_probs, state_names = NULL) {
   transition_probs
 }
 
-check_initial_probs <- function(initial_probs, n_states, state_names = NULL) {
+.check_initial_probs <- function(initial_probs, n_states, state_names = NULL) {
   stopifnot_(
     is.vector(initial_probs),
     "{.arg initial_probs} is not a {.cls vector}."
@@ -113,7 +113,7 @@ check_initial_probs <- function(initial_probs, n_states, state_names = NULL) {
   initial_probs
 }
 
-check_emission_probs <- function(
+.check_emission_probs <- function(
     emission_probs, n_states, n_channels, n_symbols, state_names, symbol_names,
     channel_names = NULL) {
   
@@ -152,16 +152,17 @@ check_emission_probs <- function(
   }
   
   if (is.null(channel_names)) {
-    if (is.null(channel_names <- names(observations))) {
+    if (is.null(channel_names <- names(emission_probs))) {
       channel_names <- paste("Channel", 1:n_channels)
     }
-  }
-  if (length(channel_names) != n_channels) {
-    warning_(
-      "The length of {.arg channel_names} does not match the number of 
+  } else {
+    if (length(channel_names) != n_channels) {
+      warning_(
+        "The length of {.arg channel_names} does not match the number of 
       channels. Names were not used."
-    )
-    channel_names <- paste("Channel", 1:n_channels)
+      )
+      channel_names <- paste("Channel", 1:n_channels)
+    }
   }
   for (i in seq_len(n_channels)) {
     dimnames(emission_probs[[i]]) <- 

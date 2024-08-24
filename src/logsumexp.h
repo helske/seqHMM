@@ -3,5 +3,4 @@
 
 #include <RcppArmadillo.h>
 double logSumExp(const arma::vec& x);
-arma::vec softmax(const arma::vec& x, const int logspace);
 #endif

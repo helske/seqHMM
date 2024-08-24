@@ -625,7 +625,7 @@ fit_model <- function(
     df <- attr(model, "df")
     nobs <- attr(model, "nobs")
     original_model <- model
-    model <- combine_models(model)
+    model <- .combine_models(model)
   }
   obsArray <- create_obsArray(model)
   emissionArray <- create_emissionArray(model)

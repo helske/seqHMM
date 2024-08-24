@@ -1,11 +1,26 @@
-#' Estimate Non-homogeneous Hidden Markov Model
+#' Estimate a Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_nhmm <- function(model, restarts, threads, ...) {
+fit_nhmm <- function(model, inits, init_sd, restarts, threads, ...) {
   check_positive_integer(threads)
   obs <- create_obsArray(model) + 1L
   if (model$n_channels == 1) {
     obs <- obs[1, ,]
+  }
+  K_i <- dim(model$X_initial)[2]
+  K_s <- dim(model$X_transition)[3]
+  K_o <- dim(model$X_emission)[3]
+  M <- model$n_symbols
+  S <- model$n_states
+  if (identical(inits, "random")) {
+    inits <- list(
+      initial_probs = NULL, 
+      transition_probs = NULL, 
+      emission_probs = NULL)
+  } else {
+    if (is.null(inits$initial_probs)) inits$initial_probs <- NULL
+    if (is.null(inits$transition_probs)) inits$transition_probs <- NULL
+    if (is.null(inits$emission_probs)) inits$emission_probs <- NULL
   }
   if (restarts > 1L) {
     if (threads > 1L) {
@@ -14,17 +29,21 @@ fit_nhmm <- function(model, restarts, threads, ...) {
       plan(sequential)
     }
     out <- future_lapply(seq_len(restarts), function(i) {
+      init <- create_initial_values(
+        inits, S, M, init_sd, K_i, K_s, K_o
+      )
       optimizing(
-        stanmodels[[attr(model, "type")]], init = "random",
+        stanmodels[[attr(model, "type")]], init = init,
         data = list(
           N = model$n_sequences,
           T = model$length_of_sequences, 
-          M = model$n_symbols,
-          S = model$n_states,
+          max_M = max(model$n_symbols),
+          M = M,
+          S = S,
           C = model$n_channels,
-          K_i = dim(model$X_initial)[2],
-          K_s = dim(model$X_transition)[3],
-          K_o = dim(model$X_emission)[3],
+          K_i = K_i,
+          K_s = K_s,
+          K_o = K_o,
           X_i = model$X_initial,
           X_s = model$X_transition,
           X_o = model$X_emission,
@@ -43,20 +62,22 @@ fit_nhmm <- function(model, restarts, threads, ...) {
     optimum <- successful[which.max(logliks[successful])]
     init <- as.list(out[[optimum]]$par)
   } else {
-    init <- "random"
+    init <- create_initial_values(
+      inits, S, M, init_sd, K_i, K_s, K_o
+    )
   }
-  
   out <- optimizing(
     stanmodels[[attr(model, "type")]], 
     data = list(
       N = model$n_sequences,
       T = model$length_of_sequences, 
-      M = model$n_symbols,
-      S = model$n_states,
+      max_M = max(model$n_symbols),
+      M = M,
+      S = S,
       C = model$n_channels,
-      K_i = dim(model$X_initial)[2],
-      K_s = dim(model$X_transition)[3],
-      K_o = dim(model$X_emission)[3],
+      K_i = K_i,
+      K_s = K_s,
+      K_o = K_o,
       X_i = model$X_initial,
       X_s = model$X_transition,
       X_o = model$X_emission,

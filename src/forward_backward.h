@@ -10,12 +10,12 @@ void uvBackward(const arma::sp_mat& transition, const arma::cube& emission,
 
 void internalForwardx(const arma::sp_mat& transition_t, const arma::cube& emission,
                       const arma::mat& init, const arma::ucube& obs, arma::cube& alpha, arma::mat& scales, unsigned int threads);
-void internalBackwardx(const arma::sp_mat& transition, const arma::cube& emission,
-                       const arma::ucube& obs, arma::cube& beta, const arma::mat& scales, unsigned int threads);
 
-void internalForward(const arma::mat& transition, const arma::cube& emission,
+void internalForward(const arma::mat& transition_t, const arma::cube& emission,
                      const arma::vec& init, const arma::ucube& obs, arma::cube& alpha, arma::mat& scales, unsigned int threads);
 void internalBackward(const arma::mat& transition, const arma::cube& emission,
+                      const arma::ucube& obs, arma::cube& beta, const arma::mat& scales, unsigned int threads);
+void internalBackwardx(const arma::sp_mat& transition, const arma::cube& emission,
                       const arma::ucube& obs, arma::cube& beta, const arma::mat& scales, unsigned int threads);
 
 #endif

@@ -8,7 +8,7 @@ Rcpp::List forwardbackward(const arma::mat& transition, const arma::cube& emissi
   arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
   arma::mat scales(obs.n_cols, obs.n_slices); //n,k
   
-  internalForward(transition, emission, init, obs, alpha, scales, threads);
+  internalForward(transition.t(), emission, init, obs, alpha, scales, threads);
   
   if(!scales.is_finite()) {
     Rcpp::stop("Scaling factors contain non-finite values. \n Check the model or try using the log-space version of the algorithm.");

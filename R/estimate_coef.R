@@ -1,4 +1,4 @@
-#' Estimate Regression Coefficients of Mixture Hidden Markov Models
+#' Estimate Only the Regression Coefficients of Mixture Hidden Markov Models
 #'
 #' Function `estimate_coef` estimates the regression coefficients of 
 #' mixture hidden Markov models of class `mhmm` and its restricted variants 
@@ -17,7 +17,7 @@ estimate_coef <- function(model, threads = 1) {
   df <- attr(model, "df")
   nobs <- attr(model, "nobs")
   original_model <- model
-  model <- combine_models(model)
+  model <- .combine_models(model)
   obsArray <- create_obsArray(model)
   emissionArray <- create_emissionArray(model)
 
