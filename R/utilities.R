@@ -114,6 +114,9 @@ create_initial_values <- function(
 #' @param ... See [cli::cli_abort()].
 #' @param call See [cli::cli_abort()].
 #' @noRd
+#' @references Tikka S, Helske J (2024). “dynamite: An R Package for Dynamic 
+#' Multivariate Panel Models.” doi:10.48550/arXiv.2302.01607.
+#' 
 stopifnot_ <- function(cond, message, ..., call = rlang::caller_env()) {
   if (!cond) {
     cli::cli_abort(message, ..., .envir = parent.frame(), call = call)
@@ -126,6 +129,8 @@ stopifnot_ <- function(cond, message, ..., call = rlang::caller_env()) {
 #' @param message See [cli::cli_inform()].
 #' @param ... See [cli::cli_inform()].
 #' @noRd
+#' @references Tikka S, Helske J (2024). “dynamite: An R Package for Dynamic 
+#' Multivariate Panel Models.” doi:10.48550/arXiv.2302.01607.
 message_ <- function(message, ...) {
   cli::cli_inform(message, ..., .envir = parent.frame())
 }
@@ -136,6 +141,9 @@ message_ <- function(message, ...) {
 #' @param message See [cli::cli_abort()].
 #' @param ... See [cli::cli_warn()].
 #' @noRd
+#' @references Tikka S, Helske J (2024). “dynamite: An R Package for Dynamic 
+#' Multivariate Panel Models.” doi:10.48550/arXiv.2302.01607.
+#' 
 warning_ <- function (message, ...) {
   cli::cli_warn(message, ..., .envir = parent.frame())
 }
@@ -147,6 +155,9 @@ warning_ <- function (message, ...) {
 #' @param ... See [cli::cli_abort()].
 #' @param call See [cli::cli_abort()].
 #' @noRd
+#' @references Tikka S, Helske J (2024). “dynamite: An R Package for Dynamic 
+#' Multivariate Panel Models.” doi:10.48550/arXiv.2302.01607.
+#' 
 stop_ <- function(message, ..., call = rlang::caller_env()) {
   cli::cli_abort(message, ..., .envir = parent.frame(), call = call)
 }
@@ -156,13 +167,6 @@ stop_ <- function(message, ..., call = rlang::caller_env()) {
 #' @noRd
 intercept_only <- function(f) {
   identical(deparse(update(f, 0 ~ .)), "0 ~ 1")
-}
-#' @noRd
-check_positive_integer <- function(x, name = "threads") {
-  stopifnot_(
-    x > 0 && x == as.integer(x),
-    "{.arg {name}} must be a positive integer."
-  )
 }
 #' Create obsArray for Various C++ functions
 #' 

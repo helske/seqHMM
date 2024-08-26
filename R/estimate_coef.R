@@ -13,7 +13,10 @@ estimate_coef <- function(model, threads = 1) {
     inherits(model, "mhmm"),
     "{.arg model} must be a {.cls mhmm} object."
   )
-  check_positive_integer(threads)
+  stopifnot_(
+    checkmate::test_int(x = threads, lower = 1L), 
+    "Argument {.arg threads} must be a single positive integer."
+  )
   df <- attr(model, "df")
   nobs <- attr(model, "nobs")
   original_model <- model

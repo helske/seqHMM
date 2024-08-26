@@ -1,6 +1,6 @@
 #' Imported Functions from `TraMineR`
 #'
-#' @description Imported functions for convinience. For details, see
+#' @description Imported functions for convenience. For details, see
 #'   the corresponding help pages of [TraMineR::seqstatf()],
 #'   [TraMineR::alphabet()] and [TraMineR::seqdef()].
 #'

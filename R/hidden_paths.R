@@ -7,8 +7,7 @@
 #' @param model A hidden Markov model.
 #' @param respect_void If `TRUE` (default), states at the time points
 #' corresponding to `TraMineR`'s void in the observed sequences are set to void
-#' in the hidden state sequences as well.
-#'
+#' in the hidden state sequences as well.#'
 #' @return The most probable paths of hidden states as an `stslist` object
 #' (see [seqdef()]). The log-probability is included as an attribute 
 #' `log_prop`.
@@ -76,23 +75,24 @@ hidden_paths.nhmm <- function(model, respect_void = TRUE) {
   X_transition <- aperm(model$X_transition, c(3, 1, 2))
   X_emission <- aperm(model$X_emission, c(3, 1, 2))
   obsArray <- create_obsArray(model)
-  beta_i_raw <- model$estimation_results$parameters$beta_i_raw
-  beta_s_raw <- aperm(
-    model$estimation_results$parameters$beta_s_raw, 
-    c(2, 3, 1)
+  beta_i_raw <- stan_to_cpp_initial(
+    model$estimation_results$parameters$beta_i_raw
+  )
+  beta_s_raw <- stan_to_cpp_transition(
+    model$estimation_results$parameters$beta_s_raw
+  )
+  beta_o_raw <- stan_to_cpp_emission(
+    model$estimation_results$parameters$beta_o_raw,
+    1,
+    model$n_channels > 1
   )
   if (model$n_channels == 1) {
-    beta_o_raw <- aperm(
-      model$estimation_results$parameters$beta_o_raw, 
-      c(2, 3, 1)
-    )
     out <- viterbi_nhmm_singlechannel(
       beta_i_raw, X_initial,
       beta_s_raw, X_transition,
       beta_o_raw, X_emission,
       obsArray[1, , ])
   } else {
-    beta_o_raw <- model$estimation_results$parameters$beta_o_raw
     out <- viterbi_nhmm_multichannel(
       beta_i_raw, X_initial,
       beta_s_raw, X_transition,
@@ -109,19 +109,24 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE) {
   X_transition <- aperm(model$X_transition, c(3, 1, 2))
   X_emission <- aperm(model$X_emission, c(3, 1, 2))
   X_cluster <- t(model$X_cluster)
-  
   obsArray <- create_obsArray(model)
-  beta_i_raw <- model$estimation_results$parameters$beta_i_raw
-  beta_s_raw <- aperm(
-    model$estimation_results$parameters$beta_s_raw, 
-    c(2, 3, 1)
+  S <- model$n_states
+  D <- model$n_clusters
+  beta_i_raw <- stan_to_cpp_initial(
+    model$estimation_results$parameters$beta_i_raw,
+    model$n_clusters
+  )
+  beta_s_raw <- stan_to_cpp_transition(
+    model$estimation_results$parameters$beta_s_raw,
+    model$n_clusters
+  )
+  beta_o_raw <- stan_to_cpp_emission(
+    model$estimation_results$parameters$beta_o_raw,
+    model$n_clusters,
+    model$n_channels > 1
   )
   theta_raw <- model$estimation_results$parameters$theta_raw
   if (model$n_channels == 1) {
-    beta_o_raw <- aperm(
-      model$estimation_results$parameters$beta_o_raw, 
-      c(2, 3, 1)
-    )
     out <- viterbi_mnhmm_singlechannel(
       beta_i_raw, X_initial,
       beta_s_raw, X_transition,
@@ -129,7 +134,6 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE) {
       theta_raw, X_cluster,
       obsArray[1, , ])
   } else {
-    beta_o_raw <- model$estimation_results$parameters$beta_o_raw
     out <- viterbi_mnhmm_multichannel(
       beta_i_raw, X_initial,
       beta_s_raw, X_transition,

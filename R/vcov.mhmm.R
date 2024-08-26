@@ -19,16 +19,21 @@
 #' computed conditional on other model parameters. See details.
 #' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater
-#' numerical stability at cost of decreased computational performance. Default is `FALSE`.
+#' numerical stability at cost of decreased computational performance. 
+#' Default is `TRUE`.
 #' @param ... Additional arguments to function `jacobian` of `numDeriv` package.
 #' @return Matrix containing the variance-covariance matrix of coefficients.
 #' @export
 #'
-vcov.mhmm <- function(object, conditional = TRUE, threads = 1, log_space = FALSE, ...) {
+vcov.mhmm <- function(object, conditional = TRUE, threads = 1, 
+                      log_space = TRUE, ...) {
   if (conditional) {
     vcovm <- varcoef(object$coefficients, object$X)
   } else {
-    check_positive_integer(threads)
+    stopifnot_(
+      checkmate::test_int(x = threads, lower = 1L), 
+      "Argument {.arg threads} must be a single positive integer."
+    )
     # copied from fit_model
     #
     original_model <- object

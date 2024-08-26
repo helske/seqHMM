@@ -3,7 +3,6 @@
 #' Function `summary.mhmm` gives a summary of a mixture hidden Markov model.
 #'
 #' @export
-#' @method summary mhmm
 #' @param object Mixture hidden Markov model of class `mhmm`.
 #' @param parameters Whether or not to return transition, emission, and
 #' initial probabilities. `FALSE` by default.
@@ -47,18 +46,16 @@
 #'
 summary.mhmm <- function(
     object, parameters = FALSE, conditional_se = TRUE,
-    log_space = FALSE, ...) {
+    log_space = TRUE, ...) {
   partial_ll <- logLik(object, partials = TRUE, log_space = log_space)
   ll <- structure(sum(partial_ll), class = "logLik", df = attr(object, "df"), nobs = attr(object, "nobs"))
-
-  fw <- forward_backward(object, forward_only = TRUE, log_space = log_space)$forward_probs[, object$length_of_sequences, ]
+  fw <- forward_backward(object, 
+                         forward_only = TRUE, 
+                         log_space = log_space)$forward_probs[, object$length_of_sequences, ]
 
   pr <- exp(object$X %*% object$coefficients)
   prior_cluster_probabilities <- pr / rowSums(pr)
-
-
   posterior_cluster_probabilities <- array(0, dim = dim(pr))
-
   if (!log_space) {
     p <- 0
     for (i in 1:object$n_clusters) {
@@ -77,8 +74,6 @@ summary.mhmm <- function(
   most_probable_cluster <- factor(apply(posterior_cluster_probabilities, 1, which.max),
     levels = 1:object$n_clusters, labels = object$cluster_names
   )
-
-
   clProbs <- matrix(NA, nrow = object$n_clusters, ncol = object$n_clusters)
   rownames(clProbs) <- colnames(clProbs) <- object$cluster_names
   for (i in 1:object$n_clusters) {
@@ -86,7 +81,6 @@ summary.mhmm <- function(
       clProbs[i, j] <- mean(posterior_cluster_probabilities[most_probable_cluster == object$cluster_names[i], j])
     }
   }
-
   if (!parameters) {
     summary_mhmm <- list(
       logLik = ll, BIC = BIC(ll), most_probable_cluster = most_probable_cluster,

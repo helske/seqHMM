@@ -105,20 +105,21 @@ Rcpp::List viterbi_mnhmm_singlechannel(
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
   unsigned int S = beta_s_raw.n_slices;
-  unsigned int D = theta_raw.n_rows;
+  unsigned int D = theta_raw.n_rows + 1;
   unsigned int SD = S * D;
+  unsigned int M = beta_o_raw.n_rows + 1;
   arma::umat q(T, N, arma::fill::zeros);
   arma::vec logp(N);
   arma::mat log_py(SD, T);
   arma::vec log_Pi(SD);
   arma::cube log_A(SD, SD, T, arma::fill::value(-arma::datum::inf));
-  arma::cube log_B(SD, SD, T, arma::fill::value(-arma::datum::inf));
+  arma::cube log_B(SD, M, T, arma::fill::value(-arma::datum::inf));
   for (unsigned int i = 0; i < N; i++) {
     arma::vec log_omega = get_omega_i(theta_raw, X_d.col(i), 1);
     for (unsigned int d = 0; d < D; d++) {
       log_Pi.rows(d * S, (d + 1) * S - 1) = log_omega(d) + 
         get_pi_i(beta_i_raw.rows(d * (S - 1), (d + 1) * (S - 1) - 1), X_i.col(i), 1);
-      log_A.rows(d * S, (d + 1) * S - 1) = 
+      log_A.tube(d * S, d * S, (d + 1) * S - 1, (d + 1) * S - 1) = 
         get_A_i(beta_s_raw.rows(d * (S - 1), (d + 1) * (S - 1) - 1), X_s.slice(i), 1);
       log_B.rows(d * S, (d + 1) * S - 1) = 
         get_B_i(beta_o_raw.rows(d * (S - 1), (d + 1) * (S - 1) - 1), X_o.slice(i), 1);
@@ -139,14 +140,13 @@ Rcpp::List viterbi_mnhmm_singlechannel(
 Rcpp::List viterbi_mnhmm_multichannel(
     const arma::mat& beta_i_raw, const arma::mat& X_i,
     const arma::cube& beta_s_raw, const arma::cube& X_s,
-    const arma::vec& beta_o_raw, const arma::cube& X_o,
+    const arma::mat& beta_o_raw, const arma::cube& X_o,
     const arma::mat& theta_raw, const arma::mat& X_d,
     const arma::cube& obs, const arma::uvec M) {
-  
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
   unsigned int S = beta_s_raw.n_slices;
-  unsigned int D = theta_raw.n_rows;
+  unsigned int D = theta_raw.n_rows + 1;
   unsigned int SD = S * D;
   unsigned int C = obs.n_rows;
   arma::umat q(T, N, arma::fill::zeros);
@@ -162,7 +162,7 @@ Rcpp::List viterbi_mnhmm_multichannel(
         get_pi_i(
           beta_i_raw.rows(d * (S - 1), (d + 1) * (S - 1) - 1), X_i.col(i), 1
         );
-      log_A.rows(d * S, (d + 1) * S - 1) = get_A_i(
+      log_A.tube(d * S, d * S, (d + 1) * S - 1, (d + 1) * S - 1) = get_A_i(
         beta_s_raw.rows(d * (S - 1), (d + 1) * (S - 1) - 1), X_s.slice(i), 1
       );
       log_B = get_multichannel_B_i(

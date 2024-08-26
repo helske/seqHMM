@@ -96,7 +96,7 @@ arma::cube forward_mnhmm_singlechannel(
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
   unsigned int S = beta_s_raw.n_slices;
-  unsigned int D = theta_raw.n_rows;
+  unsigned int D = theta_raw.n_rows + 1;
   unsigned int SD = S * D;
   arma::cube log_alpha(S, T, N);
   arma::mat log_py(SD, T);
@@ -133,7 +133,7 @@ arma::cube forward_mnhmm_multichannel(
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
   unsigned int S = beta_s_raw.n_slices;
-  unsigned int D = theta_raw.n_rows;
+  unsigned int D = theta_raw.n_rows + 1;
   unsigned int SD = S * D;
   unsigned int C = obs.n_rows;
   arma::cube log_alpha(S, T, N);

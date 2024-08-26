@@ -74,7 +74,7 @@
 #' is `1`.
 #' @param log_space Make computations using log-space instead of scaling for 
 #' greater numerical stability at a cost of decreased computational performance. 
-#' The default is `FALSE`.
+#' The default is `TRUE`.
 #' @param constraints Integer vector defining equality constraints for emission 
 #' distributions. Not supported for EM algorithm. See details.
 #' @param fixed_inits Can be used to fix some of the probabilities to their 
@@ -589,10 +589,13 @@
 fit_model <- function(
     model, em_step = TRUE, global_step = FALSE, local_step = FALSE,
     control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1,
-    log_space = FALSE, constraints = NULL, fixed_inits = NULL,
+    log_space = TRUE, constraints = NULL, fixed_inits = NULL,
     fixed_emissions = NULL, fixed_transitions = NULL, ...) {
   
-  check_positive_integer(threads)
+  stopifnot_(
+    checkmate::test_int(x = threads, lower = 1L), 
+    "Argument {.arg threads} must be a single positive integer."
+  )
   # check that the initial model is ok
   stopifnot_(
     is.finite(logLik(model)),

@@ -2,19 +2,42 @@
 % Please edit documentation in R/forwardBackward.R
 \name{forward_backward}
 \alias{forward_backward}
+\alias{forward_backward.hmm}
+\alias{forward_backward.mhmm}
+\alias{forward_backward.nhmm}
+\alias{forward_backward.mnhmm}
 \title{Forward and Backward Probabilities for Hidden Markov Model}
 \usage{
-forward_backward(model, forward_only = FALSE, log_space = FALSE, threads = 1)
+forward_backward(model, ...)
+
+\method{forward_backward}{hmm}(
+  model,
+  forward_only = FALSE,
+  log_space = FALSE,
+  threads = 1,
+  ...
+)
+
+\method{forward_backward}{mhmm}(
+  model,
+  forward_only = FALSE,
+  log_space = FALSE,
+  threads = 1,
+  ...
+)
+
+\method{forward_backward}{nhmm}(model, forward_only = FALSE, ...)
+
+\method{forward_backward}{mnhmm}(model, forward_only = FALSE, ...)
 }
 \arguments{
-\item{model}{Object of class \code{hmm} or \code{mhmm}.}
+\item{model}{A hidden Markov model.}
 
 \item{forward_only}{If \code{TRUE}, only forward probabilities are computed. The
 default is \code{FALSE}.}
 
 \item{log_space}{Compute forward and backward probabilities in logarithmic
-scale instead of scaling.
-The default is \code{FALSE}.}
+scale instead of scaling. The default is \code{FALSE}.}
 
 \item{threads}{Number of threads used in parallel computing. The default
 is \code{1}.}
@@ -34,7 +57,7 @@ sequence.
 }
 }
 \description{
-The \code{forward_backward} function computes scaled forward and backward
+The \code{forward_backward} function computes forward and backward
 probabilities of a hidden Markov model.
 }
 \examples{

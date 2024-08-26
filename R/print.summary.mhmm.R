@@ -1,7 +1,5 @@
 #' @export
 #' @rdname print
-#' @method print summary.mhmm
-
 print.summary.mhmm <- function(x, digits = 3, ...) {
   if (exists("transition_probs", x)) {
     cat("Initial probabilities :\n")

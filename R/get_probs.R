@@ -7,7 +7,12 @@
 #' @param probs Vector defining the quantiles of interest. Default is 
 #' `c(0.025, 0.975)`.
 #' @export
-get_probs <- function(model, nsim = 0, probs = c(0.025, 0.975)) {
+get_probs <- function(model, data = NULL, nsim = 0, 
+                      probs = c(0.025, 0.975)) {
+  
+  if (!is.null(data)) {
+    model <- update(model, data = data)
+  }
  
   beta_i_raw <- model$estimation_results$parameters$beta_i_raw
   beta_s_raw <- aperm(

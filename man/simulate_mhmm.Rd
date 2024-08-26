@@ -10,9 +10,9 @@ simulate_mhmm(
   transition_probs,
   emission_probs,
   sequence_length,
-  formula,
-  data,
-  coefficients
+  formula = NULL,
+  data = NULL,
+  coefficients = NULL
 )
 }
 \arguments{

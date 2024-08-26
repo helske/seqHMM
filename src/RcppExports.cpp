@@ -734,7 +734,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // viterbi_mnhmm_multichannel
-Rcpp::List viterbi_mnhmm_multichannel(const arma::mat& beta_i_raw, const arma::mat& X_i, const arma::cube& beta_s_raw, const arma::cube& X_s, const arma::vec& beta_o_raw, const arma::cube& X_o, const arma::mat& theta_raw, const arma::mat& X_d, const arma::cube& obs, const arma::uvec M);
+Rcpp::List viterbi_mnhmm_multichannel(const arma::mat& beta_i_raw, const arma::mat& X_i, const arma::cube& beta_s_raw, const arma::cube& X_s, const arma::mat& beta_o_raw, const arma::cube& X_o, const arma::mat& theta_raw, const arma::mat& X_d, const arma::cube& obs, const arma::uvec M);
 RcppExport SEXP _seqHMM_viterbi_mnhmm_multichannel(SEXP beta_i_rawSEXP, SEXP X_iSEXP, SEXP beta_s_rawSEXP, SEXP X_sSEXP, SEXP beta_o_rawSEXP, SEXP X_oSEXP, SEXP theta_rawSEXP, SEXP X_dSEXP, SEXP obsSEXP, SEXP MSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -743,7 +743,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type X_i(X_iSEXP);
     Rcpp::traits::input_parameter< const arma::cube& >::type beta_s_raw(beta_s_rawSEXP);
     Rcpp::traits::input_parameter< const arma::cube& >::type X_s(X_sSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type beta_o_raw(beta_o_rawSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type beta_o_raw(beta_o_rawSEXP);
     Rcpp::traits::input_parameter< const arma::cube& >::type X_o(X_oSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type theta_raw(theta_rawSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type X_d(X_dSEXP);

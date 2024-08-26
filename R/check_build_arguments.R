@@ -174,3 +174,30 @@
   }
   emission_probs
 }
+
+.check_data <- function(data, id, time) {
+  stopifnot_(
+    is.data.frame(data), 
+    "Argument {.arg data} must be a {.cls data.frame} object."
+  )
+  stopifnot_(!missing(time), "Argument {.arg time} is missing.")
+  stopifnot_(!missing(id), "Argument {.arg id} is missing.")
+  stopifnot_(
+    checkmate::test_string(x = time), 
+    "Argument {.arg time} must be a single character string"
+  )
+  stopifnot_(
+    checkmate::test_string(x = id), 
+    "Argument {.arg id} must be a single character string"
+  )
+  stopifnot_(
+    !is.null(data[[id]]), 
+    "Can't find grouping variable {.var {id}} in {.arg data}."
+  )
+  stopifnot_(
+    !is.null(data[[time]]), 
+    "Can't find time index variable {.var {time}} in {.arg data}."
+  )
+  data <- data[order(data[[id]], data[[time]]), ]
+  fill_time(data, id, time)
+}

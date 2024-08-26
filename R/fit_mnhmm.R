@@ -2,7 +2,10 @@
 #'
 #' @noRd
 fit_mnhmm <- function(model, inits, init_sd, restarts, threads, ...) {
-  check_positive_integer(threads)
+  stopifnot_(
+    checkmate::test_int(x = threads, lower = 1L), 
+    "Argument {.arg threads} must be a single positive integer."
+  )
   obs <- create_obsArray(model) + 1L
   if (model$n_channels == 1) {
     obs <- obs[1, ,]

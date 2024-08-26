@@ -3,7 +3,7 @@
 build_mnhmm <- function(
     observations, n_states, n_clusters, initial_formula, 
     transition_formula, emission_formula, cluster_formula,
-    data, data0, state_names, channel_names, cluster_names) {
+    data, state_names, channel_names, cluster_names) {
   
   stopifnot_(
     inherits(initial_formula, "formula"), 
@@ -17,17 +17,15 @@ build_mnhmm <- function(
   stopifnot_(
     inherits(cluster_formula, "formula"), 
     "Argument {.arg cluster_formula} must be a {.cls formula} object.")
-  
-  observations <- .check_observations(observations, channel_names)
-  channel_names <- attr(observations, "channel_names")
-  n_channels <- attr(observations, "n_channels")
-  n_sequences <- attr(observations, "n_sequences")
-  length_of_sequences <- attr(observations, "length_of_sequences")
-  n_symbols <- attr(observations, "n_symbols")
-  check_positive_integer(n_states, "n_states")
+  icp_only_i <- intercept_only(initial_formula)
+  icp_only_s <- intercept_only(transition_formula)
+  icp_only_o <- intercept_only(emission_formula)
+  icp_only_d <- intercept_only(cluster_formula)
+  stopifnot_(
+    checkmate::test_int(x = n_states, lower = 1L), 
+    "Argument {.arg n_states} must be a single positive integer."
+  )
   n_states <- as.integer(n_states)
-  check_positive_integer(n_clusters, "n_clusters")
-  n_clusters <- as.integer(n_clusters)
   if (is.null(state_names)) {
     state_names <- paste("State", seq_len(n_states))
   } else {
@@ -37,6 +35,11 @@ build_mnhmm <- function(
       states."
     )
   }
+  stopifnot_(
+    checkmate::test_int(x = n_clusters, lower = 2L), 
+    "Argument {.arg n_clusters} must be a single positive integer larger than 1."
+  )
+  n_clusters <- as.integer(n_clusters)
   if (is.null(cluster_names)) {
     cluster_names <- paste("Cluster", seq_len(n_clusters))
   } else {
@@ -45,19 +48,45 @@ build_mnhmm <- function(
       "Length of {.arg cluster_names} is not equal to the number of clusters."
     )
   }
-  if (intercept_only(initial_formula)) {
+  y_in_data <- checkmate::check_character(observations)
+  if (!icp_only_i || !icp_only_s || icp_only_o || icp_only_d || y_in_data) {
+    data <- .check_data(data, time, id)
+    n_sequences <- length(unique(data[[id]]))
+    length_of_sequences <- length(unique(data[[time]]))
+    channel_names <- observations
+    if (y_in_data) {
+      observations <- lapply(
+        observations,
+        function(y) {
+          stopifnot_(
+            !is.null(data[[y]]), 
+            "Can't find response variable {.var {y}} in {.arg data}."
+          )
+          seqdef(matrix(data[[y]], n_sequences, length_of_sequences))
+        }
+      )
+      observations <- .check_observations(observations, channel_names)
+    }
+  }
+  if (!y_in_data) {
+    observations <- .check_observations(observations, channel_names)
+    channel_names <- attr(observations, "channel_names")
+    n_sequences <- attr(observations, "n_sequences")
+    length_of_sequences <- attr(observations, "length_of_sequences")  
+  }
+  n_channels <- attr(observations, "n_channels")
+  n_symbols <- attr(observations, "n_symbols")
+  if (icp_only_i) {
     init_type <- "c"
     n_pars <- n_states - 1L
     X_i <- matrix(1, n_sequences, 1)
     coef_names_initial <- "(Intercept)"
   } else {
-    stopifnot_(
-      is.data.frame(data0), 
-      "If {.arg initial_formula} is provided, {.arg data0} must be a 
-      {.cls data.frame} object."
-    )
+    first_time_point <- min(data[[time]])
     X_i <- model.matrix.lm(
-      initial_formula, data = data0, na.action = na.pass
+      initial_formula, 
+      data = data[data[[time]] == first_time_point, ], 
+      na.action = na.pass
     )
     coef_names_initial <- colnames(X_i)
     X_i[is.na(X_i)] <- 0
@@ -65,17 +94,12 @@ build_mnhmm <- function(
     n_pars <- (n_states - 1L) * ncol(X_i)
   }
   
-  if (intercept_only(transition_formula)) {
+  if (icp_only_s) {
     A_type <- "c"
     n_pars <- n_pars + n_states * (n_states - 1L)
     X_s <- array(1, c(length_of_sequences, n_sequences, 1L))
     coef_names_transition <- "(Intercept)"
   } else {
-    stopifnot_(
-      is.data.frame(data),
-      "If {.arg transition_formula} is provided, {.arg data} must be a 
-      {.cls data.frame} object."
-    )
     X_s <- model.matrix.lm(
       transition_formula, data = data, na.action = na.pass
     )
@@ -86,17 +110,12 @@ build_mnhmm <- function(
     n_pars <- n_pars + n_states * (n_states - 1L) * dim(X_s)[3]
   }
   
-  if (intercept_only(emission_formula)) {
+  if (icp_only_o) {
     B_type <- "c"
     n_pars <- n_pars + n_channels * n_states * (n_symbols - 1L)
     X_o <- array(1, c(length_of_sequences, n_sequences, 1L))
     coef_names_emission <- "(Intercept)"
   } else {
-    stopifnot_(
-      is.data.frame(data), 
-      "If {.arg emission_formula} is provided, {.arg data} must be a 
-      {.cls data.frame} object."
-    )
     X_o <- model.matrix.lm(
       emission_formula, data = data, na.action = na.pass
     )
@@ -107,17 +126,12 @@ build_mnhmm <- function(
     n_pars <- n_pars + n_channels * n_states * (n_symbols - 1L) * dim(X_o)[3]
   }
   
-  if (intercept_only(cluster_formula)) {
+  if (icp_only_d) {
     theta_type <- "c"
     n_pars <- n_states - 1L
     X_d <- matrix(1, n_sequences, 1)
     coef_names_cluster <- "(Intercept)"
   } else {
-    stopifnot_(
-      is.data.frame(data0), 
-      "If {.arg cluster_formula} is provided, {.arg data0} must be a 
-      {.cls data.frame} object."
-    )
     X_d <- model.matrix.lm(
       cluster_formula, data = data0, na.action = na.pass
     )
@@ -138,6 +152,7 @@ build_mnhmm <- function(
       state_names = state_names,
       symbol_names = attr(observations, "symbol_names"),
       channel_names = channel_names,
+      cluster_names = cluster_names,
       length_of_sequences = length_of_sequences,
       n_sequences = n_sequences,
       n_symbols = n_symbols,

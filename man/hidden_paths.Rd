@@ -5,6 +5,7 @@
 \alias{hidden_paths.hmm}
 \alias{hidden_paths.mhmm}
 \alias{hidden_paths.nhmm}
+\alias{hidden_paths.mnhmm}
 \title{Most Probable Paths of Hidden States}
 \usage{
 hidden_paths(model, ...)
@@ -14,13 +15,15 @@ hidden_paths(model, ...)
 \method{hidden_paths}{mhmm}(model, respect_void = TRUE)
 
 \method{hidden_paths}{nhmm}(model, respect_void = TRUE)
+
+\method{hidden_paths}{mnhmm}(model, respect_void = TRUE)
 }
 \arguments{
 \item{model}{A hidden Markov model.}
 
 \item{respect_void}{If \code{TRUE} (default), states at the time points
 corresponding to \code{TraMineR}'s void in the observed sequences are set to void
-in the hidden state sequences as well.}
+in the hidden state sequences as well.#'}
 }
 \value{
 The most probable paths of hidden states as an \code{stslist} object
