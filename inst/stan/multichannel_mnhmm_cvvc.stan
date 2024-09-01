@@ -21,23 +21,23 @@ transformed parameters {
   #include /include/transformed_parameters_multichannel_mixture.stan
   #include /include/priors_multichannel_mixture.stan
   {
-     matrix[N, D] ll;
+    matrix[N, D] ll;
     vector[S] log_Pi;
     array[C] matrix[S, max_M + 1] log_B;
-    matrix[S, T] log_py;
-    array[T] matrix[S, S] log_A;
-      for(d in 1:D) {
-    #include /include/model_pi_constant_mixture.stan
-    for(i in 1:N) {
-      for(t in 1:T) {
-        #include /include/model_A_varying_mixture.stan
-        #include /include/model_B_varying_multichannel_mixture.stan
-        log_py[, t] = zeros_S;
-        for(c in 1:C) {
-          log_py[, t] += log_B[c, , obs[c, t, i]];
+    for(d in 1:D) {
+      #include /include/model_pi_constant_mixture.stan
+      for(i in 1:N) {
+        array[T[i]] matrix[S, S] log_A;
+        matrix[S, T[i]] log_py;
+        for (t in 1:T[i]) {
+          #include /include/model_A_varying_mixture.stan
+          #include /include/model_B_varying_multichannel_mixture.stan
+          log_py[, t] = zeros_S;
+          for(c in 1:C) {
+            log_py[, t] += log_B[c, , obs[c, t, i]];
+          }
         }
-      }
-     ll[i, d] = loglik(log_Pi, log_A, log_py);
+        ll[i, d] = loglik(log_Pi, log_A, log_py);
       }
     }
     #include /include/model_theta_constant_mixture.stan

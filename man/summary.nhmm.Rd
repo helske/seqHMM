@@ -2,13 +2,14 @@
 % Please edit documentation in R/summary.nhmm.R
 \name{summary.nhmm}
 \alias{summary.nhmm}
-\title{Summary method for non-homogeneous hidden Markov models}
+\title{Summary of Non-homogeneous Hidden Markov Models}
 \usage{
-\method{summary}{nhmm}(object, ...)
+\method{summary}{nhmm}(object, nsim = 0, probs = c(0.025, 0.975), ...)
 }
 \arguments{
 \item{object}{Non-homogeneous hidden Markov model of class \code{nhmm}.}
 }
 \description{
-Function \code{summary.nhmm} gives a summary of a non-homogeneous hidden Markov model.
+Function \code{summary.nhmm} returns basic information about the model as well as
+the estimated regression coefficients.
 }

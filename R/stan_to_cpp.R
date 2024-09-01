@@ -5,7 +5,7 @@ stan_to_cpp_initial <- function(x, D = 1) {
   if (D > 1) {
     # x is D x S - 1 x K
     K <- dim(x)[3]
-    S <- nrow(x) + 1
+    S <- ncol(x) + 1
     z <- matrix(aperm(x, c(2, 1, 3)), D * (S - 1), K)
   } else {
     # x is S - 1 x K
@@ -48,7 +48,7 @@ stan_to_cpp_emission <- function(x, D = 1, multichannel = FALSE) {
     if (D > 1) {
       # x is D x S x M - 1 x K
       S <- ncol(x)
-      M <- dim(x)[3]
+      M <- dim(x)[3] + 1
       K <- dim(x)[4]
       z <- array(0, c(D * (M - 1), K, S))
       for (d in 1:D) {

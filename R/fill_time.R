@@ -14,7 +14,7 @@ fill_time <- function(data, id_var, time_var) {
   )
   time_ivals <- diff(time)
   time_resolution <- min(time_ivals)
-  full_time <- seq(time[1L], time[length(time)], by = time_scale)
+  full_time <- seq(time[1L], time[length(time)], by = time_resolution)
   ids <- unique(data[[id_var]])
   n_group <- length(ids)
   time_duplicated <- logical(n_group)

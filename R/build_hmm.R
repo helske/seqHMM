@@ -224,7 +224,8 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
       length_of_sequences = attr(observations, "length_of_sequences"),
       n_sequences = attr(observations, "n_sequences"),
       n_symbols = n_symbols, n_states = n_states,
-      n_channels = n_channels
+      n_channels = n_channels,
+      call = match.call()
     ),
     class = "hmm",
     nobs = attr(observations, "nobs"),

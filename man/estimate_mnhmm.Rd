@@ -13,7 +13,8 @@ estimate_mnhmm(
   emission_formula = ~1,
   cluster_formula = ~1,
   data = NULL,
-  data0 = NULL,
+  time = NULL,
+  id = NULL,
   state_names = NULL,
   channel_names = NULL,
   cluster_names = NULL,
@@ -21,14 +22,15 @@ estimate_mnhmm(
   init_sd = 2,
   restarts = 1L,
   threads = 1L,
+  store_data = TRUE,
   ...
 )
 }
 \arguments{
-\item{observations}{An \code{stslist} object
-(see \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}}) containing the sequences.}
-
-\item{n_states}{A positive integer defining the number of hidden states.}
+\item{observations}{Either the name of the response variable in \code{data}, or
+an \code{stslist} object (see \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}}) containing the
+sequences. In case of multichannel data, \code{observations} should be a vector
+of response variable names in \code{data}, or a list of \code{stslist} objects.}
 
 \item{n_clusters}{A positive integer defining the number of clusters
 (mixtures).}
@@ -45,13 +47,14 @@ state emission probabilities.}
 \item{cluster_formula}{of class \code{\link[=formula]{formula()}} for the
 mixture probabilities.}
 
-\item{data}{A data frame containing the variables used in the transition and
-emission formulas. Data should be sorted so the first T rows corresponds to
-observations of the first sequence and so forth.}
+\item{data}{A data frame containing the variables used in the model
+formulas. Can be omitted in case of model with no covariates and observations
+given as \code{stslist} objects.}
 
-\item{data0}{A data frame containing the variables used in the initial
-state and cluster formulas. Data should be sorted so that the first row
-corresponds to covariates of the first sequence and so forth.}
+\item{time}{Name of the time index variable in \code{data}.}
+
+\item{id}{Name of the id variable in \code{data} identifying different
+sequences.}
 
 \item{state_names}{A vector of optional labels for the hidden states. If this
 is \code{NULL} (the default), numbered states are used.}
@@ -76,15 +79,20 @@ values. Default is 1.}
 \item{threads}{Number of parallel threads for optimization with restarts.
 Default is 1.}
 
+\item{store_data}{If \code{TRUE} (default), original data frame passed as \code{data}
+is stored to the model object. For large datasets, this can be set to
+\code{FALSE}, in which case you might need to pass the data separately to some
+post-prosessing functions.}
+
 \item{...}{Additional arguments to \code{\link[rstan:stanmodel-method-optimizing]{rstan::optimizing()}}.}
 }
 \value{
-Object of class \code{nhmm}.
+Object of class \code{mnhmm}.
 }
 \description{
 Function \code{estimate_mnhmm} estimates a hidden Markov model object of class
 \code{mnhmm} where initial, transition, emission, and mixture probabilities
-(potentially) depend on covariates.#'
+(potentially) depend on covariates.
 }
 \examples{
 data("mvad", package = "TraMineR")

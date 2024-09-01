@@ -35,42 +35,44 @@ arma::cube backward_nhmm_singlechannel(
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
   unsigned int S = beta_s_raw.n_slices;
-  arma::cube log_alpha(S, T, N);
+  arma::cube log_beta(S, T, N);
   arma::mat log_py(S, T);
   arma::mat log_Pi = get_pi(beta_i_raw, X_i, 1);
   // field of S x S x T cubes
   arma::field<arma::cube> log_A = get_A(beta_s_raw, X_s, 1);
   // field of S x M x T cubes
-  arma::field<arma::cube> log_B = get_B(beta_o_raw, X_o, 1);
+  arma::field<arma::cube> log_B = get_B(beta_o_raw, X_o, 1, 1);
   for (unsigned int i = 0; i < N; i++) {
     for (unsigned int t = 0; t < T; t++) {
       for (unsigned int s = 0; s < S; s++) {
         log_py(s, t) = log_B(i).at(s, obs(t, i), t);
       }
     }
-    log_alpha.slice(i) = univariate_backward_nhmm(log_Pi.col(i), log_A(i), log_py);
+    log_beta.slice(i) = univariate_backward_nhmm(log_Pi.col(i), log_A(i), log_py);
   }
-  return log_alpha;
+  return log_beta;
 }
 
 // [[Rcpp::export]]
 arma::cube backward_nhmm_multichannel(
     const arma::mat& beta_i_raw, const arma::mat& X_i,
     const arma::cube& beta_s_raw, const arma::cube& X_s,
-    const arma::cube& beta_o_raw, const arma::cube& X_o,
+    const arma::vec& beta_o_raw, const arma::cube& X_o,
     const arma::cube& obs, const arma::uvec M) {
   
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
   unsigned int S = beta_s_raw.n_slices;
   unsigned int C = obs.n_rows;
-  arma::cube log_alpha(S, T, N);
+  arma::cube log_beta(S, T, N);
   arma::mat log_py(S, T);
   arma::mat log_Pi = get_pi(beta_i_raw, X_i, 1);
   // field of S x S x T cubes
   arma::field<arma::cube> log_A = get_A(beta_s_raw, X_s, 1);
   // field of S x M x T cubes
-  arma::field<arma::cube> log_B = get_multichannel_B(beta_o_raw, X_o, S, C, M, 1);
+  arma::field<arma::cube> log_B = get_multichannel_B(
+    beta_o_raw, X_o, S, C, M, 1, 1
+  );
   for (unsigned int i = 0; i < N; i++) {
     for (unsigned int t = 0; t < T; t++) {
       for (unsigned int s = 0; s < S; s++) {
@@ -80,11 +82,10 @@ arma::cube backward_nhmm_multichannel(
         }
       }
     }
-    log_alpha.slice(i) = univariate_backward_nhmm(log_Pi.col(i), log_A(i), log_py);
+    log_beta.slice(i) = univariate_backward_nhmm(log_Pi.col(i), log_A(i), log_py);
   }
-  return log_alpha;
+  return log_beta;
 }
-
 
 // [[Rcpp::export]]
 arma::cube backward_mnhmm_singlechannel(
@@ -97,47 +98,51 @@ arma::cube backward_mnhmm_singlechannel(
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
   unsigned int S = beta_s_raw.n_slices;
-  unsigned int D = theta_raw.n_rows;
+  unsigned int D = theta_raw.n_rows + 1;
+  unsigned int M = beta_o_raw.n_rows / D + 1;
   unsigned int SD = S * D;
-  arma::cube log_alpha(S, T, N);
+  arma::cube log_beta(SD, T, N);
   arma::mat log_py(SD, T);
   arma::vec log_Pi(SD);
   arma::cube log_A(SD, SD, T, arma::fill::value(-arma::datum::inf));
-  arma::cube log_B(SD, SD, T, arma::fill::value(-arma::datum::inf));
+  arma::cube log_B(SD, M + 1, T);
   for (unsigned int i = 0; i < N; i++) {
     arma::vec log_omega = get_omega_i(theta_raw, X_d.col(i), 1);
     for (unsigned int d = 0; d < D; d++) {
-      log_Pi.rows(d * S, (d + 1) * S - 1) = log_omega(d) + 
-        get_pi_i(beta_i_raw.rows(d * (S - 1), (d + 1) * (S - 1) - 1), X_i.col(i), 1);
-      log_A.rows(d * S, (d + 1) * S - 1) = 
-        get_A_i(beta_s_raw.rows(d * (S - 1), (d + 1) * (S - 1) - 1), X_s.slice(i), 1);
-      log_B.rows(d * S, (d + 1) * S - 1) = 
-        get_B_i(beta_o_raw.rows(d * (S - 1), (d + 1) * (S - 1) - 1), X_o.slice(i), 1);
+      log_Pi.rows(d * S, (d + 1) * S - 1) = log_omega(d) + get_pi_i(
+        beta_i_raw.rows(d * (S - 1), (d + 1) * (S - 1) - 1), X_i.col(i), 1
+      );
+      log_A.tube(d * S, d * S, (d + 1) * S - 1, (d + 1) * S - 1) = get_A_i(
+        beta_s_raw.rows(d * (S - 1), (d + 1) * (S - 1) - 1), X_s.slice(i), 1
+      );
+      log_B.rows(d * S, (d + 1) * S - 1) = get_B_i(
+        beta_o_raw.rows(d * (M - 1), (d + 1) * (M - 1) - 1), X_o.slice(i), 1, 1
+      );
     }
     for (unsigned int t = 0; t < T; t++) {
-      for (unsigned int s = 0; s < S; s++) {
+      for (unsigned int s = 0; s < SD; s++) {
         log_py(s, t) = log_B(s, obs(t, i), t);
       }
     }
-    log_alpha.slice(i) = univariate_backward_nhmm(log_Pi, log_A, log_py);
+    log_beta.slice(i) = univariate_backward_nhmm(log_Pi, log_A, log_py);
   }
-  return log_alpha;
+  return log_beta;
 }
 // [[Rcpp::export]]
 arma::cube backward_mnhmm_multichannel(
     const arma::mat& beta_i_raw, const arma::mat& X_i,
     const arma::cube& beta_s_raw, const arma::cube& X_s,
-    const arma::vec& beta_o_raw, const arma::cube& X_o,
+    const arma::mat& beta_o_raw, const arma::cube& X_o,
     const arma::mat& theta_raw, const arma::mat& X_d,
     const arma::cube& obs, const arma::uvec M) {
   
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
   unsigned int S = beta_s_raw.n_slices;
-  unsigned int D = theta_raw.n_rows;
+  unsigned int D = theta_raw.n_rows + 1;
   unsigned int SD = S * D;
   unsigned int C = obs.n_rows;
-  arma::cube log_alpha(S, T, N);
+  arma::cube log_beta(SD, T, N);
   arma::mat log_py(SD, T);
   arma::vec log_Pi(SD);
   arma::cube log_A(SD, SD, T, arma::fill::value(-arma::datum::inf));
@@ -145,15 +150,14 @@ arma::cube backward_mnhmm_multichannel(
   for (unsigned int i = 0; i < N; i++) {
     arma::vec log_omega = get_omega_i(theta_raw, X_d.col(i), 1);
     for (unsigned int d = 0; d < D; d++) {
-      log_Pi.rows(d * S, (d + 1) * S - 1) = log_omega(d) +
-        get_pi_i(
-          beta_i_raw.rows(d * (S - 1), (d + 1) * (S - 1) - 1), X_i.col(i), 1
-        );
-      log_A.rows(d * S, (d + 1) * S - 1) = get_A_i(
+      log_Pi.rows(d * S, (d + 1) * S - 1) = log_omega(d) + get_pi_i(
+        beta_i_raw.rows(d * (S - 1), (d + 1) * (S - 1) - 1), X_i.col(i), 1
+      );
+      log_A.tube(d * S, d * S, (d + 1) * S - 1, (d + 1) * S - 1) = get_A_i(
         beta_s_raw.rows(d * (S - 1), (d + 1) * (S - 1) - 1), X_s.slice(i), 1
       );
       log_B = get_multichannel_B_i(
-        beta_o_raw.col(d), X_o.slice(i), S, C, M, 1
+        beta_o_raw.col(d), X_o.slice(i), S, C, M, 1, 1
       );
       for (unsigned int t = 0; t < T; t++) {
         for (unsigned int s = 0; s < S; s++) {
@@ -164,7 +168,7 @@ arma::cube backward_mnhmm_multichannel(
         }
       }
     }
-    log_alpha.slice(i) = univariate_backward_nhmm(log_Pi, log_A, log_py);
+    log_beta.slice(i) = univariate_backward_nhmm(log_Pi, log_A, log_py);
   }
-  return log_alpha;
+  return log_beta;
 }

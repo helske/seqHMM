@@ -1,7 +1,9 @@
 # create test data
 set.seed(123)
 s <- 4
-obs <- seqdef(matrix(sample(letters[1:s], 50, replace = TRUE), ncol = 10))
+obs <- suppressMessages(
+  seqdef(matrix(sample(letters[1:s], 50, replace = TRUE), ncol = 10))
+)
 
 test_that("build_hmm returns object of class 'hmm'", {
   expect_error(
@@ -22,21 +24,21 @@ test_that("build_hmm returns object of class 'hmm'", {
 test_that("build_hmm errors with incorrect dims", {
   expect_error(
     build_hmm(obs, initial_probs = c(1, 0),
-                       transition_probs = diag(2),
-                       emission_probs = diag(2)),
-    "Number of columns in 'emission_probs' is not equal to the number of symbols."
+              transition_probs = diag(2),
+              emission_probs = diag(2)),
+    "Number of columns in `emission_probs` is not equal to the number of symbols."
   )
   expect_error(
     build_hmm(obs, initial_probs = c(1, 0, 0),
               transition_probs = diag(2),
               emission_probs = cbind(1, matrix(0, 2, s - 1))),
-    "Length of 'initial_probs' is not equal to the number of states."
+    "Length of `initial_probs` is not equal to the number of hidden states."
   )
   expect_error(
     build_hmm(obs, initial_probs = c(1, 0, 0),
               transition_probs = diag(3),
               emission_probs = cbind(1, matrix(0, 2, s - 1))),
-    "Number of rows in 'emission_probs' is not equal to the number of states."
+    "`emission_probs` do not sum to one."
   )
 })
 
@@ -45,9 +47,8 @@ test_that("build_hmm errors with incorrect observations", {
     build_hmm(1, initial_probs = c(1, 0),
               transition_probs = diag(2),
               emission_probs = diag(2)),
-    paste0("Argument 'observations' should a 'stslist' object created with ",
-    "'seqdef' function, or a list of such objects in case of multichannel data."
-    )
+    paste0("`observations` should be a <stslist> object created with `seqdef\\(\\)`,",
+           " or a <list> of <stslist> objects in a multichannel case\\.")
   )
 })
 
@@ -79,7 +80,7 @@ test_that("build_hmm returns the correct probabilities", {
     all(model$initial_probs <= 1)
   )
   expect_equal(sum(model$initial_probs), 1)
-
+  
   expect_equal(
     rowSums(model$transition_probs),
     setNames(rep(1, s), paste("State", 1:s))

@@ -55,7 +55,7 @@ arma::field<arma::cube> get_A(const arma::cube& beta_raw, const arma::cube& X,
 // X is K x T x N (covariates, time points, sequences)
 // [[Rcpp::export]]
 arma::field<arma::cube> get_B(const arma::cube& beta_raw, const arma::cube& X, 
-                              const int logspace) {
+                              const int logspace, const int add_missing) {
   unsigned int S = beta_raw.n_slices;
   unsigned int M = beta_raw.n_rows + 1;
   unsigned int K = X.n_rows;
@@ -66,12 +66,17 @@ arma::field<arma::cube> get_B(const arma::cube& beta_raw, const arma::cube& X,
     beta.slice(i) = arma::join_cols(arma::zeros<arma::rowvec>(K), beta_raw.slice(i));
   }
   arma::field<arma::cube> B(N); // field of N cubes, each S x M x T
-  B.fill(arma::zeros<arma::cube>(S, M, T));
+  B.fill(arma::zeros<arma::cube>(S, M + add_missing, T));
+  arma::mat Btmp(M + add_missing, S);
+  if (add_missing) {
+    Btmp.row(M).fill(1.0 - logspace);
+  }
   for (unsigned int i = 0; i < N; i++) { // sequences
     for (unsigned int t = 0; t < T; t++) { // time
-      arma::mat Btmp(M, S);
       for (unsigned int j = 0; j < S; j ++) { // from states
-        Btmp.col(j) = softmax(beta.slice(j) * X.slice(i).col(t), logspace);
+        Btmp.col(j).rows(0, M - add_missing) = softmax(
+          beta.slice(j) * X.slice(i).col(t), logspace
+        );
       }
       B(i).slice(t) = Btmp.t();
     }
@@ -84,7 +89,7 @@ arma::field<arma::cube> get_B(const arma::cube& beta_raw, const arma::cube& X,
 arma::field<arma::cube> get_multichannel_B(
     const arma::vec& beta_raw, 
     const arma::cube& X, unsigned int S, unsigned int C,
-    const arma::uvec& M, const int logspace) {
+    const arma::uvec& M, const int logspace, const int add_missing) {
   unsigned int K = X.n_rows;
   unsigned int N = X.n_slices;
   unsigned int T = X.n_cols;
@@ -94,7 +99,6 @@ arma::field<arma::cube> get_multichannel_B(
   for (unsigned int c = 0; c < C; c++) {
     beta(c) = arma::zeros<arma::cube>(M(c), K, S);
     for (unsigned int s = 0; s < S; s++) {
-      arma::mat mat_slice = beta(c).slice(s);
       for (unsigned int m = 1; m < M(c); m++) {
         beta(c).slice(s).row(m - 1) = beta_raw.subvec(idx, idx + K - 1).t();
         idx += K;
@@ -102,14 +106,18 @@ arma::field<arma::cube> get_multichannel_B(
     }
   }
   arma::field<arma::cube> B(N, C); // NxC field of cubes, each S x M_c x T
-  
   for (unsigned int i = 0; i < N; i++) { // sequences
     for (unsigned int c = 0; c < C; c++) { // channels  
-      B(i, c) = arma::cube(S, M(c), T); //arma::zeros<arma::cube>(S, M(c), T);
+      B(i, c) = arma::cube(S, M(c) + add_missing, T);
+      arma::mat Btmp(M(c) + add_missing, S);
+      if (add_missing) {
+        Btmp.row(M(c)).fill(1.0 - logspace);
+      }
       for (unsigned int t = 0; t < T; t++) { // time
-        arma::mat Btmp(M(c), S);
         for (unsigned int j = 0; j < S; j ++) { // from states
-          Btmp.col(j) = softmax(beta(c).slice(j) * X.slice(i).col(t), logspace);
+          Btmp.col(j).rows(0, M(c) - add_missing) = softmax(
+            beta(c).slice(j) * X.slice(i).col(t), logspace
+          );
         }
         B(i, c).slice(t) = Btmp.t();
       }
@@ -139,7 +147,7 @@ arma::vec get_pi_i(const arma::mat& beta_raw, const arma::vec X, const int logsp
 // X is K x T matrix (covariates, time points)
 // [[Rcpp::export]]
 arma::cube get_A_i(const arma::cube& beta_raw, const arma::mat& X, 
-                 const int logspace) {
+                   const int logspace) {
   unsigned int S = beta_raw.n_slices;
   unsigned int K = X.n_rows;
   unsigned int T = X.n_cols;
@@ -161,7 +169,7 @@ arma::cube get_A_i(const arma::cube& beta_raw, const arma::mat& X,
 // X is K x T (covariates, time points)
 // [[Rcpp::export]]
 arma::cube get_B_i(const arma::cube& beta_raw, const arma::mat& X, 
-                 const int logspace) {
+                   const int logspace, const int add_missing) {
   unsigned int S = beta_raw.n_slices;
   unsigned int M = beta_raw.n_rows + 1;
   unsigned int K = X.n_rows;
@@ -170,11 +178,16 @@ arma::cube get_B_i(const arma::cube& beta_raw, const arma::mat& X,
   for (unsigned int i = 0; i < S; i++) {
     beta.slice(i) = arma::join_cols(arma::zeros<arma::rowvec>(K), beta_raw.slice(i));
   }
-  arma::cube B(S, S, T);
-  arma::mat Btmp(M, S);
+  arma::cube B(S, M + add_missing, T);
+  arma::mat Btmp(M + add_missing, S);
+  if (add_missing) {
+    Btmp.row(M).fill(1.0 - logspace);
+  }
   for (unsigned int t = 0; t < T; t++) { // time
     for (unsigned int j = 0; j < S; j ++) { // from states
-      Btmp.col(j) = softmax(beta.slice(j) * X.col(t), logspace);
+      Btmp.col(j).rows(0, M - add_missing) = softmax(
+        beta.slice(j) * X.col(t), logspace
+      );
     }
     B.slice(t) = Btmp.t();
   }
@@ -186,7 +199,7 @@ arma::cube get_B_i(const arma::cube& beta_raw, const arma::mat& X,
 arma::field<arma::cube> get_multichannel_B_i(
     const arma::vec& beta_raw, 
     const arma::mat& X, unsigned int S, unsigned int C,
-    const arma::uvec& M, const int logspace) {
+    const arma::uvec& M, const int logspace, const int add_missing) {
   unsigned int K = X.n_rows;
   unsigned int T = X.n_cols;
   
@@ -195,7 +208,6 @@ arma::field<arma::cube> get_multichannel_B_i(
   for (unsigned int c = 0; c < C; c++) {
     beta(c) = arma::zeros<arma::cube>(M(c), K, S);
     for (unsigned int s = 0; s < S; s++) {
-      arma::mat mat_slice = beta(c).slice(s);
       for (unsigned int m = 1; m < M(c); m++) {
         beta(c).slice(s).row(m - 1) = beta_raw.subvec(idx, idx + K - 1).t();
         idx += K;
@@ -205,11 +217,16 @@ arma::field<arma::cube> get_multichannel_B_i(
   arma::field<arma::cube> B(C); // C field of cubes, each S x M_c x T
   
   for (unsigned int c = 0; c < C; c++) { // channels  
-    B(c) = arma::cube(S, M(c), T); //arma::zeros<arma::cube>(S, M(c), T);
+    B(c) = arma::cube(S, M(c) + add_missing, T);
+    arma::mat Btmp(M(c) + add_missing, S);
+    if (add_missing) {
+      Btmp.row(M(c)).fill(1.0 - logspace);
+    }
     for (unsigned int t = 0; t < T; t++) { // time
-      arma::mat Btmp(M(c), S);
       for (unsigned int j = 0; j < S; j ++) { // from states
-        Btmp.col(j) = softmax(beta(c).slice(j) * X.col(t), logspace);
+        Btmp.col(j).rows(0, M(c) - add_missing) = softmax(
+          beta(c).slice(j) * X.col(t), logspace
+        );
       }
       B(c).slice(t) = Btmp.t();
     }

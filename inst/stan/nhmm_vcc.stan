@@ -20,13 +20,13 @@ transformed parameters {
     vector[N] ll;
     vector[S] log_Pi;
     matrix[S, M + 1] log_B;
-    matrix[S, T] log_py;
     matrix[S, S] log_A;
     #include /include/model_A_constant.stan
     #include /include/model_B_constant.stan
     for(i in 1:N) {
       #include /include/model_pi_varying.stan
-      for(t in 1:T) {
+      matrix[S, T[i]] log_py;
+      for (t in 1:T[i]) {
         log_py[, t] = log_B[, obs[t, i]];
       }
       ll[i] = loglik(log_Pi, log_A, log_py);

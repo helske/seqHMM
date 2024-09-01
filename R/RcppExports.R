@@ -65,12 +65,12 @@ get_A <- function(beta_raw, X, logspace) {
     .Call(`_seqHMM_get_A`, beta_raw, X, logspace)
 }
 
-get_B <- function(beta_raw, X, logspace) {
-    .Call(`_seqHMM_get_B`, beta_raw, X, logspace)
+get_B <- function(beta_raw, X, logspace, add_missing) {
+    .Call(`_seqHMM_get_B`, beta_raw, X, logspace, add_missing)
 }
 
-get_multichannel_B <- function(beta_raw, X, S, C, M, logspace) {
-    .Call(`_seqHMM_get_multichannel_B`, beta_raw, X, S, C, M, logspace)
+get_multichannel_B <- function(beta_raw, X, S, C, M, logspace, add_missing) {
+    .Call(`_seqHMM_get_multichannel_B`, beta_raw, X, S, C, M, logspace, add_missing)
 }
 
 get_omega_i <- function(theta_raw, X, logspace) {
@@ -85,12 +85,12 @@ get_A_i <- function(beta_raw, X, logspace) {
     .Call(`_seqHMM_get_A_i`, beta_raw, X, logspace)
 }
 
-get_B_i <- function(beta_raw, X, logspace) {
-    .Call(`_seqHMM_get_B_i`, beta_raw, X, logspace)
+get_B_i <- function(beta_raw, X, logspace, add_missing) {
+    .Call(`_seqHMM_get_B_i`, beta_raw, X, logspace, add_missing)
 }
 
-get_multichannel_B_i <- function(beta_raw, X, S, C, M, logspace) {
-    .Call(`_seqHMM_get_multichannel_B_i`, beta_raw, X, S, C, M, logspace)
+get_multichannel_B_i <- function(beta_raw, X, S, C, M, logspace, add_missing) {
+    .Call(`_seqHMM_get_multichannel_B_i`, beta_raw, X, S, C, M, logspace, add_missing)
 }
 
 logLikHMM <- function(transition, emission, init, obs, threads) {

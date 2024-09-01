@@ -20,13 +20,13 @@ transformed parameters {
     vector[N] ll;
     vector[S] log_Pi;
     array[C] matrix[S, max_M + 1] log_B;
-    matrix[S, T] log_py;
     matrix[S, S] log_A;
     #include /include/model_pi_constant.stan
     #include /include/model_A_constant.stan
     #include /include/model_B_constant_multichannel.stan
     for(i in 1:N) {
-      for(t in 1:T) {
+      matrix[S, T[i]] log_py;
+      for (t in 1:T[i]) {
         log_py[, t] = zeros_S;
         for(c in 1:C) {
           log_py[, t] += log_B[c, , obs[c, t, i]];

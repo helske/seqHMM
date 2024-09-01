@@ -2,7 +2,9 @@
 set.seed(123)
 k <- 2
 s <- 5
-obs <- seqdef(matrix(sample(letters[1:s], 50, replace = TRUE), ncol = 10))
+obs <- suppressMessages(
+  seqdef(matrix(sample(letters[1:s], 50, replace = TRUE), ncol = 10))
+)
 
 test_that("build_mmm returns object of class 'mhmm'", {
   expect_error(
@@ -18,16 +20,17 @@ test_that("build_mmm errors with incorrect observations", {
   expect_error(
     build_mmm(1, n_clusters = k),
     paste0(
-      "Argument 'observations' should a 'stslist' object created with ",
-      "'seqdef' function, or a list of such objects in case of multichannel ",
-      "data."
+      "`observations` should be a <stslist> object created with ", 
+      "`seqdef\\(\\)`, or a <list> of <stslist> objects in a multichannel ", 
+      "case\\."
     )
   )
   expect_error(
     build_mmm(list(a = obs, b = obs), n_clusters = k),
-    paste0("The 'build_mmm' function can only be used for single-channel ",
-           "sequence data \\(as an stslist object\\). Use the 'mc_to_sc_data' function ",
-           "to convert data into single-channel state sequences."
+    paste0("`build\\_mmm\\(\\)` can only be used for single-channel ",
+           "sequence data \\(a <stslist> object\\)\\. Use ",
+           "`mc\\_to\\_sc\\_data\\(\\)` to convert data into single-channel ", 
+           "state sequences\\."
     )
   )
 })

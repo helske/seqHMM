@@ -99,13 +99,15 @@
 build_mmm <- function(observations, n_clusters, transition_probs, initial_probs,
                       formula = NULL, data = NULL, coefficients = NULL,
                       cluster_names = NULL, ...) {
-  observations <- .check_observations(observations, channel_names)
+  observations <- .check_observations(observations)
   n_channels <- attr(observations, "n_channels")
   stopifnot_(
     n_channels == 1,
-    "{.fn build_mmm} can only be used for single-channel sequence data 
-    (a {.cls stslist} object). Use the {.fn mc_to_sc_data} to convert data into 
-    single-channel state sequences."
+    paste0(
+      "{.fn build_mmm} can only be used for single-channel sequence data ",
+      "(a {.cls stslist} object). Use {.fn mc_to_sc_data} to convert data ",
+      "into single-channel state sequences."
+    )
   )
   n_symbols <- n_states <- attr(observations, "n_symbols")
   symbol_names <- state_names <- attr(observations, "symbol_names")
@@ -155,6 +157,7 @@ build_mmm <- function(observations, n_clusters, transition_probs, initial_probs,
     emission_probs = emission_probs, initial_probs = initial_probs,
     formula = formula, data = data, coefficients = coefficients,
     cluster_names = cluster_names, state_names = state_names)
+  model$call <- match.call()
   attr(model, "type") <- "mmm"
   model
 }

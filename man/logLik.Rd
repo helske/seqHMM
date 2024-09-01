@@ -2,9 +2,18 @@
 % Please edit documentation in R/logLik.R
 \name{logLik.hmm}
 \alias{logLik.hmm}
+\alias{logLik.mhmm}
+\alias{logLik.nhmm}
+\alias{logLik.mnhmm}
 \title{Log-likelihood of the Hidden Markov Model}
 \usage{
-\method{logLik}{hmm}(object, partials = FALSE, threads = 1, log_space = FALSE, ...)
+\method{logLik}{hmm}(object, partials = FALSE, threads = 1, log_space = TRUE, ...)
+
+\method{logLik}{mhmm}(object, partials = FALSE, threads = 1, log_space = TRUE, ...)
+
+\method{logLik}{nhmm}(object, partials = FALSE, ...)
+
+\method{logLik}{mnhmm}(object, partials = FALSE, ...)
 }
 \arguments{
 \item{object}{Ahidden Markov model.}

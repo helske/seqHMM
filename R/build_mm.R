@@ -56,18 +56,20 @@
 #' mm_mvad <- build_mm(observations = mvad_seq)
 #'
 build_mm <- function(observations) {
-
-  observations <- .check_observations(observations, channel_names)
+  
+  observations <- .check_observations(observations)
   n_channels <- attr(observations, "n_channels")
   stopifnot_(
     n_channels == 1,
-    "{.fn build_mm} can only be used for single-channel sequence data 
-    (a {.cls stslist} object). Use the {.fn mc_to_sc_data} to convert data into 
-    single-channel state sequences."
+    paste0(
+      "{.fn build_mm} can only be used for single-channel sequence data ",
+      "(a {.cls stslist} object). Use {.fn mc_to_sc_data} to convert data ",
+      "into single-channel state sequences."
+    )
   )
   state_names <- alphabet(observations)
   n_states <- length(state_names)
-
+  
   if (any(observations == attr(observations, "nr"))) {
     model <- build_hmm(
       observations,
@@ -83,8 +85,8 @@ build_mm <- function(observations) {
       seqdef(
         observations[observations[, 1] %in% state_names, 1], 
         alphabet = state_names
-        )
       )
+    )
     initial_probs <- TraMineR::seqstatf(first_timepoint)[, 2] / 100
     transition_probs <- suppressMessages(TraMineR::seqtrate(observations))
     zeros <- which(rowSums(transition_probs) == 0)
@@ -99,6 +101,7 @@ build_mm <- function(observations) {
       initial_probs = initial_probs,
       state_names = state_names)
   }
+  model$call <- match.call()
   attr(model, "type") <- "mm"
   model
 }

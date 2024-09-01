@@ -5,21 +5,22 @@
 #' (potentially) depend on covariates.
 #'
 #' 
-#' @param observations An `stslist` object 
-#' (see [TraMineR::seqdef()]) containing the sequences.
-#' @param n_states A positive integer defining the number of hidden states.
+#' @param observations Either the name of the response variable in `data`, or 
+#' an `stslist` object (see [TraMineR::seqdef()]) containing the 
+#' sequences. In case of multichannel data, `observations` should be a vector 
+#' of response variable names in `data`, or a list of `stslist` objects.
 #' @param initial_formula of class [formula()] for the
 #' initial state probabilities.
 #' @param transition_formula of class [formula()] for the
 #' state transition probabilities.
 #' @param emission_formula of class [formula()] for the
 #' state emission probabilities.
-#' @param data A data frame containing the variables used in the transition and 
-#' emission formulas. Data should be sorted so the first T rows corresponds to 
-#' observations of the first sequence and so forth.
-#' @param data0 A data frame containing the variables used in the initial 
-#' state formula. Data should be sorted so that the first row corresponds to 
-#' covariates of the first sequence and so forth.
+#' @param data A data frame containing the variables used in the model 
+#' formulas. Can be omitted in case of model with no covariates and observations 
+#' given as `stslist` objects.
+#' @param time Name of the time index variable in `data`.
+#' @param id Name of the id variable in `data` identifying different 
+#' sequences.
 #' @param state_names A vector of optional labels for the hidden states. If this
 #' is `NULL` (the default), numbered states are used.
 #' @param channel_names A vector of optional names for the channels. If this
@@ -34,7 +35,18 @@
 #' values. Default is 1.
 #' @param threads Number of parallel threads for optimization with restarts. 
 #' Default is 1.
-#' @param ... Additional arguments to [rstan::optimizing()].
+#' @param store_data If `TRUE` (default), original data frame passed as `data` 
+#' is stored to the model object. For large datasets, this can be set to 
+#' `FALSE`, in which case you might need to pass the data separately to some 
+#' post-prosessing functions.
+#' @param verbose If `TRUE` (default), print progress messages during the final 
+#' optimization (after restarts). Note that due to the design of `rstan`, the 
+#' reason for the termination of optimization (e.g., reached the maximum number 
+#' of iterations) is only available by the final message show with 
+#' `verbose = TRUE`.
+#' @param ... Additional arguments to [rstan::optimizing()]. Most importantly,
+#' argument `iter` defines the maximum number of iterations for optimization.
+#' The default is `2000`.
 #' @return Object of class `nhmm`.
 #' @export
 #' @examples
@@ -54,13 +66,20 @@
 estimate_nhmm <- function(
     observations, n_states, initial_formula = ~1, 
     transition_formula = ~1, emission_formula = ~1, 
-    data = NULL, data0 = NULL, state_names = NULL, channel_names = NULL, 
-    inits = "random", init_sd = 2, restarts = 1L, threads = 1L, ...) {
+    data = NULL, time = NULL, id = NULL, state_names = NULL, channel_names = NULL, 
+    inits = "random", init_sd = 2, restarts = 1L, threads = 1L, 
+    store_data = TRUE, verbose = TRUE, ...) {
   
   model <- build_nhmm(
     observations, n_states, initial_formula, 
-    transition_formula, emission_formula, data, data0, state_names, 
+    transition_formula, emission_formula, data, time, id, state_names, 
     channel_names
     )
-  fit_nhmm(model, inits, init_sd, restarts, threads, ...)
+  stopifnot_(
+    checkmate::test_flag(x = store_data), 
+    "Argument {.arg store_data} must be a single {.cls logical} value.")
+  if (store_data) {
+    model$data <- data
+  }
+  fit_nhmm(model, inits, init_sd, restarts, threads, verbose, ...)
 }

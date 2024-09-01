@@ -1,3 +1,22 @@
+#' Filter data.frame Rows with Time not Exceeding Sequence Length
+#' @noRd
+non_void_rows <- function(d, time, id, sequence_lengths) {
+  d[d[[time]] <= sequence_lengths[match(d[[id]], unique(d[[id]]))], ]
+}
+#' Check If an Object Is a List of Lists
+#' 
+#' @noRd
+is_list_of_lists <- function(x) {
+  if (!is.list(x)) {
+    return(FALSE)
+  } else {
+    if (all(unlist(lapply(x, is.list)))) {
+      return(TRUE)
+    } else {
+      return(FALSE)
+    }
+  }
+}
 #' Regularized Inverse Softmax Function
 #' 
 #' @noRd
@@ -200,4 +219,26 @@ create_emissionArray <- function(model) {
     emissionArray[, 1:model$n_symbols[i], i] <- model$emission_probs[[i]]
   }
   emissionArray
+}
+
+#' Remove rows corresponding to void symbols
+#' @noRd
+remove_voids <- function(model, time, id, x) {
+  if (model$n_channels > 1) {
+    which_not_void <- unique(
+      do.call("rbind", lapply(model$observations, function(x) {
+        which(x != attr(x, "void"), arr.ind = TRUE)
+      }))
+    )
+  } else {
+    which_not_void <- which(
+      model$observations != attr(model$observations, "void"), arr.ind = TRUE
+    )
+  }
+  colnames(which_not_void) <- c(id, time)
+  merge(
+    x, 
+    which_not_void, 
+    by = c(time, id)
+  )
 }

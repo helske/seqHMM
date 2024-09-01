@@ -3,65 +3,100 @@ set.seed(123)
 s <- 4
 n_id <- 10
 n_time <- 15
-obs <- seqdef(matrix(sample(letters[1:s], n_id, replace = TRUE), ncol = n_time))
+obs <- suppressMessages(seqdef(
+  matrix(
+    sample(letters[1:s], n_id * n_time, replace = TRUE), 
+    n_id, n_time
+  )
+))
+data <- data.frame(
+  y = unlist(obs), 
+  x = rnorm(n_id * n_time), 
+  z = rnorm(n_id * n_time),
+  time = rep(1:n_time, each = n_id),
+  id = rep(1:n_id, n_time)
+)
 
 test_that("build_nhmm returns object of class 'nhmm'", {
   expect_error(
-    model <- build_nhmm(obs, n_states = s),
+    model <- build_nhmm(
+      obs, s, initial_formula = ~ x, transition_formula = ~z,
+      emission_formula = ~ z, data = data, 
+      time = "time", id = "id", state_names = 1:s, channel_names = "obs"
+    ),
     NA
   )
   expect_s3_class(
     model,
     "nhmm"
   )
+})
+test_that("estimate_nhmm returns object of class 'nhmm'", {
   expect_error(
-    build_nhmm(obs, s, initial_formula = ~ x, transition_formula = ~z, 
-               emission_formula = ~ z, data0 = data.frame(x = rnorm(n_id)), 
-               data = data.frame(z = rnorm(n_id * n_time))),
+    capture.output(fit <- estimate_nhmm(
+      "y", s, initial_formula = ~ x, transition_formula = ~z,
+      emission_formula = ~ z, data = data, time = "time", id = "id", 
+      iter = 0)),
     NA
   )
-})
-test_that("build_hmm errors with missing 'n_states' argument", {
-  expect_error(
-    build_nhmm(obs),
-    "Number of columns in 'emission_probs' is not equal to the number of symbols."
+  expect_s3_class(
+    fit,
+    "nhmm"
   )
 })
-
-test_that("build_nhmm errors with incorrect formulas", {
+test_that("estimate_nhmm errors with missing 'n_states' argument", {
   expect_error(
-    build_nhmm(obs, n_states = 3, initial_formula = 5),
-    "Number of columns in 'emission_probs' is not equal to the number of symbols."
-  )
-  expect_error(
-    build_nhmm(obs, n_states = 3, transition_formula = 5),
-    "Number of columns in 'emission_probs' is not equal to the number of symbols."
-  )
-  expect_error(
-    build_nhmm(obs, n_states = 3, emission_formula = 5),
-    "Number of columns in 'emission_probs' is not equal to the number of symbols."
+    estimate_nhmm(obs),
+    "Argument `n\\_states` must be a single positive integer\\."
   )
 })
-test_that("build_hmm errors with missing data arguments", {
+test_that("estimate_nhmm errors with incorrect formulas", {
   expect_error(
-    build_nhmm(obs, n_states = 3, initial_formula = ~ x),
-    "Number of columns in 'emission_probs' is not equal to the number of symbols."
+    estimate_nhmm(obs, n_states = 3, initial_formula = 5),
+    "Argument `initial\\_formula` must be a <formula> object\\."
   )
   expect_error(
-    build_nhmm(obs, 3, initial_formula = ~ z, transition_formula = ~x,
-               data0 = data.frame(rnorm(n_id))),
-    "Number of columns in 'emission_probs' is not equal to the number of symbols."
+    estimate_nhmm(obs, n_states = 3, transition_formula = 5),
+    "Argument `transition\\_formula` must be a <formula> object\\."
   )
   expect_error(
-    build_nhmm(obs, 3, emission_formula = ~x),
-    "Number of columns in 'emission_probs' is not equal to the number of symbols."
+    estimate_nhmm(obs, n_states = 3, emission_formula = "a"),
+    "Argument `emission\\_formula` must be a <formula> object\\."
   )
 })
-test_that("build_nhmm errors with incorrect observations", {
+test_that("estimate_nhmm errors with missing data arguments", {
   expect_error(
-    build_nhmm(1, 2),
-    paste0("Argument 'observations' should a 'stslist' object created with ",
-           "'seqdef' function, or a list of such objects in case of multichannel data."
+    estimate_nhmm(obs, s, initial_formula = ~ x),
+    "Argument `data` must be a <data.frame> object."
+  )
+  expect_error(
+    estimate_nhmm(obs, 3, initial_formula = ~ z, transition_formula = ~x,
+                  data = data),
+    "Argument `time` must be a single character string."
+  )
+  expect_error(
+    estimate_nhmm(obs, 3, emission_formula = ~x,
+                  data = data, time = "time"),
+    "Argument `id` must be a single character string."
+  )
+  expect_error(
+    estimate_nhmm(obs, 3, emission_formula = ~x,
+                  data = data, id = "id"),
+    "Argument `time` must be a single character string."
+  )
+})
+test_that("estimate_nhmm errors with incorrect observations", {
+  expect_error(
+    estimate_nhmm(list(1, "a"), s),
+    paste0("`observations` should be a <stslist> object created with ",
+           "`seqdef\\(\\)`, a <list> of <stslist> objects, or a <character> ",
+           "vector containing names of the response variables in `data`."
     )
+  )
+})
+test_that("build_nhmm works with vector of characters as observations", {
+  expect_error(
+    estimate_nhmm("y", s, data = data, time = "time", id = "id", iter = 0),
+    NA
   )
 })

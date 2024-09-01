@@ -209,6 +209,7 @@ build_lcm <- function(observations, n_clusters, emission_probs,
     formula = formula, data = data, coefficients = coefficients,
     cluster_names = cluster_names, state_names = cluster_names,
     channel_names = channel_names)
+  model$call <- match.call()
   attr(model, "type") <- "lcm"
   model
 }

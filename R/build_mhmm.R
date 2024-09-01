@@ -275,15 +275,15 @@ build_mhmm <- function(observations,
   symbol_names <- attr(observations, "symbol_names")
   n_sequences <- attr(observations, "n_sequences")
   
-  inits_given <- !missing(transition_probs) || !missing(initial_probs) || !missing(emission_probs)
+  inits_given <- !missing(transition_probs) && !missing(initial_probs) && !missing(emission_probs)
   n_states_given <- !missing(n_states)
   stopifnot_(
     inits_given || n_states_given,
-    "Provide either {.arg n_states} or all three of {.arg initial_probs}, ",
-    "{.arg transition_probs}, and {.arg emission_probs}."
+    "Provide either {.arg n_states} or all three of {.arg initial_probs},
+    {.arg transition_probs}, and {.arg emission_probs}."
   )
   
-  # if any initial values are given, ignore n_states and use these
+  # if all initial values are given, ignore n_states and use these
   if (inits_given) {
     stopifnot_(
       is.list(transition_probs),
@@ -321,8 +321,8 @@ build_mhmm <- function(observations,
           "The length of {.arg cluster_names} does not match the number of
           clusters. Names were not used."
         )
+        cluster_names <- paste("Cluster", seq_len(n_clusters))
       }
-      cluster_names <- paste("Cluster", seq_len(n_clusters))
     }
     n_states <- integer(n_clusters)
     if (is.null(state_names)) {
@@ -367,6 +367,9 @@ build_mhmm <- function(observations,
     emission_probs <- simulate_emission_probs(
       n_states = n_states, n_symbols = n_symbols, n_clusters = n_clusters
     )
+    if (is.null(state_names)) {
+      state_names <- vector("list", n_clusters)
+    }
     for (i in seq_len(n_clusters)) {
       transition_probs[[i]] <- .check_transition_probs(
         transition_probs[[i]], 
@@ -376,7 +379,7 @@ build_mhmm <- function(observations,
       initial_probs[[i]] <- .check_initial_probs(
         initial_probs[[i]], n_states[i], state_names[[i]]
       )
-      emission_probs <- .check_emission_probs(
+      emission_probs[[i]] <- .check_emission_probs(
         emission_probs[[i]], n_states[i], n_channels, n_symbols, 
         state_names[[i]], symbol_names,channel_names
       )
@@ -390,20 +393,24 @@ build_mhmm <- function(observations,
   } else {
     stopifnot_(
       inherits(formula, "formula"), 
-      "Argument {.arg formula} must be a {.cls formula} object.")
+      "{.arg formula} must be a {.cls formula} object.")
     stopifnot_(
       is.data.frame(data),
-      "If {.arg formula} is provided, {.arg data} must be a {.cls data.frame} 
-      object."
+      paste0(
+        "If {.arg formula} is provided, {.arg data} must be a ",
+        "{.cls data.frame} object."
+      )
     )
     X <- model.matrix(formula, data)
     if (nrow(X) != n_sequences) {
       if (length(all.vars(formula)) > 0 && 
           sum(!complete.cases(data[all.vars(formula)])) > 0) {
         stop_(
-          "Missing cases are not allowed in covariates. Use e.g. the 
-                {.fn complete.cases} to detect them, then fix, impute, or 
-                remove."
+          paste0(
+            "Missing cases are not allowed in covariates. Use e.g. the ",
+            "{.fn complete.cases} to detect them, then fix, impute, or ",
+            "remove."
+          )
         )
       } else {
         stop_(
@@ -427,24 +434,29 @@ build_mhmm <- function(observations,
   }
   rownames(coefficients) <- colnames(X)
   colnames(coefficients) <- cluster_names
-  names(transition_probs) <- names(emission_probs) <- names(initial_probs) <- cluster_names
+  names(transition_probs) <- names(emission_probs) <- 
+    names(initial_probs) <- cluster_names
   
   model <- structure(
     list(
       observations = observations, transition_probs = transition_probs,
       emission_probs = emission_probs, initial_probs = initial_probs,
-      coefficients = coefficients, X = X, cluster_names = cluster_names, state_names = state_names,
+      coefficients = coefficients, X = X, cluster_names = cluster_names, 
+      state_names = state_names,
       symbol_names = symbol_names, channel_names = channel_names,
       length_of_sequences = attr(observations, "length_of_sequences"),
       n_sequences = n_sequences, n_clusters = n_clusters,
       n_symbols = n_symbols, n_states = n_states,
       n_channels = n_channels,
-      n_covariates = n_covariates, formula = formula
+      n_covariates = n_covariates, formula = formula,
+      call = match.call()
     ),
     class = "mhmm",
     nobs = attr(observations, "nobs"),
-    df = sum(unlist(initial_probs) > 0) - n_clusters + sum(unlist(transition_probs) > 0) - sum(n_states) +
-      sum(unlist(emission_probs) > 0) - sum(n_states) * n_channels + n_covariates * (n_clusters - 1),
+    df = sum(unlist(initial_probs) > 0) - n_clusters + 
+      sum(unlist(transition_probs) > 0) - sum(n_states) +
+      sum(unlist(emission_probs) > 0) - 
+      sum(n_states) * n_channels + n_covariates * (n_clusters - 1),
     type = "mhmm"
   )
   model

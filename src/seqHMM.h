@@ -7,7 +7,7 @@
 #endif
 
 #define ARMA_NO_DEBUG
-#define ARMA_DONT_PRINT_ERRORS
+#define ARMA_WARN_LEVEL 1
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 

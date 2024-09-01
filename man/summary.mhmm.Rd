@@ -8,7 +8,7 @@
   object,
   parameters = FALSE,
   conditional_se = TRUE,
-  log_space = FALSE,
+  log_space = TRUE,
   ...
 )
 }

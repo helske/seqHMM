@@ -20,11 +20,11 @@ transformed parameters {
     vector[N] ll;
     vector[S] log_Pi;
     array[C] matrix[S, max_M + 1] log_B;
-    matrix[S, T] log_py;
-    array[T] matrix[S, S] log_A;
     #include /include/model_pi_constant.stan
     for(i in 1:N) {
-      for(t in 1:T) {
+      array[T[i]] matrix[S, S] log_A;
+      matrix[S, T[i]] log_py;
+      for (t in 1:T[i]) {
         #include /include/model_A_varying.stan
         #include /include/model_B_varying_multichannel.stan
         log_py[, t] = zeros_S;
@@ -34,7 +34,7 @@ transformed parameters {
       }
       ll[i] = loglik(log_Pi, log_A, log_py);
     }
-     log_lik = sum(ll);
+    log_lik = sum(ll);
   }
 }
 model {

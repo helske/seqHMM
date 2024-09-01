@@ -2,15 +2,19 @@
 #' Models
 #' 
 #' @param object An object of class `nhmm` or `mnhmm`.
-#' @param nsim Non-negative integer defining the number of samples used in 
-#' constructing confidence intervals. If `0`, only point estimates are 
-#' returned.
+#' @param nsim Non-negative integer defining the number of samples from the 
+#' normal approximation of the model parameters used in 
+#' computing the approximate quantiles of the estimates. If `0`, only point 
+#' estimates are returned.
 #' @param probs Vector defining the quantiles of interest. Default is 
 #' `c(0.025, 0.975)`.
 #' @rdname coef
 #' @export
 coef.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.975), ...) {
-  
+  stopifnot_(
+    checkmate::test_count(nsim),
+    "Argument {.arg nsim} should be a single non-negative integer."
+  )
   S <- object$n_states
   M <- object$n_symbols
   beta_i_raw <- c(object$estimation_results$parameters$beta_i_raw)
@@ -45,6 +49,13 @@ coef.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.975), ...) {
     )
   }
   if (nsim > 0) {
+    stopifnot_(
+      checkmate::test_numeric(
+        x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
+      ),
+      "Argument {.arg probs} must be a {.cls numeric} vector with values
+      between 0 and 1."
+    )
     chol_precision <- chol(-object$estimation$hessian)
     U <- backsolve(chol_precision, diag(ncol(chol_precision)))
     x <- matrix(rnorm(nsim * ncol(U)), nrow = nsim) %*% U
@@ -74,7 +85,10 @@ coef.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.975), ...) {
 #' @rdname coef
 #' @export
 coef.mnhmm <- function(object, nsim = 0, probs = c(0.025, 0.975), ...) {
-  
+  stopifnot_(
+    checkmate::test_count(nsim),
+    "Argument {.arg nsim} should be a single non-negative integer."
+  )
   S <- object$n_states
   M <- object$n_symbols
   D <- object$n_clusters
@@ -119,6 +133,13 @@ coef.mnhmm <- function(object, nsim = 0, probs = c(0.025, 0.975), ...) {
     estimate = theta_raw
   )
   if (nsim > 0) {
+    stopifnot_(
+      checkmate::test_numeric(
+        x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
+      ),
+      "Argument {.arg probs} must be a {.cls numeric} vector with values
+      between 0 and 1."
+    )
     chol_precision <- chol(-object$estimation$hessian)
     U <- backsolve(chol_precision, diag(ncol(chol_precision)))
     x <- matrix(rnorm(nsim * ncol(U)), nrow = nsim) %*% U

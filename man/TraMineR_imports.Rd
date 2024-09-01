@@ -6,7 +6,7 @@
 \alias{alphabet}
 \title{Imported Functions from \code{TraMineR}}
 \description{
-Imported functions for convinience. For details, see
+Imported functions for convenience. For details, see
 the corresponding help pages of \code{\link[TraMineR:seqstatf]{TraMineR::seqstatf()}},
 \code{\link[TraMineR:alphabet]{TraMineR::alphabet()}} and \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}}.
 }

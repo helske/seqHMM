@@ -9,10 +9,16 @@
 #' default is `FALSE`.
 #' @param log_space If `TRUE` (default), forward and backward probabilities are 
 #' computed and returned in logarithmic scale for numerical stability. If 
-#' `FALSE`, scaling is used instead, which is somewhat faster.
+#' `FALSE`, scaling is used instead, which is somewhat faster. Not used for 
+#' `nhmm` and `mnhmm` objects which always use logarithmic scale.
 #' @param threads Number of threads used in parallel computing. The default 
-#' is `1`.
-#' @return List with components
+#' is `1`. Not used for `nhmm` and `mnhmm` objects.
+#' @param as_data_frame If `TRUE` (default), the output is returned as a 
+#' data.frame. Otherwise, a list of array(s) is returned. Ignored if 
+#' `log_space` is `FALSE`, in which case list of arrays is always returned.
+#' @return If `as_data_frame` is `TRUE` a `data.frame` with 
+#' log-values of forward and backward probabilities. If `FALSE` or 
+#' `log_space = FALSE`, a list with components
 #' * forward_probs\cr If `log_space = FALSE`, scaled forward probabilities, 
 #'   i.e. probability of state given observations up to that time point. 
 #'   If `log_space = TRUE`, logarithms of non-scaled forward probabilities.
@@ -41,7 +47,8 @@ forward_backward <- function(model, ...) {
 #' @rdname forward_backward
 #' @export
 forward_backward.hmm <- function(model, forward_only = FALSE, 
-                                 log_space = TRUE, threads = 1, ...) {
+                                 log_space = TRUE, threads = 1,
+                                 as_data_frame = TRUE, ...) {
   stopifnot_(
     checkmate::test_int(x = threads, lower = 1L), 
     "Argument {.arg threads} must be a single positive integer."
@@ -78,12 +85,20 @@ forward_backward.hmm <- function(model, forward_only = FALSE,
       "time" = time_names, "sequence" = sequence_names
     )
   }
-  out
+  if (as_data_frame && log_space) {
+    do.call(rbind, lapply(names(out), function(x) {
+      cbind(expand.grid(dimnames(out[[x]])), log_probability = c(out[[x]]),
+            variable = x)
+    }))
+  } else {
+    out
+  }
 }
 #' @rdname forward_backward
 #' @export
 forward_backward.mhmm <- function(model, forward_only = FALSE, 
-                                  log_space = TRUE, threads = 1, ...) {
+                                  log_space = TRUE, threads = 1,
+                                  as_data_frame = TRUE, ...) {
   stopifnot_(
     checkmate::test_int(x = threads, lower = 1L), 
     "Argument {.arg threads} must be a single positive integer."
@@ -121,11 +136,19 @@ forward_backward.mhmm <- function(model, forward_only = FALSE,
       "time" = time_names, "sequence" = sequence_names
     )
   }
-  out
+  if (as_data_frame && log_space) {
+    do.call(rbind, lapply(names(out), function(x) {
+      cbind(expand.grid(dimnames(out[[x]])), log_probability = c(out[[x]]),
+            variable = x)
+    }))
+  } else {
+    out
+  }
 }
 #' @rdname forward_backward
 #' @export
-forward_backward.nhmm <- function(model, forward_only = FALSE, ...) {
+forward_backward.nhmm <- function(model, forward_only = FALSE, 
+                                  as_data_frame = TRUE, ...) {
   X_initial <- t(model$X_initial)
   X_transition <- aperm(model$X_transition, c(3, 1, 2))
   X_emission <- aperm(model$X_emission, c(3, 1, 2))
@@ -147,13 +170,13 @@ forward_backward.nhmm <- function(model, forward_only = FALSE, ...) {
       beta_i_raw, X_initial,
       beta_s_raw, X_transition,
       beta_o_raw, X_emission,
-      obsArray[1, , ])
+      array(obsArray[1, , ], dim(obsArray)[2:3]))
     if (!forward_only) {
       out$backward_probs <- backward_nhmm_singlechannel(
         beta_i_raw, X_initial,
         beta_s_raw, X_transition,
         beta_o_raw, X_emission,
-        obsArray[1, , ])
+        array(obsArray[1, , ], dim(obsArray)[2:3]))
     }
     if (is.null(time_names <- colnames(model$observations))) {
       time_names <- seq_len(model$length_of_sequences)
@@ -166,13 +189,13 @@ forward_backward.nhmm <- function(model, forward_only = FALSE, ...) {
       beta_i_raw, X_initial,
       beta_s_raw, X_transition,
       beta_o_raw, X_emission,
-      obsArray[1, , ], model$n_symbols)
+      obsArray, model$n_symbols)
     if (!forward_only) {
       out$backward_probs <- backward_nhmm_multichannel(
         beta_i_raw, X_initial,
         beta_s_raw, X_transition,
         beta_o_raw, X_emission,
-        obsArray[1, , ], model$n_symbols)
+        obsArray, model$n_symbols)
     }
     if (is.null(time_names <- colnames(model$observations[[1]]))) {
       time_names <- seq_len(model$length_of_sequences)
@@ -191,12 +214,20 @@ forward_backward.nhmm <- function(model, forward_only = FALSE, ...) {
       "time" = time_names, "sequence" = sequence_names
     )
   }
-  out
+  if (as_data_frame) {
+    do.call(rbind, lapply(names(out), function(x) {
+      cbind(expand.grid(dimnames(out[[x]])), log_probability = c(out[[x]]),
+            variable = x)
+    }))
+  } else {
+    out
+  }
 }
 
 #' @rdname forward_backward
 #' @export
-forward_backward.mnhmm <- function(model, forward_only = FALSE, ...) {
+forward_backward.mnhmm <- function(model, forward_only = FALSE, 
+                                   as_data_frame = TRUE, ...) {
   X_initial <- t(model$X_initial)
   X_transition <- aperm(model$X_transition, c(3, 1, 2))
   X_emission <- aperm(model$X_emission, c(3, 1, 2))
@@ -225,14 +256,14 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE, ...) {
       beta_s_raw, X_transition,
       beta_o_raw, X_emission,
       theta_raw, X_cluster,
-      obsArray[1, , ])
+      array(obsArray, dim(obsArray)[2:3]))
     if (!forward_only) {
       out$backward_probs <- backward_mnhmm_singlechannel(
         beta_i_raw, X_initial,
         beta_s_raw, X_transition,
         beta_o_raw, X_emission,
         theta_raw, X_cluster,
-        obsArray[1, , ])
+        array(obsArray, dim(obsArray)[2:3]))
     }
     if (is.null(time_names <- colnames(model$observations))) {
       time_names <- seq_len(model$length_of_sequences)
@@ -262,15 +293,24 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE, ...) {
       sequence_names <- seq_len(model$n_sequences)
     }
   }
+  state_names <- paste0(
+    rep(model$cluster_names, each = model$n_states), ": ",
+    model$state_names
+  )
   dimnames(out$forward_probs) <- list(
-    "state" = model$state_names,
-    "time" = time_names, "sequence" = sequence_names
+    "state" = state_names, "time" = time_names, "id" = sequence_names
   )
   if (!forward_only) {
     dimnames(out$backward_probs) <- list(
-      "state" = model$state_names,
-      "time" = time_names, "sequence" = sequence_names
+      "state" = state_names, "time" = time_names, "id" = sequence_names
     )
   }
-  out
+  if (as_data_frame) {
+    do.call(rbind, lapply(names(out), function(x) {
+      cbind(expand.grid(dimnames(out[[x]])), log_probability = c(out[[x]]),
+            variable = x)
+    }))
+  } else {
+    out
+  }
 }

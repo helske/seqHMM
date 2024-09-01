@@ -24,12 +24,12 @@ transformed parameters {
     matrix[N, D] ll;
     vector[S] log_Pi;
     matrix[S, M + 1] log_B;
-    matrix[S, T] log_py;
-    array[T] matrix[S, S] log_A;
     for (d in 1:D) {
       #include /include/model_pi_constant_mixture.stan
       for(i in 1:N) {
-        for(t in 1:T) {
+        array[T[i]] matrix[S, S] log_A;
+        matrix[S, T[i]] log_py;
+        for (t in 1:T[i]) {
           #include /include/model_A_varying_mixture.stan
           #include /include/model_B_varying_mixture.stan
           log_py[, t] = log_B[, obs[t, i]];

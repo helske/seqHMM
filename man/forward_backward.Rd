@@ -13,22 +13,24 @@ forward_backward(model, ...)
 \method{forward_backward}{hmm}(
   model,
   forward_only = FALSE,
-  log_space = FALSE,
+  log_space = TRUE,
   threads = 1,
+  as_data_frame = TRUE,
   ...
 )
 
 \method{forward_backward}{mhmm}(
   model,
   forward_only = FALSE,
-  log_space = FALSE,
+  log_space = TRUE,
   threads = 1,
+  as_data_frame = TRUE,
   ...
 )
 
-\method{forward_backward}{nhmm}(model, forward_only = FALSE, ...)
+\method{forward_backward}{nhmm}(model, forward_only = FALSE, as_data_frame = TRUE, ...)
 
-\method{forward_backward}{mnhmm}(model, forward_only = FALSE, ...)
+\method{forward_backward}{mnhmm}(model, forward_only = FALSE, as_data_frame = TRUE, ...)
 }
 \arguments{
 \item{model}{A hidden Markov model.}
@@ -36,14 +38,21 @@ forward_backward(model, ...)
 \item{forward_only}{If \code{TRUE}, only forward probabilities are computed. The
 default is \code{FALSE}.}
 
-\item{log_space}{Compute forward and backward probabilities in logarithmic
-scale instead of scaling. The default is \code{FALSE}.}
+\item{log_space}{If \code{TRUE} (default), forward and backward probabilities are
+computed and returned in logarithmic scale for numerical stability. If
+\code{FALSE}, scaling is used instead, which is somewhat faster. Not used for
+\code{nhmm} and \code{mnhmm} objects which always use logarithmic scale.}
 
 \item{threads}{Number of threads used in parallel computing. The default
-is \code{1}.}
+is \code{1}. Not used for \code{nhmm} and \code{mnhmm} objects.}
+
+\item{as_data_frame}{If \code{TRUE} (default), the output is returned as a
+data.frame. Otherwise, a list of array(s) is returned.}
 }
 \value{
-List with components
+If \code{as_data_frame} is \code{TRUE} a \code{data.frame} with
+log-values of forward and backward probabilities. If \code{FALSE}, a list with
+components
 \itemize{
 \item forward_probs\cr If \code{log_space = FALSE}, scaled forward probabilities,
 i.e. probability of state given observations up to that time point.

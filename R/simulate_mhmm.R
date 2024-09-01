@@ -189,6 +189,12 @@ simulate_mhmm <- function(
       n_sequences, sequence_length
     ), alphabet = v_state_names)
   ))
+  if (n_channels == 1) {
+    for (i in 1:n_clusters) {
+      emission_probs[[i]] <- emission_probs[[i]][[1]]
+    }
+    symbol_names <- symbol_names[[1]]
+  }
   for (i in seq_len(n_clusters)) {
     initial_probs[[i]] <- 
       .check_initial_probs(initial_probs[[i]], n_states[i], state_names[[i]])

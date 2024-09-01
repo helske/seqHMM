@@ -2,20 +2,29 @@
 % Please edit documentation in R/get_probs.R
 \name{get_probs}
 \alias{get_probs}
-\title{Get the Estimated Initial, Transition, and Emission Probabilities for NHMM}
+\alias{get_probs.nhmm}
+\alias{get_probs.mnhmm}
+\title{Get the Estimated Initial, Transition, and Emission Probabilities for NHMM
+or MNHMM}
 \usage{
-get_probs(model, nsim = 0, probs = c(0.025, 0.975))
+get_probs(model, ...)
+
+\method{get_probs}{nhmm}(model, data = NULL, nsim = 0, probs = c(0.025, 0.975))
+
+\method{get_probs}{mnhmm}(model, data = NULL, nsim = 0, probs = c(0.025, 0.975))
 }
 \arguments{
-\item{model}{An object of class \code{nhmm}.}
+\item{model}{An object of class \code{nhmm} or \code{mnhmm}.}
 
-\item{nsim}{Non-negative integer defining the number of samples used in
-constructing confidence intervals. If \code{0}, only point estimates are
-returned.}
+\item{nsim}{Non-negative integer defining the number of samples from the
+normal approximation of the model parameters used in
+computing the approximate quantiles of the estimates. If \code{0}, only point
+estimates are returned.}
 
 \item{probs}{Vector defining the quantiles of interest. Default is
 \code{c(0.025, 0.975)}.}
 }
 \description{
 Get the Estimated Initial, Transition, and Emission Probabilities for NHMM
+or MNHMM
 }

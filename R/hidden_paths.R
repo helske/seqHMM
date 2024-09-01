@@ -132,7 +132,7 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE) {
       beta_s_raw, X_transition,
       beta_o_raw, X_emission,
       theta_raw, X_cluster,
-      obsArray[1, , ])
+      array(obsArray, dim(obsArray)[2:3]))
   } else {
     out <- viterbi_mnhmm_multichannel(
       beta_i_raw, X_initial,
@@ -141,6 +141,11 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE) {
       theta_raw, X_cluster,
       obsArray, model$n_symbols)
   }
+  model$state_names <- paste0(
+    rep(model$cluster_names, each = model$n_states), ": ",
+    model$state_names
+  )
+  model$n_states <- length(model$state_names)
   create_mpp_seq(out, model, respect_void)
 }
 #' Create a seqdef Object from the Viterbi Algorithm Output
@@ -152,7 +157,6 @@ create_mpp_seq <- function(out, model, respect_void) {
     mpp <- t(apply(out$q + 1, 2, function(x) model$state_names[x]))
   }
   if (model$n_channels == 1) model$observations <- list(model$observations)
-  
   if (respect_void) {
     void_symbol <- attr(model$observations[[1]], "void")
     voids <- vector("list", model$n_channels)

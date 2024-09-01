@@ -632,7 +632,9 @@ fit_model <- function(
   }
   obsArray <- create_obsArray(model)
   emissionArray <- create_emissionArray(model)
-  
+  if (model$n_channels == 1) {
+    model$emission_probs <- list(model$emission_probs)
+  }
   if (em_step) {
     em.con <- list(print_level = 0, maxeval = 1000, reltol = 1e-10, restart = NULL)
     nmsC <- names(em.con)
@@ -1460,7 +1462,6 @@ fit_model <- function(
   }
   
   if (model$n_channels == 1) {
-    model$observations <- model$observations[[1]]
     model$emission_probs <- model$emission_probs[[1]]
   }
   
