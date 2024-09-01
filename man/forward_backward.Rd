@@ -47,12 +47,13 @@ computed and returned in logarithmic scale for numerical stability. If
 is \code{1}. Not used for \code{nhmm} and \code{mnhmm} objects.}
 
 \item{as_data_frame}{If \code{TRUE} (default), the output is returned as a
-data.frame. Otherwise, a list of array(s) is returned.}
+data.frame. Otherwise, a list of array(s) is returned. Ignored if
+\code{log_space} is \code{FALSE}, in which case list of arrays is always returned.}
 }
 \value{
 If \code{as_data_frame} is \code{TRUE} a \code{data.frame} with
-log-values of forward and backward probabilities. If \code{FALSE}, a list with
-components
+log-values of forward and backward probabilities. If \code{FALSE} or
+\code{log_space = FALSE}, a list with components
 \itemize{
 \item forward_probs\cr If \code{log_space = FALSE}, scaled forward probabilities,
 i.e. probability of state given observations up to that time point.

@@ -23,6 +23,7 @@ estimate_mnhmm(
   restarts = 1L,
   threads = 1L,
   store_data = TRUE,
+  verbose = TRUE,
   ...
 )
 }
@@ -84,7 +85,15 @@ is stored to the model object. For large datasets, this can be set to
 \code{FALSE}, in which case you might need to pass the data separately to some
 post-prosessing functions.}
 
-\item{...}{Additional arguments to \code{\link[rstan:stanmodel-method-optimizing]{rstan::optimizing()}}.}
+\item{verbose}{If \code{TRUE} (default), print progress messages during the final
+optimization (after restarts). Note that due to the design of \code{rstan}, the
+reason for the termination of optimization (e.g., reached the maximum number
+of iterations) is only available by the final message show with
+\code{verbose = TRUE}.}
+
+\item{...}{Additional arguments to \code{\link[rstan:stanmodel-method-optimizing]{rstan::optimizing()}}. Most importantly,
+argument \code{iter} defines the maximum number of iterations for optimization.
+The default is \code{2000}.}
 }
 \value{
 Object of class \code{mnhmm}.

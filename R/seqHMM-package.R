@@ -25,7 +25,6 @@
 #' @import Rcpp
 #' @importFrom future plan sequential multisession
 #' @importFrom future.apply future_lapply
-#' @importFrom posterior as_draws_rvars draws_of
 #' @importFrom rstan optimizing
 #' @importFrom rstantools rstan_config
 #' @importFrom RcppParallel RcppParallelLibs CxxFlags
