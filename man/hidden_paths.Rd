@@ -10,13 +10,13 @@
 \usage{
 hidden_paths(model, ...)
 
-\method{hidden_paths}{hmm}(model, respect_void = TRUE)
+\method{hidden_paths}{hmm}(model, respect_void = TRUE, ...)
 
-\method{hidden_paths}{mhmm}(model, respect_void = TRUE)
+\method{hidden_paths}{mhmm}(model, respect_void = TRUE, ...)
 
-\method{hidden_paths}{nhmm}(model, respect_void = TRUE)
+\method{hidden_paths}{nhmm}(model, respect_void = TRUE, ...)
 
-\method{hidden_paths}{mnhmm}(model, respect_void = TRUE)
+\method{hidden_paths}{mnhmm}(model, respect_void = TRUE, ...)
 }
 \arguments{
 \item{model}{A hidden Markov model.}

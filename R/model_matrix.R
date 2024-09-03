@@ -12,10 +12,10 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
     coef_names <- "(Intercept)"
   } else {
     first_time_point <- min(data[[time]])
-    X <- model.matrix.lm(
+    X <- stats::model.matrix.lm(
       formula, 
       data = data[data[[time]] == first_time_point, ], 
-      na.action = na.pass
+      na.action = stats::na.pass
     )
     missing_values <- which(!complete.cases(X))
     stopifnot_(
@@ -33,7 +33,8 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
     type <- "v"
     n_pars <- (n_states - 1L) * ncol(X)
   }
-  list(type = type, n_pars = n_pars, X = X, coef_names = coef_names)
+  list(formula = formula, type = type, n_pars = n_pars, X = X, 
+       coef_names = coef_names)
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
@@ -48,10 +49,10 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     X <- array(1, c(length_of_sequences, n_sequences, 1L))
     coef_names <- "(Intercept)"
   } else {
-    X <- model.matrix.lm(
+    X <- stats::model.matrix.lm(
       formula, 
       data = data, 
-      na.action = na.pass
+      na.action = stats::na.pass
     )
     missing_values <- which(!complete.cases(X))
     if (length(missing_values) > 0) {
@@ -74,7 +75,8 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     type <- "v"
     n_pars <- n_states * (n_states - 1L) * dim(X)[3]
   }
-  list(type = type, n_pars = n_pars, X = X, coef_names = coef_names)
+  list(formula = formula, type = type, n_pars = n_pars, X = X, 
+       coef_names = coef_names)
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
@@ -90,10 +92,10 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     X <- array(1, c(length_of_sequences, n_sequences, 1L))
     coef_names <- "(Intercept)"
   } else {
-    X <- model.matrix.lm(
+    X <- stats::model.matrix.lm(
       formula, 
       data = data, 
-      na.action = na.pass
+      na.action = stats::na.pass
     )
     missing_values <- which(!complete.cases(X))
     if (length(missing_values) > 0) {
@@ -116,7 +118,8 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     type <- "v"
     n_pars <- n_channels * n_states * (n_symbols - 1L) * dim(X)[3]
   }
-  list(type = type, n_pars = n_pars, X = X, coef_names = coef_names)
+  list(formula = formula, type = type, n_pars = n_pars, X = X, 
+       coef_names = coef_names)
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
@@ -131,10 +134,10 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
     coef_names <- "(Intercept)"
   } else {
     first_time_point <- min(data[[time]])
-    X <- model.matrix.lm(
+    X <- stats::model.matrix.lm(
       formula, 
       data = data[data[[time]] == first_time_point, ], 
-      na.action = na.pass
+      na.action = stats::na.pass
     )
     missing_values <- which(!complete.cases(X))
     stopifnot_(
@@ -152,5 +155,6 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
     type <- "v"
     n_pars <- (n_clusters - 1L) * ncol(X)
   }
-  list(type = type, n_pars = n_pars, X = X, coef_names = coef_names)
+  list(formula = formula, type = type, n_pars = n_pars, X = X, 
+       coef_names = coef_names)
 }

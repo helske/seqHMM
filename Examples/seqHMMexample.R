@@ -4,16 +4,19 @@ library(TraMineR)
 
 data(biofam3c)
 
-# Building sequence objects (starting at age 15)
-marr.seq <- seqdef(biofam3c$married, start = 15)
-child.seq <- seqdef(biofam3c$children, start = 15)
-left.seq <- seqdef(biofam3c$left, start = 15)
-
-# Choosing colours for states
-attr(marr.seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-attr(child.seq, "cpal") <- c("#66C2A5", "#FC8D62")
-attr(left.seq, "cpal") <- c("#A6CEE3", "#E31A1C")
-
+# Building sequence objects (starting at age 15, with custom color palette)
+marr.seq <- seqdef(
+  biofam3c$married, start = 15, 
+  cpal = c("#AB82FF", "#E6AB02", "#E7298A")
+)
+child.seq <- seqdef(
+  biofam3c$children, start = 15,
+  cpal = c("#66C2A5", "#FC8D62")
+)
+left.seq <- seqdef(
+  biofam3c$left, start = 15,
+  cpal = c("#A6CEE3", "#E31A1C")
+)
 
 # Plotting multichannel sequence data
 
@@ -137,9 +140,9 @@ ssplot(
   most probable paths of hidden states",
   # Labels for hidden states (most common states)
   mpp.labels = c("1: Childless single, with parents", 
-               "2: Childless single, left home",
-               "3: Married without children",
-               "4: Married parent, left home"),
+                 "2: Childless single, left home",
+                 "3: Married without children",
+                 "4: Married parent, left home"),
   # Colours for hidden states
   mpp.col = c("olivedrab", "bisque", "plum", "indianred"),
   # Labels for x axis
@@ -244,17 +247,17 @@ B3_left <- matrix(c(0.01, 0.99, # High probability for living with parents
 
 # Starting values for transition matrices
 A1 <- matrix(c(0.8,   0.16, 0.03, 0.01,
-                 0,    0.9, 0.07, 0.03,
-                 0,      0,  0.9,  0.1,
-                 0,      0,    0,    1),
+               0,    0.9, 0.07, 0.03,
+               0,      0,  0.9,  0.1,
+               0,      0,    0,    1),
              nrow = 4, ncol = 4, byrow = TRUE)
 
 A2 <- matrix(c(0.8, 0.10, 0.05,  0.03, 0.01, 0.01,
-                 0,  0.7,  0.1,   0.1, 0.05, 0.05,
-                 0,    0, 0.85,  0.01,  0.1, 0.04,
-                 0,    0,    0,   0.9, 0.05, 0.05,
-                 0,    0,    0,     0,  0.9,  0.1,
-                 0,    0,    0,     0,    0,    1),
+               0,  0.7,  0.1,   0.1, 0.05, 0.05,
+               0,    0, 0.85,  0.01,  0.1, 0.04,
+               0,    0,    0,   0.9, 0.05, 0.05,
+               0,    0,    0,     0,  0.9,  0.1,
+               0,    0,    0,     0,    0,    1),
              nrow = 6, ncol = 6, byrow = TRUE)
 
 # Starting values for initial state probabilities

@@ -41,7 +41,7 @@ hidden_paths <- function(model, ...) {
 }
 #' @rdname hidden_paths
 #' @export
-hidden_paths.hmm <- function(model, respect_void = TRUE) {
+hidden_paths.hmm <- function(model, respect_void = TRUE, ...) {
   model$initial_probs <- log(model$initial_probs)
   model$transition_probs <- log(model$transition_probs)
   obsArray <- create_obsArray(model)
@@ -54,7 +54,7 @@ hidden_paths.hmm <- function(model, respect_void = TRUE) {
 }
 #' @rdname hidden_paths
 #' @export
-hidden_paths.mhmm <- function(model, respect_void = TRUE) {
+hidden_paths.mhmm <- function(model, respect_void = TRUE, ...) {
   model <- .combine_models(model)
   model$initial_probs <- log(model$initial_probs)
   model$transition_probs <- log(model$transition_probs)
@@ -69,7 +69,7 @@ hidden_paths.mhmm <- function(model, respect_void = TRUE) {
 }
 #' @rdname hidden_paths
 #' @export
-hidden_paths.nhmm <- function(model, respect_void = TRUE) {
+hidden_paths.nhmm <- function(model, respect_void = TRUE, ...) {
   
   X_initial <- t(model$X_initial)
   X_transition <- aperm(model$X_transition, c(3, 1, 2))
@@ -103,7 +103,7 @@ hidden_paths.nhmm <- function(model, respect_void = TRUE) {
 }
 #' @rdname hidden_paths
 #' @export
-hidden_paths.mnhmm <- function(model, respect_void = TRUE) {
+hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
   
   X_initial <- t(model$X_initial)
   X_transition <- aperm(model$X_transition, c(3, 1, 2))
@@ -177,7 +177,7 @@ create_mpp_seq <- function(out, model, respect_void) {
     )
   )
   if (sum(model$n_states) <= 200) {
-    attr(mpp, "cpal") <- seqHMM::colorpalette[[sum(model$n_states)]]
+    TraMineR::cpal(mpp) <- seqHMM::colorpalette[[sum(model$n_states)]]
   } else {
     cp <- NULL
     k <- 200
@@ -187,7 +187,7 @@ create_mpp_seq <- function(out, model, respect_void) {
       p <- p + k
       k <- k - 1
     }
-    attr(mpp, "cpal") <- cp[1:sum(model$n_states)]
+    TraMineR::cpal(mpp) <- cp[1:sum(model$n_states)]
   }
   attr(mpp, "log_prob") <- c(out$logp)
   mpp

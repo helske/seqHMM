@@ -14,8 +14,6 @@ build_nhmm <- function(
   structure(
     out$model,
     class = "nhmm",
-    time_variable = time,
-    id_variable = id,
     nobs = attr(out$observations, "nobs"),
     df = out$extras$n_pars,
     type = paste0(out$extras$multichannel, "nhmm_", out$extras$model_type)

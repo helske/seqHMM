@@ -16,7 +16,7 @@ simulate_mhmm(
 )
 }
 \arguments{
-\item{n_sequences}{The number of simulations.}
+\item{n_sequences}{The number of sequences to simulate.}
 
 \item{initial_probs}{A list containing vectors of initial state probabilities
 for the submodel of each cluster.}

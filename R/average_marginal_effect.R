@@ -48,7 +48,7 @@ average_marginal_effect <- function(
     )
   } else {
     stopifnot(
-      !is.null(object$data),
+      !is.null(model$data),
       "Model does not contain original data and argument {.arg newdata} is 
       {.var NULL}."
     )
@@ -84,10 +84,21 @@ average_marginal_effect <- function(
   ame_B <- if (model$n_channels == 1) {
     get_B(beta_o_raw, X_emission1, 0) - get_B(beta_o_raw, X_emission2, 0)
   } else {
-    get_multichannel_B(beta_o_raw, X_emission1, S, C, M, 0) -
-      get_multichannel_B(beta_o_raw, X_emission2, S, C, M, 0) 
+    get_multichannel_B(
+      beta_o_raw, 
+      X_emission1, 
+      model$n_states, 
+      model$n_channels, 
+      model$n_symbols, 
+      0, 0) -
+      get_multichannel_B(
+        beta_o_raw, 
+        X_emission2, 
+        model$n_states, 
+        model$n_channels, 
+        model$n_symbols, 
+        0, 0)
   }
-  browser()
   if (nsim > 0) {
     stopifnot_(
       checkmate::test_numeric(

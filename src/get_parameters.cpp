@@ -74,7 +74,7 @@ arma::field<arma::cube> get_B(const arma::cube& beta_raw, const arma::cube& X,
   for (unsigned int i = 0; i < N; i++) { // sequences
     for (unsigned int t = 0; t < T; t++) { // time
       for (unsigned int j = 0; j < S; j ++) { // from states
-        Btmp.col(j).rows(0, M - add_missing) = softmax(
+        Btmp.col(j).rows(0, M - 1) = softmax(
           beta.slice(j) * X.slice(i).col(t), logspace
         );
       }
@@ -100,7 +100,7 @@ arma::field<arma::cube> get_multichannel_B(
     beta(c) = arma::zeros<arma::cube>(M(c), K, S);
     for (unsigned int s = 0; s < S; s++) {
       for (unsigned int m = 1; m < M(c); m++) {
-        beta(c).slice(s).row(m - 1) = beta_raw.subvec(idx, idx + K - 1).t();
+        beta(c).slice(s).row(m) = beta_raw.subvec(idx, idx + K - 1).t();
         idx += K;
       }
     }
@@ -115,7 +115,7 @@ arma::field<arma::cube> get_multichannel_B(
       }
       for (unsigned int t = 0; t < T; t++) { // time
         for (unsigned int j = 0; j < S; j ++) { // from states
-          Btmp.col(j).rows(0, M(c) - add_missing) = softmax(
+          Btmp.col(j).rows(0, M(c) - 1) = softmax(
             beta(c).slice(j) * X.slice(i).col(t), logspace
           );
         }
@@ -185,7 +185,7 @@ arma::cube get_B_i(const arma::cube& beta_raw, const arma::mat& X,
   }
   for (unsigned int t = 0; t < T; t++) { // time
     for (unsigned int j = 0; j < S; j ++) { // from states
-      Btmp.col(j).rows(0, M - add_missing) = softmax(
+      Btmp.col(j).rows(0, M - 1) = softmax(
         beta.slice(j) * X.col(t), logspace
       );
     }
@@ -209,7 +209,7 @@ arma::field<arma::cube> get_multichannel_B_i(
     beta(c) = arma::zeros<arma::cube>(M(c), K, S);
     for (unsigned int s = 0; s < S; s++) {
       for (unsigned int m = 1; m < M(c); m++) {
-        beta(c).slice(s).row(m - 1) = beta_raw.subvec(idx, idx + K - 1).t();
+        beta(c).slice(s).row(m) = beta_raw.subvec(idx, idx + K - 1).t();
         idx += K;
       }
     }
@@ -224,7 +224,7 @@ arma::field<arma::cube> get_multichannel_B_i(
     }
     for (unsigned int t = 0; t < T; t++) { // time
       for (unsigned int j = 0; j < S; j ++) { // from states
-        Btmp.col(j).rows(0, M(c) - add_missing) = softmax(
+        Btmp.col(j).rows(0, M(c) - 1) = softmax(
           beta(c).slice(j) * X.col(t), logspace
         );
       }

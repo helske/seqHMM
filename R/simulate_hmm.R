@@ -2,7 +2,7 @@
 #'
 #' Simulate sequences of observed and hidden states given parameters of a hidden Markov model.
 #'
-#' @param n_sequences Number of simulations.
+#' @param n_sequences The number of sequences to simulate.
 #' @param initial_probs A vector of initial state probabilities.
 #' @param transition_probs A matrix of transition probabilities.
 #' @param emission_probs A matrix of emission probabilities or a list of such objects (one for each channel).
@@ -37,6 +37,10 @@
 simulate_hmm <- function(
     n_sequences, initial_probs, transition_probs, emission_probs,
     sequence_length) {
+  stopifnot_(
+    !missing(emission_probs),
+    "{.arg emission_probs} must be a matrix or a list of matrices."
+  )
   if (is.list(emission_probs)) {
     n_channels <- length(emission_probs)
   } else {
@@ -49,20 +53,20 @@ simulate_hmm <- function(
     state_names <- 1:n_states
   }
 
-  for (i in 1:n_channels) {
+  for (i in seq_len(n_channels)) {
     rownames(emission_probs[[i]]) <- rownames(transition_probs)
   }
 
   n_symbols <- sapply(emission_probs, ncol)
 
   if (is.null(colnames(emission_probs[[1]]))) {
-    symbol_names <- lapply(1:n_channels, function(i) 1:n_symbols[i])
+    symbol_names <- lapply(seq_len(n_channels), function(i) 1:n_symbols[i])
   } else {
-    symbol_names <- lapply(1:n_channels, function(i) colnames(emission_probs[[i]]))
+    symbol_names <- lapply(seq_len(n_channels), function(i) colnames(emission_probs[[i]]))
   }
 
   if (is.null(channel_names <- names(emission_probs))) {
-    channel_names <- 1:n_channels
+    channel_names <- seq_len(n_channels)
   }
 
   states <- array(NA, c(n_sequences, sequence_length))
@@ -70,7 +74,7 @@ simulate_hmm <- function(
 
   for (i in 1:n_sequences) {
     states[i, 1] <- sample(state_names, 1, prob = initial_probs)
-    for (k in 1:n_channels) {
+    for (k in seq_len(n_channels)) {
       obs[i, 1, k] <- sample(symbol_names[[k]], 1,
         prob = emission_probs[[k]][states[i, 1], ]
       )
@@ -80,7 +84,7 @@ simulate_hmm <- function(
     for (i in 1:n_sequences) {
       for (t in 2:sequence_length) {
         states[i, t] <- sample(state_names, 1, prob = transition_probs[states[i, t - 1], ])
-        for (k in 1:n_channels) {
+        for (k in seq_len(n_channels)) {
           obs[i, t, k] <- sample(symbol_names[[k]], 1,
             prob = emission_probs[[k]][states[i, t], ]
           )
@@ -89,7 +93,7 @@ simulate_hmm <- function(
     }
   }
 
-  obs <- suppressMessages(lapply(1:n_channels, function(i) {
+  obs <- suppressMessages(lapply(seq_len(n_channels), function(i) {
     seqdef(matrix(obs[, , i], nrow = n_sequences), alphabet = symbol_names[[i]])
   }))
   names(obs) <- channel_names
@@ -97,8 +101,8 @@ simulate_hmm <- function(
 
   p <- 0
   if (length(unlist(symbol_names)) <= 200) {
-    for (i in 1:n_channels) {
-      attr(obs[[i]], "cpal") <- seqHMM::colorpalette[[
+    for (i in seq_len(n_channels)) {
+      TraMineR::cpal(obs[[i]]) <- seqHMM::colorpalette[[
         length(unlist(symbol_names))
       ]][(p + 1):(p + n_symbols[[i]])]
       p <- 1
@@ -113,15 +117,15 @@ simulate_hmm <- function(
       k <- k - 1
     }
     cp <- cp[1:length(unlist(symbol_names))]
-    for (i in 1:n_channels) {
-      attr(obs[[i]], "cpal") <- cp[(p + 1):(p + n_symbols[[i]])]
+    for (i in seq_len(n_channels)) {
+      TraMineR::cpal(obs[[i]]) <- cp[(p + 1):(p + n_symbols[[i]])]
       p <- 1
     }
   }
 
   if (length(unlist(symbol_names)) != length(alphabet(states))) {
     if (length(alphabet(states)) <= 200) {
-      attr(states, "cpal") <- seqHMM::colorpalette[[length(alphabet(states))]]
+      TraMineR::cpal(states) <- seqHMM::colorpalette[[length(alphabet(states))]]
     } else {
       cp <- NULL
       k <- 200
@@ -131,11 +135,12 @@ simulate_hmm <- function(
         p <- p + k
         k <- k - 1
       }
-      attr(states, "cpal") <- cp[1:length(alphabet(states))]
+      TraMineR::cpal(states) <- cp[1:length(alphabet(states))]
     }
   } else {
     if (length(alphabet(states)) <= 199) {
-      attr(states, "cpal") <- seqHMM::colorpalette[[length(alphabet(states)) + 1]][1:length(alphabet(states))]
+      TraMineR::cpal(states) <- 
+        seqHMM::colorpalette[[length(alphabet(states)) + 1]][1:length(alphabet(states))]
     } else {
       cp <- NULL
       k <- 199
@@ -145,7 +150,7 @@ simulate_hmm <- function(
         p <- p + k
         k <- k - 1
       }
-      attr(states, "cpal") <- cp[1:length(alphabet(states))]
+      TraMineR::cpal(states) <- cp[1:length(alphabet(states))]
     }
   }
   if (n_channels == 1) obs <- obs[[1]]

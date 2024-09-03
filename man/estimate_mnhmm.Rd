@@ -46,7 +46,15 @@ state transition probabilities.}
 state emission probabilities.}
 
 \item{cluster_formula}{of class \code{\link[=formula]{formula()}} for the
-mixture probabilities.}
+mixture probabilities.
+@param inits If \code{inits = "random"} (default), random initial values are
+used. Otherwise \code{inits} should be list of initial values. If coefficients
+are given using list components \code{beta_i_raw}, \code{beta_s_raw}, \code{beta_o_raw},
+and \code{theta_raw}, these are used as is, alternatively initial values can be
+given in terms of the initial state, transition, emission, and mixture
+probabilities using list components \code{initial_probs}, \code{emission_probs},
+\code{transition_probs}, and \code{cluster_probs}. These can also be mixed, i.e. you
+can give only \code{initial_probs} and \code{beta_s_raw}.}
 
 \item{data}{A data frame containing the variables used in the model
 formulas. Can be omitted in case of model with no covariates and observations
@@ -66,9 +74,13 @@ is \code{NULL} (the default), numbered channels are used.}
 \item{cluster_names}{A vector of optional labels for the clusters. If this
 is \code{NULL} (the default), numbered clusters are used.}
 
-\item{inits}{Optional initial values for the initial state, transition,
-emission, and mixture probabilities. Either a list with \code{initial_probs},
-\code{emission_probs}, \code{transition_probs}, \code{cluster_probs}, or \code{"random"}.}
+\item{inits}{If \code{inits = "random"} (default), random initial values are
+used. Otherwise \code{inits} should be list of initial values. If coefficients
+are given using list components \code{beta_i_raw}, \code{beta_s_raw}, \code{beta_o_raw},
+these are used as is, alternatively initial values can be given in terms of
+the initial state, transition, and emission probabilities using list
+components \code{initial_probs}, \code{emission_probs}, and \code{transition_probs}. These
+can also be mixed, i.e. you can give only \code{initial_probs} and \code{beta_s_raw}.}
 
 \item{init_sd}{Standard deviation of the normal distribution used to generate
 random initial values. Default is \code{2}. If you want to fix the initial values

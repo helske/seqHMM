@@ -97,6 +97,8 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
   list(
     model = list(
       observations = observations, 
+      time_variable = time,
+      id_variable = id,
       X_initial = pi$X, X_transition = A$X, X_emission = B$X,
       X_cluster = if(mixture) theta$X else NULL,
       initial_formula = pi$formula, 

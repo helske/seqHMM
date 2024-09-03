@@ -107,7 +107,7 @@ stacked_sequence_plot <- function(
         "{.arg x} is not an {.cls stslist} object or a list of such objects."
       )
       n_channels <- length(y)
-      if (channel_names <- is.null(channel_names)) {
+      if (is.null(channel_names <- names(y))) {
         channel_names <- paste("Channel", seq_len(n_channels))
       }
     }
@@ -149,11 +149,19 @@ stacked_sequence_plot <- function(
       p <- ggseqplot::ggseqdplot(y, group = group, sortv = sort_by, ...) + 
         ggplot2::theme(legend.position = legend_position) +
         ggplot2::ylab(channel_names)
+      suppressMessages(
+        p <- p +
+          ggplot2::scale_fill_manual(values = TraMineR::cpal(y))
+      )
     }
     if (type == "index") {
       p <- ggseqplot::ggseqiplot(y, group = group, sortv = sort_by, ...) + 
         ggplot2::theme(legend.position = "right") +
         ggplot2::ylab(channel_names)
+      suppressMessages(
+        p <- p +
+          ggplot2::scale_fill_manual(values = TraMineR::cpal(y))
+      )
     }
   } else {
     if (length(legend_position) == 1) {
@@ -170,6 +178,10 @@ stacked_sequence_plot <- function(
         p[[i]] <- ggseqplot::ggseqdplot(y[[i]], group = group, ...) + 
           ggplot2::theme(legend.position = legend_position[i]) +
           ggplot2::ylab(channel_names[i])
+        suppressMessages(
+          p[[i]] <- p[[i]] + 
+            ggplot2::scale_fill_manual(values = TraMineR::cpal(y[[i]]))
+        )
       }
     }
     if (type == "index") {
@@ -177,6 +189,10 @@ stacked_sequence_plot <- function(
         p[[i]] <- ggseqplot::ggseqiplot(y[[i]], group = group, ...) + 
           ggplot2::theme(legend.position = legend_position[i]) +
           ggplot2::ylab(channel_names[i])
+        suppressMessages(
+          p[[i]] <- p[[i]] + 
+            ggplot2::scale_fill_manual(values = TraMineR::cpal(y[[i]]))
+        )
       }
     }
     p <- patchwork::wrap_plots(p, ncol = 1, ...)

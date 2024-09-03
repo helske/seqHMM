@@ -9,11 +9,16 @@
 #' (mixtures).
 #' @param cluster_formula of class [formula()] for the
 #' mixture probabilities.
+#'  @param inits If `inits = "random"` (default), random initial values are 
+#' used. Otherwise `inits` should be list of initial values. If coefficients 
+#' are given using list components `beta_i_raw`, `beta_s_raw`, `beta_o_raw`, 
+#' and `theta_raw`, these are used as is, alternatively initial values can be 
+#' given in terms of the initial state, transition, emission, and mixture 
+#' probabilities using list components `initial_probs`, `emission_probs`, 
+#' `transition_probs`, and `cluster_probs`. These can also be mixed, i.e. you 
+#' can give only `initial_probs` and `beta_s_raw`.
 #' @param cluster_names A vector of optional labels for the clusters. If this
 #' is `NULL` (the default), numbered clusters are used.
-#' @param inits Optional initial values for the initial state, transition, 
-#' emission, and mixture probabilities. Either a list with `initial_probs`, 
-#' `emission_probs`, `transition_probs`, `cluster_probs`, or `"random"`.
 #' @return Object of class `mnhmm`.
 #' @export
 #' @examples

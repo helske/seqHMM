@@ -3,7 +3,7 @@
 #' Simulate sequences of observed and hidden states given the parameters of a mixture
 #' hidden Markov model.
 #'
-#' @param n_sequences The number of simulations.
+#' @param n_sequences The number of sequences to simulate.
 #' @param initial_probs A list containing vectors of initial state probabilities
 #' for the submodel of each cluster.
 #' @param transition_probs A list of matrices of transition probabilities
@@ -135,19 +135,19 @@ simulate_mhmm <- function(
     }
   }
   if (is.null(channel_names <- names(emission_probs[[1]]))) {
-    channel_names <- paste("Channel", 1:n_channels)
+    channel_names <- paste("Channel", seq_len(n_channels))
   }
   if (n_sequences < 2) {
     stop_("{.arg n_sequences} must be at least 2 for a mixture model.")
   }
   n_symbols <- sapply(emission_probs[[1]], ncol)
   if (is.null(colnames(emission_probs[[1]][[1]]))) {
-    symbol_names <- lapply(1:n_channels, function(i) seq_len(n_symbols[i]))
+    symbol_names <- lapply(seq_len(n_channels), function(i) seq_len(n_symbols[i]))
   } else {
-    symbol_names <- lapply(1:n_channels, function(i) colnames(emission_probs[[1]][[i]]))
+    symbol_names <- lapply(seq_len(n_channels), function(i) colnames(emission_probs[[1]][[i]]))
   }
   
-  obs <- lapply(1:n_channels, function(i) {
+  obs <- lapply(seq_len(n_channels), function(i) {
     suppressWarnings(suppressMessages(
       seqdef(matrix(symbol_names[[i]], n_sequences, sequence_length),
              alphabet = symbol_names[[i]]
@@ -260,7 +260,7 @@ simulate_mhmm <- function(
         transition_probs[[i]], emission_probs[[i]], sequence_length
       )
       if (n_channels > 1) {
-        for (k in 1:n_channels) {
+        for (k in seq_len(n_channels)) {
           obs[[k]][clusters == cluster_names[i], ] <- sim$observations[[k]]
         }
       } else {
@@ -271,8 +271,8 @@ simulate_mhmm <- function(
   }
   p <- 0
   if (length(unlist(symbol_names)) <= 200) {
-    for (i in 1:n_channels) {
-      attr(obs[[i]], "cpal") <- seqHMM::colorpalette[[
+    for (i in seq_len(n_channels)) {
+      TraMineR::cpal(obs[[i]]) <- seqHMM::colorpalette[[
         length(unlist(symbol_names))
       ]][(p + 1):(p + n_symbols[[i]])]
       p <- p + n_symbols[[i]]
@@ -287,15 +287,15 @@ simulate_mhmm <- function(
       k <- k - 1
     }
     cp <- cp[1:length(unlist(symbol_names))]
-    for (i in 1:n_channels) {
-      attr(obs[[i]], "cpal") <- cp[(p + 1):(p + n_symbols[[i]])]
+    for (i in seq_len(n_channels)) {
+      TraMineR::cpal(obs[[i]]) <- cp[(p + 1):(p + n_symbols[[i]])]
       p <- p + n_symbols[[i]]
     }
   }
   
   if (length(unlist(symbol_names)) != length(alphabet(states))) {
     if (length(alphabet(states)) <= 200) {
-      attr(states, "cpal") <- seqHMM::colorpalette[[length(alphabet(states))]]
+      TraMineR::cpal(states) <- seqHMM::colorpalette[[length(alphabet(states))]]
     } else {
       cp <- NULL
       k <- 200
@@ -305,11 +305,11 @@ simulate_mhmm <- function(
         p <- p + k
         k <- k - 1
       }
-      attr(states, "cpal") <- cp[1:length(alphabet(states))]
+      TraMineR::cpal(states) <- cp[1:length(alphabet(states))]
     }
   } else {
     if (length(alphabet(states)) <= 199) {
-      attr(states, "cpal") <- seqHMM::colorpalette[[length(alphabet(states)) + 1]][1:length(alphabet(states))]
+      TraMineR::cpal(states) <- seqHMM::colorpalette[[length(alphabet(states)) + 1]][1:length(alphabet(states))]
     } else {
       cp <- NULL
       k <- 199
@@ -319,7 +319,7 @@ simulate_mhmm <- function(
         p <- p + k
         k <- k - 1
       }
-      attr(states, "cpal") <- cp[1:length(alphabet(states))]
+      TraMineR::cpal(states) <- cp[1:length(alphabet(states))]
     }
   }
   if (n_channels == 1) obs <- obs[[1]]

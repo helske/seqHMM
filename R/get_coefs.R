@@ -42,7 +42,7 @@ coef.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.975), ...) {
     beta_o <- data.frame(
       state = object$state_names,
       symbol = rep(unlist(lapply(object$symbol_names, "[", -1)), each = S),
-      parameter = unlist(lapply(seq_len(model$n_channels), function(i) {
+      parameter = unlist(lapply(seq_len(object$n_channels), function(i) {
         rep(object$coef_names_emission, each = S * (M[i] - 1))
       })),
       estimate = beta_o_raw
@@ -121,7 +121,7 @@ coef.mnhmm <- function(object, nsim = 0, probs = c(0.025, 0.975), ...) {
     beta_o <- data.frame(
       state = rep(object$state_names, each = D),
       symbol = rep(unlist(lapply(object$symbol_names, "[", -1)), each = S * D),
-      parameter = rep(unlist(lapply(seq_len(model$n_channels), function(i) {
+      parameter = rep(unlist(lapply(seq_len(object$n_channels), function(i) {
         rep(object$coef_names_emission, each = S * (M[i] - 1))
       })), each = D),
       estimate = beta_o_raw
@@ -147,7 +147,7 @@ coef.mnhmm <- function(object, nsim = 0, probs = c(0.025, 0.975), ...) {
     p_i <- length(beta_i_raw)
     p_s <- length(beta_s_raw)
     p_o <- length(beta_o_raw)
-    p_c <- length(theta_o_raw)
+    p_c <- length(theta_raw)
     quantiles <- fast_quantiles(x[seq_len(p_i), ], probs)
     for(i in seq_along(probs)) {
       beta_i[paste0("q", 100 * probs[i])] <- quantiles[, i]

@@ -37,21 +37,19 @@ data("biofam3c")
 # Building sequence objects
 marr_seq <- seqdef(biofam3c$married,
   start = 15,
-  alphabet = c("single", "married", "divorced")
+  alphabet = c("single", "married", "divorced"),
+  cpal = c("violetred2", "darkgoldenrod2", "darkmagenta")
 )
 child_seq <- seqdef(biofam3c$children,
   start = 15,
-  alphabet = c("childless", "children")
+  alphabet = c("childless", "children"),
+  cpal = c("darkseagreen1", "coral3")
 )
 left_seq <- seqdef(biofam3c$left,
   start = 15,
-  alphabet = c("with parents", "left home")
+  alphabet = c("with parents", "left home"),
+  cpal = c("lightblue", "red3")
 )
-
-# Define colors
-attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
-attr(child_seq, "cpal") <- c("darkseagreen1", "coral3")
-attr(left_seq, "cpal") <- c("lightblue", "red3")
 
 # Converting multichannel data to single-channel data
 sc_data <- mc_to_sc_data(list(marr_seq, child_seq, left_seq))

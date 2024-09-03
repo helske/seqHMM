@@ -58,7 +58,7 @@ simulate_emission_probs <- function(n_states, n_symbols, n_clusters = 1) {
   if (n_channels > 1) {
     for (i in 1:n_clusters) {
       emiss[[i]] <- vector("list", n_channels)
-      for (j in 1:n_channels) {
+      for (j in seq_len(n_channels)) {
         emiss[[i]][[j]] <- matrix(runif(n_states[i] * n_symbols[j]), n_states[i], n_symbols[j])
         emiss[[i]][[j]] <- emiss[[i]][[j]] / rowSums(emiss[[i]][[j]])
       }

@@ -16,14 +16,14 @@ get_probs <- function(model, ...) {
 #' @rdname get_probs
 #' @export
 get_probs.nhmm <- function(model, data = NULL, nsim = 0, 
-                           probs = c(0.025, 0.975)) {
+                           probs = c(0.025, 0.975), ...) {
   
   stopifnot_(
     checkmate::test_count(nsim),
     "Argument {.arg nsim} should be a single non-negative integer."
   )
   if (!is.null(data)) {
-    model <- update(model, data = data)
+    model <- update(model, newdata = data)
   }
   S <- model$n_states
   M <- model$n_symbols
@@ -39,53 +39,33 @@ get_probs.nhmm <- function(model, data = NULL, nsim = 0,
     1,
     C > 1
   )
-  if (intercept_only(model$initial_formula)) {
-    X_initial <- t(model$X_initial[1, , drop = FALSE])
-    ids_pi <- "all"
-  } else {
-    X_initial <- t(model$X_initial)
-    ids_pi <- seq_len(model$n_sequences)
-  }
-  if (intercept_only(model$transition_formula)) {
-    X_transition <- aperm(model$X_transition[1, 1, , drop = FALSE], c(3, 1, 2))
-    ids_A <- "all"
-    times_A <- "all"
-  } else {
-    X_transition <- aperm(model$X_transition, c(3, 1, 2))
-    ids_A <- seq_len(model$n_sequences)
-    times_A <- colnames(model$observations)
-  }
-  if (intercept_only(model$emission_formula)) {
-    X_emission <- aperm(model$X_emission[1, 1, , drop = FALSE], c(3, 1, 2))
-    ids_B <- "all"
-    times_B <- "all"
-  } else {
-    X_emission <- aperm(model$X_emission, c(3, 1, 2))
-    ids_B <- seq_len(model$n_sequences)
-    times_B <- colnames(model$observations)
-  }
+  X_initial <- t(model$X_initial)
+  X_transition <- aperm(model$X_transition, c(3, 1, 2))
+  X_emission <- aperm(model$X_emission, c(3, 1, 2))
   initial_probs <- get_pi(beta_i_raw, X_initial, 0)
   transition_probs <- get_A(beta_s_raw, X_transition, 0)
   emission_probs <- if (model$n_channels == 1) {
     get_B(beta_o_raw, X_emission, 0) 
   } else {
-    get_multichannel_B(beta_o_raw, X_emission, S, C, M, 0) 
+    get_multichannel_B(beta_o_raw, X_emission, S, C, M, 0, 0) 
   }
+  ids <- rownames(model$observations)
+  times <- colnames(model$observations)
   initial_probs <- data.frame(
-    id = rep(ids_pi, each = S),
+    id = rep(ids, each = S),
     state = model$state_names,
     estimate = c(initial_probs)
   )
   transition_probs <- data.frame(
-    id = rep(ids_A, each = S^2),
-    time = rep(times_A, each = S^2 * length(ids_A)),
+    id = rep(ids, each = S^2),
+    time = rep(times, each = S^2 * length(ids)),
     state_from = model$state_names,
     state_to = rep(model$state_names, each = S),
     estimate = unlist(transition_probs)
   )
   emission_probs <- data.frame(
-    id = rep(ids_B, each = S * M),
-    time = rep(times_B, each = S * M * length(ids_B)),
+    id = rep(ids, each = S * M),
+    time = rep(times, each = S * M * length(ids)),
     state = model$state_names,
     observation = rep(model$symbol_names, each = S),
     estimate = unlist(emission_probs)
@@ -139,15 +119,14 @@ get_probs.nhmm <- function(model, data = NULL, nsim = 0,
   }
   list(
     initial_probs = initial_probs, 
-    transition_probs = 
-      remove_voids(transition_probs, time, id, transition_probs),
-    emission_probs = remove_voids(emission_probs, time, id, emission_probs)
+    transition_probs = remove_voids(model, transition_probs),
+    emission_probs = remove_voids(model, emission_probs)
   )
 }
 #' @rdname get_probs
 #' @export
 get_probs.mnhmm <- function(model, data = NULL, nsim = 0, 
-                            probs = c(0.025, 0.975)) {
+                            probs = c(0.025, 0.975), ...) {
   
   stopifnot_(
     checkmate::test_count(nsim),
@@ -155,83 +134,104 @@ get_probs.mnhmm <- function(model, data = NULL, nsim = 0,
   )
   
   if (!is.null(data)) {
-    model <- update(model, data = data)
+    model <- update(model, newdata = data)
   }
+  
+  T <- model$length_of_sequences
+  N <- model$n_sequences
   S <- model$n_states
   M <- model$n_symbols
   C <- model$n_channels
-  beta_i_raw <- stan_to_cpp_initial(
-    model$estimation_results$parameters$beta_i_raw
-  )
-  beta_s_raw <- stan_to_cpp_transition(
-    model$estimation_results$parameters$beta_s_raw
-  )
-  beta_o_raw <- stan_to_cpp_emission(
-    model$estimation_results$parameters$beta_o_raw,
-    1,
-    C > 1
-  )
+  D <- model$n_clusters
+  X_initial <- t(model$X_initial)
+  X_transition <- aperm(model$X_transition, c(3, 1, 2))
+  X_emission <- aperm(model$X_emission, c(3, 1, 2))
+  X_cluster <- t(model$X_cluster)
   theta_raw <- model$estimation_results$parameters$theta_raw
-  
-  if (intercept_only(model$initial_formula)) {
-    X_initial <- t(model$X_initial[1, , drop = FALSE])
-    ids_pi <- "all"
-  } else {
-    X_initial <- t(model$X_initial)
-    ids_pi <- seq_len(model$n_sequences)
+  initial_probs <- vector("list", D)
+  transition_probs <- vector("list", D)
+  emission_probs <- vector("list", D)
+  for (d in seq_len(D)) {
+    beta_i_raw <- stan_to_cpp_initial(
+      matrix(
+        model$estimation_results$parameters$beta_i_raw[d, ,], 
+        S - 1, nrow(X_initial)
+      )
+    )
+    beta_s_raw <- stan_to_cpp_transition(
+      array(
+        model$estimation_results$parameters$beta_s_raw[d, , ,], 
+        dim = c(S, S - 1, nrow(X_transition))
+      )
+    )
+    beta_o_raw <- stan_to_cpp_emission(
+      if (C == 1) {
+        array(
+          model$estimation_results$parameters$beta_o_raw[d, , ,],
+          dim = c(S, M - 1, nrow(X_emission))
+        )
+      } else {
+        model$estimation_results$parameters$beta_o_raw[d, ]
+      },
+      1,
+      C > 1
+    )
+    initial_probs[[d]] <- get_pi(beta_i_raw, X_initial, 0)
+    transition_probs[[d]] <- get_A(beta_s_raw, X_transition, 0)
+    emission_probs[[d]] <- if (C == 1) {
+      get_B(beta_o_raw, X_emission, 0) 
+    } else {
+      get_multichannel_B(beta_o_raw, X_emission, S, C, M, 0, 0) 
+    }
   }
-  if (intercept_only(model$transition_formula)) {
-    X_transition <- aperm(model$X_transition[1, 1, , drop = FALSE], c(3, 1, 2))
-    ids_A <- "all"
-    times_A <- "all"
+  if (C == 1) {
+    ids <- rownames(model$observations)
+    times <- colnames(model$observations)
+    symbol_names <- list(model$symbol_names)
   } else {
-    X_transition <- aperm(model$X_transition, c(3, 1, 2))
-    ids_A <- seq_len(model$n_sequences)
-    times_A <- colnames(model$observations)
+    ids <- rownames(model$observations[[1]])
+    times <- colnames(model$observations[[1]])
+    symbol_names <- model$symbol_names
   }
-  if (intercept_only(model$emission_formula)) {
-    X_emission <- aperm(model$X_emission[1, 1, , drop = FALSE], c(3, 1, 2))
-    ids_B <- "all"
-    times_B <- "all"
-  } else {
-    X_emission <- aperm(model$X_emission, c(3, 1, 2))
-    ids_B <- seq_len(model$n_sequences)
-    times_B <- colnames(model$observations)
-  }
-  if (intercept_only(model$cluster_formula)) {
-    X_cluster <- t(model$X_cluster[1, , drop = FALSE])
-    ids_theta <- "all"
-  } else {
-    X_cluster <- t(model$X_cluster)
-    ids_theta <- seq_len(model$n_sequences)
-  }
-  initial_probs <- get_pi(beta_i_raw, X_initial, 0)
-  transition_probs <- get_A(beta_s_raw, X_transition, 0)
-  emission_probs <- if (model$n_channels == 1) {
-    get_B(beta_o_raw, X_emission, 0) 
-  } else {
-    get_multichannel_B(beta_o_raw, X_emission, S, C, M, 0) 
-  }
-  cluster_probs <- get_theta(theta_raw, X_cluster, 0)
   initial_probs <- data.frame(
-    id = rep(ids_pi, each = S),
+    cluster = rep(model$cluster_names, each = S * N),
+    id = rep(ids, each = S),
     state = model$state_names,
-    estimate = c(initial_probs)
+    estimate = unlist(initial_probs)
   )
+  colnames(initial_probs)[2] <- model$id_variable
   transition_probs <- data.frame(
-    id = rep(ids_A, each = S^2),
-    time = rep(times_A, each = S^2 * length(ids_A)),
+    cluster = rep(model$cluster_names, each = S^2 * T * N),
+    id = rep(ids, each = S^2 * T),
+    time = rep(times, each = S^2),
     state_from = model$state_names,
     state_to = rep(model$state_names, each = S),
     estimate = unlist(transition_probs)
   )
+  colnames(transition_probs)[2] <- model$id_variable
+  colnames(transition_probs)[3] <- model$time_variable
   emission_probs <- data.frame(
-    id = rep(ids_B, each = S * M),
-    time = rep(times_B, each = S * M * length(ids_B)),
+    cluster =  rep(model$cluster_names, each = S * sum(M) * T * N),
+    id = unlist(lapply(seq_len(C), function(i) rep(ids, each = S * M[i] * T))),
+    time = unlist(lapply(seq_len(C), function(i) rep(times, each = S * M[i]))),
     state = model$state_names,
-    observation = rep(model$symbol_names, each = S),
+    channel = unlist(lapply(seq_len(C), function(i) {
+      rep(model$channel_names[i], each = S * M[i]* T * N)
+    })),
+    observation = unlist(lapply(seq_len(C), function(i) {
+      rep(symbol_names[[i]], each = S)
+    })),
     estimate = unlist(emission_probs)
   )
+  colnames(emission_probs)[2] <- model$id_variable
+  colnames(emission_probs)[3] <- model$time_variable
+  if (C == 1) emission_probs$channel <- NULL
+  cluster_probs <- data.frame(
+    cluster = model$cluster_names,
+    id = rep(ids, each = D),
+    estimate = unlist(get_omega(theta_raw, X_cluster, 0))
+  )
+  
   if (nsim > 0) {
     stopifnot_(
       checkmate::test_numeric(
@@ -243,10 +243,15 @@ get_probs.mnhmm <- function(model, data = NULL, nsim = 0,
     chol_precision <- chol(-model$estimation$hessian)
     U <- backsolve(chol_precision, diag(ncol(chol_precision)))
     x <- matrix(rnorm(nsim * ncol(U)), nrow = nsim) %*% U
-    x <- t(sweep(x, 2, c(beta_i_raw, beta_s_raw, beta_o_raw), "+"))
+    beta_i_raw <- model$estimation_results$parameters$beta_i_raw
+    beta_s_raw <- model$estimation_results$parameters$beta_s_raw
+    beta_o_raw <- model$estimation_results$parameters$beta_o_raw
+    theta_raw <- model$estimation_results$parameters$theta_raw
+    x <- t(sweep(x, 2, c(beta_i_raw, beta_s_raw, beta_o_raw, theta_raw), "+"))
     p_i <- length(beta_i_raw)
     p_s <- length(beta_s_raw)
     p_o <- length(beta_o_raw)
+    p_d <- length(theta_raw)
     
     samples <- apply(
       x[seq_len(p_i), ], 2, function(z) {
@@ -278,12 +283,21 @@ get_probs.mnhmm <- function(model, data = NULL, nsim = 0,
     for(i in seq_along(probs)) {
       emission_probs[paste0("q", 100 * probs[i])] <- quantiles[, i]
     }
+    samples <- apply(
+      x[p_i + p_s + p_o + seq_len(p_d), ], 2, function(z) {
+        z <- array(z, dim = dim(theta_raw))
+        unlist(get_omega(z, X_cluster))
+      }
+    )
+    quantiles <- fast_quantiles(samples, probs)
+    for(i in seq_along(probs)) {
+      cluster_probs[paste0("q", 100 * probs[i])] <- quantiles[, i]
+    }
   }
   list(
     initial_probs = initial_probs, 
-    transition_probs = 
-      remove_voids(transition_probs, time, id, transition_probs),
-    emission_probs = remove_voids(emission_probs, time, id, emission_probs),
+    transition_probs = remove_voids(model, transition_probs),
+    emission_probs = remove_voids(model, emission_probs),
     cluster_probs = cluster_probs
   )
 }

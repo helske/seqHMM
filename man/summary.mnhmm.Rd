@@ -10,6 +10,6 @@
 \item{object}{Non-homogeneous hidden Markov model of class \code{mnhmm}.}
 }
 \description{
-Function \code{summary.nhmm} returns basic information about the model as well as
+Function \code{summary.mnhmm} returns basic information about the model as well as
 the estimated regression coefficients.
 }

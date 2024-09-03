@@ -103,21 +103,19 @@ data("biofam3c")
 ## Building sequence objects
 marr_seq <- seqdef(biofam3c$married,
   start = 15,
-  alphabet = c("single", "married", "divorced")
+  alphabet = c("single", "married", "divorced"),
+  cpal = c("#AB82FF", "#E6AB02", "#E7298A")
 )
 child_seq <- seqdef(biofam3c$children,
   start = 15,
-  alphabet = c("childless", "children")
+  alphabet = c("childless", "children"),
+  cpal = c("#66C2A5", "#FC8D62")
 )
 left_seq <- seqdef(biofam3c$left,
   start = 15,
-  alphabet = c("with parents", "left home")
+  alphabet = c("with parents", "left home"),
+  cpal = c("#A6CEE3", "#E31A1C")
 )
-
-## Choosing colors
-attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
-attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 ## MHMM with random starting values, no covariates
 set.seed(468)

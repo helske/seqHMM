@@ -28,7 +28,7 @@ cluster_names.mnhmm <- function(object) {
 #' @export
 `cluster_names<-.mnhmm` <- function(object, value) {
   stopifnot_(
-    length(Value) == object$n_clusters,
+    length(value) == object$n_clusters,
     "New cluster names should be a vector of length {object$n_clusters}."
   )
   object$cluster_names <- value
@@ -38,7 +38,7 @@ cluster_names.mnhmm <- function(object) {
 #' @export
 `cluster_names<-.mhmm` <- function(object, value) {
   stopifnot_(
-    length(Value) == object$n_clusters,
+    length(value) == object$n_clusters,
     "New cluster names should be a vector of length {object$n_clusters}."
   )
   object$cluster_names <- value

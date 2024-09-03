@@ -25,9 +25,13 @@
 #' is `NULL` (the default), numbered states are used.
 #' @param channel_names A vector of optional names for the channels. If this
 #' is `NULL` (the default), numbered channels are used.
-#' @param inits Optional initial values for the initial state, transition, 
-#' emission, and mixture probabilities. Either a list with `initial_probs`, 
-#' `emission_probs`, `transition_probs`, `cluster_probs`, or `"random"`.
+#' @param inits If `inits = "random"` (default), random initial values are 
+#' used. Otherwise `inits` should be list of initial values. If coefficients 
+#' are given using list components `beta_i_raw`, `beta_s_raw`, `beta_o_raw`, 
+#' these are used as is, alternatively initial values can be given in terms of 
+#' the initial state, transition, and emission probabilities using list 
+#' components `initial_probs`, `emission_probs`, and `transition_probs`. These 
+#' can also be mixed, i.e. you can give only `initial_probs` and `beta_s_raw`.
 #' @param init_sd Standard deviation of the normal distribution used to generate
 #' random initial values. Default is `2`. If you want to fix the initial values 
 #' of the regression coefficients to zero, use `init_sd = 0`.

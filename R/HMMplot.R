@@ -173,11 +173,11 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
 
   # Colors for the (combinations of) observed states
   if (identical(cpal, "auto")) {
-    pie.colors <- attr(x$observations, "cpal")
+    pie.colors <- TraMineR::cpal(x$observations)
   } else if (length(cpal) != ncol(x$emiss)) {
     warning_("The length of {.arg cpal} does not match the number of observed 
              states. Automatic color palette was used.")
-    pie.colors <- attr(x$observations, "cpal")
+    pie.colors <- TraMineR::cpal(x$observations)
   } else if (!all(isColor(cpal))) {
     stop_("Please provide a vector of colors for {.arg cpal} or use value 
           {.val 'auto'} for automatic color palette.")

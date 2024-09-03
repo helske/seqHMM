@@ -13,7 +13,7 @@ simulate_hmm(
 )
 }
 \arguments{
-\item{n_sequences}{Number of simulations.}
+\item{n_sequences}{The number of sequences to simulate.}
 
 \item{initial_probs}{A vector of initial state probabilities.}
 

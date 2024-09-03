@@ -16,7 +16,6 @@ print.summary.mhmm <- function(x, digits = 3, ...) {
       }
     }
   }
-
   coef_se <- matrix(sqrt(diag(x$vcov)), nrow(x$coefficients))
   coefs <- replicate((ncol(x$coefficients) - 1),
     matrix(NA, nrow = nrow(x$coefficients), ncol = 2),

@@ -89,7 +89,7 @@ create_initial_values <- function(
         bind_3D_arrays(lapply(seq_len(D), function(i) {
           create_inits_matrix(inits$transition_probs[[i]], S, S, K_s, init_sd)
         }))
-      } else inits_beta_s_raw,
+      } else inits$beta_s_raw,
       beta_o_raw = if (is.null(inits$beta_o_raw)) {
         if (length(M) > 1) {
           do.call("rbind", lapply(seq_len(D), function(i) {
@@ -223,22 +223,24 @@ create_emissionArray <- function(model) {
 
 #' Remove rows corresponding to void symbols
 #' @noRd
-remove_voids <- function(model, time, id, x) {
-  if (model$n_channels > 1) {
-    which_not_void <- unique(
-      do.call("rbind", lapply(model$observations, function(x) {
-        which(x != attr(x, "void"), arr.ind = TRUE)
-      }))
-    )
+remove_voids <- function(model, x) {
+  
+  x_id <- x[[model$id_variable]]
+  x_time <- x[[model$time_variable]]
+  if (model$n_channels == 1) {
+    time <- colnames(model$observations)
+    id <- rownames(model$observations)
   } else {
-    which_not_void <- which(
-      model$observations != attr(model$observations, "void"), arr.ind = TRUE
-    )
+    time <- colnames(model$observations[[1]])
+    id <- rownames(model$observations[[1]])
   }
-  colnames(which_not_void) <- c(id, time)
-  merge(
-    x, 
-    which_not_void, 
-    by = c(time, id)
+  do.call(
+    "rbind", 
+    lapply(model$n_sequences, function(i) {
+      idx <- which(
+        x_id == id[i] & x_time %in% time[seq_len(model$sequence_lengths[i])]
+      )
+      x[idx, ]
+    })
   )
 }

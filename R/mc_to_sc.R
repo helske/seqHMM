@@ -191,7 +191,7 @@ mc_to_sc <- function(model, combine_missing = TRUE, all_combinations = FALSE, cp
   attr(modelx$observations, "missing") <- 
     attr(model$observations[[1]], "missing")
   attr(modelx$observations, "start") <- attr(model$observations[[1]], "start")
-  attr(modelx$observations, "cpal") <- 
+  TraMineR::cpal(modelx$observations) <- 
     cpal[alph %in% alphabet(modelx$observations)]
   
   

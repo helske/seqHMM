@@ -27,8 +27,6 @@ build_mnhmm <- function(
   structure(
     out$model,
     class = "mnhmm",
-    time_variable = time,
-    id_variable = id,
     nobs = attr(out$observations, "nobs"),
     df = out$extras$n_pars,
     type = paste0(out$extras$multichannel, "mnhmm_", out$extras$model_type)

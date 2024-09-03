@@ -191,7 +191,7 @@
   
   if (is.null(channel_names)) {
     if (is.null(channel_names <- names(x))) {
-      channel_names <- paste("Channel", 1:n_channels)
+      channel_names <- paste("Channel", seq_len(n_channels))
     }
   } else {
     if (length(channel_names) != n_channels) {
@@ -199,7 +199,7 @@
         "The length of {.arg channel_names} does not match the number of 
       channels. Names were not used."
       )
-      channel_names <- paste("Channel", 1:n_channels)
+      channel_names <- paste("Channel", seq_len(n_channels))
     }
   }
   for (i in seq_len(n_channels)) {

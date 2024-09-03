@@ -224,10 +224,9 @@ mvad_labels <- c(
 mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
 mvad_seq <- seqdef(mvad, 17:86,
   alphabet = mvad_alphabet,
-  states = mvad_scodes, labels = mvad_labels, xtstep = 6
+  states = mvad_scodes, labels = mvad_labels, xtstep = 6,
+  cpal = colorpalette[[6]]
 )
-
-attr(mvad_seq, "cpal") <- colorpalette[[6]]
 
 # Starting values for the emission matrix
 emiss <- matrix(
@@ -294,21 +293,19 @@ data("biofam3c")
 # Building sequence objects
 marr_seq <- seqdef(biofam3c$married,
   start = 15,
-  alphabet = c("single", "married", "divorced")
+  alphabet = c("single", "married", "divorced"),
+  cpal = c("violetred2", "darkgoldenrod2", "darkmagenta")
 )
 child_seq <- seqdef(biofam3c$children,
   start = 15,
-  alphabet = c("childless", "children")
+  alphabet = c("childless", "children"),
+  cpal = c("darkseagreen1", "coral3")
 )
 left_seq <- seqdef(biofam3c$left,
   start = 15,
-  alphabet = c("with parents", "left home")
+  alphabet = c("with parents", "left home"),
+  cpal = c("lightblue", "red3")
 )
-
-# Define colors
-attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
-attr(child_seq, "cpal") <- c("darkseagreen1", "coral3")
-attr(left_seq, "cpal") <- c("lightblue", "red3")
 
 # Starting values for emission matrices
 
@@ -393,24 +390,22 @@ hmm_5$logLik # -21675.4
 
 data("biofam3c")
 
-## Building sequence objects
+# Building sequence objects
 marr_seq <- seqdef(biofam3c$married,
   start = 15,
-  alphabet = c("single", "married", "divorced")
+  alphabet = c("single", "married", "divorced"),
+  cpal = c("violetred2", "darkgoldenrod2", "darkmagenta")
 )
 child_seq <- seqdef(biofam3c$children,
   start = 15,
-  alphabet = c("childless", "children")
+  alphabet = c("childless", "children"),
+  cpal = c("darkseagreen1", "coral3")
 )
 left_seq <- seqdef(biofam3c$left,
   start = 15,
-  alphabet = c("with parents", "left home")
+  alphabet = c("with parents", "left home"),
+  cpal = c("lightblue", "red3")
 )
-
-## Choosing colors
-attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
-attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 ## Starting values for emission probabilities
 # Cluster 1

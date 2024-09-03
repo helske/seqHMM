@@ -149,9 +149,9 @@ left_seq <- seqdef(biofam3c$left, start = 15,
 The \texttt{TraMineR} package provides several plotting options for simple single-channel sequence data with the \texttt{seqplot} function, but there are no easy options for plotting multichannel data. In \texttt{seqHMM}, such data can be plotted in several ways. We start by choosing colors for the observed states in each channel.
 
 <<'definecolors', cache=TRUE>>=
-attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
-attr(child_seq, "cpal") <- c("darkseagreen1", "coral3")
-attr(left_seq, "cpal") <- c("lightblue", "red3")
+TraMineR::cpal(marr_seq) <- c("violetred2", "darkgoldenrod2", "darkmagenta")
+TraMineR::cpal(child_seq) <- c("darkseagreen1", "coral3")
+TraMineR::cpal(left_seq) <- c("lightblue", "red3")
 @
 
 \subsection{Stacked sequence plots}

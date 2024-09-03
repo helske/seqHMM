@@ -334,7 +334,7 @@ Model inference     & \code{logLik}, \code{BIC}, \code{summary} \\
 \hline
 State inference     & \code{hidden_paths}, \code{posterior_probs}, \code{forward_backward} \\
 \hline
-Data visualization       & \code{ssplot}, \code{ssp} + \code{plot}, \code{ssp} + \code{gridplot}\\
+Data visualization       & \code{stacked_sequence_plot} (deprecated: \code{ssplot}, \code{ssp} + \code{plot}, \code{ssp} + \code{gridplot})\\
 \hline
 Data and model manipulation & \code{mc\_to\_sc}, \code{mc\_to\_sc\_data}, \code{trim\_model}, \code{separate\_mhmm} \\
 \hline
@@ -394,32 +394,31 @@ Good graphical presentations of data and models are useful during the whole anal
 library("seqHMM")
 
 data("biofam", package = "TraMineR")
-biofam_seq <- seqdef(biofam[, 10:25], start = 15, labels = c(
-  "parent",
-  "left", "married", "left+marr", "child", "left+child", "left+marr+ch",
-  "divorced"
-))
+biofam_seq <- seqdef(
+  biofam[, 10:25], start = 15, labels = c(
+    "parent", "left", "married", "left+marr", "child", "left+child", 
+    "left+marr+ch","divorced")
+)
 
 data("biofam3c")
-marr_seq <- seqdef(biofam3c$married, start = 15, alphabet = c(
-  "single",
-  "married", "divorced"
-))
-child_seq <- seqdef(biofam3c$children,
-  start = 15,
-  alphabet = c("childless", "children")
+marr_seq <- seqdef(
+  biofam3c$married, start = 15, 
+  alphabet = c( "single", "married", "divorced"), 
+  cpal = c("violetred2", "darkgoldenrod2", "darkmagenta")
 )
-left_seq <- seqdef(biofam3c$left, start = 15, alphabet = c(
-  "with parents",
-  "left home"
-))
-
-attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
-attr(child_seq, "cpal") <- c("darkseagreen1", "coral3")
-attr(left_seq, "cpal") <- c("lightblue", "red3")
+child_seq <- seqdef(
+  biofam3c$children, start = 15,
+  alphabet = c("childless", "children"),
+  cpal =  c("darkseagreen1", "coral3")
+)
+left_seq <- seqdef(
+  biofam3c$left, start = 15, alphabet = c("with parents", "left home"),
+  cpal = c("lightblue", "red3")
+)
 @
 
-<<graphicalillustrations2, fig.width=6.5, fig.height=3.7, dev.args=list(pointsize=10), fig.keep='last', cache=FALSE, message=FALSE, echo=FALSE, fig.cap='Stacked sequence plot of the first ten individuals in the \\code{biofam} data plotted with the \\code{ssplot} function. The top plot shows the original sequences, and the three bottom plots show the sequences in the separate channels for the same individuals. The sequences are in the same order in each plot, i.e., the same row always matches the same individual.', fig.align='center'>>=
+Old code before \pkg{seqHMM} version 2.0.0: 
+<<graphicalillustrations2, fig.width=6.5, fig.height=3.7, dev.args=list(pointsize=10), fig.keep='last', cache=FALSE, message=FALSE, echo=FALSE, fig.cap='Stacked sequence plot of the first ten individuals in the \\code{biofam} data plotted with the \\code{ssplot} function. The top plot shows the original sequences, and the three bottom plots show the sequences in the separate channels for the same individuals. The sequences are in the same order in each plot, i.e., the same row always matches the same individual.', fig.align='center', eval = FALSE>>=
 ssplot(
   list(
     biofam_seq[1:10, ], marr_seq[1:10, ], child_seq[1:10, ],
@@ -432,11 +431,31 @@ ssplot(
   ncol.legend = c(3, 1, 1, 1)
 )
 @
-
+New code from version 2.0.0 onward
+<<graphicalillustrations2, fig.width=6.5, fig.height=3.7, dev.args=list(pointsize=10), fig.keep='last', cache=FALSE, message=FALSE, echo=FALSE, fig.cap='Stacked sequence plot of the first ten individuals in the \\code{biofam} data plotted with the \\code{stacked_sequence_plot} function. The top plot shows the original sequences, and the three bottom plots show the sequences in the separate channels for the same individuals. The sequences are in the same order in each plot, i.e., the same row always matches the same individual.', fig.align='center'>>=
+stacked_sequence_plot(
+  list(
+    Original = biofam_seq[1:10, ], 
+    Marriage = marr_seq[1:10, ], 
+    Parenthood = child_seq[1:10, ],
+    Residence = left_seq[1:10, ]
+  ),
+  sort_by = "from.start", sort.channel = 1, type = "i",
+  legend_position = "bottom")) +
+  xlab("Age") + ggtitle("Ten first sequences")
+@
 The \code{ssplot} function is the simplest way of plotting multichannel sequence data in \pkg{seqHMM}. It can be used to illustrate state distributions or sequence index plots. The former is the default option, since index plots can take a lot of time and memory if data are large. Figure \ref{fig:plottingsequences} illustrates a default plot which the user can modify in many ways (see the code in Section \hyperlink{plottingd}{4.1}). More examples are shown in the documentation pages of the \code{ssplot} function.
 
-<<plottingsequences, fig.width=5, fig.height=3, dev.args=list(pointsize=10), fig.cap="Stacked sequence plot of annual state distributions in the three-channel \\code{biofam} data. This is the default output of the \\code{ssplot} function. The labels for the channels are taken from the named list of state sequence objects, and the labels for the x axis ticks are taken from the column names of the first object.", fig.keep='last', fig.align='center', cache=FALSE, echo = FALSE>>=
+Old code before \pkg{seqHMM} version 2.0.0: 
+<<plottingsequences, fig.width=5, fig.height=3, dev.args=list(pointsize=10), fig.cap="Stacked sequence plot of annual state distributions in the three-channel \\code{biofam} data. This is the default output of the \\code{ssplot} function. The labels for the channels are taken from the named list of state sequence objects, and the labels for the x axis ticks are taken from the column names of the first object.", fig.keep='last', fig.align='center', cache=FALSE, echo = FALSE, eval = FALSE>>=
 ssplot(list(
+  "Marriage" = marr_seq, "Parenthood" = child_seq,
+  "Residence" = left_seq
+))
+@
+New code:
+<<plottingsequences, fig.width=5, fig.height=3, dev.args=list(pointsize=10), fig.cap="Stacked sequence plot of annual state distributions in the three-channel \\code{biofam} data. This is the default output of the \\code{stacked_sequence_plot} function. The labels for the channels are taken from the named list of state sequence objects, and the labels for the x axis ticks are taken from the column names of the first object.", fig.keep='last', fig.align='center', cache=FALSE, echo = FALSE, eval = FALSE>>=
+stacked_sequence_plot(list(
   "Marriage" = marr_seq, "Parenthood" = child_seq,
   "Residence" = left_seq
 ))
@@ -444,7 +463,8 @@ ssplot(list(
 
 Another option is to define function arguments with the \code{ssp} function and then use previously saved arguments for plotting with a simple \code{plot} method. It is also possible to combine several \code{ssp} figures into one plot with the \code{gridplot} function. Figure \ref{fig:gridplot1} illustrates an example of such a plot showing sequence index plots for women and men (see the code in Section \hyperlink{plottinggrid}{4.1}). Sequences are ordered in a more meaningful order using multidimensional scaling scores of observations (computed from sequence dissimilarities). After defining the plot for one group, a similar plot for other groups is easily defined using the \code{update} function.
 
-<<gridplot1, fig.width=5.5, fig.height=3.5, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Showing state distribution plots for women and men in the \\code{biofam} data. Two figures were defined with the \\code{ssp} function and then combined into one figure with the \\code{gridplot} function.", fig.align='center', fig.keep='last', cache = FALSE>>=
+Deprecated code: 
+<<gridplot1, fig.width=5.5, fig.height=3.5, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Showing state distribution plots for women and men in the \\code{biofam} data. Two figures were defined with the \\code{ssp} function and then combined into one figure with the \\code{gridplot} function.", fig.align='center', fig.keep='last', cache = FALSE, eval = FALSE>>=
 ssp_f <- ssp(
   list(
     marr_seq[biofam3c$covariates$sex == "woman", ],
@@ -559,14 +579,21 @@ The \code{ssplot} function (see Section \ref{sec:vizualizing}) also accepts an o
 
 Figure \ref{fig:ssplotHMM} shows observed sequences with the most probable paths of hidden states given the model. Sequences are sorted according to multidimensional scaling scores computed from hidden paths. The code for creating the plot is shown in Section \hyperlink{ssplotHMM}{4.4}.
 
-<<ssplotHMM, fig.width=5.5, fig.height=5.5, dev.args=list(pointsize=10), fig.cap="Using the \\code{ssplot} function for an \\code{hmm} object makes it easy to plot the observed sequences together with the most probable paths of hidden states given the model.", fig.align='center', fig.keep='last', cache = FALSE, echo = FALSE>>=
+Old depracated code:
+<<ssplotHMM, fig.width=5.5, fig.height=5.5, dev.args=list(pointsize=10), fig.cap="Using the \\code{ssplot} function for an \\code{hmm} object makes it easy to plot the observed sequences together with the most probable paths of hidden states given the model.", fig.align='center', fig.keep='last', cache = FALSE, echo = FALSE, eval = FALSE>>=
 ssplot(hmm_biofam,
   plots = "both", type = "I", sortv = "mds.hidden",
   title = "Observed and hidden state sequences", xtlab = 15:30,
   xlab = "Age"
 )
 @
-
+<<ssplotHMM, fig.width=5.5, fig.height=5.5, dev.args=list(pointsize=10), fig.cap="Using the \\code{stacked_sequence_plot} function for an \\code{hmm} object makes it easy to plot the observed sequences together with the most probable paths of hidden states given the model.", fig.align='center', fig.keep='last', cache = FALSE, echo = FALSE>>=
+stacked_sequence_plot(hmm_biofam,
+  plots = "both", type = "i", sort_by = "mds.hidden",
+  title = "Observed and hidden state sequences", xtlab = 15:30,
+  xlab = "Age"
+)
+@
 The \code{plot} method works for \code{mhmm} objects as well. The user can choose between an interactive mode, where the model for each (chosen) cluster is plotted separately, and a combined plot with all models in one plot. The equivalent to the \code{ssplot} function for MHMMs is \code{mssplot}. It plots stacked sequence plots separately for each cluster. If the user asks to plot more than one cluster, the function is interactive by default.
 
 \section{Examples with life course data}
@@ -857,6 +884,7 @@ plot(mhmm,
 
 The equivalent of the \code{ssplot} function for \code{mhmm} objects is \code{mssplot}. It shows data and/or hidden paths one cluster at a time. The function is interactive if more than one cluster is plotted (thus omitted here). Subjects are allocated to clusters according to the most probable hidden state paths.
 
+Deprecated code:
 <<code_ssplotMHMM, eval = FALSE, echo = TRUE>>=
 mssplot(mhmm, ask = TRUE)
 @

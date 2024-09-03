@@ -63,9 +63,9 @@
 #' left_seq <- seqdef(biofam3c$left, start = 15)
 #'
 #' ## Choosing colors
-#' attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
-#' attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-#' attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
+#' cpal(child_seq) <- c("#66C2A5", "#FC8D62")
+#' cpal(marr_seq) <- c("#AB82FF", "#E6AB02", "#E7298A")
+#' cpal(left_seq) <- c("#A6CEE3", "#E31A1C")
 #'
 #'
 #' # Preparing plot for state distribution plots of observations for women
