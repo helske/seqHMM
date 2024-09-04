@@ -7,10 +7,10 @@
 #' computing the approximate quantiles of the estimates. If `0`, only point 
 #' estimates are returned.
 #' @param probs Vector defining the quantiles of interest. Default is 
-#' `c(0.025, 0.975)`.
+#' `c(0.025, 0.5, 0.975)`.
 #' @rdname coef
 #' @export
-coef.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.975), ...) {
+coef.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
   stopifnot_(
     checkmate::test_count(nsim),
     "Argument {.arg nsim} should be a single non-negative integer."
@@ -84,7 +84,7 @@ coef.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.975), ...) {
 }
 #' @rdname coef
 #' @export
-coef.mnhmm <- function(object, nsim = 0, probs = c(0.025, 0.975), ...) {
+coef.mnhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
   stopifnot_(
     checkmate::test_count(nsim),
     "Argument {.arg nsim} should be a single non-negative integer."

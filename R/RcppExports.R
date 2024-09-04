@@ -145,10 +145,6 @@ objectivex <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols,
     .Call(`_seqHMM_objectivex`, transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads)
 }
 
-estimate_coefs <- function(transition, emission, init, obs, nSymbols, coef, X, numberOfStates, itermax, tol, trace, threads) {
-    .Call(`_seqHMM_estimate_coefs`, transition, emission, init, obs, nSymbols, coef, X, numberOfStates, itermax, tol, trace, threads)
-}
-
 softmax <- function(x, logspace) {
     .Call(`_seqHMM_softmax`, x, logspace)
 }

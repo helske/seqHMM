@@ -4,7 +4,7 @@
 \alias{summary.nhmm}
 \title{Summary of Non-homogeneous Hidden Markov Models}
 \usage{
-\method{summary}{nhmm}(object, nsim = 0, probs = c(0.025, 0.975), ...)
+\method{summary}{nhmm}(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...)
 }
 \arguments{
 \item{object}{Non-homogeneous hidden Markov model of class \code{nhmm}.}

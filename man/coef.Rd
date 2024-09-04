@@ -6,9 +6,9 @@
 \title{Get the Estimated Regression Coefficients of Non-Homogeneous Hidden Markov
 Models}
 \usage{
-\method{coef}{nhmm}(object, nsim = 0, probs = c(0.025, 0.975), ...)
+\method{coef}{nhmm}(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...)
 
-\method{coef}{mnhmm}(object, nsim = 0, probs = c(0.025, 0.975), ...)
+\method{coef}{mnhmm}(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...)
 }
 \arguments{
 \item{object}{An object of class \code{nhmm} or \code{mnhmm}.}
@@ -19,7 +19,7 @@ computing the approximate quantiles of the estimates. If \code{0}, only point
 estimates are returned.}
 
 \item{probs}{Vector defining the quantiles of interest. Default is
-\code{c(0.025, 0.975)}.}
+\code{c(0.025, 0.5, 0.975)}.}
 }
 \description{
 Get the Estimated Regression Coefficients of Non-Homogeneous Hidden Markov

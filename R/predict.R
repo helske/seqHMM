@@ -1,0 +1,163 @@
+#' Predict method for non-homogeneous hidden Markov models
+#' 
+#' @param model A Hidden Markov Model of class `nhmm` or `mnhmm`.
+#' @param newdata Optional data frame which is used for prediction.
+#' @param nsim Non-negative integer defining the number of samples from the
+#' normal approximation of the model coefficients.
+#' @param probs Vector defining the quantiles of interest.
+#' @param return_samples Logical indicating whether to return samples or
+#' quantiles.
+#' @export
+predict.nhmm <- function(
+    model, newdata = NULL, nsim = 0, 
+    probs = c(0.025, 0.5, 0.975), return_samples = FALSE) {
+  
+  stopifnot_(
+    checkmate::test_count(nsim),
+    "Argument {.arg nsim} should be a single non-negative integer."
+  )
+  if (!is.null(newdata)) {
+    time <- model$time_variable
+    id <- model$id_variable
+    stopifnot_(
+      is.data.frame(newdata), 
+      "Argument {.arg newdata} must be a {.cls data.frame} object."
+    )
+    stopifnot_(
+      !is.null(newdata[[id]]), 
+      "Can't find grouping variable {.var {id}} in {.arg newdata}."
+    )
+    stopifnot_(
+      !is.null(newdata[[time]]), 
+      "Can't find time index variable {.var {time}} in {.arg newdata}."
+    )
+    stopifnot_(
+      !is.null(newdata[[variable]]), 
+      "Can't find time variable {.var {variable}} in {.arg newdata}."
+    )
+  } else {
+    stopifnot(
+      !is.null(model$data),
+      "Model does not contain original data and argument {.arg newdata} is 
+      {.var NULL}."
+    )
+    model <- update(model, newdata = newdata)
+  }
+  
+  beta_i_raw <- stan_to_cpp_initial(
+    model$estimation_results$parameters$beta_i_raw
+  )
+  beta_s_raw <- stan_to_cpp_transition(
+    model$estimation_results$parameters$beta_s_raw
+  )
+  beta_o_raw <- stan_to_cpp_emission(
+    model$estimation_results$parameters$beta_o_raw,
+    1,
+    C > 1
+  )
+  X_initial <- t(model$X_initial)
+  X_transition <- aperm(model$X_transition, c(3, 1, 2))
+  X_emission <- aperm(model$X_emission, c(3, 1, 2))
+  out <- list()
+  out$pi <- get_pi(beta_i_raw, X_initial, 0)
+  out$A <- get_A(beta_s_raw, X_transition, 0)
+  out$B <- if (model$n_channels == 1) {
+    get_B(beta_o_raw, X_emission, 0)
+  } else {
+    get_multichannel_B(
+      beta_o_raw, 
+      X_emission1, 
+      model$n_states, 
+      model$n_channels, 
+      model$n_symbols, 
+      0, 0)
+  }
+  if (nsim > 0) {
+    samples <- sample_parameters(model, nsim, probs, return_samples)
+    if (return_samples) {
+      out$samples <- samples
+    } else {
+      out$quantiles <- samples
+    }
+  }
+  out
+}
+#' @export
+predict.mnhmm <- function(
+    model, newdata = NULL, nsim = 0, 
+    probs = c(0.025, 0.5, 0.975), return_samples = FALSE) {
+  
+  stopifnot_(
+    checkmate::test_count(nsim),
+    "Argument {.arg nsim} should be a single non-negative integer."
+  )
+  if (!is.null(newdata)) {
+    time <- model$time_variable
+    id <- model$id_variable
+    stopifnot_(
+      is.data.frame(newdata), 
+      "Argument {.arg newdata} must be a {.cls data.frame} object."
+    )
+    stopifnot_(
+      !is.null(newdata[[id]]), 
+      "Can't find grouping variable {.var {id}} in {.arg newdata}."
+    )
+    stopifnot_(
+      !is.null(newdata[[time]]), 
+      "Can't find time index variable {.var {time}} in {.arg newdata}."
+    )
+    stopifnot_(
+      !is.null(newdata[[variable]]), 
+      "Can't find time variable {.var {variable}} in {.arg newdata}."
+    )
+  } else {
+    stopifnot(
+      !is.null(model$data),
+      "Model does not contain original data and argument {.arg newdata} is 
+      {.var NULL}."
+    )
+    model <- update(model, newdata = newdata)
+  }
+  
+  beta_i_raw <- stan_to_cpp_initial(
+    model$estimation_results$parameters$beta_i_raw
+  )
+  beta_s_raw <- stan_to_cpp_transition(
+    model$estimation_results$parameters$beta_s_raw
+  )
+  beta_o_raw <- stan_to_cpp_emission(
+    model$estimation_results$parameters$beta_o_raw,
+    1,
+    C > 1
+  )
+  X_initial <- t(model$X_initial)
+  X_transition <- aperm(model$X_transition, c(3, 1, 2))
+  X_emission <- aperm(model$X_emission, c(3, 1, 2))
+  X_cluster <- t(model$X_cluster)
+  out <- list()
+  out$pi <- get_pi(beta_i_raw, X_initial, 0)
+  out$A <- get_A(beta_s_raw, X_transition, 0)
+  out$B <- if (model$n_channels == 1) {
+    get_B(beta_o_raw, X_emission, 0)
+  } else {
+    get_multichannel_B(
+      beta_o_raw, 
+      X_emission1, 
+      model$n_states, 
+      model$n_channels, 
+      model$n_symbols, 
+      0, 0)
+  }
+  out$omega <- get_omega(
+    model$estimation_results$parameters$theta_raw, X_cluster, 0
+  )
+  if (nsim > 0) {
+    samples <- sample_parameters(model, nsim, probs, return_samples)
+    if (return_samples) {
+      out$samples <- samples
+    } else {
+      out$quantiles <- samples
+    }
+  }
+  out
+}

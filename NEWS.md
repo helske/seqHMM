@@ -1,13 +1,17 @@
-seqHMM 1.3.0
+seqHMM 2.0.0
 ==============
-  * Rewrote sequence visualization functions using `ggseqplot` and `patchwork` 
-  packages. Old plotting functions are deprecated and will be removed in the 
-  future.
   * Added support for non-homogeneous HMMs where initial, transition, and 
-  emission probabilities can depend on individual-specific covariates. 
-  Penalized maximum likelihood estimation of these models is based on 
-  L-BFGS-B with automatic differentiation with `Stan`.
+emission probabilities can depend on individual-specific covariates. 
+Penalized maximum likelihood estimation of these models is based on 
+L-BFGS-B with automatic differentiation with `Stan`.
+  * Rewrote sequence visualization functions using `ggseqplot` and `patchwork` 
+packages. Old plotting functions are deprecated and will be removed in the 
+future.
   * Warning and error messages were rewritten using `cli` package.
+  * Removed the function `estimate_coef`. A portion of the code was 
+accidentally commented out, rendering the function non-functional for 
+several years. Rather than correcting the code, the function was removed as it 
+was deemed unnecessary.
   * Added automatic tests using `testthat` package.
   * Internally switched from Rd syntax to Markdown in Roxygen documentation.
 

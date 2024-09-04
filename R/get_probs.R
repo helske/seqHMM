@@ -7,7 +7,7 @@
 #' computing the approximate quantiles of the estimates. If `0`, only point 
 #' estimates are returned.
 #' @param probs Vector defining the quantiles of interest. Default is 
-#' `c(0.025, 0.975)`.
+#' `c(0.025, 0.5, 0.975)`.
 #' @rdname get_probs
 #' @export
 get_probs <- function(model, ...) {
@@ -15,15 +15,15 @@ get_probs <- function(model, ...) {
 }
 #' @rdname get_probs
 #' @export
-get_probs.nhmm <- function(model, data = NULL, nsim = 0, 
-                           probs = c(0.025, 0.975), ...) {
+get_probs.nhmm <- function(model, newdata = NULL, nsim = 0, 
+                           probs = c(0.025, 0.5, 0.975), ...) {
   
   stopifnot_(
     checkmate::test_count(nsim),
     "Argument {.arg nsim} should be a single non-negative integer."
   )
-  if (!is.null(data)) {
-    model <- update(model, newdata = data)
+  if (!is.null(newdata)) {
+    model <- update(model, newdata = ne)
   }
   S <- model$n_states
   M <- model$n_symbols
@@ -125,16 +125,16 @@ get_probs.nhmm <- function(model, data = NULL, nsim = 0,
 }
 #' @rdname get_probs
 #' @export
-get_probs.mnhmm <- function(model, data = NULL, nsim = 0, 
-                            probs = c(0.025, 0.975), ...) {
+get_probs.mnhmm <- function(model, ne = NULL, nsim = 0, 
+                            probs = c(0.025, 0.5, 0.975), ...) {
   
   stopifnot_(
     checkmate::test_count(nsim),
     "Argument {.arg nsim} should be a single non-negative integer."
   )
   
-  if (!is.null(data)) {
-    model <- update(model, newdata = data)
+  if (!is.null(ne)) {
+    model <- update(model, newdata = ne)
   }
   
   T <- model$length_of_sequences
@@ -233,65 +233,18 @@ get_probs.mnhmm <- function(model, data = NULL, nsim = 0,
   )
   
   if (nsim > 0) {
-    stopifnot_(
-      checkmate::test_numeric(
-        x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
-      ),
-      "Argument {.arg probs} must be a {.cls numeric} vector with values
-      between 0 and 1."
-    )
-    chol_precision <- chol(-model$estimation$hessian)
-    U <- backsolve(chol_precision, diag(ncol(chol_precision)))
-    x <- matrix(rnorm(nsim * ncol(U)), nrow = nsim) %*% U
-    beta_i_raw <- model$estimation_results$parameters$beta_i_raw
-    beta_s_raw <- model$estimation_results$parameters$beta_s_raw
-    beta_o_raw <- model$estimation_results$parameters$beta_o_raw
-    theta_raw <- model$estimation_results$parameters$theta_raw
-    x <- t(sweep(x, 2, c(beta_i_raw, beta_s_raw, beta_o_raw, theta_raw), "+"))
-    p_i <- length(beta_i_raw)
-    p_s <- length(beta_s_raw)
-    p_o <- length(beta_o_raw)
-    p_d <- length(theta_raw)
-    
-    samples <- apply(
-      x[seq_len(p_i), ], 2, function(z) {
-        z <- array(z, dim = dim(beta_i_raw))
-        get_pi(z, X_initial)
-      }
-    )
-    quantiles <- fast_quantiles(samples, probs)
+    out <- sample_parameters(model, nsim, probs)
     for(i in seq_along(probs)) {
-      initial_probs[paste0("q", 100 * probs[i])] <- quantiles[, i]
+      initial_probs[paste0("q", 100 * probs[i])] <- out$quantiles_pi[, i]
     }
-    samples <- apply(
-      x[p_i + seq_len(p_s), ], 2, function(z) {
-        z <- array(z, dim = dim(beta_s_raw))
-        unlist(get_A(aperm(z, c(2, 3, 1)), X_transition))
-      }
-    )
-    quantiles <- fast_quantiles(samples, probs)
     for(i in seq_along(probs)) {
-      transition_probs[paste0("q", 100 * probs[i])] <- quantiles[, i]
+      transition_probs[paste0("q", 100 * probs[i])] <- out$quantiles_A[, i]
     }
-    samples <- apply(
-      x[p_i + p_s + seq_len(p_o), ], 2, function(z) {
-        z <- array(z, dim = dim(beta_o_raw))
-        unlist(get_B(aperm(z, c(2, 3, 1)), X_emission))
-      }
-    )
-    quantiles <- fast_quantiles(samples, probs)
     for(i in seq_along(probs)) {
-      emission_probs[paste0("q", 100 * probs[i])] <- quantiles[, i]
+      emission_probs[paste0("q", 100 * probs[i])] <- out$quantiles_B[, i]
     }
-    samples <- apply(
-      x[p_i + p_s + p_o + seq_len(p_d), ], 2, function(z) {
-        z <- array(z, dim = dim(theta_raw))
-        unlist(get_omega(z, X_cluster))
-      }
-    )
-    quantiles <- fast_quantiles(samples, probs)
     for(i in seq_along(probs)) {
-      cluster_probs[paste0("q", 100 * probs[i])] <- quantiles[, i]
+      cluster_probs[paste0("q", 100 * probs[i])] <- out$quantiles_omega[, i]
     }
   }
   list(

@@ -9,9 +9,9 @@ or MNHMM}
 \usage{
 get_probs(model, ...)
 
-\method{get_probs}{nhmm}(model, data = NULL, nsim = 0, probs = c(0.025, 0.975), ...)
+\method{get_probs}{nhmm}(model, newdata = NULL, nsim = 0, probs = c(0.025, 0.5, 0.975), ...)
 
-\method{get_probs}{mnhmm}(model, data = NULL, nsim = 0, probs = c(0.025, 0.975), ...)
+\method{get_probs}{mnhmm}(model, ne = NULL, nsim = 0, probs = c(0.025, 0.5, 0.975), ...)
 }
 \arguments{
 \item{model}{An object of class \code{nhmm} or \code{mnhmm}.}
@@ -22,7 +22,7 @@ computing the approximate quantiles of the estimates. If \code{0}, only point
 estimates are returned.}
 
 \item{probs}{Vector defining the quantiles of interest. Default is
-\code{c(0.025, 0.975)}.}
+\code{c(0.025, 0.5, 0.975)}.}
 }
 \description{
 Get the Estimated Initial, Transition, and Emission Probabilities for NHMM

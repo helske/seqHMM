@@ -623,28 +623,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// estimate_coefs
-Rcpp::List estimate_coefs(const arma::mat& transition, const arma::cube& emission, const arma::vec& init, const arma::ucube& obs, const arma::uvec& nSymbols, arma::mat coef, const arma::mat& X, const arma::uvec& numberOfStates, int itermax, double tol, int trace, unsigned int threads);
-RcppExport SEXP _seqHMM_estimate_coefs(SEXP transitionSEXP, SEXP emissionSEXP, SEXP initSEXP, SEXP obsSEXP, SEXP nSymbolsSEXP, SEXP coefSEXP, SEXP XSEXP, SEXP numberOfStatesSEXP, SEXP itermaxSEXP, SEXP tolSEXP, SEXP traceSEXP, SEXP threadsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type transition(transitionSEXP);
-    Rcpp::traits::input_parameter< const arma::cube& >::type emission(emissionSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type init(initSEXP);
-    Rcpp::traits::input_parameter< const arma::ucube& >::type obs(obsSEXP);
-    Rcpp::traits::input_parameter< const arma::uvec& >::type nSymbols(nSymbolsSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type coef(coefSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const arma::uvec& >::type numberOfStates(numberOfStatesSEXP);
-    Rcpp::traits::input_parameter< int >::type itermax(itermaxSEXP);
-    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    Rcpp::traits::input_parameter< int >::type trace(traceSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(estimate_coefs(transition, emission, init, obs, nSymbols, coef, X, numberOfStates, itermax, tol, trace, threads));
-    return rcpp_result_gen;
-END_RCPP
-}
 // softmax
 arma::vec softmax(const arma::vec& x, const int logspace);
 RcppExport SEXP _seqHMM_softmax(SEXP xSEXP, SEXP logspaceSEXP) {
@@ -861,7 +839,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_log_objectivex", (DL_FUNC) &_seqHMM_log_objectivex, 12},
     {"_seqHMM_objective", (DL_FUNC) &_seqHMM_objective, 9},
     {"_seqHMM_objectivex", (DL_FUNC) &_seqHMM_objectivex, 12},
-    {"_seqHMM_estimate_coefs", (DL_FUNC) &_seqHMM_estimate_coefs, 12},
     {"_seqHMM_softmax", (DL_FUNC) &_seqHMM_softmax, 2},
     {"_seqHMM_varcoef", (DL_FUNC) &_seqHMM_varcoef, 2},
     {"_seqHMM_viterbi", (DL_FUNC) &_seqHMM_viterbi, 4},

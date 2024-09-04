@@ -1,6 +1,6 @@
 set.seed(1)
-p <- 100
-n <- 20
+p <- 50
+n <- 10
 d <- data.frame(
   person = rep(1:p, each = n),
   month = rep(1:n, p),
@@ -21,6 +21,19 @@ test_that("simulate_mnhmm works", {
       data = d, time = "month", id = "person", 
       coefs = "random", init_sd = 2),
     NA
+  )
+  expect_equal(
+    table(unlist(sim$states)),
+    structure(
+      c(`Cluster 1: State 1` = 305L, `Cluster 1: State 2` = 304L, 
+        `Cluster 2: State 1` = 355L, `Cluster 2: State 2` = 335L, 
+        `Cluster 3: State 1` = 380L, `Cluster 3: State 2` = 321L, 
+        `*` = 0L, `%` = 0L), dim = 8L, 
+      dimnames = structure(list(
+        c("Cluster 1: State 1", "Cluster 1: State 2", "Cluster 2: State 1", 
+          "Cluster 2: State 2", "Cluster 3: State 1", "Cluster 3: State 2", 
+          "*", "%")), names = ""), class = "table")
+    
   )
 })
 
