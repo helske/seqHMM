@@ -16,6 +16,7 @@
 #' @param as_data_frame If `TRUE` (default), the output is returned as a 
 #' data.frame. Otherwise, a list of array(s) is returned. Ignored if 
 #' `log_space` is `FALSE`, in which case list of arrays is always returned.
+#' @param ... Ignored.
 #' @return If `as_data_frame` is `TRUE` a `data.frame` with 
 #' log-values of forward and backward probabilities. If `FALSE` or 
 #' `log_space = FALSE`, a list with components

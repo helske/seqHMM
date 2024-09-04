@@ -77,7 +77,7 @@ print.mhmm <- function(x, digits = 3, ...) {
       cat("\nNumber of clusters:", x$n_clusters)
     }
   }
-  cat("Coefficients :\n")
+  cat("\nCoefficients :\n")
   print(x$coefficients, digits = digits, ...)
   
   if (attr(x, "type") != "lcm") {

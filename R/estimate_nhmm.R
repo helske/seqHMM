@@ -9,6 +9,7 @@
 #' an `stslist` object (see [TraMineR::seqdef()]) containing the 
 #' sequences. In case of multichannel data, `observations` should be a vector 
 #' of response variable names in `data`, or a list of `stslist` objects.
+#' @param n_states A positive integer defining the number of hidden states.
 #' @param initial_formula of class [formula()] for the
 #' initial state probabilities.
 #' @param transition_formula of class [formula()] for the

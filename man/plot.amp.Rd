@@ -7,7 +7,10 @@
 \method{plot}{amp}(x, type, probs = c(0.025, 0.975), alpha = 0.25)
 }
 \arguments{
-\item{x}{Output from \code{\link[=amp]{amp()}}.}
+\item{x}{Output from \code{\link[=average_marginal_prediction]{average_marginal_prediction()}}.}
+
+\item{type}{Type of plot to create. One of \code{"initial"}, \code{"transition"},
+\code{"emission"}, or \code{"cluster"}.}
 
 \item{alpha}{Transparency level for \code{\link[ggplot2:geom_ribbon]{ggplot2::geom_ribbon()}}.}
 }

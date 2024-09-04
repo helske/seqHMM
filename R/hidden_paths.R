@@ -7,7 +7,8 @@
 #' @param model A hidden Markov model.
 #' @param respect_void If `TRUE` (default), states at the time points
 #' corresponding to `TraMineR`'s void in the observed sequences are set to void
-#' in the hidden state sequences as well.#'
+#' in the hidden state sequences as well.
+#' @param ... Ignored.
 #' @return The most probable paths of hidden states as an `stslist` object
 #' (see [seqdef()]). The log-probability is included as an attribute 
 #' `log_prop`.

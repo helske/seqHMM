@@ -35,6 +35,8 @@ forward_backward(model, ...)
 \arguments{
 \item{model}{A hidden Markov model.}
 
+\item{...}{Ignored.}
+
 \item{forward_only}{If \code{TRUE}, only forward probabilities are computed. The
 default is \code{FALSE}.}
 

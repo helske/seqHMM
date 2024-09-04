@@ -21,6 +21,8 @@ posterior_probs(model, ...)
 \arguments{
 \item{model}{A hidden Markov model.}
 
+\item{...}{Ignored.}
+
 \item{log_space}{Internally compute posterior probabilities in logarithmic
 scale. The default is \code{TRUE}, which is also only option for
 non-homogenous models.}

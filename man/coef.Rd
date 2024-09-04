@@ -20,6 +20,8 @@ estimates are returned.}
 
 \item{probs}{Vector defining the quantiles of interest. Default is
 \code{c(0.025, 0.5, 0.975)}.}
+
+\item{...}{Ignored.}
 }
 \description{
 Get the Estimated Regression Coefficients of Non-Homogeneous Hidden Markov

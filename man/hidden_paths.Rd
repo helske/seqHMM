@@ -21,9 +21,11 @@ hidden_paths(model, ...)
 \arguments{
 \item{model}{A hidden Markov model.}
 
+\item{...}{Ignored.}
+
 \item{respect_void}{If \code{TRUE} (default), states at the time points
 corresponding to \code{TraMineR}'s void in the observed sequences are set to void
-in the hidden state sequences as well.#'}
+in the hidden state sequences as well.}
 }
 \value{
 The most probable paths of hidden states as an \code{stslist} object

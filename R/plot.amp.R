@@ -1,12 +1,14 @@
 #' Visualize Average Marginal Effects
 #' 
-#' @importFrom ggplot2 ggplot aes geom_pointrange geom_ribbon geom_line facet_wrap
-#' @param x Output from [amp()].
+#' @param x Output from [average_marginal_prediction()].
+#' @param type Type of plot to create. One of `"initial"`, `"transition"`,
+#'  `"emission"`, or `"cluster"`.
 #' @param alpha Transparency level for [ggplot2::geom_ribbon()].
 plot.amp <- function(x, type, probs = c(0.025, 0.975), alpha = 0.25) {
   type <- match.arg(type, c("initial", "transition", "emission", "cluster"))
   
-  cluster <- time <- state <- state_from <- state_to <- observation <- NULL
+  cluster <- time <- state <- state_from <- state_to <- observation <- 
+    estimate <- NULL
   stopifnot_(
     checkmate::test_numeric(
       x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 2L, 
@@ -17,6 +19,10 @@ plot.amp <- function(x, type, probs = c(0.025, 0.975), alpha = 0.25) {
   )
   lwr <- paste0("q", 100 * probs[1])
   upr <- paste0("q", 100 * probs[2])
+  stopifnot_(
+    all(c(lwr, upr) %in% names(x$initial)),
+    "The probabilities in {.arg probs} are not available in the {.arg x}."
+  )
   if (type == "initial") {
     p <- ggplot(x$initial, aes(estimate, state)) + 
       geom_pointrange(aes(ymin = .data[[lwr]], ymax = .data[[upr]]))

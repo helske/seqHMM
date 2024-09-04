@@ -2,12 +2,15 @@
 #' or MNHMM
 #' 
 #' @param model An object of class `nhmm` or `mnhmm`.
+#' @param newdata An optional data frame containing the new data to be used in 
+#' computing the probabilities.
 #' @param nsim Non-negative integer defining the number of samples from the 
 #' normal approximation of the model parameters used in 
 #' computing the approximate quantiles of the estimates. If `0`, only point 
 #' estimates are returned.
 #' @param probs Vector defining the quantiles of interest. Default is 
 #' `c(0.025, 0.5, 0.975)`.
+#' @param ... Ignored.
 #' @rdname get_probs
 #' @export
 get_probs <- function(model, ...) {

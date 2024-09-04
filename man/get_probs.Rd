@@ -16,6 +16,11 @@ get_probs(model, ...)
 \arguments{
 \item{model}{An object of class \code{nhmm} or \code{mnhmm}.}
 
+\item{...}{Ignored.}
+
+\item{newdata}{An optional data frame containing the new data to be used in
+computing the probabilities.}
+
 \item{nsim}{Non-negative integer defining the number of samples from the
 normal approximation of the model parameters used in
 computing the approximate quantiles of the estimates. If \code{0}, only point

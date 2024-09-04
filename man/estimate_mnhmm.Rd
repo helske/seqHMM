@@ -33,6 +33,8 @@ an \code{stslist} object (see \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}})
 sequences. In case of multichannel data, \code{observations} should be a vector
 of response variable names in \code{data}, or a list of \code{stslist} objects.}
 
+\item{n_states}{A positive integer defining the number of hidden states.}
+
 \item{n_clusters}{A positive integer defining the number of clusters
 (mixtures).}
 

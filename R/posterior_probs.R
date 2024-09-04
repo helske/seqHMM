@@ -10,6 +10,7 @@
 #' non-homogenous models.
 #' @param as_data_frame If `TRUE` (default), the output is returned as a 
 #' data.frame. Otherwise, a 3d array is returned.
+#' @param ... Ignored.
 #' @return Posterior probabilities. In case of multiple observations,
 #' these are computed independently for each sequence.
 #' @examples

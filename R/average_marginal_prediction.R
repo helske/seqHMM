@@ -16,6 +16,9 @@
 average_marginal_prediction <- function(
     model, variable, values, marginalize_B_over = "sequences", newdata = NULL, 
     nsim = 0, probs = c(0.025, 0.5, 0.975)) {
+  # avoid warnings of NSEs
+  cluster <- state <- estimate <- state_from <- state_to <- time_var <- 
+    channel <- observation <- NULL
   stopifnot_(
     inherits(model, "nhmm") || inherits(model, "mnhmm"),
     "Argument {.arg model} must be a {.cls nhmm} or {.cls mnhmm} object."
@@ -106,7 +109,7 @@ average_marginal_prediction <- function(
     estimate = unlist(pred$pi)
   ) |> 
     dplyr::group_by(cluster, state) |>
-    summarise(estimate = mean(estimate))
+    dplyr::summarise(estimate = mean(estimate))
   
   A <- data.frame(
     cluster = rep(model$cluster_names, each = S^2 * T * N),

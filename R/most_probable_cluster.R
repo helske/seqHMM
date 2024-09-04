@@ -22,11 +22,14 @@ most_probable_cluster <- function(x, type = "viterbi", hp) {
 posterior_cluster_probabilities <- function(x) {
   pp <- posterior_probs(x, as_data_frame = FALSE)
   posterior_cluster_probabilities <- matrix(0, x$n_sequences, x$n_clusters)
-  n_states <- rep(x$n_states, length.out = x$n_channels)
+  n_states <- rep(x$n_states, length.out = x$n_clusters)
   p <- 0
   for (i in seq_len(x$n_clusters)) {
     posterior_cluster_probabilities[, i] <- 
-      colSums(pp[(p + 1):(p + n_states[i]), 1, ])
+      colSums(array(
+        pp[(p + 1):(p + n_states[i]), 1, ], 
+        dim = c(n_states[i], x$n_sequences)
+      ))
     p <- p + n_states[i]
   }
   dimnames(posterior_cluster_probabilities) <- list(
