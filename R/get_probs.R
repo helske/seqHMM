@@ -229,7 +229,7 @@ get_probs.mnhmm <- function(model, data = NULL, nsim = 0,
   cluster_probs <- data.frame(
     cluster = model$cluster_names,
     id = rep(ids, each = D),
-    estimate = unlist(get_omega(theta_raw, X_cluster, 0))
+    estimate = c(get_omega(theta_raw, X_cluster, 0))
   )
   
   if (nsim > 0) {
