@@ -3,6 +3,8 @@
 #' @param model A Hidden Markov Model of class `nhmm` or `mnhmm`.
 #' @param variable Name of the variable of interest.
 #' @param values Vector containing one or two values for `variable`.
+#' @param marginalize_B_over Character string defining the dimensions over which
+#' emission probabilities are marginalized. Default is `"sequences"`.
 #' @param newdata Optional data frame which is used for marginalization.
 #' @param nsim Non-negative integer defining the number of samples from the 
 #' normal approximation of the model parameters used in 
@@ -14,8 +16,16 @@
 average_marginal_prediction <- function(
     model, variable, values, marginalize_B_over = "sequences", newdata = NULL, 
     nsim = 0, probs = c(0.025, 0.5, 0.975)) {
-  marginalize_over <- match.arg(
-    marginalize_over, c("sequences", "states", "clusters"), several.ok = TRUE)
+  stopifnot_(
+    inherits(model, "nhmm") || inherits(model, "mnhmm"),
+    "Argument {.arg model} must be a {.cls nhmm} or {.cls mnhmm} object."
+  )
+  marginalize_B_over <- match.arg(
+    marginalize_B_over, c("sequences", "states", "clusters"), several.ok = TRUE)
+  stopifnot_(
+    marginalize_B_over != "clusters" || model$n_clusters > 1,
+    "Cannot marginalize over clusters as {.arg model} is not a {.cls mnhmm} object."
+  )
   stopifnot_(
     checkmate::test_count(nsim),
     "Argument {.arg nsim} should be a single non-negative integer."
@@ -81,13 +91,13 @@ average_marginal_prediction <- function(
     times <- colnames(model$observations[[1]])
     symbol_names <- model$symbol_names
   }
-  marginalize <- dplyr::recode(
-    marginalize_B_over,
-    "clusters" = "cluster",
-    "states" = "state",
-    "sequences" = "id")
-  id_var <- model$id_variable
-  time_var <- model$time_variable
+  marginalize <- c(
+    switch(
+      marginalize_B_over,
+      "clusters" = c("cluster", "state", "id"),
+      "states" = c("state", "id"),
+      "sequences" = "id"), 
+    "time", "channel", "observation")
   
   pi <- data.frame(
     cluster = rep(model$cluster_names, each = S * N),
@@ -95,9 +105,8 @@ average_marginal_prediction <- function(
     state = model$state_names,
     estimate = unlist(pred$pi)
   ) |> 
-    dplyr::group_by(.data[[marginalize]]) |>
+    dplyr::group_by(cluster, state) |>
     summarise(estimate = mean(estimate))
-  colnames(pi)[2] <- id_var
   
   A <- data.frame(
     cluster = rep(model$cluster_names, each = S^2 * T * N),
@@ -106,9 +115,10 @@ average_marginal_prediction <- function(
     state_from = model$state_names,
     state_to = rep(model$state_names, each = S),
     estimate = unlist(pred$A)
-  )
-  colnames(A)[2] <- id_var
-  colnames(A)[3] <- time_var
+  )  |> 
+    dplyr::group_by(cluster, time, state_from, state_to) |>
+    dplyr::summarise(estimate = mean(estimate)) |> 
+    dplyr::rename(!!time_var := time)
   
   B <- data.frame(
     cluster =  rep(model$cluster_names, each = S * sum(M) * T * N),
@@ -123,13 +133,9 @@ average_marginal_prediction <- function(
     })),
     estimate = unlist(pred$B)
   ) |> 
-    dplyr::group_by(.data[[marginalize]]) |>
-    summarise(estimate = mean(estimate))
-  idx <- which(names(B) == "id")
-  if(length(idx) == 1) names(B)[idx] <- id_var
-  idx <- which(names(B) == "time")
-  if(length(idx) == 1) names(B)[idx] <- time_var
-  if (C == 1) emission_probs$channel <- NULL
+    dplyr::group_by(across(all_of(marginalize))) |>
+    dplyr::summarise(estimate = mean(estimate)) |> 
+    dplyr::rename(!!time_var := time)
   
   if (D > 1) {
     omega <- data.frame(
@@ -142,5 +148,7 @@ average_marginal_prediction <- function(
     out <- list(pi = pi, A = A, B = B)
   }
   class(out) <- "amp"
+  attr(out, "seed") <- seed
+  attr(out, "marginalize_B_over") <- marginalize_B_over
   out
 }

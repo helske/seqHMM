@@ -86,7 +86,8 @@ model <- build_lcm(obs, n_clusters = 2)
 fit <- fit_model(model)
 
 # How many of the observations were correctly classified:
-sum(summary(fit$model)$most_probable_cluster == rep(c("Class 2", "Class 1"), times = c(500, 200)))
+sum(summary(fit$model)$most_probable_cluster == rep(c("Class 2", "Class 1"), 
+  times = c(500, 200)))
 
 ############################################################
 \dontrun{

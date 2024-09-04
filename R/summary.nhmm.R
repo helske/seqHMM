@@ -51,18 +51,18 @@ summary.mnhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
 }
 #' @export
 print.summary.nhmm <- function(x, digits = 3, ...) {
-  print(object)
+  print(x)
   cat("\nCoefficients:\n")
-  print.listof(out, digits = digits, ...)
+  print.listof(x$coefficients, digits = digits, ...)
   
   cat("Log-likelihood:", x$logLik, "  BIC:", x$BIC, "\n\n")
   invisible(x)
 }
 #' @export
 print.summary.mnhmm <- function(x, digits = 3, ...) {
-  print(object)
+  print(x)
   cat("\nCoefficients:\n")
-  print.listof(out, digits = digits, ...)
+  print.listof(x$coefficients, digits = digits, ...)
   
   cat("Log-likelihood:", x$logLik, "  BIC:", x$BIC, "\n\n")
   

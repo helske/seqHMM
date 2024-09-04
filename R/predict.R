@@ -31,10 +31,6 @@ predict.nhmm <- function(
       !is.null(newdata[[time]]), 
       "Can't find time index variable {.var {time}} in {.arg newdata}."
     )
-    stopifnot_(
-      !is.null(newdata[[variable]]), 
-      "Can't find time variable {.var {variable}} in {.arg newdata}."
-    )
   } else {
     stopifnot(
       !is.null(model$data),
@@ -53,7 +49,7 @@ predict.nhmm <- function(
   beta_o_raw <- stan_to_cpp_emission(
     model$estimation_results$parameters$beta_o_raw,
     1,
-    C > 1
+    model$n_channels > 1
   )
   X_initial <- t(model$X_initial)
   X_transition <- aperm(model$X_transition, c(3, 1, 2))
@@ -66,7 +62,7 @@ predict.nhmm <- function(
   } else {
     get_multichannel_B(
       beta_o_raw, 
-      X_emission1, 
+      X_emission, 
       model$n_states, 
       model$n_channels, 
       model$n_symbols, 
@@ -106,10 +102,6 @@ predict.mnhmm <- function(
       !is.null(newdata[[time]]), 
       "Can't find time index variable {.var {time}} in {.arg newdata}."
     )
-    stopifnot_(
-      !is.null(newdata[[variable]]), 
-      "Can't find time variable {.var {variable}} in {.arg newdata}."
-    )
   } else {
     stopifnot(
       !is.null(model$data),
@@ -128,7 +120,7 @@ predict.mnhmm <- function(
   beta_o_raw <- stan_to_cpp_emission(
     model$estimation_results$parameters$beta_o_raw,
     1,
-    C > 1
+    model$n_channels > 1
   )
   X_initial <- t(model$X_initial)
   X_transition <- aperm(model$X_transition, c(3, 1, 2))
@@ -142,7 +134,7 @@ predict.mnhmm <- function(
   } else {
     get_multichannel_B(
       beta_o_raw, 
-      X_emission1, 
+      X_emission, 
       model$n_states, 
       model$n_channels, 
       model$n_symbols, 

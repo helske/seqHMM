@@ -23,7 +23,7 @@ get_probs.nhmm <- function(model, newdata = NULL, nsim = 0,
     "Argument {.arg nsim} should be a single non-negative integer."
   )
   if (!is.null(newdata)) {
-    model <- update(model, newdata = ne)
+    model <- update(model, newdata = newdata)
   }
   S <- model$n_states
   M <- model$n_symbols
@@ -93,7 +93,7 @@ get_probs.nhmm <- function(model, newdata = NULL, nsim = 0,
 }
 #' @rdname get_probs
 #' @export
-get_probs.mnhmm <- function(model, ne = NULL, nsim = 0, 
+get_probs.mnhmm <- function(model, newdata = NULL, nsim = 0, 
                             probs = c(0.025, 0.5, 0.975), ...) {
   
   stopifnot_(
@@ -101,8 +101,8 @@ get_probs.mnhmm <- function(model, ne = NULL, nsim = 0,
     "Argument {.arg nsim} should be a single non-negative integer."
   )
   
-  if (!is.null(ne)) {
-    model <- update(model, newdata = ne)
+  if (!is.null(newdata)) {
+    model <- update(model, newdata = newdata)
   }
   
   T <- model$length_of_sequences

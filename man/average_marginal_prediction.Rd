@@ -21,6 +21,9 @@ average_marginal_prediction(
 
 \item{values}{Vector containing one or two values for \code{variable}.}
 
+\item{marginalize_B_over}{Character string defining the dimensions over which
+emission probabilities are marginalized. Default is \code{"sequences"}.}
+
 \item{newdata}{Optional data frame which is used for marginalization.}
 
 \item{nsim}{Non-negative integer defining the number of samples from the

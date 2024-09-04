@@ -185,7 +185,7 @@ stop_ <- function(message, ..., call = rlang::caller_env()) {
 #' @param f A formula object.
 #' @noRd
 intercept_only <- function(f) {
-  identical(deparse(update(f, 0 ~ .)), "0 ~ 1")
+  identical(deparse(stats::update(f, 0 ~ .)), "0 ~ 1")
 }
 #' Create obsArray for Various C++ functions
 #' 

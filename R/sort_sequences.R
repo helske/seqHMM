@@ -1,4 +1,10 @@
-
+#' Sort sequences in a sequence object
+#' 
+#' @param x A sequence object or a list of sequence objects
+#' @param sort_by A character string specifying the sorting criterion.
+#' @param sort_channel An integer or character string specifying the channel to 
+#' sort by.
+#' @param dist_method A character string specifying the distance method to use.
 #' @export
 sort_sequences <- function(
     x, sort_by = "start", sort_channel = 1, dist_method = "OM") {
