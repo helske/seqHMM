@@ -9,7 +9,7 @@
 #' @param threads Number of threads to use in parallel computing. 
 #' The default is 1.
 estimate_coef <- function(model, threads = 1) {
-  stopifnot(
+  stopifnot_(
     inherits(model, "mhmm"),
     "{.arg model} must be a {.cls mhmm} object."
   )

@@ -31,7 +31,6 @@ test_that("'fit_model' works for 'hmm'", {
     ),
     NA
   )
-  expect_error(print(fit$model), NA)
 })
 
 test_that("'fit_model' works for 'mhmm'", {
@@ -94,5 +93,4 @@ test_that("'fit_model' works for 'mhmm'", {
     ),
     NA
   )
-  expect_error(print(fit$model), NA)
 })

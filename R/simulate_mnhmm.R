@@ -92,7 +92,9 @@ simulate_mnhmm <- function(
   times <- sort(unique(data[[time]]))
   clusters <- character(n_sequences)
   cluster_names <- model$cluster_names
-  state_names <- paste0(rep(cluster_names, each = S), ": ", model$state_names)
+  state_names <- paste0(
+    rep(cluster_names, each = model$n_states), ": ", model$state_names
+  )
   for (i in seq_len(n_sequences)) {
     p_cluster <- probs$cluster[
       probs$cluster[[time]] == time[1] & probs$cluster[[id]] == ids[i],
@@ -115,7 +117,7 @@ simulate_mnhmm <- function(
       obs[1, k, i] <- sample(symbol_names[[k]], 1, prob = p_emission)
     }
   }
-
+  
   for (i in seq_len(n_sequences)) {
     for (t in 2:sequence_lengths[i]) {
       p_transition <- probs$transition[
@@ -147,7 +149,7 @@ simulate_mnhmm <- function(
   obs <- lapply(seq_len(n_channels), function(i) {
     suppressWarnings(suppressMessages(
       seqdef(t(obs[, i, ]), alphabet = symbol_names[[i]])
-      ))
+    ))
   })
   names(obs) <- model$channel_names
   if (n_channels == 1) obs <- obs[[1]]
