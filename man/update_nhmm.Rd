@@ -2,9 +2,17 @@
 % Please edit documentation in R/update.R
 \name{update.nhmm}
 \alias{update.nhmm}
+\alias{update.mnhmm}
 \title{Update Covariate Values of NHMM}
 \usage{
 \method{update}{nhmm}(object, newdata, ...)
+
+\method{update}{mnhmm}(object, newdata, ...)
+}
+\arguments{
+\item{object}{An object of class \code{nhmm} or \code{mnhmm}.}
+
+\item{newdata}{A data frame containing the new covariate values.}
 }
 \description{
 This function can be used to replace original covariate values of NHMMs.

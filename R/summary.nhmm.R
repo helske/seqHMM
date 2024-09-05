@@ -1,9 +1,11 @@
 #' Summary of Non-homogeneous Hidden Markov Models
 #'
-#' Function `summary.nhmm` returns basic information about the model as well as 
+#' Returns basic information about the model as well as 
 #' the estimated regression coefficients.
 #'
 #' @export
+#' @inheritParams get_probs
+#' @rdname summary_nhmm
 #' @param object Non-homogeneous hidden Markov model of class `nhmm`.
 summary.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
   ll <- logLik(object)
@@ -14,12 +16,9 @@ summary.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
   class(out) <- "summary.nhmm"
   out
 }
-#' Summary method for non-homogeneous hidden Markov models
-#'
-#' Function `summary.mnhmm` returns basic information about the model as well as 
-#' the estimated regression coefficients.
 #'
 #' @export
+#' @rdname summary_nhmm
 #' @param object Non-homogeneous hidden Markov model of class `mnhmm`.
 summary.mnhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
   cf <- coef(object, nsim, probs)

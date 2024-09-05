@@ -3,6 +3,9 @@
 #' @param x Output from [average_marginal_prediction()].
 #' @param type Type of plot to create. One of `"initial"`, `"transition"`,
 #'  `"emission"`, or `"cluster"`.
+#' @param probs A numeric vector of length 2 with the lower and upper limits for 
+#' confidence intervals. Default is `c(0.025, 0.975)`. If the limits are not 
+#' found in the input object `x`, an error is thrown.
 #' @param alpha Transparency level for [ggplot2::geom_ribbon()].
 plot.amp <- function(x, type, probs = c(0.025, 0.975), alpha = 0.25) {
   type <- match.arg(type, c("initial", "transition", "emission", "cluster"))
@@ -21,7 +24,11 @@ plot.amp <- function(x, type, probs = c(0.025, 0.975), alpha = 0.25) {
   upr <- paste0("q", 100 * probs[2])
   stopifnot_(
     all(c(lwr, upr) %in% names(x$initial)),
-    "The probabilities in {.arg probs} are not available in the {.arg x}."
+    paste0(
+      "The probabilities in {.arg probs} are not available in the {.arg x}. ",
+      "Run {.fn average_marginal_predictions} with {.arg probs} as ",
+      "`c({paste(probs, collapse = ', ')}) ."
+    )
   )
   if (type == "initial") {
     p <- ggplot(x$initial, aes(estimate, state)) + 

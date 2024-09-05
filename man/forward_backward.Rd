@@ -77,7 +77,7 @@ probabilities of a hidden Markov model.
 data("mhmm_biofam")
 
 # Compute forward and backward probabilities
-fb <- forward_backward(mhmm_biofam)
+fb <- forward_backward(mhmm_biofam, as_data_frame = FALSE)
 
 # The most probable hidden state at time t
 # given the observations up to time t for the first subject:

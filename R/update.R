@@ -2,6 +2,9 @@
 #' 
 #' This function can be used to replace original covariate values of NHMMs. 
 #' The model formulae and estimated coefficients are not altered.
+#' @param object An object of class `nhmm` or `mnhmm`.
+#' @param newdata A data frame containing the new covariate values.
+#' @rdname update_nhmm
 #' @export
 update.nhmm <- function(object, newdata, ...) {
   newdata <- .check_data(newdata, object$time_variable, object$id_variable)
@@ -26,10 +29,7 @@ update.nhmm <- function(object, newdata, ...) {
   )
   object
 }
-#' Update Covariate Values of MNHMM
-#' 
-#' This function can be used to replace original covariate values of MNHMMs. 
-#' The model formulae and estimated coefficients are not altered.
+#' @rdname update_nhmm
 #' @export
 update.mnhmm <- function(object, newdata, ...) {
   newdata <- .check_data(newdata, object$time_variable, object$id_variable)
