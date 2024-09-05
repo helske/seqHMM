@@ -61,7 +61,7 @@ average_marginal_prediction <- function(
       "Can't find time variable {.var {variable}} in {.arg newdata}."
     )
   } else {
-    stopifnot(
+    stopifnot_(
       !is.null(model$data),
       "Model does not contain original data and argument {.arg newdata} is 
       {.var NULL}."

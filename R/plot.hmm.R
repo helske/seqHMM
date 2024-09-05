@@ -328,7 +328,7 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
   # Vertex label distances
   if (is.character(vertex.label.dist)) {
     ind <- pmatch(vertex.label.dist, "auto")
-    stopifnot(
+    stopifnot_(
       !is.na(ind),
       "{.arg vertex.label.dist} only accepts the value {.val 'auto'} or a 
       numerical vector."

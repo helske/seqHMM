@@ -5,7 +5,7 @@
 \title{Predict method for non-homogeneous hidden Markov models}
 \usage{
 \method{predict}{nhmm}(
-  model,
+  object,
   newdata = NULL,
   nsim = 0,
   probs = c(0.025, 0.5, 0.975),
@@ -13,7 +13,7 @@
 )
 }
 \arguments{
-\item{model}{A Hidden Markov Model of class \code{nhmm} or \code{mnhmm}.}
+\item{object}{A Hidden Markov Model of class \code{nhmm} or \code{mnhmm}.}
 
 \item{newdata}{Optional data frame which is used for prediction.}
 
