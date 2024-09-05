@@ -1,7 +1,7 @@
 #' Stacked Sequence Plots of Multichannel Sequences and/or Most Probable
 #' Paths from Hidden Markov Models
 #'
-#' Function `stacked_sequence_plot draws stacked sequence plots of sequence 
+#' Function `stacked_sequence_plot` draws stacked sequence plots of sequence 
 #' object created with the [TraMineR::seqdef] function or observations and/or most
 #' probable paths of model objects of `seqHMM` (e.g., `hmm` and `mhmm`).
 #'
