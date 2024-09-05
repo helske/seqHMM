@@ -104,7 +104,7 @@ mc_to_sc_data <- function(data, combine_missing = TRUE, all_combinations = FALSE
   }
   if (missing(cpal) || identical(cpal, "auto")) {
     stopifnot_(
-      alph <= 200,
+      length(alph) <= 200,
       "The number of observed states is {length(alph)}, which is more than 
       supported by the default color palette (200). Specify your own color 
       palette with the argument {.arg cpal}."

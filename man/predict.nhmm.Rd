@@ -9,7 +9,8 @@
   newdata = NULL,
   nsim = 0,
   probs = c(0.025, 0.5, 0.975),
-  return_samples = FALSE
+  return_samples = FALSE,
+  ...
 )
 }
 \arguments{
@@ -23,7 +24,9 @@ normal approximation of the model coefficients.}
 \item{probs}{Vector defining the quantiles of interest.}
 
 \item{return_samples}{Logical indicating whether to return samples or
-quantiles.}
+quantiles. Default is \code{FALSE}.}
+
+\item{...}{Ignored.}
 }
 \description{
 Predict method for non-homogeneous hidden Markov models

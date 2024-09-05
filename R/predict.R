@@ -6,11 +6,12 @@
 #' normal approximation of the model coefficients.
 #' @param probs Vector defining the quantiles of interest.
 #' @param return_samples Logical indicating whether to return samples or
-#' quantiles.
+#' quantiles. Default is `FALSE`.
+#' @param ... Ignored.
 #' @export
 predict.nhmm <- function(
     object, newdata = NULL, nsim = 0, 
-    probs = c(0.025, 0.5, 0.975), return_samples = FALSE) {
+    probs = c(0.025, 0.5, 0.975), return_samples = FALSE, ...) {
   
   stopifnot_(
     checkmate::test_count(nsim),
@@ -81,7 +82,7 @@ predict.nhmm <- function(
 #' @export
 predict.mnhmm <- function(
     object, newdata = NULL, nsim = 0, 
-    probs = c(0.025, 0.5, 0.975), return_samples = FALSE) {
+    probs = c(0.025, 0.5, 0.975), return_samples = FALSE, ...) {
   
   stopifnot_(
     checkmate::test_count(nsim),
