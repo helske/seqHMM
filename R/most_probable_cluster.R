@@ -9,7 +9,7 @@ most_probable_cluster <- function(x, type = "viterbi", hp) {
       if (length(unique(state_names)) == length(state_names)) {
         idx <- which(hp[, 1] %in% x$state_names[[i]])
       } else {
-        idx <- which(grepl(paste0(x$cluster_names[i], ":"), hp[, 1]))
+        idx <- which(grepl(paste0(x$cluster_names[i], ": "), hp[, 1]))
       }
       clusters[idx] <- x$cluster_names[i]
     }
