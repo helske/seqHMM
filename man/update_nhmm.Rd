@@ -13,6 +13,8 @@
 \item{object}{An object of class \code{nhmm} or \code{mnhmm}.}
 
 \item{newdata}{A data frame containing the new covariate values.}
+
+\item{...}{Ignored.}
 }
 \description{
 This function can be used to replace original covariate values of NHMMs.

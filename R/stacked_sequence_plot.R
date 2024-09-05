@@ -18,14 +18,14 @@
 #' @param ids Indexes of the subjects to be plotted (the default is all). For 
 #' example, `ids = c(1:10, 15) plots the first ten subjects and subject 15 in 
 #' the data.
-#' @param sort_by A sorting variable or a sort method (one of `"start"`,
+#' @param sort_by A sorting variable or a sort method (one of `"none`, `"start"`,
 #' `"end"`, or `"mds"` for `type = "index"`. Option `"mds"` arranges the 
 #' sequences according to the scores of multidimensional scaling (using 
-#' [stats::cmdscale()]). Default is no sorting. Numberic vectors are passed to 
-#' `sortv` argument of [ggseqplot::ggseqiplot()].
+#' [stats::cmdscale()]). Default is `"none"`, i.e., no sorting. Numeric vectors 
+#' are passed to `sortv` argument of [ggseqplot::ggseqiplot()].
 #' @param sort_channel Name of the channel which should be used for the 
 #' sorting. Alternatively value `"Hidden states"` uses the hidden state 
-#' sequences for sorting.
+#' sequences for sorting. Default is to sort by the first channel in the data.
 #' @param dist_method The metric to be used for computing the distances of the
 #' sequences if multidimensional scaling is used for sorting. One of `"OM"`
 #' (optimal matching, the default), `"LCP"` (longest common prefix), `"RLCP"`
@@ -56,7 +56,7 @@
 #' 
 stacked_sequence_plot <- function(
     x, plots = "obs", type = "d", ids,
-    sort_by, sort_channel, dist_method = "OM", group = NULL, 
+    sort_by = "none", sort_channel, dist_method = "OM", group = NULL, 
     legend_position = "right", ...) {
   
   plots <- match.arg(plots, c("obs", "hidden_paths", "both"))
@@ -121,9 +121,9 @@ stacked_sequence_plot <- function(
       }
     }
   }
-  if (!missing(sort_by)) {
+  if (!identical(sort_by, "none")) {
     if (length(sort_by) == 1) {
-      sort_by <- match.arg(sort_by, c("start", "end", "mds"))
+      sort_by <- match.arg(sort_by, c("none", "start", "end", "mds"))
       if (missing(sort_channel)) sort_channel <- channel_names[1]
       stopifnot_(
         sort_channel %in% channel_names,

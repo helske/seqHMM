@@ -10,7 +10,7 @@ stacked_sequence_plot(
   plots = "obs",
   type = "d",
   ids,
-  sort_by,
+  sort_by = "none",
   sort_channel,
   dist_method = "OM",
   group = NULL,
@@ -36,15 +36,15 @@ See \code{\link[ggseqplot:ggseqiplot]{ggseqplot::ggseqiplot()}} and \code{\link[
 example, `ids = c(1:10, 15) plots the first ten subjects and subject 15 in
 the data.}
 
-\item{sort_by}{A sorting variable or a sort method (one of \code{"start"},
+\item{sort_by}{A sorting variable or a sort method (one of \verb{"none}, \code{"start"},
 \code{"end"}, or \code{"mds"} for \code{type = "index"}. Option \code{"mds"} arranges the
 sequences according to the scores of multidimensional scaling (using
-\code{\link[stats:cmdscale]{stats::cmdscale()}}). Default is no sorting. Numberic vectors are passed to
-\code{sortv} argument of \code{\link[ggseqplot:ggseqiplot]{ggseqplot::ggseqiplot()}}.}
+\code{\link[stats:cmdscale]{stats::cmdscale()}}). Default is \code{"none"}, i.e., no sorting. Numeric vectors
+are passed to \code{sortv} argument of \code{\link[ggseqplot:ggseqiplot]{ggseqplot::ggseqiplot()}}.}
 
 \item{sort_channel}{Name of the channel which should be used for the
 sorting. Alternatively value \code{"Hidden states"} uses the hidden state
-sequences for sorting.}
+sequences for sorting. Default is to sort by the first channel in the data.}
 
 \item{dist_method}{The metric to be used for computing the distances of the
 sequences if multidimensional scaling is used for sorting. One of \code{"OM"}

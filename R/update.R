@@ -4,6 +4,7 @@
 #' The model formulae and estimated coefficients are not altered.
 #' @param object An object of class `nhmm` or `mnhmm`.
 #' @param newdata A data frame containing the new covariate values.
+#' @param ... Ignored.
 #' @rdname update_nhmm
 #' @export
 update.nhmm <- function(object, newdata, ...) {
