@@ -38,10 +38,10 @@ average_marginal_prediction <- function(
     "Argument {.arg variable} must be a single character string."
   )
   stopifnot_(
-    length(values) != 2, 
+    length(values) == 2, 
     "Argument {.arg values} should contain two values for 
     variable {.var variable}.")
-  if (is.null(newdata)) {
+  if (!is.null(newdata)) {
     time <- model$time_variable
     id <- model$id_variable
     stopifnot_(
@@ -62,7 +62,7 @@ average_marginal_prediction <- function(
     )
   } else {
     stopifnot_(
-      !is.null(model$data),
+      is.null(model$data),
       "Model does not contain original data and argument {.arg newdata} is 
       {.var NULL}."
     )

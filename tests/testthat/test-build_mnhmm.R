@@ -108,7 +108,8 @@ test_that("estimate_mnhmm errors with incorrect observations", {
 })
 test_that("build_mnhmm works with vector of characters as observations", {
   expect_error(
-    estimate_mnhmm("y", s, d, data = data, time = "time", id = "id", iter = 0),
+    estimate_mnhmm("y", s, d, data = data, time = "time", id = "id", iter = 0,
+                   verbose = FALSE),
     NA
   )
 })

@@ -34,7 +34,7 @@ predict.nhmm <- function(
     )
   } else {
     stopifnot_(
-      !is.null(object$data),
+      is.null(object$data),
       "Model does not contain original data and argument {.arg newdata} is 
       {.var NULL}."
     )
@@ -105,7 +105,7 @@ predict.mnhmm <- function(
     )
   } else {
     stopifnot_(
-      !is.null(object$data),
+      is.null(object$data),
       "Model does not contain original data and argument {.arg newdata} is 
       {.var NULL}."
     )
@@ -113,14 +113,14 @@ predict.mnhmm <- function(
   }
   
   beta_i_raw <- stan_to_cpp_initial(
-    object$coefficients$beta_i_raw
+    object$coefficients$beta_i_raw, object$n_clusters
   )
   beta_s_raw <- stan_to_cpp_transition(
-    object$coefficients$beta_s_raw
+    object$coefficients$beta_s_raw, object$n_clusters
   )
   beta_o_raw <- stan_to_cpp_emission(
     object$coefficients$beta_o_raw,
-    1,
+    object$n_clusters,
     object$n_channels > 1
   )
   X_initial <- t(object$X_initial)

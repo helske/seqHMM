@@ -22,8 +22,7 @@ test_that("build_nhmm returns object of class 'nhmm'", {
     model <- build_nhmm(
       obs, s, initial_formula = ~ x, transition_formula = ~z,
       emission_formula = ~ z, data = data, 
-      time = "time", id = "id", state_names = 1:s, channel_names = "obs", 
-      verbose = FALSE
+      time = "time", id = "id", state_names = 1:s, channel_names = "obs"
     ),
     NA
   )
@@ -97,7 +96,8 @@ test_that("estimate_nhmm errors with incorrect observations", {
 })
 test_that("build_nhmm works with vector of characters as observations", {
   expect_error(
-    estimate_nhmm("y", s, data = data, time = "time", id = "id", iter = 0),
+    estimate_nhmm("y", s, data = data, time = "time", id = "id", iter = 0,
+                  verbose = FALSE),
     NA
   )
 })

@@ -37,12 +37,12 @@ test_that("simulate_mnhmm, coef and get_probs works", {
   )
   expect_error(
     fit <- estimate_mnhmm(
-      sim$observations, n_states = 2, 
+      sim$model$obs, n_states = 2, 
       n_clusters = 3, 
       initial_formula = ~1, transition_formula = ~ x, 
       emission_formula = ~ x + z, cluster_formula = ~w, 
       data = d, time = "month", id = "person", 
-      init = sim$model$coefficients, 
+      inits = sim$model$coefficients, 
       iter = 1, verbose = FALSE, hessian = FALSE),
     NA
   )
