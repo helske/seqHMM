@@ -69,7 +69,9 @@ of length 1, or of length matching the number of channels to be plotted.}
 \code{\link[ggseqplot:ggseqdplot]{ggseqplot::ggseqdplot()}}.}
 }
 \description{
-Function \verb{stacked_sequence_plot draws stacked sequence plots of sequence  object created with the [TraMineR::seqdef] function or observations and/or most probable paths of model objects of }seqHMM\verb{(e.g.,}hmm\code{and}mhmm`).
+Function \code{stacked_sequence_plot} draws stacked sequence plots of sequence
+object created with the \link[TraMineR:seqdef]{TraMineR::seqdef} function or observations and/or most
+probable paths of model objects of \code{seqHMM} (e.g., \code{hmm} and \code{mhmm}).
 }
 \examples{
 p <- stacked_sequence_plot(

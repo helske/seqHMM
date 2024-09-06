@@ -1,7 +1,7 @@
 #ifndef OPTCOEF_H
 #define OPTCOEF_H
 
-
+#define ARMA_WARN_LEVEL 1
 #include <RcppArmadillo.h>
 unsigned int optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cube& emission,
                      const arma::mat& bsi, arma::mat& coef, const arma::mat& X,

@@ -151,22 +151,8 @@
 #' @param respect_void  If `TRUE` (default), states at the time points
 #' corresponding to TraMineR's void in the observed sequences are set to void
 #' in the hidden state sequences as well.
-#'
 #' @param ... Other arguments to be passed on to
 #'   [TraMineR::seqplot()].
-#'
-#' @examples
-#' # Loading mixture hidden Markov model (mhmm object)
-#' # of the biofam data
-#' data("mhmm_biofam")
-#'
-#' # Plotting the first cluster only
-#' mssplot(mhmm_biofam, which.plots = 1)
-#'
-#' if (interactive()) {
-#'   # Interactive plot
-#'   mssplot(mhmm_biofam)
-#' }
 #'
 #' @seealso [build_mhmm()] and [fit_model()] for building and
 #'   fitting mixture hidden Markov models, [hidden_paths()] for

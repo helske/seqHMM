@@ -2,8 +2,8 @@
 
 #include "log_forward_backward.h"
 #include "logsumexp.h"
+#include <omp.h>
 // [[Rcpp::export]]
-
 Rcpp::List log_EM(const arma::mat& transition_, const arma::cube& emission_, 
   const arma::vec& init_, const arma::ucube& obs, const arma::uvec& nSymbols, 
   int itermax, double tol, int trace, unsigned int threads) {

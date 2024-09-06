@@ -1,7 +1,7 @@
 // EM algorithm for non-mixture hidden Markov models
 
 #include "forward_backward.h"
-
+#include <omp.h>
 // [[Rcpp::export]]
 
 Rcpp::List EM(const arma::mat& transition_, const arma::cube& emission_, const arma::vec& init_,

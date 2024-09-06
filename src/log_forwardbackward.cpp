@@ -1,8 +1,9 @@
 // Forward-backward algorithm for non-mixture hidden Markov models using log-space
 
 #include "log_forward_backward.h"
-// [[Rcpp::export]]
+#include <omp.h>
 
+// [[Rcpp::export]]
 Rcpp::List log_forwardbackward(const arma::mat& transition_, const arma::cube& emission_, 
   const arma::vec& init_, const arma::ucube& obs, bool forwardonly, unsigned int threads) {
 

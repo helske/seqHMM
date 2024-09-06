@@ -1,6 +1,6 @@
 // Forward-backward algorithm for non-mixture hidden Markov models
 #include "forward_backward.h"
-
+#include <omp.h>
 // [[Rcpp::export]]
 Rcpp::List forwardbackward(const arma::mat& transition, const arma::cube& emission,
   const arma::vec& init, const arma::ucube& obs, bool forwardonly, unsigned int threads) {

@@ -2,6 +2,8 @@
 #include "optcoef.h"
 #include "forward_backward.h"
 #include "reparma.h"
+#include <omp.h>
+
 // [[Rcpp::export]]
 Rcpp::List objectivex(const arma::mat& transition, const arma::cube& emission,
                 const arma::vec& init, const arma::ucube& obs, const arma::umat& ANZ,

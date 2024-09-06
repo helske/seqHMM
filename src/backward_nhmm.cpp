@@ -1,5 +1,4 @@
 // backward algorithm for NHMM
-#include <RcppArmadillo.h>
 #include "backward_nhmm.h"
 #include "get_parameters.h"
 #include "logsumexp.h"

@@ -2,8 +2,9 @@
 
 #include "log_forward_backward.h"
 #include "reparma.h"
-// [[Rcpp::export]]
+#include <omp.h>
 
+// [[Rcpp::export]]
 Rcpp::List log_forwardbackwardx(const arma::mat& transition_, 
   const arma::cube& emission_, const arma::vec& init_,
   const arma::ucube& obs, const arma::mat& coef, const arma::mat& X,

@@ -198,20 +198,6 @@ Function \code{mssplot} plots stacked sequence plots of observation sequences
 and/or most probable hidden state paths for each model of the \code{mhmm}
 object (model chosen according to the most probable path).
 }
-\examples{
-# Loading mixture hidden Markov model (mhmm object)
-# of the biofam data
-data("mhmm_biofam")
-
-# Plotting the first cluster only
-mssplot(mhmm_biofam, which.plots = 1)
-
-if (interactive()) {
-  # Interactive plot
-  mssplot(mhmm_biofam)
-}
-
-}
 \seealso{
 \code{\link[=build_mhmm]{build_mhmm()}} and \code{\link[=fit_model]{fit_model()}} for building and
 fitting mixture hidden Markov models, \code{\link[=hidden_paths]{hidden_paths()}} for

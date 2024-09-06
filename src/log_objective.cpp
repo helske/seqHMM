@@ -2,6 +2,7 @@
 
 #include "log_forward_backward.h"
 #include "logsumexp.h"
+#include <omp.h>
 
 // [[Rcpp::export]]
 Rcpp::List log_objective(const arma::mat& transition, const arma::cube& emission,

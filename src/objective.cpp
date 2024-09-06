@@ -1,6 +1,7 @@
 // log-likelihood and gradients of HMM
 #include "optcoef.h"
 #include "forward_backward.h"
+#include <omp.h>
 
 // [[Rcpp::export]]
 Rcpp::List objective(const arma::mat& transition, const arma::cube& emission,

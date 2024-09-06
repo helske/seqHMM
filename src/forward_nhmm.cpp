@@ -1,5 +1,4 @@
 // forward algorithm for NHMM
-#include <RcppArmadillo.h>
 #include "forward_nhmm.h"
 #include "get_parameters.h"
 #include "logsumexp.h"

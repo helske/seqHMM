@@ -2,6 +2,7 @@
 
 #include "forward_backward.h"
 #include "logsumexp.h"
+#include <omp.h>
 
 void log_internalForward(const arma::mat& transition, const arma::cube& emission,
   const arma::vec& init, const arma::ucube& obs, arma::cube& alpha, unsigned int threads) {

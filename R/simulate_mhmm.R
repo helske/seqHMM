@@ -69,9 +69,8 @@
 #'   data = dataf, coefficients = coefs
 #' )
 #'
-#' ssplot(sim$observations,
-#'   hidden.paths = sim$states, plots = "both",
-#'   sortv = "from.start", sort.channel = 0, type = "I"
+#' stacked_sequence_plot(sim, 
+#'   sort_by = "start", sort_channel = "states", type = "i"
 #' )
 #'
 #' hmm <- build_mhmm(sim$observations,
@@ -87,10 +86,14 @@
 #'
 #' paths <- hidden_paths(fit$model)
 #'
-#' ssplot(list(estimates = paths, true = sim$states),
-#'   sortv = "from.start",
-#'   sort.channel = 2, ylab = c("estimated paths", "true (simulated)"),
-#'   type = "I"
+#' stacked_sequence_plot(
+#'   list(
+#'     "estimated paths" = paths, 
+#'     "true (simulated)" = sim$states
+#'   ),
+#'   sort_by = "start",
+#'   sort_channel = "true (simulated)",
+#'   type = "i"
 #' )
 #'
 simulate_mhmm <- function(

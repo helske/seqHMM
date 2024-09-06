@@ -14,25 +14,6 @@
 #'
 #' @references Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
 #' Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
-#'
-#' @examples
-#'
-#' data("biofam3c")
-#'
-#' ## Building sequence objects
-#' child_seq <- seqdef(biofam3c$children, start = 15)
-#' marr_seq <- seqdef(biofam3c$married, start = 15)
-#' left_seq <- seqdef(biofam3c$left, start = 15)
-#'
-#' ## Choosing colors
-#' attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
-#' attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-#' attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
-#'
-#'
-#' # Plotting state distribution plots of observations
-#' ssp1 <- ssp(list(child_seq, marr_seq, left_seq))
-#' plot(ssp1)
 plot.ssp <- function(x, ...) {
   .Deprecated("stacked_sequence_plot")
   plot.new()
