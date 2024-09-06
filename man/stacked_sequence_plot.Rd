@@ -77,9 +77,9 @@ probable paths of model objects of \code{seqHMM} (e.g., \code{hmm} and \code{mhm
 p <- stacked_sequence_plot(
   mhmm_biofam, 
   plots = "both", 
-  type="d", 
+  type = "d", 
   legend_position = c("right", "right", "right", "none")
 )
-p & theme(plot.margin = unit(c(1, 1, 0, 2), "mm"))
+p & ggplot2::theme(plot.margin = unit(c(1, 1, 0, 2), "mm"))
 
 }
