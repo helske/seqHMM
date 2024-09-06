@@ -117,7 +117,9 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
     ), dots)
   )[c("par", "value", "return_code", "hessian")]
   
-  model$coefficients <- out$par[c("beta_i_raw", "beta_s_raw", "beta_o_raw")]
+  model$coefficients <- out$par[
+    c("beta_i_raw", "beta_s_raw", "beta_o_raw", "theta_raw")
+  ]
   model$stan_model <- model_code
   model$estimation_results <- list(
     hessian = out$hessian,
