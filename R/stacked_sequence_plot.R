@@ -52,7 +52,8 @@
 #'   type = "d", 
 #'   legend_position = c("right", "right", "right", "none")
 #' )
-#' p & ggplot2::theme(plot.margin = unit(c(1, 1, 0, 2), "mm"))
+#' library(ggplot2)
+#' p & theme(plot.margin = unit(c(1, 1, 0, 2), "mm"))
 #' 
 stacked_sequence_plot <- function(
     x, plots = "obs", type = "d", ids,
