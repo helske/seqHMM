@@ -1,7 +1,7 @@
 // Internal forward algorithms for HMMs and MHMMs
 
 #include "forward_backward.h"
-#include <omp.h>
+#include "useomp.h"
 
 void internalForward(const arma::mat& transition_t, const arma::cube& emission, const arma::vec& init,
   const arma::ucube& obs, arma::cube& alpha, arma::mat& scales, unsigned int threads) {

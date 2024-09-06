@@ -2,7 +2,7 @@
 #include "optcoef.h"
 #include "forward_backward.h"
 #include "reparma.h"
-#include <omp.h>
+#include "useomp.h"
 
 // [[Rcpp::export]]
 Rcpp::List objectivex(const arma::mat& transition, const arma::cube& emission,

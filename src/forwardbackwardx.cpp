@@ -1,7 +1,7 @@
 // Forward-backward algorithm for mixture hidden Markov models
 #include "forward_backward.h"
 #include "reparma.h"
-#include <omp.h>
+#include "useomp.h"
 
 // [[Rcpp::export]]
 Rcpp::List forwardbackwardx(const arma::mat& transition, const arma::cube& emission,

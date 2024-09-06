@@ -1,7 +1,7 @@
 // log-likelihood of MHMM using log-space
 #include <RcppArmadillo.h>
 #include "reparma.h"
-#include <omp.h>
+#include "useomp.h"
 
 // [[Rcpp::export]]
 Rcpp::NumericVector logLikMixHMM(const arma::mat& transition, const arma::cube& emission,

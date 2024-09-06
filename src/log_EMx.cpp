@@ -4,7 +4,7 @@
 #include "optcoef.h"
 #include "logsumexp.h"
 #include "reparma.h"
-#include <omp.h>
+#include "useomp.h"
 
 // [[Rcpp::export]]
 Rcpp::List log_EMx(const arma::mat& transition_, const arma::cube& emission_, 

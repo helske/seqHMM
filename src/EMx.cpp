@@ -2,7 +2,7 @@
 #include "forward_backward.h"
 #include "optcoef.h"
 #include "reparma.h"
-#include <omp.h>
+#include "useomp.h"
 
 // [[Rcpp::export]]
 Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::vec& init_,

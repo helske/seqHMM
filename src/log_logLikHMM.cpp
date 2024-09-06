@@ -1,7 +1,7 @@
 // log-likelihood of HMM using log-space
 
 #include "logsumexp.h"
-#include <omp.h>
+#include "useomp.h"
 
 // [[Rcpp::export]]
 Rcpp::NumericVector log_logLikHMM(const arma::mat& transition_, const arma::cube& emission_, 

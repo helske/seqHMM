@@ -3,7 +3,7 @@
 #include "logsumexp.h"
 #include "reparma.h"
 
-#include <omp.h>
+#include "useomp.h"
 // [[Rcpp::export]]
 Rcpp::List log_objectivex(const arma::mat& transition, const arma::cube& emission,
   const arma::vec& init, const arma::ucube& obs, const arma::umat& ANZ,

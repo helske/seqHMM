@@ -1,6 +1,6 @@
 // Internal backward algorithms for HMMs and MHMMs
 #include "forward_backward.h"
-#include <omp.h>
+#include "useomp.h"
 
 void internalBackward(const arma::mat& transition, const arma::cube& emission,
     const arma::ucube& obs, arma::cube& beta, const arma::mat& scales, 

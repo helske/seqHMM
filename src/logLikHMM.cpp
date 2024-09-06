@@ -1,6 +1,6 @@
 // log-likelihood of HMM
 #include <RcppArmadillo.h>
-#include <omp.h>
+#include "useomp.h"
 
 // [[Rcpp::export]]
 Rcpp::NumericVector logLikHMM(const arma::mat& transition, const arma::cube& emission,

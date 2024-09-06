@@ -2,7 +2,7 @@
 
 #include "log_forward_backward.h"
 #include "reparma.h"
-#include <omp.h>
+#include "useomp.h"
 
 // [[Rcpp::export]]
 Rcpp::List log_forwardbackwardx(const arma::mat& transition_, 

@@ -2,7 +2,7 @@
 
 #include "logsumexp.h"
 #include "reparma.h"
-#include <omp.h>
+#include "useomp.h"
 
 // [[Rcpp::export]]
 Rcpp::NumericVector log_logLikMixHMM(arma::mat transition, arma::cube emission, arma::vec init,
