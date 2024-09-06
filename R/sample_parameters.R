@@ -36,7 +36,7 @@ sample_parameters <- function(model, nsim, probs, return_samples = FALSE) {
   p_s <- length(beta_s_raw)
   p_o <- length(beta_o_raw)
   if (mixture) {
-    theta_raw <- model$coefficientstheta_raw
+    theta_raw <- model$coefficients$theta_raw
     pars <- c(pars, theta_raw)
     if (mixture) p_d <- length(theta_raw)
   }

@@ -1,4 +1,4 @@
-test_that("simulate_mnhmm works", {
+test_that("simulate_mnhmm, coef and get_probs works", {
   set.seed(1)
   p <- 50
   n <- 10
@@ -34,6 +34,25 @@ test_that("simulate_mnhmm works", {
           "Cluster 2: State 2", "Cluster 3: State 1", "Cluster 3: State 2", 
           "*", "%")), names = ""), class = "table")
     
+  )
+  expect_error(
+    fit <- estimate_mnhmm(
+      sim$observations, n_states = 2, 
+      n_clusters = 3, 
+      initial_formula = ~1, transition_formula = ~ x, 
+      emission_formula = ~ x + z, cluster_formula = ~w, 
+      data = d, time = "month", id = "person", 
+      init = sim$model$coefficients, 
+      iter = 1, verbose = FALSE, hessian = FALSE),
+    NA
+  )
+  expect_error(
+    cf <- coef(fit),
+    NA
+  )
+  expect_error(
+    p <- get_probs(fit, nsim = 0),
+    NA
   )
 })
 

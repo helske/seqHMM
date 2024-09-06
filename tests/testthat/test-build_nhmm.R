@@ -22,7 +22,8 @@ test_that("build_nhmm returns object of class 'nhmm'", {
     model <- build_nhmm(
       obs, s, initial_formula = ~ x, transition_formula = ~z,
       emission_formula = ~ z, data = data, 
-      time = "time", id = "id", state_names = 1:s, channel_names = "obs"
+      time = "time", id = "id", state_names = 1:s, channel_names = "obs", 
+      verbose = FALSE
     ),
     NA
   )
@@ -33,10 +34,10 @@ test_that("build_nhmm returns object of class 'nhmm'", {
 })
 test_that("estimate_nhmm returns object of class 'nhmm'", {
   expect_error(
-    capture.output(fit <- estimate_nhmm(
+    fit <- estimate_nhmm(
       "y", s, initial_formula = ~ x, transition_formula = ~z,
       emission_formula = ~ z, data = data, time = "time", id = "id", 
-      iter = 0)),
+      iter = 0, verbose = FALSE, hessian = FALSE),
     NA
   )
   expect_s3_class(

@@ -33,8 +33,10 @@
 #'                    states = mvad_scodes, labels = mvad_labels, xtstep = 6,
 #'                    cpal = unname(colorpalette[[6]]))
 #' 
+#' \dontrun{
 #' set.seed(1)
 #' fit <- estimate_mnhmm(mvad_seq, n_states = 3, n_clusters = 2)
+#' }
 estimate_mnhmm <- function(
     observations, n_states, n_clusters, initial_formula = ~1, 
     transition_formula = ~1, emission_formula = ~1, cluster_formula = ~1,

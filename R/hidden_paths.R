@@ -126,7 +126,7 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
     model$n_clusters,
     model$n_channels > 1
   )
-  theta_raw <- model$coefficientstheta_raw
+  theta_raw <- model$coefficients$theta_raw
   if (model$n_channels == 1) {
     out <- viterbi_mnhmm_singlechannel(
       beta_i_raw, X_initial,

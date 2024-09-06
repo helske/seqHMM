@@ -118,7 +118,7 @@ get_probs.mnhmm <- function(model, newdata = NULL, nsim = 0,
   X_transition <- aperm(model$X_transition, c(3, 1, 2))
   X_emission <- aperm(model$X_emission, c(3, 1, 2))
   X_cluster <- t(model$X_cluster)
-  theta_raw <- model$coefficientstheta_raw
+  theta_raw <- model$coefficients$theta_raw
   initial_probs <- vector("list", D)
   transition_probs <- vector("list", D)
   emission_probs <- vector("list", D)

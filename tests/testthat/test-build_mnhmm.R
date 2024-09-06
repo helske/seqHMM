@@ -38,7 +38,7 @@ test_that("estimate_mnhmm returns object of class 'mnhmm'", {
       "y", s, d, initial_formula = ~ x, transition_formula = ~z,
       emission_formula = ~ z, cluster_formula = ~ x,
       data = data, time = "time", id = "id", 
-      iter = 0),
+      iter = 0, verbose = FALSE, hessian = FALSE),
     NA
   )
   expect_s3_class(

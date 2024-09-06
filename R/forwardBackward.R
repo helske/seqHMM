@@ -249,7 +249,7 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,
     model$n_clusters,
     model$n_channels > 1
   )
-  theta_raw <- model$coefficientstheta_raw
+  theta_raw <- model$coefficients$theta_raw
   out <- list()
   if (model$n_channels == 1) {
     out$forward_probs <- forward_mnhmm_singlechannel(

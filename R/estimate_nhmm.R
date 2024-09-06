@@ -67,7 +67,9 @@
 #'                    cpal = unname(colorpalette[[6]]))
 #' 
 #' set.seed(1)
+#' \dontrun{
 #' fit <- estimate_nhmm(mvad_seq, n_states = 3)
+#' }
 estimate_nhmm <- function(
     observations, n_states, initial_formula = ~1, 
     transition_formula = ~1, emission_formula = ~1, 
