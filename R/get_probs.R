@@ -32,13 +32,13 @@ get_probs.nhmm <- function(model, newdata = NULL, nsim = 0,
   M <- model$n_symbols
   C <- model$n_channels
   beta_i_raw <- stan_to_cpp_initial(
-    model$coefficientsbeta_i_raw
+    model$coefficients$beta_i_raw
   )
   beta_s_raw <- stan_to_cpp_transition(
-    model$coefficientsbeta_s_raw
+    model$coefficients$beta_s_raw
   )
   beta_o_raw <- stan_to_cpp_emission(
-    model$coefficientsbeta_o_raw,
+    model$coefficients$beta_o_raw,
     1,
     C > 1
   )
@@ -125,24 +125,24 @@ get_probs.mnhmm <- function(model, newdata = NULL, nsim = 0,
   for (d in seq_len(D)) {
     beta_i_raw <- stan_to_cpp_initial(
       matrix(
-        model$coefficientsbeta_i_raw[d, ,], 
+        model$coefficients$beta_i_raw[d, ,], 
         S - 1, nrow(X_initial)
       )
     )
     beta_s_raw <- stan_to_cpp_transition(
       array(
-        model$coefficientsbeta_s_raw[d, , ,], 
+        model$coefficients$beta_s_raw[d, , ,], 
         dim = c(S, S - 1, nrow(X_transition))
       )
     )
     beta_o_raw <- stan_to_cpp_emission(
       if (C == 1) {
         array(
-          model$coefficientsbeta_o_raw[d, , ,],
+          model$coefficients$beta_o_raw[d, , ,],
           dim = c(S, M - 1, nrow(X_emission))
         )
       } else {
-        model$coefficientsbeta_o_raw[d, ]
+        model$coefficients$beta_o_raw[d, ]
       },
       1,
       C > 1

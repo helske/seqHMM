@@ -28,9 +28,9 @@ sample_parameters <- function(model, nsim, probs, return_samples = FALSE) {
   chol_precision <- chol(-model$estimation$hessian)
   U <- backsolve(chol_precision, diag(ncol(chol_precision)))
   x <- matrix(rnorm(nsim * ncol(U)), nrow = nsim) %*% U
-  beta_i_raw <- model$coefficientsbeta_i_raw
-  beta_s_raw <- model$coefficientsbeta_s_raw
-  beta_o_raw <- model$coefficientsbeta_o_raw
+  beta_i_raw <- model$coefficients$beta_i_raw
+  beta_s_raw <- model$coefficients$beta_s_raw
+  beta_o_raw <- model$coefficients$beta_o_raw
   pars <- c(beta_i_raw, beta_s_raw, beta_o_raw)
   p_i <- length(beta_i_raw)
   p_s <- length(beta_s_raw)

@@ -54,11 +54,11 @@ test_that("'forward_backward' works for multichannel 'nhmm'", {
   expect_lte(max(fb$backward_probs), 0)
   
   expect_error(
-    fb_log <- forward_backward(mhmm_biofam),
+    fb <- forward_backward(fit),
     NA
   )
-  expect_lte(max(exp(fb_log$log_probability)), 1)
-  expect_gte(min(exp(fb_log$log_probability)), 0)
+  expect_lte(max(exp(fb$log_probability)), 1)
+  expect_gte(min(exp(fb$log_probability)), 0)
 })
 test_that("'forward_backward' works for single-channel 'nhmm'", {
   data("hmm_biofam")
@@ -80,11 +80,11 @@ test_that("'forward_backward' works for single-channel 'nhmm'", {
   expect_lte(max(fb$backward_probs), 0)
   
   expect_error(
-    fb_log <- forward_backward(fit),
+    fb <- forward_backward(fit),
     NA
   )
-  expect_lte(max(exp(fb_log$log_probability)), 1)
-  expect_gte(min(exp(fb_log$log_probability)), 0)
+  expect_lte(max(exp(fb$log_probability)), 1)
+  expect_gte(min(exp(fb$log_probability)), 0)
 })
 
 test_that("'forward_backward' works for multichannel 'mnhmm'", {
@@ -107,11 +107,11 @@ test_that("'forward_backward' works for multichannel 'mnhmm'", {
   expect_lte(max(fb$backward_probs), 0)
   
   expect_error(
-    fb_log <- forward_backward(fit),
+    fb <- forward_backward(fit),
     NA
   )
-  expect_lte(max(exp(fb_log$log_probability)), 1)
-  expect_gte(min(exp(fb_log$log_probability)), 0)
+  expect_lte(max(exp(fb$log_probability)), 1)
+  expect_gte(min(exp(fb$log_probability)), 0)
 })
 
 test_that("'forward_backward' works for single-channel 'mnhmm'", {
@@ -133,9 +133,9 @@ test_that("'forward_backward' works for single-channel 'mnhmm'", {
   expect_lte(max(fb$backward_probs), 0)
   
   expect_error(
-    fb_log <- forward_backward(fit),
+    fb <- forward_backward(fit),
     NA
   )
-  expect_lte(max(exp(fb_log$log_probability)), 1)
-  expect_gte(min(exp(fb_log$log_probability)), 0)
+  expect_lte(max(exp(fb$log_probability)), 1)
+  expect_gte(min(exp(fb$log_probability)), 0)
 })
