@@ -42,13 +42,13 @@ predict.nhmm <- function(
   }
   
   beta_i_raw <- stan_to_cpp_initial(
-    object$estimation_results$parameters$beta_i_raw
+    object$coefficients$beta_i_raw
   )
   beta_s_raw <- stan_to_cpp_transition(
-    object$estimation_results$parameters$beta_s_raw
+    object$coefficients$beta_s_raw
   )
   beta_o_raw <- stan_to_cpp_emission(
-    object$estimation_results$parameters$beta_o_raw,
+    object$coefficients$beta_o_raw,
     1,
     object$n_channels > 1
   )
@@ -113,13 +113,13 @@ predict.mnhmm <- function(
   }
   
   beta_i_raw <- stan_to_cpp_initial(
-    object$estimation_results$parameters$beta_i_raw
+    object$coefficients$beta_i_raw
   )
   beta_s_raw <- stan_to_cpp_transition(
-    object$estimation_results$parameters$beta_s_raw
+    object$coefficients$beta_s_raw
   )
   beta_o_raw <- stan_to_cpp_emission(
-    object$estimation_results$parameters$beta_o_raw,
+    object$coefficients$beta_o_raw,
     1,
     object$n_channels > 1
   )
@@ -142,7 +142,7 @@ predict.mnhmm <- function(
       0, 0)
   }
   out$omega <- get_omega(
-    object$estimation_results$parameters$theta_raw, X_cluster, 0
+    object$coefficients$theta_raw, X_cluster, 0
   )
   if (nsim > 0) {
     samples <- sample_parameters(object, nsim, probs, return_samples)

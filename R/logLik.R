@@ -1,7 +1,6 @@
-#' Log-likelihood of the Hidden Markov Model
+#' Log-likelihood of a Hidden Markov Model
 #'
-#'
-#' @param object Ahidden Markov model.
+#' @param object A hidden Markov model.
 #' @param partials Return a vector containing the individual contributions of 
 #' each sequence to the total log-likelihood. The default is `FALSE`, which 
 #' returns the sum of all log-likelihood components.
@@ -13,7 +12,7 @@
 #' @param ... Ignored.
 #' @return Log-likelihood of the hidden Markov model. This is an object of class
 #' `logLik` with attributes `nobs` and `df` inherited from the model object.
-#' @rdname logLik
+#' @rdname logLik_hmm
 #' @export
 logLik.hmm <- function(object, partials = FALSE, threads = 1, 
                        log_space = TRUE, ...) {
@@ -42,7 +41,7 @@ logLik.hmm <- function(object, partials = FALSE, threads = 1,
     df = df, nobs = nobs
   )
 }
-#' @rdname logLik
+#' @rdname logLik_hmm
 #' @export
 logLik.mhmm <- function(object, partials = FALSE, threads = 1, 
                         log_space = TRUE, ...) {
@@ -72,26 +71,57 @@ logLik.mhmm <- function(object, partials = FALSE, threads = 1,
     df = df, nobs = nobs
   )
 }
-#' @rdname logLik
+#' Log-likelihood of a Non-homogeneous Hidden Markov Model
+#'
+#' @param object A hidden Markov model.
+#' @param partials Return a vector containing the individual contributions of 
+#' each sequence to the total log-likelihood. The default is `FALSE`, which 
+#' returns the sum of all log-likelihood components.
+#' @param penalized if `TRUE` (the default), returns the final penalized 
+#' log-likelihood value from the optimization. If `FALSE`, returns the standard 
+#' log-likelihood of non-homogenous HMM. if `partials = TRUE`, this argument is
+#' set to `FALSE`.
+#' @param ... Ignored.
+#' @return (Penalized) log-likelihood of the hidden Markov model. This is an 
+#' object of class `logLik` with attributes `nobs` and `df` inherited from the 
+#' model object.
+#' @rdname logLik_nhmm
 #' @export
-logLik.nhmm <- function(object, partials = FALSE, ...) {
+#' @export
+logLik.nhmm <- function(object, partials = FALSE, penalized = TRUE, ...) {
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")
-  out <- forward_backward(object, forward_only = TRUE)
-  ll <- apply(out$forward_probs[, object$length_of_sequences, ], 2, logSumExp)
+  if (partials) {
+    out <- forward_backward(object, forward_only = TRUE)
+    ll <- apply(out$forward_probs[, object$length_of_sequences, ], 2, logSumExp)
+  } else {
+    if (penalized) {
+      ll <- object$estimation_results$penalized_loglik
+    } else {
+      ll <- object$estimation_results$loglik
+    }
+  }
   structure(
     if (partials) ll else sum(ll), 
     class = "logLik", 
     df = df, nobs = nobs
   )
 }
-#' @rdname logLik
+#' @rdname logLik_nhmm
 #' @export
-logLik.mnhmm <- function(object, partials = FALSE, ...) {
+logLik.mnhmm <- function(object, partials = FALSE, penalized = TRUE,...) {
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")
-  out <- forward_backward(object, forward_only = TRUE)
-  ll <- apply(out$forward_probs[, object$length_of_sequences, ], 2, logSumExp)
+  if (partials) {
+    out <- forward_backward(object, forward_only = TRUE)
+    ll <- apply(out$forward_probs[, object$length_of_sequences, ], 2, logSumExp)
+  } else {
+    if (penalized) {
+      ll <- object$estimation_results$penalized_loglik
+    } else {
+      ll <- object$estimation_results$loglik
+    }
+  }
   structure(
     if (partials) ll else sum(ll), 
     class = "logLik", 

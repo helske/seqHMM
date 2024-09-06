@@ -3,20 +3,14 @@
 \name{logLik.hmm}
 \alias{logLik.hmm}
 \alias{logLik.mhmm}
-\alias{logLik.nhmm}
-\alias{logLik.mnhmm}
-\title{Log-likelihood of the Hidden Markov Model}
+\title{Log-likelihood of a Hidden Markov Model}
 \usage{
 \method{logLik}{hmm}(object, partials = FALSE, threads = 1, log_space = TRUE, ...)
 
 \method{logLik}{mhmm}(object, partials = FALSE, threads = 1, log_space = TRUE, ...)
-
-\method{logLik}{nhmm}(object, partials = FALSE, ...)
-
-\method{logLik}{mnhmm}(object, partials = FALSE, ...)
 }
 \arguments{
-\item{object}{Ahidden Markov model.}
+\item{object}{A hidden Markov model.}
 
 \item{partials}{Return a vector containing the individual contributions of
 each sequence to the total log-likelihood. The default is \code{FALSE}, which
@@ -36,5 +30,5 @@ Log-likelihood of the hidden Markov model. This is an object of class
 \code{logLik} with attributes \code{nobs} and \code{df} inherited from the model object.
 }
 \description{
-Log-likelihood of the Hidden Markov Model
+Log-likelihood of a Hidden Markov Model
 }

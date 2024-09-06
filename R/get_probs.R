@@ -32,13 +32,13 @@ get_probs.nhmm <- function(model, newdata = NULL, nsim = 0,
   M <- model$n_symbols
   C <- model$n_channels
   beta_i_raw <- stan_to_cpp_initial(
-    model$estimation_results$parameters$beta_i_raw
+    model$coefficientsbeta_i_raw
   )
   beta_s_raw <- stan_to_cpp_transition(
-    model$estimation_results$parameters$beta_s_raw
+    model$coefficientsbeta_s_raw
   )
   beta_o_raw <- stan_to_cpp_emission(
-    model$estimation_results$parameters$beta_o_raw,
+    model$coefficientsbeta_o_raw,
     1,
     C > 1
   )
@@ -118,31 +118,31 @@ get_probs.mnhmm <- function(model, newdata = NULL, nsim = 0,
   X_transition <- aperm(model$X_transition, c(3, 1, 2))
   X_emission <- aperm(model$X_emission, c(3, 1, 2))
   X_cluster <- t(model$X_cluster)
-  theta_raw <- model$estimation_results$parameters$theta_raw
+  theta_raw <- model$coefficientstheta_raw
   initial_probs <- vector("list", D)
   transition_probs <- vector("list", D)
   emission_probs <- vector("list", D)
   for (d in seq_len(D)) {
     beta_i_raw <- stan_to_cpp_initial(
       matrix(
-        model$estimation_results$parameters$beta_i_raw[d, ,], 
+        model$coefficientsbeta_i_raw[d, ,], 
         S - 1, nrow(X_initial)
       )
     )
     beta_s_raw <- stan_to_cpp_transition(
       array(
-        model$estimation_results$parameters$beta_s_raw[d, , ,], 
+        model$coefficientsbeta_s_raw[d, , ,], 
         dim = c(S, S - 1, nrow(X_transition))
       )
     )
     beta_o_raw <- stan_to_cpp_emission(
       if (C == 1) {
         array(
-          model$estimation_results$parameters$beta_o_raw[d, , ,],
+          model$coefficientsbeta_o_raw[d, , ,],
           dim = c(S, M - 1, nrow(X_emission))
         )
       } else {
-        model$estimation_results$parameters$beta_o_raw[d, ]
+        model$coefficientsbeta_o_raw[d, ]
       },
       1,
       C > 1

@@ -23,11 +23,7 @@ most_probable_cluster <- function(x, type = "viterbi", hp = NULL) {
     clusters <- numeric(x$n_sequences)
     for (i in seq_len(x$n_clusters)) {
       # Find matching cluster names from the first hidden state of each individual
-      if (length(unique(state_names)) == length(state_names)) {
-        idx <- which(hp[, 1] %in% x$state_names[[i]])
-      } else {
-        idx <- which(grepl(paste0(x$cluster_names[i], ": "), hp[, 1]))
-      }
+      idx <- which(grepl(paste0(x$cluster_names[i], ": "), hp[, 1]))
       clusters[idx] <- i
     }
   } else {

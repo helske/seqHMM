@@ -77,13 +77,13 @@ hidden_paths.nhmm <- function(model, respect_void = TRUE, ...) {
   X_emission <- aperm(model$X_emission, c(3, 1, 2))
   obsArray <- create_obsArray(model)
   beta_i_raw <- stan_to_cpp_initial(
-    model$estimation_results$parameters$beta_i_raw
+    model$coefficientsbeta_i_raw
   )
   beta_s_raw <- stan_to_cpp_transition(
-    model$estimation_results$parameters$beta_s_raw
+    model$coefficientsbeta_s_raw
   )
   beta_o_raw <- stan_to_cpp_emission(
-    model$estimation_results$parameters$beta_o_raw,
+    model$coefficientsbeta_o_raw,
     1,
     model$n_channels > 1
   )
@@ -114,19 +114,19 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
   S <- model$n_states
   D <- model$n_clusters
   beta_i_raw <- stan_to_cpp_initial(
-    model$estimation_results$parameters$beta_i_raw,
+    model$coefficientsbeta_i_raw,
     model$n_clusters
   )
   beta_s_raw <- stan_to_cpp_transition(
-    model$estimation_results$parameters$beta_s_raw,
+    model$coefficientsbeta_s_raw,
     model$n_clusters
   )
   beta_o_raw <- stan_to_cpp_emission(
-    model$estimation_results$parameters$beta_o_raw,
+    model$coefficientsbeta_o_raw,
     model$n_clusters,
     model$n_channels > 1
   )
-  theta_raw <- model$estimation_results$parameters$theta_raw
+  theta_raw <- model$coefficientstheta_raw
   if (model$n_channels == 1) {
     out <- viterbi_mnhmm_singlechannel(
       beta_i_raw, X_initial,

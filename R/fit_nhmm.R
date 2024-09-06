@@ -25,6 +25,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
     if (is.null(inits$transition_probs)) inits$transition_probs <- NULL
     if (is.null(inits$emission_probs)) inits$emission_probs <- NULL
   }
+  model_code <- stanmodels[[attr(model, "type")]]
   if (restarts > 0L) {
     if (threads > 1L) {
       plan(multisession, workers = threads)
@@ -46,7 +47,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
       do.call(
         optimizing, 
         c(list(
-          stanmodels[[attr(model, "type")]], init = init,
+          model_code, init = init,
           data = list(
             N = model$n_sequences,
             T = model$sequence_lengths,
@@ -84,7 +85,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
   out <-  do.call(
     optimizing, 
     c(list(
-      stanmodels[[attr(model, "type")]], 
+      model_code, 
       data = list(
         N = model$n_sequences,
         T = model$sequence_lengths,
@@ -106,14 +107,16 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
     ), dots)
   )[c("par", "value", "return_code", "hessian")]
   
+  model$coefficients <- out$par[c("beta_i_raw", "beta_s_raw", "beta_o_raw")]
+  model$stan_model <- model_code
   model$estimation_results <- list(
-    parameters = out$par[lengths(out$par) > 0], 
     hessian = out$hessian,
-    logLik = out$value, 
+    penalized_loglik = out$value, 
+    loglik = out$par["log_lik"], 
+    penalty = out$par["prior"],
     return_code = out$return_code,
-    logLiks_of_restarts = if(restarts > 1L) logliks else NULL, 
-    return_codes_of_restarts = if(restarts > 1L) return_codes else NULL,
-    stan_model = stanmodels[[attr(model, "type")]]
+    plogliks_of_restarts = if(restarts > 1L) logliks else NULL, 
+    return_codes_of_restarts = if(restarts > 1L) return_codes else NULL
   )
   model
 }

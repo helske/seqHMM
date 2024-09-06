@@ -18,9 +18,9 @@ coef.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
   )
   S <- object$n_states
   M <- object$n_symbols
-  beta_i_raw <- c(object$estimation_results$parameters$beta_i_raw)
-  beta_s_raw <- c(object$estimation_results$parameters$beta_s_raw)
-  beta_o_raw <- c(object$estimation_results$parameters$beta_o_raw)
+  beta_i_raw <- c(object$coefficients$beta_i_raw)
+  beta_s_raw <- c(object$coefficients$beta_s_raw)
+  beta_o_raw <- c(object$coefficients$beta_o_raw)
   beta_i <- data.frame(
     state = object$state_names[-1],
     parameter = rep(object$coef_names_initial, each = S - 1),
@@ -93,10 +93,10 @@ coef.mnhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
   S <- object$n_states
   M <- object$n_symbols
   D <- object$n_clusters
-  beta_i_raw <- c(object$estimation_results$parameters$beta_i_raw)
-  beta_s_raw <- c(object$estimation_results$parameters$beta_s_raw)
-  beta_o_raw <- c(object$estimation_results$parameters$beta_o_raw)
-  theta_raw <- c(object$estimation_results$parameters$theta_raw)
+  beta_i_raw <- c(object$coefficients$beta_i_raw)
+  beta_s_raw <- c(object$coefficients$beta_s_raw)
+  beta_o_raw <- c(object$coefficients$beta_o_raw)
+  theta_raw <- c(object$coefficients$theta_raw)
   beta_i <- data.frame(
     state = rep(object$state_names[-1], each = D),
     parameter = rep(object$coef_names_initial, each = (S - 1) * D),
