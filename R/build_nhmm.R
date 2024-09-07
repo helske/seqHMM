@@ -16,6 +16,7 @@ build_nhmm <- function(
     class = "nhmm",
     nobs = attr(out$observations, "nobs"),
     df = out$extras$n_pars,
-    type = paste0(out$extras$multichannel, "nhmm_", out$extras$model_type)
+    type = paste0(out$extras$multichannel, "nhmm_", out$extras$model_type),
+    intercept_only = intercept_only
   )
 }

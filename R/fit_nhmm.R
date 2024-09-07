@@ -108,12 +108,12 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
   )[c("par", "value", "return_code", "hessian")]
   
   model$coefficients <- out$par[c("beta_i_raw", "beta_s_raw", "beta_o_raw")]
-  model$stan_model <- model_code
+  model$stan_model <- model_code@model_code
   model$estimation_results <- list(
     hessian = out$hessian,
     penalized_loglik = out$value, 
-    loglik = out$par["log_lik"], 
-    penalty = out$par["prior"],
+    loglik = out$par[["log_lik"]], 
+    penalty = out$par[["prior"]],
     return_code = out$return_code,
     plogliks_of_restarts = if(restarts > 1L) logliks else NULL, 
     return_codes_of_restarts = if(restarts > 1L) return_codes else NULL

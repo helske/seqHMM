@@ -1,18 +1,29 @@
-# create test data
-set.seed(123)
-s <- 4
-obs <- suppressMessages(
-  seqdef(matrix(sample(letters[1:s], 50, replace = TRUE), ncol = 10))
-)
-
 test_that("build_mm returns object of class 'hmm'", {
-  expect_error(
+  set.seed(123)
+  s <- 4
+  obs_matrix <- matrix(sample(letters[1:s], 50, replace = TRUE), ncol = 10)
+  obs_matrix[1:3, 10] <- NA
+  obs_matrix[5, 5] <- NA
+  obs_matrix[4, 0] <- "z"
+  obs_matrix[5, 10] <- "z"
+  obs <- suppressMessages(seqdef(obs_matrix))
+  expect_message(
     model <- build_mm(obs),
-    NA
+    "Sequences contain missing values, initial and transition probabilities estimated via EM."
   )
   expect_s3_class(
     model,
     "hmm"
+  )
+  set.seed(123)
+  s <- 4
+  obs_matrix <- matrix(sample(letters[1:s], 50, replace = TRUE), ncol = 10)
+  obs_matrix[4, 10] <- "z"
+  obs_matrix[5, 10] <- "z"
+  obs <- suppressMessages(seqdef(obs_matrix))
+  expect_warning(
+    model <- build_mm(obs),
+    "There are no observed transitions from some of the symbols."
   )
 })
 test_that("build_mm errors with incorrect observations", {
@@ -35,6 +46,11 @@ test_that("build_mm errors with incorrect observations", {
 })
 
 test_that("build_mm returns the correct number of states", {
+  set.seed(123)
+  s <- 4 
+  obs <- suppressMessages(
+    seqdef(matrix(sample(letters[1:s], 50, replace = TRUE), ncol = 10))
+  )
   expect_error(
     model <- build_mm(obs),
     NA
@@ -54,6 +70,11 @@ test_that("build_mm returns the correct number of states", {
 })
 
 test_that("build_mm returns the correct probabilities", {
+  set.seed(123)
+  s <- 4 
+  obs <- suppressMessages(
+    seqdef(matrix(sample(letters[1:s], 50, replace = TRUE), ncol = 10))
+  )
   model <- build_mm(obs)
   expect_equal(
     model$initial_probs,

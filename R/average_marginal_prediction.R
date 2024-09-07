@@ -20,6 +20,10 @@ average_marginal_prediction <- function(
   cluster <- state <- estimate <- state_from <- state_to <- time_var <- 
     channel <- observation <- NULL
   stopifnot_(
+    attr(model, "intercept_only") == FALSE,
+    "Model does not contain any covariates."
+  )
+  stopifnot_(
     inherits(model, "nhmm") || inherits(model, "mnhmm"),
     "Argument {.arg model} must be a {.cls nhmm} or {.cls mnhmm} object."
   )

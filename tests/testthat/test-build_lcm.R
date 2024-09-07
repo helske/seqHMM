@@ -20,6 +20,17 @@ test_that("build_lcm returns object of class 'mhmm'", {
               emission_probs = cbind(1, matrix(0, 2, s - 1))),
     NA
   )
+  expect_warning(
+    model <- build_lcm(
+      list(obs, obs), n_clusters = k,
+      channel_names = 1:2, 
+      cluster_names = letters[1:(k + 1)]),
+    "The length of `cluster_names` does not match the number of clusters. Names were not used."
+  )
+  expect_equal(
+    cluster_names(model),
+    paste("Class", seq_len(k))
+  )
 })
 test_that("build_lcm errors with incorrect dims", {
   expect_error(

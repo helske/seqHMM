@@ -31,6 +31,8 @@ get_probs.nhmm <- function(model, newdata = NULL, nsim = 0,
   S <- model$n_states
   M <- model$n_symbols
   C <- model$n_channels
+  N <- model$n_sequences
+  T <- model$length_of_sequences
   beta_i_raw <- stan_to_cpp_initial(
     model$coefficients$beta_i_raw
   )
@@ -47,32 +49,51 @@ get_probs.nhmm <- function(model, newdata = NULL, nsim = 0,
   X_emission <- aperm(model$X_emission, c(3, 1, 2))
   initial_probs <- get_pi(beta_i_raw, X_initial, 0)
   transition_probs <- get_A(beta_s_raw, X_transition, 0)
-  emission_probs <- if (model$n_channels == 1) {
-    get_B(beta_o_raw, X_emission, 0) 
+  emission_probs <- if (C == 1) {
+    get_B(beta_o_raw, X_emission, 0, 0) 
   } else {
     get_multichannel_B(beta_o_raw, X_emission, S, C, M, 0, 0) 
+  } 
+  if (C == 1) {
+    ids <- rownames(model$observations)
+    times <- colnames(model$observations)
+    symbol_names <- list(model$symbol_names)
+  } else {
+    ids <- rownames(model$observations[[1]])
+    times <- colnames(model$observations[[1]])
+    symbol_names <- model$symbol_names
   }
-  ids <- rownames(model$observations)
-  times <- colnames(model$observations)
   initial_probs <- data.frame(
     id = rep(ids, each = S),
     state = model$state_names,
     estimate = c(initial_probs)
   )
+  colnames(initial_probs)[1] <- model$id_variable
   transition_probs <- data.frame(
-    id = rep(ids, each = S^2),
-    time = rep(times, each = S^2 * length(ids)),
+    id = rep(ids, each = S^2 * T),
+    time = rep(times, each = S^2),
     state_from = model$state_names,
     state_to = rep(model$state_names, each = S),
     estimate = unlist(transition_probs)
   )
-  emission_probs <- data.frame(
-    id = rep(ids, each = S * M),
-    time = rep(times, each = S * M * length(ids)),
-    state = model$state_names,
-    observation = rep(model$symbol_names, each = S),
-    estimate = unlist(emission_probs)
+  colnames(transition_probs)[1] <- model$id_variable
+  colnames(transition_probs)[2] <- model$time_variable
+  emission_probs <- do.call(
+    "rbind", 
+    lapply(seq_len(C), function(i) {
+      data.frame(
+        id = rep(ids, each = S * M[i] * T),
+        time = rep(times, each = S * M[i]),
+        state = model$state_names,
+        channel = model$channel_names[i],
+        observation = rep(symbol_names[[i]], each = S),
+        estimate = unlist(emission_probs[((i - 1) * N + 1):(i * N)])
+      )
+    })
   )
+  colnames(emission_probs)[1] <- model$id_variable
+  colnames(emission_probs)[2] <- model$time_variable
+  
   if (nsim > 0) {
     out <- sample_parameters(model, nsim, probs)
     for(i in seq_along(probs)) {
@@ -84,10 +105,10 @@ get_probs.nhmm <- function(model, newdata = NULL, nsim = 0,
     for(i in seq_along(probs)) {
       emission_probs[paste0("q", 100 * probs[i])] <- out$quantiles_B[, i]
     }
-    for(i in seq_along(probs)) {
-      cluster_probs[paste0("q", 100 * probs[i])] <- out$quantiles_omega[, i]
-    }
   }
+  rownames(initial_probs) <- NULL
+  rownames(transition_probs) <- NULL
+  rownames(emission_probs) <- NULL
   list(
     initial_probs = initial_probs, 
     transition_probs = remove_voids(model, transition_probs),
@@ -150,7 +171,7 @@ get_probs.mnhmm <- function(model, newdata = NULL, nsim = 0,
     initial_probs[[d]] <- get_pi(beta_i_raw, X_initial, 0)
     transition_probs[[d]] <- get_A(beta_s_raw, X_transition, 0)
     emission_probs[[d]] <- if (C == 1) {
-      get_B(beta_o_raw, X_emission, 0) 
+      get_B(beta_o_raw, X_emission, 0, 0) 
     } else {
       get_multichannel_B(beta_o_raw, X_emission, S, C, M, 0, 0) 
     }
@@ -182,16 +203,12 @@ get_probs.mnhmm <- function(model, newdata = NULL, nsim = 0,
   colnames(transition_probs)[2] <- model$id_variable
   colnames(transition_probs)[3] <- model$time_variable
   emission_probs <- data.frame(
-    cluster =  rep(model$cluster_names, each = S * sum(M) * T * N),
+    cluster = rep(model$cluster_names, each = S * sum(M) * T * N),
     id = unlist(lapply(seq_len(C), function(i) rep(ids, each = S * M[i] * T))),
     time = unlist(lapply(seq_len(C), function(i) rep(times, each = S * M[i]))),
     state = model$state_names,
-    channel = unlist(lapply(seq_len(C), function(i) {
-      rep(model$channel_names[i], each = S * M[i]* T * N)
-    })),
-    observation = unlist(lapply(seq_len(C), function(i) {
-      rep(symbol_names[[i]], each = S)
-    })),
+    channel = rep(model$channel_names, S * M * T * N),
+    observation = rep(unlist(symbol_names), each = S),
     estimate = unlist(emission_probs)
   )
   colnames(emission_probs)[2] <- model$id_variable
@@ -218,6 +235,10 @@ get_probs.mnhmm <- function(model, newdata = NULL, nsim = 0,
       cluster_probs[paste0("q", 100 * probs[i])] <- out$quantiles_omega[, i]
     }
   }
+  rownames(initial_probs) <- NULL
+  rownames(transition_probs) <- NULL
+  rownames(emission_probs) <- NULL
+  rownames(cluster_probs) <- NULL
   list(
     initial_probs = initial_probs, 
     transition_probs = remove_voids(model, transition_probs),

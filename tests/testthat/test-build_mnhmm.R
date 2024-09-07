@@ -108,8 +108,32 @@ test_that("estimate_mnhmm errors with incorrect observations", {
 })
 test_that("build_mnhmm works with vector of characters as observations", {
   expect_error(
-    estimate_mnhmm("y", s, d, data = data, time = "time", id = "id", iter = 0,
-                   verbose = FALSE),
+    model <- estimate_mnhmm("y", s, d, data = data, time = "time", id = "id", iter = 0,
+                            verbose = FALSE),
     NA
+  )
+  expect_error(
+    cluster_names(model) <- seq_len(d),
+    NA
+  )
+  expect_equal(
+    cluster_names(model),
+    seq_len(d)
+  )
+})
+
+test_that("build_mnhmm works with missing observations", {
+  data <- data[data$time != 5, ]
+  data$y[50:55] <- NA
+  expect_error(
+    model <- estimate_mnhmm(
+      "y", s, d, data = data, time = "time", id = "id", iter = 0,
+      verbose = FALSE),
+    NA
+  )
+  expect_equal(
+    which(model$observations == "*"),
+    c(41L, 42L, 43L, 44L, 45L, 46L, 47L, 48L, 49L, 50L, 60L, 61L, 
+      62L, 63L, 64L, 65L)
   )
 })

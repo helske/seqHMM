@@ -35,14 +35,14 @@ coef.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
   if (object$n_channels == 1) {
     beta_o <- data.frame(
       state = object$state_names,
-      symbol = rep(object$symbol_names[-1], each = S),
+      observation = rep(object$symbol_names[-1], each = S),
       parameter = rep(object$coef_names_emission, each = S * (M - 1)),
       estimate = beta_o_raw
     )
   } else {
     beta_o <- data.frame(
       state = object$state_names,
-      symbol = rep(unlist(lapply(object$symbol_names, "[", -1)), each = S),
+      observation = rep(unlist(lapply(object$symbol_names, "[", -1)), each = S),
       parameter = unlist(lapply(seq_len(object$n_channels), function(i) {
         rep(object$coef_names_emission, each = S * (M[i] - 1))
       })),
@@ -113,7 +113,7 @@ coef.mnhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
   if (object$n_channels == 1) {
     beta_o <- data.frame(
       state = rep(object$state_names, each = D),
-      symbol = rep(object$symbol_names[-1], each = S * D),
+      observations = rep(object$symbol_names[-1], each = S * D),
       parameter = rep(object$coef_names_emission, each = S * (M - 1) * D),
       estimate = beta_o_raw,
       cluster = object$cluster_names
@@ -121,7 +121,7 @@ coef.mnhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
   } else {
     beta_o <- data.frame(
       state = rep(object$state_names, each = D),
-      symbol = rep(unlist(lapply(object$symbol_names, "[", -1)), each = S * D),
+      observations = rep(unlist(lapply(object$symbol_names, "[", -1)), each = S * D),
       parameter = rep(unlist(lapply(seq_len(object$n_channels), function(i) {
         rep(object$coef_names_emission, each = S * (M[i] - 1))
       })), each = D),

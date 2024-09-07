@@ -11,9 +11,34 @@ test_that("build_mmm returns object of class 'mhmm'", {
     model <- build_mmm(obs, n_clusters = k),
     NA
   )
+  expect_error(
+    model <- build_mmm(
+      obs, 
+      transition_probs = list(diag(2), diag(2)), initial_probs = list(1:0, 1:0)
+    ),
+    NA
+  )
   expect_s3_class(
     model,
     "mhmm"
+  )
+  
+})
+
+test_that("build_mmm errors when neither clusters or probs are given", {
+  expect_error(
+    build_mmm(obs), 
+    "Provide either `n_clusters` or both `initial_probs` and `transition_probs`."
+  )
+})
+test_that("build_mmm errors with incorrect argument types", {
+  expect_error(
+    build_mmm(obs, transition = 1, initial = "a"), 
+    "`transition_probs` is not a <list>."
+  )
+  expect_error(
+    build_mmm(obs, transition = list(diag(2), diag(2)), initial = "a"), 
+    "`initial_probs` is not a <list>."
   )
 })
 test_that("build_mmm errors with incorrect observations", {

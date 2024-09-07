@@ -35,6 +35,7 @@ sample_parameters <- function(model, nsim, probs, return_samples = FALSE) {
   p_i <- length(beta_i_raw)
   p_s <- length(beta_s_raw)
   p_o <- length(beta_o_raw)
+  D <- model$n_clusters
   if (mixture) {
     theta_raw <- model$coefficients$theta_raw
     pars <- c(pars, theta_raw)
@@ -44,26 +45,38 @@ sample_parameters <- function(model, nsim, probs, return_samples = FALSE) {
   samples_pi <- apply(
     x[seq_len(p_i), ], 2, function(z) {
       z <- array(z, dim = dim(beta_i_raw))
-      get_pi(z, X_initial)
+      get_pi(z, X_initial, 0)
     }
   )
   samples_A <- apply(
     x[p_i + seq_len(p_s), ], 2, function(z) {
       z <- array(z, dim = dim(beta_s_raw))
-      unlist(get_A(aperm(z, c(2, 3, 1)), X_transition))
+      unlist(get_A(stan_to_cpp_transition(z, D), X_transition, 0))
     }
   )
-  samples_B <- apply(
-    x[p_i + p_s + seq_len(p_o), ], 2, function(z) {
-      z <- array(z, dim = dim(beta_o_raw))
-      unlist(get_B(aperm(z, c(2, 3, 1)), X_emission))
-    }
-  )
+  if (model$n_channels == 1) {
+    samples_B <- apply(
+      x[p_i + p_s + seq_len(p_o), ], 2, function(z) {
+        z <- array(z, dim = dim(beta_o_raw))
+        unlist(get_B(stan_to_cpp_emission(z, D, FALSE), X_emission, 0, 0))
+      }
+    )
+  } else { 
+    samples_B <- apply(
+      x[p_i + p_s + seq_len(p_o), ], 2, function(z) {
+        z <- array(z, dim = dim(beta_o_raw))
+        unlist(get_multichannel_B(
+          stan_to_cpp_emission(z, D, TRUE), X_emission,
+          model$n_states, model$n_channels, model$n_symbols, 0, 0
+        ))
+      }
+    )
+  }
   if (mixture) {
     samples_omega <- apply(
       x[p_i + p_s + p_o + seq_len(p_d), ], 2, function(z) {
         z <- array(z, dim = dim(theta_raw))
-        unlist(get_omega(z, X_cluster))
+        unlist(get_omega(z, X_cluster, 0))
       }
     )
   }

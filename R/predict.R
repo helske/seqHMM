@@ -59,7 +59,7 @@ predict.nhmm <- function(
   out$pi <- get_pi(beta_i_raw, X_initial, 0)
   out$A <- get_A(beta_s_raw, X_transition, 0)
   out$B <- if (object$n_channels == 1) {
-    get_B(beta_o_raw, X_emission, 0)
+    get_B(beta_o_raw, X_emission, 0, 0)
   } else {
     get_multichannel_B(
       beta_o_raw, 
@@ -131,7 +131,7 @@ predict.mnhmm <- function(
   out$pi <- get_pi(beta_i_raw, X_initial, 0)
   out$A <- get_A(beta_s_raw, X_transition, 0)
   out$B <- if (object$n_channels == 1) {
-    get_B(beta_o_raw, X_emission, 0)
+    get_B(beta_o_raw, X_emission, 0, 0)
   } else {
     get_multichannel_B(
       beta_o_raw, 

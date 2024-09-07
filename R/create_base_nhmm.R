@@ -55,8 +55,11 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
             "Can't find response variable {.var {y}} in {.arg data}."
           )
           x <- suppressMessages(
-            seqdef(matrix(data[[y]], n_sequences, length_of_sequences),
-                   id = sort(ids)
+            seqdef(matrix(
+              data[[y]], 
+              n_sequences, 
+              length_of_sequences, byrow = TRUE),
+              id = ids
             )
           )
           colnames(x) <- sort(times)
@@ -97,8 +100,8 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
   list(
     model = list(
       observations = observations, 
-      time_variable = time,
-      id_variable = id,
+      time_variable = if (is.null(time)) "time" else time,
+      id_variable = if (is.null(id)) "id" else id,
       X_initial = pi$X, X_transition = A$X, X_emission = B$X,
       X_cluster = if(mixture) theta$X else NULL,
       initial_formula = pi$formula, 
@@ -126,7 +129,8 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
       multichannel = ifelse(n_channels > 1, "multichannel_", ""),
       model_type = paste0(
         pi$type, A$type, B$type, if (mixture) theta$type else ""
-      )
+      ),
+      intercept_only = icp_only_i && icp_only_s && icp_only_o && icp_only_d
     )
   )
 }

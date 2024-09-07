@@ -119,8 +119,8 @@ build_mmm <- function(observations, n_clusters, transition_probs, initial_probs,
       "{.arg transition_probs} is not a {.cls list}."
     )
     stopifnot_(
-      is.list(.check_initial_probs),
-      "{.arg .check_initial_probs} is not a {.cls list}."
+      is.list(initial_probs),
+      "{.arg initial_probs} is not a {.cls list}."
     )
     n_clusters <- length(transition_probs)
     for (i in seq_len(n_clusters)) {
