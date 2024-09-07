@@ -26,6 +26,10 @@ test_that("build_mm returns object of class 'hmm'", {
     "There are no observed transitions from some of the symbols."
   )
 })
+set.seed(123)
+s <- 4
+obs_matrix <- matrix(sample(letters[1:s], 50, replace = TRUE), ncol = 10)
+obs <- suppressMessages(seqdef(obs_matrix))
 test_that("build_mm errors with incorrect observations", {
   expect_error(
     build_mm(1),
