@@ -14,7 +14,8 @@ test_that("build_mmm returns object of class 'mhmm'", {
   expect_error(
     model <- build_mmm(
       obs, 
-      transition_probs = list(diag(2), diag(2)), initial_probs = list(1:0, 1:0)
+      transition_probs = list(diag(s), diag(s)), 
+      initial_probs = list(rep(1/s, s), rep(1/s, s))
     ),
     NA
   )
