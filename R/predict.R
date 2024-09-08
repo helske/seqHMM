@@ -32,12 +32,6 @@ predict.nhmm <- function(
       !is.null(newdata[[time]]), 
       "Can't find time index variable {.var {time}} in {.arg newdata}."
     )
-  } else {
-    stopifnot_(
-      !is.null(object$data),
-      "Model does not contain original data and argument {.arg newdata} is 
-      {.var NULL}."
-    )
     object <- update(object, newdata = newdata)
   }
   S <- object$n_states
@@ -141,15 +135,8 @@ predict.mnhmm <- function(
       !is.null(newdata[[time]]), 
       "Can't find time index variable {.var {time}} in {.arg newdata}."
     )
-  } else {
-    stopifnot_(
-      !is.null(object$data),
-      "Model does not contain original data and argument {.arg newdata} is 
-      {.var NULL}."
-    )
     object <- update(object, newdata = newdata)
   }
-  
   T_ <- object$length_of_sequences
   N <- object$n_sequences
   S <- object$n_states
