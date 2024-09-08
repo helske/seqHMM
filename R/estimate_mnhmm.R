@@ -24,18 +24,19 @@
 #' @examples
 #' data("mvad", package = "TraMineR")
 #' 
-#' mvad_alphabet <-
-#'   c("employment", "FE", "HE", "joblessness", "school", "training")
-#' mvad_labels <- c("employment", "further education", "higher education",
-#'                  "joblessness", "school", "training")
-#' mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-#' mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet,
-#'                    states = mvad_scodes, labels = mvad_labels, xtstep = 6,
-#'                    cpal = unname(colorpalette[[6]]))
+#' d <- reshape(mvad, direction = "long", varying = list(15:86), 
+#'   v.names = "activity")
 #' 
 #' \dontrun{
 #' set.seed(1)
-#' fit <- estimate_mnhmm(mvad_seq, n_states = 3, n_clusters = 2)
+#' fit <- estimate_mnhmm("activity", n_states = 3, n_clusters = 2,
+#'   data = d, time = "time", id = "id", 
+#'   cluster_formula = ~ male + catholic + gcse5eq + Grammar + 
+#'     funemp + fmpr + livboth + Belfast +
+#'   N.Eastern + Southern + S.Eastern + Western,
+#'   initial_formula = ~ 1, emission_formula =  ~ male + catholic + gcse5eq,
+#'   transition_formula = ~ male + gcse5eq, inits = "random"
+#'   )
 #' }
 estimate_mnhmm <- function(
     observations, n_states, n_clusters, initial_formula = ~1, 

@@ -56,7 +56,7 @@
 #'   "joblessness", "school", "training"
 #' )
 #' mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-#' mvad_seq <- seqdef(mvad, 17:86,
+#' mvad_seq <- seqdef(mvad, 15:86,
 #'   alphabet = mvad_alphabet, states = mvad_scodes,
 #'   labels = mvad_labels, xtstep = 6
 #' )

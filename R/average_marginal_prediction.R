@@ -66,7 +66,7 @@ average_marginal_prediction <- function(
     )
   } else {
     stopifnot_(
-      is.null(model$data),
+      !is.null(model$data),
       "Model does not contain original data and argument {.arg newdata} is 
       {.var NULL}."
     )

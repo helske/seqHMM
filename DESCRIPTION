@@ -36,7 +36,7 @@ LinkingTo:
     rstan (>= 2.18.1),
     StanHeaders (>= 2.18.0)
 Depends:
-    R (>= 3.5.0)
+    R (>= 4.1.0)
 Imports:
     checkmate,
     cli,

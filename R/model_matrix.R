@@ -70,6 +70,8 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
         )
       )
     }
+    # Replace NAs in void cases with zero as we need to input these to Stan
+    X[missing_values] <- 0
     coef_names <- colnames(X)
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
     type <- "v"
@@ -113,6 +115,8 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
         )
       )
     }
+    # Replace NAs in void cases with zero as we need to input these to Stan
+    X[missing_values] <- 0
     coef_names <- colnames(X)
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
     type <- "v"

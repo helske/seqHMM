@@ -30,6 +30,6 @@ build_mnhmm <- function(
     nobs = attr(out$observations, "nobs"),
     df = out$extras$n_pars,
     type = paste0(out$extras$multichannel, "mnhmm_", out$extras$model_type),
-    intercept_only = intercept_only
+    intercept_only = out$extras$intercept_only
   )
 }

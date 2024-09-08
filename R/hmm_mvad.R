@@ -16,7 +16,7 @@
 #' mvad_labels <- c("employment", "further education", "higher education",
 #'   "joblessness", "school", "training")
 #' mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-#' mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet,
+#' mvad_seq <- seqdef(mvad, 15:86, alphabet = mvad_alphabet,
 #'   states = mvad_scodes, labels = mvad_labels, xtstep = 6,
 #'   cpal = colorpalette[[6]])
 #'

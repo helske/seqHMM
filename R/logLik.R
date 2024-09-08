@@ -92,7 +92,7 @@ logLik.nhmm <- function(object, partials = FALSE, penalized = TRUE, ...) {
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")
   if (partials) {
-    out <- forward_backward(object, forward_only = TRUE)
+    out <- forward_backward(object, forward_only = TRUE, as_data_frame = FALSE)
     ll <- apply(out$forward_probs[, object$length_of_sequences, ], 2, logSumExp)
   } else {
     if (penalized) {
@@ -113,7 +113,7 @@ logLik.mnhmm <- function(object, partials = FALSE, penalized = TRUE,...) {
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")
   if (partials) {
-    out <- forward_backward(object, forward_only = TRUE)
+    out <- forward_backward(object, forward_only = TRUE, as_data_frame = FALSE)
     ll <- apply(out$forward_probs[, object$length_of_sequences, ], 2, logSumExp)
   } else {
     if (penalized) {

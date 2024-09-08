@@ -34,13 +34,17 @@ predict.nhmm <- function(
     )
   } else {
     stopifnot_(
-      is.null(object$data),
+      !is.null(object$data),
       "Model does not contain original data and argument {.arg newdata} is 
       {.var NULL}."
     )
     object <- update(object, newdata = newdata)
   }
-  
+  S <- object$n_states
+  M <- object$n_symbols
+  C <- object$n_channels
+  N <- object$n_sequences
+  T_ <- object$length_of_sequences
   beta_i_raw <- stan_to_cpp_initial(
     object$coefficients$beta_i_raw
   )
@@ -50,25 +54,59 @@ predict.nhmm <- function(
   beta_o_raw <- stan_to_cpp_emission(
     object$coefficients$beta_o_raw,
     1,
-    object$n_channels > 1
+    C > 1
   )
   X_initial <- t(object$X_initial)
   X_transition <- aperm(object$X_transition, c(3, 1, 2))
   X_emission <- aperm(object$X_emission, c(3, 1, 2))
-  out <- list()
-  out$pi <- get_pi(beta_i_raw, X_initial, 0)
-  out$A <- get_A(beta_s_raw, X_transition, 0)
-  out$B <- if (object$n_channels == 1) {
-    get_B(beta_o_raw, X_emission, 0, 0)
+  initial_probs <- get_pi(beta_i_raw, X_initial, 0)
+  transition_probs <- get_A(beta_s_raw, X_transition, 0)
+  emission_probs <- if (C == 1) {
+    get_B(beta_o_raw, X_emission, 0, 0) 
   } else {
-    get_multichannel_B(
-      beta_o_raw, 
-      X_emission, 
-      object$n_states, 
-      object$n_channels, 
-      object$n_symbols, 
-      0, 0)
+    get_multichannel_B(beta_o_raw, X_emission, S, C, M, 0, 0) 
+  } 
+  if (C == 1) {
+    ids <- rownames(object$observations)
+    times <- colnames(object$observations)
+    symbol_names <- list(object$symbol_names)
+  } else {
+    ids <- rownames(object$observations[[1]])
+    times <- colnames(object$observations[[1]])
+    symbol_names <- object$symbol_names
   }
+  out <- list()
+  out$initial_probs <- data.frame(
+    id = rep(ids, each = S),
+    state = object$state_names,
+    estimate = c(initial_probs)
+  )
+  colnames(out$initial_probs)[1] <- object$id_variable
+  out$transition_probs <- data.frame(
+    id = rep(ids, each = S^2 * T_),
+    time = rep(times, each = S^2),
+    state_from = object$state_names,
+    state_to = rep(object$state_names, each = S),
+    estimate = unlist(transition_probs)
+  )
+  colnames(out$transition_probs)[1] <- object$id_variable
+  colnames(out$transition_probs)[2] <- object$time_variable
+  out$emission_probs <- do.call(
+    "rbind", 
+    lapply(seq_len(C), function(i) {
+      data.frame(
+        id = rep(ids, each = S * M[i] * T_),
+        time = rep(times, each = S * M[i]),
+        state = object$state_names,
+        channel = object$channel_names[i],
+        observation = rep(symbol_names[[i]], each = S),
+        estimate = unlist(emission_probs[((i - 1) * N + 1):(i * N)])
+      )
+    })
+  )
+  colnames(out$emission_probs)[1] <- object$id_variable
+  colnames(out$emission_probs)[2] <- object$time_variable
+  
   if (nsim > 0) {
     samples <- sample_parameters(object, nsim, probs, return_samples)
     if (return_samples) {
@@ -105,44 +143,103 @@ predict.mnhmm <- function(
     )
   } else {
     stopifnot_(
-      is.null(object$data),
+      !is.null(object$data),
       "Model does not contain original data and argument {.arg newdata} is 
       {.var NULL}."
     )
     object <- update(object, newdata = newdata)
   }
   
-  beta_i_raw <- stan_to_cpp_initial(
-    object$coefficients$beta_i_raw, object$n_clusters
-  )
-  beta_s_raw <- stan_to_cpp_transition(
-    object$coefficients$beta_s_raw, object$n_clusters
-  )
-  beta_o_raw <- stan_to_cpp_emission(
-    object$coefficients$beta_o_raw,
-    object$n_clusters,
-    object$n_channels > 1
-  )
+  T_ <- object$length_of_sequences
+  N <- object$n_sequences
+  S <- object$n_states
+  M <- object$n_symbols
+  C <- object$n_channels
+  D <- object$n_clusters
   X_initial <- t(object$X_initial)
   X_transition <- aperm(object$X_transition, c(3, 1, 2))
   X_emission <- aperm(object$X_emission, c(3, 1, 2))
   X_cluster <- t(object$X_cluster)
-  out <- list()
-  out$pi <- get_pi(beta_i_raw, X_initial, 0)
-  out$A <- get_A(beta_s_raw, X_transition, 0)
-  out$B <- if (object$n_channels == 1) {
-    get_B(beta_o_raw, X_emission, 0, 0)
-  } else {
-    get_multichannel_B(
-      beta_o_raw, 
-      X_emission, 
-      object$n_states, 
-      object$n_channels, 
-      object$n_symbols, 
-      0, 0)
+  theta_raw <- object$coefficients$theta_raw
+  initial_probs <- vector("list", D)
+  transition_probs <- vector("list", D)
+  emission_probs <- vector("list", D)
+  for (d in seq_len(D)) {
+    beta_i_raw <- stan_to_cpp_initial(
+      matrix(
+        object$coefficients$beta_i_raw[d, ,], 
+        S - 1, nrow(X_initial)
+      )
+    )
+    beta_s_raw <- stan_to_cpp_transition(
+      array(
+        object$coefficients$beta_s_raw[d, , ,], 
+        dim = c(S, S - 1, nrow(X_transition))
+      )
+    )
+    beta_o_raw <- stan_to_cpp_emission(
+      if (C == 1) {
+        array(
+          object$coefficients$beta_o_raw[d, , ,],
+          dim = c(S, M - 1, nrow(X_emission))
+        )
+      } else {
+        object$coefficients$beta_o_raw[d, ]
+      },
+      1,
+      C > 1
+    )
+    initial_probs[[d]] <- get_pi(beta_i_raw, X_initial, 0)
+    transition_probs[[d]] <- get_A(beta_s_raw, X_transition, 0)
+    emission_probs[[d]] <- if (C == 1) {
+      get_B(beta_o_raw, X_emission, 0, 0) 
+    } else {
+      get_multichannel_B(beta_o_raw, X_emission, S, C, M, 0, 0) 
+    }
   }
-  out$omega <- get_omega(
-    object$coefficients$theta_raw, X_cluster, 0
+  if (C == 1) {
+    ids <- rownames(object$observations)
+    times <- colnames(object$observations)
+    symbol_names <- list(object$symbol_names)
+  } else {
+    ids <- rownames(object$observations[[1]])
+    times <- colnames(object$observations[[1]])
+    symbol_names <- object$symbol_names
+  }
+  out <- list()
+  out$initial_probs <- data.frame(
+    cluster = rep(object$cluster_names, each = S * N),
+    id = rep(ids, each = S),
+    state = object$state_names,
+    estimate = unlist(initial_probs)
+  )
+  colnames(out$initial_probs)[2] <- object$id_variable
+  out$transition_probs <- data.frame(
+    cluster = rep(object$cluster_names, each = S^2 * T_ * N),
+    id = rep(ids, each = S^2 * T_),
+    time = rep(times, each = S^2),
+    state_from = object$state_names,
+    state_to = rep(object$state_names, each = S),
+    estimate = unlist(transition_probs)
+  )
+  colnames(out$transition_probs)[2] <- object$id_variable
+  colnames(out$transition_probs)[3] <- object$time_variable
+  out$emission_probs <- data.frame(
+    cluster = rep(object$cluster_names, each = S * sum(M) * T_ * N),
+    id = unlist(lapply(seq_len(C), function(i) rep(ids, each = S * M[i] * T_))),
+    time = unlist(lapply(seq_len(C), function(i) rep(times, each = S * M[i]))),
+    state = object$state_names,
+    channel = rep(object$channel_names, S * M * T_ * N),
+    observation = rep(unlist(symbol_names), each = S),
+    estimate = unlist(emission_probs)
+  )
+  colnames(out$emission_probs)[2] <- object$id_variable
+  colnames(out$emission_probs)[3] <- object$time_variable
+  if (C == 1) emission_probs$channel <- NULL
+  out$cluster_probs <- data.frame(
+    cluster = object$cluster_names,
+    id = rep(ids, each = D),
+    estimate = c(get_omega(theta_raw, X_cluster, 0))
   )
   if (nsim > 0) {
     samples <- sample_parameters(object, nsim, probs, return_samples)

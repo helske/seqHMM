@@ -236,7 +236,7 @@ remove_voids <- function(model, x) {
   }
   do.call(
     "rbind", 
-    lapply(model$n_sequences, function(i) {
+    lapply(seq_len(model$n_sequences), function(i) {
       idx <- which(
         x_id == id[i] & x_time %in% time[seq_len(model$sequence_lengths[i])]
       )
