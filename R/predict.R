@@ -99,14 +99,19 @@ predict.nhmm <- function(
     })
   )
   colnames(out$emission_probs)[1] <- object$id_variable
-  colnames(out$emission_probs)[2] <- object$time_variable
+  colnames(out$emission_probs)[2] <- object$time_variable 
+  if (C == 1) out$emission_probs$channel <- NULL
   
   if (nsim > 0) {
-    samples <- sample_parameters(object, nsim, probs, return_samples)
+    samples <- sample_parameters_nhmm(object, nsim)
     if (return_samples) {
-      out$samples <- samples
+      out$samples <- samples_to_df(object, samples)
     } else {
-      out$quantiles <- samples
+      out$quantiles <-  list(
+        initial_probs = fast_quantiles(samples$pi, probs),
+        transition_probs = fast_quantiles(samples$A, probs),
+        emission_probs = fast_quantiles(samples$B, probs)
+      )
     }
   }
   out
@@ -229,11 +234,16 @@ predict.mnhmm <- function(
     estimate = c(get_omega(theta_raw, X_cluster, 0))
   )
   if (nsim > 0) {
-    samples <- sample_parameters(object, nsim, probs, return_samples)
+    samples <- sample_parameters_mnhmm(object, nsim)
     if (return_samples) {
-      out$samples <- samples
+      out$samples <- samples_to_df(object, samples)
     } else {
-      out$quantiles <- samples
+      out$quantiles <-  list(
+        initial_probs = fast_quantiles(samples$pi, probs),
+        transition_probs = fast_quantiles(samples$A, probs),
+        emission_probs = fast_quantiles(samples$B, probs),
+        cluster_probs = fast_quantiles(samples$omega, probs)
+      )
     }
   }
   out

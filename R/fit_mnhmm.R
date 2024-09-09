@@ -6,6 +6,10 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
     checkmate::test_int(x = threads, lower = 1L), 
     "Argument {.arg threads} must be a single positive integer."
   )
+  stopifnot_(
+    checkmate::test_int(x = restarts, lower = 0L), 
+    "Argument {.arg restarts} must be a single integer."
+  )
   obs <- create_obsArray(model) + 1L
   if (model$n_channels == 1) {
     obs <- array(obs, dim(obs)[2:3])

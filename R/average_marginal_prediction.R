@@ -45,9 +45,9 @@ average_marginal_prediction <- function(
     length(values) == 2, 
     "Argument {.arg values} should contain two values for 
     variable {.var variable}.")
+  time <- model$time_variable
+  id <- model$id_variable
   if (!is.null(newdata)) {
-    time <- model$time_variable
-    id <- model$id_variable
     stopifnot_(
       is.data.frame(newdata), 
       "Argument {.arg newdata} must be a {.cls data.frame} object."
@@ -77,83 +77,94 @@ average_marginal_prediction <- function(
   seed <- sample(.Machine$integer.max, 1)
   set.seed(seed)
   pred <- predict(model, newdata, nsim, return_samples = TRUE)
-  if (length(values) == 2) {
-    newdata[[variable]] <- values[2]
-    set.seed(seed)
-    pred2 <- predict(model, newdata, nsim, return_samples = TRUE)
-    pred <- mapply("-", pred, pred2, SIMPLIFY = FALSE)
-  }
-  T <- model$length_of_sequences
-  N <- model$n_sequences
-  S <- model$n_states
-  M <- model$n_symbols
-  C <- model$n_channels
   D <- model$n_clusters
-  if (C == 1) {
-    ids <- rownames(model$observations)
-    times <- colnames(model$observations)
-    symbol_names <- list(model$symbol_names)
-  } else {
-    ids <- rownames(model$observations[[1]])
-    times <- colnames(model$observations[[1]])
-    symbol_names <- model$symbol_names
+  
+  newdata[[variable]] <- values[2]
+  set.seed(seed)
+  pred2 <- predict(model, newdata, nsim, return_samples = TRUE)
+  pars <- c("initial_probs", "transition_probs", "emission_probs",
+            if (D > 1) "cluster_probs")
+  for (i in pars) {
+    pred[[i]]$estimate <- pred[[i]]$estimate - pred2[[i]]$estimate
   }
-  marginalize <- c(
-    switch(
-      marginalize_B_over,
-      "clusters" = c("cluster", "state", "id"),
-      "states" = c("state", "id"),
-      "sequences" = "id"), 
-    "time", "channel", "observation")
+  if (nsim > 0) {
+    for (i in pars) {
+      pred$samples[[i]]$estimate <- pred$samples[[i]]$estimate - 
+        pred2$samples[[i]]$estimate
+    }
+  }
   
-  pi <- data.frame(
-    cluster = rep(model$cluster_names, each = S * N),
-    id = rep(ids, each = S),
-    state = model$state_names,
-    estimate = unlist(pred$pi)
-  ) |> 
-    dplyr::group_by(cluster, state) |>
-    dplyr::summarise(estimate = mean(estimate))
+  channel <- if (model$n_channels > 1) "channel" else NULL
+  group_by_B <- switch(
+    marginalize_B_over,
+    "clusters" = c("time", channel, "observation"),
+    "states" = c("cluster", "time", channel, "observation"),
+    "sequences" = c("cluster", "time", "state", channel, "observation")
+  )
   
-  A <- data.frame(
-    cluster = rep(model$cluster_names, each = S^2 * T * N),
-    id = rep(ids, each = S^2 * T),
-    time = rep(times, each = S^2),
-    state_from = model$state_names,
-    state_to = rep(model$state_names, each = S),
-    estimate = unlist(pred$A)
-  )  |> 
-    dplyr::group_by(cluster, time, state_from, state_to) |>
-    dplyr::summarise(estimate = mean(estimate)) |> 
-    dplyr::rename(!!time_var := time)
+  qs <- function(x, probs) {
+    x <- quantile(x, probs)
+    names(x) <- paste0("q", 100 * probs)
+    as.data.frame(t(x))
+  }
+  out <- list()
+  out$initial_probs <- cbind(
+    pred$initial_probs |> 
+      dplyr::group_by(cluster, state) |>
+      dplyr::summarise(estimate = mean(estimate)) |> 
+      dplyr::ungroup(),
+    pred$samples$initial_probs |> 
+      dplyr::group_by(cluster, state, replication) |>
+      dplyr::summarise(estimate = mean(estimate)) |>
+      dplyr::group_by(cluster, state) |>
+      dplyr::summarise(qs(estimate, probs)) |>
+      dplyr::ungroup() |> 
+      dplyr::select(-c(cluster, state))
+  )
   
-  B <- data.frame(
-    cluster =  rep(model$cluster_names, each = S * sum(M) * T * N),
-    id = unlist(lapply(seq_len(C), function(i) rep(ids, each = S * M[i] * T))),
-    time = unlist(lapply(seq_len(C), function(i) rep(times, each = S * M[i]))),
-    state = model$state_names,
-    channel = unlist(lapply(seq_len(C), function(i) {
-      rep(model$channel_names[i], each = S * M[i]* T * N)
-    })),
-    observation = unlist(lapply(seq_len(C), function(i) {
-      rep(symbol_names[[i]], each = S)
-    })),
-    estimate = unlist(pred$B)
-  ) |> 
-    dplyr::group_by(across(all_of(marginalize))) |>
-    dplyr::summarise(estimate = mean(estimate)) |> 
-    dplyr::rename(!!time_var := time)
+  out$transition_probs <- cbind(
+    pred$transition_probs |> 
+      dplyr::group_by(cluster, time, state_from, state_to) |>
+      dplyr::summarise(estimate = mean(estimate)) |> 
+      dplyr::ungroup(),
+    pred$samples$transition_probs |> 
+      dplyr::group_by(cluster, time, state_from, state_to, replication) |>
+      dplyr::summarise(estimate = mean(estimate)) |>
+      dplyr::group_by(cluster, time, state_from, state_to) |>
+      dplyr::summarise(qs(estimate, probs)) |>
+      dplyr::ungroup() |> 
+      dplyr::select(-c(cluster, time, state_from, state_to))
+  ) |>  dplyr::rename(!!time := time)
+  
+  out$emission_probs <- cbind(
+    pred$emission_probs |> 
+      dplyr::group_by(dplyr::pick(group_by_B)) |>
+      dplyr::summarise(estimate = mean(estimate)) |> 
+      dplyr::ungroup(),
+    pred$samples$emission_probs |> 
+      dplyr::group_by(dplyr::pick(c(group_by_B, "replication"))) |>
+      dplyr::summarise(estimate = mean(estimate)) |>
+      dplyr::group_by(dplyr::pick(group_by_B)) |>
+      dplyr::summarise(qs(estimate, probs)) |>
+      dplyr::ungroup() |> 
+      dplyr::select(dplyr::starts_with("q"))
+  ) |> dplyr::rename(!!time := time)
   
   if (D > 1) {
-    omega <- data.frame(
-      cluster = model$cluster_names,
-      id = rep(ids, each = D),
-      estimate = c(pred$omega)
+    out$cluster_probs <- cbind(
+      pred$cluster_probs |> 
+        dplyr::group_by(cluster) |>
+        dplyr::summarise(estimate = mean(estimate)) |> 
+        dplyr::ungroup(),
+      pred$samples$cluster_probs |> 
+        dplyr::group_by(cluster, replication) |>
+        dplyr::summarise(estimate = mean(estimate)) |>
+        dplyr::group_by(cluster) |>
+        dplyr::summarise(qs(estimate, probs)) |>
+        dplyr::ungroup() |> 
+        dplyr::select(-cluster)
     )
-    out <- list(omega = omega, pi = pi, A = A, B = B)  
-  } else {
-    out <- list(pi = pi, A = A, B = B)
-  }
+  } 
   class(out) <- "amp"
   attr(out, "seed") <- seed
   attr(out, "marginalize_B_over") <- marginalize_B_over

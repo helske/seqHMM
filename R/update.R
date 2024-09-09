@@ -16,18 +16,18 @@ update.nhmm <- function(object, newdata, ...) {
     object$initial_formula, newdata, object$n_sequences,
     object$length_of_sequences, object$n_states, object$time_variable, 
     object$id_variable
-  )
+  )$X
   object$X_transition <- model_matrix_transition_formula(
     object$transition_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$time_variable, 
     object$id_variable, object$sequence_lengths
-  )
+  )$X
   object$X_emission <- model_matrix_emission_formula(
     object$emission_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$n_symbols, 
     object$n_channels, object$time_variable, object$id_variable, 
     object$sequence_lengths
-  )
+  )$X
   object
 }
 #' @rdname update_nhmm
@@ -41,21 +41,21 @@ update.mnhmm <- function(object, newdata, ...) {
     object$initial_formula, newdata, object$n_sequences,
     object$length_of_sequences, object$n_states, object$time_variable, 
     object$id_variable
-  )
+  )$X
   object$X_transition <- model_matrix_transition_formula(
     object$transition_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$time_variable, 
     object$id_variable, object$sequence_lengths
-  )
+  )$X
   object$X_emission <- model_matrix_emission_formula(
     object$emission_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$n_symbols, 
     object$n_channels, object$time_variable, object$id_variable, 
     object$sequence_lengths
-  )
+  )$X
   object$X_cluster <- model_matrix_cluster_formula(
     object$cluster_formula, newdata, object$n_sequences, object$n_clusters,
     object$time_variable, object$id_variable
-  )
+  )$X
   object
 }

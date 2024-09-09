@@ -37,7 +37,7 @@
 #' random initial values. Default is `2`. If you want to fix the initial values 
 #' of the regression coefficients to zero, use `init_sd = 0`.
 #' @param restarts Number of times to run optimization using random starting 
-#' values. Default is 1.
+#' values (in addition to the final run). Default is 0.
 #' @param threads Number of parallel threads for optimization with restarts. 
 #' Default is 1.
 #' @param store_data If `TRUE` (default), original data frame passed as `data` 
@@ -57,24 +57,22 @@
 #' @examples
 #' data("mvad", package = "TraMineR")
 #' 
-#' mvad_alphabet <-
-#'   c("employment", "FE", "HE", "joblessness", "school", "training")
-#' mvad_labels <- c("employment", "further education", "higher education",
-#'                  "joblessness", "school", "training")
-#' mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-#' mvad_seq <- seqdef(mvad, 15:86, alphabet = mvad_alphabet,
-#'                    states = mvad_scodes, labels = mvad_labels, xtstep = 6,
-#'                    cpal = unname(colorpalette[[6]]))
+#' d <- reshape(mvad, direction = "long", varying = list(15:86), 
+#'   v.names = "activity")
 #' 
-#' set.seed(1)
 #' \dontrun{
-#' fit <- estimate_nhmm(mvad_seq, n_states = 3)
+#' set.seed(1)
+#' fit <- estimate_mnhmm("activity", n_states = 3,
+#'   data = d, time = "time", id = "id", 
+#'   initial_formula = ~ 1, emission_formula =  ~ male + gcse5eq,
+#'   transition_formula = ~ male + gcse5eq, inits = "random"
+#'   )
 #' }
 estimate_nhmm <- function(
     observations, n_states, initial_formula = ~1, 
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, channel_names = NULL, 
-    inits = "random", init_sd = 2, restarts = 1L, threads = 1L, 
+    inits = "random", init_sd = 2, restarts = 0L, threads = 1L, 
     store_data = TRUE, verbose = TRUE, ...) {
   
   model <- build_nhmm(

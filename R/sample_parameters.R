@@ -1,29 +1,13 @@
-#' Samples parameters of non-homegeneous Markov hidden models using the normal approximation.
+#' Samples parameters of non-homogeneous Markov hidden models using the normal approximation.
 #' 
 #' @param model An object of class `nhmm` or `mnhmm`.
 #' @param nsim A non-negative integer defining the number of samples from the 
 #' normal approximation.
-#' @param probs A numeric vector defining the quantiles of interest.
-#' @param return_samples A logical indicating whether to return the samples 
-#' instead of quantiles.
 #' @noRd
-sample_parameters <- function(model, nsim, probs, return_samples = FALSE) {
-  stopifnot_(
-    checkmate::test_int(x = nsim, lower = 1L), 
-    "Argument {.arg nsim} must be a single positive integer."
-  )
-  stopifnot_(
-    !return_samples && checkmate::test_numeric(
-      x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
-    ),
-    "Argument {.arg probs} must be a {.cls numeric} vector with values
-      between 0 and 1."
-  )
-  mixture <- inherits(model, "mnhmm")
+sample_parameters_nhmm <- function(model, nsim) {
   X_initial <- t(model$X_initial)
   X_transition <- aperm(model$X_transition, c(3, 1, 2))
   X_emission <- aperm(model$X_emission, c(3, 1, 2))
-  if (mixture) X_cluster <- t(model$X_cluster)
   
   chol_precision <- chol(-model$estimation$hessian)
   U <- backsolve(chol_precision, diag(ncol(chol_precision)))
@@ -35,12 +19,6 @@ sample_parameters <- function(model, nsim, probs, return_samples = FALSE) {
   p_i <- length(beta_i_raw)
   p_s <- length(beta_s_raw)
   p_o <- length(beta_o_raw)
-  D <- model$n_clusters
-  if (mixture) {
-    theta_raw <- model$coefficients$theta_raw
-    pars <- c(pars, theta_raw)
-    if (mixture) p_d <- length(theta_raw)
-  }
   x <- t(sweep(x, 2, pars, "+"))
   samples_pi <- apply(
     x[seq_len(p_i), ], 2, function(z) {
@@ -72,27 +50,159 @@ sample_parameters <- function(model, nsim, probs, return_samples = FALSE) {
       }
     )
   }
-  if (mixture) {
-    samples_omega <- apply(
-      x[p_i + p_s + p_o + seq_len(p_d), ], 2, function(z) {
-        z <- array(z, dim = dim(theta_raw))
-        unlist(get_omega(z, X_cluster, 0))
+  list(
+    pi = samples_pi,
+    A = samples_A,
+    B = samples_B
+  )
+}
+
+sample_parameters_mnhmm <- function(model, nsim) {
+  X_initial <- t(model$X_initial)
+  X_transition <- aperm(model$X_transition, c(3, 1, 2))
+  X_emission <- aperm(model$X_emission, c(3, 1, 2))
+  X_cluster <- t(model$X_cluster)
+  
+  chol_precision <- chol(-model$estimation$hessian)
+  U <- backsolve(chol_precision, diag(ncol(chol_precision)))
+  x <- matrix(rnorm(nsim * ncol(U)), nrow = nsim) %*% U
+  beta_i_raw <- model$coefficients$beta_i_raw
+  beta_s_raw <- model$coefficients$beta_s_raw
+  beta_o_raw <- model$coefficients$beta_o_raw 
+  theta_raw <- model$coefficients$theta_raw
+  pars <- c(beta_i_raw, beta_s_raw, beta_o_raw, theta_raw)
+  D <- model$n_clusters
+  p_i <- length(beta_i_raw)
+  p_s <- length(beta_s_raw)
+  p_o <- length(beta_o_raw)
+  p_d <- length(theta_raw)
+  x <- t(sweep(x, 2, pars, "+"))
+  
+  samples_pi <- apply(
+    x[seq_len(p_i), ], 2, function(z) {
+      b <- array(z, dim = dim(beta_i_raw))
+      pi <- vector("list", D)
+      for (d in seq_len(D)) {
+        pi[[d]] <- get_pi(
+          array(b[d, ,], dim = dim(b)[-1]), 
+          X_initial, 0)
+      }
+      do.call("rbind", pi)
+    }
+  )
+  samples_A <- apply(
+    x[p_i + seq_len(p_s), ], 2, function(z) {
+      b <- array(z, dim = dim(beta_s_raw))
+      A <- vector("list", D)
+      for (d in seq_len(D)) {
+        A[[d]] <- unlist(get_A(
+          stan_to_cpp_transition(array(b[d, , , ], dim = dim(b)[-1])), 
+          X_transition, 0))
+      }
+      do.call("rbind", A)
+    }
+  )
+  if (model$n_channels == 1) {
+    samples_B <- apply(
+      x[p_i + p_s + seq_len(p_o), ], 2, function(z) {
+        b <- array(z, dim = dim(beta_o_raw))
+        B <- vector("list", D)
+        for (d in seq_len(D)) {
+          B[[d]] <- unlist(get_B(
+            stan_to_cpp_emission(array(b[d, , , ], dim = dim(b)[-1]), 1, FALSE), 
+            X_emission, 0, 0))
+        }
+        do.call("rbind", B)
+      }
+    )
+  } else {
+    samples_B <- apply(
+      x[p_i + p_s + seq_len(p_o), ], 2, function(z) {
+        b <- array(z, dim = dim(beta_o_raw))
+        B <- vector("list", D)
+        for (d in seq_len(D)) {
+          B[[d]] <- unlist(get_multichannel_B(
+            stan_to_cpp_emission(array(b[d, ], dim = dim(b)[-1]), 1, TRUE), 
+            X_emission, 0, 0))
+        }
+        do.call("rbind", B)
       }
     )
   }
-  if (return_samples) {
-    list(
-      samples_pi = samples_pi,
-      samples_A = samples_A,
-      samples_B = samples_B,
-      samples_omega = if (mixture) samples_omega
-    )
+  
+  samples_omega <- apply(
+    x[p_i + p_s + p_o + seq_len(p_d), ], 2, function(z) {
+      z <- array(z, dim = dim(theta_raw))
+      unlist(get_omega(z, X_cluster, 0))
+    }
+  )
+  
+  list(
+    pi = samples_pi,
+    A = samples_A,
+    B = samples_B,
+    omega = samples_omega
+  )
+}
+#' Convert matrices of samples to data frames
+#' @noRd
+samples_to_df <- function(object, x) {
+  nsim <- ncol(x$pi)
+  T_ <- object$length_of_sequences
+  N <- object$n_sequences
+  S <- object$n_states
+  M <- object$n_symbols
+  C <- object$n_channels
+  D <- object$n_clusters
+  if (C == 1) {
+    ids <- rownames(object$observations)
+    times <- colnames(object$observations)
+    symbol_names <- list(object$symbol_names)
   } else {
-    list(
-      quantiles_pi = fast_quantiles(samples_pi, probs),
-      quantiles_A = fast_quantiles(samples_A, probs),
-      quantiles_B = fast_quantiles(samples_B, probs),
-      quantiles_omega = if (mixture) fast_quantiles(samples_omega, probs)
+    ids <- rownames(object$observations[[1]])
+    times <- colnames(object$observations[[1]])
+    symbol_names <- object$symbol_names
+  }
+  out <- list()
+  out$initial_probs <- data.frame(
+    cluster = rep(object$cluster_names, each = S * N),
+    id = rep(ids, each = S),
+    state = object$state_names,
+    estimate = c(x$pi),
+    replication = rep(seq_len(nsim), each = nrow(x$pi))
+  )
+  colnames(out$initial_probs)[2] <- object$id_variable
+  out$transition_probs <- data.frame(
+    cluster = rep(object$cluster_names, each = S^2 * T_ * N),
+    id = rep(ids, each = S^2 * T_),
+    time = rep(times, each = S^2),
+    state_from = object$state_names,
+    state_to = rep(object$state_names, each = S),
+    estimate = c(x$A),
+    replication = rep(seq_len(nsim), each = nrow(x$A))
+  )
+  colnames(out$transition_probs)[2] <- object$id_variable
+  colnames(out$transition_probs)[3] <- object$time_variable
+  out$emission_probs <- data.frame(
+    cluster = rep(object$cluster_names, each = S * sum(M) * T_ * N),
+    id = unlist(lapply(seq_len(C), function(i) rep(ids, each = S * M[i] * T_))),
+    time = unlist(lapply(seq_len(C), function(i) rep(times, each = S * M[i]))),
+    state = object$state_names,
+    channel = rep(object$channel_names, S * M * T_ * N),
+    observation = rep(unlist(symbol_names), each = S),
+    estimate = c(x$B),
+    replication = rep(seq_len(nsim), each = nrow(x$B))
+  )
+  colnames(out$emission_probs)[2] <- object$id_variable
+  colnames(out$emission_probs)[3] <- object$time_variable
+  if (C == 1) out$emission_probs$channel <- NULL
+  if (D > 1) {
+    out$cluster_probs <- data.frame(
+      cluster = object$cluster_names,
+      id = rep(ids, each = D),
+      estimate = c(x$omega),
+      replication = rep(seq_len(nsim), each = nrow(x$omega))
     )
   }
+  out
 }
