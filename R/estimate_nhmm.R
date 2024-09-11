@@ -75,6 +75,8 @@ estimate_nhmm <- function(
     inits = "random", init_sd = 2, restarts = 0L, threads = 1L, 
     store_data = TRUE, verbose = TRUE, ...) {
   
+  call <- match.call()
+  
   model <- build_nhmm(
     observations, n_states, initial_formula, 
     transition_formula, emission_formula, data, time, id, state_names, 
@@ -86,5 +88,7 @@ estimate_nhmm <- function(
   if (store_data) {
     model$data <- data
   }
-  fit_nhmm(model, inits, init_sd, restarts, threads, verbose, ...)
+  out <- fit_nhmm(model, inits, init_sd, restarts, threads, verbose, ...)
+  attr(out, "call") <- call
+  out
 }

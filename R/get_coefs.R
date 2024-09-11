@@ -2,16 +2,12 @@
 #' Models
 #' 
 #' @param object An object of class `nhmm` or `mnhmm`.
-#' @param nsim Non-negative integer defining the number of samples from the 
-#' normal approximation of the model parameters used in 
-#' computing the approximate quantiles of the estimates. If `0`, only point 
-#' estimates are returned.
 #' @param probs Vector defining the quantiles of interest. Default is 
 #' `c(0.025, 0.5, 0.975)`.
 #' @param ... Ignored.
 #' @rdname coef
 #' @export
-coef.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
+coef.nhmm <- function(object, probs = c(0.025, 0.975), ...) {
   stopifnot_(
     checkmate::test_count(nsim),
     "Argument {.arg nsim} should be a single non-negative integer."
@@ -49,34 +45,25 @@ coef.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
       estimate = beta_o_raw
     )
   }
-  if (nsim > 0) {
-    stopifnot_(
-      checkmate::test_numeric(
-        x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
-      ),
-      "Argument {.arg probs} must be a {.cls numeric} vector with values
+  
+  stopifnot_(
+    checkmate::test_numeric(
+      x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
+    ),
+    "Argument {.arg probs} must be a {.cls numeric} vector with values
       between 0 and 1."
-    )
-    chol_precision <- chol(-object$estimation$hessian)
-    U <- backsolve(chol_precision, diag(ncol(chol_precision)))
-    x <- matrix(rnorm(nsim * ncol(U)), nrow = nsim) %*% U
-    x <- t(sweep(x, 2, c(beta_i_raw, beta_s_raw, beta_o_raw), "+"))
-    p_i <- length(beta_i_raw)
-    p_s <- length(beta_s_raw)
-    p_o <- length(beta_o_raw)
-    quantiles <- fast_quantiles(x[seq_len(p_i), ], probs)
-    for(i in seq_along(probs)) {
-      beta_i[paste0("q", 100 * probs[i])] <- quantiles[, i]
-    }
-    quantiles <- fast_quantiles(x[p_i + seq_len(p_s), ], probs)
-    for(i in seq_along(probs)) {
-      beta_s[paste0("q", 100 * probs[i])] <- quantiles[, i]
-    }
-    quantiles <- fast_quantiles(x[p_i + p_s + seq_len(p_o), ], probs)
-    for(i in seq_along(probs)) {
-      beta_o[paste0("q", 100 * probs[i])] <- quantiles[, i]
-    }
+  )
+  sds <- sqrt(diag(solve(-object$estimation_results$hessian)))
+  p_i <- length(beta_i_raw)
+  p_s <- length(beta_s_raw)
+  p_o <- length(beta_o_raw)
+  for(i in seq_along(probs)) {
+    q <- qnorm(probs[i])
+    beta_i[paste0("q", 100 * probs[i])] <- beta_i_raw + q * sds[seq_len(p_i)]
+    beta_s[paste0("q", 100 * probs[i])] <- beta_s_raw + q * sds[p_i + seq_len(p_s)]
+    beta_o[paste0("q", 100 * probs[i])] <- beta_o_raw + q * sds[p_i + p_s + seq_len(p_o)]
   }
+  
   list(
     beta_initial = beta_i, 
     beta_transition = beta_s, 
@@ -85,11 +72,8 @@ coef.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
 }
 #' @rdname coef
 #' @export
-coef.mnhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
-  stopifnot_(
-    checkmate::test_count(nsim),
-    "Argument {.arg nsim} should be a single non-negative integer."
-  )
+coef.mnhmm <- function(object, probs = c(0.025, 0.5, 0.975), ...) {
+  
   S <- object$n_states
   M <- object$n_symbols
   D <- object$n_clusters
@@ -133,39 +117,27 @@ coef.mnhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
     parameter = rep(object$coef_names_cluster, each = D - 1),
     estimate = theta_raw
   )
-  if (nsim > 0) {
-    stopifnot_(
-      checkmate::test_numeric(
-        x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
-      ),
-      "Argument {.arg probs} must be a {.cls numeric} vector with values
+  
+  stopifnot_(
+    checkmate::test_numeric(
+      x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
+    ),
+    "Argument {.arg probs} must be a {.cls numeric} vector with values
       between 0 and 1."
-    )
-    chol_precision <- chol(-object$estimation$hessian)
-    U <- backsolve(chol_precision, diag(ncol(chol_precision)))
-    x <- matrix(rnorm(nsim * ncol(U)), nrow = nsim) %*% U
-    x <- t(sweep(x, 2, c(beta_i_raw, beta_s_raw, beta_o_raw, theta_raw), "+"))
-    p_i <- length(beta_i_raw)
-    p_s <- length(beta_s_raw)
-    p_o <- length(beta_o_raw)
-    p_c <- length(theta_raw)
-    quantiles <- fast_quantiles(x[seq_len(p_i), ], probs)
-    for(i in seq_along(probs)) {
-      beta_i[paste0("q", 100 * probs[i])] <- quantiles[, i]
-    }
-    quantiles <- fast_quantiles(x[p_i + seq_len(p_s), ], probs)
-    for(i in seq_along(probs)) {
-      beta_s[paste0("q", 100 * probs[i])] <- quantiles[, i]
-    }
-    quantiles <- fast_quantiles(x[p_i + p_s + seq_len(p_o), ], probs)
-    for(i in seq_along(probs)) {
-      beta_o[paste0("q", 100 * probs[i])] <- quantiles[, i]
-    }
-    quantiles <- fast_quantiles(x[p_i + p_s + p_o + seq_len(p_c), ], probs)
-    for(i in seq_along(probs)) {
-      theta[paste0("q", 100 * probs[i])] <- quantiles[, i]
-    }
+  )
+  sds <- sqrt(diag(solve(-object$estimation_results$hessian)))
+  p_i <- length(beta_i_raw)
+  p_s <- length(beta_s_raw)
+  p_o <- length(beta_o_raw)
+  p_c <- length(theta_raw)
+  for(i in seq_along(probs)) {
+    q <- qnorm(probs[i])
+    beta_i[paste0("q", 100 * probs[i])] <- beta_i_raw + q * sds[seq_len(p_i)]
+    beta_s[paste0("q", 100 * probs[i])] <- beta_s_raw + q * sds[p_i + seq_len(p_s)]
+    beta_o[paste0("q", 100 * probs[i])] <- beta_o_raw + q * sds[p_i + p_s + seq_len(p_o)]
+    theta[paste0("q", 100 * probs[i])] <- theta_raw + q * sds[p_i + p_s + p_o + seq_len(p_c)]
   }
+  
   list(
     beta_initial = beta_i, 
     beta_transition = beta_s, 

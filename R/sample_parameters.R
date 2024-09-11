@@ -9,7 +9,7 @@ sample_parameters_nhmm <- function(model, nsim) {
   X_transition <- aperm(model$X_transition, c(3, 1, 2))
   X_emission <- aperm(model$X_emission, c(3, 1, 2))
   
-  chol_precision <- chol(-model$estimation$hessian)
+  chol_precision <- chol(-model$estimation_results$hessian)
   U <- backsolve(chol_precision, diag(ncol(chol_precision)))
   x <- matrix(rnorm(nsim * ncol(U)), nrow = nsim) %*% U
   beta_i_raw <- model$coefficients$beta_i_raw
@@ -29,14 +29,14 @@ sample_parameters_nhmm <- function(model, nsim) {
   samples_A <- apply(
     x[p_i + seq_len(p_s), ], 2, function(z) {
       z <- array(z, dim = dim(beta_s_raw))
-      unlist(get_A(stan_to_cpp_transition(z, D), X_transition, 0))
+      unlist(get_A(stan_to_cpp_transition(z), X_transition, 0))
     }
   )
   if (model$n_channels == 1) {
     samples_B <- apply(
       x[p_i + p_s + seq_len(p_o), ], 2, function(z) {
         z <- array(z, dim = dim(beta_o_raw))
-        unlist(get_B(stan_to_cpp_emission(z, D, FALSE), X_emission, 0, 0))
+        unlist(get_B(stan_to_cpp_emission(z), X_emission, 0, 0))
       }
     )
   } else { 
@@ -44,7 +44,7 @@ sample_parameters_nhmm <- function(model, nsim) {
       x[p_i + p_s + seq_len(p_o), ], 2, function(z) {
         z <- array(z, dim = dim(beta_o_raw))
         unlist(get_multichannel_B(
-          stan_to_cpp_emission(z, D, TRUE), X_emission,
+          stan_to_cpp_emission(z, 1, TRUE), X_emission,
           model$n_states, model$n_channels, model$n_symbols, 0, 0
         ))
       }
@@ -63,7 +63,7 @@ sample_parameters_mnhmm <- function(model, nsim) {
   X_emission <- aperm(model$X_emission, c(3, 1, 2))
   X_cluster <- t(model$X_cluster)
   
-  chol_precision <- chol(-model$estimation$hessian)
+  chol_precision <- chol(-model$estimation_results$hessian)
   U <- backsolve(chol_precision, diag(ncol(chol_precision)))
   x <- matrix(rnorm(nsim * ncol(U)), nrow = nsim) %*% U
   beta_i_raw <- model$coefficients$beta_i_raw

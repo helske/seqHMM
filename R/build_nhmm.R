@@ -10,7 +10,6 @@ build_nhmm <- function(
     observations, data, time, id, n_states, state_names, channel_names,
     initial_formula, transition_formula, emission_formula) 
   out[c("cluster_names", "n_clusters", "X_cluster", "coef_names_cluster")] <- NULL
-  out$model$call <- match.call()
   structure(
     out$model,
     class = "nhmm",
