@@ -49,10 +49,10 @@ get_probs.mnhmm <- function(model, newdata = NULL, nsim = 0,
   if (nsim > 0) {
     for(i in seq_along(probs)) {
       q <- paste0("q", 100 * probs[i])
-      out$initial_probs[q] <- out$quantiles$quantiles_pi[, i]
-      out$transition_probs[q] <- out$quantiles$quantiles_A[, i]
-      out$emission_probs[q] <- out$quantiles$quantiles_B[, i]
-      out$cluster_probs[q] <- out$quantiles$quantiles_omega[, i]
+      out$initial_probs[[q]] <- out$quantiles$quantiles_pi[, i]
+      out$transition_probs[[q]] <- out$quantiles$quantiles_A[, i]
+      out$emission_probs[[q]] <- out$quantiles$quantiles_B[, i]
+      out$cluster_probs[[q]] <- out$quantiles$quantiles_omega[, i]
     }
   }
   rownames(out$initial_probs) <- NULL

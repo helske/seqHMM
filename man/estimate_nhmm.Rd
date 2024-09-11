@@ -17,7 +17,7 @@ estimate_nhmm(
   channel_names = NULL,
   inits = "random",
   init_sd = 2,
-  restarts = 1L,
+  restarts = 0L,
   threads = 1L,
   store_data = TRUE,
   verbose = TRUE,
@@ -69,7 +69,7 @@ random initial values. Default is \code{2}. If you want to fix the initial value
 of the regression coefficients to zero, use \code{init_sd = 0}.}
 
 \item{restarts}{Number of times to run optimization using random starting
-values. Default is 1.}
+values (in addition to the final run). Default is 0.}
 
 \item{threads}{Number of parallel threads for optimization with restarts.
 Default is 1.}
@@ -100,15 +100,15 @@ Function \code{estimate_nhmm} estimates a hidden Markov model object of class
 \examples{
 data("mvad", package = "TraMineR")
 
-mvad_alphabet <-
-  c("employment", "FE", "HE", "joblessness", "school", "training")
-mvad_labels <- c("employment", "further education", "higher education",
-                 "joblessness", "school", "training")
-mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-mvad_seq <- seqdef(mvad, 15:86, alphabet = mvad_alphabet,
-                   states = mvad_scodes, labels = mvad_labels, xtstep = 6,
-                   cpal = unname(colorpalette[[6]]))
+d <- reshape(mvad, direction = "long", varying = list(15:86), 
+  v.names = "activity")
 
+\dontrun{
 set.seed(1)
-fit <- estimate_nhmm(mvad_seq, n_states = 3)
+fit <- estimate_mnhmm("activity", n_states = 3,
+  data = d, time = "time", id = "id", 
+  initial_formula = ~ 1, emission_formula =  ~ male + gcse5eq,
+  transition_formula = ~ male + gcse5eq, inits = "random"
+  )
+}
 }

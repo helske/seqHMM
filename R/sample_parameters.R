@@ -146,7 +146,7 @@ sample_parameters_mnhmm <- function(model, nsim) {
 }
 #' Convert matrices of samples to data frames
 #' @noRd
-samples_to_df <- function(object, x) {
+samples_to_df <- function(object, x, dontchange_colnames) {
   nsim <- ncol(x$pi)
   T_ <- object$length_of_sequences
   N <- object$n_sequences
@@ -154,6 +154,7 @@ samples_to_df <- function(object, x) {
   M <- object$n_symbols
   C <- object$n_channels
   D <- object$n_clusters
+  mix <- D > 1
   if (C == 1) {
     ids <- rownames(object$observations)
     times <- colnames(object$observations)
@@ -163,17 +164,18 @@ samples_to_df <- function(object, x) {
     times <- colnames(object$observations[[1]])
     symbol_names <- object$symbol_names
   }
-  out <- list()
+  out <- vector("list", 3 + (D > 1))
+  names(out) <- c("initial_probs", "transition_probs", "emission_probs", 
+                  if (D > 1) "cluster_probs")
   out$initial_probs <- data.frame(
-    cluster = rep(object$cluster_names, each = S * N),
+    cluster = if (mix) rep(object$cluster_names, each = S * N),
     id = rep(ids, each = S),
     state = object$state_names,
     estimate = c(x$pi),
     replication = rep(seq_len(nsim), each = nrow(x$pi))
   )
-  colnames(out$initial_probs)[2] <- object$id_variable
   out$transition_probs <- data.frame(
-    cluster = rep(object$cluster_names, each = S^2 * T_ * N),
+    if (mix) cluster = rep(object$cluster_names, each = S^2 * T_ * N),
     id = rep(ids, each = S^2 * T_),
     time = rep(times, each = S^2),
     state_from = object$state_names,
@@ -181,10 +183,8 @@ samples_to_df <- function(object, x) {
     estimate = c(x$A),
     replication = rep(seq_len(nsim), each = nrow(x$A))
   )
-  colnames(out$transition_probs)[2] <- object$id_variable
-  colnames(out$transition_probs)[3] <- object$time_variable
   out$emission_probs <- data.frame(
-    cluster = rep(object$cluster_names, each = S * sum(M) * T_ * N),
+    if (mix) cluster = rep(object$cluster_names, each = S * sum(M) * T_ * N),
     id = unlist(lapply(seq_len(C), function(i) rep(ids, each = S * M[i] * T_))),
     time = unlist(lapply(seq_len(C), function(i) rep(times, each = S * M[i]))),
     state = object$state_names,
@@ -193,16 +193,29 @@ samples_to_df <- function(object, x) {
     estimate = c(x$B),
     replication = rep(seq_len(nsim), each = nrow(x$B))
   )
-  colnames(out$emission_probs)[2] <- object$id_variable
-  colnames(out$emission_probs)[3] <- object$time_variable
+  if (mix) {
+    names(out$initial_probs)[1] <- "cluster"
+    names(out$transition_probs)[1] <- "cluster"
+    names(out$emission_probs)[1] <- "cluster"
+  }
   if (C == 1) out$emission_probs$channel <- NULL
-  if (D > 1) {
+  if (!dontchange_colnames) {
+    colnames(out$initial_probs)[1 + mix] <- object$id_variable
+    colnames(out$transition_probs)[1 + mix] <- object$id_variable
+    colnames(out$transition_probs)[2 + mix] <- object$time_variable
+    colnames(out$emission_probs)[1 + mix] <- object$id_variable
+    colnames(out$emission_probs)[2 + mix] <- object$time_variable
+  }
+  if (mix) {
     out$cluster_probs <- data.frame(
       cluster = object$cluster_names,
       id = rep(ids, each = D),
       estimate = c(x$omega),
       replication = rep(seq_len(nsim), each = nrow(x$omega))
     )
+    if (!dontchange_colnames) {
+      colnames(out$cluster_probs)[2] <- object$id_variable
+    }
   }
   out
 }

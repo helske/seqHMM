@@ -1,14 +1,14 @@
 #' Visualize Average Marginal Effects
 #' 
-#' @param x Output from [average_marginal_prediction()].
+#' @param x Output from [ame()].
 #' @param type Type of plot to create. One of `"initial"`, `"transition"`,
 #'  `"emission"`, or `"cluster"`.
 #' @param probs A numeric vector of length 2 with the lower and upper limits for 
 #' confidence intervals. Default is `c(0.025, 0.975)`. If the limits are not 
 #' found in the input object `x`, an error is thrown.
-#' @param alpha Transparency level for [ggplot2::geom_ribbon()].
-plot.amp <- function(x, type, probs = c(0.025, 0.975), alpha = 0.25) {
-  type <- match.arg(type, c("initial", "transition", "emission", "cluster"))
+#' @export
+plot.ame <- function(x, type, probs = c(0.025, 0.975)) {
+  type <- match.arg(type, c("initial", "transition", "emission", "cluster"), ...)
   
   cluster <- time <- state <- state_from <- state_to <- observation <- 
     estimate <- NULL
@@ -26,43 +26,41 @@ plot.amp <- function(x, type, probs = c(0.025, 0.975), alpha = 0.25) {
     all(c(lwr, upr) %in% names(x$initial)),
     paste0(
       "The probabilities in {.arg probs} are not available in the {.arg x}. ",
-      "Run {.fn average_marginal_predictions} with {.arg probs} as ",
+      "Run {.fn ame} with {.arg probs} as ",
       "`c({paste(probs, collapse = ', ')}) ."
     )
   )
   if (type == "initial") {
-    p <- ggplot(x$initial, aes(estimate, state)) + 
+    p <- ggplot(x$initial_probs, aes(state, estimate)) + 
       geom_pointrange(aes(ymin = .data[[lwr]], ymax = .data[[upr]]))
-    if (!is.null(cluster)) {
+    if (!is.null(x$initial_probs$cluster)) {
       p <- p + facet_wrap(~ cluster)
     }
   }
   if (type == "transition") {
-    p <- ggplot(x$transition, aes(estimate, time)) +
-      geom_ribbon(
-        aes(ymin = .data[[lwr]], ymax = .data[[upr]], fill = state_to),
-        alpha = alpha
-      ) +
-      geom_line(aes(colour = state_to)) +
-      facet_wrap(~ state_from)
-    if (!is.null(cluster)) {
-      p <- p + facet_wrap(~ cluster)
+    p <- ggplot(x$transition_probs, aes(time, estimate)) +
+      geom_pointrange(
+        aes(ymin = .data[[lwr]], ymax = .data[[upr]], colour = state_to)
+      )
+    if (is.null(x$transition_probs$cluster)) {
+      p <- p + facet_wrap(~ state_from)
+    } else {
+      p <- p + facet_wrap(~ state_from + cluster)
     }
   }
   if (type == "emission") {
-    p <- ggplot(x$emission, aes(estimate, time)) +
-      geom_ribbon(
-        aes(ymin = .data[[lwr]], ymax = .data[[upr]], fill = observation),
-        alpha = alpha
-      ) +
-      geom_line(aes(colour = observation)) +
-      facet_wrap(~ state)
-    if (!is.null(cluster)) {
-      p <- p + facet_wrap(~ cluster)
+    p <- ggplot(x$emission_probs, aes(time, estimate)) +
+      geom_pointrange(
+        aes(ymin = .data[[lwr]], ymax = .data[[upr]], colour = observation)
+      )
+    if (is.null(x$emission_probs$cluster)) {
+      p <- p + facet_wrap(~ state)
+    } else {
+      p <- p + facet_wrap(~ state + cluster)
     }
   }
   if (type == "cluster") {
-    p <- ggplot(x$theta, aes(estimate, cluster)) + 
+    p <- ggplot(x$cluster_probs, aes(cluster, estimate)) + 
       geom_pointrange(aes(ymin = .data[[lwr]], ymax = .data[[upr]]))
   }
   

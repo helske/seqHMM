@@ -1,5 +1,7 @@
 #' Predict method for non-homogeneous hidden Markov models
 #' 
+#' This is essentially same as `get_probs` but with option to return samples.
+#' 
 #' @param object A Hidden Markov Model of class `nhmm` or `mnhmm`.
 #' @param newdata Optional data frame which is used for prediction.
 #' @param nsim Non-negative integer defining the number of samples from the
@@ -8,10 +10,11 @@
 #' @param return_samples Logical indicating whether to return samples or
 #' quantiles. Default is `FALSE`.
 #' @param ... Ignored.
-#' @export
+#' @noRd
 predict.nhmm <- function(
     object, newdata = NULL, nsim = 0, 
-    probs = c(0.025, 0.5, 0.975), return_samples = FALSE, ...) {
+    probs = c(0.025, 0.5, 0.975), 
+    return_samples = FALSE, dontchange_colnames = FALSE, ...) {
   
   stopifnot_(
     checkmate::test_count(nsim),
@@ -75,7 +78,7 @@ predict.nhmm <- function(
     state = object$state_names,
     estimate = c(initial_probs)
   )
-  colnames(out$initial_probs)[1] <- object$id_variable
+  
   out$transition_probs <- data.frame(
     id = rep(ids, each = S^2 * T_),
     time = rep(times, each = S^2),
@@ -83,8 +86,6 @@ predict.nhmm <- function(
     state_to = rep(object$state_names, each = S),
     estimate = unlist(transition_probs)
   )
-  colnames(out$transition_probs)[1] <- object$id_variable
-  colnames(out$transition_probs)[2] <- object$time_variable
   out$emission_probs <- do.call(
     "rbind", 
     lapply(seq_len(C), function(i) {
@@ -98,16 +99,21 @@ predict.nhmm <- function(
       )
     })
   )
-  colnames(out$emission_probs)[1] <- object$id_variable
-  colnames(out$emission_probs)[2] <- object$time_variable 
   if (C == 1) out$emission_probs$channel <- NULL
   
+  if (!dontchange_colnames) {
+    colnames(out$initial_probs)[1] <- object$id_variable
+    colnames(out$transition_probs)[1] <- object$id_variable
+    colnames(out$transition_probs)[2] <- object$time_variable
+    colnames(out$emission_probs)[1] <- object$id_variable
+    colnames(out$emission_probs)[2] <- object$time_variable
+  }
   if (nsim > 0) {
     samples <- sample_parameters_nhmm(object, nsim)
     if (return_samples) {
-      out$samples <- samples_to_df(object, samples)
+      out$samples <- samples_to_df(object, samples, dontchange_colnames)
     } else {
-      out$quantiles <-  list(
+      out$quantiles <- list(
         initial_probs = fast_quantiles(samples$pi, probs),
         transition_probs = fast_quantiles(samples$A, probs),
         emission_probs = fast_quantiles(samples$B, probs)
@@ -116,10 +122,11 @@ predict.nhmm <- function(
   }
   out
 }
-#' @export
+#' @noRd
 predict.mnhmm <- function(
     object, newdata = NULL, nsim = 0, 
-    probs = c(0.025, 0.5, 0.975), return_samples = FALSE, ...) {
+    probs = c(0.025, 0.5, 0.975), 
+    return_samples = FALSE, dontchange_colnames = FALSE, ...) {
   
   stopifnot_(
     checkmate::test_count(nsim),
@@ -205,7 +212,6 @@ predict.mnhmm <- function(
     state = object$state_names,
     estimate = unlist(initial_probs)
   )
-  colnames(out$initial_probs)[2] <- object$id_variable
   out$transition_probs <- data.frame(
     cluster = rep(object$cluster_names, each = S^2 * T_ * N),
     id = rep(ids, each = S^2 * T_),
@@ -214,8 +220,6 @@ predict.mnhmm <- function(
     state_to = rep(object$state_names, each = S),
     estimate = unlist(transition_probs)
   )
-  colnames(out$transition_probs)[2] <- object$id_variable
-  colnames(out$transition_probs)[3] <- object$time_variable
   out$emission_probs <- data.frame(
     cluster = rep(object$cluster_names, each = S * sum(M) * T_ * N),
     id = unlist(lapply(seq_len(C), function(i) rep(ids, each = S * M[i] * T_))),
@@ -225,18 +229,24 @@ predict.mnhmm <- function(
     observation = rep(unlist(symbol_names), each = S),
     estimate = unlist(emission_probs)
   )
-  colnames(out$emission_probs)[2] <- object$id_variable
-  colnames(out$emission_probs)[3] <- object$time_variable
   if (C == 1) emission_probs$channel <- NULL
   out$cluster_probs <- data.frame(
     cluster = object$cluster_names,
     id = rep(ids, each = D),
     estimate = c(get_omega(theta_raw, X_cluster, 0))
   )
+  if (!dontchange_colnames) {
+    colnames(out$initial_probs)[2] <- object$id_variable
+    colnames(out$transition_probs)[2] <- object$id_variable
+    colnames(out$transition_probs)[3] <- object$time_variable
+    colnames(out$emission_probs)[2] <- object$id_variable
+    colnames(out$emission_probs)[3] <- object$time_variable
+    colnames(out$cluster_probs)[2] <- object$id_variable
+  }
   if (nsim > 0) {
     samples <- sample_parameters_mnhmm(object, nsim)
     if (return_samples) {
-      out$samples <- samples_to_df(object, samples)
+      out$samples <- samples_to_df(object, samples, dontchange_colnames)
     } else {
       out$quantiles <-  list(
         initial_probs = fast_quantiles(samples$pi, probs),
