@@ -753,54 +753,10 @@ BEGIN_RCPP
 END_RCPP
 }
 
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_cccc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_cccv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_ccvc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_ccvv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_cvcc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_cvcv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_cvvc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_cvvv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_vccc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_vccv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_vcvc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_vcvv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_vvcc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_vvcv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_vvvc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_vvvv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_cccc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_cccv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_ccvc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_ccvv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_cvcc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_cvcv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_cvvc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_cvvv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_vccc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_vccv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_vcvc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_vcvv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_vvcc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_vvcv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_vvvc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_vvvv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_nhmm_ccc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_nhmm_ccv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_nhmm_cvc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_nhmm_cvv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_nhmm_vcc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_nhmm_vcv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_nhmm_vvc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_nhmm_vvv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4nhmm_ccc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4nhmm_ccv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4nhmm_cvc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4nhmm_cvv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4nhmm_vcc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4nhmm_vcv_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4nhmm_vvc_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4nhmm_vvv_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4mnhmm_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_mnhmm_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4multichannel_nhmm_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4nhmm_mod();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_EM", (DL_FUNC) &_seqHMM_EM, 9},
@@ -847,54 +803,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_viterbi_mnhmm_singlechannel", (DL_FUNC) &_seqHMM_viterbi_mnhmm_singlechannel, 9},
     {"_seqHMM_viterbi_mnhmm_multichannel", (DL_FUNC) &_seqHMM_viterbi_mnhmm_multichannel, 10},
     {"_seqHMM_viterbix", (DL_FUNC) &_seqHMM_viterbix, 7},
-    {"_rcpp_module_boot_stan_fit4mnhmm_cccc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_cccc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_cccv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_cccv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_ccvc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_ccvc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_ccvv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_ccvv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_cvcc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_cvcc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_cvcv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_cvcv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_cvvc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_cvvc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_cvvv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_cvvv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_vccc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_vccc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_vccv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_vccv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_vcvc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_vcvc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_vcvv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_vcvv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_vvcc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_vvcc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_vvcv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_vvcv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_vvvc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_vvvc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4mnhmm_vvvv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_vvvv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_cccc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_cccc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_cccv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_cccv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_ccvc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_ccvc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_ccvv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_ccvv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_cvcc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_cvcc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_cvcv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_cvcv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_cvvc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_cvvc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_cvvv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_cvvv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_vccc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_vccc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_vccv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_vccv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_vcvc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_vcvc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_vcvv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_vcvv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_vvcc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_vvcc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_vvcv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_vvcv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_vvvc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_vvvc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_vvvv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_vvvv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_nhmm_ccc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_nhmm_ccc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_nhmm_ccv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_nhmm_ccv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_nhmm_cvc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_nhmm_cvc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_nhmm_cvv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_nhmm_cvv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_nhmm_vcc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_nhmm_vcc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_nhmm_vcv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_nhmm_vcv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_nhmm_vvc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_nhmm_vvc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4multichannel_nhmm_vvv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_nhmm_vvv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4nhmm_ccc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4nhmm_ccc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4nhmm_ccv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4nhmm_ccv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4nhmm_cvc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4nhmm_cvc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4nhmm_cvv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4nhmm_cvv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4nhmm_vcc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4nhmm_vcc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4nhmm_vcv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4nhmm_vcv_mod, 0},
-    {"_rcpp_module_boot_stan_fit4nhmm_vvc_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4nhmm_vvc_mod, 0},
-    {"_rcpp_module_boot_stan_fit4nhmm_vvv_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4nhmm_vvv_mod, 0},
+    {"_rcpp_module_boot_stan_fit4mnhmm_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4mnhmm_mod, 0},
+    {"_rcpp_module_boot_stan_fit4multichannel_mnhmm_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_mnhmm_mod, 0},
+    {"_rcpp_module_boot_stan_fit4multichannel_nhmm_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4multichannel_nhmm_mod, 0},
+    {"_rcpp_module_boot_stan_fit4nhmm_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4nhmm_mod, 0},
     {NULL, NULL, 0}
 };
 

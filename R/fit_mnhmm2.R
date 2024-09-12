@@ -49,36 +49,38 @@ fit_mnhmm2 <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
     if (is.null(dots$tol_param)) dots$tol_param <- 1e-4
     if (is.null(dots$check_data)) dots$check_data <- FALSE
     
-    n <- ceiling(model$n_sequences / restarts)
-    out0 <- future_lapply(seq_len(restarts), function(i) {
-      
+    n <- as.integer(max(5 * D, ceiling(model$n_sequences / restarts)))
+    # 5 * restarts runs with subset data
+    out0 <- future_lapply(seq_len(5 * restarts), function(i) {
       init <- create_initial_values(
         inits, S, M, init_sd, K_i, K_s, K_o, K_d, D
       )
-      subset_data <- list(
-        N = n,
-        T = model$sequence_lengths,
-        max_T = model$length_of_sequences, 
-        max_M = max(model$n_symbols),
-        M = M,
-        S = S,
-        C = model$n_channels,
-        D = D,
-        K_i = K_i,
-        K_s = K_s,
-        K_o = K_o,
-        K_d = K_d,
-        X_i = model$X_initial,
-        X_s = model$X_transition,
-        X_o = model$X_emission,
-        X_d = model$X_cluster,
-        obs = subsample_obs(obs, n))
-      
+      ids <- sample(model$n_sequences, size = n)
       do.call(
         optimizing, 
         c(list(
           model_code, init = init,
-          data = subset_data,
+          data = list(
+            N = model$n_sequences,
+            T = model$sequence_lengths,
+            max_T = model$length_of_sequences, 
+            max_M = max(model$n_symbols),
+            M = M,
+            S = S,
+            C = model$n_channels,
+            D = D,
+            K_i = K_i,
+            K_s = K_s,
+            K_o = K_o,
+            K_d = K_d,
+            X_i = model$X_initial,
+            X_s = model$X_transition,
+            X_o = model$X_emission,
+            X_d = model$X_cluster,
+            obs = obs,
+            ids = ids,
+            N_sample = n
+          ),
           as_vector = FALSE,
           verbose = FALSE
         ), dots)
@@ -86,38 +88,42 @@ fit_mnhmm2 <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
     },
     future.seed = TRUE)
     
-    data <- list(
-      N = model$n_sequences,
-      T = model$sequence_lengths,
-      max_T = model$length_of_sequences, 
-      max_M = max(model$n_symbols),
-      M = M,
-      S = S,
-      C = model$n_channels,
-      D = D,
-      K_i = K_i,
-      K_s = K_s,
-      K_o = K_o,
-      K_d = K_d,
-      X_i = model$X_initial,
-      X_s = model$X_transition,
-      X_o = model$X_emission,
-      X_d = model$X_cluster,
-      obs = obs)
+    # take restarts/5 best solutions and run to the end
+    logliks <- unlist(lapply(out0, "[[", "value"))
+    idx <- head(order(logliks, decreasing = TRUE), restarts / 5)
     
-    out <- future_lapply(seq_len(restarts), function(i) {
+    out <- future_lapply(seq_len(restarts / 5), function(i) {
       do.call(
         optimizing, 
         c(list(
-          model_code, init = out0[[i]]$par,
-          data = data,
+          model_code, init = out0[[idx[i]]]$par,
+          data = list(
+            N = model$n_sequences,
+            T = model$sequence_lengths,
+            max_T = model$length_of_sequences, 
+            max_M = max(model$n_symbols),
+            M = M,
+            S = S,
+            C = model$n_channels,
+            D = D,
+            K_i = K_i,
+            K_s = K_s,
+            K_o = K_o,
+            K_d = K_d,
+            X_i = model$X_initial,
+            X_s = model$X_transition,
+            X_o = model$X_emission,
+            X_d = model$X_cluster,
+            obs = obs,
+            ids = seq_len(model$n_sequences),
+            N_sample = model$n_sequences
+          ),
           as_vector = FALSE,
           verbose = FALSE
         ), dots)
       )[c("par", "value", "return_code")]
     },
     future.seed = TRUE)
-    
     logliks <- unlist(lapply(out, "[[", "value"))
     return_codes <- unlist(lapply(out, "[[", "return_code"))
     successful <- which(return_codes == 0)
@@ -152,7 +158,10 @@ fit_mnhmm2 <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
         X_s = model$X_transition,
         X_o = model$X_emission,
         X_d = model$X_cluster,
-        obs = obs), 
+        obs = obs,
+        ids = seq_len(model$n_sequences),
+        N_sample = model$n_sequences
+      ), 
       as_vector = FALSE,
       init = init,
       verbose = verbose
@@ -165,7 +174,7 @@ fit_mnhmm2 <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
   model$stan_model <- model_code@model_code
   model$estimation_results <- list(
     hessian = out$hessian,
-    penalized_loglik = out$value, 
+    penalized_loglik = out$value,
     loglik = out$par[["log_lik"]], 
     penalty = out$par[["prior"]],
     return_code = out$return_code,

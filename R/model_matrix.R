@@ -6,7 +6,6 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
                                          time, id) {
   icp_only <- intercept_only(formula)
   if (icp_only) {
-    type <- "c"
     n_pars <- n_states - 1L
     X <- matrix(1, n_sequences, 1)
     coef_names <- "(Intercept)"
@@ -30,11 +29,9 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
       )
     )
     coef_names <- colnames(X)
-    type <- "v"
     n_pars <- (n_states - 1L) * ncol(X)
   }
-  list(formula = formula, type = type, n_pars = n_pars, X = X, 
-       coef_names = coef_names)
+  list(formula = formula, n_pars = n_pars, X = X, coef_names = coef_names)
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
@@ -44,7 +41,6 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
                                             time, id, sequence_lengths) {
   icp_only <- intercept_only(formula)
   if (icp_only) {
-    type <- "c"
     n_pars <-  n_states * (n_states - 1L)
     X <- array(1, c(length_of_sequences, n_sequences, 1L))
     coef_names <- "(Intercept)"
@@ -74,11 +70,9 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     X[missing_values] <- 0
     coef_names <- colnames(X)
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
-    type <- "v"
     n_pars <- n_states * (n_states - 1L) * dim(X)[3]
   }
-  list(formula = formula, type = type, n_pars = n_pars, X = X, 
-       coef_names = coef_names)
+  list(formula = formula, n_pars = n_pars, X = X, coef_names = coef_names)
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
@@ -89,7 +83,6 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
                                           time, id, sequence_lengths) {
   icp_only <- intercept_only(formula)
   if (icp_only) {
-    type <- "c"
     n_pars <-  n_channels * n_states * (n_symbols - 1L)
     X <- array(1, c(length_of_sequences, n_sequences, 1L))
     coef_names <- "(Intercept)"
@@ -119,11 +112,9 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     X[missing_values] <- 0
     coef_names <- colnames(X)
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
-    type <- "v"
     n_pars <- n_channels * n_states * (n_symbols - 1L) * dim(X)[3]
   }
-  list(formula = formula, type = type, n_pars = n_pars, X = X, 
-       coef_names = coef_names)
+  list(formula = formula, n_pars = n_pars, X = X, coef_names = coef_names)
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
@@ -132,7 +123,6 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
                                          time, id) {
   icp_only <- intercept_only(formula)
   if (icp_only) {
-    type <- "c"
     n_pars <- n_clusters - 1L
     X <- matrix(1, n_sequences, 1)
     coef_names <- "(Intercept)"
@@ -156,9 +146,7 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
       )
     )
     coef_names <- colnames(X)
-    type <- "v"
     n_pars <- (n_clusters - 1L) * ncol(X)
   }
-  list(formula = formula, type = type, n_pars = n_pars, X = X, 
-       coef_names = coef_names)
+  list(formula = formula, n_pars = n_pars, X = X, coef_names = coef_names)
 }

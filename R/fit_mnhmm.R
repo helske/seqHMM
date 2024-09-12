@@ -73,7 +73,10 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
             X_s = model$X_transition,
             X_o = model$X_emission,
             X_d = model$X_cluster,
-            obs = obs),
+            obs = obs,
+            ids = seq_len(model$n_sequences),
+            N_sample = model$n_sequences
+          ),
           as_vector = FALSE,
           verbose = FALSE
         ), dots)
@@ -114,7 +117,10 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
         X_s = model$X_transition,
         X_o = model$X_emission,
         X_d = model$X_cluster,
-        obs = obs), 
+        obs = obs, 
+        ids = seq_len(model$n_sequences),
+        N_sample = model$n_sequences
+      ), 
       as_vector = FALSE,
       init = init,
       verbose = verbose
@@ -127,6 +133,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
   model$stan_model <- model_code@model_code
   model$estimation_results <- list(
     hessian = out$hessian,
+    penalized_loglik_N = out$par[["ploglik_N"]],
     penalized_loglik = out$value, 
     loglik = out$par[["log_lik"]], 
     penalty = out$par[["prior"]],

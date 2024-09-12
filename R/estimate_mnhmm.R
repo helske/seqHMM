@@ -43,7 +43,8 @@ estimate_mnhmm <- function(
     transition_formula = ~1, emission_formula = ~1, cluster_formula = ~1,
     data = NULL, time = NULL, id = NULL, state_names = NULL, 
     channel_names = NULL, cluster_names = NULL, inits = "random", init_sd = 2, 
-    restarts = 0L, threads = 1L, store_data = TRUE, verbose = TRUE, restart_method = "1", ...) {
+    restarts = 0L, threads = 1L, store_data = TRUE, verbose = TRUE, 
+    restart_method = "1", ...) {
   
   call <- match.call()
   model <- build_mnhmm(

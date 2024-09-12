@@ -127,9 +127,6 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
     extras = list(
       n_pars = n_pars, 
       multichannel = ifelse(n_channels > 1, "multichannel_", ""),
-      model_type = paste0(
-        pi$type, A$type, B$type, if (mixture) theta$type else ""
-      ),
       intercept_only = icp_only_i && icp_only_s && icp_only_o && icp_only_d
     )
   )

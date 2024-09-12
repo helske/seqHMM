@@ -4,3 +4,5 @@
   int<lower=2> M; // number of observed symbols
   int<lower=1> S; // number of hidden states
   array[max_T, N] int<lower=0, upper=M + 1> obs; // observations
+  int<upper=N> N_sample;
+  array[N_sample] int ids;

@@ -1,6 +1,23 @@
-real log_lik;
-real prior = 0;
-{
+
+real loglik_mc(matrix beta_i_raw, array[] matrix beta_s_raw, 
+row_vector beta_o_raw, array[,,] int obs, array[] int M,
+array[] int T, int N_sample, array[] int ids, array[,] vector X_s,
+array[,] vector X_o, array[] vector X_i) {
+  
+  int S = rows(beta_i_raw) + 1;
+  int N = size(X_i);
+  int K_i = num_elements(X_i[1]);
+  int K_s = num_elements(X_s[1, 1]);
+  int K_o = num_elements(X_o[1, 1]);
+  int C = size(M);
+  int max_M = max(M);
+  
+  row_vector[K_i] zeros_row_K_i = rep_row_vector(0, K_i);
+  row_vector[K_s] zeros_row_K_s = rep_row_vector(0, K_s);
+  matrix[max_M, K_o] zeros_mat_M_K_o = rep_matrix(0, max_M, K_o);  
+  vector[S] zeros_S = rep_vector(0, S);
+  array[C + 1] int cumsum_M = append_array({0}, cumulative_sum(M));
+  
   vector[N] ll;
   vector[S] log_Pi;
   matrix[S, S] log_A;
@@ -11,25 +28,17 @@ real prior = 0;
   matrix[S, K_i] beta_i;
   array[S] matrix[S, K_s] beta_s;
   array[C, S] matrix[max_M, K_o] beta_o;
-  // priors for (very weak) regularisation
-  prior += normal_lpdf(to_vector(beta_i_raw) | 0, 5);
-  for(s in 1:S) {
-    prior += normal_lpdf(to_vector(beta_s_raw[s]) | 0, 5);
-  }
-  prior += normal_lpdf(beta_o_raw | 0, 5);
   beta_i = append_row(zeros_row_K_i, beta_i_raw);
   for(s in 1:S) {
     beta_s[s] = append_row(zeros_row_K_s, beta_s_raw[s]);
   }
-  {
-    int idx = 1;
-    for (c in 1:C) {
-      for (s in 1:S) {
-        beta_o[c, s, , ] = zeros_mat_M_K_o;
-        for (m in 2:M[c]) {
-          beta_o[c, s, m, ] = beta_o_raw[idx:(idx + K_o - 1)];
-          idx += K_o;
-        }
+  int idx = 1;
+  for (c in 1:C) {
+    for (s in 1:S) {
+      beta_o[c, s, , ] = zeros_mat_M_K_o;
+      for (m in 2:M[c]) {
+        beta_o[c, s, m, ] = beta_o_raw[idx:(idx + K_o - 1)];
+        idx += K_o;
       }
     }
   }
@@ -64,5 +73,5 @@ real prior = 0;
     }
     ll[i] = log_sum_exp(log_alpha);
   }
-  log_lik = sum(ll);
+  return sum(ll);
 }

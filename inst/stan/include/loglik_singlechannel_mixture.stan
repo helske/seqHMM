@@ -1,6 +1,23 @@
-real log_lik;
-real prior = 0;
-{
+
+real loglik_sc_mix(array[] matrix beta_i_raw, array[,] matrix beta_s_raw, 
+array[,] matrix beta_o_raw, matrix theta_raw, array[,] int obs, int M,
+array[] int T, int N_sample, array[] int ids, array[,] vector X_s,
+array[,] vector X_o, array[] vector X_i, array[] vector X_d) {
+  
+  int D = size(beta_i_raw);
+  int S = rows(beta_i_raw[1]) + 1;
+  int N = size(X_i);
+  int K_i = num_elements(X_i[1]);
+  int K_s = num_elements(X_s[1, 1]);
+  int K_o = num_elements(X_o[1, 1]);
+  int K_d = num_elements(X_d[1]);
+  
+  row_vector[K_i] zeros_row_K_i = rep_row_vector(0, K_i);
+  row_vector[K_s] zeros_row_K_s = rep_row_vector(0, K_s);
+  row_vector[K_o] zeros_row_K_o = rep_row_vector(0, K_o); 
+  row_vector[K_d] zeros_row_K_d = rep_row_vector(0, K_d);
+  vector[S] zeros_S = rep_vector(0, S);
+  
   matrix[N, D] ll;
   vector[S] log_Pi;
   matrix[S, S] log_A;
@@ -13,12 +30,6 @@ real prior = 0;
   array[S] matrix[M, K_o] beta_o;
   matrix[D, K_d] theta = append_row(zeros_row_K_d, theta_raw);
   for(d in 1:D) {
-    // priors for (very weak) regularisation
-    prior += normal_lpdf(to_vector(beta_i_raw[d]) | 0, 5);
-    for(s in 1:S) {
-      prior += normal_lpdf(to_vector(beta_s_raw[d, s]) | 0, 5);
-      prior += normal_lpdf(to_vector(beta_o_raw[d, s]) | 0, 5);
-    }
     beta_i = append_row(zeros_row_K_i, beta_i_raw[d]);
     for(s in 1:S) {
       beta_s[s] = append_row(zeros_row_K_s, beta_s_raw[d, s]);
@@ -50,12 +61,11 @@ real prior = 0;
       ll[i, d] = log_sum_exp(log_alpha);
     }
   }
-  prior += normal_lpdf(to_vector(theta_raw) | 0, 5);
   vector[N_sample] ll_i;
   for(ii in 1:N_sample) {
     int i = ids[ii];
     vector[D] log_omega = log_softmax(theta * X_d[i]);
     ll_i[i] = log_sum_exp(log_omega + ll[i, ]');
   }
-  log_lik = sum(ll_i);
+  return sum(ll_i);
 }

@@ -43,12 +43,15 @@ test_that("simulate_mnhmm, coef and get_probs works", {
       emission_formula = ~ x + z, cluster_formula = ~w, 
       data = d, time = "month", id = "person", 
       inits = sim$model$coefficients, 
-      iter = 1, verbose = FALSE, hessian = FALSE),
+      iter = 1, verbose = FALSE),
     NA
   )
-  expect_error(
+  expect_warning(
     cf <- coef(fit),
-    NA
+    paste0(
+      "Standard errors could not be computed due to singular Hessian.",
+      "Confidence intervals will not be provided."
+    )
   )
   expect_error(
     p <- get_probs(fit, nsim = 0),

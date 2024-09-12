@@ -6,3 +6,5 @@
   int<lower=2> C; // number of response channels
   array[C] int<lower=2, upper=max_M> M; // number of observed symbols per channel
   array[C, max_T, N] int<lower=0,upper=max_M + 1> obs; // observations
+  int<upper=N> N_sample;
+  array[N_sample] int ids;

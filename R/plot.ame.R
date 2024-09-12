@@ -8,7 +8,8 @@
 #' found in the input object `x`, an error is thrown.
 #' @export
 plot.ame <- function(x, type, probs = c(0.025, 0.975)) {
-  type <- match.arg(type, c("initial", "transition", "emission", "cluster"), ...)
+  
+  type <- match.arg(type, c("initial", "transition", "emission", "cluster"))
   
   cluster <- time <- state <- state_from <- state_to <- observation <- 
     estimate <- NULL
