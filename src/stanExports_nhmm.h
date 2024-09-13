@@ -120,8 +120,8 @@ static constexpr std::array<const char*, 151> locations_array__ =
   " (in 'string', line 42, column 2 to column 57)",
   " (in 'string', line 43, column 9 to column 10)",
   " (in 'string', line 43, column 2 to column 39)",
-  " (in 'string', line 44, column 9 to column 10)",
-  " (in 'string', line 44, column 2 to column 15)",
+  " (in 'string', line 44, column 9 to column 17)",
+  " (in 'string', line 44, column 2 to column 22)",
   " (in 'string', line 45, column 9 to column 10)",
   " (in 'string', line 45, column 2 to column 19)",
   " (in 'string', line 46, column 9 to column 10)",
@@ -174,7 +174,7 @@ static constexpr std::array<const char*, 151> locations_array__ =
   " (in 'string', line 80, column 6 to column 32)",
   " (in 'string', line 68, column 22 to line 81, column 5)",
   " (in 'string', line 68, column 4 to line 81, column 5)",
-  " (in 'string', line 82, column 4 to column 35)",
+  " (in 'string', line 82, column 4 to column 36)",
   " (in 'string', line 59, column 24 to line 83, column 3)",
   " (in 'string', line 59, column 2 to line 83, column 3)",
   " (in 'string', line 84, column 2 to column 17)",
@@ -384,9 +384,9 @@ loglik_sc(const T0__& beta_i_raw_arg__,
     stan::model::assign(zeros_S, stan::math::rep_vector(0, S),
       "assigning variable zeros_S");
     current_statement__ = 92;
-    stan::math::validate_non_negative_index("ll", "N", N);
+    stan::math::validate_non_negative_index("ll", "N_sample", N_sample);
     Eigen::Matrix<local_scalar_t__,-1,1> ll =
-      Eigen::Matrix<local_scalar_t__,-1,1>::Constant(N, DUMMY_VAR__);
+      Eigen::Matrix<local_scalar_t__,-1,1>::Constant(N_sample, DUMMY_VAR__);
     current_statement__ = 94;
     stan::math::validate_non_negative_index("log_Pi", "S", S);
     Eigen::Matrix<local_scalar_t__,-1,1> log_Pi =
@@ -555,7 +555,7 @@ loglik_sc(const T0__& beta_i_raw_arg__,
       }
       current_statement__ = 146;
       stan::model::assign(ll, stan::math::log_sum_exp(log_alpha),
-        "assigning variable ll", stan::model::index_uni(i));
+        "assigning variable ll", stan::model::index_uni(ii));
     }
     current_statement__ = 149;
     return stan::math::sum(ll);

@@ -62,8 +62,8 @@ fit_mnhmm2 <- function(model, inits, init_sd, restarts, threads, verbose,
         c(list(
           model_code, init = init,
           data = list(
-            penalize = penalize, 
             penalty = penalty, 
+            penalize = as.integer(penalize),
             N = model$n_sequences,
             T = model$sequence_lengths,
             max_T = model$length_of_sequences, 
@@ -102,8 +102,8 @@ fit_mnhmm2 <- function(model, inits, init_sd, restarts, threads, verbose,
         c(list(
           model_code, init = out0[[idx[i]]]$par,
           data = list(
-            penalize = penalize, 
             penalty = penalty, 
+            penalize = as.integer(penalize),
             N = model$n_sequences,
             T = model$sequence_lengths,
             max_T = model$length_of_sequences, 
@@ -154,8 +154,8 @@ fit_mnhmm2 <- function(model, inits, init_sd, restarts, threads, verbose,
     c(list(
       model_code, 
       data = list(
-        penalize = penalize, 
         penalty = penalty, 
+        penalize = as.integer(penalize),
         N = model$n_sequences,
         T = model$sequence_lengths,
         max_T = model$length_of_sequences,

@@ -138,9 +138,9 @@ static constexpr std::array<const char*, 183> locations_array__ =
   " (in 'string', line 45, column 2 to column 57)",
   " (in 'string', line 46, column 9 to column 10)",
   " (in 'string', line 46, column 2 to column 39)",
-  " (in 'string', line 47, column 9 to column 10)",
-  " (in 'string', line 47, column 12 to column 13)",
-  " (in 'string', line 47, column 2 to column 18)",
+  " (in 'string', line 47, column 9 to column 17)",
+  " (in 'string', line 47, column 19 to column 20)",
+  " (in 'string', line 47, column 2 to column 25)",
   " (in 'string', line 48, column 9 to column 10)",
   " (in 'string', line 48, column 2 to column 19)",
   " (in 'string', line 49, column 9 to column 10)",
@@ -196,7 +196,7 @@ static constexpr std::array<const char*, 183> locations_array__ =
   " (in 'string', line 85, column 8 to column 34)",
   " (in 'string', line 73, column 24 to line 86, column 7)",
   " (in 'string', line 73, column 6 to line 86, column 7)",
-  " (in 'string', line 87, column 6 to column 40)",
+  " (in 'string', line 87, column 6 to column 41)",
   " (in 'string', line 64, column 26 to line 88, column 5)",
   " (in 'string', line 64, column 4 to line 88, column 5)",
   " (in 'string', line 58, column 16 to line 89, column 3)",
@@ -206,7 +206,7 @@ static constexpr std::array<const char*, 183> locations_array__ =
   " (in 'string', line 92, column 4 to column 20)",
   " (in 'string', line 93, column 11 to column 12)",
   " (in 'string', line 93, column 4 to column 54)",
-  " (in 'string', line 94, column 4 to column 48)",
+  " (in 'string', line 94, column 4 to column 50)",
   " (in 'string', line 91, column 24 to line 95, column 3)",
   " (in 'string', line 91, column 2 to line 95, column 3)",
   " (in 'string', line 96, column 2 to column 19)",
@@ -443,11 +443,12 @@ loglik_sc_mix(const std::vector<Eigen::Matrix<T0__,-1,-1>>& beta_i_raw,
     stan::model::assign(zeros_S, stan::math::rep_vector(0, S),
       "assigning variable zeros_S");
     current_statement__ = 110;
-    stan::math::validate_non_negative_index("ll", "N", N);
+    stan::math::validate_non_negative_index("ll", "N_sample", N_sample);
     current_statement__ = 111;
     stan::math::validate_non_negative_index("ll", "D", D);
     Eigen::Matrix<local_scalar_t__,-1,-1> ll =
-      Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(N, D, DUMMY_VAR__);
+      Eigen::Matrix<local_scalar_t__,-1,-1>::Constant(N_sample, D,
+        DUMMY_VAR__);
     current_statement__ = 113;
     stan::math::validate_non_negative_index("log_Pi", "S", S);
     Eigen::Matrix<local_scalar_t__,-1,1> log_Pi =
@@ -630,7 +631,7 @@ loglik_sc_mix(const std::vector<Eigen::Matrix<T0__,-1,-1>>& beta_i_raw,
         }
         current_statement__ = 168;
         stan::model::assign(ll, stan::math::log_sum_exp(log_alpha),
-          "assigning variable ll", stan::model::index_uni(i),
+          "assigning variable ll", stan::model::index_uni(ii),
           stan::model::index_uni(d));
       }
     }
@@ -658,9 +659,9 @@ loglik_sc_mix(const std::vector<Eigen::Matrix<T0__,-1,-1>>& beta_i_raw,
         stan::math::log_sum_exp(
           stan::math::add(log_omega,
             stan::math::transpose(
-              stan::model::rvalue(ll, "ll", stan::model::index_uni(i),
+              stan::model::rvalue(ll, "ll", stan::model::index_uni(ii),
                 stan::model::index_omni())))), "assigning variable ll_i",
-        stan::model::index_uni(i));
+        stan::model::index_uni(ii));
     }
     current_statement__ = 181;
     return stan::math::sum(ll_i);

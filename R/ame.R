@@ -13,6 +13,7 @@
 #' estimates are returned.
 #' @param probs Vector defining the quantiles of interest. Default is 
 #' `c(0.025, 0.5, 0.975)`.
+#' @param ... Further arguments passed to specific methods.
 #' @rdname ame
 #' @export
 ame <- function(model, variable, values, ...) {

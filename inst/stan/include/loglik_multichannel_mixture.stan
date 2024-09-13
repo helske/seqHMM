@@ -21,7 +21,7 @@ array[,] vector X_o, array[] vector X_i, array[] vector X_d) {
   vector[S] zeros_S = rep_vector(0, S);
   array[C + 1] int cumsum_M = append_array({0}, cumulative_sum(M));
   
-  matrix[N, D] ll;
+  matrix[N_sample, D] ll;
   vector[S] log_Pi;
   matrix[S, S] log_A;
   matrix[S, max_M + 1] log_B;
@@ -76,14 +76,14 @@ array[,] vector X_o, array[] vector X_i, array[] vector X_d) {
         }
         log_alpha = log_alpha_new;
       }
-      ll[i, d] = log_sum_exp(log_alpha);
+      ll[ii, d] = log_sum_exp(log_alpha);
     }
   }
   vector[N_sample] ll_i;
   for(ii in 1:N_sample) {
     int i = ids[ii];
     vector[D] log_omega = log_softmax(theta * X_d[i]);
-    ll_i[i] = log_sum_exp(log_omega + ll[i, ]');
+    ll_i[ii] = log_sum_exp(log_omega + ll[ii, ]');
   }
   return sum(ll_i);
 }

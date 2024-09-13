@@ -15,7 +15,7 @@ array[,] vector X_o, array[] vector X_i) {
   row_vector[K_o] zeros_row_K_o = rep_row_vector(0, K_o);
   vector[S] zeros_S = rep_vector(0, S);
   
-  vector[N] ll;
+  vector[N_sample] ll;
   vector[S] log_Pi;
   matrix[S, S] log_A;
   matrix[S, M + 1] log_B;
@@ -53,7 +53,7 @@ array[,] vector X_o, array[] vector X_i) {
       }
       log_alpha = log_alpha_new;
     }
-    ll[i] = log_sum_exp(log_alpha);
+    ll[ii] = log_sum_exp(log_alpha);
   }
   return sum(ll);
 }

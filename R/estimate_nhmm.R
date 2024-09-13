@@ -49,6 +49,10 @@
 #' reason for the termination of optimization (e.g., reached the maximum number 
 #' of iterations) is only available by the final message show with 
 #' `verbose = TRUE`.
+#' @param penalize If `TRUE` (default), penalize the likelihood with a prior on 
+#' the coefficients
+#' @param penalty If `penalize = TRUE`, the standard deviation of the zero-mean 
+#' normal density used as a penalizing prior for the coefficients. Default is `5`.
 #' @param ... Additional arguments to [rstan::optimizing()]. Most importantly,
 #' argument `iter` defines the maximum number of iterations for optimization.
 #' The default is `2000`.

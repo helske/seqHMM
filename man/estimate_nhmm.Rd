@@ -21,6 +21,8 @@ estimate_nhmm(
   threads = 1L,
   store_data = TRUE,
   verbose = TRUE,
+  penalize = TRUE,
+  penalty = 5,
   ...
 )
 }
@@ -84,6 +86,12 @@ optimization (after restarts). Note that due to the design of \code{rstan}, the
 reason for the termination of optimization (e.g., reached the maximum number
 of iterations) is only available by the final message show with
 \code{verbose = TRUE}.}
+
+\item{penalize}{If \code{TRUE} (default), penalize the likelihood with a prior on
+the coefficients}
+
+\item{penalty}{If \code{penalize = TRUE}, the standard deviation of the zero-mean
+normal density used as a penalizing prior for the coefficients. Default is \code{5}.}
 
 \item{...}{Additional arguments to \code{\link[rstan:stanmodel-method-optimizing]{rstan::optimizing()}}. Most importantly,
 argument \code{iter} defines the maximum number of iterations for optimization.

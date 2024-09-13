@@ -127,8 +127,8 @@ static constexpr std::array<const char*, 174> locations_array__ =
   " (in 'string', line 45, column 2 to column 39)",
   " (in 'string', line 46, column 8 to column 13)",
   " (in 'string', line 46, column 2 to column 67)",
-  " (in 'string', line 47, column 9 to column 10)",
-  " (in 'string', line 47, column 2 to column 15)",
+  " (in 'string', line 47, column 9 to column 17)",
+  " (in 'string', line 47, column 2 to column 22)",
   " (in 'string', line 48, column 9 to column 10)",
   " (in 'string', line 48, column 2 to column 19)",
   " (in 'string', line 49, column 9 to column 10)",
@@ -197,7 +197,7 @@ static constexpr std::array<const char*, 174> locations_array__ =
   " (in 'string', line 98, column 6 to column 32)",
   " (in 'string', line 83, column 22 to line 99, column 5)",
   " (in 'string', line 83, column 4 to line 99, column 5)",
-  " (in 'string', line 100, column 4 to column 35)",
+  " (in 'string', line 100, column 4 to column 36)",
   " (in 'string', line 71, column 24 to line 101, column 3)",
   " (in 'string', line 71, column 2 to line 101, column 3)",
   " (in 'string', line 102, column 2 to column 17)",
@@ -428,9 +428,9 @@ loglik_mc(const T0__& beta_i_raw_arg__,
       stan::math::append_array(std::vector<int>{0},
         stan::math::cumulative_sum(M)), "assigning variable cumsum_M");
     current_statement__ = 99;
-    stan::math::validate_non_negative_index("ll", "N", N);
+    stan::math::validate_non_negative_index("ll", "N_sample", N_sample);
     Eigen::Matrix<local_scalar_t__,-1,1> ll =
-      Eigen::Matrix<local_scalar_t__,-1,1>::Constant(N, DUMMY_VAR__);
+      Eigen::Matrix<local_scalar_t__,-1,1>::Constant(N_sample, DUMMY_VAR__);
     current_statement__ = 101;
     stan::math::validate_non_negative_index("log_Pi", "S", S);
     Eigen::Matrix<local_scalar_t__,-1,1> log_Pi =
@@ -651,7 +651,7 @@ loglik_mc(const T0__& beta_i_raw_arg__,
       }
       current_statement__ = 169;
       stan::model::assign(ll, stan::math::log_sum_exp(log_alpha),
-        "assigning variable ll", stan::model::index_uni(i));
+        "assigning variable ll", stan::model::index_uni(ii));
     }
     current_statement__ = 172;
     return stan::math::sum(ll);

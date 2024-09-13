@@ -37,6 +37,8 @@ ame(model, variable, values, ...)
 
 \item{values}{Vector containing one or two values for \code{variable}.}
 
+\item{...}{Further arguments passed to specific methods.}
+
 \item{marginalize_B_over}{Character string defining the dimensions over which
 emission probabilities are marginalized. Default is \code{"sequences"}. Other
 options are \code{"states"} and \code{"clusters"}.}

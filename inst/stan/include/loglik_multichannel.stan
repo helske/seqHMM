@@ -18,7 +18,7 @@ array[,] vector X_o, array[] vector X_i) {
   vector[S] zeros_S = rep_vector(0, S);
   array[C + 1] int cumsum_M = append_array({0}, cumulative_sum(M));
   
-  vector[N] ll;
+  vector[N_sample] ll;
   vector[S] log_Pi;
   matrix[S, S] log_A;
   matrix[S, max_M + 1] log_B;
@@ -71,7 +71,7 @@ array[,] vector X_o, array[] vector X_i) {
       }
       log_alpha = log_alpha_new;
     }
-    ll[i] = log_sum_exp(log_alpha);
+    ll[ii] = log_sum_exp(log_alpha);
   }
   return sum(ll);
 }
