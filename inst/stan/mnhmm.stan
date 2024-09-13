@@ -22,7 +22,6 @@ model {
   target += log_lik;
 }
 generated quantities {
-  print("not yet!");
   real ploglik_N = prior + log_lik;
   if (N > N_sample) {
     ploglik_N = prior + loglik_sc_mix(beta_i_raw, beta_s_raw, 

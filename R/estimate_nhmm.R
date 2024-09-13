@@ -73,7 +73,7 @@ estimate_nhmm <- function(
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, channel_names = NULL, 
     inits = "random", init_sd = 2, restarts = 0L, threads = 1L, 
-    store_data = TRUE, verbose = TRUE, ...) {
+    store_data = TRUE, verbose = TRUE, penalize = TRUE, penalty = 5, ...) {
   
   call <- match.call()
   
@@ -88,7 +88,8 @@ estimate_nhmm <- function(
   if (store_data) {
     model$data <- data
   }
-  out <- fit_nhmm(model, inits, init_sd, restarts, threads, verbose, ...)
+  out <- fit_nhmm(model, inits, init_sd, restarts, threads, verbose, 
+                  penalize, penalty, ...)
   attr(out, "call") <- call
   out
 }

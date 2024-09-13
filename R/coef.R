@@ -53,17 +53,29 @@ coef.nhmm <- function(object, probs = c(0.025, 0.975), ...) {
   p_s <- length(beta_s_raw)
   p_o <- length(beta_o_raw)
   sds <- try(
-    sqrt(diag(solve(-object$estimation_results$hessian))), 
+    diag(solve(-object$estimation_results$hessian)), 
     silent = TRUE
   )
   if (inherits(sds, "try-error")) {
     warning_(
       paste0(
-        "Standard errors could not be computed due to singular Hessian.",
+        "Standard errors could not be computed due to singular Hessian. ",
         "Confidence intervals will not be provided."
       )
     )
     sds <- rep(NA, p_i + p_s + p_o)
+  } else {
+    if (any(sds < 0)) {
+      warning_(
+        paste0(
+          "Standard errors could not be computed due to negative variances. ",
+          "Confidence intervals will not be provided."
+        )
+      )
+      sds <- rep(NA, p_i + p_s + p_o)
+    } else {
+      sds <- sqrt(sds)
+    }
   }
   for(i in seq_along(probs)) {
     q <- qnorm(probs[i])

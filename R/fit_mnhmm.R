@@ -1,7 +1,7 @@
 #' Estimate a Mixture Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_mnhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
+fit_mnhmm <- function(model, inits, init_sd, restarts, threads, verbose, penalize, penalty, ...) {
   stopifnot_(
     checkmate::test_int(x = threads, lower = 1L), 
     "Argument {.arg threads} must be a single positive integer."
@@ -57,6 +57,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
         c(list(
           model_code, init = init,
           data = list(
+            penalty = penalty,
+            penalize = penalize,
             N = model$n_sequences,
             T = model$sequence_lengths,
             max_T = model$length_of_sequences, 
@@ -107,6 +109,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
     c(list(
       model_code, 
       data = list(
+        penalty = penalty,
+        penalize = penalize,
         N = model$n_sequences,
         T = model$sequence_lengths,
         max_T = model$length_of_sequences,

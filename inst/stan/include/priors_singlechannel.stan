@@ -1,6 +1,9 @@
 // priors for (very weak) regularisation
-real prior = normal_lpdf(to_vector(beta_i_raw) | 0, 5);
-for(s in 1:S) {
-  prior += normal_lpdf(to_vector(beta_s_raw[s]) | 0, 5);
-  prior += normal_lpdf(to_vector(beta_o_raw[s]) | 0, 5);
+real prior = 0;
+if (penalize == 1) {
+  prior += normal_lpdf(to_vector(beta_i_raw) | 0, penalty);
+  for(s in 1:S) {
+    prior += normal_lpdf(to_vector(beta_s_raw[s]) | 0, penalty);
+    prior += normal_lpdf(to_vector(beta_o_raw[s]) | 0, penalty);
+  }
 }

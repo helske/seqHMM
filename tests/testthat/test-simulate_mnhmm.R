@@ -49,7 +49,7 @@ test_that("simulate_mnhmm, coef and get_probs works", {
   expect_warning(
     cf <- coef(fit),
     paste0(
-      "Standard errors could not be computed due to singular Hessian.",
+      "Standard errors could not be computed due to negative variances. ",
       "Confidence intervals will not be provided."
     )
   )
