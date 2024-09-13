@@ -22,10 +22,10 @@ ame <- function(model, variable, values, ...) {
 #' @export
 ame.nhmm <- function(
     model, variable, values, marginalize_B_over = "sequences", newdata = NULL, 
-    nsim = 0, probs = c(0.025, 0.5, 0.975)) {
+    nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
   # avoid warnings of NSEs
   cluster <- state <- estimate <- state_from <- state_to <- time_var <- 
-    channel <- observation <- NULL
+    channel <- observation <- replication <- NULL
   stopifnot_(
     attr(model, "intercept_only") == FALSE,
     "Model does not contain any covariates."
@@ -161,10 +161,10 @@ ame.nhmm <- function(
 #' @export
 ame.mnhmm <- function(
     model, variable, values, marginalize_B_over = "sequences", newdata = NULL, 
-    nsim = 0, probs = c(0.025, 0.5, 0.975)) {
+    nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
   # avoid warnings of NSEs
   cluster <- state <- estimate <- state_from <- state_to <- time_var <- 
-    channel <- observation <- NULL
+    channel <- observation <- replication <- NULL
   stopifnot_(
     attr(model, "intercept_only") == FALSE,
     "Model does not contain any covariates."

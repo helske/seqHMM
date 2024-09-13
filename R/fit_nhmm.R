@@ -71,7 +71,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
             N_sample = model$n_sequences
           ),
           as_vector = FALSE,
-          verbose = FALSE
+          verbose = FALSE,
+          save_iterations = FALSE
         ), dots)
       )[c("par", "value", "return_code")]
     },
@@ -89,6 +90,11 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
   dots <- list(...)
   if (is.null(dots$hessian)) dots$hessian <- TRUE
   if (is.null(dots$check_data)) dots$check_data <- FALSE
+  if (is.null(dots$tol_obj)) dots$tol_obj <- 1e-12
+  if (is.null(dots$tol_rel_obj)) dots$tol_rel_obj <- 1e4
+  if (is.null(dots$tol_grad)) dots$tol_grad <-  1e-8
+  if (is.null(dots$tol_rel_grad)) dots$tol_rel_grad <- 1e4
+  if (is.null(dots$tol_param)) dots$tol_param <- 1e-8
   out <-  do.call(
     optimizing, 
     c(list(
@@ -113,7 +119,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, verbose, ...) {
       ), 
       as_vector = FALSE,
       init = init,
-      verbose = verbose
+      verbose = verbose,
+      save_iterations = FALSE
     ), dots)
   )[c("par", "value", "return_code", "hessian")]
   

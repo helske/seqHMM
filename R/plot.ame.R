@@ -7,7 +7,7 @@
 #' confidence intervals. Default is `c(0.025, 0.975)`. If the limits are not 
 #' found in the input object `x`, an error is thrown.
 #' @export
-plot.ame <- function(x, type, probs = c(0.025, 0.975)) {
+plot.ame <- function(x, type, probs = c(0.025, 0.975), ...) {
   
   type <- match.arg(type, c("initial", "transition", "emission", "cluster"))
   

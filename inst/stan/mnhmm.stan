@@ -22,7 +22,11 @@ model {
   target += log_lik;
 }
 generated quantities {
-  real ploglik_N = prior + loglik_sc_mix(beta_i_raw, beta_s_raw, 
-  beta_o_raw, theta_raw, obs, M, T, N, linspaced_int_array(N, 1, N), X_s, X_o, 
-  X_i, X_d);
+  print("not yet!");
+  real ploglik_N = prior + log_lik;
+  if (N > N_sample) {
+    ploglik_N = prior + loglik_sc_mix(beta_i_raw, beta_s_raw, 
+    beta_o_raw, theta_raw, obs, M, T, N, linspaced_int_array(N, 1, N), X_s, X_o, 
+    X_i, X_d);
+  }
 }

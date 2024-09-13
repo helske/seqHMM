@@ -8,10 +8,6 @@
 #' @rdname coef
 #' @export
 coef.nhmm <- function(object, probs = c(0.025, 0.975), ...) {
-  stopifnot_(
-    checkmate::test_count(nsim),
-    "Argument {.arg nsim} should be a single non-negative integer."
-  )
   S <- object$n_states
   M <- object$n_symbols
   beta_i_raw <- c(object$coefficients$beta_i_raw)

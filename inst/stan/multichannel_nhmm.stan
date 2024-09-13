@@ -19,6 +19,9 @@ model {
   target += log_lik;
 }
 generated quantities {
-  real ploglik_N = prior + loglik_mc(beta_i_raw, beta_s_raw, beta_o_raw, obs, 
-  M, T, N, linspaced_int_array(N, 1, N), X_s, X_o, X_i);
+  real ploglik_N = prior + log_lik;
+  if (N > N_sample) {
+    ploglik_N = prior + loglik_mc(beta_i_raw, beta_s_raw, beta_o_raw, obs, 
+    M, T, N, linspaced_int_array(N, 1, N), X_s, X_o, X_i);
+  }
 }

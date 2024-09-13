@@ -24,6 +24,7 @@ estimate_mnhmm(
   threads = 1L,
   store_data = TRUE,
   verbose = TRUE,
+  restart_method = "1",
   ...
 )
 }

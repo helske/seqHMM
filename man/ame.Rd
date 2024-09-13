@@ -15,7 +15,8 @@ ame(model, variable, values, ...)
   marginalize_B_over = "sequences",
   newdata = NULL,
   nsim = 0,
-  probs = c(0.025, 0.5, 0.975)
+  probs = c(0.025, 0.5, 0.975),
+  ...
 )
 
 \method{ame}{mnhmm}(
@@ -25,7 +26,8 @@ ame(model, variable, values, ...)
   marginalize_B_over = "sequences",
   newdata = NULL,
   nsim = 0,
-  probs = c(0.025, 0.5, 0.975)
+  probs = c(0.025, 0.5, 0.975),
+  ...
 )
 }
 \arguments{

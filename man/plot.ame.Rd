@@ -4,7 +4,7 @@
 \alias{plot.ame}
 \title{Visualize Average Marginal Effects}
 \usage{
-\method{plot}{ame}(x, type, probs = c(0.025, 0.975), alpha = 0.25)
+\method{plot}{ame}(x, type, probs = c(0.025, 0.975), ...)
 }
 \arguments{
 \item{x}{Output from \code{\link[=ame]{ame()}}.}
@@ -15,8 +15,6 @@
 \item{probs}{A numeric vector of length 2 with the lower and upper limits for
 confidence intervals. Default is \code{c(0.025, 0.975)}. If the limits are not
 found in the input object \code{x}, an error is thrown.}
-
-\item{alpha}{Transparency level for \code{\link[ggplot2:geom_ribbon]{ggplot2::geom_ribbon()}}.}
 }
 \description{
 Visualize Average Marginal Effects

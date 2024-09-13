@@ -244,17 +244,3 @@ remove_voids <- function(model, x) {
     })
   )
 }
-#' Subsample Observations
-#' @noRd
-subsample_obs <- function(obs, n, multichannel) {
-  
-  if (multichannel) {
-    idx <- sample(seq_len(dim(obs)[3]), n)
-    obs <- x[, , idx, drop = FALSE]
-  } else {
-    idx <- sample(seq_len(ncol(obs)), n)
-    obs <- obs[, idx, drop = FALSE]
-  }
-  attr(obs, "idx") <- idx
-  obs
-}
