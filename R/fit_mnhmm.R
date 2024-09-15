@@ -76,7 +76,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, verbose, penaliz
             X_o = model$X_emission,
             X_d = model$X_cluster,
             obs = obs,
-            ids = seq_len(model$n_sequences),
+            ids = as.array(seq_len(model$n_sequences)),
             N_sample = model$n_sequences
           ),
           as_vector = FALSE,
@@ -128,7 +128,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, verbose, penaliz
         X_o = model$X_emission,
         X_d = model$X_cluster,
         obs = obs, 
-        ids = seq_len(model$n_sequences),
+        ids = as.array(seq_len(model$n_sequences)),
         N_sample = model$n_sequences
       ), 
       as_vector = FALSE,

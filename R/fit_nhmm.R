@@ -69,7 +69,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, verbose, penalize
             X_s = model$X_transition,
             X_o = model$X_emission,
             obs = obs,
-            ids = seq_len(model$n_sequences),
+            ids = as.array(seq_len(model$n_sequences)),
             N_sample = model$n_sequences
           ),
           as_vector = FALSE,
@@ -118,7 +118,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, verbose, penalize
         X_s = model$X_transition,
         X_o = model$X_emission,
         obs = obs,
-        ids = seq_len(model$n_sequences),
+        ids = as.array(seq_len(model$n_sequences)),
         N_sample = model$n_sequences
       ), 
       as_vector = FALSE,
