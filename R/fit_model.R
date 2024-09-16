@@ -939,7 +939,7 @@ fit_model <- function(
         emissNZ[, 1:model$n_symbols[i], i] <- model$emission_probs[[i]] > 0
         emissNZ[, 1:model$n_symbols[i], i][maxEM[[i]]] <- 0
         paramEM[[i]] <- which(emissNZ[, 1:model$n_symbols[i], i] == 1, arr.ind = TRUE)
-        paramEM[[i]] <- paramEM[[i]][order(paramEM[[i]][, 1]), ]
+        paramEM[[i]] <- paramEM[[i]][order(paramEM[[i]][, 1]), , drop = FALSE]
         npEM[i] <- nrow(paramEM[[i]])
       }
     } else {
@@ -947,7 +947,7 @@ fit_model <- function(
         emissNZ[, 1:model$n_symbols[i], i] <- model$emission_probs[[i]] > 0 & !fixed_emissions[[i]]
         emissNZ[, 1:model$n_symbols[i], i][maxEM[[i]]] <- 0
         paramEM[[i]] <- which(emissNZ[, 1:model$n_symbols[i], i] == 1, arr.ind = TRUE)
-        paramEM[[i]] <- paramEM[[i]][order(paramEM[[i]][, 1]), ]
+        paramEM[[i]] <- paramEM[[i]][order(paramEM[[i]][, 1]), , drop = FALSE]
         npEM[i] <- nrow(paramEM[[i]])
       }
     }
