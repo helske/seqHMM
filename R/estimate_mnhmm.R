@@ -11,12 +11,12 @@
 #' mixture probabilities.
 #'  @param inits If `inits = "random"` (default), random initial values are 
 #' used. Otherwise `inits` should be list of initial values. If coefficients 
-#' are given using list components `beta_i_raw`, `beta_s_raw`, `beta_o_raw`, 
-#' and `theta_raw`, these are used as is, alternatively initial values can be 
-#' given in terms of the initial state, transition, emission, and mixture 
+#' are given using list components `gamma_pi_raw`, `gamma_A_raw`, `gamma_B_raw`, 
+#' and `gamma_omega_raw`, these are used as is, alternatively initial values 
+#' can be given in terms of the initial state, transition, emission, and mixture 
 #' probabilities using list components `initial_probs`, `emission_probs`, 
 #' `transition_probs`, and `cluster_probs`. These can also be mixed, i.e. you 
-#' can give only `initial_probs` and `beta_s_raw`.
+#' can give only `initial_probs` and `gamma_A_raw`.
 #' @param cluster_names A vector of optional labels for the clusters. If this
 #' is `NULL` (the default), numbered clusters are used.
 #' @return Object of class `mnhmm`.
@@ -43,8 +43,7 @@ estimate_mnhmm <- function(
     transition_formula = ~1, emission_formula = ~1, cluster_formula = ~1,
     data = NULL, time = NULL, id = NULL, state_names = NULL, 
     channel_names = NULL, cluster_names = NULL, inits = "random", init_sd = 2, 
-    restarts = 0L, threads = 1L, store_data = TRUE, verbose = TRUE, 
-    restart_method = "1", penalize = TRUE, penalty = 5, ...) {
+    restarts = 0L, threads = 1L, store_data = TRUE, hessian = FALSE, ...) {
   
   call <- match.call()
   model <- build_mnhmm(
@@ -58,13 +57,8 @@ estimate_mnhmm <- function(
   if (store_data) {
     model$data <- data
   }
-  if (restart_method == "1") {
-    out <- fit_mnhmm(model, inits, init_sd, restarts, threads, verbose, 
-                     penalize, penalty, ...)
-  } else {
-    out <- fit_mnhmm2(model, inits, init_sd, restarts, threads, verbose, 
-                      penalize, penalty, ...)
-  }
+  out <- fit_mnhmm(model, inits, init_sd, restarts, threads, hessian, ...)
+  
   attr(out, "call") <- call
   out
 }

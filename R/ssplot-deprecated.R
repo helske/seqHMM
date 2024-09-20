@@ -22,7 +22,7 @@
 #'
 #' @param type The type of the plot. Available types are `"I"` for sequence index
 #'   plots and `"d"` for state distribution plots (the default). See
-#'   [seqplot()] for details.
+#'   [TraMineR::seqplot()] for details.
 #'
 #' @param tlim Indexes of the subjects to be plotted (the default is 0,
 #' i.e. all subjects are plotted). For example, `tlim = 1:10` plots
@@ -33,7 +33,7 @@
 #'   `type = "I"`. The value `"mds.hidden"` is only available when
 #'   hidden paths are available. Options `"mds.obs"` and
 #'   `"mds.hidden"` automatically arrange the sequences according to the
-#'   scores of multidimensional scaling (using [cmdscale()]) for the
+#'   scores of multidimensional scaling (using [stats::cmdscale()]) for the
 #'   observed data or hidden states paths.
 #'   MDS scores are computed from distances/dissimilarities using a metric
 #'   defined in argument `dist.method`. See [plot.stslist()] for

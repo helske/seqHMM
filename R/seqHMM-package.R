@@ -21,24 +21,14 @@
 #' @import gridBase
 #' @import grid
 #' @import nloptr
-#' @import methods
 #' @import Rcpp
-#' @importFrom future plan sequential multisession
-#' @importFrom future.apply future_lapply
-#' @importFrom rstan optimizing
-#' @importFrom rstantools rstan_config
-#' @importFrom RcppParallel RcppParallelLibs CxxFlags
 #' @importFrom Rcpp loadModule evalCpp
-#' @importFrom Matrix .bdiag
-#' @importFrom stats logLik cmdscale complete.cases model.matrix BIC rnorm runif vcov predict update coef qnorm quantile
-#' @importFrom TraMineR alphabet seqstatf seqdef seqlegend seqdist seqdistmc seqplot seqlength is.stslist
-#' @importFrom grDevices col2rgb rainbow
-#' @importFrom graphics barplot par plot plot.new polygon strwidth text
+#' @importFrom stats logLik complete.cases model.matrix BIC rnorm runif vcov predict update coef qnorm quantile
+#' @importFrom TraMineR alphabet seqstatf seqdef
+#' @importFrom graphics par plot.new
 #' @importFrom methods hasArg
-#' @importFrom utils menu head
 #' @importFrom ggplot2 ggplot aes geom_pointrange geom_ribbon geom_line facet_wrap
 #' @importFrom rlang :=
-#' @importFrom dplyr across all_of
 #' @references Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
 #' Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
 "_PACKAGE"

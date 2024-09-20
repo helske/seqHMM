@@ -14,8 +14,6 @@ ame(model, variable, values, ...)
   values,
   marginalize_B_over = "sequences",
   newdata = NULL,
-  nsim = 0,
-  probs = c(0.025, 0.5, 0.975),
   ...
 )
 
@@ -25,8 +23,6 @@ ame(model, variable, values, ...)
   values,
   marginalize_B_over = "sequences",
   newdata = NULL,
-  nsim = 0,
-  probs = c(0.025, 0.5, 0.975),
   ...
 )
 }
@@ -44,14 +40,6 @@ emission probabilities are marginalized. Default is \code{"sequences"}. Other
 options are \code{"states"} and \code{"clusters"}.}
 
 \item{newdata}{Optional data frame which is used for marginalization.}
-
-\item{nsim}{Non-negative integer defining the number of samples from the
-normal approximation of the model parameters used in
-computing the approximate quantiles of the estimates. If \code{0}, only point
-estimates are returned.}
-
-\item{probs}{Vector defining the quantiles of interest. Default is
-\code{c(0.025, 0.5, 0.975)}.}
 }
 \description{
 Average Marginal Effects for Non-homogenous Hidden Markov Models

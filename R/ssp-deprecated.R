@@ -20,7 +20,7 @@
 #'
 #' @param type The type of the plot. Available types are `"I"` for sequence index
 #'   plots and `"d"` for state distribution plots (the default). See
-#'   [seqplot()] for details.
+#'   [TraMineR::seqplot()] for details.
 #'
 #' @param tlim Indexes of the subjects to be plotted (the default is 0,
 #' i.e. all subjects are plotted). For example, `tlim = 1:10` plots
@@ -31,7 +31,7 @@
 #'   `type = "I"`. The value `"mds.hidden"` is only available when
 #'   hidden paths are available. Options `"mds.obs"` and
 #'   `"mds.hidden"` automatically arrange the sequences according to the
-#'   scores of multidimensional scaling (using [cmdscale()]) for the
+#'   scores of multidimensional scaling (using [stats::cmdscale()]) for the
 #'   observed data or hidden states paths.
 #'   MDS scores are computed from distances/dissimilarities using a metric
 #'   defined in argument `dist.method`. See [plot.stslist()] for
@@ -473,11 +473,12 @@ ssp <- function(
 
     # Sort sequences according to multidimensional scaling score of hidden.paths
     if (!is.null(sortv) && length(sortv) == 1 && sortv == "mds.hidden") {
-      dist.hidden.paths <- suppressWarnings(suppressMessages(seqdist(hidden.paths,
+      dist.hidden.paths <- suppressWarnings(
+        suppressMessages(TraMineR::seqdist(hidden.paths,
         method = dist.method,
         sm = "TRATE", with.missing = TRUE
       )))
-      sortv <- cmdscale(dist.hidden.paths, k = 1)
+      sortv <- stats::cmdscale(dist.hidden.paths, k = 1)
     }
   }
 
@@ -502,19 +503,19 @@ ssp <- function(
             )
           ))
         }
-        sortv <- cmdscale(dist.obs, k = 1)
+        sortv <- stats::cmdscale(dist.obs, k = 1)
       }
       # Sorting from start or end (extended version of the same feature in TraMineR:::plot.stslist)
       if (length(sortv) == 1 && (sortv == "from.start" || sortv == "from.end")) {
         end <- if (sortv == "from.end") {
           # Sorting according to observations
           if (sort.channel > 0 && sort.channel <= length(obs)) {
-            max(seqlength(obs[[sort.channel]]))
+            max(TraMineR::seqlength(obs[[sort.channel]]))
             # Sorting according to hidden paths
           } else if (sort.channel == 0) {
             if (plots == "both" || plots == "hidden.paths" ||
               (plots == "obs" && !is.null(hidden.paths))) {
-              max(seqlength(hidden.paths))
+              max(TraMineR::seqlength(hidden.paths))
             } else {
               stop("Sorting according to hidden paths is not possible since they were not provided.")
             }
@@ -529,11 +530,11 @@ ssp <- function(
           1
         } else {
           if (sort.channel > 0 && sort.channel <= length(obs)) {
-            max(seqlength(obs[[sort.channel]]))
+            max(TraMineR::seqlength(obs[[sort.channel]]))
           } else if (sort.channel == 0) {
             if (plots == "both" || plots == "hidden.paths" ||
               (plots == "obs" && !is.null(hidden.paths))) {
-              max(seqlength(hidden.paths))
+              max(TraMineR::seqlength(hidden.paths))
             } else {
               stop("Sorting according to hidden paths is not possible since they were not provided.")
             }
@@ -553,19 +554,19 @@ ssp <- function(
       # Single-channel data (nchannels == 1)
     } else {
       if (length(sortv) == 1 && sortv == "mds.obs") {
-        dist.obs <- suppressWarnings(suppressMessages(seqdist(obs,
+        dist.obs <- suppressWarnings(suppressMessages(TraMineR::seqdist(obs,
           method = dist.method,
           sm = "TRATE", with.missing = TRUE
         )))
-        sortv <- cmdscale(dist.obs, k = 1)
+        sortv <- stats::cmdscale(dist.obs, k = 1)
       } else if (length(sortv) == 1 && (sortv == "from.start" || sortv == "from.end")) {
         end <- if (sortv == "from.end") {
           if (sort.channel == 1) {
-            max(seqlength(obs))
+            max(TraMineR::seqlength(obs))
           } else if (sort.channel == 0) {
             if (plots == "both" || plots == "hidden.paths" ||
               (plots == "obs" && !is.null(hidden.paths))) {
-              max(seqlength(hidden.paths))
+              max(TraMineR::seqlength(hidden.paths))
             } else {
               stop("Sorting according to hidden paths is not possible since they were not provided.")
             }
@@ -579,11 +580,11 @@ ssp <- function(
           1
         } else {
           if (sort.channel == 1) {
-            max(seqlength(obs))
+            max(TraMineR::seqlength(obs))
           } else if (sort.channel == 0) {
             if (plots == "both" || plots == "hidden.paths" ||
               (plots == "obs" && !is.null(hidden.paths))) {
-              max(seqlength(hidden.paths))
+              max(TraMineR::seqlength(hidden.paths))
             } else {
               stop("Sorting according to hidden paths is not possible since they were not provided.")
             }

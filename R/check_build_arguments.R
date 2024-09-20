@@ -61,7 +61,7 @@
                of channels. Names were not used.")
       channel_names <- paste("Channel", seq_len(n_channels))
     }
-    sequence_lengths <- do.call("pmax", lapply(x, TraMineR::seqlength))
+    sequence_lengths <- do.call(pmax, lapply(x, TraMineR::seqlength))
   } else {
     n_sequences <- nrow(x)
     length_of_sequences <- ncol(x)

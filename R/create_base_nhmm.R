@@ -91,23 +91,38 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
     n_symbols, n_channels, time, id, sequence_lengths
   )
   if (mixture) {
-    theta <- model_matrix_cluster_formula(
+    omega <- model_matrix_cluster_formula(
       cluster_formula, data, n_sequences, n_clusters, time, id
     )
+    coefficients <- create_initial_values(
+      list(pi = NULL, A = NULL, B = NULL, omega = NULL), 
+      n_states, n_symbols, 0, 
+      length(pi$coef_names), length(A$coef_names), length(B$coef_names),
+      length(omega$coef_names), n_clusters
+    )
+  } else {
+    coefficients <- create_initial_values(
+      list(pi = NULL, A = NULL, B = NULL), 
+      n_states, n_symbols, 0, 
+      length(pi$coef_names), length(A$coef_names), length(B$coef_names)
+    )
   }
-  n_pars <- if (mixture) theta$n_pars else 0
+  n_pars <- if (mixture) omega$n_pars else 0
   n_pars <- n_pars + n_clusters * (pi$n_pars + A$n_pars + B$n_pars)
   list(
     model = list(
       observations = observations, 
       time_variable = if (is.null(time)) "time" else time,
       id_variable = if (is.null(id)) "id" else id,
-      X_initial = pi$X, X_transition = A$X, X_emission = B$X,
-      X_cluster = if(mixture) theta$X else NULL,
+      X_initial = t(pi$X), 
+      X_transition = aperm(A$X, c(3, 1, 2)), 
+      X_emission = aperm(B$X, c(3, 1, 2)),
+      X_cluster = if(mixture) t(omega$X) else NULL,
       initial_formula = pi$formula, 
       transition_formula = A$formula,
       emission_formula = B$formula,
-      cluster_formula = if(mixture) theta$formula else NULL,
+      cluster_formula = if(mixture) omega$formula else NULL,
+      coefficients = coefficients,
       state_names = state_names,
       symbol_names = attr(observations, "symbol_names"),
       channel_names = attr(observations, "channel_names"),
@@ -122,7 +137,7 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
       coef_names_initial = pi$coef_names,
       coef_names_transition = A$coef_names,
       coef_names_emission = B$coef_names,
-      coef_names_cluster = if(mixture) theta$coef_names else NULL
+      coef_names_cluster = if(mixture) omega$coef_names else NULL
     ),
     extras = list(
       n_pars = n_pars, 

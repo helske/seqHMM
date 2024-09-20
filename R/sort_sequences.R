@@ -12,14 +12,14 @@ sort_sequences <- function(
   n_channels <- if(inherits(x, "stslist")) 1 else length(x)
   if (sort_by %in% c("start", "end")) {
     if (n_channels == 1) {
-      idx <- seq_len(max(seqlength(x)))
+      idx <- seq_len(max(TraMineR::seqlength(x)))
       if (sort_by == "start") {
         ordering <- do.call(order, x[, idx])
       } else {
         ordering <- do.call(order, x[, rev(idx)])
       }
     } else {
-      idx <- seq_len(max(seqlength(x)))
+      idx <- seq_len(max(TraMineR::seqlength(x)))
       if (sort_by == "start") {
         ordering <- do.call(order, x[[sort_channel]][, idx])
       } else {
@@ -42,7 +42,7 @@ sort_sequences <- function(
         )
       ))
     }
-    ordering <- order(drop(cmdscale(distances, k = 1)))
+    ordering <- order(drop(stats::cmdscale(distances, k = 1)))
   }
   if (n_channels == 1) {
     x <- x[ordering,]

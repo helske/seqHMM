@@ -5,20 +5,12 @@
 \alias{summary.mnhmm}
 \title{Summary of Non-homogeneous Hidden Markov Models}
 \usage{
-\method{summary}{nhmm}(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...)
+\method{summary}{nhmm}(object, ...)
 
-\method{summary}{mnhmm}(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...)
+\method{summary}{mnhmm}(object, ...)
 }
 \arguments{
 \item{object}{Non-homogeneous hidden Markov model of class \code{mnhmm}.}
-
-\item{nsim}{Non-negative integer defining the number of samples from the
-normal approximation of the model parameters used in
-computing the approximate quantiles of the estimates. If \code{0}, only point
-estimates are returned.}
-
-\item{probs}{Vector defining the quantiles of interest. Default is
-\code{c(0.025, 0.5, 0.975)}.}
 
 \item{...}{Ignored.}
 }

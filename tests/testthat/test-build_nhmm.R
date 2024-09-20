@@ -35,8 +35,7 @@ test_that("estimate_nhmm returns object of class 'nhmm'", {
   expect_error(
     fit <- estimate_nhmm(
       "y", s, initial_formula = ~ x, transition_formula = ~z,
-      emission_formula = ~ z, data = data, time = "time", id = "id", 
-      iter = 0, verbose = FALSE, hessian = FALSE),
+      emission_formula = ~ z, data = data, time = "time", id = "id"),
     NA
   )
   expect_s3_class(
@@ -96,8 +95,7 @@ test_that("estimate_nhmm errors with incorrect observations", {
 })
 test_that("build_nhmm works with vector of characters as observations", {
   expect_error(
-    estimate_nhmm("y", s, data = data, time = "time", id = "id", iter = 0,
-                  verbose = FALSE),
+    estimate_nhmm("y", s, data = data, time = "time", id = "id"),
     NA
   )
 })

@@ -3,7 +3,6 @@
 #' Function `estimate_nhmm` estimates a hidden Markov model object of class 
 #' `nhmm` where initial, transition and emission probabilities 
 #' (potentially) depend on covariates.
-#'
 #' 
 #' @param observations Either the name of the response variable in `data`, or 
 #' an `stslist` object (see [TraMineR::seqdef()]) containing the 
@@ -28,11 +27,11 @@
 #' is `NULL` (the default), numbered channels are used.
 #' @param inits If `inits = "random"` (default), random initial values are 
 #' used. Otherwise `inits` should be list of initial values. If coefficients 
-#' are given using list components `beta_i_raw`, `beta_s_raw`, `beta_o_raw`, 
+#' are given using list components `gamma_pi_raw`, `gamma_A_raw`, `gamma_B_raw`, 
 #' these are used as is, alternatively initial values can be given in terms of 
 #' the initial state, transition, and emission probabilities using list 
 #' components `initial_probs`, `emission_probs`, and `transition_probs`. These 
-#' can also be mixed, i.e. you can give only `initial_probs` and `beta_s_raw`.
+#' can also be mixed, i.e. you can give only `initial_probs` and `gamma_A_raw`.
 #' @param init_sd Standard deviation of the normal distribution used to generate
 #' random initial values. Default is `2`. If you want to fix the initial values 
 #' of the regression coefficients to zero, use `init_sd = 0`.
@@ -44,18 +43,15 @@
 #' is stored to the model object. For large datasets, this can be set to 
 #' `FALSE`, in which case you might need to pass the data separately to some 
 #' post-prosessing functions.
-#' @param verbose If `TRUE` (default), print progress messages during the final 
-#' optimization (after restarts). Note that due to the design of `rstan`, the 
-#' reason for the termination of optimization (e.g., reached the maximum number 
-#' of iterations) is only available by the final message show with 
-#' `verbose = TRUE`.
-#' @param penalize If `TRUE` (default), penalize the likelihood with a prior on 
-#' the coefficients
-#' @param penalty If `penalize = TRUE`, the standard deviation of the zero-mean 
-#' normal density used as a penalizing prior for the coefficients. Default is `5`.
-#' @param ... Additional arguments to [rstan::optimizing()]. Most importantly,
-#' argument `iter` defines the maximum number of iterations for optimization.
-#' The default is `2000`.
+#' @param hessian If `TRUE`, computes the Hessian of the model 
+#' coefficients using [numDeriv::jacobian]. Default is `FALSE`. Can also be 
+#' a list with components `method`, `side` and `method.args` to 
+#' [numDeriv::jacobian].
+#' @param ... Additional arguments to [nloptr::nloptr()]. Most importantly,
+#' argument `maxeval` defines the maximum number of iterations for optimization.
+#' The default is `1000` for restarts and `10000` for the final optimization. 
+#' Other useful arguments are `algorithm` (default uses LBFGS), and 
+#' `print_level` (default is `0`, no console output of optimization).
 #' @return Object of class `nhmm`.
 #' @export
 #' @examples
@@ -77,7 +73,7 @@ estimate_nhmm <- function(
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, channel_names = NULL, 
     inits = "random", init_sd = 2, restarts = 0L, threads = 1L, 
-    store_data = TRUE, verbose = TRUE, penalize = TRUE, penalty = 5, ...) {
+    store_data = TRUE, hessian = FALSE, ...) {
   
   call <- match.call()
   
@@ -92,8 +88,7 @@ estimate_nhmm <- function(
   if (store_data) {
     model$data <- data
   }
-  out <- fit_nhmm(model, inits, init_sd, restarts, threads, verbose, 
-                  penalize, penalty, ...)
+  out <- fit_nhmm(model, inits, init_sd, restarts, threads, hessian, ...)
   attr(out, "call") <- call
   out
 }

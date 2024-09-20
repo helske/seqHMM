@@ -11,8 +11,8 @@
 #' @param n_states The number of hidden states.
 #' @param n_clusters The number of clusters/mixtures.
 #' @param coefs If `coefs = "random"` (default), random coefficient values are 
-#' used. Otherwise `coefs` should be named list of `beta_i_raw`, `beta_s_raw`, 
-#' `beta_o_raw`, and `theta_raw`.
+#' used. Otherwise `coefs` should be named list of `gamma_pi_raw`, `gamma_A_raw`, 
+#' `gamma_B_raw`, and `gamma_omega_raw`.
 #' @param init_sd Standard deviation of the normal distribution used to generate
 #' random coefficient values. Default is `2`.
 #' @inheritParams estimate_mnhmm

@@ -13,7 +13,6 @@
 #' Computing the non-conditional standard errors can be slow for large models as
 #' the Jacobian of analytical gradients is computed using finite difference approximation.
 #'
-#' @importFrom numDeriv jacobian
 #' @param object Object of class `mhmm`.
 #' @param conditional If `TRUE` (default), the standard errors are
 #' computed conditional on other model parameters. See details.
@@ -65,16 +64,16 @@ vcov.mhmm <- function(object, conditional = TRUE, threads = 1,
     npTM <- nrow(paramTM)
     transNZ <- model$transition_probs > 0
     transNZ[maxTM] <- 0
-
+    
     npCoef <- length(model$coefficients[, -1])
     model$coefficients[, 1] <- 0
-
-
+    
+    
     emissNZ <- lapply(model$emission_probs, function(i) {
       x <- which(i > 0, arr.ind = TRUE)
       x[order(x[, 1]), ]
     })
-
+    
     if (model$n_states > 1) {
       maxEM <- lapply(model$emission_probs, function(i) cbind(1:model$n_states, max.col(i, ties.method = "first")))
       paramEM <- lapply(1:model$n_channels, function(i) {
@@ -90,18 +89,18 @@ vcov.mhmm <- function(object, conditional = TRUE, threads = 1,
       })
       npEM <- length(unlist(paramEM))
     }
-
+    
     maxEMvalue <- lapply(1:model$n_channels, function(i) {
       apply(model$emission_probs[[i]], 1, max)
     })
-
-
+    
+    
     emissNZ <- array(0, c(model$n_states, max(model$n_symbols), model$n_channels))
     for (i in 1:model$n_channels) {
       emissNZ[, 1:model$n_symbols[i], i] <- model$emission_probs[[i]] > 0
       emissNZ[, 1:model$n_symbols[i], i][maxEM[[i]]] <- 0
     }
-
+    
     initialvalues <- c(
       if ((npTM + sum(npEM) + npIPAll) > 0) {
         log(c(
@@ -121,9 +120,9 @@ vcov.mhmm <- function(object, conditional = TRUE, threads = 1,
       },
       model$coefficients[, -1]
     )
-
+    
     coef_ind <- npTM + sum(npEM) + npIPAll + 1:npCoef
-
+    
     objectivef <- function(pars, model) {
       if (npTM > 0) {
         model$transition_probs[maxTM] <- maxTMvalue
@@ -143,13 +142,13 @@ vcov.mhmm <- function(object, conditional = TRUE, threads = 1,
         if (npIP[m] > 0) {
           original_model$initial_probs[[m]][maxIP[[m]]] <- maxIPvalue[[m]] # Not needed?
           original_model$initial_probs[[m]][paramIP[[m]]] <- exp(pars[npTM + sum(npEM) + c(0, cumsum(npIP))[m] +
-            1:npIP[m]])
+                                                                        1:npIP[m]])
           original_model$initial_probs[[m]][] <- original_model$initial_probs[[m]] / sum(original_model$initial_probs[[m]])
         }
       }
       model$initial_probs <- unlist(original_model$initial_probs)
       model$coefficients[, -1] <- pars[coef_ind]
-
+      
       if (!log_space) {
         objectivex(
           model$transition_probs, emissionArray, model$initial_probs, obsArray,
@@ -164,7 +163,10 @@ vcov.mhmm <- function(object, conditional = TRUE, threads = 1,
         )$gradient
       }
     }
-    vcovm <- solve(jacobian(objectivef, initialvalues, model = model, ...))[coef_ind, coef_ind]
+    vcovm <- solve(numDeriv::jacobian(
+      objectivef, 
+      initialvalues, model = model, ...)
+    )[coef_ind, coef_ind]
   }
   rownames(vcovm) <- colnames(vcovm) <- paste(
     rep(object$cluster_names[-1], each = object$n_covariates),

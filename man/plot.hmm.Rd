@@ -133,7 +133,7 @@ plotted. Possible values include \code{"bottom"} (the default),
 legend.}
 
 \item{ltext}{Optional description of (combined) observed states to appear
-in the legend. A vector of character strings.  See \code{\link[=seqplot]{seqplot()}} for
+in the legend. A vector of character strings.  See \code{\link[TraMineR:seqplot]{TraMineR::seqplot()}} for
 more information.}
 
 \item{legend.prop}{Proportion used for plotting the legend. A scalar between

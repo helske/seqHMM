@@ -626,7 +626,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
           for (i in 1:x[[1]]$nchannels) {
             pushViewport(viewport(layout.pos.col = 1, layout.pos.row = i))
             par(plt = gridPLT(), new = TRUE)
-            seqlegend(x[[1]]$obs[[i]],
+            TraMineR::seqlegend(x[[1]]$obs[[i]],
               cex = cex.legend, position = legend.pos2,
               cpal = cpals[[i]], ltext = ltexts[[i]],
               ncol = ncol.legend[i], with.missing = with.missing.legend,
@@ -639,7 +639,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         if (x[[1]]$plots == "both" || x[[1]]$plots == "hidden.paths") {
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = x[[1]]$nplots))
           par(plt = gridPLT(), new = TRUE)
-          seqlegend(x[[1]]$hidden.paths,
+          TraMineR::seqlegend(x[[1]]$hidden.paths,
             cex = cex.legend,
             position = legend.pos2, ncol = ncol.legend[length(ncol.legend)],
             cpal = hscpal, ltext = hstext,
@@ -667,7 +667,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
           for (i in 1:x[[1]]$nchannels) {
             pushViewport(viewport(layout.pos.col = i, layout.pos.row = 1))
             par(plt = gridPLT(), new = TRUE)
-            seqlegend(x[[1]]$obs[[i]],
+            TraMineR::seqlegend(x[[1]]$obs[[i]],
               cex = cex.legend, position = legend.pos2,
               cpal = cpals[[i]], ltext = ltexts[[i]],
               ncol = ncol.legend[i], with.missing = with.missing.legend,
@@ -680,7 +680,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         if (x[[1]]$plots == "both" || x[[1]]$plots == "hidden.paths") {
           pushViewport(viewport(layout.pos.col = x[[1]]$nplots, layout.pos.row = 1))
           par(plt = gridPLT(), new = TRUE)
-          seqlegend(x[[1]]$hidden.paths,
+          TraMineR::seqlegend(x[[1]]$hidden.paths,
             cex = cex.legend,
             position = legend.pos2, ncol = ncol.legend[length(ncol.legend)],
             cpal = hscpal, ltext = hstext,
@@ -698,7 +698,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         par(plt = gridPLT(), new = TRUE)
         pushViewport(viewport(width = unit(0.9, "npc")))
 
-        seqlegend(x[[1]]$obs[[1]],
+        TraMineR::seqlegend(x[[1]]$obs[[1]],
           cex = cex.legend, position = legend.pos2,
           ncol = ncol.legend, cpal = cpal, ltext = ltext,
           with.missing = anymissing,
@@ -716,7 +716,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         par(plt = gridPLT(), new = TRUE)
         pushViewport(viewport(width = unit(0.9, "npc")))
 
-        seqlegend(x[[1]]$obs[[1]],
+        TraMineR::seqlegend(x[[1]]$obs[[1]],
           cex = cex.legend, position = legend.pos2,
           ncol = ncol.legend, cpal = cpal, ltext = ltext,
           with.missing = anymissing,

@@ -56,7 +56,7 @@ or \code{"both"} for observations and hidden paths together.}
 
 \item{type}{The type of the plot. Available types are \code{"I"} for sequence index
 plots and \code{"d"} for state distribution plots (the default). See
-\code{\link[=seqplot]{seqplot()}} for details.}
+\code{\link[TraMineR:seqplot]{TraMineR::seqplot()}} for details.}
 
 \item{tlim}{Indexes of the subjects to be plotted (the default is 0,
 i.e. all subjects are plotted). For example, \code{tlim = 1:10} plots
@@ -67,7 +67,7 @@ the first ten subjects in data.}
 \code{type = "I"}. The value \code{"mds.hidden"} is only available when
 hidden paths are available. Options \code{"mds.obs"} and
 \code{"mds.hidden"} automatically arrange the sequences according to the
-scores of multidimensional scaling (using \code{\link[=cmdscale]{cmdscale()}}) for the
+scores of multidimensional scaling (using \code{\link[stats:cmdscale]{stats::cmdscale()}}) for the
 observed data or hidden states paths.
 MDS scores are computed from distances/dissimilarities using a metric
 defined in argument \code{dist.method}. See \code{\link[=plot.stslist]{plot.stslist()}} for

@@ -430,7 +430,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
 
   # Plotting legend
   if (with.legend != FALSE && pie == TRUE) {
-    legendcall <- call("seqlegend",
+    legendcall <- call("TraMineR::seqlegend",
       seqdata = x$observations, cpal = pie.colors.l, ltext = ltext,
       position = legend.pos, cex = cex.legend, ncol = ncol.legend,
       with.missing = FALSE

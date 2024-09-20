@@ -7,12 +7,6 @@
 #' emission probabilities are marginalized. Default is `"sequences"`. Other 
 #' options are `"states"` and `"clusters"`.
 #' @param newdata Optional data frame which is used for marginalization.
-#' @param nsim Non-negative integer defining the number of samples from the 
-#' normal approximation of the model parameters used in 
-#' computing the approximate quantiles of the estimates. If `0`, only point 
-#' estimates are returned.
-#' @param probs Vector defining the quantiles of interest. Default is 
-#' `c(0.025, 0.5, 0.975)`.
 #' @param ... Further arguments passed to specific methods.
 #' @rdname ame
 #' @export
@@ -23,10 +17,10 @@ ame <- function(model, variable, values, ...) {
 #' @export
 ame.nhmm <- function(
     model, variable, values, marginalize_B_over = "sequences", newdata = NULL, 
-    nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
+    ...) {
   # avoid warnings of NSEs
   cluster <- state <- estimate <- state_from <- state_to <- time_var <- 
-    channel <- observation <- replication <- NULL
+    channel <- observation <- NULL
   stopifnot_(
     attr(model, "intercept_only") == FALSE,
     "Model does not contain any covariates."
@@ -78,23 +72,12 @@ ame.nhmm <- function(
   }
   # use same RNG seed so that the same samples of coefficients are drawn
   newdata[[variable]] <- values[1]
-  seed <- sample(.Machine$integer.max, 1)
-  set.seed(seed)
-  pred <- predict(model, newdata, nsim, return_samples = TRUE, 
-                  dontchange_colnames = TRUE)
+  pred <- predict(model, newdata, dontchange_colnames = TRUE)
   newdata[[variable]] <- values[2]
-  set.seed(seed)
-  pred2 <- predict(model, newdata, nsim, return_samples = TRUE, 
-                   dontchange_colnames = TRUE)
+  pred2 <- predict(model, newdata, dontchange_colnames = TRUE)
   pars <- c("initial_probs", "transition_probs", "emission_probs")
   for (i in pars) {
     pred[[i]]$estimate <- pred[[i]]$estimate - pred2[[i]]$estimate
-  }
-  if (nsim > 0) {
-    for (i in pars) {
-      pred$samples[[i]]$estimate <- pred$samples[[i]]$estimate - 
-        pred2$samples[[i]]$estimate
-    }
   }
   channel <- if (model$n_channels > 1) "channel" else NULL
   group_by_B <- switch(
@@ -109,51 +92,25 @@ ame.nhmm <- function(
     as.data.frame(t(x))
   }
   out <- list()
-  out$initial_probs <- cbind(
-    pred$initial_probs |> 
-      dplyr::group_by(state) |>
-      dplyr::summarise(estimate = mean(estimate)) |> 
-      dplyr::ungroup(),
-    pred$samples$initial_probs |> 
-      dplyr::group_by(state, replication) |>
-      dplyr::summarise(estimate = mean(estimate)) |>
-      dplyr::group_by(state) |>
-      dplyr::summarise(qs(estimate, probs)) |>
-      dplyr::ungroup() |> 
-      dplyr::select(-state)
-  )
+  out$initial_probs <- pred$initial_probs |> 
+    dplyr::group_by(state) |>
+    dplyr::summarise(estimate = mean(estimate)) |> 
+    dplyr::ungroup()
   
-  out$transition_probs <- cbind(
-    pred$transition_probs |> 
-      dplyr::group_by(time, state_from, state_to) |>
-      dplyr::summarise(estimate = mean(estimate)) |> 
-      dplyr::ungroup(),
-    pred$samples$transition_probs |> 
-      dplyr::group_by(time, state_from, state_to, replication) |>
-      dplyr::summarise(estimate = mean(estimate)) |>
-      dplyr::group_by(time, state_from, state_to) |>
-      dplyr::summarise(qs(estimate, probs)) |>
-      dplyr::ungroup() |> 
-      dplyr::select(-c(time, state_from, state_to))
-  ) |>  dplyr::rename(!!time := time)
+  out$transition_probs <- pred$transition_probs |> 
+    dplyr::group_by(time, state_from, state_to) |>
+    dplyr::summarise(estimate = mean(estimate)) |> 
+    dplyr::ungroup() |> 
+    dplyr::rename(!!time := time)
   
-  out$emission_probs <- cbind(
-    pred$emission_probs |> 
-      dplyr::group_by(dplyr::pick(group_by_B)) |>
-      dplyr::summarise(estimate = mean(estimate)) |> 
-      dplyr::ungroup(),
-    pred$samples$emission_probs |> 
-      dplyr::group_by(dplyr::pick(c(group_by_B, "replication"))) |>
-      dplyr::summarise(estimate = mean(estimate)) |>
-      dplyr::group_by(dplyr::pick(group_by_B)) |>
-      dplyr::summarise(qs(estimate, probs)) |>
-      dplyr::ungroup() |> 
-      dplyr::select(dplyr::starts_with("q"))
-  ) |> dplyr::rename(!!time := time)
+  out$emission_probs <- pred$emission_probs |> 
+    dplyr::group_by(dplyr::pick(group_by_B)) |>
+    dplyr::summarise(estimate = mean(estimate)) |> 
+    dplyr::ungroup() |> 
+    dplyr::rename(!!time := time)
   
   class(out) <- "amp"
   attr(out, "model") <- "nhmm"
-  attr(out, "seed") <- seed
   attr(out, "marginalize_B_over") <- marginalize_B_over
   out
 }
@@ -162,10 +119,10 @@ ame.nhmm <- function(
 #' @export
 ame.mnhmm <- function(
     model, variable, values, marginalize_B_over = "sequences", newdata = NULL, 
-    nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
+    ...) {
   # avoid warnings of NSEs
   cluster <- state <- estimate <- state_from <- state_to <- time_var <- 
-    channel <- observation <- replication <- NULL
+    channel <- observation <- NULL
   stopifnot_(
     attr(model, "intercept_only") == FALSE,
     "Model does not contain any covariates."
@@ -175,10 +132,6 @@ ame.mnhmm <- function(
   stopifnot_(
     marginalize_B_over != "clusters" || model$n_clusters > 1,
     "Cannot marginalize over clusters as {.arg model} is not a {.cls mnhmm} object."
-  )
-  stopifnot_(
-    checkmate::test_count(nsim),
-    "Argument {.arg nsim} should be a single non-negative integer."
   )
   stopifnot_(
     checkmate::test_string(x = variable), 
@@ -217,25 +170,14 @@ ame.mnhmm <- function(
   }
   # use same RNG seed so that the same samples of coefficients are drawn
   newdata[[variable]] <- values[1]
-  seed <- sample(.Machine$integer.max, 1)
-  set.seed(seed)
-  pred <- predict(model, newdata, nsim, return_samples = TRUE, 
-                  dontchange_colnames = TRUE)
- 
+  pred <- predict(model, newdata, dontchange_colnames = TRUE)
+  
   newdata[[variable]] <- values[2]
-  set.seed(seed)
-  pred2 <- predict(model, newdata, nsim, return_samples = TRUE, 
-                   dontchange_colnames = TRUE)
+  pred2 <- predict(model, newdata, dontchange_colnames = TRUE)
   pars <- c("initial_probs", "transition_probs", "emission_probs",
             "cluster_probs")
   for (i in pars) {
     pred[[i]]$estimate <- pred[[i]]$estimate - pred2[[i]]$estimate
-  }
-  if (nsim > 0) {
-    for (i in pars) {
-      pred$samples[[i]]$estimate <- pred$samples[[i]]$estimate - 
-        pred2$samples[[i]]$estimate
-    }
   }
   channel <- if (model$n_channels > 1) "channel" else NULL
   group_by_B <- switch(
@@ -244,72 +186,32 @@ ame.mnhmm <- function(
     "states" = c("cluster", "time", channel, "observation"),
     "sequences" = c("cluster", "time", "state", channel, "observation")
   )
-  
-  qs <- function(x, probs) {
-    x <- quantile(x, probs)
-    names(x) <- paste0("q", 100 * probs)
-    as.data.frame(t(x))
-  }
+
   out <- list()
-  out$initial_probs <- cbind(
-    pred$initial_probs |> 
+  out$initial_probs <- pred$initial_probs |> 
       dplyr::group_by(cluster, state) |>
       dplyr::summarise(estimate = mean(estimate)) |> 
-      dplyr::ungroup(),
-    pred$samples$initial_probs |> 
-      dplyr::group_by(cluster, state, replication) |>
-      dplyr::summarise(estimate = mean(estimate)) |>
-      dplyr::group_by(cluster, state) |>
-      dplyr::summarise(qs(estimate, probs)) |>
-      dplyr::ungroup() |> 
-      dplyr::select(-c(cluster, state))
-  )
+      dplyr::ungroup()
   
-  out$transition_probs <- cbind(
-    pred$transition_probs |> 
+  out$transition_probs <- pred$transition_probs |> 
       dplyr::group_by(cluster, time, state_from, state_to) |>
       dplyr::summarise(estimate = mean(estimate)) |> 
-      dplyr::ungroup(),
-    pred$samples$transition_probs |> 
-      dplyr::group_by(cluster, time, state_from, state_to, replication) |>
-      dplyr::summarise(estimate = mean(estimate)) |>
-      dplyr::group_by(cluster, time, state_from, state_to) |>
-      dplyr::summarise(qs(estimate, probs)) |>
       dplyr::ungroup() |> 
-      dplyr::select(-c(cluster, time, state_from, state_to))
-  ) |> dplyr::rename(!!time := time)
+      dplyr::rename(!!time := time)
   
-  out$emission_probs <- cbind(
-    pred$emission_probs |> 
-      dplyr::group_by(dplyr::pick(group_by_B)) |>
-      dplyr::summarise(estimate = mean(estimate)) |> 
-      dplyr::ungroup(),
-    pred$samples$emission_probs |> 
-      dplyr::group_by(dplyr::pick(c(group_by_B, "replication"))) |>
-      dplyr::summarise(estimate = mean(estimate)) |>
-      dplyr::group_by(dplyr::pick(group_by_B)) |>
-      dplyr::summarise(qs(estimate, probs)) |>
-      dplyr::ungroup() |> 
-      dplyr::select(dplyr::starts_with("q"))
-  ) |> dplyr::rename(!!time := time)
+  out$emission_probs <- pred$emission_probs |> 
+    dplyr::group_by(dplyr::pick(group_by_B)) |>
+    dplyr::summarise(estimate = mean(estimate)) |> 
+    dplyr::ungroup() |> 
+    dplyr::rename(!!time := time)
   
-  out$cluster_probs <- cbind(
-    pred$cluster_probs |> 
-      dplyr::group_by(cluster) |>
-      dplyr::summarise(estimate = mean(estimate)) |> 
-      dplyr::ungroup(),
-    pred$samples$cluster_probs |> 
-      dplyr::group_by(cluster, replication) |>
-      dplyr::summarise(estimate = mean(estimate)) |>
-      dplyr::group_by(cluster) |>
-      dplyr::summarise(qs(estimate, probs)) |>
-      dplyr::ungroup() |> 
-      dplyr::select(-cluster)
-  )
+  out$cluster_probs <- pred$cluster_probs |> 
+    dplyr::group_by(cluster) |>
+    dplyr::summarise(estimate = mean(estimate)) |> 
+    dplyr::ungroup()
   
   class(out) <- "amp"
   attr(out, "model") <- "mnhmm"
-  attr(out, "seed") <- seed
   attr(out, "marginalize_B_over") <- marginalize_B_over
   out
 }

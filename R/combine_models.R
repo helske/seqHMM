@@ -7,7 +7,7 @@
 .combine_models <- function(model) {
   n_states_in_clusters <- model$n_states
   n_states <- sum(model$n_states)
-  transition_probs <- as.matrix(.bdiag(model$transition_probs))
+  transition_probs <- as.matrix(Matrix::.bdiag(model$transition_probs))
   state_names <- unlist(original_state_names <- model$state_names)
   if (length(unique(state_names)) != length(state_names)) {
     state_names <- paste0(rep(model$cluster_names, model$n_states), 
@@ -17,13 +17,13 @@
 
   if (model$n_channels > 1) {
     emission_probs <- lapply(seq_len(model$n_channels), function(i) {
-      x <- do.call("rbind", sapply(model$emission_probs, "[", i))
+      x <- do.call(rbind, sapply(model$emission_probs, "[", i))
       rownames(x) <- state_names
       x
     })
     names(emission_probs) <- model$channel_names
   } else {
-    emission_probs <- do.call("rbind", model$emission_probs)
+    emission_probs <- do.call(rbind, model$emission_probs)
     rownames(emission_probs) <- state_names
   }
 

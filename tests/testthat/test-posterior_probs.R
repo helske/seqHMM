@@ -41,8 +41,7 @@ test_that("'posterior_probs' works for 'nhmm'", {
       hmm_biofam$observations, n_states = 5,
       inits = hmm_biofam[
         c("initial_probs", "transition_probs", "emission_probs")
-      ],
-      iter = 1, verbose = FALSE, hessian = FALSE
+      ]
     ),
     NA
   )
@@ -56,7 +55,7 @@ test_that("'posterior_probs' works for 'nhmm'", {
   expect_error(
     fit <- estimate_nhmm(
       hmm_biofam$observations[[1]], n_states = 3,
-      iter = 1, verbose = FALSE, restarts = 2, threads = 1, hessian = FALSE
+      restarts = 2, threads = 1
     ),
     NA
   )
@@ -73,8 +72,7 @@ test_that("'posterior_probs' works for 'mnhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_mnhmm(
-      hmm_biofam$observations, n_states = 3, n_clusters = 2,
-      iter = 1, verbose = FALSE, hessian = FALSE
+      hmm_biofam$observations, n_states = 3, n_clusters = 2
     ),
     NA
   )
@@ -88,8 +86,7 @@ test_that("'posterior_probs' works for 'mnhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_mnhmm(
-      hmm_biofam$observations[[1]], n_states = 3, n_clusters = 2,
-      iter = 1, verbose = FALSE, restarts = 2, threads = 1, hessian = FALSE
+      hmm_biofam$observations[[1]], n_states = 3, n_clusters = 2
     ),
     NA
   )

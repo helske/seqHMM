@@ -72,32 +72,18 @@ hidden_paths.mhmm <- function(model, respect_void = TRUE, ...) {
 #' @export
 hidden_paths.nhmm <- function(model, respect_void = TRUE, ...) {
   
-  X_initial <- t(model$X_initial)
-  X_transition <- aperm(model$X_transition, c(3, 1, 2))
-  X_emission <- aperm(model$X_emission, c(3, 1, 2))
   obsArray <- create_obsArray(model)
-  beta_i_raw <- stan_to_cpp_initial(
-    model$coefficients$beta_i_raw
-  )
-  beta_s_raw <- stan_to_cpp_transition(
-    model$coefficients$beta_s_raw
-  )
-  beta_o_raw <- stan_to_cpp_emission(
-    model$coefficients$beta_o_raw,
-    1,
-    model$n_channels > 1
-  )
   if (model$n_channels == 1) {
     out <- viterbi_nhmm_singlechannel(
-      beta_i_raw, X_initial,
-      beta_s_raw, X_transition,
-      beta_o_raw, X_emission,
+      model$coefficients$gamma_pi_raw, model$X_initial,
+      model$coefficients$gamma_A_raw, model$X_transition,
+      model$coefficients$gamma_B_raw, model$X_emission,
       obsArray[1, , ])
   } else {
     out <- viterbi_nhmm_multichannel(
-      beta_i_raw, X_initial,
-      beta_s_raw, X_transition,
-      beta_o_raw, X_emission,
+      model$coefficients$gamma_pi_raw, model$X_initial,
+      model$coefficients$gamma_A_raw, model$X_transition,
+      model$coefficients$gamma_B_raw, model$X_emission,
       obsArray, model$n_symbols)
   }
   create_mpp_seq(out, model, respect_void)
@@ -106,40 +92,20 @@ hidden_paths.nhmm <- function(model, respect_void = TRUE, ...) {
 #' @export
 hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
   
-  X_initial <- t(model$X_initial)
-  X_transition <- aperm(model$X_transition, c(3, 1, 2))
-  X_emission <- aperm(model$X_emission, c(3, 1, 2))
-  X_cluster <- t(model$X_cluster)
   obsArray <- create_obsArray(model)
-  S <- model$n_states
-  D <- model$n_clusters
-  beta_i_raw <- stan_to_cpp_initial(
-    model$coefficients$beta_i_raw,
-    model$n_clusters
-  )
-  beta_s_raw <- stan_to_cpp_transition(
-    model$coefficients$beta_s_raw,
-    model$n_clusters
-  )
-  beta_o_raw <- stan_to_cpp_emission(
-    model$coefficients$beta_o_raw,
-    model$n_clusters,
-    model$n_channels > 1
-  )
-  theta_raw <- model$coefficients$theta_raw
   if (model$n_channels == 1) {
     out <- viterbi_mnhmm_singlechannel(
-      beta_i_raw, X_initial,
-      beta_s_raw, X_transition,
-      beta_o_raw, X_emission,
-      theta_raw, X_cluster,
+      model$coefficients$gamma_pi_raw, model$X_initial,
+      model$coefficients$gamma_A_raw, model$X_transition,
+      model$coefficients$gamma_B_raw, model$X_emission,
+      model$coefficients$gamma_omega_raw, model$X_cluster,
       array(obsArray, dim(obsArray)[2:3]))
   } else {
     out <- viterbi_mnhmm_multichannel(
-      beta_i_raw, X_initial,
-      beta_s_raw, X_transition,
-      beta_o_raw, X_emission,
-      theta_raw, X_cluster,
+      model$coefficients$gamma_pi_raw, model$X_initial,
+      model$coefficients$gamma_A_raw, model$X_transition,
+      model$coefficients$gamma_B_raw, model$X_emission,
+      model$coefficients$gamma_omega_raw, model$X_cluster,
       obsArray, model$n_symbols)
   }
   model$state_names <- paste0(

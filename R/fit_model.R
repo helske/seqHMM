@@ -871,7 +871,7 @@ fit_model <- function(
       transNZ <- model$transition_probs > 0
     } else {
       if (mhmm) {
-        fixed_transitions <- as.matrix(.bdiag(fixed_transitions))
+        fixed_transitions <- as.matrix(Matrix::.bdiag(fixed_transitions))
       }
       mode(fixed_transitions) <- "logical"
       transNZ <- model$transition_probs > 0 & !fixed_transitions
@@ -907,10 +907,10 @@ fit_model <- function(
       if (mhmm) {
         if (model$n_channels > 1) {
           fixed_emissions <- lapply(1:model$n_channels, function(i) {
-            do.call("rbind", sapply(fixed_emissions, "[", i))
+            do.call(rbind, sapply(fixed_emissions, "[", i))
           })
         } else {
-          fixed_emissions <- list(do.call("rbind", fixed_emissions))
+          fixed_emissions <- list(do.call(rbind, fixed_emissions))
         }
       } else {
         if (model$n_channels == 1) {

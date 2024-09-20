@@ -74,7 +74,7 @@
 #'   `"top"`, `"left"`, and `"right"`. `FALSE` omits the
 #'   legend.
 #' @param ltext Optional description of (combined) observed states to appear
-#'   in the legend. A vector of character strings.  See [seqplot()] for
+#'   in the legend. A vector of character strings.  See [TraMineR::seqplot()] for
 #'   more information.
 #' @param legend.prop Proportion used for plotting the legend. A scalar between
 #'   0 and 1, defaults to 0.5.
@@ -655,14 +655,14 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
   if (with.legend != FALSE && pie == TRUE) {
     # Order by appearance
     if (legend.order) {
-      seqlegend(x$observations,
+      TraMineR::seqlegend(x$observations,
                 cpal = pie.colors.l, ltext = ltext,
                 position = "center", cex = cex.legend, ncol = ncol.legend,
                 with.missing = FALSE
       )
       # Original order (by alphabet in observations)
     } else {
-      seqlegend(x$observations,
+      TraMineR::seqlegend(x$observations,
                 cpal = cpal.legend, ltext = ltext.orig,
                 position = "center", cex = cex.legend, ncol = ncol.legend,
                 with.missing = FALSE

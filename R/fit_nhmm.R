@@ -1,7 +1,7 @@
 #' Estimate a Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_nhmm <- function(model, inits, init_sd, restarts, threads, verbose, penalize, penalty, ...) {
+fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
   stopifnot_(
     checkmate::test_int(x = threads, lower = 1L), 
     "Argument {.arg threads} must be a single positive integer."
@@ -10,15 +10,14 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, verbose, penalize
     checkmate::test_int(x = restarts, lower = 0L), 
     "Argument {.arg restarts} must be a single integer."
   )
-  obs <- create_obsArray(model) + 1L
+  obs <- create_obsArray(model)
   if (model$n_channels == 1) {
     obs <- array(obs, dim(obs)[2:3])
   }
-  K_i <- dim(model$X_initial)[2]
-  K_s <- dim(model$X_transition)[3]
-  K_o <- dim(model$X_emission)[3]
   M <- model$n_symbols
   S <- model$n_states
+  T_ <- model$length_of_sequences
+  
   if (identical(inits, "random")) {
     inits <- list(
       initial_probs = NULL, 
@@ -29,116 +28,165 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, verbose, penalize
     if (is.null(inits$transition_probs)) inits$transition_probs <- NULL
     if (is.null(inits$emission_probs)) inits$emission_probs <- NULL
   }
-  model_code <- stanmodels[[attr(model, "type")]]
+  
+  n_i <- length(model$coefficients$gamma_pi_raw)
+  n_s <- length(model$coefficients$gamma_A_raw)
+  n_o <- length(unlist(model$coefficients$gamma_B_raw))
+  X_i <- model$X_initial
+  X_s <- model$X_transition
+  X_o <- model$X_emission
+  K_i <- nrow(X_i)
+  K_s <- nrow(X_s)
+  K_o <- nrow(X_o)
+  
+  dots <- list(...)
+  if (is.null(dots$algorithm)) dots$algorithm <- "NLOPT_LD_LBFGS"
+  need_grad <- grepl("NLOPT_LD_", dots$algorithm)
+  
+  if (model$n_channels == 1L) {
+    if (need_grad) {
+      objectivef <- function(pars) {
+        gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
+        gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+        gamma_B_raw <- create_gamma_B_raw_nhmm(
+          pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+        )
+        out <- log_objective_nhmm_singlechannel(
+          gamma_pi_raw, X_i,
+          gamma_A_raw, X_s,
+          gamma_B_raw, X_o,
+          obs)
+        list(objective = - out$loglik,
+             gradient = - unlist(out[-1]))
+      }
+    } else {
+      objectivef <- function(pars) {
+        gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
+        gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+        gamma_B_raw <- create_gamma_B_raw_nhmm(
+          pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+        )
+        out <- forward_nhmm_singlechannel(
+          gamma_pi_raw, X_i,
+          gamma_A_raw, X_s,
+          gamma_B_raw, X_o,
+          obs)
+        
+        - sum(apply(out[, T_, ], 2, logSumExp))
+      }
+    }
+  } else {
+    if (need_grad) {
+      objectivef <- function(pars) {
+        gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
+        gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+        gamma_B_raw <- create_gamma_multichannel_B_raw_nhmm(
+          pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+        )
+        out <- log_objective_nhmm_multichannel(
+          gamma_pi_raw, X_i,
+          gamma_A_raw, X_s,
+          gamma_B_raw, X_o,
+          obs, M)
+        list(objective = - out$loglik,
+             gradient = - unlist(out[-1]))
+      }
+    } else {
+      objectivef <- function(pars) {
+        gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
+        gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+        gamma_B_raw <- create_gamma_multichannel_B_raw_nhmm(
+          pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+        )
+        out <- forward_nhmm_multichannel(
+          gamma_pi_raw, X_i,
+          gamma_A_raw, X_s,
+          gamma_B_raw, X_o,
+          obs, M)
+        
+        - sum(apply(out[, T_, ], 2, logSumExp))
+      }
+    }
+  }
+  
   if (restarts > 0L) {
     if (threads > 1L) {
-      plan(multisession, workers = threads)
+      future::plan(future::multisession, workers = threads)
     } else {
-      plan(sequential)
+      future::plan(future::sequential)
     }
-    dots <- list(...)
-    if (is.null(dots$hessian)) dots$hessian <- FALSE
-    if (is.null(dots$tol_obj)) dots$tol_obj <- 1e-6
-    if (is.null(dots$tol_rel_obj)) dots$tol_rel_obj <- 1e6
-    if (is.null(dots$tol_grad)) dots$tol_grad <-  1e-4
-    if (is.null(dots$tol_rel_grad)) dots$tol_rel_grad <- 1e9
-    if (is.null(dots$tol_param)) dots$tol_param <- 1e-4
-    if (is.null(dots$check_data)) dots$check_data <- FALSE
-    out <- future_lapply(seq_len(restarts), function(i) {
-      init <- create_initial_values(
+    if (is.null(dots$maxeval)) dots$maxeval <- 1000L
+    if (is.null(dots$print_level )) dots$print_level <- 0
+    if (is.null(dots$xtol_rel)) dots$xtol_rel <- 1e-2
+    if (is.null(dots$xtol_rel)) dots$ftol_rel <- 1e-4
+    if (is.null(dots$check_derivatives)) dots$check_derivatives <- FALSE
+    out <- future.apply::future_lapply(seq_len(restarts), function(i) {
+      init <- unlist(create_initial_values(
         inits, S, M, init_sd, K_i, K_s, K_o
+      ))
+      nloptr(
+        x0 = init, eval_f = objectivef,
+        opts = dots
       )
-      do.call(
-        optimizing, 
-        c(list(
-          model_code, init = init,
-          data = list(
-            penalty = penalty,
-            penalize = as.integer(penalize),
-            N = model$n_sequences,
-            T = model$sequence_lengths,
-            max_T = model$length_of_sequences, 
-            max_M = max(model$n_symbols),
-            M = M,
-            S = S,
-            C = model$n_channels,
-            K_i = K_i,
-            K_s = K_s,
-            K_o = K_o,
-            X_i = model$X_initial,
-            X_s = model$X_transition,
-            X_o = model$X_emission,
-            obs = obs,
-            ids = as.array(seq_len(model$n_sequences)),
-            N_sample = model$n_sequences
-          ),
-          as_vector = FALSE,
-          verbose = FALSE,
-          save_iterations = FALSE
-        ), dots)
-      )[c("par", "value", "return_code")]
     },
     future.seed = TRUE)
-    logliks <- unlist(lapply(out, "[[", "value"))
-    return_codes <- unlist(lapply(out, "[[", "return_code"))
+    
+    logliks <- unlist(lapply(out, "[[", "objective"))
+    return_codes <- unlist(lapply(out, "[[", "status"))
     successful <- which(return_codes == 0)
     optimum <- successful[which.max(logliks[successful])]
-    init <- as.list(out[[optimum]]$par)
+    init <- out[[optimum]]$solution
   } else {
-    init <- create_initial_values(
+    init <- unlist(create_initial_values(
       inits, S, M, init_sd, K_i, K_s, K_o
-    )
+    ))
   }
   dots <- list(...)
-  if (is.null(dots$hessian)) dots$hessian <- TRUE
-  if (is.null(dots$check_data)) dots$check_data <- FALSE
-  if (is.null(dots$tol_obj)) dots$tol_obj <- 1e-12
-  if (is.null(dots$tol_rel_obj)) dots$tol_rel_obj <- 1e4
-  if (is.null(dots$tol_grad)) dots$tol_grad <-  1e-8
-  if (is.null(dots$tol_rel_grad)) dots$tol_rel_grad <- 1e4
-  if (is.null(dots$tol_param)) dots$tol_param <- 1e-8
-  out <-  do.call(
-    optimizing, 
-    c(list(
-      model_code, 
-      data = list(
-        penalty = penalty, 
-        penalize = as.integer(penalize),
-        N = model$n_sequences,
-        T = model$sequence_lengths,
-        max_T = model$length_of_sequences, 
-        max_M = max(model$n_symbols),
-        M = M,
-        S = S,
-        C = model$n_channels,
-        K_i = K_i,
-        K_s = K_s,
-        K_o = K_o,
-        X_i = model$X_initial,
-        X_s = model$X_transition,
-        X_o = model$X_emission,
-        obs = obs,
-        ids = as.array(seq_len(model$n_sequences)),
-        N_sample = model$n_sequences
-      ), 
-      as_vector = FALSE,
-      init = init,
-      verbose = verbose,
-      save_iterations = FALSE
-    ), dots)
-  )[c("par", "value", "return_code", "hessian")]
+  if (is.null(dots$algorithm)) dots$algorithm <- "NLOPT_LD_LBFGS"
+  if (is.null(dots$maxeval)) dots$maxeval <- 10000L
+  if (is.null(dots$xtol_rel)) dots$xtol_rel <- 1e-6
+  if (is.null(dots$xtol_rel)) dots$ftol_rel <- 1e-12
+  if (is.null(dots$check_derivatives)) dots$check_derivatives <- FALSE
+  out <- nloptr(
+    x0 = init, eval_f = objectivef,
+    opts = dots
+  )
+  if (out$status < 0) {
+    warning_(paste("Local optimization terminated:", out$message))
+  }
+  pars <- out$solution
+  model$coefficients$gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
+  model$coefficients$gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+  if (model$n_channels == 1L) {
+    model$coefficients$gamma_B_raw <- create_gamma_B_raw_nhmm(
+      pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+    )
+  } else {
+    model$coefficients$gamma_B_raw <- create_gamma_multichannel_B_raw_nhmm(
+      pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+    )
+  }
   
-  model$coefficients <- out$par[c("beta_i_raw", "beta_s_raw", "beta_o_raw")]
-  model$stan_model <- model_code@model_code
+  if (!isFALSE(hessian)) {
+    if (isTRUE(hessian)){
+      hessian <- numDeriv::jacobian(objectivef, pars)
+    } else {
+      hessian <- do.call(
+        numDeriv::jacobian,
+        c(hessian, list(func = objectivef, x = pars))
+      )
+    }
+  } else {
+    hessian <- NULL
+  }
+  
   model$estimation_results <- list(
-    hessian = out$hessian,
-    penalized_loglik_N = out$par[["ploglik_N"]],
-    penalized_loglik = out$value, 
-    loglik = out$par[["log_lik"]], 
-    penalty = out$par[["prior"]],
-    return_code = out$return_code,
-    plogliks_of_restarts = if(restarts > 1L) logliks else NULL, 
-    return_codes_of_restarts = if(restarts > 1L) return_codes else NULL
+    hessian = hessian,
+    loglik = out$objective, 
+    return_code = out$status,
+    message = out$message,
+    logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
+    return_codes_of_restarts = if(restarts > 0L) return_codes else NULL
   )
   model
 }

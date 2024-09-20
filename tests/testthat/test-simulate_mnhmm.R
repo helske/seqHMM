@@ -42,19 +42,15 @@ test_that("simulate_mnhmm, coef and get_probs works", {
       initial_formula = ~1, transition_formula = ~ x, 
       emission_formula = ~ x + z, cluster_formula = ~w, 
       data = d, time = "month", id = "person", 
-      inits = sim$model$coefficients, 
-      iter = 1, verbose = FALSE),
+      inits = sim$model$coefficients),
     NA
   )
-  expect_warning(
+  expect_error(
     cf <- coef(fit),
-    paste0(
-      "Standard errors could not be computed due to negative variances. ",
-      "Confidence intervals will not be provided."
-    )
+    NA
   )
   expect_error(
-    p <- get_probs(fit, nsim = 0),
+    p <- get_probs(fit),
     NA
   )
 })

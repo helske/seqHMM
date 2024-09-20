@@ -28,13 +28,8 @@ Description: Designed for fitting hidden (latent) Markov models and mixture
     vignettes, and the paper by Helske and Helske (2019, <doi:10.18637/jss.v088.i03>).
 LazyData: true
 LinkingTo: 
-    BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
     RcppArmadillo,
-    RcppEigen (>= 0.3.3.3.0),
-    RcppParallel (>= 5.0.1),
-    rstan (>= 2.18.1),
-    StanHeaders (>= 2.18.0)
 Depends:
     R (>= 4.1.0)
 Imports:
@@ -56,10 +51,7 @@ Imports:
     numDeriv,
     patchwork,
     Rcpp (>= 0.12.0),
-    RcppParallel (>= 5.0.1),
     rlang,
-    rstan (>= 2.18.1),
-    rstantools (>= 2.4.0),
     stats,
     TraMineR (>= 2.2-7),
     utils

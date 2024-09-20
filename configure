@@ -1,4 +1,0 @@
-#! /bin/sh
-"${R_HOME}/bin/Rscript" -e "rstantools::rstan_config()"
-echo "PKG_LIBS += \$(LAPACK_LIBS) \$(BLAS_LIBS) \$(FLIBS) \$(SHLIB_OPENMP_CXXFLAGS)" >> src/Makevars
-echo "PKG_CXXFLAGS += \$(SHLIB_OPENMP_CXXFLAGS)" >> src/Makevars

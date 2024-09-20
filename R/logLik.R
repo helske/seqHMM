@@ -77,29 +77,21 @@ logLik.mhmm <- function(object, partials = FALSE, threads = 1,
 #' @param partials Return a vector containing the individual contributions of 
 #' each sequence to the total log-likelihood. The default is `FALSE`, which 
 #' returns the sum of all log-likelihood components.
-#' @param penalized if `TRUE` (the default), returns the final penalized 
-#' log-likelihood value from the optimization. If `FALSE`, returns the standard 
-#' log-likelihood of non-homogenous HMM. if `partials = TRUE`, this argument is
-#' set to `FALSE`.
 #' @param ... Ignored.
-#' @return (Penalized) log-likelihood of the hidden Markov model. This is an 
+#' @return Log-likelihood of the hidden Markov model. This is an 
 #' object of class `logLik` with attributes `nobs` and `df` inherited from the 
 #' model object.
 #' @rdname logLik_nhmm
 #' @export
 #' @export
-logLik.nhmm <- function(object, partials = FALSE, penalized = TRUE, ...) {
+logLik.nhmm <- function(object, partials = FALSE, ...) {
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")
   if (partials || is.null(object$estimation_results)) {
     out <- forward_backward(object, forward_only = TRUE, as_data_frame = FALSE)
-    ll <- apply(out$forward_probs[, object$length_of_sequences, ], 2, logSumExp)
+    ll <- apply(out$forward_probs[, object$length_of_sequences, , drop = FALSE], 2, logSumExp)
   } else {
-    if (penalized) {
-      ll <- object$estimation_results$penalized_loglik
-    } else {
-      ll <- object$estimation_results$loglik
-    }
+    ll <- object$estimation_results$loglik
   }
   structure(
     if (partials) ll else sum(ll), 
@@ -109,18 +101,14 @@ logLik.nhmm <- function(object, partials = FALSE, penalized = TRUE, ...) {
 }
 #' @rdname logLik_nhmm
 #' @export
-logLik.mnhmm <- function(object, partials = FALSE, penalized = TRUE,...) {
+logLik.mnhmm <- function(object, partials = FALSE, ...) {
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")
   if (partials || is.null(object$estimation_results)) {
     out <- forward_backward(object, forward_only = TRUE, as_data_frame = FALSE)
-    ll <- apply(out$forward_probs[, object$length_of_sequences, ], 2, logSumExp)
+    ll <- apply(out$forward_probs[, object$length_of_sequences, , drop = FALSE], 2, logSumExp)
   } else {
-    if (penalized) {
-      ll <- object$estimation_results$penalized_loglik
-    } else {
-      ll <- object$estimation_results$loglik
-    }
+    ll <- object$estimation_results$loglik
   }
   structure(
     if (partials) ll else sum(ll), 

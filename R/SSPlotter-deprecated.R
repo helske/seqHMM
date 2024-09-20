@@ -67,7 +67,7 @@ SSPlotter <- function(
           for (i in 1:(nchannels - 1)) {
             pushViewport(viewport(layout.pos.col = 1, layout.pos.row = i))
             par(plt = gridPLT(), new = TRUE)
-            seqplot(obs[[i]],
+            TraMineR::seqplot(obs[[i]],
               type = "I", with.legend = FALSE,
               use.layout = FALSE, yaxis = yaxis, xaxis = FALSE, ylab = NA,
               xtlab = xtlab, missing.color = missing.color, ...
@@ -76,7 +76,7 @@ SSPlotter <- function(
           }
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
-          seqplot(obs[[nchannels]],
+          TraMineR::seqplot(obs[[nchannels]],
             type = "I", with.legend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
             xtlab = xtlab, cex.axis = cex.axis, missing.color = missing.color, ...
@@ -85,7 +85,7 @@ SSPlotter <- function(
         } else {
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
-          seqplot(obs,
+          TraMineR::seqplot(obs,
             type = "I", with.legend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
             xtlab = xtlab, cex.axis = cex.axis, missing.color = missing.color, ...
@@ -97,7 +97,7 @@ SSPlotter <- function(
           for (i in 1:(nchannels - 1)) {
             pushViewport(viewport(layout.pos.col = 1, layout.pos.row = i))
             par(plt = gridPLT(), new = TRUE)
-            seqplot(obs[[i]][orderv, ],
+            TraMineR::seqplot(obs[[i]][orderv, ],
               type = "I", with.legend = FALSE,
               use.layout = FALSE, yaxis = yaxis, xaxis = FALSE, ylab = NA,
               xtlab = xtlab, missing.color = missing.color, ...
@@ -106,7 +106,7 @@ SSPlotter <- function(
           }
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
-          seqplot(obs[[nchannels]][orderv, ],
+          TraMineR::seqplot(obs[[nchannels]][orderv, ],
             type = "I", with.legend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
             xtlab = xtlab, cex.axis = cex.axis, missing.color = missing.color, ...
@@ -115,7 +115,7 @@ SSPlotter <- function(
         } else {
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
-          seqplot(obs[orderv, ],
+          TraMineR::seqplot(obs[orderv, ],
             type = "I", with.legend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
             xtlab = xtlab, cex.axis = cex.axis, missing.color = missing.color, ...
@@ -127,7 +127,7 @@ SSPlotter <- function(
           for (i in 1:(nchannels - 1)) {
             pushViewport(viewport(layout.pos.col = 1, layout.pos.row = i))
             par(plt = gridPLT(), new = TRUE)
-            seqplot(obs[[i]],
+            TraMineR::seqplot(obs[[i]],
               type = "I", sortv = sortv, with.legend = FALSE,
               use.layout = FALSE, yaxis = yaxis, xaxis = FALSE, ylab = NA,
               xtlab = xtlab, missing.color = missing.color, ...
@@ -136,7 +136,7 @@ SSPlotter <- function(
           }
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
-          seqplot(obs[[nchannels]],
+          TraMineR::seqplot(obs[[nchannels]],
             type = "I", sortv = sortv, with.legend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
             xtlab = xtlab, cex.axis = cex.axis, missing.color = missing.color, ...
@@ -145,7 +145,7 @@ SSPlotter <- function(
         } else {
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
           par(plt = gridPLT(), new = TRUE)
-          seqplot(obs,
+          TraMineR::seqplot(obs,
             type = "I", sortv = sortv, with.legend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
             xtlab = xtlab, cex.axis = cex.axis, missing.color = missing.color, ...
@@ -162,7 +162,7 @@ SSPlotter <- function(
         for (i in 1:(nchannels - 1)) {
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = i))
           par(plt = gridPLT(), new = TRUE)
-          seqplot(obs[[i]],
+          TraMineR::seqplot(obs[[i]],
             type = "d", with.legend = FALSE,
             use.layout = FALSE, yaxis = yaxis, xaxis = FALSE, ylab = NA,
             with.missing = with.missing, xtlab = xtlab, missing.color = missing.color, ...
@@ -171,7 +171,7 @@ SSPlotter <- function(
         }
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
         par(plt = gridPLT(), new = TRUE)
-        seqplot(obs[[nchannels]],
+        TraMineR::seqplot(obs[[nchannels]],
           type = "d", with.legend = FALSE,
           use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
           with.missing = with.missing, xtlab = xtlab, cex.axis = cex.axis,
@@ -181,7 +181,7 @@ SSPlotter <- function(
       } else {
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nchannels))
         par(plt = gridPLT(), new = TRUE)
-        seqplot(obs,
+        TraMineR::seqplot(obs,
           type = "d", with.legend = FALSE,
           use.layout = FALSE, yaxis = yaxis, xaxis = plotxaxis, ylab = NA,
           with.missing = with.missing, xtlab = xtlab, cex.axis = cex.axis,
@@ -203,7 +203,7 @@ SSPlotter <- function(
       if (is.null(sortv)) {
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nplots))
         par(plt = gridPLT(), new = TRUE)
-        seqplot(hidden.paths,
+        TraMineR::seqplot(hidden.paths,
           type = type, sortv = sortv, with.legend = FALSE,
           use.layout = FALSE, yaxis = yaxis, xaxis = xaxis, ylab = NA,
           xtlab = xtlab, cex.axis = cex.axis, missing.color = missing.color, ...
@@ -212,7 +212,7 @@ SSPlotter <- function(
       } else if (length(sortv) == 1 && (sortv == "from.start" || sortv == "from.end")) {
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nplots))
         par(plt = gridPLT(), new = TRUE)
-        seqplot(hidden.paths[orderv, ],
+        TraMineR::seqplot(hidden.paths[orderv, ],
           type = type, with.legend = FALSE,
           use.layout = FALSE, yaxis = yaxis, xaxis = xaxis, ylab = NA,
           xtlab = xtlab, cex.axis = cex.axis, missing.color = missing.color, ...
@@ -221,7 +221,7 @@ SSPlotter <- function(
       } else if (length(sortv) > 1) {
         pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nplots))
         par(plt = gridPLT(), new = TRUE)
-        seqplot(hidden.paths,
+        TraMineR::seqplot(hidden.paths,
           type = type, sortv = sortv, with.legend = FALSE,
           use.layout = FALSE, yaxis = yaxis, xaxis = xaxis, ylab = NA,
           xtlab = xtlab, cex.axis = cex.axis, missing.color = missing.color, ...
@@ -231,7 +231,7 @@ SSPlotter <- function(
     } else {
       pushViewport(viewport(layout.pos.col = 1, layout.pos.row = nplots))
       par(plt = gridPLT(), new = TRUE)
-      seqplot(hidden.paths,
+      TraMineR::seqplot(hidden.paths,
         type = type, with.legend = FALSE,
         use.layout = FALSE, yaxis = yaxis, xaxis = xaxis, ylab = NA,
         xtlab = xtlab, cex.axis = cex.axis, missing.color = missing.color, ...
@@ -317,13 +317,13 @@ SSPlotter <- function(
         par(plt = gridPLT(), new = TRUE)
         if (nchannels > 1) {
           if (with.legend == "bottom") {
-            seqlegend(obs[[i]],
+            TraMineR::seqlegend(obs[[i]],
               cex = cex.legend, position = "top",
               ncol = ncol.legend[i], with.missing = with.missing.legend,
               missing.color = missing.color
             )
           } else {
-            seqlegend(obs[[i]],
+            TraMineR::seqlegend(obs[[i]],
               cex = cex.legend, position = "left",
               ncol = ncol.legend[i], with.missing = with.missing.legend,
               missing.color = missing.color
@@ -331,13 +331,13 @@ SSPlotter <- function(
           }
         } else {
           if (with.legend == "bottom") {
-            seqlegend(obs,
+            TraMineR::seqlegend(obs,
               cex = cex.legend, position = "top",
               ncol = ncol.legend[i], with.missing = with.missing.legend,
               missing.color = missing.color
             )
           } else {
-            seqlegend(obs,
+            TraMineR::seqlegend(obs,
               cex = cex.legend, position = "left",
               ncol = ncol.legend[i], with.missing = with.missing.legend,
               missing.color = missing.color
@@ -356,14 +356,14 @@ SSPlotter <- function(
       pushViewport(viewport(width = unit(0.9, "npc")))
       par(plt = gridPLT(), new = TRUE)
       if (with.legend == "bottom") {
-        seqlegend(hidden.paths,
+        TraMineR::seqlegend(hidden.paths,
           cex = cex.legend, position = "top",
           ncol = ncol.legend[length(ncol.legend)], with.missing = with.missing.legend,
           missing.color = missing.color,
           ltext = hidden.states.labels
         )
       } else {
-        seqlegend(hidden.paths,
+        TraMineR::seqlegend(hidden.paths,
           cex = cex.legend, position = "left",
           ncol = ncol.legend[length(ncol.legend)],
           with.missing = with.missing.legend,
@@ -421,7 +421,7 @@ SSPlotter <- function(
     if (plots == "both" || plots == "obs") {
       if (nchannels > 1) {
         if (with.legend == "right.combined") {
-          seqlegend(obs[[1]],
+          TraMineR::seqlegend(obs[[1]],
             cex = cex.legend, position = "left",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = anymissing,
@@ -430,7 +430,7 @@ SSPlotter <- function(
             )
           )
         } else { # with.legend == "bottom.combined"
-          seqlegend(obs[[1]],
+          TraMineR::seqlegend(obs[[1]],
             cex = cex.legend, position = "top",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = anymissing,
@@ -441,7 +441,7 @@ SSPlotter <- function(
         }
       } else {
         if (with.legend == "right.combined") {
-          seqlegend(obs,
+          TraMineR::seqlegend(obs,
             cex = cex.legend, position = "left",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = anymissing,
@@ -450,7 +450,7 @@ SSPlotter <- function(
             )
           )
         } else { # with.legend == "bottom.combined"
-          seqlegend(obs,
+          TraMineR::seqlegend(obs,
             cex = cex.legend, position = "top",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = anymissing,
@@ -463,7 +463,7 @@ SSPlotter <- function(
     } else {
       if (nchannels > 1) {
         if (with.legend == "right.combined") {
-          seqlegend(hidden.paths,
+          TraMineR::seqlegend(hidden.paths,
             cex = cex.legend, position = "left",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,
@@ -472,7 +472,7 @@ SSPlotter <- function(
             )
           )
         } else { # with.legend == "bottom.combined"
-          seqlegend(hidden.paths,
+          TraMineR::seqlegend(hidden.paths,
             cex = cex.legend, position = "top",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,
@@ -483,7 +483,7 @@ SSPlotter <- function(
         }
       } else {
         if (with.legend == "right.combined") {
-          seqlegend(hidden.paths,
+          TraMineR::seqlegend(hidden.paths,
             cex = cex.legend, position = "left",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,
@@ -492,7 +492,7 @@ SSPlotter <- function(
             )
           )
         } else { # with.legend == "bottom.combined"
-          seqlegend(hidden.paths,
+          TraMineR::seqlegend(hidden.paths,
             cex = cex.legend, position = "top",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,

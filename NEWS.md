@@ -2,8 +2,8 @@ seqHMM 2.0.0
 ==============
   * Added support for non-homogeneous HMMs where initial, transition, and 
 emission probabilities can depend on individual-specific covariates. 
-Penalized maximum likelihood estimation of these models is based on 
-L-BFGS-B with automatic differentiation with `Stan`.
+Models can be estimated using direct maximum likelihood estimation using 
+analytical gradients with `nloptr`.
   * Rewrote sequence visualization functions using `ggseqplot` and `patchwork` 
 packages. Old plotting functions are deprecated and will be removed in the 
 future.

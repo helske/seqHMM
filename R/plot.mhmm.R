@@ -15,7 +15,7 @@
 #'   Defaults to `TRUE`, i.e. clusters are plotted one after another.
 #'
 #' @param ask If `TRUE` and `which.plots` is NULL,
-#'   `plot.mhmm` operates in interactive mode, via [menu()].
+#'   `plot.mhmm` operates in interactive mode, via [utils::menu()].
 #'   Defaults to `FALSE`. Ignored if `interactive = FALSE`.
 #' @param which.plots The number(s) of the requested cluster(s) as an integer
 #'   vector. The default `NULL` produces all plots.
@@ -96,7 +96,7 @@
 #'   `"top"`, `"left"`, and `"right"`. `FALSE` omits the
 #'   legend.
 #' @param ltext Optional description of (combined) observed states to appear
-#'   in the legend. A vector of character strings. See [seqplot()] for
+#'   in the legend. A vector of character strings. See [TraMineR::seqplot()] for
 #'   more information.
 #' @param legend.prop Proportion used for plotting the legend. A scalar between
 #'   0 and 1, defaults to 0.5.

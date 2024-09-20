@@ -20,7 +20,7 @@
 #'
 #' plot_colors(c("yellow", "orange", "red", "purple", "blue", "green"))
 #'
-#' plot_colors(rainbow(15))
+#' plot_colors(grDevices::rainbow(15))
 plot_colors <- function(x, labels = NULL) {
   stopifnot_(
     all(isColor(x)),
@@ -35,8 +35,8 @@ plot_colors <- function(x, labels = NULL) {
   } else {
     labels <- rev(labels)
   }
-  par(mai = c(0.1, max(strwidth(x, "inch") + 0.4, na.rm = TRUE), 0.1, 0.4))
-  barplot(rep(1, length(x)),
+  par(mai = c(0.1, max(graphics::strwidth(x, "inch") + 0.4, na.rm = TRUE), 0.1, 0.4))
+  graphics::barplot(rep(1, length(x)),
           col = rev(x), space = 0.2, axes = FALSE,
           names.arg = labels, cex.names = 0.8, horiz = TRUE, las = 1
   )

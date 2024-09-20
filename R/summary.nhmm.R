@@ -7,11 +7,11 @@
 #' @inheritParams get_probs
 #' @rdname summary_nhmm
 #' @param object Non-homogeneous hidden Markov model of class `nhmm`.
-summary.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
+summary.nhmm <- function(object, ...) {
   ll <- logLik(object)
   out <- list(
     logLik = ll, BIC = BIC(ll),
-    coefficients = coef(object, nsim, probs)
+    coefficients = coef(object)
   )
   class(out) <- "summary.nhmm"
   out
@@ -20,9 +20,9 @@ summary.nhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
 #' @export
 #' @rdname summary_nhmm
 #' @param object Non-homogeneous hidden Markov model of class `mnhmm`.
-summary.mnhmm <- function(object, nsim = 0, probs = c(0.025, 0.5, 0.975), ...) {
-  cf <- coef(object, nsim, probs)
-  pr <- exp(object$X_cluster %*% object$coefficients$theta_raw)
+summary.mnhmm <- function(object, ...) {
+  cf <- coef(object)
+  pr <- exp(object$X_cluster %*% object$coefficients$gamma_omega_raw)
   prior_cluster_probabilities <- pr / rowSums(pr)
   pcp <- posterior_cluster_probabilities(object)
   mpc <- factor(

@@ -58,7 +58,7 @@ transformation.}
 Defaults to \code{TRUE}, i.e. clusters are plotted one after another.}
 
 \item{ask}{If \code{TRUE} and \code{which.plots} is NULL,
-\code{plot.mhmm} operates in interactive mode, via \code{\link[=menu]{menu()}}.
+\code{plot.mhmm} operates in interactive mode, via \code{\link[utils:menu]{utils::menu()}}.
 Defaults to \code{FALSE}. Ignored if \code{interactive = FALSE}.}
 
 \item{which.plots}{The number(s) of the requested cluster(s) as an integer
@@ -164,7 +164,7 @@ plotted. Possible values include \code{"bottom"} (the default),
 legend.}
 
 \item{ltext}{Optional description of (combined) observed states to appear
-in the legend. A vector of character strings. See \code{\link[=seqplot]{seqplot()}} for
+in the legend. A vector of character strings. See \code{\link[TraMineR:seqplot]{TraMineR::seqplot()}} for
 more information.}
 
 \item{legend.prop}{Proportion used for plotting the legend. A scalar between

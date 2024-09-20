@@ -23,10 +23,7 @@ estimate_mnhmm(
   restarts = 0L,
   threads = 1L,
   store_data = TRUE,
-  verbose = TRUE,
-  restart_method = "1",
-  penalize = TRUE,
-  penalty = 5,
+  hessian = FALSE,
   ...
 )
 }
@@ -54,12 +51,12 @@ state emission probabilities.}
 mixture probabilities.
 @param inits If \code{inits = "random"} (default), random initial values are
 used. Otherwise \code{inits} should be list of initial values. If coefficients
-are given using list components \code{beta_i_raw}, \code{beta_s_raw}, \code{beta_o_raw},
-and \code{theta_raw}, these are used as is, alternatively initial values can be
-given in terms of the initial state, transition, emission, and mixture
+are given using list components \code{gamma_pi_raw}, \code{gamma_A_raw}, \code{gamma_B_raw},
+and \code{gamma_omega_raw}, these are used as is, alternatively initial values
+can be given in terms of the initial state, transition, emission, and mixture
 probabilities using list components \code{initial_probs}, \code{emission_probs},
 \code{transition_probs}, and \code{cluster_probs}. These can also be mixed, i.e. you
-can give only \code{initial_probs} and \code{beta_s_raw}.}
+can give only \code{initial_probs} and \code{gamma_A_raw}.}
 
 \item{data}{A data frame containing the variables used in the model
 formulas. Can be omitted in case of model with no covariates and observations
@@ -81,11 +78,11 @@ is \code{NULL} (the default), numbered clusters are used.}
 
 \item{inits}{If \code{inits = "random"} (default), random initial values are
 used. Otherwise \code{inits} should be list of initial values. If coefficients
-are given using list components \code{beta_i_raw}, \code{beta_s_raw}, \code{beta_o_raw},
+are given using list components \code{gamma_pi_raw}, \code{gamma_A_raw}, \code{gamma_B_raw},
 these are used as is, alternatively initial values can be given in terms of
 the initial state, transition, and emission probabilities using list
 components \code{initial_probs}, \code{emission_probs}, and \code{transition_probs}. These
-can also be mixed, i.e. you can give only \code{initial_probs} and \code{beta_s_raw}.}
+can also be mixed, i.e. you can give only \code{initial_probs} and \code{gamma_A_raw}.}
 
 \item{init_sd}{Standard deviation of the normal distribution used to generate
 random initial values. Default is \code{2}. If you want to fix the initial values
@@ -102,21 +99,16 @@ is stored to the model object. For large datasets, this can be set to
 \code{FALSE}, in which case you might need to pass the data separately to some
 post-prosessing functions.}
 
-\item{verbose}{If \code{TRUE} (default), print progress messages during the final
-optimization (after restarts). Note that due to the design of \code{rstan}, the
-reason for the termination of optimization (e.g., reached the maximum number
-of iterations) is only available by the final message show with
-\code{verbose = TRUE}.}
+\item{hessian}{If \code{TRUE}, computes the Hessian of the model
+coefficients using \link[numDeriv:jacobian]{numDeriv::jacobian}. Default is \code{FALSE}. Can also be
+a list with components \code{method}, \code{side} and \code{method.args} to
+\link[numDeriv:jacobian]{numDeriv::jacobian}.}
 
-\item{penalize}{If \code{TRUE} (default), penalize the likelihood with a prior on
-the coefficients}
-
-\item{penalty}{If \code{penalize = TRUE}, the standard deviation of the zero-mean
-normal density used as a penalizing prior for the coefficients. Default is \code{5}.}
-
-\item{...}{Additional arguments to \code{\link[rstan:stanmodel-method-optimizing]{rstan::optimizing()}}. Most importantly,
-argument \code{iter} defines the maximum number of iterations for optimization.
-The default is \code{2000}.}
+\item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}}. Most importantly,
+argument \code{maxeval} defines the maximum number of iterations for optimization.
+The default is \code{1000} for restarts and \code{10000} for the final optimization.
+Other useful arguments are \code{algorithm} (default uses LBFGS), and
+\code{print_level} (default is \code{0}, no console output of optimization).}
 }
 \value{
 Object of class \code{mnhmm}.
