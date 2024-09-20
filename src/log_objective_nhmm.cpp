@@ -299,7 +299,7 @@ Rcpp::List log_objective_mnhmm_singlechannel(
     }
     gradvec_D = exp(loglik_i - loglik(i));
     omega = exp(log_omega);
-    gradmat_D -= omega * omega.t();
+    gradmat_D = -omega * omega.t();
     gradmat_D.diag() += omega;
     grad_omega += gradmat_D.rows(1, D - 1) * gradvec_D * X_d.col(i).t();
   }
@@ -433,7 +433,7 @@ Rcpp::List log_objective_mnhmm_multichannel(
     }
     gradvec_D = exp(loglik_i - loglik(i));
     omega = exp(log_omega);
-    gradmat_D -= omega * omega.t();
+    gradmat_D = -omega * omega.t();
     gradmat_D.diag() += omega;
     grad_omega += gradmat_D.rows(1, D - 1) * gradvec_D * X_d.col(i).t();
   }
