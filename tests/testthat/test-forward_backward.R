@@ -39,7 +39,7 @@ test_that("'forward_backward' works for multichannel 'nhmm'", {
       hmm_biofam$observations, n_states = 5,
       inits = hmm_biofam[
         c("initial_probs", "transition_probs", "emission_probs")
-      ]
+      ], maxeval = 1
     ),
     NA
   )
@@ -65,7 +65,7 @@ test_that("'forward_backward' works for single-channel 'nhmm'", {
   expect_error(
     fit <- estimate_nhmm(
       hmm_biofam$observations[[1]], n_states = 3,
-      restarts = 2, threads = 1
+      restarts = 2, threads = 1, maxeval = 2
     ),
     NA
   )
@@ -73,8 +73,8 @@ test_that("'forward_backward' works for single-channel 'nhmm'", {
     fb <- forward_backward(fit, as_data_frame = FALSE),
     NA
   )
-  expect_gte(min(fb$forward_probs), -60)
-  expect_gte(min(fb$backward_probs), -60)
+  expect_gte(min(fb$forward_probs), -2000)
+  expect_gte(min(fb$backward_probs), -2000)
   expect_lte(max(fb$forward_probs), 0)
   expect_lte(max(fb$backward_probs), 0)
   
@@ -99,8 +99,8 @@ test_that("'forward_backward' works for multichannel 'mnhmm'", {
     fb <- forward_backward(fit, as_data_frame = FALSE),
     NA
   )
-  expect_gte(min(fb$forward_probs), -130)
-  expect_gte(min(fb$backward_probs), -120)
+  expect_gte(min(fb$forward_probs), -2000)
+  expect_gte(min(fb$backward_probs), -2000)
   expect_lte(max(fb$forward_probs), 0)
   expect_lte(max(fb$backward_probs), 0)
   

@@ -133,7 +133,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
     
     logliks <- unlist(lapply(out, "[[", "objective"))
     return_codes <- unlist(lapply(out, "[[", "status"))
-    successful <- which(return_codes == 0)
+    successful <- which(return_codes > 0)
     optimum <- successful[which.max(logliks[successful])]
     init <- out[[optimum]]$solution
   } else {
@@ -152,7 +152,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
     opts = dots
   )
   if (out$status < 0) {
-    warning_(paste("Local optimization terminated:", out$message))
+    warning_(paste("Optimization terminated due to error:", out$message))
   }
   pars <- out$solution
   model$coefficients$gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
@@ -185,6 +185,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
     loglik = out$objective, 
     return_code = out$status,
     message = out$message,
+    iterations = out$iterations,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL
   )
