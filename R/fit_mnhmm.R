@@ -55,7 +55,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
         )
         gamma_omega_raw <- create_gamma_omega_raw_mnhmm(
-          pars[n_i + n_s + n_o + seq_len(n_d)], K_d, D
+          pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
         )
         out <- log_objective_mnhmm_singlechannel(
           gamma_pi_raw, X_i,
@@ -74,7 +74,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
         )
         gamma_omega_raw <- create_gamma_omega_raw_mnhmm(
-          pars[n_i + n_s + n_o + seq_len(n_d)], K_d, D
+          pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
         )
         out <- forward_mnhmm_singlechannel(
           gamma_pi_raw, X_i,
@@ -101,7 +101,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           recursive = FALSE
         )
         gamma_omega_raw <- create_gamma_omega_raw_mnhmm(
-          pars[n_i + n_s + n_o + seq_len(n_d)], K_d, D
+          pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
         )
         out <- log_objective_mnhmm_multichannel(
           gamma_pi_raw, X_i,
@@ -125,7 +125,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           recursive = FALSE
         )
         gamma_omega_raw <- create_gamma_omega_raw_mnhmm(
-          pars[n_i + n_s + n_o + seq_len(n_d)], K_d, D
+          pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
         )
         out <- forward_mnhmm_multichannel(
           gamma_pi_raw, X_i,
@@ -201,7 +201,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
     )
   }
   model$coefficients$gamma_omega_raw <- create_gamma_omega_raw_mnhmm(
-    pars[n_i + n_s + n_o + seq_len(n_d)], K_d, D
+    pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
   )
   
   if (!isFALSE(hessian)) {
