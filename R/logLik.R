@@ -89,7 +89,10 @@ logLik.nhmm <- function(object, partials = FALSE, ...) {
   nobs <- attr(object, "nobs")
   if (partials || is.null(object$estimation_results)) {
     out <- forward_backward(object, forward_only = TRUE, as_data_frame = FALSE)
-    ll <- apply(out$forward_probs[, object$length_of_sequences, , drop = FALSE], 2, logSumExp)
+    ll <- apply(
+      out$forward_probs[, object$length_of_sequences, , drop = FALSE], 
+      3, logSumExp
+    )
   } else {
     ll <- object$estimation_results$loglik
   }
@@ -106,7 +109,10 @@ logLik.mnhmm <- function(object, partials = FALSE, ...) {
   nobs <- attr(object, "nobs")
   if (partials || is.null(object$estimation_results)) {
     out <- forward_backward(object, forward_only = TRUE, as_data_frame = FALSE)
-    ll <- apply(out$forward_probs[, object$length_of_sequences, , drop = FALSE], 2, logSumExp)
+    ll <- apply(
+      out$forward_probs[, object$length_of_sequences, , drop = FALSE], 
+      3, logSumExp
+    )
   } else {
     ll <- object$estimation_results$loglik
   }
