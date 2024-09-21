@@ -7,11 +7,12 @@ create_gamma_A_raw_nhmm <- function(x, S, K) {
 }
 create_gamma_B_raw_nhmm <- function(x, S, M, K) {
   array(x, c(M - 1, K, S))
+  
 }
 create_gamma_multichannel_B_raw_nhmm <- function(x, S, M, K) {
   n <- c(0, cumsum((M - 1) * K * S))
   lapply(seq_len(length(M)), function(i) {
-    create_gamma_B_raw_nhmm(x[(i - 1) * n[i] + 1:((M[i] - 1) * K * S)], S, M[i], K)
+    create_gamma_B_raw_nhmm(x[(n[i] + 1):(n[i + 1])], S, M[i], K)
   })
 }
 create_gamma_pi_raw_mnhmm <- function(x, S, K, D) {
