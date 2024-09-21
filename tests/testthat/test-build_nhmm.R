@@ -99,3 +99,17 @@ test_that("build_nhmm works with vector of characters as observations", {
     NA
   )
 })
+test_that("build_nhmm works with missing observations", {
+  data <- data[data$time != 5, ]
+  data$y[50:55] <- NA
+  expect_error(
+    model <- estimate_nhmm(
+      "y", s, data = data, time = "time", id = "id"),
+    NA
+  )
+  expect_equal(
+    which(model$observations == "*"),
+    c(41L, 42L, 43L, 44L, 45L, 46L, 47L, 48L, 49L, 50L, 60L, 61L, 
+      62L, 63L, 64L, 65L)
+  )
+})

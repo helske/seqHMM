@@ -30,9 +30,9 @@ Rcpp::List log_objective_nhmm_singlechannel(
   
   arma::vec gradvec_S(S);
   arma::mat gradmat_S(S, S);
-  arma::mat gradmat_M(M + 1, M + 1);
+  arma::mat gradmat_M(M, M);
   arma::mat A(S, S);
-  arma::rowvec Brow(M + 1);
+  arma::rowvec Brow(M);
   for (unsigned int i = 0; i < N; i++) {
     log_Pi = get_pi(gamma_pi_raw, X_i.col(i), 1);
     log_A = get_A(gamma_A_raw, X_s.slice(i), 1);
@@ -71,18 +71,22 @@ Rcpp::List log_objective_nhmm_singlechannel(
     }
     // gradient wrt gamma_B
     for (unsigned int s = 0; s < S; s++) {
-      Brow = exp(log_B.slice(0).row(s));
-      gradmat_M = -Brow.t() * Brow;
-      gradmat_M.diag() += Brow;
-      double grad = exp(log_Pi(s) + log_beta(s, 0) - ll);
-      grad_B.slice(s) += gradmat_M.rows(1, M - 1).col(obs(0, i)) * grad * X_o.slice(i).col(0).t();
-      for (unsigned int t = 0; t < (T - 1); t++) {
-        Brow = exp(log_B.slice(t + 1).row(s));
+      if (obs(0, i) < M) {
+        Brow = exp(log_B.slice(0).row(s).cols(0, M - 1));
         gradmat_M = -Brow.t() * Brow;
         gradmat_M.diag() += Brow;
-        double grad = arma::accu(
-          exp(log_alpha.col(t) + log_A.slice(t).col(s) + log_beta(s, t + 1) - ll));
-        grad_B.slice(s) += gradmat_M.rows(1, M - 1).col(obs(t + 1, i)) * grad * X_o.slice(i).col(t + 1).t();
+        double grad = exp(log_Pi(s) + log_beta(s, 0) - ll);
+        grad_B.slice(s) += gradmat_M.rows(1, M - 1).col(obs(0, i)) * grad * X_o.slice(i).col(0).t();
+      }
+      for (unsigned int t = 0; t < (T - 1); t++) {
+        if (obs(t + 1, i) < M) {
+          Brow = exp(log_B.slice(t + 1).row(s).cols(0, M - 1));
+          gradmat_M = -Brow.t() * Brow;
+          gradmat_M.diag() += Brow;
+          double grad = arma::accu(
+            exp(log_alpha.col(t) + log_A.slice(t).col(s) + log_beta(s, t + 1) - ll));
+          grad_B.slice(s) += gradmat_M.rows(1, M - 1).col(obs(t + 1, i)) * grad * X_o.slice(i).col(t + 1).t();
+        }
       }
     }
   }
@@ -161,33 +165,38 @@ Rcpp::List log_objective_nhmm_multichannel(
       }
     }
     for (unsigned int c = 0; c < C; c++) {
-      arma::mat gradmat_M(M(c) + 1, M(c) + 1);
-      arma::rowvec Brow(M(c) + 1);
+      arma::mat gradmat_M(M(c), M(c));
+      arma::rowvec Brow(M(c));
+      double logpy;
       for (unsigned int s = 0; s < S; s++) {
-        Brow = exp(log_B(c).slice(0).row(s));
-        gradmat_M = -Brow.t() * Brow;
-        gradmat_M.diag() += Brow;
-        double logpy = 0;
-        for (unsigned int cc = 0; cc < C; cc++) {
-          if (cc != c) {
-            logpy += log_B(cc).at(s, obs(cc, 0, i), 0);
-          }
-        }
-        double grad = exp(log_Pi(s) + logpy + log_beta(s, 0) - ll);
-        grad_B(c).slice(s) += gradmat_M.rows(1, M(c) - 1).col(obs(c, 0, i)) * grad * X_o.slice(i).col(0).t();
-        for (unsigned int t = 0; t < (T - 1); t++) {
-          Brow = exp(log_B(c).slice(t + 1).row(s));
+        if (obs(c, 0, i) < M(c)) {
+          Brow = exp(log_B(c).slice(0).row(s).cols(0, M(c) - 1));
           gradmat_M = -Brow.t() * Brow;
           gradmat_M.diag() += Brow;
           logpy = 0;
           for (unsigned int cc = 0; cc < C; cc++) {
             if (cc != c) {
-              logpy += log_B(cc).at(s, obs(cc, t + 1, i), t + 1);
+              logpy += log_B(cc).at(s, obs(cc, 0, i), 0);
             }
           }
-          double grad = arma::accu(
-            exp(log_alpha.col(t) + log_A.slice(t).col(s) + logpy + log_beta(s, t + 1) - ll));
-          grad_B(c).slice(s) += gradmat_M.rows(1, M(c) - 1).col(obs(c, t + 1, i)) * grad * X_o.slice(i).col(t + 1).t();
+          double grad = exp(log_Pi(s) + logpy + log_beta(s, 0) - ll);
+          grad_B(c).slice(s) += gradmat_M.rows(1, M(c) - 1).col(obs(c, 0, i)) * grad * X_o.slice(i).col(0).t();
+        }
+        for (unsigned int t = 0; t < (T - 1); t++) {
+          if (obs(c, t + 1, i) < M(c)) {
+            Brow = exp(log_B(c).slice(t + 1).row(s).cols(0, M(c) - 1));
+            gradmat_M = -Brow.t() * Brow;
+            gradmat_M.diag() += Brow;
+            logpy = 0;
+            for (unsigned int cc = 0; cc < C; cc++) {
+              if (cc != c) {
+                logpy += log_B(cc).at(s, obs(cc, t + 1, i), t + 1);
+              }
+            }
+            double grad = arma::accu(
+              exp(log_alpha.col(t) + log_A.slice(t).col(s) + logpy + log_beta(s, t + 1) - ll));
+            grad_B(c).slice(s) += gradmat_M.rows(1, M(c) - 1).col(obs(c, t + 1, i)) * grad * X_o.slice(i).col(t + 1).t();
+          }
         }
       }
     }
@@ -207,7 +216,7 @@ Rcpp::List log_objective_mnhmm_singlechannel(
     const arma::field<arma::cube>& gamma_B_raw, const arma::cube& X_o,
     const arma::mat& gamma_omega_raw, const arma::mat& X_d,
     const arma::mat& obs) {
-
+  
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
   unsigned int S = gamma_A_raw(0).n_slices;
@@ -219,11 +228,11 @@ Rcpp::List log_objective_mnhmm_singlechannel(
   arma::cube log_beta(S, T, D);
   arma::cube log_py(S, T, D);
   arma::vec log_omega(D);
-
+  
   arma::field<arma::vec> log_Pi(D);
   arma::field<arma::cube> log_A(D);
   arma::field<arma::cube> log_B(D);
-
+  
   arma::mat grad_omega(D - 1, X_d.n_rows, arma::fill::zeros);
   arma::field<arma::mat> grad_pi(D);
   arma::field<arma::cube> grad_A(D);
@@ -240,7 +249,7 @@ Rcpp::List log_objective_mnhmm_singlechannel(
   arma::mat gradmat_M(M + 1, M + 1);
   arma::vec Pi(S);
   arma::mat A(S, S);
-  arma::rowvec Brow(M + 1);
+  arma::rowvec Brow(M);
   arma::vec omega(D);
   for (unsigned int i = 0; i < N; i++) {
     log_omega = get_omega(gamma_omega_raw, X_d.col(i), 1);
@@ -267,7 +276,7 @@ Rcpp::List log_objective_mnhmm_singlechannel(
       gradmat_S = -Pi * Pi.t();
       gradmat_S.diag() += Pi;
       grad_pi(d) += gradmat_S.rows(1, S - 1) * gradvec_S * X_i.col(i).t();
-
+      
       // gradient wrt gamma_A
       for (unsigned int t = 0; t < (T - 1); t++) {
         A = exp(log_A(d).slice(t));
@@ -282,18 +291,22 @@ Rcpp::List log_objective_mnhmm_singlechannel(
         }
       }
       for (unsigned int s = 0; s < S; s++) {
-        Brow = exp(log_B(d).slice(0).row(s));
-        gradmat_M = -Brow.t() * Brow;
-        gradmat_M.diag() += Brow;
-        double grad = exp(log_omega(d) + log_Pi(d).at(s) + log_beta(s, 0, d) - loglik(i));
-        grad_B(d).slice(s) += gradmat_M.rows(1, M - 1).col(obs(0, i)) * grad * X_o.slice(i).col(0).t();
-        for (unsigned int t = 0; t < (T - 1); t++) {
-          Brow = exp(log_B(d).slice(t + 1).row(s));
+        if (obs(0, i) < M) {
+          Brow = exp(log_B(d).slice(0).row(s).cols(0, M - 1));
           gradmat_M = -Brow.t() * Brow;
           gradmat_M.diag() += Brow;
-          double grad = arma::accu(
-            exp(log_omega(d) + log_alpha.slice(d).col(t) + log_A(d).slice(t).col(s) + log_beta(s, t + 1, d) - loglik(i)));
-          grad_B(d).slice(s) += gradmat_M.rows(1, M - 1).col(obs(t + 1, i)) * grad * X_o.slice(i).col(t + 1).t();
+          double grad = exp(log_omega(d) + log_Pi(d).at(s) + log_beta(s, 0, d) - loglik(i));
+          grad_B(d).slice(s) += gradmat_M.rows(1, M - 1).col(obs(0, i)) * grad * X_o.slice(i).col(0).t();
+        }
+        for (unsigned int t = 0; t < (T - 1); t++) {
+          if (obs(t + 1, i) < M) {
+            Brow = exp(log_B(d).slice(t + 1).row(s).cols(0, M - 1));
+            gradmat_M = -Brow.t() * Brow;
+            gradmat_M.diag() += Brow;
+            double grad = arma::accu(
+              exp(log_omega(d) + log_alpha.slice(d).col(t) + log_A(d).slice(t).col(s) + log_beta(s, t + 1, d) - loglik(i)));
+            grad_B(d).slice(s) += gradmat_M.rows(1, M - 1).col(obs(t + 1, i)) * grad * X_o.slice(i).col(t + 1).t();
+          }
         }
       }
     }
@@ -400,33 +413,38 @@ Rcpp::List log_objective_mnhmm_multichannel(
       }
       // gradient wrt gamma_B
       for (unsigned int c = 0; c < C; c++) {
-        arma::mat gradmat_M(M(c) + 1, M(c) + 1);
-        arma::rowvec Brow(M(c) + 1);
+        arma::mat gradmat_M(M(c), M(c));
+        arma::rowvec Brow(M(c));
+        double logpy;
         for (unsigned int s = 0; s < S; s++) {
-          Brow = exp(log_B(d * C + c).slice(0).row(s));
-          gradmat_M = -Brow.t() * Brow;
-          gradmat_M.diag() += Brow;
-          double logpy = 0;
-          for (unsigned int cc = 0; cc < C; cc++) {
-            if (cc != c) {
-              logpy += log_B(d * C + cc).at(s, obs(cc, 0, i), 0);
-            }
-          }
-          double grad = exp(log_omega(d) + log_Pi(d).at(s) + logpy + log_beta(s, 0, d) - loglik(i));
-          grad_B(c, d).slice(s) += gradmat_M.rows(1, M(c) - 1).col(obs(c, 0, i)) * grad * X_o.slice(i).col(0).t();
-          for (unsigned int t = 0; t < (T - 1); t++) {
-            Brow = exp(log_B(d * C + c).slice(t + 1).row(s));
+          if (obs(c, 0, i) < M(c)) {
+            Brow = exp(log_B(d * C + c).slice(0).row(s).cols(0, M(c) - 1));
             gradmat_M = -Brow.t() * Brow;
             gradmat_M.diag() += Brow;
             logpy = 0;
             for (unsigned int cc = 0; cc < C; cc++) {
               if (cc != c) {
-                logpy += log_B(d * C + cc).at(s, obs(cc, t + 1, i), t + 1);
+                logpy += log_B(d * C + cc).at(s, obs(cc, 0, i), 0);
               }
             }
-            double grad = arma::accu(
-              exp(log_omega(d) + log_alpha.slice(d).col(t) + log_A(d).slice(t).col(s) + logpy + log_beta(s, t + 1, d) - loglik(i)));
-            grad_B(c, d).slice(s) += gradmat_M.rows(1, M(c) - 1).col(obs(c, t + 1, i)) * grad * X_o.slice(i).col(t + 1).t();
+            double grad = exp(log_omega(d) + log_Pi(d).at(s) + logpy + log_beta(s, 0, d) - loglik(i));
+            grad_B(c, d).slice(s) += gradmat_M.rows(1, M(c) - 1).col(obs(c, 0, i)) * grad * X_o.slice(i).col(0).t();
+          }
+          for (unsigned int t = 0; t < (T - 1); t++) {
+            if (obs(c, t + 1, i) < M(c)) {
+              Brow = exp(log_B(d * C + c).slice(t + 1).row(s).cols(0, M(c) - 1));
+              gradmat_M = -Brow.t() * Brow;
+              gradmat_M.diag() += Brow;
+              logpy = 0;
+              for (unsigned int cc = 0; cc < C; cc++) {
+                if (cc != c) {
+                  logpy += log_B(d * C + cc).at(s, obs(cc, t + 1, i), t + 1);
+                }
+              }
+              double grad = arma::accu(
+                exp(log_omega(d) + log_alpha.slice(d).col(t) + log_A(d).slice(t).col(s) + logpy + log_beta(s, t + 1, d) - loglik(i)));
+              grad_B(c, d).slice(s) += gradmat_M.rows(1, M(c) - 1).col(obs(c, t + 1, i)) * grad * X_o.slice(i).col(t + 1).t();
+            }
           }
         }
       }
