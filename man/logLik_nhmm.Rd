@@ -5,9 +5,9 @@
 \alias{logLik.mnhmm}
 \title{Log-likelihood of a Non-homogeneous Hidden Markov Model}
 \usage{
-\method{logLik}{nhmm}(object, partials = FALSE, penalized = TRUE, ...)
+\method{logLik}{nhmm}(object, partials = FALSE, ...)
 
-\method{logLik}{mnhmm}(object, partials = FALSE, penalized = TRUE, ...)
+\method{logLik}{mnhmm}(object, partials = FALSE, ...)
 }
 \arguments{
 \item{object}{A hidden Markov model.}
@@ -16,15 +16,10 @@
 each sequence to the total log-likelihood. The default is \code{FALSE}, which
 returns the sum of all log-likelihood components.}
 
-\item{penalized}{if \code{TRUE} (the default), returns the final penalized
-log-likelihood value from the optimization. If \code{FALSE}, returns the standard
-log-likelihood of non-homogenous HMM. if \code{partials = TRUE}, this argument is
-set to \code{FALSE}.}
-
 \item{...}{Ignored.}
 }
 \value{
-(Penalized) log-likelihood of the hidden Markov model. This is an
+Log-likelihood of the hidden Markov model. This is an
 object of class \code{logLik} with attributes \code{nobs} and \code{df} inherited from the
 model object.
 }
