@@ -14,8 +14,16 @@ build_nhmm <- function(
     out$model,
     class = "nhmm",
     nobs = attr(out$observations, "nobs"),
-    df = out$extras$n_pars,
+    df = out$extras$np_pi + out$extras$np_A + out$extras$np_B,
     type = paste0(out$extras$multichannel, "nhmm"),
-    intercept_only = out$extras$intercept_only
+    intercept_only = out$extras$intercept_only,
+    iv_pi = out$extras$iv_pi,
+    iv_A =  out$extras$iv_A,
+    iv_B = out$extras$iv_B,
+    tv_A =  out$extras$tv_A,
+    tv_B =  out$extras$tv_B,
+    np_pi = out$extras$np_pi,
+    np_A = out$extras$np_A,
+    np_B = out$extras$np_B
   )
 }

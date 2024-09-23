@@ -260,7 +260,7 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,
   }
   state_names <- paste0(
     rep(model$cluster_names, each = model$n_states), ": ",
-    model$state_names
+    unlist(model$state_names)
   )
   dimnames(out$forward_probs) <- list(
     "state" = state_names, "time" = time_names, "id" = sequence_names

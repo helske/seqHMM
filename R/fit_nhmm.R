@@ -29,9 +29,14 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
     if (is.null(inits$emission_probs)) inits$emission_probs <- NULL
   }
   
-  n_i <- length(model$coefficients$gamma_pi_raw)
-  n_s <- length(model$coefficients$gamma_A_raw)
-  n_o <- length(unlist(model$coefficients$gamma_B_raw))
+  n_i <- attr(model, "np_pi")
+  n_s <- attr(model, "np_A")
+  n_o <- attr(model, "np_B")
+  iv_pi <- attr(model, "iv_pi")
+  iv_A <- attr(model, "iv_A")
+  iv_B <- attr(model, "iv_B")
+  tv_A <- attr(model, "tv_A")
+  tv_B <- attr(model, "tv_B")
   X_i <- model$X_initial
   X_s <- model$X_transition
   X_o <- model$X_emission
@@ -52,10 +57,9 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           pars[n_i + n_s + seq_len(n_o)], S, M, K_o
         )
         out <- log_objective_nhmm_singlechannel(
-          gamma_pi_raw, X_i,
-          gamma_A_raw, X_s,
-          gamma_B_raw, X_o,
-          obs)
+          gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o, obs,
+          iv_pi, iv_A, iv_B, tv_A, tv_B
+        )
         list(objective = - out$loglik,
              gradient = - unlist(out[-1]))
       }
@@ -67,10 +71,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           pars[n_i + n_s + seq_len(n_o)], S, M, K_o
         )
         out <- forward_nhmm_singlechannel(
-          gamma_pi_raw, X_i,
-          gamma_A_raw, X_s,
-          gamma_B_raw, X_o,
-          obs)
+          gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o, obs
+        )
         
         - sum(apply(out[, T_, ], 2, logSumExp))
       }
@@ -84,10 +86,9 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           pars[n_i + n_s + seq_len(n_o)], S, M, K_o
         )
         out <- log_objective_nhmm_multichannel(
-          gamma_pi_raw, X_i,
-          gamma_A_raw, X_s,
-          gamma_B_raw, X_o,
-          obs, M)
+          gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o, obs, M,
+          iv_pi, iv_A, iv_B, tv_A, tv_B
+        )
         list(objective = - out$loglik,
              gradient = - unlist(out[-1]))
       }
@@ -99,10 +100,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           pars[n_i + n_s + seq_len(n_o)], S, M, K_o
         )
         out <- forward_nhmm_multichannel(
-          gamma_pi_raw, X_i,
-          gamma_A_raw, X_s,
-          gamma_B_raw, X_o,
-          obs, M)
+          gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o, obs, M
+        )
         
         - sum(apply(out[, T_, ], 2, logSumExp))
       }

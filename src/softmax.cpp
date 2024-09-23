@@ -3,7 +3,7 @@
 #include "softmax.h"
 
 // [[Rcpp::export]]
-arma::vec softmax(const arma::vec& x, const int logspace) {
+arma::vec softmax(const arma::vec& x, const bool logspace) {
   arma::vec result;
   if (logspace == 0) {
     double x_max = arma::max(x);

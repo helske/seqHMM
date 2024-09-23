@@ -53,7 +53,8 @@ estimate_mnhmm <- function(
   )
   stopifnot_(
     checkmate::test_flag(x = store_data), 
-    "Argument {.arg store_data} must be a single {.cls logical} value.")
+    "Argument {.arg store_data} must be a single {.cls logical} value."
+  )
   if (store_data) {
     model$data <- data
   }

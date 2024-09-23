@@ -108,10 +108,14 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
       model$coefficients$gamma_omega_raw, model$X_cluster,
       obsArray, model$n_symbols)
   }
-  model$state_names <- paste0(
-    rep(model$cluster_names, each = model$n_states), ": ",
-    model$state_names
-  )
+  if (identical(model$state_names[[1]], model$state_names[[2]])) {
+    model$state_names <- paste0(
+      rep(model$cluster_names, each = model$n_states), ": ",
+      model$state_names
+    )
+  } else {
+    model$state_names <- unlist(model$state_names)
+  }
   model$n_states <- length(model$state_names)
   create_mpp_seq(out, model, respect_void)
 }

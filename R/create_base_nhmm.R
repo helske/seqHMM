@@ -10,16 +10,6 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
     !missing(n_states) && checkmate::test_int(x = n_states, lower = 1L), 
     "Argument {.arg n_states} must be a single positive integer."
   )
-  n_states <- as.integer(n_states)
-  if (is.null(state_names)) {
-    state_names <- paste("State", seq_len(n_states))
-  } else {
-    stopifnot_(
-      length(state_names) == n_states,
-      "Length of {.arg state_names} is not equal to the number of hidden 
-      states."
-    )
-  }
   stopifnot_(
     inherits(initial_formula, "formula"), 
     "Argument {.arg initial_formula} must be a {.cls formula} object.")
@@ -34,6 +24,49 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
   stopifnot_(
     !mixture || inherits(cluster_formula, "formula"), 
     "Argument {.arg cluster_formula} must be a {.cls formula} object.")
+  
+  n_states <- as.integer(n_states)
+  if (is.null(state_names)) {
+    state_names <- paste("State", seq_len(n_states))
+    if (mixture) {
+      state_names <- replicate(n_cluster, state_names, simplify = FALSE)
+      names(state_names) <- cluster_names
+    }
+  } else {
+    if (mixture) {
+      names_is_vec <- !is.list(state_names) && length(state_names) == n_states
+      stopifnot_(
+        length(state_names) == n_clusters || names_is_vec,
+        paste0(
+          "For MNHMMs, {.arg state_names} should be a list of length ", 
+          "{n_clusters}, the number of clusters, or a vector of length 
+          {n_states}, number of hidden states."
+        )
+      )
+      if (names_is_vec) {
+        state_names <- rep(n_cluster, state_names, simplify = FALSE)
+      } else {
+        lapply(seq_len(n_states), function(i) {
+          stopifnot_(
+            length(state_names[[i]]) == n_states,
+            paste0(
+              "Length of {.arg state_names[[{i}]]} is not equal to ",
+              "{n_states}, the number of hidden states."
+            )
+          )
+        })
+      }
+    } else {
+      stopifnot_(
+        length(state_names) == n_states,
+        paste0(
+          "Length of {.arg state_names} is not equal to {n_states}, the number", 
+          " of hidden states."
+        )
+      ) 
+    }
+  }
+  
   icp_only_i <- intercept_only(initial_formula)
   icp_only_s <- intercept_only(transition_formula)
   icp_only_o <- intercept_only(emission_formula)
@@ -95,7 +128,7 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
       cluster_formula, data, n_sequences, n_clusters, time, id
     )
     coefficients <- create_initial_values(
-      list(pi = NULL, A = NULL, B = NULL, omega = NULL), 
+      list(gamma_pi = NULL, gamma_A = NULL, gamma_B = NULL, gamma_omega = NULL), 
       n_states, n_symbols, 0, 
       length(pi$coef_names), length(A$coef_names), length(B$coef_names),
       length(omega$coef_names), n_clusters
@@ -106,18 +139,17 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
       n_states, n_symbols, 0, 
       length(pi$coef_names), length(A$coef_names), length(B$coef_names)
     )
+    omega <- list(n_pars = 0, iv = FALSE)
   }
-  n_pars <- if (mixture) omega$n_pars else 0
-  n_pars <- n_pars + n_clusters * (pi$n_pars + A$n_pars + B$n_pars)
   list(
     model = list(
       observations = observations, 
       time_variable = if (is.null(time)) "time" else time,
       id_variable = if (is.null(id)) "id" else id,
-      X_initial = t(pi$X), 
-      X_transition = aperm(A$X, c(3, 1, 2)), 
-      X_emission = aperm(B$X, c(3, 1, 2)),
-      X_cluster = if(mixture) t(omega$X) else NULL,
+      X_initial = pi$X, 
+      X_transition = A$X, 
+      X_emission = B$X,
+      X_cluster = if(mixture) omega$X else NULL,
       initial_formula = pi$formula, 
       transition_formula = A$formula,
       emission_formula = B$formula,
@@ -140,8 +172,17 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
       coef_names_cluster = if(mixture) omega$coef_names else NULL
     ),
     extras = list(
-      n_pars = n_pars, 
+      np_pi = pi$n_pars,
+      np_A = A$n_pars,
+      np_B = B$n_pars,
+      np_omega = omega$n_pars,
       multichannel = ifelse(n_channels > 1, "multichannel_", ""),
+      iv_pi = pi$iv,
+      iv_A = A$iv,
+      iv_B = B$iv,
+      iv_omega = omega$iv,
+      tv_A = A$tv,
+      tv_B = B$tv,
       intercept_only = icp_only_i && icp_only_s && icp_only_o && icp_only_d
     )
   )

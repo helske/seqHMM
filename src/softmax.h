@@ -2,5 +2,5 @@
 #define SOFTMAX_H
 
 #include <RcppArmadillo.h>
-arma::vec softmax(const arma::vec& x, const int logspace);
+arma::vec softmax(const arma::vec& x, const bool logspace);
 #endif

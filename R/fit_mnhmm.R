@@ -29,10 +29,16 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
     if (is.null(inits$emission_probs)) inits$emission_probs <- NULL
   }
   
-  n_i <- length(unlist(model$coefficients$gamma_pi_raw))
-  n_s <- length(unlist(model$coefficients$gamma_A_raw))
-  n_o <- length(unlist(model$coefficients$gamma_B_raw))
-  n_d <- length(model$coefficients$gamma_omega_raw)
+  n_i <- attr(model, "np_pi")
+  n_s <- attr(model, "np_A")
+  n_o <- attr(model, "np_B")
+  n_d <- attr(model, "np_omega")
+  iv_pi <- attr(model, "iv_pi")
+  iv_A <- attr(model, "iv_A")
+  iv_B <- attr(model, "iv_B")
+  iv_omega <- attr(model, "iv_omega")
+  tv_A <- attr(model, "tv_A")
+  tv_B <- attr(model, "tv_B")
   X_i <- model$X_initial
   X_s <- model$X_transition
   X_o <- model$X_emission
@@ -58,11 +64,9 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
         )
         out <- log_objective_mnhmm_singlechannel(
-          gamma_pi_raw, X_i,
-          gamma_A_raw, X_s,
-          gamma_B_raw, X_o,
-          gamma_omega_raw, X_d,
-          obs)
+          gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o,
+          gamma_omega_raw, X_d, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega
+        )
         list(objective = - out$loglik,
              gradient = - unlist(out[-1]))
       }
@@ -77,11 +81,9 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
         )
         out <- forward_mnhmm_singlechannel(
-          gamma_pi_raw, X_i,
-          gamma_A_raw, X_s,
-          gamma_B_raw, X_o,
-          gamma_omega_raw, X_d,
-          obs)
+          gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o, 
+          gamma_omega_raw, X_d, obs
+        )
         
         - sum(apply(out[, T_, ], 2, logSumExp))
       }
@@ -94,21 +96,16 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           pars[n_i + seq_len(n_s)], 
           S, K_s, D
         )
-        gamma_B_raw <- unlist(
-          create_gamma_multichannel_B_raw_mnhmm(
-            pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
-          ), 
-          recursive = FALSE
+        gamma_B_raw <- create_gamma_multichannel_B_raw_mnhmm(
+          pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
         )
         gamma_omega_raw <- create_gamma_omega_raw_mnhmm(
           pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
         )
         out <- log_objective_mnhmm_multichannel(
-          gamma_pi_raw, X_i,
-          gamma_A_raw, X_s,
-          gamma_B_raw, X_o,
-          gamma_omega_raw, X_d,
-          obs, M)
+          gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o,
+          gamma_omega_raw, X_d, obs, M, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega
+        )
         list(objective = - out$loglik,
              gradient = - unlist(out[-1]))
       }
@@ -117,13 +114,10 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
         gamma_pi_raw <- create_gamma_pi_raw_mnhmm(pars[seq_len(n_i)], S, K_i, D)
         gamma_A_raw <- create_gamma_A_raw_mnhmm(
           pars[n_i + seq_len(n_s)], S, K_s, D
-          )
-        gamma_B_raw <- unlist(
-          create_gamma_multichannel_B_raw_mnhmm(
-            pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
-          ), 
-          recursive = FALSE
         )
+        gamma_B_raw <- create_gamma_multichannel_B_raw_mnhmm(
+            pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
+          )
         gamma_omega_raw <- create_gamma_omega_raw_mnhmm(
           pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
         )
@@ -187,10 +181,10 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
   pars <- out$solution
   model$coefficients$gamma_pi_raw <- create_gamma_pi_raw_mnhmm(
     pars[seq_len(n_i)], S, K_i, D
-    )
+  )
   model$coefficients$gamma_A_raw <- create_gamma_A_raw_mnhmm(
     pars[n_i + seq_len(n_s)], S, K_s, D
-    )
+  )
   if (model$n_channels == 1L) {
     model$coefficients$gamma_B_raw <- create_gamma_B_raw_mnhmm(
       pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D

@@ -4,12 +4,12 @@
 \alias{get_probs}
 \alias{get_probs.nhmm}
 \alias{get_probs.mnhmm}
-\title{Get the Estimated Initial, Transition, and Emission Probabilities for NHMM
-or MNHMM}
+\title{Get the Estimated Initial, Transition, Emission and (Prior) Cluster
+Probabilities for NHMM or MNHMM}
 \usage{
 get_probs(model, ...)
 
-\method{get_probs}{nhmm}(model, newdata = NULL, ...)
+\method{get_probs}{nhmm}(model, newdata = NULL, remove_voids = TRUE, ...)
 
 \method{get_probs}{mnhmm}(model, newdata = NULL, ...)
 }
@@ -20,8 +20,11 @@ get_probs(model, ...)
 
 \item{newdata}{An optional data frame containing the new data to be used in
 computing the probabilities.}
+
+\item{remove_voids}{Should the time points corresponding to \code{TraMineR}'s
+void in the observed sequences be removed? Default is \code{TRUE}.}
 }
 \description{
-Get the Estimated Initial, Transition, and Emission Probabilities for NHMM
-or MNHMM
+Get the Estimated Initial, Transition, Emission and (Prior) Cluster
+Probabilities for NHMM or MNHMM
 }

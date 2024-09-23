@@ -72,9 +72,9 @@ ame.nhmm <- function(
   }
   # use same RNG seed so that the same samples of coefficients are drawn
   newdata[[variable]] <- values[1]
-  pred <- predict(model, newdata, dontchange_colnames = TRUE)
+  pred <- get_probs(model, newdata)
   newdata[[variable]] <- values[2]
-  pred2 <- predict(model, newdata, dontchange_colnames = TRUE)
+  pred2 <- get_probs(model, newdata)
   pars <- c("initial_probs", "transition_probs", "emission_probs")
   for (i in pars) {
     pred[[i]]$estimate <- pred[[i]]$estimate - pred2[[i]]$estimate
@@ -170,10 +170,10 @@ ame.mnhmm <- function(
   }
   # use same RNG seed so that the same samples of coefficients are drawn
   newdata[[variable]] <- values[1]
-  pred <- predict(model, newdata, dontchange_colnames = TRUE)
+  pred <- get_probs(model, newdata)
   
   newdata[[variable]] <- values[2]
-  pred2 <- predict(model, newdata, dontchange_colnames = TRUE)
+  pred2 <- get_probs(model, newdata)
   pars <- c("initial_probs", "transition_probs", "emission_probs",
             "cluster_probs")
   for (i in pars) {
@@ -186,18 +186,18 @@ ame.mnhmm <- function(
     "states" = c("cluster", "time", channel, "observation"),
     "sequences" = c("cluster", "time", "state", channel, "observation")
   )
-
+  
   out <- list()
   out$initial_probs <- pred$initial_probs |> 
-      dplyr::group_by(cluster, state) |>
-      dplyr::summarise(estimate = mean(estimate)) |> 
-      dplyr::ungroup()
+    dplyr::group_by(cluster, state) |>
+    dplyr::summarise(estimate = mean(estimate)) |> 
+    dplyr::ungroup()
   
   out$transition_probs <- pred$transition_probs |> 
-      dplyr::group_by(cluster, time, state_from, state_to) |>
-      dplyr::summarise(estimate = mean(estimate)) |> 
-      dplyr::ungroup() |> 
-      dplyr::rename(!!time := time)
+    dplyr::group_by(cluster, time, state_from, state_to) |>
+    dplyr::summarise(estimate = mean(estimate)) |> 
+    dplyr::ungroup() |> 
+    dplyr::rename(!!time := time)
   
   out$emission_probs <- pred$emission_probs |> 
     dplyr::group_by(dplyr::pick(group_by_B)) |>

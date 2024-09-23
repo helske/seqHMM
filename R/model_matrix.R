@@ -1,3 +1,22 @@
+#' Does covariate values vary per ID?
+#' @noRd
+iv_X <- function(X) {
+  dim(unique(X, MARGIN = 3))[3] > 1L
+}
+#' Does covariate values vary in time?
+#' @noRd
+tv_X <- function(X) {
+  dim(unique(X, MARGIN = 2))[2] > 1L
+}
+
+# Function to check uniqueness along the N dimension
+check_unique_N <- function(arr) {
+  # Flatten along the T and K dimensions
+  flattened_N <- apply(arr, 2, function(x) as.vector(x))
+  # Check for unique rows
+  length(unique(as.data.frame(t(flattened_N)))) > 1
+}
+
 #' Create the Model Matrix based on NHMM Formulas
 #'
 #' @noRd
@@ -9,6 +28,7 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
     n_pars <- n_states - 1L
     X <- matrix(1, n_sequences, 1)
     coef_names <- "(Intercept)"
+    iv <- FALSE
   } else {
     first_time_point <- min(data[[time]])
     X <- stats::model.matrix.lm(
@@ -17,6 +37,7 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
       na.action = stats::na.pass
     )
     missing_values <- which(!complete.cases(X))
+    iv <- nrow(unique(X[-missing_values, ])) > 1
     stopifnot_(
       length(missing_values) == 0,
       c(
@@ -31,7 +52,8 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
     coef_names <- colnames(X)
     n_pars <- (n_states - 1L) * ncol(X)
   }
-  list(formula = formula, n_pars = n_pars, X = X, coef_names = coef_names)
+  list(formula = formula, n_pars = n_pars, X = t(X), coef_names = coef_names, 
+       iv = iv)
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
@@ -44,6 +66,7 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     n_pars <-  n_states * (n_states - 1L)
     X <- array(1, c(length_of_sequences, n_sequences, 1L))
     coef_names <- "(Intercept)"
+    iv <- tv <- FALSE
   } else {
     X <- stats::model.matrix.lm(
       formula, 
@@ -66,13 +89,16 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
         )
       )
     }
-    # Replace NAs in void cases with zero as we need to input these to Stan
-    X[missing_values] <- 0
+    # Replace NAs in void cases with zero
+    X[is.na(X)] <- 0
     coef_names <- colnames(X)
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
     n_pars <- n_states * (n_states - 1L) * dim(X)[3]
+    iv <- iv_X(X)
+    tv <- tv_X(X)
   }
-  list(formula = formula, n_pars = n_pars, X = X, coef_names = coef_names)
+  list(formula = formula, n_pars = n_pars, X = aperm(X, c(3, 1, 2)), 
+       coef_names = coef_names, iv = iv, tv = tv)
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
@@ -83,9 +109,10 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
                                           time, id, sequence_lengths) {
   icp_only <- intercept_only(formula)
   if (icp_only) {
-    n_pars <-  n_channels * n_states * (n_symbols - 1L)
+    n_pars <-  sum(n_states * (n_symbols - 1L))
     X <- array(1, c(length_of_sequences, n_sequences, 1L))
     coef_names <- "(Intercept)"
+    iv <- tv <- FALSE
   } else {
     X <- stats::model.matrix.lm(
       formula, 
@@ -108,13 +135,16 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
         )
       )
     }
-    # Replace NAs in void cases with zero as we need to input these to Stan
-    X[missing_values] <- 0
+    # Replace NAs in void cases with zero
+    X[is.na(X)] <- 0
     coef_names <- colnames(X)
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
-    n_pars <- n_channels * n_states * (n_symbols - 1L) * dim(X)[3]
+    n_pars <- sum(n_states * (n_symbols - 1L) * dim(X)[3])
+    iv <- iv_X(X)
+    tv <- tv_X(X)
   }
-  list(formula = formula, n_pars = n_pars, X = X, coef_names = coef_names)
+  list(formula = formula, n_pars = n_pars, X = aperm(X, c(3, 1, 2)), 
+       coef_names = coef_names, iv = iv, tv = tv)
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
@@ -126,6 +156,7 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
     n_pars <- n_clusters - 1L
     X <- matrix(1, n_sequences, 1)
     coef_names <- "(Intercept)"
+    iv <- FALSE
   } else {
     first_time_point <- min(data[[time]])
     X <- stats::model.matrix.lm(
@@ -134,6 +165,7 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
       na.action = stats::na.pass
     )
     missing_values <- which(!complete.cases(X))
+    iv <- nrow(unique(X[-missing_values, ])) > 1
     stopifnot_(
       length(missing_values) == 0,
       c(
@@ -148,5 +180,6 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
     coef_names <- colnames(X)
     n_pars <- (n_clusters - 1L) * ncol(X)
   }
-  list(formula = formula, n_pars = n_pars, X = X, coef_names = coef_names)
+  list(formula = formula, n_pars = n_pars, X = t(X), coef_names = coef_names, 
+       iv = iv)
 }

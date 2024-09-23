@@ -1,34 +1,45 @@
-#' Get state names from hmm or mhmm object
+#' Get State Names of Hidden Markov  Model
 #'
-#' @param object An object of class `hmm` or `mhmm`.
+#' @param object An object of class `hmm`, `mhmm`, `nhmm`, or `mnhmm`.
 #' @return A character vector containing the state names, or a list of such
-#'   vectors in `mhmm` case.
+#'   vectors in case of mixture models.
+#' @rdname state_names
 #' @export
 state_names <- function(object) {
   UseMethod("state_names")
 }
-
+#' @rdname state_names
 #' @export
 state_names.hmm <- function(object) {
   object$state_names
 }
-
+#' @rdname state_names
 #' @export
 state_names.mhmm <- function(object) {
   object$state_names
 }
-
-#' Set state names for hmm or mhmm object
+#' @rdname state_names
+#' @export
+state_names.nhmm <- function(object) {
+  object$state_names
+}
+#' @rdname state_names
+#' @export
+state_names.mnhmm <- function(object) {
+  object$state_names
+}
+#' Set State Names of Hidden Markov  Model
 #'
-#' @param object An object of class `hmm` or `mhmm`.
+#' @param object object An object of class `hmm`, `mhmm`, `nhmm`, or `mnhmm`.
 #' @param value A character vector containing the new state names, or a list of
-#'   such vectors in `mhmm` case.
-#' @return The modified object with updated state names.
+#'   such vectors in case of mixture models.
+#' @return The original object with updated state names.
+#' @rdname state_names
 #' @export
 `state_names<-` <- function(object, value) {
   UseMethod("state_names<-")
 }
-
+#' @rdname state_names
 #' @export
 `state_names<-.hmm` <- function(object, value) {
   stopifnot_(
@@ -47,7 +58,7 @@ state_names.mhmm <- function(object) {
   }
   object
 }
-
+#' @rdname state_names
 #' @export
 `state_names<-.mhmm` <- function(object, value) {
   stopifnot_(
@@ -55,7 +66,7 @@ state_names.mhmm <- function(object) {
     "New state names should be a {.cls list} with length of 
     {object$n_clusters}."
   )
-  for (i in 1:object$n_clusters) {
+  for (i in seq_len(object$n_clusters)) {
     stopifnot_(
       length(value[[i]]) == object$n_states[i],
       "Number of new state names for cluster {i} is not equal to the number of 
@@ -71,6 +82,34 @@ state_names.mhmm <- function(object) {
     } else {
       dimnames(object$emission_probs[[i]])$state_names <- value[[i]]
     }
+  }
+  object
+}
+#' @rdname state_names
+#' @export
+`state_names<-.nhmm` <- function(object, value) {
+  stopifnot_(
+    length(value) == object$n_states,
+    "Number of state names does not match with the number of states."
+  )
+  object$state_names <- value
+  object
+}
+#' @rdname state_names
+#' @export
+`state_names<-.mnhmm` <- function(object, value) {
+  stopifnot_(
+    length(value) != object$n_clusters,
+    "New state names should be a {.cls list} with length of 
+    {object$n_clusters}."
+  )
+  for (i in seq_len(object$n_clusters)) {
+    stopifnot_(
+      length(value[[i]]) == object$n_states[i],
+      "Number of new state names for cluster {i} is not equal to the number of 
+      hidden states."
+    )
+    object$state_names[[i]] <- value[[i]]
   }
   object
 }

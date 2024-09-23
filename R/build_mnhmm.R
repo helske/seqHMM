@@ -27,8 +27,19 @@ build_mnhmm <- function(
     out$model,
     class = "mnhmm",
     nobs = attr(out$observations, "nobs"),
-    df = out$extras$n_pars,
+    df = out$extras$np_omega + 
+      n_clusters * (out$extras$np_pi + out$extras$np_A + out$extras$np_B),
     type = paste0(out$extras$multichannel, "mnhmm"),
-    intercept_only = out$extras$intercept_only
+    intercept_only = out$extras$intercept_only,
+    iv_pi = out$extras$iv_pi,
+    iv_A =  out$extras$iv_A,
+    iv_B = out$extras$iv_B,
+    iv_omega =  out$extras$iv_omega,
+    tv_A =  out$extras$tv_A,
+    tv_B =  out$extras$tv_B,
+    np_pi = n_clusters * out$extras$np_pi,
+    np_A = n_clusters * out$extras$np_A,
+    np_B = n_clusters * out$extras$np_B,
+    np_omega = out$extras$np_omega
   )
 }

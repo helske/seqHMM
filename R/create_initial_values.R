@@ -34,10 +34,13 @@ create_gamma_B_raw_mnhmm <- function(x, S, M, K, D) {
   })
 }
 create_gamma_multichannel_B_raw_mnhmm <- function(x, S, M, K, D) {
-  n <- (sum(M) - 1) * K * S
-  lapply(seq_len(D), function(i) {
-    create_gamma_multichannel_B_raw_nhmm(x[(i - 1) * n + 1:n], S, M, K)
-  })
+  n <- sum((M - 1) * K * S)
+  unlist(
+    lapply(seq_len(D), function(i) {
+      create_gamma_multichannel_B_raw_nhmm(x[(i - 1) * n + 1:n], S, M, K)
+    }),
+    recursive = FALSE
+  )
 }
 create_gamma_omega_raw_mnhmm <- function(x, D, K) {
   matrix(x, D - 1, K)
@@ -106,14 +109,14 @@ create_gamma_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
     if (D > 1) {
       if (is.null(x)) {
         create_gamma_multichannel_B_raw_mnhmm(
-          rnorm((M - 1) * K * S * D, sd = init_sd), S, M, K, D
+          rnorm(sum((M - 1) * K * S) * D, sd = init_sd), S, M, K, D
         )
       } else {
         stopifnot_(
-          length(x) == (M - 1) * K * S * D,
+          length(x) == sum((M - 1) * K * S) * D,
           paste0(
             "Number of initial values for {.val gamma_B} is not equal to ",
-            "(M - 1) * K * S * D = {(M - 1) * K * S * D}."
+            "sum((M - 1) * K * S) * D = {sum((M - 1) * K * S) * D}."
           )
         )
         create_gamma_multichannel_B_raw_mnhmm(x, S, M, K, D)
@@ -121,14 +124,14 @@ create_gamma_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
     } else {
       if (is.null(x)) {
         create_gamma_multichannel_B_raw_nhmm(
-          rnorm((M - 1) * K * S, sd = init_sd), S, M, K
+          rnorm(sum((M - 1) * K * S), sd = init_sd), S, M, K
         )
       } else {
         stopifnot_(
-          length(x) == (M - 1) * K * S,
+          length(x) == sum((M - 1) * K * S),
           paste0(
             "Number of initial values for {.val gamma_B} is not equal to ",
-            "(M - 1) * K * S = {(M - 1) * K * S}."
+            "sum((M - 1) * K * S) = {sum((M - 1) * K * S)}."
           )
         )
         create_gamma_multichannel_B_raw_nhmm(x, S, M, K)

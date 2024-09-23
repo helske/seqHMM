@@ -12,22 +12,30 @@ update.nhmm <- function(object, newdata, ...) {
   object$n_sequences <- length(unique(newdata[[object$id_variable]]))
   object$length_of_sequences <- length(unique(newdata[[object$time_variable]]))
   if (!is.null(object$data)) object$data <- newdata
-  object$X_initial <- model_matrix_initial_formula(
+  X <- model_matrix_initial_formula(
     object$initial_formula, newdata, object$n_sequences,
     object$length_of_sequences, object$n_states, object$time_variable, 
     object$id_variable
-  )$X
-  object$X_transition <- model_matrix_transition_formula(
+  )
+  object$X_initial <- X$X
+  attr(object, "iv_pi") <- x$iv
+  X <- model_matrix_transition_formula(
     object$transition_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$time_variable, 
     object$id_variable, object$sequence_lengths
-  )$X
-  object$X_emission <- model_matrix_emission_formula(
+  )
+  object$X_transition <- X$X
+  attr(object, "iv_A") <- X$iv
+  attr(object, "tv_A") <- X$tv
+  X <- model_matrix_emission_formula(
     object$emission_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$n_symbols, 
     object$n_channels, object$time_variable, object$id_variable, 
     object$sequence_lengths
-  )$X
+  )
+  object$X_emission <- X$X
+  attr(object, "iv_B") <- X$iv
+  attr(object, "tv_B") <- X$tv
   object
 }
 #' @rdname update_nhmm
@@ -37,25 +45,35 @@ update.mnhmm <- function(object, newdata, ...) {
   object$n_sequences <- length(unique(newdata[[object$id_variable]]))
   object$length_of_sequences <- length(unique(newdata[[object$time_variable]]))
   if (!is.null(object$data)) object$data <- newdata
-  object$X_initial <- model_matrix_initial_formula(
+  X <- model_matrix_initial_formula(
     object$initial_formula, newdata, object$n_sequences,
     object$length_of_sequences, object$n_states, object$time_variable, 
     object$id_variable
-  )$X
-  object$X_transition <- model_matrix_transition_formula(
+  )
+  object$X_initial <- X$X
+  attr(object, "iv_pi") <- x$iv
+  X <- model_matrix_transition_formula(
     object$transition_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$time_variable, 
     object$id_variable, object$sequence_lengths
-  )$X
-  object$X_emission <- model_matrix_emission_formula(
+  )
+  object$X_transition <- X$X
+  attr(object, "iv_A") <- X$iv
+  attr(object, "tv_A") <- X$tv
+  X <- model_matrix_emission_formula(
     object$emission_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$n_symbols, 
     object$n_channels, object$time_variable, object$id_variable, 
     object$sequence_lengths
-  )$X
-  object$X_cluster <- model_matrix_cluster_formula(
+  )
+  object$X_emission <- X$X
+  attr(object, "iv_B") <- X$iv
+  attr(object, "tv_B") <- X$tv
+  X <- model_matrix_cluster_formula(
     object$cluster_formula, newdata, object$n_sequences, object$n_clusters,
     object$time_variable, object$id_variable
-  )$X
+  )
+  object$X_cluster <- X$X
+  attr(object, "iv_omega") <- x$iv
   object
 }
