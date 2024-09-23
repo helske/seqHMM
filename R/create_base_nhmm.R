@@ -29,7 +29,7 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
   if (is.null(state_names)) {
     state_names <- paste("State", seq_len(n_states))
     if (mixture) {
-      state_names <- replicate(n_cluster, state_names, simplify = FALSE)
+      state_names <- replicate(n_clusters, state_names, simplify = FALSE)
       names(state_names) <- cluster_names
     }
   } else {
@@ -44,7 +44,7 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
         )
       )
       if (names_is_vec) {
-        state_names <- rep(n_cluster, state_names, simplify = FALSE)
+        state_names <- replicate(n_clusters, state_names, simplify = FALSE)
       } else {
         lapply(seq_len(n_states), function(i) {
           stopifnot_(
