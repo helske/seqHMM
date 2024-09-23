@@ -12,11 +12,11 @@ get_initial_probs(model, ...)
 
 \method{get_initial_probs}{nhmm}(model, ...)
 
-\method{get_initial_probs}{mnhmm}(x)
+\method{get_initial_probs}{mnhmm}(model, ...)
 
-\method{get_initial_probs}{hmm}(x)
+\method{get_initial_probs}{hmm}(model, ...)
 
-\method{get_initial_probs}{mhmm}(x)
+\method{get_initial_probs}{mhmm}(model, ...)
 }
 \description{
 Extract the Initial State Probabilities of Hidden Markov Model

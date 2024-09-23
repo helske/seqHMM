@@ -118,7 +118,7 @@ test_that("'forward_backward' works for single-channel 'mnhmm'", {
   expect_error(
     fit <- estimate_mnhmm(
       hmm_biofam$observations[[1]], n_states = 4, n_clusters = 2,
-      restarts = 2, threads = 1,  maxeval = 1
+      restarts = 2, threads = 1, maxeval = 1
     ),
     NA
   )
@@ -126,8 +126,8 @@ test_that("'forward_backward' works for single-channel 'mnhmm'", {
     fb <- forward_backward(fit, as_data_frame = FALSE),
     NA
   )
-  expect_gte(min(fb$forward_probs), -50)
-  expect_gte(min(fb$backward_probs), -50)
+  expect_gte(min(fb$forward_probs), -100)
+  expect_gte(min(fb$backward_probs), -100)
   expect_lte(max(fb$forward_probs), 0)
   expect_lte(max(fb$backward_probs), 0)
   

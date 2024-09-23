@@ -10,13 +10,13 @@
 \usage{
 get_emission_probs(model, ...)
 
-\method{get_emission_probs}{nhmm}(x)
+\method{get_emission_probs}{nhmm}(model, ...)
 
-\method{get_emission_probs}{mnhmm}(x)
+\method{get_emission_probs}{mnhmm}(model, ...)
 
-\method{get_emission_probs}{hmm}(x)
+\method{get_emission_probs}{hmm}(model, ...)
 
-\method{get_emission_probs}{mhmm}(x)
+\method{get_emission_probs}{mhmm}(model, ...)
 }
 \description{
 Extract the Emission Probabilities of Hidden Markov Model

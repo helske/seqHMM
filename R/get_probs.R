@@ -50,7 +50,7 @@ get_initial_probs.nhmm <- function(model, ...) {
 }
 #' @rdname initial_probs
 #' @export
-get_initial_probs.mnhmm <- function(x) {
+get_initial_probs.mnhmm <- function(model, ...) {
   if (model$n_channels == 1L) {
     ids <- rownames(model$observations)
   } else {
@@ -91,18 +91,18 @@ get_initial_probs.mnhmm <- function(x) {
 }
 #' @rdname initial_probs
 #' @export
-get_initial_probs.hmm <- function(x) {
-  x$initial_probs
+get_initial_probs.hmm <- function(model, ...) {
+  model$initial_probs
 }
 #' @rdname initial_probs
 #' @export
-get_initial_probs.mhmm <- function(x) {
-  x$initial_probs
+get_initial_probs.mhmm <- function(model, ...) {
+  model$initial_probs
 }
 #' Extract the State Transition Probabilities of Hidden Markov Model
 #' @rdname transition_probs
 #' @export
-get_transition_probs.nhmm <- function(x) {
+get_transition_probs.nhmm <- function(model, ...) {
   if (model$n_channels == 1L) {
     ids <- rownames(model$observations)
     times <- colnames(model$observations)
@@ -111,24 +111,24 @@ get_transition_probs.nhmm <- function(x) {
     times <- colnames(model$observations[[1]])
   }
   S <- model$n_states
-  T_ <- length(times)
+  T_ <- model$length_of_sequences
   if (!attr(model, "iv_A")) {
-    X <- matrix(model$X_transition[, 1L, ], ncol = model$length_of_sequences)
+    X <- matrix(model$X_transition[, , 1L], ncol = model$length_of_sequences)
     d <- data.frame(
       id = rep(ids, each = S^2 * T_),
       time = rep(times, each = S^2),
-      state_from = object$state_names,
-      state_to = rep(object$state_names, each = S),
-      estimate = get_A(
+      state_from = model$state_names,
+      state_to = rep(model$state_names, each = S),
+      estimate = c(get_A(
         model$coefficients$gamma_A_raw, X, FALSE, attr(model, "tv_A")
-      )
+      ))
     )
   } else {
     d <- data.frame(
       id = rep(ids, each = S^2 * T_),
       time = rep(times, each = S^2),
-      state_from = object$state_names,
-      state_to = rep(object$state_names, each = S),
+      state_from = model$state_names,
+      state_to = rep(model$state_names, each = S),
       estimate = c(apply(
         model$X_transition, 2, function(z) {
           get_A(
@@ -149,7 +149,7 @@ get_transition_probs.nhmm <- function(x) {
 }
 #' @rdname transition_probs
 #' @export
-get_transition_probs.mnhmm <- function(x) {
+get_transition_probs.mnhmm <- function(model, ...) {
   if (model$n_channels == 1L) {
     ids <- rownames(model$observations)
     times <- colnames(model$observations)
@@ -158,21 +158,21 @@ get_transition_probs.mnhmm <- function(x) {
     times <- colnames(model$observations[[1]])
   }
   S <- model$n_states
-  T_ <- length(times)
+  T_ <- model$length_of_sequences
   D <- model$n_clusters
   if (!attr(model, "iv_A")) {
-    X <- matrix(model$X_transition[, 1L, ], ncol = model$length_of_sequences)
+    X <- matrix(model$X_transition[, , 1L], ncol = model$length_of_sequences)
     d <- do.call(
       rbind,
       lapply(seq_len(D), function(i) {
         data.frame(
           id = rep(ids, each = S^2 * T_),
           time = rep(times, each = S^2),
-          state_from = object$state_names[[i]],
-          state_to = rep(object$state_names[[i]], each = S),
-          estimate = get_A(
+          state_from = model$state_names[[i]],
+          state_to = rep(model$state_names[[i]], each = S),
+          estimate = c(get_A(
             model$coefficients$gamma_A_raw[[i]], X, FALSE, attr(model, "tv_A")
-          )
+          ))
         )
       })
     )
@@ -183,8 +183,8 @@ get_transition_probs.mnhmm <- function(x) {
         data.frame(
           id = rep(ids, each = S^2 * T_),
           time = rep(times, each = S^2),
-          state_from = object$state_names[[i]],
-          state_to = rep(object$state_names[[i]], each = S),
+          state_from = model$state_names[[i]],
+          state_to = rep(model$state_names[[i]], each = S),
           estimate = c(apply(
             model$X_transition, 2, function(z) {
               get_A(
@@ -205,18 +205,18 @@ get_transition_probs.mnhmm <- function(x) {
 }
 #' @rdname transition_probs
 #' @export
-get_transition_probs.hmm <- function(x) {
-  x$transition_probs
+get_transition_probs.hmm <- function(model, ...) {
+  model$transition_probs
 }
 #' @rdname transition_probs
 #' @export
-get_transition_probs.mhmm <- function(x) {
-  x$transition_probs
+get_transition_probs.mhmm <- function(model, ...) {
+  model$transition_probs
 }
 #' Extract the Emission Probabilities of Hidden Markov Model
 #' @rdname emission_probs
 #' @export
-get_emission_probs.nhmm <- function(x) {
+get_emission_probs.nhmm <- function(model, ...) {
   if (model$n_channels == 1L) {
     ids <- rownames(model$observations)
     times <- colnames(model$observations)
@@ -229,9 +229,10 @@ get_emission_probs.nhmm <- function(x) {
   }
   S <- model$n_states
   C <- model$n_channels
-  T_ <- length(times)
+  T_ <- model$length_of_sequences
+  M <- model$n_symbols
   if (!attr(model, "iv_B")) {
-    X <- matrix(model$X_emission[, 1L, ], ncol = model$length_of_sequences)
+    X <- matrix(model$X_emission[, , 1L], ncol = model$length_of_sequences)
     d <- do.call(
       rbind,
       lapply(seq_len(C), function(i) {
@@ -241,8 +242,9 @@ get_emission_probs.nhmm <- function(x) {
           state = model$state_names,
           channel = model$channel_names[i],
           observation = rep(symbol_names[[i]], each = S),
-          estimate = get_B(
-            model$coefficients$gamma_B_raw[[i]], X, FALSE, FALSE, attr(model, "tv_B")
+          estimate = unlist(get_B(
+            model$coefficients$gamma_B_raw[i], X, M[i], FALSE, FALSE, 
+            attr(model, "tv_B"))
           )
         )
       })
@@ -257,14 +259,14 @@ get_emission_probs.nhmm <- function(x) {
           state = model$state_names,
           channel = model$channel_names[i],
           observation = rep(symbol_names[[i]], each = S),
-          estimate = c(apply(
+          estimate = apply(
             model$X_emission, 2, function(z) {
-              get_B(
-                model$coefficients$gamma_B_raw[[i]], matrix(z, ncol = T), FALSE, 
-                FALSE, attr(model, "tv_B")
-              )
+              unlist(get_B(
+                model$coefficients$gamma_B_raw[i], matrix(z, ncol = T), M[i], 
+                FALSE, FALSE, attr(model, "tv_B")
+              ))
             }
-          ))
+          )
         )
       })
     )
@@ -277,7 +279,7 @@ get_emission_probs.nhmm <- function(x) {
 }
 #' @rdname emission_probs
 #' @export
-get_emission_probs.mnhmm <- function(x) {
+get_emission_probs.mnhmm <- function(model, ...) {
   if (model$n_channels == 1L) {
     ids <- rownames(model$observations)
     times <- colnames(model$observations)
@@ -291,9 +293,10 @@ get_emission_probs.mnhmm <- function(x) {
   S <- model$n_states
   C <- model$n_channels
   D <- model$n_clusters
-  T_ <- length(times)
+  T_ <- model$length_of_sequences
+  M <- model$n_symbols
   if (!attr(model, "iv_B")) {
-    X <- matrix(model$X_emission[, 1L, ], ncol = model$length_of_sequences)
+    X <- matrix(model$X_emission[, , 1L], ncol = model$length_of_sequences)
     d <- do.call(
       rbind,
       lapply(seq_len(D), function(j) {
@@ -307,9 +310,9 @@ get_emission_probs.mnhmm <- function(x) {
               state = model$state_names[[j]],
               channel = model$channel_names[i],
               observation = rep(symbol_names[[i]], each = S),
-              estimate = get_B(
-                model$coefficients$gamma_B_raw[[j]][[i]], X, FALSE, FALSE, 
-                attr(model, "tv_B")
+              estimate = unlist(get_B(
+                model$coefficients$gamma_B_raw[[j]][i], X, M[i], FALSE, FALSE, 
+                attr(model, "tv_B"))
               )
             )
           })
@@ -330,14 +333,14 @@ get_emission_probs.mnhmm <- function(x) {
               state = model$state_names[[j]],
               channel = model$channel_names[i],
               observation = rep(symbol_names[[i]], each = S),
-              estimate = c(apply(
+              estimate = apply(
                 model$X_emission, 2, function(z) {
-                  get_B(
-                    model$coefficients$gamma_B_raw[[j]][[i]], 
-                    matrix(z, ncol = T), FALSE, FALSE, attr(model, "tv_B")
-                  )
+                  unlist(get_B(
+                    model$coefficients$gamma_B_raw[[j]][i], 
+                    matrix(z, ncol = T), M[i], FALSE, FALSE, attr(model, "tv_B")
+                  ))
                 }
-              ))
+              )
             )
           })
         )
@@ -352,13 +355,13 @@ get_emission_probs.mnhmm <- function(x) {
 }
 #' @rdname emission_probs
 #' @export
-get_emission_probs.hmm <- function(x) {
-  x$emission_probs
+get_emission_probs.hmm <- function(model, ...) {
+  model$emission_probs
 }
 #' @rdname emission_probs
 #' @export
-get_emission_probs.mhmm <- function(x) {
-  x$emission_probs
+get_emission_probs.mhmm <- function(model, ...) {
+  model$emission_probs
 }
 #' Extract the Prior Cluster Probabilities of MHMM or MNHMM
 #' 
@@ -426,8 +429,8 @@ get_probs.nhmm <- function(model, newdata = NULL, remove_voids = TRUE, ...) {
     "Argument {.arg remove_voids} must be a single {.cls logical} value."
   )
   if (!is.null(newdata)) {
-    time <- object$time_variable
-    id <- object$id_variable
+    time <- model$time_variable
+    id <- model$id_variable
     stopifnot_(
       is.data.frame(newdata),
       "Argument {.arg newdata} must be a {.cls data.frame} object."
@@ -442,15 +445,15 @@ get_probs.nhmm <- function(model, newdata = NULL, remove_voids = TRUE, ...) {
     )
     object <- update(object, newdata = newdata)
   }
-  S <- object$n_states
-  M <- object$n_symbols
-  C <- object$n_channels
-  N <- object$n_sequences
-  T_ <- object$length_of_sequences
+  S <- model$n_states
+  M <- model$n_symbols
+  C <- model$n_channels
+  N <- model$n_sequences
+  T_ <- model$length_of_sequences
   out <- list(
-    initial_probs = get_initial_probs(object),
-    transition_probs = get_transition_probs(object),
-    emission_probs = get_emission_probs(object)
+    initial_probs = get_initial_probs(model),
+    transition_probs = get_transition_probs(model),
+    emission_probs = get_emission_probs(model)
   )
   rownames(out$initial_probs) <- NULL
   rownames(out$transition_probs) <- NULL
@@ -465,15 +468,15 @@ get_probs.nhmm <- function(model, newdata = NULL, remove_voids = TRUE, ...) {
 }
 #' @rdname get_probs
 #' @export
-get_probs.mnhmm <- function(model, newdata = NULL, ...) {
+get_probs.mnhmm <- function(model, newdata = NULL, remove_voids = TRUE, ...) {
   
   stopifnot_(
     checkmate::test_flag(x = remove_voids), 
     "Argument {.arg remove_voids} must be a single {.cls logical} value."
   )
   if (!is.null(newdata)) {
-    time <- object$time_variable
-    id <- object$id_variable
+    time <- model$time_variable
+    id <- model$id_variable
     stopifnot_(
       is.data.frame(newdata),
       "Argument {.arg newdata} must be a {.cls data.frame} object."
@@ -488,16 +491,16 @@ get_probs.mnhmm <- function(model, newdata = NULL, ...) {
     )
     object <- update(object, newdata = newdata)
   }
-  S <- object$n_states
-  M <- object$n_symbols
-  C <- object$n_channels
-  N <- object$n_sequences
-  T_ <- object$length_of_sequences
+  S <- model$n_states
+  M <- model$n_symbols
+  C <- model$n_channels
+  N <- model$n_sequences
+  T_ <- model$length_of_sequences
   out <- list(
-    initial_probs = get_initial_probs(object),
-    transition_probs = get_transition_probs(object),
-    emission_probs = get_emission_probs(object),
-    cluster_probs = get_cluster_probs(object)
+    initial_probs = get_initial_probs(model),
+    transition_probs = get_transition_probs(model),
+    emission_probs = get_emission_probs(model),
+    cluster_probs = get_cluster_probs(model)
   )
   rownames(out$initial_probs) <- NULL
   rownames(out$transition_probs) <- NULL

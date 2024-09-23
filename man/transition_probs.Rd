@@ -10,13 +10,13 @@
 \usage{
 get_transition_probs(model, ...)
 
-\method{get_transition_probs}{nhmm}(x)
+\method{get_transition_probs}{nhmm}(model, ...)
 
-\method{get_transition_probs}{mnhmm}(x)
+\method{get_transition_probs}{mnhmm}(model, ...)
 
-\method{get_transition_probs}{hmm}(x)
+\method{get_transition_probs}{hmm}(model, ...)
 
-\method{get_transition_probs}{mhmm}(x)
+\method{get_transition_probs}{mhmm}(model, ...)
 }
 \description{
 Extract the State Transition Probabilities of Hidden Markov Model

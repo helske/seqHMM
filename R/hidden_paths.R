@@ -111,7 +111,7 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
   if (identical(model$state_names[[1]], model$state_names[[2]])) {
     model$state_names <- paste0(
       rep(model$cluster_names, each = model$n_states), ": ",
-      model$state_names
+      unlist(model$state_names)
     )
   } else {
     model$state_names <- unlist(model$state_names)

@@ -11,7 +11,7 @@ get_probs(model, ...)
 
 \method{get_probs}{nhmm}(model, newdata = NULL, remove_voids = TRUE, ...)
 
-\method{get_probs}{mnhmm}(model, newdata = NULL, ...)
+\method{get_probs}{mnhmm}(model, newdata = NULL, remove_voids = TRUE, ...)
 }
 \arguments{
 \item{model}{An object of class \code{nhmm} or \code{mnhmm}.}

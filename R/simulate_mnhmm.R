@@ -84,7 +84,6 @@ simulate_mnhmm <- function(
   model$coefficients <- create_initial_values(
     coefs, n_states, n_symbols, init_sd, K_i, K_s, K_o, K_d, n_clusters
   )
-  model$stan_model <-  stanmodels[[attr(model, "type")]]
   
   probs <- get_probs(model)
   states <- array(NA_character_, c(max(sequence_lengths), n_sequences))
