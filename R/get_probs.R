@@ -133,7 +133,7 @@ get_transition_probs.nhmm <- function(model, ...) {
       time = rep(times, each = S^2),
       state_from = model$state_names,
       state_to = rep(model$state_names, each = S),
-      estimate = c(
+      estimate = unlist(
         get_A_all(
           model$coefficients$gamma_A_raw, model$X_transition, FALSE, 
           attr(model, "tv_A")
@@ -190,7 +190,7 @@ get_transition_probs.mnhmm <- function(model, ...) {
           time = rep(times, each = S^2),
           state_from = model$state_names[[i]],
           state_to = rep(model$state_names[[i]], each = S),
-          estimate = c(
+          estimate = unlist(
             get_A_all(
               model$coefficients$gamma_A_raw[[i]], model$X_transition, FALSE, 
               attr(model, "tv_A")
@@ -265,7 +265,7 @@ get_emission_probs.nhmm <- function(model, ...) {
           state = model$state_names,
           channel = model$channel_names[i],
           observation = rep(symbol_names[[i]], each = S),
-          estimate = c(
+          estimate = unlist(
             get_B_all(
               model$coefficients$gamma_B_raw[[i]], model$X_emission, 
               FALSE, FALSE, attr(model, "tv_B")
@@ -317,7 +317,7 @@ get_emission_probs.mnhmm <- function(model, ...) {
               state = model$state_names[[j]],
               channel = model$channel_names[i],
               observation = rep(symbol_names[[i]], each = S),
-              estimate = unlist(get_B(
+              estimate = c(get_B(
                 model$coefficients$gamma_B_raw[[j]][[i]], X, FALSE, FALSE, 
                 attr(model, "tv_B"))
               )
