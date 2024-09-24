@@ -49,7 +49,7 @@ create_gamma_pi_inits <- function(x, S, K, init_sd = 0, D = 1) {
       create_gamma_pi_raw_mnhmm(rnorm((S - 1) * K * D, sd = init_sd), S, K, D)
     } else {
       stopifnot_(
-        length(x) == (S - 1) * K * D,
+        length(unlist(x)) == (S - 1) * K * D,
         paste0(
           "Number of initial values for {.val gamma_pi} is not equal to ",
           "(S - 1) * K * D = {(S - 1) * K * D}."
@@ -78,7 +78,7 @@ create_gamma_A_inits <- function(x, S, K, init_sd = 0, D = 1) {
       create_gamma_A_raw_mnhmm(rnorm((S - 1) * K * S * D, sd = init_sd), S, K, D)
     } else {
       stopifnot_(
-        length(x) == (S - 1) * K * S * D,
+        length(unlist(x)) == (S - 1) * K * S * D,
         paste0(
           "Number of initial values for {.val gamma_A} is not equal to ",
           "(S - 1) * K * S * D = {(S - 1) * K * S * D}."
@@ -110,7 +110,7 @@ create_gamma_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
         )
       } else {
         stopifnot_(
-          length(x) == sum((M - 1) * K * S) * D,
+          length(unlist(x)) == sum((M - 1) * K * S) * D,
           paste0(
             "Number of initial values for {.val gamma_B} is not equal to ",
             "sum((M - 1) * K * S) * D = {sum((M - 1) * K * S) * D}."
@@ -142,7 +142,7 @@ create_gamma_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
         )
       } else {
         stopifnot_(
-          length(x) == (M - 1) * K * S * D,
+          length(unlist(x)) == (M - 1) * K * S * D,
           paste0(
             "Number of initial values for {.val gamma_B} is not equal to ",
             "(M - 1) * K * S * D = {(M - 1) * K * S * D}."
