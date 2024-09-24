@@ -37,9 +37,8 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
       na.action = stats::na.pass
     )
     missing_values <- which(!complete.cases(X))
-    iv <- nrow(unique(X[-missing_values, ])) > 1
     stopifnot_(
-      length(missing_values) == 0,
+      length(missing_values) == 0L,
       c(
         "Missing cases are not allowed in covariates of `initial_formula`.",
         "Use {.fn complete.cases} to detect them, then fix or impute them.",
@@ -49,6 +48,7 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
         )
       )
     )
+    iv <- nrow(unique(X)) > 1L
     coef_names <- colnames(X)
     n_pars <- (n_states - 1L) * ncol(X)
   }
@@ -183,9 +183,8 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
       na.action = stats::na.pass
     )
     missing_values <- which(!complete.cases(X))
-    iv <- nrow(unique(X[-missing_values, ])) > 1
     stopifnot_(
-      length(missing_values) == 0,
+      length(missing_values) == 0L,
       c(
         "Missing cases are not allowed in covariates of `cluster_formula`.",
         "Use {.fn complete.cases} to detect them, then fix or impute them.",
@@ -195,6 +194,7 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
         )
       )
     )
+    iv <- nrow(unique(X)) > 1L
     coef_names <- colnames(X)
     n_pars <- (n_clusters - 1L) * ncol(X)
   }

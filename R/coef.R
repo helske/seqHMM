@@ -86,7 +86,7 @@ coef.nhmm <- function(object, probs = c(0.025, 0.975), ...) {
   # }
   
   list(
-    gamma_pinitial = gamma_pi, 
+    gamma_initial = gamma_pi, 
     beta_transition = gamma_A, 
     beta_emission = gamma_B
   )

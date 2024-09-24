@@ -20,6 +20,10 @@ test_that("build_lcm returns object of class 'mhmm'", {
               emission_probs = cbind(1, matrix(0, 2, s - 1))),
     NA
   )
+  expect_error(
+    build_lcm(list(obs, obs), n_clusters = k),
+    NA
+  )
   expect_warning(
     model <- build_lcm(
       list(obs, obs), n_clusters = k,

@@ -12,7 +12,11 @@ arma::vec get_omega(const arma::mat& gamma_raw, const arma::vec& X, const bool l
 // [[Rcpp::export]]
 arma::mat get_omega_all(const arma::mat& gamma_raw, const arma::mat& X, const bool logspace) {
   arma::mat beta = arma::join_cols(arma::zeros<arma::rowvec>(gamma_raw.n_cols), gamma_raw);
-  return softmax(beta * X, logspace).t();
+  arma::mat omega(beta.n_rows, X.n_cols);
+  for (unsigned int i = 0; i < X.n_cols; i++) {
+    omega.col(i) = softmax(beta * X.col(i), logspace);
+  }
+  return omega;
 }
 // gamma_raw is (S - 1) x K (start from, covariates)
 // X a vector of length K
@@ -26,7 +30,11 @@ arma::vec get_pi(const arma::mat& gamma_raw, const arma::vec& X, const bool logs
 // [[Rcpp::export]]
 arma::mat get_pi_all(const arma::mat& gamma_raw, const arma::mat& X, const bool logspace) {
   arma::mat beta = arma::join_cols(arma::zeros<arma::rowvec>(gamma_raw.n_cols), gamma_raw);
-  return softmax(beta * X, logspace).t();
+  arma::mat pi(beta.n_rows, X.n_cols);
+  for (unsigned int i = 0; i < X.n_cols; i++) {
+    pi.col(i) = softmax(beta * X.col(i), logspace);
+  }
+  return pi;
 }
 
 // gamma_raw is (S - 1) x K x S (transition to, covariates, transition from)
