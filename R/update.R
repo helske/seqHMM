@@ -18,7 +18,7 @@ update.nhmm <- function(object, newdata, ...) {
     object$id_variable
   )
   object$X_initial <- X$X
-  attr(object, "iv_pi") <- x$iv
+  attr(object, "iv_pi") <- X$iv
   X <- model_matrix_transition_formula(
     object$transition_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$time_variable, 
@@ -51,7 +51,7 @@ update.mnhmm <- function(object, newdata, ...) {
     object$id_variable
   )
   object$X_initial <- X$X
-  attr(object, "iv_pi") <- x$iv
+  attr(object, "iv_pi") <- X$iv
   X <- model_matrix_transition_formula(
     object$transition_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$time_variable, 
@@ -74,6 +74,6 @@ update.mnhmm <- function(object, newdata, ...) {
     object$time_variable, object$id_variable
   )
   object$X_cluster <- X$X
-  attr(object, "iv_omega") <- x$iv
+  attr(object, "iv_omega") <- X$iv
   object
 }

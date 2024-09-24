@@ -104,7 +104,8 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
     out <- viterbi_mnhmm_multichannel(
       model$coefficients$gamma_pi_raw, model$X_initial,
       model$coefficients$gamma_A_raw, model$X_transition,
-      model$coefficients$gamma_B_raw, model$X_emission,
+      unlist(model$coefficients$gamma_B_raw, recursive = FALSE),
+      model$X_emission,
       model$coefficients$gamma_omega_raw, model$X_cluster,
       obsArray, model$n_symbols)
   }

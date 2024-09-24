@@ -77,14 +77,13 @@ simulate_mnhmm <- function(
     if (is.null(coefs$emission_probs)) coefs$emission_probs <- NULL
     if (is.null(coefs$cluster_probs)) coefs$cluster_probs <- NULL
   }
-  K_i <- dim(model$X_initial)[2]
-  K_s <- dim(model$X_transition)[3]
-  K_o <- dim(model$X_emission)[3]
-  K_d <- dim(model$X_cluster)[2]
+  K_i <- nrow(model$X_initial)
+  K_s <- nrow(model$X_transition)
+  K_o <- nrow(model$X_emission)
+  K_d <- nrow(model$X_cluster)
   model$coefficients <- create_initial_values(
     coefs, n_states, n_symbols, init_sd, K_i, K_s, K_o, K_d, n_clusters
   )
-  
   probs <- get_probs(model)
   states <- array(NA_character_, c(max(sequence_lengths), n_sequences))
   obs <- array(NA_character_, c(max(sequence_lengths), n_channels, n_sequences))
@@ -93,7 +92,7 @@ simulate_mnhmm <- function(
   clusters <- character(n_sequences)
   cluster_names <- model$cluster_names
   state_names <- paste0(
-    rep(cluster_names, each = model$n_states), ": ", model$state_names
+    rep(cluster_names, each = model$n_states), ": ", unlist(model$state_names)
   )
   for (i in seq_len(n_sequences)) {
     p_cluster <- probs$cluster[

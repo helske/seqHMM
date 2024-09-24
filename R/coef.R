@@ -119,12 +119,13 @@ coef.mnhmm <- function(object, probs = c(0.025, 0.5, 0.975), ...) {
     cluster = rep(object$cluster_names, each = (S - 1) * S * K_s)
   )
   K_o <- length(object$coef_names_emission)
+  gamma_B_raw <- unlist(object$coefficients$gamma_B_raw)
   if (object$n_channels == 1) {
     gamma_B <- data.frame(
       state = unlist(object$state_names),
       observations = rep(object$symbol_names[-1], each = S),
       parameter = rep(object$coef_names_emission, each = S * (M - 1)),
-      estimate = unlist(gamma_B_raw),
+      estimate = gamma_B_raw,
       cluster =  rep(object$cluster_names, each = S * (S - 1) * K_o)
     )
   } else {
@@ -134,7 +135,7 @@ coef.mnhmm <- function(object, probs = c(0.025, 0.5, 0.975), ...) {
       parameter = unlist(lapply(seq_len(object$n_channels), function(i) {
         rep(object$coef_names_emission, each = S * (M[i] - 1))
       })),
-      estimate = unlist(gamma_B_raw),
+      estimate = gamma_B_raw,
       cluster =  unlist(lapply(seq_len(object$n_channels), function(i) {
         rep(object$cluster_names, each = S * (M[i] - 1) * K_o)
       }))

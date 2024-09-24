@@ -96,8 +96,11 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           pars[n_i + seq_len(n_s)], 
           S, K_s, D
         )
-        gamma_B_raw <- create_gamma_multichannel_B_raw_mnhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
+        gamma_B_raw <- unlist(
+          create_gamma_multichannel_B_raw_mnhmm(
+            pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
+          ),
+          recursive = FALSE
         )
         gamma_omega_raw <- create_gamma_omega_raw_mnhmm(
           pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
@@ -115,9 +118,12 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
         gamma_A_raw <- create_gamma_A_raw_mnhmm(
           pars[n_i + seq_len(n_s)], S, K_s, D
         )
-        gamma_B_raw <- create_gamma_multichannel_B_raw_mnhmm(
+        gamma_B_raw <- unlist(
+          create_gamma_multichannel_B_raw_mnhmm(
             pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
-          )
+          ),
+          recursive = FALSE
+        )
         gamma_omega_raw <- create_gamma_omega_raw_mnhmm(
           pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
         )

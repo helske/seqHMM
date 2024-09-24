@@ -32,10 +32,6 @@ ame.nhmm <- function(
     "Cannot marginalize over clusters as {.arg model} is not a {.cls mnhmm} object."
   )
   stopifnot_(
-    checkmate::test_count(nsim),
-    "Argument {.arg nsim} should be a single non-negative integer."
-  )
-  stopifnot_(
     checkmate::test_string(x = variable), 
     "Argument {.arg variable} must be a single character string."
   )

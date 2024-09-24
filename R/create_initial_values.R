@@ -35,12 +35,9 @@ create_gamma_B_raw_mnhmm <- function(x, S, M, K, D) {
 }
 create_gamma_multichannel_B_raw_mnhmm <- function(x, S, M, K, D) {
   n <- sum((M - 1) * K * S)
-  unlist(
-    lapply(seq_len(D), function(i) {
-      create_gamma_multichannel_B_raw_nhmm(x[(i - 1) * n + 1:n], S, M, K)
-    }),
-    recursive = FALSE
-  )
+  lapply(seq_len(D), function(i) {
+    create_gamma_multichannel_B_raw_nhmm(x[(i - 1) * n + 1:n], S, M, K)
+  })
 }
 create_gamma_omega_raw_mnhmm <- function(x, D, K) {
   matrix(x, D - 1, K)
@@ -181,7 +178,7 @@ create_gamma_omega_inits <- function(x, D, K, init_sd = 0) {
         "(D - 1) * K = {(D - 1) * K}."
       )
     )
-    create_gamma_omega_raw_nhmm(x, D, K)
+    create_gamma_omega_raw_mnhmm(x, D, K)
   }
 }
 #' Convert Initial Values for Inverse Softmax Scale
@@ -206,7 +203,7 @@ create_initial_values <- function(inits, S, M, init_sd, K_i, K_s, K_o, K_d = 0,
   if(!is.null(inits$initial_probs)) {
     if (D > 1) {
       gamma_pi_raw <- lapply(
-        seq_len(d), function(i) {
+        seq_len(D), function(i) {
           create_inits_vector(inits$initial_probs[[i]], S, K_i, init_sd)
         }
       )
@@ -222,7 +219,7 @@ create_initial_values <- function(inits, S, M, init_sd, K_i, K_s, K_o, K_d = 0,
   if(!is.null(inits$transition_probs)) {
     if (D > 1) {
       gamma_A_raw <- lapply(
-        seq_len(d), function(i) {
+        seq_len(D), function(i) {
           create_inits_matrix(inits$transition_probs[[i]], S, S, K_s, init_sd)
         }
       )
@@ -239,7 +236,7 @@ create_initial_values <- function(inits, S, M, init_sd, K_i, K_s, K_o, K_d = 0,
     if (D > 1) {
       if (length(M) > 1) {
         gamma_B_raw <-  lapply(
-          seq_len(d), function(i) {
+          seq_len(D), function(i) {
             lapply(seq_len(length(M)), function(j) {
               create_inits_matrix(
                 inits$emission_probs[[i]][[j]], S, M[j], K_o, init_sd)
@@ -247,7 +244,7 @@ create_initial_values <- function(inits, S, M, init_sd, K_i, K_s, K_o, K_d = 0,
           })
       } else {
         gamma_B_raw <- lapply(
-          seq_len(d), function(i) {
+          seq_len(D), function(i) {
             create_inits_matrix(inits$emission_probs[[i]], S, M, K_o, init_sd)
           }
         )

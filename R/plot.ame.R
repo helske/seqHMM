@@ -6,6 +6,7 @@
 #' @param probs A numeric vector of length 2 with the lower and upper limits for 
 #' confidence intervals. Default is `c(0.025, 0.975)`. If the limits are not 
 #' found in the input object `x`, an error is thrown.
+#' @param ... Ignored.
 #' @export
 plot.ame <- function(x, type, probs = c(0.025, 0.975), ...) {
   
