@@ -18,6 +18,11 @@ get_initial_probs(model, ...)
 
 \method{get_initial_probs}{mhmm}(model, ...)
 }
+\arguments{
+\item{model}{A hidden Markov model.}
+
+\item{...}{Ignored.}
+}
 \description{
 Extract the Initial State Probabilities of Hidden Markov Model
 }

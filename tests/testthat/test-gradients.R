@@ -17,12 +17,13 @@ test_that("Gradients for singlechannel-NHMM are correct", {
     time = rep(1:n_time, each = n_id),
     id = rep(1:n_id, n_time)
   )
-  data <- data[-10L, ]
-  data$y[10:15] <- NA
-  data$x[12] <- NA
+  data[data$id < 3 & data$time > 6, c("y", "x", "z")] <- NA
+  data[data$time > 9, c("y", "x", "z")] <- NA
+  data$x[12:15] <- 0
+  data$y[10:25] <- NA
   model <- build_nhmm(
     "y", S, initial_formula = ~ x, transition_formula = ~z,
-    emission_formula = ~ z, data = data, time = "time", id = "id")
+    emission_formula = ~ x, data = data, time = "time", id = "id")
   
   n_i <- attr(model, "np_pi")
   n_s <- attr(model, "np_A")
@@ -47,7 +48,7 @@ test_that("Gradients for singlechannel-NHMM are correct", {
       gamma_pi_raw, X_i,
       gamma_A_raw, X_s,
       gamma_B_raw, X_o,
-      obs, TRUE, TRUE, TRUE, TRUE, TRUE)$loglik
+      obs, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)$loglik
     
   }
   g <- function(pars) {
@@ -60,7 +61,7 @@ test_that("Gradients for singlechannel-NHMM are correct", {
       gamma_pi_raw, X_i,
       gamma_A_raw, X_s,
       gamma_B_raw, X_o,
-      obs, TRUE, TRUE, TRUE, TRUE, TRUE)[-1]))
+      obs, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)[-1]))
   }
   expect_equal(g(pars), numDeriv::grad(f, pars))
 })
@@ -92,10 +93,11 @@ test_that("Gradients for multichannel-NHMM are correct", {
     id = rep(1:n_id, n_time)
   )
   
-  data <- data[-10L, ]
-  data$y1[10:15] <- NA
-  data$y2[12:20] <- NA
-  data$x[12] <- NA
+  data[data$id < 3 & data$time > 6, c("y1", "y2", "x", "z")] <- NA
+  data[data$time > 9, c("y1", "y2", "x", "z")] <- NA
+  data$x[12:15] <- 0
+  data$y1[10:25] <- NA
+  data$y2[10:35] <- NA
   
   model <- build_nhmm(
     c("y1", "y2"), S, initial_formula = ~ x, transition_formula = ~z,
@@ -123,7 +125,7 @@ test_that("Gradients for multichannel-NHMM are correct", {
       gamma_pi_raw, X_i,
       gamma_A_raw, X_s,
       gamma_B_raw, X_o,
-      obs, M, TRUE, TRUE, TRUE, TRUE, TRUE)$loglik
+      obs, M, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)$loglik
     
   }
   g <- function(pars) {
@@ -136,7 +138,7 @@ test_that("Gradients for multichannel-NHMM are correct", {
       gamma_pi_raw, X_i,
       gamma_A_raw, X_s,
       gamma_B_raw, X_o,
-      obs, M, TRUE, TRUE, TRUE, TRUE, TRUE)[-1]))
+      obs, M, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)[-1]))
   }
   expect_equal(g(pars), numDeriv::grad(f, pars))
 })
@@ -161,9 +163,10 @@ test_that("Gradients for singlechannel-NHMM are correct", {
     time = rep(1:n_time, each = n_id),
     id = rep(1:n_id, n_time)
   )
-  data <- data[-10L, ]
-  data$y[10:15] <- NA
-  data$x[12] <- NA
+  data[data$id < 3 & data$time > 6, c("y", "x", "z")] <- NA
+  data[data$time > 9, c("y", "x", "z")] <- NA
+  data$x[12:15] <- 0
+  data$y[10:25] <- NA
   model <- build_mnhmm(
     "y", S, D, initial_formula = ~ x, transition_formula = ~z,
     emission_formula = ~ z, cluster_formula = ~ z, data = data, 
@@ -199,7 +202,7 @@ test_that("Gradients for singlechannel-NHMM are correct", {
       gamma_A_raw, X_s,
       gamma_B_raw, X_o,
       gamma_omega_raw, X_d,
-      obs, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)$loglik
+      obs, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)$loglik
     
   }
   g <- function(pars) {
@@ -216,10 +219,11 @@ test_that("Gradients for singlechannel-NHMM are correct", {
       gamma_A_raw, X_s,
       gamma_B_raw, X_o,
       gamma_omega_raw, X_d,
-      obs, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)[-1]))
+      obs, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)[-1]))
   }
   expect_equal(g(pars), numDeriv::grad(f, pars))
 })
+
 test_that("Gradients for multichannel-MNHMM are correct", {
   set.seed(123)
   M <- c(2, 5)
@@ -248,9 +252,11 @@ test_that("Gradients for multichannel-MNHMM are correct", {
     id = rep(1:n_id, n_time)
   )
   
-  data <- data[-10L, ]
-  data$y1[10:15] <- NA
-  data$x[12] <- NA
+  data[data$id < 3 & data$time > 6, c("y1", "y2", "x", "z")] <- NA
+  data[data$time > 9, c("y1", "y2", "x", "z")] <- NA
+  data$x[12:15] <- 0
+  data$y1[10:25] <- NA
+  data$y2[10:35] <- NA
   
   model <- build_mnhmm(
     c("y1", "y2"), S, D, initial_formula = ~ x, transition_formula = ~z,
@@ -289,7 +295,7 @@ test_that("Gradients for multichannel-MNHMM are correct", {
       gamma_A_raw, X_s,
       gamma_B_raw, X_o,
       gamma_omega_raw, X_d,
-      obs, M, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)$loglik
+      obs, M, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)$loglik
     
   }
   g <- function(pars) {
@@ -309,7 +315,7 @@ test_that("Gradients for multichannel-MNHMM are correct", {
       gamma_A_raw, X_s,
       gamma_B_raw, X_o,
       gamma_omega_raw, X_d,
-      obs, M, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)[-1]))
+      obs, M, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)[-1]))
   }
   expect_equal(g(pars), numDeriv::grad(f, pars))
 })

@@ -1,8 +1,8 @@
 #' Create observations for the model objects
 #' 
-#' Note that for historical reasons `length_of_sequences` refers to the maximum 
-#' length of sequences, whereas `sequence_lengths` refers to the actual non-void 
-#' lengths of each sequence.
+#' Note that for backward compatibility reasons `length_of_sequences` refers 
+#' to the maximum length of sequences, whereas `sequence_lengths` refers to 
+#' the actual non-void lengths of each sequence.
 #'@noRd
 #'
 .check_observations <- function(x, channel_names = NULL, 

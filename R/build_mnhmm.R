@@ -40,6 +40,8 @@ build_mnhmm <- function(
     np_pi = n_clusters * out$extras$np_pi,
     np_A = n_clusters * out$extras$np_A,
     np_B = n_clusters * out$extras$np_B,
-    np_omega = out$extras$np_omega
+    np_omega = out$extras$np_omega,
+    missing_X_transition = out$extras$missing_X_transition,
+    missing_X_emission = out$extras$missing_X_emission
   )
 }

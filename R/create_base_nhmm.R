@@ -172,6 +172,8 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
       coef_names_cluster = if(mixture) omega$coef_names else NULL
     ),
     extras = list(
+      missing_X_transition <- A$missing,
+      missing_X_emission <- B$missing,
       np_pi = pi$n_pars,
       np_A = A$n_pars,
       np_B = B$n_pars,

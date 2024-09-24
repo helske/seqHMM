@@ -13,7 +13,9 @@ get_cluster_probs(model, ...)
 \method{get_cluster_probs}{mhmm}(model, ...)
 }
 \arguments{
-\item{model}{An object of class \code{mnhmm} or `mhmm.}
+\item{model}{A mixture hidden Markov model.}
+
+\item{...}{Ignored.}
 }
 \description{
 Extract the Prior Cluster Probabilities of MHMM or MNHMM

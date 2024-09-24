@@ -67,6 +67,7 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     X <- array(1, c(length_of_sequences, n_sequences, 1L))
     coef_names <- "(Intercept)"
     iv <- tv <- FALSE
+    missing_values <- integer(0)
   } else {
     X <- stats::model.matrix.lm(
       formula, 
@@ -77,10 +78,14 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     if (length(missing_values) > 0) {
       ends <- sequence_lengths[match(data[[id]], unique(data[[id]]))]
       stopifnot_(
-        all(z <- data[missing_values, time] <= ends[missing_values]),
+        all(z <- data[missing_values, time] > ends[missing_values]),
         c(
-          "Missing cases are not allowed in covariates of `transition_formula`.",
-          "Use {.fn complete.cases} to detect them, then fix or impute them.",
+          paste0(
+            "Missing cases are not allowed in covariates of ",
+            "{.arg transition_formula}, unless they correspond to void ",
+            "response values at the end of the sequences.",
+            "Use {.fn complete.cases} to detect them, then fix or impute them."
+          ),
           paste0(
             "First missing value found for ID ",
             "{data[missing_values, id][which(!z)[1]]} at time point ",
@@ -89,16 +94,19 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
         )
       )
     }
-    # Replace NAs in void cases with zero
-    X[is.na(X)] <- 0
     coef_names <- colnames(X)
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
+    missing_values <- which(is.na(X))
+    # Replace NAs in void cases with zero
+    X[is.na(X)] <- 0
     n_pars <- n_states * (n_states - 1L) * dim(X)[3]
     iv <- iv_X(X)
     tv <- tv_X(X)
   }
-  list(formula = formula, n_pars = n_pars, X = aperm(X, c(3, 1, 2)), 
-       coef_names = coef_names, iv = iv, tv = tv)
+  list(
+    formula = formula, n_pars = n_pars, X = aperm(X, c(3, 1, 2)), 
+    coef_names = coef_names, iv = iv, tv = tv, missing = missing_values
+  )
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
@@ -113,6 +121,7 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     X <- array(1, c(length_of_sequences, n_sequences, 1L))
     coef_names <- "(Intercept)"
     iv <- tv <- FALSE
+    missing_values <- integer(0)
   } else {
     X <- stats::model.matrix.lm(
       formula, 
@@ -123,28 +132,37 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     if (length(missing_values) > 0) {
       ends <- sequence_lengths[match(data[[id]], unique(data[[id]]))]
       stopifnot_(
-        all(z <- data[missing_values, time] <= ends[missing_values]),
-        c(
-          "Missing cases are not allowed in covariates of `emission_formula`.",
-          "Use {.fn complete.cases} to detect them, then fix or impute them.",
-          paste0(
-            "First missing value found for ID ",
-            "{data[missing_values, id][which(!z)[1]]} at time point ",
-            "{data[missing_values, time][which(!z)[1]]}."
-          )
+        all(z <- data[missing_values, time] > ends[missing_values]),
+        c(paste0(
+          "Missing cases are not allowed in covariates of ",
+          "{.arg emission_formula}, unless they correspond to missing ",
+          "void reponses at the end of the sequences. ",
+          "Use {.fn complete.cases} to detect them, then fix or impute them. ",
+          "Note that the missing covariates in {.arg emission_formula} ",
+          "corresponding to time points where response variables are also ",
+          "missing can be set to arbitrary value."
+        ),
+        paste0(
+          "First missing value found for ID ",
+          "{data[missing_values, id][which(!z)[1]]} at time point ",
+          "{data[missing_values, time][which(!z)[1]]}."
+        )
         )
       )
     }
-    # Replace NAs in void cases with zero
-    X[is.na(X)] <- 0
     coef_names <- colnames(X)
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
+    missing_values <- which(is.na(X))
+    # Replace NAs in void cases with zero
+    X[is.na(X)] <- 0
     n_pars <- sum(n_states * (n_symbols - 1L) * dim(X)[3])
     iv <- iv_X(X)
     tv <- tv_X(X)
   }
-  list(formula = formula, n_pars = n_pars, X = aperm(X, c(3, 1, 2)), 
-       coef_names = coef_names, iv = iv, tv = tv)
+  list(
+    formula = formula, n_pars = n_pars, X = aperm(X, c(3, 1, 2)), 
+    coef_names = coef_names, iv = iv, tv = tv, missing = missing_values
+  )
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'

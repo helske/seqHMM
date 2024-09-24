@@ -24,6 +24,8 @@ build_nhmm <- function(
     tv_B =  out$extras$tv_B,
     np_pi = out$extras$np_pi,
     np_A = out$extras$np_A,
-    np_B = out$extras$np_B
+    np_B = out$extras$np_B,
+    missing_X_transition = out$extras$missing_X_transition,
+    missing_X_emission = out$extras$missing_X_emission
   )
 }

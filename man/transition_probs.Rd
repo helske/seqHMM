@@ -18,6 +18,11 @@ get_transition_probs(model, ...)
 
 \method{get_transition_probs}{mhmm}(model, ...)
 }
+\arguments{
+\item{model}{A hidden Markov model.}
+
+\item{...}{Ignored.}
+}
 \description{
 Extract the State Transition Probabilities of Hidden Markov Model
 }

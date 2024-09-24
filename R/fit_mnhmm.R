@@ -47,6 +47,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
   K_s <- nrow(X_s)
   K_o <- nrow(X_o) 
   K_d <- nrow(X_d)
+  Ti <- model$sequence_lengths
   
   dots <- list(...)
   if (is.null(dots$algorithm)) dots$algorithm <- "NLOPT_LD_LBFGS"
@@ -65,7 +66,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
         )
         out <- log_objective_mnhmm_singlechannel(
           gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o,
-          gamma_omega_raw, X_d, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega
+          gamma_omega_raw, X_d, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega, 
+          Ti
         )
         list(objective = - out$loglik,
              gradient = - unlist(out[-1]))
@@ -107,7 +109,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
         )
         out <- log_objective_mnhmm_multichannel(
           gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o,
-          gamma_omega_raw, X_d, obs, M, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega
+          gamma_omega_raw, X_d, obs, M, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega,
+          Ti
         )
         list(objective = - out$loglik,
              gradient = - unlist(out[-1]))

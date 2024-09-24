@@ -121,27 +121,3 @@ create_emissionArray <- function(model) {
   }
   emissionArray
 }
-
-#' Remove rows corresponding to void symbols
-#' @noRd
-remove_voids <- function(model, x) {
-  
-  x_id <- x[[model$id_variable]]
-  x_time <- x[[model$time_variable]]
-  if (model$n_channels == 1) {
-    time <- colnames(model$observations)
-    id <- rownames(model$observations)
-  } else {
-    time <- colnames(model$observations[[1]])
-    id <- rownames(model$observations[[1]])
-  }
-  do.call(
-    rbind, 
-    lapply(seq_len(model$n_sequences), function(i) {
-      idx <- which(
-        x_id == id[i] & x_time %in% time[seq_len(model$sequence_lengths[i])]
-      )
-      x[idx, ]
-    })
-  )
-}

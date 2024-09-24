@@ -18,6 +18,11 @@ get_emission_probs(model, ...)
 
 \method{get_emission_probs}{mhmm}(model, ...)
 }
+\arguments{
+\item{model}{A hidden Markov model.}
+
+\item{...}{Ignored.}
+}
 \description{
 Extract the Emission Probabilities of Hidden Markov Model
 }

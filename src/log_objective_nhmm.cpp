@@ -10,7 +10,7 @@ Rcpp::List log_objective_nhmm_singlechannel(
     const arma::cube& gamma_A_raw, const arma::cube& X_s,
     const arma::cube& gamma_B_raw, const arma::cube& X_o,
     const arma::mat& obs, const bool iv_pi, const bool iv_A, const bool iv_B,
-    const bool tv_A, const bool tv_B) {
+    const bool tv_A, const bool tv_B, const arma::uvec& Ti) {
   
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
@@ -44,7 +44,7 @@ Rcpp::List log_objective_nhmm_singlechannel(
     if (iv_B || i == 0) {
       log_B = get_B(gamma_B_raw, X_o.slice(i), true, true, tv_B);
     }
-    for (unsigned int t = 0; t < T; t++) {
+    for (unsigned int t = 0; t < Ti[i]; t++) {
       for (unsigned int s = 0; s < S; s++) {
         log_py(s, t) = log_B(s, obs(t, i), t);
       }
@@ -64,7 +64,7 @@ Rcpp::List log_objective_nhmm_singlechannel(
     grad_pi += gradmat_S.rows(1, S - 1) * gradvec_S * X_i.col(i).t();
     
     // gradient wrt gamma_A
-    for (unsigned int t = 0; t < (T - 1); t++) {
+    for (unsigned int t = 0; t < (Ti[i] - 1); t++) {
       A = exp(log_A.slice(t));
       for (unsigned int s = 0; s < S; s++) {
         // d loglik / d a_s
@@ -85,7 +85,7 @@ Rcpp::List log_objective_nhmm_singlechannel(
         double grad = exp(log_Pi(s) + log_beta(s, 0) - ll);
         grad_B.slice(s) += gradmat_M.rows(1, M - 1).col(obs(0, i)) * grad * X_o.slice(i).col(0).t();
       }
-      for (unsigned int t = 0; t < (T - 1); t++) {
+      for (unsigned int t = 0; t < (Ti[i] - 1); t++) {
         if (obs(t + 1, i) < M) {
           Brow = exp(log_B.slice(t + 1).row(s).cols(0, M - 1));
           gradmat_M = -Brow.t() * Brow;
@@ -112,120 +112,121 @@ Rcpp::List log_objective_nhmm_multichannel(
     const arma::cube& gamma_A_raw, const arma::cube& X_s,
     const arma::field<arma::cube>& gamma_B_raw, const arma::cube& X_o,
     const arma::cube& obs, const arma::uvec& M, const bool iv_pi, 
-    const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B) {
-
- unsigned int C = M.n_elem;
- unsigned int N = X_s.n_slices;
- unsigned int T = X_s.n_cols;
- unsigned int S = gamma_A_raw.n_slices;
- arma::vec loglik(N);
- arma::mat log_alpha(S, T);
- arma::mat log_beta(S, T);
- arma::mat log_py(S, T);
- arma::vec log_Pi(S);
- arma::cube log_A(S, S, T);
- arma::field<arma::cube> log_B(C);
- arma::mat grad_pi(S - 1, X_i.n_rows, arma::fill::zeros);
- arma::cube grad_A(S - 1, X_s.n_rows, S, arma::fill::zeros);
- arma::field<arma::cube> grad_B(C);
- for (unsigned int c = 0; c < C; c++) {
-   grad_B(c) = arma::cube(M(c) - 1, X_o.n_rows, S, arma::fill::zeros);
- }
- arma::vec gradvec_S(S);
- arma::mat gradmat_S(S, S);
- arma::mat A(S, S);
- for (unsigned int i = 0; i < N; i++) {
-   if (iv_pi || i == 0) {
-     log_Pi = get_pi(gamma_pi_raw, X_i.col(i), true);
-   }
-   if (iv_A || i == 0) {
-     log_A = get_A(gamma_A_raw, X_s.slice(i), true, tv_A);
-   }
-   if (iv_B || i == 0) {
-     log_B = get_B(gamma_B_raw, X_o.slice(i), M, true, true, tv_B);
-   }
-   for (unsigned int t = 0; t < T; t++) {
-     for (unsigned int s = 0; s < S; s++) {
-       log_py(s, t) = 0;
-       for (unsigned int c = 0; c < C; c++) {
-         log_py(s, t) += log_B(c)(s, obs(c, t, i), t);
-       }
-     }
-   }
-   log_alpha = univariate_forward_nhmm(log_Pi, log_A, log_py);
-   log_beta = univariate_backward_nhmm(log_A, log_py);
-   double ll = logSumExp(log_alpha.col(T - 1));
-   loglik(i) = ll;
-   // gradient wrt gamma_pi
-   // d loglik / d pi
-   gradvec_S = exp(log_py.col(0) + log_beta.col(0) - ll);
-   // d pi / d gamma_pi
-   arma::vec Pi = exp(log_Pi);
-   gradmat_S = -Pi * Pi.t();
-   gradmat_S.diag() += Pi;
-   grad_pi += gradmat_S.rows(1, S - 1) * gradvec_S * X_i.col(i).t();
-   // gradient wrt gamma_A
-   for (unsigned int t = 0; t < (T - 1); t++) {
-     A = exp(log_A.slice(t));
-     for (unsigned int s = 0; s < S; s++) {
-       // d loglik / d a_s
-       gradvec_S = exp(log_alpha(s, t) + log_py.col(t + 1) + 
-         log_beta.col(t + 1) - ll);
-       // d a_s / d gamma_A
-       gradmat_S = -A.row(s).t() * A.row(s);
-       gradmat_S.diag() += A.row(s);
-       grad_A.slice(s) += gradmat_S.rows(1, S - 1) * 
-         gradvec_S * X_s.slice(i).col(t).t();
-     }
-   }
-   for (unsigned int c = 0; c < C; c++) {
-     arma::mat gradmat_M(M(c), M(c));
-     arma::rowvec Brow(M(c));
-     double logpy;
-     for (unsigned int s = 0; s < S; s++) {
-       if (obs(c, 0, i) < M(c)) {
-         Brow = exp(log_B(c).slice(0).row(s).cols(0, M(c) - 1));
-         gradmat_M = -Brow.t() * Brow;
-         gradmat_M.diag() += Brow;
-         logpy = 0;
-         for (unsigned int cc = 0; cc < C; cc++) {
-           if (cc != c) {
-             logpy += log_B(cc)(s, obs(cc, 0, i), 0);
-           }
-         }
-         double grad = exp(log_Pi(s) + logpy + log_beta(s, 0) - ll);
-         grad_B(c).slice(s) += 
-           gradmat_M.rows(1, M(c) - 1).col(obs(c, 0, i)) * 
-           grad * X_o.slice(i).col(0).t();
-       }
-       for (unsigned int t = 0; t < (T - 1); t++) {
-         if (obs(c, t + 1, i) < M(c)) {
-           Brow = exp(log_B(c).slice(t + 1).row(s).cols(0, M(c) - 1));
-           gradmat_M = -Brow.t() * Brow;
-           gradmat_M.diag() += Brow;
-           logpy = 0;
-           for (unsigned int cc = 0; cc < C; cc++) {
-             if (cc != c) {
-               logpy += log_B(cc)(s, obs(cc, t + 1, i), t + 1);
-             }
-           }
-           double grad = arma::accu(
-             exp(log_alpha.col(t) + log_A.slice(t).col(s) + 
-               logpy + log_beta(s, t + 1) - ll));
-           grad_B(c).slice(s) += 
-             gradmat_M.rows(1, M(c) - 1).col(obs(c, t + 1, i)) * 
-             grad * X_o.slice(i).col(t + 1).t();
-         }
-       }
-     }
-   }
- }
- return Rcpp::List::create(
-   Rcpp::Named("loglik") = sum(loglik),
-   Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
-   Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
-   Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B)
- );
+    const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B,
+    const arma::uvec& Ti) {
+  
+  unsigned int C = M.n_elem;
+  unsigned int N = X_s.n_slices;
+  unsigned int T = X_s.n_cols;
+  unsigned int S = gamma_A_raw.n_slices;
+  arma::vec loglik(N);
+  arma::mat log_alpha(S, T);
+  arma::mat log_beta(S, T);
+  arma::mat log_py(S, T);
+  arma::vec log_Pi(S);
+  arma::cube log_A(S, S, T);
+  arma::field<arma::cube> log_B(C);
+  arma::mat grad_pi(S - 1, X_i.n_rows, arma::fill::zeros);
+  arma::cube grad_A(S - 1, X_s.n_rows, S, arma::fill::zeros);
+  arma::field<arma::cube> grad_B(C);
+  for (unsigned int c = 0; c < C; c++) {
+    grad_B(c) = arma::cube(M(c) - 1, X_o.n_rows, S, arma::fill::zeros);
+  }
+  arma::vec gradvec_S(S);
+  arma::mat gradmat_S(S, S);
+  arma::mat A(S, S);
+  for (unsigned int i = 0; i < N; i++) {
+    if (iv_pi || i == 0) {
+      log_Pi = get_pi(gamma_pi_raw, X_i.col(i), true);
+    }
+    if (iv_A || i == 0) {
+      log_A = get_A(gamma_A_raw, X_s.slice(i), true, tv_A);
+    }
+    if (iv_B || i == 0) {
+      log_B = get_B(gamma_B_raw, X_o.slice(i), M, true, true, tv_B);
+    }
+    for (unsigned int t = 0; t < Ti[i]; t++) {
+      for (unsigned int s = 0; s < S; s++) {
+        log_py(s, t) = 0;
+        for (unsigned int c = 0; c < C; c++) {
+          log_py(s, t) += log_B(c)(s, obs(c, t, i), t);
+        }
+      }
+    }
+    log_alpha = univariate_forward_nhmm(log_Pi, log_A, log_py);
+    log_beta = univariate_backward_nhmm(log_A, log_py);
+    double ll = logSumExp(log_alpha.col(T - 1));
+    loglik(i) = ll;
+    // gradient wrt gamma_pi
+    // d loglik / d pi
+    gradvec_S = exp(log_py.col(0) + log_beta.col(0) - ll);
+    // d pi / d gamma_pi
+    arma::vec Pi = exp(log_Pi);
+    gradmat_S = -Pi * Pi.t();
+    gradmat_S.diag() += Pi;
+    grad_pi += gradmat_S.rows(1, S - 1) * gradvec_S * X_i.col(i).t();
+    // gradient wrt gamma_A
+    for (unsigned int t = 0; t < (Ti[i] - 1); t++) {
+      A = exp(log_A.slice(t));
+      for (unsigned int s = 0; s < S; s++) {
+        // d loglik / d a_s
+        gradvec_S = exp(log_alpha(s, t) + log_py.col(t + 1) + 
+          log_beta.col(t + 1) - ll);
+        // d a_s / d gamma_A
+        gradmat_S = -A.row(s).t() * A.row(s);
+        gradmat_S.diag() += A.row(s);
+        grad_A.slice(s) += gradmat_S.rows(1, S - 1) * 
+          gradvec_S * X_s.slice(i).col(t).t();
+      }
+    }
+    for (unsigned int c = 0; c < C; c++) {
+      arma::mat gradmat_M(M(c), M(c));
+      arma::rowvec Brow(M(c));
+      double logpy;
+      for (unsigned int s = 0; s < S; s++) {
+        if (obs(c, 0, i) < M(c)) {
+          Brow = exp(log_B(c).slice(0).row(s).cols(0, M(c) - 1));
+          gradmat_M = -Brow.t() * Brow;
+          gradmat_M.diag() += Brow;
+          logpy = 0;
+          for (unsigned int cc = 0; cc < C; cc++) {
+            if (cc != c) {
+              logpy += log_B(cc)(s, obs(cc, 0, i), 0);
+            }
+          }
+          double grad = exp(log_Pi(s) + logpy + log_beta(s, 0) - ll);
+          grad_B(c).slice(s) += 
+            gradmat_M.rows(1, M(c) - 1).col(obs(c, 0, i)) * 
+            grad * X_o.slice(i).col(0).t();
+        }
+        for (unsigned int t = 0; t < (Ti[i] - 1); t++) {
+          if (obs(c, t + 1, i) < M(c)) {
+            Brow = exp(log_B(c).slice(t + 1).row(s).cols(0, M(c) - 1));
+            gradmat_M = -Brow.t() * Brow;
+            gradmat_M.diag() += Brow;
+            logpy = 0;
+            for (unsigned int cc = 0; cc < C; cc++) {
+              if (cc != c) {
+                logpy += log_B(cc)(s, obs(cc, t + 1, i), t + 1);
+              }
+            }
+            double grad = arma::accu(
+              exp(log_alpha.col(t) + log_A.slice(t).col(s) + 
+                logpy + log_beta(s, t + 1) - ll));
+            grad_B(c).slice(s) += 
+              gradmat_M.rows(1, M(c) - 1).col(obs(c, t + 1, i)) * 
+              grad * X_o.slice(i).col(t + 1).t();
+          }
+        }
+      }
+    }
+  }
+  return Rcpp::List::create(
+    Rcpp::Named("loglik") = sum(loglik),
+    Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
+    Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
+    Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B)
+  );
 }
 
 // [[Rcpp::export]]
@@ -235,7 +236,8 @@ Rcpp::List log_objective_mnhmm_singlechannel(
     const arma::field<arma::cube>& gamma_B_raw, const arma::cube& X_o,
     const arma::mat& gamma_omega_raw, const arma::mat& X_d,
     const arma::mat& obs, const bool iv_pi, const bool iv_A, const bool iv_B,
-    const bool tv_A, const bool tv_B, const bool iv_omega) {
+    const bool tv_A, const bool tv_B, const bool iv_omega, 
+    const arma::uvec& Ti) {
   
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
@@ -285,7 +287,7 @@ Rcpp::List log_objective_mnhmm_singlechannel(
       if (iv_B || i == 0) {
         log_B(d) = get_B(gamma_B_raw(d), X_o.slice(i), true, true, tv_B);
       }
-      for (unsigned int t = 0; t < T; t++) {
+      for (unsigned int t = 0; t < Ti[i]; t++) {
         for (unsigned int s = 0; s < S; s++) {
           log_py(s, t, d) = log_B(d)(s, obs(t, i), t);
         }
@@ -369,7 +371,7 @@ Rcpp::List log_objective_mnhmm_multichannel(
     const arma::mat& gamma_omega_raw, const arma::mat& X_d,
     const arma::cube& obs, const arma::uvec& M, const bool iv_pi, 
     const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B,
-    const bool iv_omega) {
+    const bool iv_omega, const arma::uvec& Ti) {
   
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
@@ -422,7 +424,7 @@ Rcpp::List log_objective_mnhmm_multichannel(
           true, tv_B
         );
       }
-      for (unsigned int t = 0; t < T; t++) {
+      for (unsigned int t = 0; t < Ti[i]; t++) {
         for (unsigned int s = 0; s < S; s++) {
           log_py(s, t, d) = 0;
           for (unsigned int c = 0; c < C; c++) {

@@ -15,6 +15,8 @@
 \item{probs}{A numeric vector of length 2 with the lower and upper limits for
 confidence intervals. Default is \code{c(0.025, 0.975)}. If the limits are not
 found in the input object \code{x}, an error is thrown.}
+
+\item{...}{Ignored.}
 }
 \description{
 Visualize Average Marginal Effects
