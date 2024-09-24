@@ -100,6 +100,7 @@ coef.mnhmm <- function(object, probs = c(0.025, 0.5, 0.975), ...) {
   D <- object$n_clusters
   gamma_pi_raw <- unlist(object$coefficients$gamma_pi_raw)
   K_i <- length(object$coef_names_initial)
+  object$state_names <- unname(object$state_names)
   gamma_pi <- data.frame(
     state = unlist(lapply(object$state_names, function(x) x[-1])),
     parameter = rep(object$coef_names_initial, each = (S - 1)),

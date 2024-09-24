@@ -340,7 +340,7 @@ get_emission_probs.mnhmm <- function(model, ...) {
               state = model$state_names[[j]],
               channel = model$channel_names[i],
               observation = rep(symbol_names[[i]], each = S),
-              estimate = c(
+              estimate = unlist(
                 get_B_all(
                   model$coefficients$gamma_B_raw[[j]][[i]], model$X_emission, 
                   FALSE, FALSE,attr(model, "tv_B")
