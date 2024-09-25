@@ -44,7 +44,8 @@ are passed to \code{sortv} argument of \code{\link[ggseqplot:ggseqiplot]{ggseqpl
 
 \item{sort_channel}{Name of the channel which should be used for the
 sorting. Alternatively value \code{"Hidden states"} uses the hidden state
-sequences for sorting. Default is to sort by the first channel in the data.}
+sequences for sorting. Default is to sort by the first channel in the data.
+If \code{sort_by = "mds"}, all channels are used for defining the sorting.}
 
 \item{dist_method}{The metric to be used for computing the distances of the
 sequences if multidimensional scaling is used for sorting. One of \code{"OM"}

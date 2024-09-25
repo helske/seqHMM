@@ -12,7 +12,8 @@ sort_sequences(x, sort_by = "start", sort_channel = 1, dist_method = "OM")
 \item{sort_by}{A character string specifying the sorting criterion.}
 
 \item{sort_channel}{An integer or character string specifying the channel to
-sort by.}
+sort by (unless \verb{sort_by = "mds} in which case all channels are used for
+defining the sorting).}
 
 \item{dist_method}{A character string specifying the distance method to use.}
 }

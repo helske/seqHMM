@@ -150,7 +150,7 @@ stacked_sequence_plot <- function(
   
   if (n_channels == 1) {
     if (type == "distribution") {
-      cpal_y <- setNames(attr(y, "cpal"), attr(y, "labels"))
+      cpal_y <- stats::setNames(attr(y, "cpal"), attr(y, "labels"))
       p <- ggseqplot::ggseqdplot(y, group = group, sortv = sort_by, ...) + 
         ggplot2::theme(legend.position = legend_position) +
         ggplot2::ylab("Proportion") +
@@ -161,7 +161,7 @@ stacked_sequence_plot <- function(
       )
     }
     if (type == "index") {
-      cpal_y <- setNames(attr(y, "cpal"), attr(y, "labels"))
+      cpal_y <- stats::setNames(attr(y, "cpal"), attr(y, "labels"))
       p <- ggseqplot::ggseqiplot(y, group = group, sortv = sort_by, ...) + 
         ggplot2::theme(legend.position = legend_position) +
         ggplot2::ylab("Sequence") +
@@ -189,7 +189,7 @@ stacked_sequence_plot <- function(
     p <- vector("list", n_channels)
     if (type == "distribution") {
       for (i in seq_len(n_channels)) {
-        cpal_y <- setNames(attr(y[[i]], "cpal"), attr(y[[i]], "labels"))
+        cpal_y <- stats::setNames(attr(y[[i]], "cpal"), attr(y[[i]], "labels"))
         p[[i]] <- ggseqplot::ggseqdplot(y[[i]], group = group, ...) + 
           ggplot2::theme(legend.position = legend_position[i]) +
           ggplot2::ggtitle(channel_names[i]) +
@@ -203,7 +203,7 @@ stacked_sequence_plot <- function(
     }
     if (type == "index") {
       for (i in seq_len(n_channels)) {
-        cpal_y <- setNames(attr(y[[i]], "cpal"), attr(y[[i]], "labels"))
+        cpal_y <- stats::setNames(attr(y[[i]], "cpal"), attr(y[[i]], "labels"))
         p[[i]] <- ggseqplot::ggseqiplot(y[[i]], group = group, ...) + 
           ggplot2::theme(legend.position = legend_position[i]) +
           ggplot2::ggtitle(channel_names[i]) +
