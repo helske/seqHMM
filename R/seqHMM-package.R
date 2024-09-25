@@ -24,7 +24,7 @@
 #' @import Rcpp
 #' @importFrom Rcpp loadModule evalCpp
 #' @importFrom stats logLik complete.cases model.matrix BIC rnorm runif vcov predict update coef qnorm quantile
-#' @importFrom TraMineR alphabet seqstatf seqdef
+#' @importFrom TraMineR alphabet seqstatf seqdef seqlegend
 #' @importFrom graphics par plot.new
 #' @importFrom methods hasArg
 #' @importFrom ggplot2 ggplot aes geom_pointrange geom_ribbon geom_line facet_wrap

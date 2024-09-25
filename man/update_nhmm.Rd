@@ -18,5 +18,5 @@
 }
 \description{
 This function can be used to replace original covariate values of NHMMs.
-The model formulae and estimated coefficients are not altered.
+The responses, model formulae and estimated coefficients are not altered.
 }

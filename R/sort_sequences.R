@@ -3,7 +3,8 @@
 #' @param x A sequence object or a list of sequence objects
 #' @param sort_by A character string specifying the sorting criterion.
 #' @param sort_channel An integer or character string specifying the channel to 
-#' sort by.
+#' sort by (unless `sort_by = "mds` in which case all channels are used for 
+#' defining the sorting).
 #' @param dist_method A character string specifying the distance method to use.
 #' @export
 sort_sequences <- function(
@@ -19,7 +20,7 @@ sort_sequences <- function(
         ordering <- do.call(order, x[, rev(idx)])
       }
     } else {
-      idx <- seq_len(max(TraMineR::seqlength(x)))
+      idx <- seq_len(max(TraMineR::seqlength(x[[sort_channel]])))
       if (sort_by == "start") {
         ordering <- do.call(order, x[[sort_channel]][, idx])
       } else {
@@ -27,7 +28,7 @@ sort_sequences <- function(
       }
     }
   } else {
-    # Sort sequences according to multidimensional scaling score of hidden.paths
+    # Sort sequences according to multidimensional scaling score
     if (n_channels == 1) {
       distances <- suppressWarnings(suppressMessages(
         TraMineR::seqdist(

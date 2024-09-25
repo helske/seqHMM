@@ -317,13 +317,13 @@ SSPlotter <- function(
         par(plt = gridPLT(), new = TRUE)
         if (nchannels > 1) {
           if (with.legend == "bottom") {
-            TraMineR::seqlegend(obs[[i]],
+            seqlegend(obs[[i]],
               cex = cex.legend, position = "top",
               ncol = ncol.legend[i], with.missing = with.missing.legend,
               missing.color = missing.color
             )
           } else {
-            TraMineR::seqlegend(obs[[i]],
+            seqlegend(obs[[i]],
               cex = cex.legend, position = "left",
               ncol = ncol.legend[i], with.missing = with.missing.legend,
               missing.color = missing.color
@@ -331,13 +331,13 @@ SSPlotter <- function(
           }
         } else {
           if (with.legend == "bottom") {
-            TraMineR::seqlegend(obs,
+            seqlegend(obs,
               cex = cex.legend, position = "top",
               ncol = ncol.legend[i], with.missing = with.missing.legend,
               missing.color = missing.color
             )
           } else {
-            TraMineR::seqlegend(obs,
+            seqlegend(obs,
               cex = cex.legend, position = "left",
               ncol = ncol.legend[i], with.missing = with.missing.legend,
               missing.color = missing.color
@@ -356,14 +356,14 @@ SSPlotter <- function(
       pushViewport(viewport(width = unit(0.9, "npc")))
       par(plt = gridPLT(), new = TRUE)
       if (with.legend == "bottom") {
-        TraMineR::seqlegend(hidden.paths,
+        seqlegend(hidden.paths,
           cex = cex.legend, position = "top",
           ncol = ncol.legend[length(ncol.legend)], with.missing = with.missing.legend,
           missing.color = missing.color,
           ltext = hidden.states.labels
         )
       } else {
-        TraMineR::seqlegend(hidden.paths,
+        seqlegend(hidden.paths,
           cex = cex.legend, position = "left",
           ncol = ncol.legend[length(ncol.legend)],
           with.missing = with.missing.legend,
@@ -421,7 +421,7 @@ SSPlotter <- function(
     if (plots == "both" || plots == "obs") {
       if (nchannels > 1) {
         if (with.legend == "right.combined") {
-          TraMineR::seqlegend(obs[[1]],
+          seqlegend(obs[[1]],
             cex = cex.legend, position = "left",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = anymissing,
@@ -430,7 +430,7 @@ SSPlotter <- function(
             )
           )
         } else { # with.legend == "bottom.combined"
-          TraMineR::seqlegend(obs[[1]],
+          seqlegend(obs[[1]],
             cex = cex.legend, position = "top",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = anymissing,
@@ -441,7 +441,7 @@ SSPlotter <- function(
         }
       } else {
         if (with.legend == "right.combined") {
-          TraMineR::seqlegend(obs,
+          seqlegend(obs,
             cex = cex.legend, position = "left",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = anymissing,
@@ -450,7 +450,7 @@ SSPlotter <- function(
             )
           )
         } else { # with.legend == "bottom.combined"
-          TraMineR::seqlegend(obs,
+          seqlegend(obs,
             cex = cex.legend, position = "top",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = anymissing,
@@ -463,7 +463,7 @@ SSPlotter <- function(
     } else {
       if (nchannels > 1) {
         if (with.legend == "right.combined") {
-          TraMineR::seqlegend(hidden.paths,
+          seqlegend(hidden.paths,
             cex = cex.legend, position = "left",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,
@@ -472,7 +472,7 @@ SSPlotter <- function(
             )
           )
         } else { # with.legend == "bottom.combined"
-          TraMineR::seqlegend(hidden.paths,
+          seqlegend(hidden.paths,
             cex = cex.legend, position = "top",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,
@@ -483,7 +483,7 @@ SSPlotter <- function(
         }
       } else {
         if (with.legend == "right.combined") {
-          TraMineR::seqlegend(hidden.paths,
+          seqlegend(hidden.paths,
             cex = cex.legend, position = "left",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,
@@ -492,7 +492,7 @@ SSPlotter <- function(
             )
           )
         } else { # with.legend == "bottom.combined"
-          TraMineR::seqlegend(hidden.paths,
+          seqlegend(hidden.paths,
             cex = cex.legend, position = "top",
             ncol = ncol.legend, cpal = cpal, ltext = ltext,
             with.missing = with.missing.legend,

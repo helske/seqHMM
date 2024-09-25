@@ -655,14 +655,14 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
   if (with.legend != FALSE && pie == TRUE) {
     # Order by appearance
     if (legend.order) {
-      TraMineR::seqlegend(x$observations,
+      seqlegend(x$observations,
                 cpal = pie.colors.l, ltext = ltext,
                 position = "center", cex = cex.legend, ncol = ncol.legend,
                 with.missing = FALSE
       )
       # Original order (by alphabet in observations)
     } else {
-      TraMineR::seqlegend(x$observations,
+      seqlegend(x$observations,
                 cpal = cpal.legend, ltext = ltext.orig,
                 position = "center", cex = cex.legend, ncol = ncol.legend,
                 with.missing = FALSE

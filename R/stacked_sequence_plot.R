@@ -25,7 +25,8 @@
 #' are passed to `sortv` argument of [ggseqplot::ggseqiplot()].
 #' @param sort_channel Name of the channel which should be used for the 
 #' sorting. Alternatively value `"Hidden states"` uses the hidden state 
-#' sequences for sorting. Default is to sort by the first channel in the data.
+#' sequences for sorting. Default is to sort by the first channel in the data. 
+#' If `sort_by = "mds"`, all channels are used for defining the sorting.
 #' @param dist_method The metric to be used for computing the distances of the
 #' sequences if multidimensional scaling is used for sorting. One of `"OM"`
 #' (optimal matching, the default), `"LCP"` (longest common prefix), `"RLCP"`
@@ -127,11 +128,13 @@ stacked_sequence_plot <- function(
       sort_by <- match.arg(sort_by, c("none", "start", "end", "mds"))
       if (missing(sort_channel)) sort_channel <- channel_names[1]
       stopifnot_(
-        sort_channel %in% channel_names,
-        "{.arg sort_channel} should be either 
-        {cli::cli_vec(channel_names, style = list('vec-last' = ' or '))}."
+        sort_channel %in% channel_names || sort_channel %in% seq_len(n_channels),
+        paste0("{.arg sort_channel} should be either ",
+        "{cli::cli_vec(channel_names, style = list('vec-last' = ' or '))}, ",
+        "or integer between 1 and {n_channels}."
+        )
       )
-      y <- sort_sequences(y, sort_channel, dist_method)
+      y <- sort_sequences(y, sort_by, sort_channel, dist_method)
       sort_by <- NULL
     } else {
       stopifnot_(
@@ -147,22 +150,32 @@ stacked_sequence_plot <- function(
   
   if (n_channels == 1) {
     if (type == "distribution") {
+      cpal_y <- setNames(attr(y, "cpal"), attr(y, "labels"))
       p <- ggseqplot::ggseqdplot(y, group = group, sortv = sort_by, ...) + 
         ggplot2::theme(legend.position = legend_position) +
-        ggplot2::ylab(channel_names)
+        ggplot2::ylab("Proportion") +
+        ggplot2::xlab("Time")
       suppressMessages(
         p <- p +
-          ggplot2::scale_fill_manual(values = TraMineR::cpal(y))
+          ggplot2::scale_fill_manual(values = cpal_y)
       )
     }
     if (type == "index") {
+      cpal_y <- setNames(attr(y, "cpal"), attr(y, "labels"))
       p <- ggseqplot::ggseqiplot(y, group = group, sortv = sort_by, ...) + 
-        ggplot2::theme(legend.position = "right") +
-        ggplot2::ylab(channel_names)
+        ggplot2::theme(legend.position = legend_position) +
+        ggplot2::ylab("Sequence") +
+        ggplot2::xlab("Time")
       suppressMessages(
         p <- p +
-          ggplot2::scale_fill_manual(values = TraMineR::cpal(y))
+          ggplot2::scale_fill_manual(values = cpal_y)
       )
+      if (!isTRUE(list(...)$border)) {
+        suppressMessages(
+          p <- p +
+            ggplot2::scale_colour_manual(values = cpal_y)
+        )
+      }
     }
   } else {
     if (length(legend_position) == 1) {
@@ -176,24 +189,36 @@ stacked_sequence_plot <- function(
     p <- vector("list", n_channels)
     if (type == "distribution") {
       for (i in seq_len(n_channels)) {
+        cpal_y <- setNames(attr(y[[i]], "cpal"), attr(y[[i]], "labels"))
         p[[i]] <- ggseqplot::ggseqdplot(y[[i]], group = group, ...) + 
           ggplot2::theme(legend.position = legend_position[i]) +
-          ggplot2::ylab(channel_names[i])
+          ggplot2::ggtitle(channel_names[i]) +
+          ggplot2::ylab("Proportion") +
+          ggplot2::xlab("Time")
         suppressMessages(
           p[[i]] <- p[[i]] + 
-            ggplot2::scale_fill_manual(values = TraMineR::cpal(y[[i]]))
+            ggplot2::scale_fill_manual(values = cpal_y)
         )
       }
     }
     if (type == "index") {
       for (i in seq_len(n_channels)) {
+        cpal_y <- setNames(attr(y[[i]], "cpal"), attr(y[[i]], "labels"))
         p[[i]] <- ggseqplot::ggseqiplot(y[[i]], group = group, ...) + 
           ggplot2::theme(legend.position = legend_position[i]) +
-          ggplot2::ylab(channel_names[i])
+          ggplot2::ggtitle(channel_names[i]) +
+          ggplot2::ylab("Sequence") +
+          ggplot2::xlab("Time")
         suppressMessages(
           p[[i]] <- p[[i]] + 
-            ggplot2::scale_fill_manual(values = TraMineR::cpal(y[[i]]))
+            ggplot2::scale_fill_manual(values = cpal_y)
         )
+        if (!isTRUE(list(...)$border)) {
+          suppressMessages(
+            p[[i]] <- p[[i]] +
+              ggplot2::scale_colour_manual(values = cpal_y)
+          )
+        }
       }
     }
     p <- patchwork::wrap_plots(p, ncol = 1, ...)
