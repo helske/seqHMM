@@ -7,7 +7,6 @@
 #' @param transition_probs A matrix of transition probabilities.
 #' @param emission_probs A matrix of emission probabilities or a list of such objects (one for each channel).
 #' @param sequence_length Length for simulated sequences.
-#'
 #' @return A list of state sequence objects of class `stslist`.
 #' @seealso [build_hmm()] and [fit_model()] for building
 #' and fitting hidden Markov models; [stacked_sequence_plot()] for plotting
