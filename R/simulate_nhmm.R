@@ -69,9 +69,9 @@ simulate_nhmm <- function(
     if (is.null(coefs$transition_probs)) coefs$transition_probs <- NULL
     if (is.null(coefs$emission_probs)) coefs$emission_probs <- NULL
   }
-  K_i <- dim(model$X_initial)[2]
-  K_s <- dim(model$X_transition)[3]
-  K_o <- dim(model$X_emission)[3]
+  K_i <- nrow(model$X_initial)
+  K_s <- nrow(model$X_transition)
+  K_o <- nrow(model$X_emission)
   model$coefficients <- create_initial_values(
     coefs, n_states, n_symbols, init_sd, K_i, K_s, K_o, 0, 0
   )

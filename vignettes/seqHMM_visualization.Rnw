@@ -57,7 +57,6 @@ left_seq <- seqdef(biofam3c$left, start = 15, alphabet = c(
 @
 
 <<seqplotSingle, fig.width=6.5, fig.height=3, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Sequence index plot (left) and state distribution plot (right) of annual family states for 100 individuals from the \\texttt{biofam} data.", fig.align='center', fig.keep='last', message=FALSE>>=
-gridplot(list(seqIplot, seqdplot), ncol = 3, col.prop = c(0.35, 0.4, 0.25))
 library(patchwork)
 p1 <- stacked_sequence_plot(biofam_seq[1:100, ], type = "i", legend_position = "none")
 p2 <- stacked_sequence_plot(biofam_seq[1:100, ], type = "d", legend_position = "right")

@@ -62,6 +62,29 @@
       channel_names <- paste("Channel", seq_len(n_channels))
     }
     sequence_lengths <- do.call(pmax, lapply(x, TraMineR::seqlength))
+    times <- colnames(x[[1]])
+    na_times <- suppressWarnings(any(is.na(timenames <- as.numeric(times))))
+    if (na_times) {
+      na_times <- suppressWarnings(any(is.na(timenames <- as.numeric(sub('.', '', times)))))
+      if (na_times) {
+        warning_(
+          paste0(
+            "Time indices (column names) of sequences are not coarceable to ",
+            "numeric. Replacing them with integers."
+          )
+        )
+        timenames <- seq_len(ncol(x[[1]]))
+      }
+    }
+    stopifnot_(
+      identical(sort(timenames), timenames),
+      paste0(
+        "The numeric time indices based on column names of sequence object ", 
+        "are not numerically sorted. Please recode the column names.")
+    )
+    for (i in seq_len(length(x))) {
+      colnames(x[[i]]) <- timenames 
+    }
   } else {
     n_sequences <- nrow(x)
     length_of_sequences <- ncol(x)
@@ -73,6 +96,27 @@
       channel_names <- "Observations"
     }
     sequence_lengths <- TraMineR::seqlength(x)
+    times <- colnames(x)
+    na_times <- suppressWarnings(any(is.na(timenames <- as.numeric(times))))
+    if (na_times) {
+      na_times <- suppressWarnings(any(is.na(timenames <- as.numeric(sub('.', '', times)))))
+      if (na_times) {
+        warning_(
+          paste0(
+            "Time indices (column names) of sequences are not coarceable to ",
+            "numeric. Replacing them with integers."
+          )
+        )
+        timenames <- seq_len(ncol(x))
+      }
+    }
+    stopifnot_(
+      identical(sort(timenames), timenames),
+      paste0(
+        "The numeric time indices based on column names of sequence object ", 
+        "are not numerically sorted. Please recode the column names.")
+    )
+    colnames(x) <- timenames 
   }
   sequence_lengths <- as.integer(sequence_lengths)
   dim(sequence_lengths) <- length(sequence_lengths)
@@ -235,6 +279,13 @@
   stopifnot_(
     !is.null(data[[time]]), 
     "Can't find time index variable {.var {time}} in {.arg data}."
+  )
+  stopifnot_(
+    is.numeric(data[[time]]),
+    c(
+      "Time index variable {.arg {time}} must be of type {.cls numeric} or 
+      {.cls integer}."
+    )
   )
   data <- data[order(data[[id]], data[[time]]), ]
   fill_time(data, id, time)

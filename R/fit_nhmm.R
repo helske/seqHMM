@@ -1,7 +1,7 @@
 #' Estimate a Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
+fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian, ...) {
   stopifnot_(
     checkmate::test_int(x = threads, lower = 1L), 
     "Argument {.arg threads} must be a single positive integer."
@@ -52,6 +52,9 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
   if (model$n_channels == 1L) {
     if (need_grad) {
       objectivef <- function(pars) {
+        if (any(!is.finite(exp(pars)))) {
+          return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
+        }
         gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
         gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
         gamma_B_raw <- create_gamma_B_raw_nhmm(
@@ -61,11 +64,14 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o, obs,
           iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
-        list(objective = - out$loglik,
-             gradient = - unlist(out[-1]))
+        list(objective = - out$loglik + 0.5 * sum(pars^2) * penalty,
+             gradient = - unlist(out[-1]) + pars * penalty)
       }
     } else {
       objectivef <- function(pars) {
+        if (any(!is.finite(exp(pars)))) {
+          return(Inf)
+        } 
         gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
         gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
         gamma_B_raw <- create_gamma_B_raw_nhmm(
@@ -75,12 +81,15 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o, obs
         )
         
-        - sum(apply(out[, T_, ], 2, logSumExp))
+        - sum(apply(out[, T_, ], 2, logSumExp)) + 0.5 * sum(pars^2) * penalty
       }
     }
   } else {
     if (need_grad) {
       objectivef <- function(pars) {
+        if (any(!is.finite(exp(pars)))) {
+          return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
+        }
         gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
         gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
         gamma_B_raw <- create_gamma_multichannel_B_raw_nhmm(
@@ -90,11 +99,14 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
           gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o, obs, M,
           iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
-        list(objective = - out$loglik,
-             gradient = - unlist(out[-1]))
+        list(objective = - out$loglik + 0.5 * sum(pars^2) * penalty,
+             gradient = - unlist(out[-1]) + pars * penalty)
       }
     } else {
       objectivef <- function(pars) {
+        if (any(!is.finite(exp(pars)))) {
+          return(Inf)
+        }
         gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
         gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
         gamma_B_raw <- create_gamma_multichannel_B_raw_nhmm(
@@ -103,8 +115,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
         out <- forward_nhmm_multichannel(
           gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o, obs, M
         )
-        
-        - sum(apply(out[, T_, ], 2, logSumExp))
+        - sum(apply(out[, T_, ], 2, logSumExp)) + 0.5 * sum(pars^2) * penalty
       }
     }
   }
@@ -131,7 +142,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
     },
     future.seed = TRUE)
     
-    logliks <- unlist(lapply(out, "[[", "objective"))
+    logliks <- -unlist(lapply(out, "[[", "objective"))
     return_codes <- unlist(lapply(out, "[[", "status"))
     successful <- which(return_codes > 0)
     optimum <- successful[which.max(logliks[successful])]
@@ -182,12 +193,13 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, hessian, ...) {
   
   model$estimation_results <- list(
     hessian = hessian,
-    loglik = out$objective, 
+    loglik = -out$objective, 
     return_code = out$status,
     message = out$message,
     iterations = out$iterations,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
-    return_codes_of_restarts = if(restarts > 0L) return_codes else NULL
+    return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
+    penalty = penalty
   )
   model
 }

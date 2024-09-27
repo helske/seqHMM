@@ -43,6 +43,8 @@
 #' is stored to the model object. For large datasets, this can be set to 
 #' `FALSE`, in which case you might need to pass the data separately to some 
 #' post-prosessing functions.
+#' @param penalty Penalty for penalized maximum likelihood. Default is `0` 
+#' i.e. no penalization as the penalty is of form `0.5 * sum(pars^2) * penalty`.
 #' @param hessian If `TRUE`, computes the Hessian of the model 
 #' coefficients using [numDeriv::jacobian]. Default is `FALSE`. Can also be 
 #' a list with components `method`, `side` and `method.args` to 
@@ -73,7 +75,7 @@ estimate_nhmm <- function(
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, channel_names = NULL, 
     inits = "random", init_sd = 2, restarts = 0L, threads = 1L, 
-    store_data = TRUE, hessian = FALSE, ...) {
+    store_data = TRUE, penalty = 0, hessian = FALSE, ...) {
   
   call <- match.call()
   
@@ -89,7 +91,7 @@ estimate_nhmm <- function(
   if (store_data) {
     model$data <- data
   }
-  out <- fit_nhmm(model, inits, init_sd, restarts, threads, hessian, ...)
+  out <- fit_nhmm(model, inits, init_sd, restarts, threads, penalty, hessian, ...)
   attr(out, "call") <- call
   out
 }

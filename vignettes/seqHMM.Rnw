@@ -474,7 +474,7 @@ p
 
 % Deprecated code: 
 
-<<gridplot1, fig.width=5.5, fig.height=3.5, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Showing state distribution plots for women and men in the \\code{biofam} data. Two figures were defined with the \\code{ssp} function and then combined into one figure with the \\code{gridplot} function.", fig.align='center', fig.keep='last', cache = FALSE, eval = FALSE, echo = FALSE>>=
+<<gridplot1old, fig.width=5.5, fig.height=3.5, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Showing state distribution plots for women and men in the \\code{biofam} data. Two figures were defined with the \\code{ssp} function and then combined into one figure with the \\code{gridplot} function.", fig.align='center', fig.keep='last', cache = FALSE, eval = FALSE, echo = FALSE>>=
 ssp_f <- ssp(
   list(
     marr_seq[biofam3c$covariates$sex == "woman", ],
