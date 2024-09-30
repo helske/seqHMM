@@ -50,6 +50,33 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian
   Ti <- model$sequence_lengths
   
   dots <- list(...)
+  
+  
+  if (isTRUE(dots$maxeval < 0)) {
+    pars <- unlist(create_initial_values(
+      inits, S, M, init_sd, K_i, K_s, K_o, K_d, D
+    ))
+    model$coefficients$gamma_pi_raw <- create_gamma_pi_raw_mnhmm(
+      pars[seq_len(n_i)], S, K_i, D
+    )
+    model$coefficients$gamma_A_raw <- create_gamma_A_raw_mnhmm(
+      pars[n_i + seq_len(n_s)], S, K_s, D
+    )
+    if (model$n_channels == 1L) {
+      model$coefficients$gamma_B_raw <- create_gamma_B_raw_mnhmm(
+        pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
+      )
+    } else {
+      model$coefficients$gamma_B_raw <- create_gamma_multichannel_B_raw_mnhmm(
+        pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
+      )
+    }
+    model$coefficients$gamma_omega_raw <- create_gamma_omega_raw_mnhmm(
+      pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
+    )
+    return(model)
+  }
+  
   if (is.null(dots$algorithm)) dots$algorithm <- "NLOPT_LD_LBFGS"
   need_grad <- grepl("NLOPT_LD_", dots$algorithm)
   
