@@ -64,7 +64,7 @@
 #' 
 #' \dontrun{
 #' set.seed(1)
-#' fit <- estimate_mnhmm("activity", n_states = 3,
+#' fit <- estimate_nhmm("activity", n_states = 3,
 #'   data = d, time = "time", id = "id", 
 #'   initial_formula = ~ 1, emission_formula =  ~ male + gcse5eq,
 #'   transition_formula = ~ male + gcse5eq, inits = "random"
