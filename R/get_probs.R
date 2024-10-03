@@ -34,7 +34,7 @@ get_initial_probs.nhmm <- function(model, ...) {
       id = rep(ids, each = model$n_states),
       state = model$state_names,
       estimate = get_pi(
-        model$coefficients$gamma_pi_raw, model$X_initial[, 1L], FALSE
+        model$coefficients$eta_pi, model$X_initial[, 1L]
       )
     )
   } else {
@@ -42,7 +42,7 @@ get_initial_probs.nhmm <- function(model, ...) {
       id = rep(ids, each = model$n_states),
       state = model$state_names,
       estimate = c(
-        get_pi_all(model$coefficients$gamma_pi_raw, model$X_initial, FALSE)
+        get_pi_all(model$coefficients$eta_pi, model$X_initial)
       )
     )
   }
@@ -65,8 +65,7 @@ get_initial_probs.mnhmm <- function(model, ...) {
           id = rep(ids, each = model$n_states),
           state = model$state_names[[i]],
           estimate = c(
-            get_pi(model$coefficients$gamma_pi_raw[[i]], model$X_initial[, 1L], 
-                   FALSE)
+            get_pi(model$coefficients$eta_pi[[i]], model$X_initial[, 1L])
           )
         )
       })
@@ -81,7 +80,7 @@ get_initial_probs.mnhmm <- function(model, ...) {
           state = model$state_names[[i]],
           estimate = c(
             get_pi_all(
-              model$coefficients$gamma_pi_raw[[i]], model$X_initial, FALSE
+              model$coefficients$eta_pi[[i]], model$X_initial
             )
           )
         )
@@ -124,7 +123,7 @@ get_transition_probs.nhmm <- function(model, ...) {
       state_from = model$state_names,
       state_to = rep(model$state_names, each = S),
       estimate = c(get_A(
-        model$coefficients$gamma_A_raw, X, FALSE, attr(model, "tv_A")
+        model$coefficients$eta_A, X, attr(model, "tv_A")
       ))
     )
   } else {
@@ -135,7 +134,7 @@ get_transition_probs.nhmm <- function(model, ...) {
       state_to = rep(model$state_names, each = S),
       estimate = unlist(
         get_A_all(
-          model$coefficients$gamma_A_raw, model$X_transition, FALSE, 
+          model$coefficients$eta_A, model$X_transition, 
           attr(model, "tv_A")
         )
       )
@@ -175,7 +174,7 @@ get_transition_probs.mnhmm <- function(model, ...) {
           state_from = model$state_names[[i]],
           state_to = rep(model$state_names[[i]], each = S),
           estimate = c(get_A(
-            model$coefficients$gamma_A_raw[[i]], X, FALSE, attr(model, "tv_A")
+            model$coefficients$eta_A[[i]], X, attr(model, "tv_A")
           ))
         )
       })
@@ -192,7 +191,7 @@ get_transition_probs.mnhmm <- function(model, ...) {
           state_to = rep(model$state_names[[i]], each = S),
           estimate = unlist(
             get_A_all(
-              model$coefficients$gamma_A_raw[[i]], model$X_transition, FALSE, 
+              model$coefficients$eta_A[[i]], model$X_transition, 
               attr(model, "tv_A")
             )
           )
@@ -231,7 +230,7 @@ get_emission_probs.nhmm <- function(model, ...) {
     ids <- rownames(model$observations)
     times <- colnames(model$observations)
     symbol_names <- list(model$symbol_names)
-    model$coefficients$gamma_B_raw <- list(model$coefficients$gamma_B_raw)
+    model$coefficients$eta_B <- list(model$coefficients$eta_B)
   } else {
     ids <- rownames(model$observations[[1]])
     times <- colnames(model$observations[[1]])
@@ -249,7 +248,7 @@ get_emission_probs.nhmm <- function(model, ...) {
           channel = model$channel_names[i],
           observation = rep(symbol_names[[i]], each = S),
           estimate = c(get_B(
-            model$coefficients$gamma_B_raw[[i]], X, FALSE, FALSE, 
+            model$coefficients$eta_B[[i]], X, FALSE, 
             attr(model, "tv_B"))
           )
         )
@@ -267,8 +266,8 @@ get_emission_probs.nhmm <- function(model, ...) {
           observation = rep(symbol_names[[i]], each = S),
           estimate = unlist(
             get_B_all(
-              model$coefficients$gamma_B_raw[[i]], model$X_emission, 
-              FALSE, FALSE, attr(model, "tv_B")
+              model$coefficients$eta_B[[i]], model$X_emission, 
+              FALSE, attr(model, "tv_B")
             )
           )
         )
@@ -294,8 +293,8 @@ get_emission_probs.mnhmm <- function(model, ...) {
     ids <- rownames(model$observations)
     times <- colnames(model$observations)
     symbol_names <- list(model$symbol_names)
-    model$coefficients$gamma_B_raw <- lapply(
-      model$coefficients$gamma_B_raw, list
+    model$coefficients$eta_B <- lapply(
+      model$coefficients$eta_B, list
     )
   } else {
     ids <- rownames(model$observations[[1]])
@@ -318,7 +317,7 @@ get_emission_probs.mnhmm <- function(model, ...) {
               channel = model$channel_names[i],
               observation = rep(symbol_names[[i]], each = S),
               estimate = c(get_B(
-                model$coefficients$gamma_B_raw[[j]][[i]], X, FALSE, FALSE, 
+                model$coefficients$eta_B[[j]][[i]], X, FALSE, 
                 attr(model, "tv_B"))
               )
             )
@@ -342,8 +341,8 @@ get_emission_probs.mnhmm <- function(model, ...) {
               observation = rep(symbol_names[[i]], each = S),
               estimate = unlist(
                 get_B_all(
-                  model$coefficients$gamma_B_raw[[j]][[i]], model$X_emission, 
-                  FALSE, FALSE,attr(model, "tv_B")
+                  model$coefficients$eta_B[[j]][[i]], model$X_emission, 
+                  FALSE, attr(model, "tv_B")
                 )
               )
             )
@@ -386,7 +385,7 @@ get_cluster_probs.mnhmm <- function(model, ...) {
       cluster = model$cluster_names,
       id = rep(ids, each = model$n_clusters),
       estimate = c(get_omega(
-        model$coefficients$gamma_omega_raw, model$X_cluster[, 1L], FALSE
+        model$coefficients$eta_omega, model$X_cluster[, 1L]
       ))
     )
   } else {
@@ -395,7 +394,7 @@ get_cluster_probs.mnhmm <- function(model, ...) {
       id = rep(ids, each = model$n_clusters),
       estimate = c(
         get_omega_all(
-          model$coefficients$gamma_omega_raw, model$X_cluster, FALSE
+          model$coefficients$eta_omega, model$X_cluster
         )
       )
     )

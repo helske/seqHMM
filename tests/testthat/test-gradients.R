@@ -39,28 +39,28 @@ test_that("Gradients for singlechannel-NHMM are correct", {
   pars <- rnorm(n_i + n_s + n_o)
   
   f <- function(pars) {
-    gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
-    gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
-    gamma_B_raw <- create_gamma_B_raw_nhmm(
+    eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
+    eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+    eta_B <- create_eta_B_nhmm(
       pars[n_i + n_s + seq_len(n_o)], S, M, K_o
     )
     -log_objective_nhmm_singlechannel(
-      gamma_pi_raw, X_i,
-      gamma_A_raw, X_s,
-      gamma_B_raw, X_o,
+      eta_pi, X_i,
+      eta_A, X_s,
+      eta_B, X_o,
       obs, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)$loglik
     
   }
   g <- function(pars) {
-    gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
-    gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
-    gamma_B_raw <- create_gamma_B_raw_nhmm(
+    eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
+    eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+    eta_B <- create_eta_B_nhmm(
       pars[n_i + n_s + seq_len(n_o)], S, M, K_o
     )
     -unname(unlist(log_objective_nhmm_singlechannel(
-      gamma_pi_raw, X_i,
-      gamma_A_raw, X_s,
-      gamma_B_raw, X_o,
+      eta_pi, X_i,
+      eta_A, X_s,
+      eta_B, X_o,
       obs, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)[-1]))
   }
   expect_equal(g(pars), numDeriv::grad(f, pars))
@@ -116,34 +116,34 @@ test_that("Gradients for multichannel-NHMM are correct", {
   pars <- rnorm(n_i + n_s + n_o)
   
   f <- function(pars) {
-    gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
-    gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
-    gamma_B_raw <- create_gamma_multichannel_B_raw_nhmm(
+    eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
+    eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+    eta_B <- create_gamma_multichannel_B_raw_nhmm(
       pars[n_i + n_s + seq_len(n_o)], S, M, K_o
     )
     -log_objective_nhmm_multichannel(
-      gamma_pi_raw, X_i,
-      gamma_A_raw, X_s,
-      gamma_B_raw, X_o,
+      eta_pi, X_i,
+      eta_A, X_s,
+      eta_B, X_o,
       obs, M, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)$loglik
     
   }
   g <- function(pars) {
-    gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
-    gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
-    gamma_B_raw <- create_gamma_multichannel_B_raw_nhmm(
+    eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
+    eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+    eta_B <- create_gamma_multichannel_B_raw_nhmm(
       pars[n_i + n_s + seq_len(n_o)], S, M, K_o
     )
     -unname(unlist(log_objective_nhmm_multichannel(
-      gamma_pi_raw, X_i,
-      gamma_A_raw, X_s,
-      gamma_B_raw, X_o,
+      eta_pi, X_i,
+      eta_A, X_s,
+      eta_B, X_o,
       obs, M, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)[-1]))
   }
   expect_equal(g(pars), numDeriv::grad(f, pars))
 })
 
-test_that("Gradients for singlechannel-NHMM are correct", {
+test_that("Gradients for singlechannel-MNHMM are correct", {
   set.seed(123)
   M <- 4
   S <- 3
@@ -189,36 +189,36 @@ test_that("Gradients for singlechannel-NHMM are correct", {
   pars <- rnorm(n_i + n_s + n_o + n_d)
   
   f <- function(pars) {
-    gamma_pi_raw <- create_gamma_pi_raw_mnhmm(pars[seq_len(n_i)], S, K_i, D)
-    gamma_A_raw <- create_gamma_A_raw_mnhmm(pars[n_i + seq_len(n_s)], S, K_s, D)
-    gamma_B_raw <- create_gamma_B_raw_mnhmm(
+    eta_pi <- create_eta_pi_mnhmm(pars[seq_len(n_i)], S, K_i, D)
+    eta_A <- create_eta_A_mnhmm(pars[n_i + seq_len(n_s)], S, K_s, D)
+    eta_B <- create_eta_B_mnhmm(
       pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
     )
-    gamma_omega_raw <- create_gamma_omega_raw_mnhmm(
+    eta_omega <- create_eta_omega_mnhmm(
       pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
     )
     -log_objective_mnhmm_singlechannel(
-      gamma_pi_raw, X_i,
-      gamma_A_raw, X_s,
-      gamma_B_raw, X_o,
-      gamma_omega_raw, X_d,
+      eta_pi, X_i,
+      eta_A, X_s,
+      eta_B, X_o,
+      eta_omega, X_d,
       obs, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)$loglik
     
   }
   g <- function(pars) {
-    gamma_pi_raw <- create_gamma_pi_raw_mnhmm(pars[seq_len(n_i)], S, K_i, D)
-    gamma_A_raw <- create_gamma_A_raw_mnhmm(pars[n_i + seq_len(n_s)], S, K_s, D)
-    gamma_B_raw <- create_gamma_B_raw_mnhmm(
+    eta_pi <- create_eta_pi_mnhmm(pars[seq_len(n_i)], S, K_i, D)
+    eta_A <- create_eta_A_mnhmm(pars[n_i + seq_len(n_s)], S, K_s, D)
+    eta_B <- create_eta_B_mnhmm(
       pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
     )
-    gamma_omega_raw <- create_gamma_omega_raw_mnhmm(
+    eta_omega <- create_eta_omega_mnhmm(
       pars[n_i + n_s + n_o + seq_len(n_d)],  D, K_d
     )
     -unname(unlist(log_objective_mnhmm_singlechannel(
-      gamma_pi_raw, X_i,
-      gamma_A_raw, X_s,
-      gamma_B_raw, X_o,
-      gamma_omega_raw, X_d,
+      eta_pi, X_i,
+      eta_A, X_s,
+      eta_B, X_o,
+      eta_omega, X_d,
       obs, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)[-1]))
   }
   expect_equal(g(pars), numDeriv::grad(f, pars))
@@ -279,42 +279,42 @@ test_that("Gradients for multichannel-MNHMM are correct", {
   pars <- rnorm(n_i + n_s + n_o + n_d)
   
   f <- function(pars) {
-    gamma_pi_raw <- create_gamma_pi_raw_mnhmm(pars[seq_len(n_i)], S, K_i, D)
-    gamma_A_raw <- create_gamma_A_raw_mnhmm(pars[n_i + seq_len(n_s)], S, K_s, D)
-    gamma_B_raw <- unlist(
+    eta_pi <- create_eta_pi_mnhmm(pars[seq_len(n_i)], S, K_i, D)
+    eta_A <- create_eta_A_mnhmm(pars[n_i + seq_len(n_s)], S, K_s, D)
+    eta_B <- unlist(
       create_gamma_multichannel_B_raw_mnhmm(
         pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
       ),
       recursive = FALSE
     )
-    gamma_omega_raw <- create_gamma_omega_raw_mnhmm(
+    eta_omega <- create_eta_omega_mnhmm(
       pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
     )
     -log_objective_mnhmm_multichannel(
-      gamma_pi_raw, X_i,
-      gamma_A_raw, X_s,
-      gamma_B_raw, X_o,
-      gamma_omega_raw, X_d,
+      eta_pi, X_i,
+      eta_A, X_s,
+      eta_B, X_o,
+      eta_omega, X_d,
       obs, M, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)$loglik
     
   }
   g <- function(pars) {
-    gamma_pi_raw <- create_gamma_pi_raw_mnhmm(pars[seq_len(n_i)], S, K_i, D)
-    gamma_A_raw <- create_gamma_A_raw_mnhmm(pars[n_i + seq_len(n_s)], S, K_s, D)
-    gamma_B_raw <- unlist(
+    eta_pi <- create_eta_pi_mnhmm(pars[seq_len(n_i)], S, K_i, D)
+    eta_A <- create_eta_A_mnhmm(pars[n_i + seq_len(n_s)], S, K_s, D)
+    eta_B <- unlist(
       create_gamma_multichannel_B_raw_mnhmm(
         pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
       ),
       recursive = FALSE
     )
-    gamma_omega_raw <- create_gamma_omega_raw_mnhmm(
+    eta_omega <- create_eta_omega_mnhmm(
       pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
     )
     -unname(unlist(log_objective_mnhmm_multichannel(
-      gamma_pi_raw, X_i,
-      gamma_A_raw, X_s,
-      gamma_B_raw, X_o,
-      gamma_omega_raw, X_d,
+      eta_pi, X_i,
+      eta_A, X_s,
+      eta_B, X_o,
+      eta_omega, X_d,
       obs, M, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)[-1]))
   }
   expect_equal(g(pars), numDeriv::grad(f, pars))

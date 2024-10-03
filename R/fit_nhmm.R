@@ -50,14 +50,14 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian,
     pars <- unlist(create_initial_values(
       inits, S, M, init_sd, K_i, K_s, K_o
     ))
-    model$coefficients$gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
-    model$coefficients$gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+    model$coefficients$eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
+    model$coefficients$eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
     if (model$n_channels == 1L) {
-      model$coefficients$gamma_B_raw <- create_gamma_B_raw_nhmm(
+      model$coefficients$eta_B <- create_eta_B_nhmm(
         pars[n_i + n_s + seq_len(n_o)], S, M, K_o
       )
     } else {
-      model$coefficients$gamma_B_raw <- create_gamma_multichannel_B_raw_nhmm(
+      model$coefficients$eta_B <- create_gamma_multichannel_B_raw_nhmm(
         pars[n_i + n_s + seq_len(n_o)], S, M, K_o
       )
     }
@@ -73,13 +73,13 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian,
         if (any(!is.finite(exp(pars)))) {
           return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
         }
-        gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
-        gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
-        gamma_B_raw <- create_gamma_B_raw_nhmm(
+        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
+        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+        eta_B <- create_eta_B_nhmm(
           pars[n_i + n_s + seq_len(n_o)], S, M, K_o
         )
         out <- log_objective_nhmm_singlechannel(
-          gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o, obs,
+          eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs,
           iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
         list(objective = - out$loglik + 0.5 * sum(pars^2) * penalty,
@@ -90,13 +90,13 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian,
         if (any(!is.finite(exp(pars)))) {
           return(Inf)
         } 
-        gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
-        gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
-        gamma_B_raw <- create_gamma_B_raw_nhmm(
+        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
+        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+        eta_B <- create_eta_B_nhmm(
           pars[n_i + n_s + seq_len(n_o)], S, M, K_o
         )
         out <- forward_nhmm_singlechannel(
-          gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o, obs
+          eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs
         )
         
         - sum(apply(out[, T_, ], 2, logSumExp)) + 0.5 * sum(pars^2) * penalty
@@ -108,13 +108,13 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian,
         if (any(!is.finite(exp(pars)))) {
           return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
         }
-        gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
-        gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
-        gamma_B_raw <- create_gamma_multichannel_B_raw_nhmm(
+        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
+        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+        eta_B <- create_gamma_multichannel_B_raw_nhmm(
           pars[n_i + n_s + seq_len(n_o)], S, M, K_o
         )
         out <- log_objective_nhmm_multichannel(
-          gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o, obs, M,
+          eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M,
           iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
         list(objective = - out$loglik + 0.5 * sum(pars^2) * penalty,
@@ -125,13 +125,13 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian,
         if (any(!is.finite(exp(pars)))) {
           return(Inf)
         }
-        gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
-        gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
-        gamma_B_raw <- create_gamma_multichannel_B_raw_nhmm(
+        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
+        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+        eta_B <- create_gamma_multichannel_B_raw_nhmm(
           pars[n_i + n_s + seq_len(n_o)], S, M, K_o
         )
         out <- forward_nhmm_multichannel(
-          gamma_pi_raw, X_i, gamma_A_raw, X_s, gamma_B_raw, X_o, obs, M
+          eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M
         )
         - sum(apply(out[, T_, ], 2, logSumExp)) + 0.5 * sum(pars^2) * penalty
       }
@@ -184,14 +184,14 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian,
   }
   pars <- out$solution
   
-  model$coefficients$gamma_pi_raw <- create_gamma_pi_raw_nhmm(pars[seq_len(n_i)], S, K_i)
-  model$coefficients$gamma_A_raw <- create_gamma_A_raw_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+  model$coefficients$eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
+  model$coefficients$eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
   if (model$n_channels == 1L) {
-    model$coefficients$gamma_B_raw <- create_gamma_B_raw_nhmm(
+    model$coefficients$eta_B <- create_eta_B_nhmm(
       pars[n_i + n_s + seq_len(n_o)], S, M, K_o
     )
   } else {
-    model$coefficients$gamma_B_raw <- create_gamma_multichannel_B_raw_nhmm(
+    model$coefficients$eta_B <- create_gamma_multichannel_B_raw_nhmm(
       pars[n_i + n_s + seq_len(n_o)], S, M, K_o
     )
   }

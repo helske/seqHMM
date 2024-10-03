@@ -1,36 +1,36 @@
 
-create_gamma_pi_raw_nhmm <- function(x, S, K) {
+create_eta_pi_nhmm <- function(x, S, K) {
   matrix(x, S - 1, K)
 }
-create_gamma_A_raw_nhmm <- function(x, S, K) {
+create_eta_A_nhmm <- function(x, S, K) {
   array(x, c(S - 1, K, S))
 }
-create_gamma_B_raw_nhmm <- function(x, S, M, K) {
+create_eta_B_nhmm <- function(x, S, M, K) {
   array(x, c(M - 1, K, S))
   
 }
 create_gamma_multichannel_B_raw_nhmm <- function(x, S, M, K) {
   n <- c(0, cumsum((M - 1) * K * S))
   lapply(seq_len(length(M)), function(i) {
-    create_gamma_B_raw_nhmm(x[(n[i] + 1):(n[i + 1])], S, M[i], K)
+    create_eta_B_nhmm(x[(n[i] + 1):(n[i + 1])], S, M[i], K)
   })
 }
-create_gamma_pi_raw_mnhmm <- function(x, S, K, D) {
+create_eta_pi_mnhmm <- function(x, S, K, D) {
   n <- (S - 1) * K
   lapply(seq_len(D), function(i) {
-    create_gamma_pi_raw_nhmm(x[(i - 1) * n + 1:n], S, K)
+    create_eta_pi_nhmm(x[(i - 1) * n + 1:n], S, K)
   })
 }
-create_gamma_A_raw_mnhmm <- function(x, S, K, D) {
+create_eta_A_mnhmm <- function(x, S, K, D) {
   n <- (S - 1) * K * S
   lapply(seq_len(D), function(i) {
-    create_gamma_A_raw_nhmm(x[(i - 1) * n + 1:n], S, K)
+    create_eta_A_nhmm(x[(i - 1) * n + 1:n], S, K)
   })
 }
-create_gamma_B_raw_mnhmm <- function(x, S, M, K, D) {
+create_eta_B_mnhmm <- function(x, S, M, K, D) {
   n <- (M - 1) * K * S
   lapply(seq_len(D), function(i) {
-    create_gamma_B_raw_nhmm(x[(i - 1) * n + 1:n], S, M, K)
+    create_eta_B_nhmm(x[(i - 1) * n + 1:n], S, M, K)
   })
 }
 create_gamma_multichannel_B_raw_mnhmm <- function(x, S, M, K, D) {
@@ -39,14 +39,14 @@ create_gamma_multichannel_B_raw_mnhmm <- function(x, S, M, K, D) {
     create_gamma_multichannel_B_raw_nhmm(x[(i - 1) * n + 1:n], S, M, K)
   })
 }
-create_gamma_omega_raw_mnhmm <- function(x, D, K) {
+create_eta_omega_mnhmm <- function(x, D, K) {
   matrix(x, D - 1, K)
 }
 
 create_gamma_pi_inits <- function(x, S, K, init_sd = 0, D = 1) {
   if (D > 1) {
     if (is.null(x)) {
-      create_gamma_pi_raw_mnhmm(rnorm((S - 1) * K * D, sd = init_sd), S, K, D)
+      create_eta_pi_mnhmm(rnorm((S - 1) * K * D, sd = init_sd), S, K, D)
     } else {
       stopifnot_(
         length(unlist(x)) == (S - 1) * K * D,
@@ -55,11 +55,11 @@ create_gamma_pi_inits <- function(x, S, K, init_sd = 0, D = 1) {
           "(S - 1) * K * D = {(S - 1) * K * D}."
         )
       )
-      create_gamma_pi_raw_mnhmm(x, S, K, D)
+      create_eta_pi_mnhmm(x, S, K, D)
     }
   } else {
     if (is.null(x)) {
-      create_gamma_pi_raw_nhmm(rnorm((S - 1) * K, sd = init_sd), S, K)
+      create_eta_pi_nhmm(rnorm((S - 1) * K, sd = init_sd), S, K)
     } else {
       stopifnot_(
         length(x) == (S - 1) * K,
@@ -68,14 +68,14 @@ create_gamma_pi_inits <- function(x, S, K, init_sd = 0, D = 1) {
           "(S - 1) * K = {(S - 1) * K}."
         )
       )
-      create_gamma_pi_raw_nhmm(x, S, K)
+      create_eta_pi_nhmm(x, S, K)
     }
   }
 }
 create_gamma_A_inits <- function(x, S, K, init_sd = 0, D = 1) {
   if (D > 1) {
     if (is.null(x)) {
-      create_gamma_A_raw_mnhmm(rnorm((S - 1) * K * S * D, sd = init_sd), S, K, D)
+      create_eta_A_mnhmm(rnorm((S - 1) * K * S * D, sd = init_sd), S, K, D)
     } else {
       stopifnot_(
         length(unlist(x)) == (S - 1) * K * S * D,
@@ -84,11 +84,11 @@ create_gamma_A_inits <- function(x, S, K, init_sd = 0, D = 1) {
           "(S - 1) * K * S * D = {(S - 1) * K * S * D}."
         )
       )
-      create_gamma_A_raw_mnhmm(x, S, K, D)
+      create_eta_A_mnhmm(x, S, K, D)
     }
   } else {
     if (is.null(x)) {
-      create_gamma_A_raw_nhmm(rnorm((S - 1) * K * S, sd = init_sd), S, K)
+      create_eta_A_nhmm(rnorm((S - 1) * K * S, sd = init_sd), S, K)
     } else {
       stopifnot_(
         length(x) == (S - 1) * K * S,
@@ -97,7 +97,7 @@ create_gamma_A_inits <- function(x, S, K, init_sd = 0, D = 1) {
           "(S - 1) * K * S = {(S - 1) * K * S}."
         )
       )
-      create_gamma_A_raw_nhmm(x, S, K)
+      create_eta_A_nhmm(x, S, K)
     }
   }
 }
@@ -137,7 +137,7 @@ create_gamma_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
   } else {
     if (D > 1) {
       if (is.null(x)) {
-        create_gamma_B_raw_mnhmm(
+        create_eta_B_mnhmm(
           rnorm((M - 1) * K * S * D, sd = init_sd), S, M, K, D
         )
       } else {
@@ -148,11 +148,11 @@ create_gamma_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
             "(M - 1) * K * S * D = {(M - 1) * K * S * D}."
           )
         )
-        create_gamma_B_raw_mnhmm(x, S, M, K, D)
+        create_eta_B_mnhmm(x, S, M, K, D)
       }
     } else {
       if (is.null(x)) {
-        create_gamma_B_raw_nhmm(rnorm((M - 1) * K * S, sd = init_sd), S, M, K)
+        create_eta_B_nhmm(rnorm((M - 1) * K * S, sd = init_sd), S, M, K)
       } else {
         stopifnot_(
           length(x) == (M - 1) * K * S,
@@ -161,7 +161,7 @@ create_gamma_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
             "(M - 1) * K * S = {(M - 1) * K * S}."
           )
         )
-        create_gamma_B_raw_nhmm(x, S, M, K)
+        create_eta_B_nhmm(x, S, M, K)
       }
     }
   }
@@ -169,7 +169,7 @@ create_gamma_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
 create_gamma_omega_inits <- function(x, D, K, init_sd = 0) {
   
   if (is.null(x)) {
-    create_gamma_omega_raw_mnhmm(rnorm((D - 1) * K, sd = init_sd), D, K)
+    create_eta_omega_mnhmm(rnorm((D - 1) * K, sd = init_sd), D, K)
   } else {
     stopifnot_(
       length(x) == (D - 1) * K,
@@ -178,7 +178,7 @@ create_gamma_omega_inits <- function(x, D, K, init_sd = 0) {
         "(D - 1) * K = {(D - 1) * K}."
       )
     )
-    create_gamma_omega_raw_mnhmm(x, D, K)
+    create_eta_omega_mnhmm(x, D, K)
   }
 }
 #' Convert Initial Values for Inverse Softmax Scale
@@ -202,40 +202,40 @@ create_initial_values <- function(inits, S, M, init_sd, K_i, K_s, K_o, K_d = 0,
   
   if(!is.null(inits$initial_probs)) {
     if (D > 1) {
-      gamma_pi_raw <- lapply(
+      eta_pi <- lapply(
         seq_len(D), function(i) {
           create_inits_vector(inits$initial_probs[[i]], S, K_i, init_sd)
         }
       )
     } else {
-      gamma_pi_raw <- create_inits_vector(inits$initial_probs, S, K_i, init_sd)
+      eta_pi <- create_inits_vector(inits$initial_probs, S, K_i, init_sd)
     }
   } else {
-    gamma_pi_raw <- create_gamma_pi_inits(
+    eta_pi <- create_gamma_pi_inits(
       inits$gamma_pi, S, K_i, init_sd, D
     )
   }
   
   if(!is.null(inits$transition_probs)) {
     if (D > 1) {
-      gamma_A_raw <- lapply(
+      eta_A <- lapply(
         seq_len(D), function(i) {
           create_inits_matrix(inits$transition_probs[[i]], S, S, K_s, init_sd)
         }
       )
     } else {
-      gamma_A_raw <- create_inits_matrix(
+      eta_A <- create_inits_matrix(
         inits$transition_probs, S, S, K_s, init_sd
       )
     }
   } else {
-    gamma_A_raw <- create_gamma_A_inits(inits$gamma_A, S, K_s, init_sd, D)
+    eta_A <- create_gamma_A_inits(inits$gamma_A, S, K_s, init_sd, D)
   }
   
   if(!is.null(inits$emission_probs)) {
     if (D > 1) {
       if (length(M) > 1) {
-        gamma_B_raw <-  lapply(
+        eta_B <-  lapply(
           seq_len(D), function(i) {
             lapply(seq_len(length(M)), function(j) {
               create_inits_matrix(
@@ -243,7 +243,7 @@ create_initial_values <- function(inits, S, M, init_sd, K_i, K_s, K_o, K_d = 0,
             })
           })
       } else {
-        gamma_B_raw <- lapply(
+        eta_B <- lapply(
           seq_len(D), function(i) {
             create_inits_matrix(inits$emission_probs[[i]], S, M, K_o, init_sd)
           }
@@ -251,35 +251,35 @@ create_initial_values <- function(inits, S, M, init_sd, K_i, K_s, K_o, K_d = 0,
       }
     } else {
       if (length(M) > 1) {
-        gamma_B_raw <- lapply(seq_len(length(M)), function(j) {
+        eta_B <- lapply(seq_len(length(M)), function(j) {
           create_inits_matrix(
             inits$emission_probs[[j]], S, M[j], K_o, init_sd)
         })
       } else {
-        gamma_B_raw <- create_inits_matrix(
+        eta_B <- create_inits_matrix(
           inits$emission_probs, S, M, K_o, init_sd
         )
       }
     }
   } else {
-    gamma_B_raw <- create_gamma_B_inits(inits$gamma_B, S, M, K_o, init_sd, D)
+    eta_B <- create_gamma_B_inits(inits$gamma_B, S, M, K_o, init_sd, D)
   }
   out <- list(
-    gamma_pi_raw = gamma_pi_raw,
-    gamma_A_raw = gamma_A_raw,
-    gamma_B_raw = gamma_B_raw
+    eta_pi = eta_pi,
+    eta_A = eta_A,
+    eta_B = eta_B
   )
   if (D > 1) {
     if(!is.null(inits$cluster_probs)) {
-      gamma_omega_raw <- create_inits_vector(
+      eta_omega <- create_inits_vector(
         inits$cluster_probs, D, K_d, init_sd
       )
     } else {
-      gamma_omega_raw <- create_gamma_omega_inits(
+      eta_omega <- create_gamma_omega_inits(
         inits$gamma_omega, D, K_d, init_sd
       )
     }
-    out$gamma_omega_raw <- gamma_omega_raw
+    out$eta_omega <- eta_omega
   }
   out
 }

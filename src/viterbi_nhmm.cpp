@@ -29,15 +29,15 @@ double univariate_viterbi_nhmm(
 }
 // [[Rcpp::export]]
 Rcpp::List viterbi_nhmm_singlechannel(
-    const arma::mat& gamma_pi_raw, const arma::mat& X_i,
-    const arma::cube& gamma_A_raw, const arma::cube& X_s,
-    const arma::cube& gamma_B_raw, const arma::cube& X_o,
-    const arma::mat& obs) {
+    const arma::mat& eta_pi, const arma::mat& X_i,
+    const arma::cube& eta_A, const arma::cube& X_s,
+    const arma::cube& eta_B, const arma::cube& X_o,
+    const arma::umat& obs) {
   
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
-  unsigned int S = gamma_A_raw.n_slices;
-  unsigned int M = gamma_B_raw.n_rows + 1;
+  unsigned int S = eta_A.n_slices;
+  unsigned int M = eta_B.n_rows + 1;
   arma::umat q(T, N, arma::fill::zeros);
   arma::vec logp(N);
   arma::mat log_py(S, T);
@@ -45,13 +45,11 @@ Rcpp::List viterbi_nhmm_singlechannel(
   arma::cube log_A(S, S, T);
   arma::cube log_B(S, M + 1, T);
   for (unsigned int i = 0; i < N; i++) {
-    log_Pi = get_pi(gamma_pi_raw, X_i.col(i), true);
-    log_A = get_A(gamma_A_raw, X_s.slice(i), true);
-    log_B = get_B(gamma_B_raw, X_o.slice(i), true, true);
+    log_Pi = get_log_pi(eta_pi, X_i.col(i));
+    log_A = get_log_A(eta_A, X_s.slice(i));
+    log_B = get_log_B(eta_B, X_o.slice(i), true);
     for (unsigned int t = 0; t < T; t++) {
-      for (unsigned int s = 0; s < S; s++) {
-        log_py(s, t) = log_B(s, obs(t, i), t);
-      }
+      log_py.col(t) = log_B.slice(t).col(obs(t, i));
     }
     logp(i) = univariate_viterbi_nhmm(log_Pi, log_A, log_py, q.col(i));
   }
@@ -63,14 +61,14 @@ Rcpp::List viterbi_nhmm_singlechannel(
 
 // [[Rcpp::export]]
 Rcpp::List viterbi_nhmm_multichannel(
-    const arma::mat& gamma_pi_raw, const arma::mat& X_i,
-    const arma::cube& gamma_A_raw, const arma::cube& X_s,
-    const arma::field<arma::cube>& gamma_B_raw, const arma::cube& X_o,
-    const arma::cube& obs, const arma::uvec M) {
+    const arma::mat& eta_pi, const arma::mat& X_i,
+    const arma::cube& eta_A, const arma::cube& X_s,
+    const arma::field<arma::cube>& eta_B, const arma::cube& X_o,
+    const arma::ucube& obs, const arma::uvec M) {
   
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
-  unsigned int S = gamma_A_raw.n_slices;
+  unsigned int S = eta_A.n_slices;
   unsigned int C = obs.n_rows;
   arma::umat q(T, N, arma::fill::zeros);
   arma::vec logp(N);
@@ -79,15 +77,13 @@ Rcpp::List viterbi_nhmm_multichannel(
   arma::cube log_A(S, S, T);
   arma::field<arma::cube> log_B(C);
   for (unsigned int i = 0; i < N; i++) {
-    log_Pi = get_pi(gamma_pi_raw, X_i.col(i), true);
-    log_A = get_A(gamma_A_raw, X_s.slice(i), true);
-    log_B = get_B(gamma_B_raw, X_o.slice(i), M, true, true);
+    log_py.zeros();
+    log_Pi = get_log_pi(eta_pi, X_i.col(i));
+    log_A = get_log_A(eta_A, X_s.slice(i));
+    log_B = get_log_B(eta_B, X_o.slice(i), M, true);
     for (unsigned int t = 0; t < T; t++) {
-      for (unsigned int s = 0; s < S; s++) {
-        log_py(s, t) = 0;
-        for (unsigned int c = 0; c < C; c++) {
-          log_py(s, t) += log_B(c)(s, obs(c, t, i), t);
-        }
+      for (unsigned int c = 0; c < C; c++) {
+        log_py.col(t) += log_B(c).slice(t).col(obs(c, t, i));
       }
     }
     logp(i) = univariate_viterbi_nhmm(log_Pi, log_A, log_py, q.col(i));
@@ -101,18 +97,18 @@ Rcpp::List viterbi_nhmm_multichannel(
 
 // [[Rcpp::export]]
 Rcpp::List viterbi_mnhmm_singlechannel(
-    const arma::field<arma::mat>& gamma_pi_raw, const arma::mat& X_i,
-    const arma::field<arma::cube>& gamma_A_raw, const arma::cube& X_s,
-    const arma::field<arma::cube>& gamma_B_raw, const arma::cube& X_o,
-    const arma::mat& gamma_omega_raw, const arma::mat& X_d,
-    const arma::mat& obs) {
+    const arma::field<arma::mat>& eta_pi, const arma::mat& X_i,
+    const arma::field<arma::cube>& eta_A, const arma::cube& X_s,
+    const arma::field<arma::cube>& eta_B, const arma::cube& X_o,
+    const arma::mat& eta_omega, const arma::mat& X_d,
+    const arma::umat& obs) {
   
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
-  unsigned int S = gamma_A_raw(0).n_slices;
-  unsigned int D = gamma_omega_raw.n_rows + 1;
+  unsigned int S = eta_A(0).n_slices;
+  unsigned int D = eta_omega.n_rows + 1;
   unsigned int SD = S * D;
-  unsigned int M = gamma_B_raw(0).n_rows + 1;
+  unsigned int M = eta_B(0).n_rows + 1;
   arma::umat q(T, N, arma::fill::zeros);
   arma::vec logp(N);
   arma::mat log_py(SD, T);
@@ -121,22 +117,18 @@ Rcpp::List viterbi_mnhmm_singlechannel(
   arma::cube log_B(SD, M + 1, T);
   arma::vec log_omega(D);
   for (unsigned int i = 0; i < N; i++) {
-    log_omega = get_omega(gamma_omega_raw, X_d.col(i), true);
+    log_omega = get_log_omega(eta_omega, X_d.col(i));
     for (unsigned int d = 0; d < D; d++) {
-      log_Pi.rows(d * S, (d + 1) * S - 1) = log_omega(d) + get_pi(
-        gamma_pi_raw(d), X_i.col(i), true
-      );
-      log_A.tube(d * S, d * S, (d + 1) * S - 1, (d + 1) * S - 1) = get_A(
-        gamma_A_raw(d), X_s.slice(i), true
-      );
-      log_B.rows(d * S, (d + 1) * S - 1) = get_B(
-        gamma_B_raw(d), X_o.slice(i), true, true
+      log_Pi.rows(d * S, (d + 1) * S - 1) = log_omega(d) + 
+        get_log_pi(eta_pi(d), X_i.col(i));
+      log_A.tube(d * S, d * S, (d + 1) * S - 1, (d + 1) * S - 1) = 
+        get_log_A(eta_A(d), X_s.slice(i));
+      log_B.rows(d * S, (d + 1) * S - 1) = get_log_B(
+        eta_B(d), X_o.slice(i), true
       );
     }
     for (unsigned int t = 0; t < T; t++) {
-      for (unsigned int s = 0; s < SD; s++) {
-        log_py(s, t) = log_B(s, obs(t, i), t);
-      }
+      log_py.col(t) = log_B.slice(t).col(obs(t, i));
     }
     logp(i) = univariate_viterbi_nhmm(log_Pi, log_A, log_py, q.col(i));
   }
@@ -147,15 +139,15 @@ Rcpp::List viterbi_mnhmm_singlechannel(
 }
 // [[Rcpp::export]]
 Rcpp::List viterbi_mnhmm_multichannel(
-    const arma::field<arma::mat>& gamma_pi_raw, const arma::mat& X_i,
-    const arma::field<arma::cube>& gamma_A_raw, const arma::cube& X_s,
-    const arma::field<arma::cube>& gamma_B_raw, const arma::cube& X_o,
-    const arma::mat& gamma_omega_raw, const arma::mat& X_d,
-    const arma::cube& obs, const arma::uvec M) {
+    const arma::field<arma::mat>& eta_pi, const arma::mat& X_i,
+    const arma::field<arma::cube>& eta_A, const arma::cube& X_s,
+    const arma::field<arma::cube>& eta_B, const arma::cube& X_o,
+    const arma::mat& eta_omega, const arma::mat& X_d,
+    const arma::ucube& obs, const arma::uvec M) {
   unsigned int N = X_s.n_slices;
   unsigned int T = X_s.n_cols;
-  unsigned int S = gamma_A_raw(0).n_slices;
-  unsigned int D = gamma_omega_raw.n_rows + 1;
+  unsigned int S = eta_A(0).n_slices;
+  unsigned int D = eta_omega.n_rows + 1;
   unsigned int SD = S * D;
   unsigned int C = obs.n_rows;
   arma::umat q(T, N, arma::fill::zeros);
@@ -166,16 +158,14 @@ Rcpp::List viterbi_mnhmm_multichannel(
   arma::field<arma::cube> log_B(C);
   arma::vec log_omega(D);
   for (unsigned int i = 0; i < N; i++) {
-    log_omega = get_omega(gamma_omega_raw, X_d.col(i), true);
+    log_omega = get_log_omega(eta_omega, X_d.col(i));
     for (unsigned int d = 0; d < D; d++) {
-      log_Pi.rows(d * S, (d + 1) * S - 1) = log_omega(d) + get_pi(
-        gamma_pi_raw(d), X_i.col(i), true
-      );
-      log_A.tube(d * S, d * S, (d + 1) * S - 1, (d + 1) * S - 1) = get_A(
-        gamma_A_raw(d), X_s.slice(i), true
-      );
-      log_B = get_B(
-        gamma_B_raw.rows(d * C, (d + 1) * C - 1), X_o.slice(i), M, true, true
+      log_Pi.rows(d * S, (d + 1) * S - 1) = log_omega(d) + 
+        get_log_pi(eta_pi(d), X_i.col(i));
+      log_A.tube(d * S, d * S, (d + 1) * S - 1, (d + 1) * S - 1) = 
+        get_log_A(eta_A(d), X_s.slice(i));
+      log_B = get_log_B(
+        eta_B.rows(d * C, (d + 1) * C - 1), X_o.slice(i), M, true
       );
       for (unsigned int t = 0; t < T; t++) {
         for (unsigned int s = 0; s < S; s++) {

@@ -17,19 +17,29 @@ bootstrap_model <- function(model) {
 }
 #' @export
 bootstrap_coefs.nhmm <- function(model, B = 1000, 
-                                 method = c("nonparametric", "parametric")) {
+                                 method = c("nonparametric", "parametric"),
+                                 penalty) {
   method <- match.arg(method)
   stopifnot_(
     checkmate::test_int(x = B, lower = 0L), 
     "Argument {.arg B} must be a single positive integer."
   )
   init <- model$coefficients
-  penalty <- model$estimation_results$penalty
+  if (missing(penalty)) {
+    penalty <- model$estimation_results$penalty
+  }
+  mle_coefficients <- model$coefficients
   if (method == "nonparametric") {
     coefs <- matrix(NA, length(unlist(init)), B)
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
       fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, FALSE)
+      m <- cost_matrix(fit$coefficients$eta_pi, mle_coefficients$eta_pi,
+                       fit$coefficients$eta_A, mle_coefficients$eta_A,
+                       fit$coefficients$eta_B, mle_coefficients$eta_B,
+                       fit$X_initial, fit$X_transition, fit$X_emission)
+      perm <- RcppHungarian:HungarianSolver(m)$pairs[, 2]
+      fit$coefficients$gamma_pi[perm]
       coefs[, i] <- unlist(fit$coefficients)
     }
   } else {
@@ -63,7 +73,9 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
     "Argument {.arg B} must be a single positive integer."
   )
   init <- model$coefficients
-  penalty <- model$estimation_results$penalty
+  if (missing(penalty)) {
+    penalty <- model$estimation_results$penalty
+  }
   if (method == "nonparametric") {
     coefs <- matrix(NA, length(unlist(init)), B)
     for (i in seq_len(B)) {

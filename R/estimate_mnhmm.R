@@ -11,12 +11,12 @@
 #' mixture probabilities.
 #'  @param inits If `inits = "random"` (default), random initial values are 
 #' used. Otherwise `inits` should be list of initial values. If coefficients 
-#' are given using list components `gamma_pi_raw`, `gamma_A_raw`, `gamma_B_raw`, 
-#' and `gamma_omega_raw`, these are used as is, alternatively initial values 
+#' are given using list components `eta_pi`, `eta_A`, `eta_B`, 
+#' and `eta_omega`, these are used as is, alternatively initial values 
 #' can be given in terms of the initial state, transition, emission, and mixture 
 #' probabilities using list components `initial_probs`, `emission_probs`, 
 #' `transition_probs`, and `cluster_probs`. These can also be mixed, i.e. you 
-#' can give only `initial_probs` and `gamma_A_raw`.
+#' can give only `initial_probs` and `eta_A`.
 #' @param cluster_names A vector of optional labels for the clusters. If this
 #' is `NULL` (the default), numbered clusters are used.
 #' @return Object of class `mnhmm`.

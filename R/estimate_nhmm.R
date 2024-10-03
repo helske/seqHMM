@@ -27,11 +27,11 @@
 #' is `NULL` (the default), numbered channels are used.
 #' @param inits If `inits = "random"` (default), random initial values are 
 #' used. Otherwise `inits` should be list of initial values. If coefficients 
-#' are given using list components `gamma_pi_raw`, `gamma_A_raw`, `gamma_B_raw`, 
+#' are given using list components `eta_pi`, `eta_A`, `eta_B`, 
 #' these are used as is, alternatively initial values can be given in terms of 
 #' the initial state, transition, and emission probabilities using list 
 #' components `initial_probs`, `emission_probs`, and `transition_probs`. These 
-#' can also be mixed, i.e. you can give only `initial_probs` and `gamma_A_raw`.
+#' can also be mixed, i.e. you can give only `initial_probs` and `eta_A`.
 #' @param init_sd Standard deviation of the normal distribution used to generate
 #' random initial values. Default is `2`. If you want to fix the initial values 
 #' of the regression coefficients to zero, use `init_sd = 0`.

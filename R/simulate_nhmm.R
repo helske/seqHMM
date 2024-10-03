@@ -10,8 +10,8 @@
 #' of observed symbols per channel.
 #' @param n_states The number of hidden states.
 #' @param coefs If `coefs = "random"` (default), random coefficient values are 
-#' used. Otherwise `coefs` should be named list of `gamma_pi_raw`, `gamma_A_raw`, 
-#' and `gamma_B_raw`.
+#' used. Otherwise `coefs` should be named list of `eta_pi`, `eta_A`, 
+#' and `eta_B`.
 #' @param init_sd Standard deviation of the normal distribution used to generate
 #' random coefficient values. Default is `2`.
 #' @inheritParams estimate_mnhmm
