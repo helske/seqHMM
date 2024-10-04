@@ -22,7 +22,7 @@ summary.nhmm <- function(object, ...) {
 #' @param object Non-homogeneous hidden Markov model of class `mnhmm`.
 summary.mnhmm <- function(object, ...) {
   cf <- coef(object)
-  pr <- exp(object$X_cluster %*% object$coefficients$eta_omega)
+  pr <- exp(object$X_cluster %*% object$gammas$omega)
   prior_cluster_probabilities <- pr / rowSums(pr)
   pcp <- posterior_cluster_probabilities(object)
   mpc <- factor(
@@ -52,7 +52,7 @@ summary.mnhmm <- function(object, ...) {
 print.summary.nhmm <- function(x, digits = 3, ...) {
   print(x)
   cat("\nCoefficients:\n")
-  print.listof(x$coefficients, digits = digits, ...)
+  print.listof(x$gammas, digits = digits, ...)
   
   cat("Log-likelihood:", x$logLik, "  BIC:", x$BIC, "\n\n")
   invisible(x)
@@ -61,7 +61,7 @@ print.summary.nhmm <- function(x, digits = 3, ...) {
 print.summary.mnhmm <- function(x, digits = 3, ...) {
   print(x)
   cat("\nCoefficients:\n")
-  print.listof(x$coefficients, digits = digits, ...)
+  print.listof(x$gammas, digits = digits, ...)
   
   cat("Log-likelihood:", x$logLik, "  BIC:", x$BIC, "\n\n")
   

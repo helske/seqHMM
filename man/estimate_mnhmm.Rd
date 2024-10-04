@@ -23,7 +23,7 @@ estimate_mnhmm(
   restarts = 0L,
   threads = 1L,
   store_data = TRUE,
-  hessian = FALSE,
+  penalty = 0,
   ...
 )
 }
@@ -51,12 +51,12 @@ state emission probabilities.}
 mixture probabilities.
 @param inits If \code{inits = "random"} (default), random initial values are
 used. Otherwise \code{inits} should be list of initial values. If coefficients
-are given using list components \code{gamma_pi_raw}, \code{gamma_A_raw}, \code{gamma_B_raw},
-and \code{gamma_omega_raw}, these are used as is, alternatively initial values
+are given using list components \code{eta_pi}, \code{eta_A}, \code{eta_B},
+and \code{eta_omega}, these are used as is, alternatively initial values
 can be given in terms of the initial state, transition, emission, and mixture
 probabilities using list components \code{initial_probs}, \code{emission_probs},
 \code{transition_probs}, and \code{cluster_probs}. These can also be mixed, i.e. you
-can give only \code{initial_probs} and \code{gamma_A_raw}.}
+can give only \code{initial_probs} and \code{eta_A}.}
 
 \item{data}{A data frame containing the variables used in the model
 formulas. Can be omitted in case of model with no covariates and observations
@@ -78,11 +78,11 @@ is \code{NULL} (the default), numbered clusters are used.}
 
 \item{inits}{If \code{inits = "random"} (default), random initial values are
 used. Otherwise \code{inits} should be list of initial values. If coefficients
-are given using list components \code{gamma_pi_raw}, \code{gamma_A_raw}, \code{gamma_B_raw},
+are given using list components \code{eta_pi}, \code{eta_A}, \code{eta_B},
 these are used as is, alternatively initial values can be given in terms of
 the initial state, transition, and emission probabilities using list
 components \code{initial_probs}, \code{emission_probs}, and \code{transition_probs}. These
-can also be mixed, i.e. you can give only \code{initial_probs} and \code{gamma_A_raw}.}
+can also be mixed, i.e. you can give only \code{initial_probs} and \code{eta_A}.}
 
 \item{init_sd}{Standard deviation of the normal distribution used to generate
 random initial values. Default is \code{2}. If you want to fix the initial values
@@ -99,10 +99,8 @@ is stored to the model object. For large datasets, this can be set to
 \code{FALSE}, in which case you might need to pass the data separately to some
 post-prosessing functions.}
 
-\item{hessian}{If \code{TRUE}, computes the Hessian of the model
-coefficients using \link[numDeriv:jacobian]{numDeriv::jacobian}. Default is \code{FALSE}. Can also be
-a list with components \code{method}, \code{side} and \code{method.args} to
-\link[numDeriv:jacobian]{numDeriv::jacobian}.}
+\item{penalty}{Penalty for penalized maximum likelihood. Default is \code{0}
+i.e. no penalization as the penalty is of form \code{0.5 * sum(pars^2) * penalty}.}
 
 \item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}}. Most importantly,
 argument \code{maxeval} defines the maximum number of iterations for optimization.

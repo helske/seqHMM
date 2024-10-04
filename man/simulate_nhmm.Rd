@@ -49,8 +49,8 @@ given as \code{stslist} objects.}
 sequences.}
 
 \item{coefs}{If \code{coefs = "random"} (default), random coefficient values are
-used. Otherwise \code{coefs} should be named list of \code{gamma_pi_raw}, \code{gamma_A_raw},
-and \code{gamma_B_raw}.}
+used. Otherwise \code{coefs} should be named list of \code{eta_pi}, \code{eta_A},
+and \code{eta_B}.}
 
 \item{init_sd}{Standard deviation of the normal distribution used to generate
 random coefficient values. Default is \code{2}.}

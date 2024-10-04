@@ -45,10 +45,6 @@
 #' post-prosessing functions.
 #' @param penalty Penalty for penalized maximum likelihood. Default is `0` 
 #' i.e. no penalization as the penalty is of form `0.5 * sum(pars^2) * penalty`.
-#' @param hessian If `TRUE`, computes the Hessian of the model 
-#' coefficients using [numDeriv::jacobian]. Default is `FALSE`. Can also be 
-#' a list with components `method`, `side` and `method.args` to 
-#' [numDeriv::jacobian].
 #' @param ... Additional arguments to [nloptr::nloptr()]. Most importantly,
 #' argument `maxeval` defines the maximum number of iterations for optimization.
 #' The default is `1000` for restarts and `10000` for the final optimization. 
@@ -75,7 +71,7 @@ estimate_nhmm <- function(
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, channel_names = NULL, 
     inits = "random", init_sd = 2, restarts = 0L, threads = 1L, 
-    store_data = TRUE, penalty = 0, hessian = FALSE, ...) {
+    store_data = TRUE, penalty = 0, ...) {
   
   call <- match.call()
   
@@ -91,7 +87,7 @@ estimate_nhmm <- function(
   if (store_data) {
     model$data <- data
   }
-  out <- fit_nhmm(model, inits, init_sd, restarts, threads, penalty, hessian, ...)
+  out <- fit_nhmm(model, inits, init_sd, restarts, threads, penalty, ...)
   attr(out, "call") <- call
   out
 }

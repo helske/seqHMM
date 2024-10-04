@@ -1,7 +1,7 @@
 #' Estimate a Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian, ...) {
+fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
   stopifnot_(
     checkmate::test_int(x = threads, lower = 1L), 
     "Argument {.arg threads} must be a single positive integer."
@@ -50,17 +50,22 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian,
     pars <- unlist(create_initial_values(
       inits, S, M, init_sd, K_i, K_s, K_o
     ))
-    model$coefficients$eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
-    model$coefficients$eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+    model$etas$pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
+    model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
+    model$etas$A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+    model$gammas$A <- eta_to_gamma_cube(model$etas$A)
     if (model$n_channels == 1L) {
-      model$coefficients$eta_B <- create_eta_B_nhmm(
+      model$etas$B <- create_eta_B_nhmm(
         pars[n_i + n_s + seq_len(n_o)], S, M, K_o
       )
+      model$gammas$B <- eta_to_gamma_cube(model$etas$B)
     } else {
-      model$coefficients$eta_B <- create_gamma_multichannel_B_raw_nhmm(
+      model$etas$B <- create_eta_multichannel_B_nhmm(
         pars[n_i + n_s + seq_len(n_o)], S, M, K_o
       )
+      model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
     }
+    
     return(model)
   }
   
@@ -68,6 +73,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian,
   need_grad <- grepl("NLOPT_LD_", dots$algorithm)
   
   if (model$n_channels == 1L) {
+    Qs <- t(create_Q(S))
+    Qm <- t(create_Q(M))
     if (need_grad) {
       objectivef <- function(pars) {
         if (any(!is.finite(exp(pars)))) {
@@ -79,7 +86,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian,
           pars[n_i + n_s + seq_len(n_o)], S, M, K_o
         )
         out <- log_objective_nhmm_singlechannel(
-          eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs,
+          Qs, Qm, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs,
           iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
         list(objective = - out$loglik + 0.5 * sum(pars^2) * penalty,
@@ -103,6 +110,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian,
       }
     }
   } else {
+    Qs <- t(create_Q(S))
+    Qm <- lapply(M, function(m) t(create_Q(m)))
     if (need_grad) {
       objectivef <- function(pars) {
         if (any(!is.finite(exp(pars)))) {
@@ -110,11 +119,11 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian,
         }
         eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
         eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
-        eta_B <- create_gamma_multichannel_B_raw_nhmm(
+        eta_B <- create_eta_multichannel_B_nhmm(
           pars[n_i + n_s + seq_len(n_o)], S, M, K_o
         )
         out <- log_objective_nhmm_multichannel(
-          eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M,
+          Qs, Qm, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M,
           iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
         list(objective = - out$loglik + 0.5 * sum(pars^2) * penalty,
@@ -127,7 +136,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian,
         }
         eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
         eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
-        eta_B <- create_gamma_multichannel_B_raw_nhmm(
+        eta_B <- create_eta_multichannel_B_nhmm(
           pars[n_i + n_s + seq_len(n_o)], S, M, K_o
         )
         out <- forward_nhmm_multichannel(
@@ -183,34 +192,23 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian,
     warning_(paste("Optimization terminated due to error:", out$message))
   }
   pars <- out$solution
-  
-  model$coefficients$eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
-  model$coefficients$eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+  model$etas$pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
+  model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
+  model$etas$A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+  model$gammas$A <- eta_to_gamma_cube(model$etas$A)
   if (model$n_channels == 1L) {
-    model$coefficients$eta_B <- create_eta_B_nhmm(
-      pars[n_i + n_s + seq_len(n_o)], S, M, K_o
-    )
-  } else {
-    model$coefficients$eta_B <- create_gamma_multichannel_B_raw_nhmm(
-      pars[n_i + n_s + seq_len(n_o)], S, M, K_o
-    )
-  }
-  
-  if (!isFALSE(hessian)) {
-    if (isTRUE(hessian)){
-      hessian <- numDeriv::jacobian(objectivef, pars)
-    } else {
-      hessian <- do.call(
-        numDeriv::jacobian,
-        c(hessian, list(func = objectivef, x = pars))
+    model$etas$B <- create_eta_B_nhmm(
+        pars[n_i + n_s + seq_len(n_o)], S, M, K_o
       )
-    }
+    model$gammas$B <- eta_to_gamma_cube(model$etas$B)
   } else {
-    hessian <- NULL
+    model$etas$B <- create_eta_multichannel_B_nhmm(
+        pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+      )
+    model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
   }
   
   model$estimation_results <- list(
-    hessian = hessian,
     loglik = -out$objective, 
     return_code = out$status,
     message = out$message,

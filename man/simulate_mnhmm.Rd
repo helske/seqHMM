@@ -47,12 +47,12 @@ state emission probabilities.}
 mixture probabilities.
 @param inits If \code{inits = "random"} (default), random initial values are
 used. Otherwise \code{inits} should be list of initial values. If coefficients
-are given using list components \code{gamma_pi_raw}, \code{gamma_A_raw}, \code{gamma_B_raw},
-and \code{gamma_omega_raw}, these are used as is, alternatively initial values
+are given using list components \code{eta_pi}, \code{eta_A}, \code{eta_B},
+and \code{eta_omega}, these are used as is, alternatively initial values
 can be given in terms of the initial state, transition, emission, and mixture
 probabilities using list components \code{initial_probs}, \code{emission_probs},
 \code{transition_probs}, and \code{cluster_probs}. These can also be mixed, i.e. you
-can give only \code{initial_probs} and \code{gamma_A_raw}.}
+can give only \code{initial_probs} and \code{eta_A}.}
 
 \item{data}{A data frame containing the variables used in the model
 formulas. Can be omitted in case of model with no covariates and observations
@@ -64,8 +64,8 @@ given as \code{stslist} objects.}
 sequences.}
 
 \item{coefs}{If \code{coefs = "random"} (default), random coefficient values are
-used. Otherwise \code{coefs} should be named list of \code{gamma_pi_raw}, \code{gamma_A_raw},
-\code{gamma_B_raw}, and \code{gamma_omega_raw}.}
+used. Otherwise \code{coefs} should be named list of \code{eta_pi}, \code{eta_A},
+\code{eta_B}, and \code{eta_omega}.}
 
 \item{init_sd}{Standard deviation of the normal distribution used to generate
 random coefficient values. Default is \code{2}.}

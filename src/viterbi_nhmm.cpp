@@ -1,5 +1,6 @@
 //Viterbi algorithm for NHMM and MHMM, single_sequence
 #include "get_parameters.h"
+#include "eta_to_gamma.h"
 #include "viterbi_nhmm.h"
 
 double univariate_viterbi_nhmm(
@@ -44,10 +45,13 @@ Rcpp::List viterbi_nhmm_singlechannel(
   arma::vec log_Pi(S);
   arma::cube log_A(S, S, T);
   arma::cube log_B(S, M + 1, T);
+  arma::mat gamma_pi = eta_to_gamma(eta_pi);
+  arma::cube gamma_A = eta_to_gamma(eta_A);
+  arma::cube gamma_B = eta_to_gamma(eta_B);
   for (unsigned int i = 0; i < N; i++) {
-    log_Pi = get_log_pi(eta_pi, X_i.col(i));
-    log_A = get_log_A(eta_A, X_s.slice(i));
-    log_B = get_log_B(eta_B, X_o.slice(i), true);
+    log_Pi = get_log_pi(gamma_pi, X_i.col(i));
+    log_A = get_log_A(gamma_A, X_s.slice(i));
+    log_B = get_log_B(gamma_B, X_o.slice(i), true);
     for (unsigned int t = 0; t < T; t++) {
       log_py.col(t) = log_B.slice(t).col(obs(t, i));
     }
@@ -76,11 +80,14 @@ Rcpp::List viterbi_nhmm_multichannel(
   arma::vec log_Pi(S);
   arma::cube log_A(S, S, T);
   arma::field<arma::cube> log_B(C);
+  arma::mat gamma_pi = eta_to_gamma(eta_pi);
+  arma::cube gamma_A = eta_to_gamma(eta_A);
+  arma::field<arma::cube> gamma_B= eta_to_gamma(eta_B);
   for (unsigned int i = 0; i < N; i++) {
     log_py.zeros();
-    log_Pi = get_log_pi(eta_pi, X_i.col(i));
-    log_A = get_log_A(eta_A, X_s.slice(i));
-    log_B = get_log_B(eta_B, X_o.slice(i), M, true);
+    log_Pi = get_log_pi(gamma_pi, X_i.col(i));
+    log_A = get_log_A(gamma_A, X_s.slice(i));
+    log_B = get_log_B(gamma_B, X_o.slice(i), M, true);
     for (unsigned int t = 0; t < T; t++) {
       for (unsigned int c = 0; c < C; c++) {
         log_py.col(t) += log_B(c).slice(t).col(obs(c, t, i));
@@ -116,15 +123,19 @@ Rcpp::List viterbi_mnhmm_singlechannel(
   arma::cube log_A(SD, SD, T, arma::fill::value(-arma::datum::inf));
   arma::cube log_B(SD, M + 1, T);
   arma::vec log_omega(D);
+  arma::mat gamma_omega = eta_to_gamma(eta_omega);
+  arma::field<arma::mat> gamma_pi = eta_to_gamma(eta_pi);
+  arma::field<arma::cube> gamma_A = eta_to_gamma(eta_A);
+  arma::field<arma::cube> gamma_B = eta_to_gamma(eta_B);
   for (unsigned int i = 0; i < N; i++) {
-    log_omega = get_log_omega(eta_omega, X_d.col(i));
+    log_omega = get_log_omega(gamma_omega, X_d.col(i));
     for (unsigned int d = 0; d < D; d++) {
       log_Pi.rows(d * S, (d + 1) * S - 1) = log_omega(d) + 
-        get_log_pi(eta_pi(d), X_i.col(i));
+        get_log_pi(gamma_pi(d), X_i.col(i));
       log_A.tube(d * S, d * S, (d + 1) * S - 1, (d + 1) * S - 1) = 
-        get_log_A(eta_A(d), X_s.slice(i));
+        get_log_A(gamma_A(d), X_s.slice(i));
       log_B.rows(d * S, (d + 1) * S - 1) = get_log_B(
-        eta_B(d), X_o.slice(i), true
+        gamma_B(d), X_o.slice(i), true
       );
     }
     for (unsigned int t = 0; t < T; t++) {
@@ -157,15 +168,19 @@ Rcpp::List viterbi_mnhmm_multichannel(
   arma::cube log_A(SD, SD, T, arma::fill::value(-arma::datum::inf));
   arma::field<arma::cube> log_B(C);
   arma::vec log_omega(D);
+  arma::mat gamma_omega = eta_to_gamma(eta_omega);
+  arma::field<arma::mat> gamma_pi = eta_to_gamma(eta_pi);
+  arma::field<arma::cube> gamma_A = eta_to_gamma(eta_A);
+  arma::field<arma::cube> gamma_B = eta_to_gamma(eta_B);
   for (unsigned int i = 0; i < N; i++) {
-    log_omega = get_log_omega(eta_omega, X_d.col(i));
+    log_omega = get_log_omega(gamma_omega, X_d.col(i));
     for (unsigned int d = 0; d < D; d++) {
       log_Pi.rows(d * S, (d + 1) * S - 1) = log_omega(d) + 
-        get_log_pi(eta_pi(d), X_i.col(i));
+        get_log_pi(gamma_pi(d), X_i.col(i));
       log_A.tube(d * S, d * S, (d + 1) * S - 1, (d + 1) * S - 1) = 
-        get_log_A(eta_A(d), X_s.slice(i));
+        get_log_A(gamma_A(d), X_s.slice(i));
       log_B = get_log_B(
-        eta_B.rows(d * C, (d + 1) * C - 1), X_o.slice(i), M, true
+        gamma_B.rows(d * C, (d + 1) * C - 1), X_o.slice(i), M, true
       );
       for (unsigned int t = 0; t < T; t++) {
         for (unsigned int s = 0; s < S; s++) {

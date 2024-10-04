@@ -154,14 +154,14 @@ forward_backward.nhmm <- function(model, forward_only = FALSE,
   out <- list()
   if (model$n_channels == 1) {
     out$forward_probs <- forward_nhmm_singlechannel(
-      model$coefficients$eta_pi, model$X_initial,
-      model$coefficients$eta_A, model$X_transition,
-      model$coefficients$eta_B, model$X_emission,
+      model$etas$pi, model$X_initial,
+      model$etas$A, model$X_transition,
+      model$etas$B, model$X_emission,
       array(obsArray[1, , ], dim(obsArray)[2:3]))
     if (!forward_only) {
       out$backward_probs <- backward_nhmm_singlechannel(
-        model$coefficients$eta_A, model$X_transition,
-        model$coefficients$eta_B, model$X_emission,
+        model$etas$A, model$X_transition,
+        model$etas$B, model$X_emission,
         array(obsArray[1, , ], dim(obsArray)[2:3]))
     }
     if (is.null(time_names <- colnames(model$observations))) {
@@ -172,14 +172,14 @@ forward_backward.nhmm <- function(model, forward_only = FALSE,
     }
   } else {
     out$forward_probs <- forward_nhmm_multichannel(
-      model$coefficients$eta_pi, model$X_initial,
-      model$coefficients$eta_A, model$X_transition,
-      model$coefficients$eta_B, model$X_emission,
+      model$etas$pi, model$X_initial,
+      model$etas$A, model$X_transition,
+      model$etas$B, model$X_emission,
       obsArray, model$n_symbols)
     if (!forward_only) {
       out$backward_probs <- backward_nhmm_multichannel(
-        model$coefficients$eta_A, model$X_transition,
-        model$coefficients$eta_B, model$X_emission,
+        model$etas$A, model$X_transition,
+        model$etas$B, model$X_emission,
         obsArray, model$n_symbols)
     }
     if (is.null(time_names <- colnames(model$observations[[1]]))) {
@@ -219,16 +219,15 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,
   out <- list()
   if (model$n_channels == 1) {
     out$forward_probs <- forward_mnhmm_singlechannel(
-      model$coefficients$eta_pi, model$X_initial,
-      model$coefficients$eta_A, model$X_transition,
-      model$coefficients$eta_B, model$X_emission,
-      model$coefficients$eta_omega, model$X_cluster,
+      model$etas$pi, model$X_initial,
+      model$etas$A, model$X_transition,
+      model$etas$B, model$X_emission,
+      model$etas$omega, model$X_cluster,
       array(obsArray, dim(obsArray)[2:3]))
     if (!forward_only) {
       out$backward_probs <- backward_mnhmm_singlechannel(
-        model$coefficients$eta_A, model$X_transition,
-        model$coefficients$eta_B, model$X_emission,
-        model$coefficients$eta_omega, model$X_cluster,
+        model$etas$A, model$X_transition,
+        model$etas$B, model$X_emission,
         array(obsArray, dim(obsArray)[2:3]))
     }
     if (is.null(time_names <- colnames(model$observations))) {
@@ -238,18 +237,17 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,
       sequence_names <- seq_len(model$n_sequences)
     }
   } else {
-    eta_B <- unlist(model$coefficients$eta_B, recursive = FALSE)
+    eta_B <- unlist(model$etas$B, recursive = FALSE)
     out$forward_probs <- forward_mnhmm_multichannel(
-      model$coefficients$eta_pi, model$X_initial,
-      model$coefficients$eta_A, model$X_transition,
+      model$etas$pi, model$X_initial,
+      model$etas$A, model$X_transition,
       eta_B, model$X_emission,
-      model$coefficients$eta_omega, model$X_cluster,
+      model$etas$omega, model$X_cluster,
       obsArray, model$n_symbols)
     if (!forward_only) {
       out$backward_probs <- backward_mnhmm_multichannel(
-        model$coefficients$eta_A, model$X_transition,
+        model$etas$A, model$X_transition,
         eta_B, model$X_emission,
-        model$coefficients$eta_omega, model$X_cluster,
         obsArray, model$n_symbols)
     }
     if (is.null(time_names <- colnames(model$observations[[1]]))) {

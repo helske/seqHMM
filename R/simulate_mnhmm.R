@@ -81,8 +81,26 @@ simulate_mnhmm <- function(
   K_s <- nrow(model$X_transition)
   K_o <- nrow(model$X_emission)
   K_d <- nrow(model$X_cluster)
-  model$coefficients <- create_initial_values(
+  model$etas <- create_initial_values(
     coefs, n_states, n_symbols, init_sd, K_i, K_s, K_o, K_d, n_clusters
+  )
+  model$gammas$pi <- c(eta_to_gamma_mat_field(
+    model$etas$pi
+  ))
+  model$gammas$A <- c(eta_to_gamma_cube_field(
+    model$etas$A
+  ))
+  if (n_channels == 1L) {
+    model$gammas$B <- c(eta_to_gamma_cube_field(
+      model$etas$B
+    ))
+  } else {
+    l <- lengths(model$etas$B)
+    gamma_B <- c(eta_to_gamma_cube_field(unlist(model$etas$B, recursive = FALSE)))
+    model$gammas$B <- split(gamma_B, rep(seq_along(l), l))
+  }
+  model$gammas$omega <- eta_to_gamma_mat(
+    model$etas$omega
   )
   probs <- get_probs(model)
   states <- array(NA_character_, c(max(sequence_lengths), n_sequences))

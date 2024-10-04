@@ -75,15 +75,15 @@ hidden_paths.nhmm <- function(model, respect_void = TRUE, ...) {
   obsArray <- create_obsArray(model)
   if (model$n_channels == 1) {
     out <- viterbi_nhmm_singlechannel(
-      model$coefficients$eta_pi, model$X_initial,
-      model$coefficients$eta_A, model$X_transition,
-      model$coefficients$eta_B, model$X_emission,
+      model$etas$pi, model$X_initial,
+      model$etas$A, model$X_transition,
+      model$etas$B, model$X_emission,
       obsArray[1, , ])
   } else {
     out <- viterbi_nhmm_multichannel(
-      model$coefficients$eta_pi, model$X_initial,
-      model$coefficients$eta_A, model$X_transition,
-      model$coefficients$eta_B, model$X_emission,
+      model$etas$pi, model$X_initial,
+      model$etas$A, model$X_transition,
+      model$etas$B, model$X_emission,
       obsArray, model$n_symbols)
   }
   create_mpp_seq(out, model, respect_void)
@@ -95,18 +95,18 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
   obsArray <- create_obsArray(model)
   if (model$n_channels == 1) {
     out <- viterbi_mnhmm_singlechannel(
-      model$coefficients$eta_pi, model$X_initial,
-      model$coefficients$eta_A, model$X_transition,
-      model$coefficients$eta_B, model$X_emission,
-      model$coefficients$eta_omega, model$X_cluster,
+      model$etas$pi, model$X_initial,
+      model$etas$A, model$X_transition,
+      model$etas$B, model$X_emission,
+      model$etas$omega, model$X_cluster,
       array(obsArray, dim(obsArray)[2:3]))
   } else {
     out <- viterbi_mnhmm_multichannel(
-      model$coefficients$eta_pi, model$X_initial,
-      model$coefficients$eta_A, model$X_transition,
-      unlist(model$coefficients$eta_B, recursive = FALSE),
+      model$etas$pi, model$X_initial,
+      model$etas$A, model$X_transition,
+      unlist(model$etas$B, recursive = FALSE),
       model$X_emission,
-      model$coefficients$eta_omega, model$X_cluster,
+      model$etas$omega, model$X_cluster,
       obsArray, model$n_symbols)
   }
   if (identical(model$state_names[[1]], model$state_names[[2]])) {

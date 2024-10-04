@@ -1,7 +1,7 @@
 #' Estimate a Mixture Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian, ...) {
+fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
   stopifnot_(
     checkmate::test_int(x = threads, lower = 1L), 
     "Argument {.arg threads} must be a single positive integer."
@@ -51,29 +51,34 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian
   
   dots <- list(...)
   
-  
   if (isTRUE(dots$maxeval < 0)) {
     pars <- unlist(create_initial_values(
       inits, S, M, init_sd, K_i, K_s, K_o, K_d, D
     ))
-    model$coefficients$eta_pi <- create_eta_pi_mnhmm(
+    model$etas$pi <- create_eta_pi_mnhmm(
       pars[seq_len(n_i)], S, K_i, D
     )
-    model$coefficients$eta_A <- create_eta_A_mnhmm(
+    model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
+    model$etas$A <- create_eta_A_mnhmm(
       pars[n_i + seq_len(n_s)], S, K_s, D
     )
+    model$gammas$A <- eta_to_gamma_cube(model$etas$A)
     if (model$n_channels == 1L) {
-      model$coefficients$eta_B <- create_eta_B_mnhmm(
+      model$etas$B <- create_eta_B_mnhmm(
         pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
       )
+      model$gammas$B <- eta_to_gamma_cube(model$etas$B)
     } else {
-      model$coefficients$eta_B <- create_gamma_multichannel_B_raw_mnhmm(
+      model$etas$B <- create_eta_multichannel_B_mnhmm(
         pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
       )
+
+      model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
     }
-    model$coefficients$eta_omega <- create_eta_omega_mnhmm(
+    model$etas$omega <- create_eta_omega_mnhmm(
       pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
     )
+    model$gammas$omega <- eta_to_gamma_mat(model$etas$omega)
     return(model)
   }
   
@@ -81,12 +86,14 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian
   need_grad <- grepl("NLOPT_LD_", dots$algorithm)
   
   if (model$n_channels == 1L) {
+    Qs <- t(create_Q(S))
+    Qm <- t(create_Q(M))
+    Qd <- t(create_Q(D))
     if (need_grad) {
       objectivef <- function(pars) {
         if (any(!is.finite(exp(pars)))) {
           return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
         } 
-        
         eta_pi <- create_eta_pi_mnhmm(pars[seq_len(n_i)], S, K_i, D)
         eta_A <- create_eta_A_mnhmm(pars[n_i + seq_len(n_s)], S, K_s, D)
         eta_B <- create_eta_B_mnhmm(
@@ -96,7 +103,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian
           pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
         )
         out <- log_objective_mnhmm_singlechannel(
-          eta_pi, X_i, eta_A, X_s, eta_B, X_o,
+          Qs, Qm, Qd, eta_pi, X_i, eta_A, X_s, eta_B, X_o,
           eta_omega, X_d, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega, 
           Ti
         )
@@ -125,6 +132,9 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian
       }
     }
   } else {
+    Qs <- t(create_Q(S))
+    Qm <- lapply(M, function(m) t(create_Q(m)))
+    Qd <- t(create_Q(D))
     if (need_grad) {
       objectivef <- function(pars) {
         if (any(!is.finite(exp(pars)))) {
@@ -136,7 +146,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian
           S, K_s, D
         )
         eta_B <- unlist(
-          create_gamma_multichannel_B_raw_mnhmm(
+          create_eta_multichannel_B_mnhmm(
             pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
           ),
           recursive = FALSE
@@ -145,7 +155,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian
           pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
         )
         out <- log_objective_mnhmm_multichannel(
-          eta_pi, X_i, eta_A, X_s, eta_B, X_o,
+          Qs, Qm, Qd, eta_pi, X_i, eta_A, X_s, eta_B, X_o,
           eta_omega, X_d, obs, M, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega,
           Ti
         )
@@ -162,7 +172,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian
           pars[n_i + seq_len(n_s)], S, K_s, D
         )
         eta_B <- unlist(
-          create_gamma_multichannel_B_raw_mnhmm(
+          create_eta_multichannel_B_mnhmm(
             pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
           ),
           recursive = FALSE
@@ -228,40 +238,41 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, hessian
     warning_(paste("Optimization terminated due to error:", out$message))
   }
   pars <- out$solution
-  model$coefficients$eta_pi <- create_eta_pi_mnhmm(
+  model$etas$pi <- create_eta_pi_mnhmm(
     pars[seq_len(n_i)], S, K_i, D
   )
-  model$coefficients$eta_A <- create_eta_A_mnhmm(
+  model$gammas$pi <- c(eta_to_gamma_mat_field(
+    model$etas$pi
+  ))
+  model$etas$A <- create_eta_A_mnhmm(
     pars[n_i + seq_len(n_s)], S, K_s, D
   )
+  model$gammas$A <- c(eta_to_gamma_cube_field(
+    model$etas$A
+  ))
   if (model$n_channels == 1L) {
-    model$coefficients$eta_B <- create_eta_B_mnhmm(
+    model$etas$B <- create_eta_B_mnhmm(
       pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
     )
+    model$gammas$B <- c(eta_to_gamma_cube_field(
+      model$etas$B
+    ))
   } else {
-    model$coefficients$eta_B <- create_gamma_multichannel_B_raw_mnhmm(
+    model$etas$B <- create_eta_multichannel_B_mnhmm(
       pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
     )
+    l <- lengths(model$etas$B)
+    gamma_B <- c(eta_to_gamma_cube_field(unlist(model$etas$B, recursive = FALSE)))
+    model$gammas$B <- split(gamma_B, rep(seq_along(l), l))
   }
-  model$coefficients$eta_omega <- create_eta_omega_mnhmm(
+  model$etas$omega <- create_eta_omega_mnhmm(
     pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
   )
-  
-  if (!isFALSE(hessian)) {
-    if (isTRUE(hessian)){
-      hessian <- numDeriv::jacobian(objectivef, pars)
-    } else {
-      hessian <- do.call(
-        numDeriv::jacobian,
-        c(hessian, list(func = objectivef, x = pars))
-      )
-    }
-  } else {
-    hessian <- NULL
-  }
+  model$gammas$omega <- eta_to_gamma_mat(
+    model$etas$omega
+  )
   
   model$estimation_results <- list(
-    hessian = hessian,
     loglik = -out$objective, 
     return_code = out$status,
     message = out$message,

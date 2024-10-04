@@ -1,6 +1,7 @@
 // forward algorithm for NHMM
 #include "forward_nhmm.h"
 #include "get_parameters.h"
+#include "eta_to_gamma.h"
 #include "logsumexp.h"
 
 arma::mat univariate_forward_nhmm(
@@ -39,10 +40,13 @@ arma::cube forward_nhmm_singlechannel(
   arma::vec log_Pi(S);
   arma::cube log_A(S, S, T);
   arma::cube log_B(S, M + 1, T);
+  arma::mat gamma_pi = eta_to_gamma(eta_pi);
+  arma::cube gamma_A = eta_to_gamma(eta_A);
+  arma::cube gamma_B = eta_to_gamma(eta_B);
   for (unsigned int i = 0; i < N; i++) {
-    log_Pi = get_log_pi(eta_pi, X_i.col(i));
-    log_A = get_log_A(eta_A, X_s.slice(i));
-    log_B = get_log_B(eta_B, X_o.slice(i), true);
+    log_Pi = get_log_pi(gamma_pi, X_i.col(i));
+    log_A = get_log_A(gamma_A, X_s.slice(i));
+    log_B = get_log_B(gamma_B, X_o.slice(i), true);
     for (unsigned int t = 0; t < T; t++) {
       log_py.col(t) = log_B.slice(t).col(obs(t, i));
     }
@@ -67,11 +71,14 @@ arma::cube forward_nhmm_multichannel(
   arma::vec log_Pi(S);
   arma::cube log_A(S, S, T);
   arma::field<arma::cube> log_B(C);
+  arma::mat gamma_pi = eta_to_gamma(eta_pi);
+  arma::cube gamma_A = eta_to_gamma(eta_A);
+  arma::field<arma::cube> gamma_B = eta_to_gamma(eta_B);
   for (unsigned int i = 0; i < N; i++) {
     log_py.zeros();
-    log_Pi = get_log_pi(eta_pi, X_i.col(i));
-    log_A = get_log_A(eta_A, X_s.slice(i));
-    log_B = get_log_B(eta_B, X_o.slice(i), M, true);
+    log_Pi = get_log_pi(gamma_pi, X_i.col(i));
+    log_A = get_log_A(gamma_A, X_s.slice(i));
+    log_B = get_log_B(gamma_B, X_o.slice(i), M, true);
     for (unsigned int t = 0; t < T; t++) {
       for (unsigned int c = 0; c < C; c++) {
         log_py.col(t) += log_B(c).slice(t).col(obs(c, t, i));
@@ -102,12 +109,16 @@ arma::cube forward_mnhmm_singlechannel(
   arma::cube log_A(S, S, T);
   arma::cube log_B(S, M + 1, T);
   arma::vec log_omega(D);
+  arma::mat gamma_omega = eta_to_gamma(eta_omega);
+  arma::field<arma::mat> gamma_pi = eta_to_gamma(eta_pi);
+  arma::field<arma::cube> gamma_A = eta_to_gamma(eta_A);
+  arma::field<arma::cube> gamma_B = eta_to_gamma(eta_B);
   for (unsigned int i = 0; i < N; i++) {
-    log_omega = get_log_omega(eta_omega, X_d.col(i));
+    log_omega = get_log_omega(gamma_omega, X_d.col(i));
     for (unsigned int d = 0; d < D; d++) {
-      log_Pi = get_log_pi(eta_pi(d), X_i.col(i));
-      log_A = get_log_A(eta_A(d), X_s.slice(i));
-      log_B = get_log_B(eta_B(d), X_o.slice(i), true);
+      log_Pi = get_log_pi(gamma_pi(d), X_i.col(i));
+      log_A = get_log_A(gamma_A(d), X_s.slice(i));
+      log_B = get_log_B(gamma_B(d), X_o.slice(i), true);
       for (unsigned int t = 0; t < T; t++) {
         log_py.col(t) = log_B.slice(t).col(obs(t, i));
       }
@@ -136,14 +147,18 @@ arma::cube forward_mnhmm_multichannel(
   arma::cube log_A(S, S, T);
   arma::field<arma::cube> log_B(C);
   arma::vec log_omega(D);
+  arma::mat gamma_omega = eta_to_gamma(eta_omega);
+  arma::field<arma::mat> gamma_pi = eta_to_gamma(eta_pi);
+  arma::field<arma::cube> gamma_A = eta_to_gamma(eta_A);
+  arma::field<arma::cube> gamma_B = eta_to_gamma(eta_B);
   for (unsigned int i = 0; i < N; i++) {
-    log_omega = get_log_omega(eta_omega, X_d.col(i));
+    log_omega = get_log_omega(gamma_omega, X_d.col(i));
     for (unsigned int d = 0; d < D; d++) {
       log_py.zeros();
-      log_Pi = get_log_pi(eta_pi(d), X_i.col(i));
-      log_A = get_log_A(eta_A(d), X_s.slice(i));
+      log_Pi = get_log_pi(gamma_pi(d), X_i.col(i));
+      log_A = get_log_A(gamma_A(d), X_s.slice(i));
       log_B = get_log_B(
-        eta_B.rows(d * C, (d + 1) * C - 1), X_o.slice(i), M, true
+        gamma_B.rows(d * C, (d + 1) * C - 1), X_o.slice(i), M, true
       );
       for (unsigned int t = 0; t < T; t++) {
         for (unsigned int c = 0; c < C; c++) {

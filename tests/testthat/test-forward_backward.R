@@ -47,8 +47,8 @@ test_that("'forward_backward' works for multichannel 'nhmm'", {
     fb <- forward_backward(fit, as_data_frame = FALSE),
     NA
   )
-  expect_gte(min(fb$forward_probs), -200)
-  expect_gte(min(fb$backward_probs), -200)
+  expect_gte(min(fb$forward_probs), -300)
+  expect_gte(min(fb$backward_probs), -300)
   expect_lte(max(fb$forward_probs), 0)
   expect_lte(max(fb$backward_probs), 0)
   

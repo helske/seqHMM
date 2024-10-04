@@ -10,36 +10,32 @@
 coef.nhmm <- function(object, probs = c(0.025, 0.975), ...) {
   S <- object$n_states
   M <- object$n_symbols
-  gamma_pi <- c(eta_to_gamma(object$coefficients$eta_pi))
   gamma_pi <- data.frame(
     state = object$state_names,
     parameter = rep(object$coef_names_initial, each = S),
-    estimate = gamma_pi
+    estimate = c(object$gammas$pi)
   )
-  eta_A <- c(object$coefficients$eta_A)
   gamma_A <- data.frame(
     state_from = object$state_names,
-    state_to = rep(object$state_names[-1], each = S),
-    parameter = rep(object$coef_names_transition, each = S * (S - 1)),
-    estimate = eta_A
+    state_to = rep(object$state_names, each = S),
+    parameter = rep(object$coef_names_transition, each = S^2),
+    estimate = c(object$gammas$A)
   )
   if (object$n_channels == 1) {
-    eta_B <- c(object$coefficients$eta_B)
     gamma_B <- data.frame(
       state = object$state_names,
-      observation = rep(object$symbol_names[-1], each = S),
-      parameter = rep(object$coef_names_emission, each = S * (M - 1)),
-      estimate = eta_B
+      observation = rep(object$symbol_names, each = S),
+      parameter = rep(object$coef_names_emission, each = S * M),
+      estimate = c(object$gammas$B)
     )
   } else {
-    eta_B <- unlist(object$coefficients$eta_B)
     gamma_B <- data.frame(
       state = object$state_names,
-      observation = rep(unlist(lapply(object$symbol_names, "[", -1)), each = S),
+      observation = rep(unlist(object$symbol_names), each = S),
       parameter = unlist(lapply(seq_len(object$n_channels), function(i) {
-        rep(object$coef_names_emission, each = S * (M[i] - 1))
+        rep(object$coef_names_emission, each = S * M[i])
       })),
-      estimate = eta_B
+      estimate = unlist(object$gammas$B)
     )
   }
   
@@ -50,9 +46,9 @@ coef.nhmm <- function(object, probs = c(0.025, 0.975), ...) {
   #   "Argument {.arg probs} must be a {.cls numeric} vector with values
   #     between 0 and 1."
   # )
-  # p_i <- length(eta_pi)
-  # p_s <- length(eta_A)
-  # p_o <- length(eta_B)
+  # p_i <- length(gamma_pi)
+  # p_s <- length(gamma_A)
+  # p_o <- length(gamma_B)
   # sds <- try(
   #   diag(solve(-object$estimation_results$hessian)), 
   #   silent = TRUE
@@ -80,15 +76,15 @@ coef.nhmm <- function(object, probs = c(0.025, 0.975), ...) {
   # }
   # for(i in seq_along(probs)) {
   #   q <- qnorm(probs[i])
-  #   gamma_pi[paste0("q", 100 * probs[i])] <- eta_pi + q * sds[seq_len(p_i)]
-  #   gamma_A[paste0("q", 100 * probs[i])] <- eta_A + q * sds[p_i + seq_len(p_s)]
-  #   gamma_B[paste0("q", 100 * probs[i])] <- eta_B + q * sds[p_i + p_s + seq_len(p_o)]
+  #   gamma_pi[paste0("q", 100 * probs[i])] <- gamma_pi + q * sds[seq_len(p_i)]
+  #   gamma_A[paste0("q", 100 * probs[i])] <- gamma_A + q * sds[p_i + seq_len(p_s)]
+  #   gamma_B[paste0("q", 100 * probs[i])] <- gamma_B + q * sds[p_i + p_s + seq_len(p_o)]
   # }
   
   list(
-    gamma_initial = gamma_pi, 
-    beta_transition = gamma_A, 
-    beta_emission = gamma_B
+    initial = gamma_pi, 
+    transition = gamma_A, 
+    emission = gamma_B
   )
 }
 #' @rdname coef
@@ -98,54 +94,48 @@ coef.mnhmm <- function(object, probs = c(0.025, 0.5, 0.975), ...) {
   S <- object$n_states
   M <- object$n_symbols
   D <- object$n_clusters
-  eta_pi <- unlist(object$coefficients$eta_pi)
   K_i <- length(object$coef_names_initial)
   object$state_names <- unname(object$state_names)
   gamma_pi <- data.frame(
-    state = unlist(lapply(object$state_names, function(x) x[-1])),
-    parameter = rep(object$coef_names_initial, each = (S - 1)),
-    estimate = unlist(eta_pi),
-    cluster = rep(object$cluster_names, each = (S - 1) * K_i)
+    state = unlist(object$state_names),
+    parameter = rep(object$coef_names_initial, each = S),
+    estimate = unlist(object$gammas$pi),
+    cluster = rep(object$cluster_names, each = S * K_i)
   )
-  eta_A <- unlist(object$coefficients$eta_A)
   K_s <- length(object$coef_names_transition)
   gamma_A <- data.frame(
     state_from = unlist(object$state_names),
-    state_to = rep(
-      unlist(lapply(object$state_names, function(x) x[-1])), 
-      each = S
-    ),
-    parameter = rep(object$coef_names_transition, each = S * (S - 1)),
-    estimate = unlist(eta_A),
-    cluster = rep(object$cluster_names, each = (S - 1) * S * K_s)
+    state_to = rep(unlist(object$state_names), each = S),
+    parameter = rep(object$coef_names_transition, each = S * S),
+    estimate = unlist(object$gammas$A),
+    cluster = rep(object$cluster_names, each = S * S * K_s)
   )
   K_o <- length(object$coef_names_emission)
   if (object$n_channels == 1) {
     gamma_B <- data.frame(
       state = unlist(object$state_names),
-      observations = rep(object$symbol_names[-1], each = S),
-      parameter = rep(object$coef_names_emission, each = S * (M - 1)),
-      estimate = unlist(object$coefficients$eta_B),
-      cluster =  rep(object$cluster_names, each = S * (M - 1) * K_o)
+      observations = rep(object$symbol_names, each = S),
+      parameter = rep(object$coef_names_emission, each = S * M),
+      estimate = unlist(object$gammas$B),
+      cluster =  rep(object$cluster_names, each = S * M * K_o)
     )
   } else {
     gamma_B <- data.frame(
       state = unlist(object$state_names),
-      observations = rep(unlist(lapply(object$symbol_names, "[", -1)), each = S),
+      observations = rep(unlist(object$symbol_names), each = S),
       parameter = unlist(lapply(seq_len(object$n_channels), function(i) {
-        rep(object$coef_names_emission, each = S * (M[i] - 1))
+        rep(object$coef_names_emission, each = S * M[i])
       })),
-      estimate = unlist(object$coefficients$eta_B),
+      estimate = unlist(object$gammas$B),
       cluster =  unlist(lapply(seq_len(object$n_channels), function(i) {
-        rep(object$cluster_names, each = S * (M[i] - 1) * K_o)
+        rep(object$cluster_names, each = S * M[i] * K_o)
       }))
     )
   }
-  eta_omega <- c(object$coefficients$eta_omega)
   gamma_omega <- data.frame(
-    cluster = object$cluster_names[-1],
-    parameter = rep(object$coef_names_cluster, each = D - 1),
-    estimate = eta_omega
+    cluster = object$cluster_names,
+    parameter = rep(object$coef_names_cluster, each = D),
+    estimate = c(object$gammas$omega)
   )
   
   # stopifnot_(
@@ -155,10 +145,10 @@ coef.mnhmm <- function(object, probs = c(0.025, 0.5, 0.975), ...) {
   #   "Argument {.arg probs} must be a {.cls numeric} vector with values
   #     between 0 and 1."
   # )
-  # p_i <- length(eta_pi)
-  # p_s <- length(eta_A)
-  # p_o <- length(eta_B)
-  # p_d <- length(eta_omega)
+  # p_i <- length(gamma_pi)
+  # p_s <- length(gamma_A)
+  # p_o <- length(gamma_B)
+  # p_d <- length(gamma_omega)
   # sds <- try(
   #   sqrt(diag(solve(-object$estimation_results$hessian))), 
   #   silent = TRUE
@@ -173,16 +163,16 @@ coef.mnhmm <- function(object, probs = c(0.025, 0.5, 0.975), ...) {
   # 
   # for(i in seq_along(probs)) {
   #   q <- qnorm(probs[i])
-  #   gamma_pi[paste0("q", 100 * probs[i])] <- eta_pi + q * sds[seq_len(p_i)]
-  #   gamma_A[paste0("q", 100 * probs[i])] <- eta_A + q * sds[p_i + seq_len(p_s)]
-  #   gamma_B[paste0("q", 100 * probs[i])] <- eta_B + q * sds[p_i + p_s + seq_len(p_o)]
-  #   gamma_omega[paste0("q", 100 * probs[i])] <- eta_omega + q * sds[p_i + p_s + p_o + seq_len(p_d)]
+  #   gamma_pi[paste0("q", 100 * probs[i])] <- gamma_pi + q * sds[seq_len(p_i)]
+  #   gamma_A[paste0("q", 100 * probs[i])] <- gamma_A + q * sds[p_i + seq_len(p_s)]
+  #   gamma_B[paste0("q", 100 * probs[i])] <- gamma_B + q * sds[p_i + p_s + seq_len(p_o)]
+  #   gamma_omega[paste0("q", 100 * probs[i])] <- gamma_omega + q * sds[p_i + p_s + p_o + seq_len(p_d)]
   # }
   
   list(
-    gamma_initial = gamma_pi, 
-    gamma_transition = gamma_A, 
-    gamma_emission = gamma_B,
-    gamma_cluster = gamma_omega
+    initial = gamma_pi, 
+    transition = gamma_A, 
+    emission = gamma_B,
+    cluster = gamma_omega
   )
 }

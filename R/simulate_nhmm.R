@@ -72,9 +72,13 @@ simulate_nhmm <- function(
   K_i <- nrow(model$X_initial)
   K_s <- nrow(model$X_transition)
   K_o <- nrow(model$X_emission)
-  model$coefficients <- create_initial_values(
-    coefs, n_states, n_symbols, init_sd, K_i, K_s, K_o, 0, 0
-  )
+  model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
+  model$gammas$A <- eta_to_gamma_cube(model$etas$A)
+  if (n_channels == 1L) {
+    model$gammas$B <- eta_to_gamma_cube(model$etas$B)
+  } else {
+    model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
+  }
   probs <- get_probs(model)
   states <- array(NA_character_, c(max(sequence_lengths), n_sequences))
   obs <- array(NA_character_, c(max(sequence_lengths), n_channels, n_sequences))
