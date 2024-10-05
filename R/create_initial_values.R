@@ -185,14 +185,14 @@ create_eta_omega_inits <- function(x, D, K, init_sd = 0) {
 #' @noRd
 create_inits_vector <- function(x, n, K, sd = 0, D = 1) {
   cbind(
-    inv_softmax(x)[-1], 
+    p_to_eta(x), # intercepts
     matrix(rnorm((n - 1) * (K - 1), sd = sd), n - 1, K - 1)
   )
 }
 create_inits_matrix <- function(x, n, m, K, sd = 0) {
   z <- array(0, c(m - 1, K, n))
   for (i in seq_len(n)) {
-    z[, , i] <- t(create_inits_vector(x[i, ], m, K, sd))
+    z[, , i] <- create_inits_vector(x[i, ], m, K, sd)
   }
   z
 }

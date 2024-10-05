@@ -17,15 +17,16 @@ is_list_of_lists <- function(x) {
     }
   }
 }
-#' Regularized Inverse Softmax Function
+#' (Regularized) Inverse of softmax(Q*eta)
 #' 
 #' @noRd
-inv_softmax <- function(x) {
+p_to_eta <-function(x) {
+  Q <- create_Q(length(x))
   x <- pmin(pmax(x, 0.001), 0.999)
   x <- x / sum(x)
-  log(x) - log(x[1])
+  log_x <- log(x)
+  t(Q) %*% (log_x - mean(log_x))
 }
-
 #' Stop Function Execution Unless Condition Is True
 #' 
 #' Function copied from the `dynamite` package.

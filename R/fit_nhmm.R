@@ -77,9 +77,9 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
     Qm <- t(create_Q(M))
     if (need_grad) {
       objectivef <- function(pars) {
-        if (any(!is.finite(exp(pars)))) {
-          return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
-        }
+        # if (any(!is.finite(exp(pars)))) {
+        #   return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
+        # }
         eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
         eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
         eta_B <- create_eta_B_nhmm(
@@ -94,9 +94,9 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
       }
     } else {
       objectivef <- function(pars) {
-        if (any(!is.finite(exp(pars)))) {
-          return(Inf)
-        } 
+        # if (any(!is.finite(exp(pars)))) {
+        #   return(Inf)
+        # } 
         eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
         eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
         eta_B <- create_eta_B_nhmm(
@@ -114,9 +114,9 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
     Qm <- lapply(M, function(m) t(create_Q(m)))
     if (need_grad) {
       objectivef <- function(pars) {
-        if (any(!is.finite(exp(pars)))) {
-          return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
-        }
+        # if (any(!is.finite(exp(pars)))) {
+        #   return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
+        # }
         eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
         eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
         eta_B <- create_eta_multichannel_B_nhmm(
@@ -131,9 +131,9 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
       }
     } else {
       objectivef <- function(pars) {
-        if (any(!is.finite(exp(pars)))) {
-          return(Inf)
-        }
+        # if (any(!is.finite(exp(pars)))) {
+        #   return(Inf)
+        # }
         eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
         eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
         eta_B <- create_eta_multichannel_B_nhmm(

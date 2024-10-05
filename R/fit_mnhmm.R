@@ -91,9 +91,9 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
     Qd <- t(create_Q(D))
     if (need_grad) {
       objectivef <- function(pars) {
-        if (any(!is.finite(exp(pars)))) {
-          return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
-        } 
+        # if (any(!is.finite(exp(pars)))) {
+        #   return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
+        # } 
         eta_pi <- create_eta_pi_mnhmm(pars[seq_len(n_i)], S, K_i, D)
         eta_A <- create_eta_A_mnhmm(pars[n_i + seq_len(n_s)], S, K_s, D)
         eta_B <- create_eta_B_mnhmm(
@@ -112,9 +112,9 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
       }
     } else {
       objectivef <- function(pars) {
-        if (any(!is.finite(exp(pars)))) {
-          return(Inf)
-        } 
+        # if (any(!is.finite(exp(pars)))) {
+        #   return(Inf)
+        # } 
         eta_pi <- create_eta_pi_mnhmm(pars[seq_len(n_i)], S, K_i, D)
         eta_A <- create_eta_A_mnhmm(pars[n_i + seq_len(n_s)], S, K_s, D)
         eta_B <- create_eta_B_mnhmm(
@@ -137,9 +137,9 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
     Qd <- t(create_Q(D))
     if (need_grad) {
       objectivef <- function(pars) {
-        if (any(!is.finite(exp(pars)))) {
-          return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
-        }
+        # if (any(!is.finite(exp(pars)))) {
+        #   return(list(objective = Inf, gradient = rep(-Inf, length(pars))))
+        # }
         eta_pi <- create_eta_pi_mnhmm(pars[seq_len(n_i)], S, K_i, D)
         eta_A <- create_eta_A_mnhmm(
           pars[n_i + seq_len(n_s)], 
@@ -164,9 +164,9 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
       }
     } else {
       objectivef <- function(pars) {
-        if (any(!is.finite(exp(pars)))) {
-          return(Inf)
-        } 
+        # if (any(!is.finite(exp(pars)))) {
+        #   return(Inf)
+        # } 
         eta_pi <- create_eta_pi_mnhmm(pars[seq_len(n_i)], S, K_i, D)
         eta_A <- create_eta_A_mnhmm(
           pars[n_i + seq_len(n_s)], S, K_s, D
