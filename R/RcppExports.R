@@ -25,8 +25,12 @@ backward_mnhmm_multichannel <- function(eta_A, X_s, eta_B, X_o, obs, M) {
     .Call(`_seqHMM_backward_mnhmm_multichannel`, eta_A, X_s, eta_B, X_o, obs, M)
 }
 
-cost_matrix <- function(gamma_pi_est, gamma_pi_ref, gamma_A_est, gamma_A_ref, gamma_B_est, gamma_B_ref) {
-    .Call(`_seqHMM_cost_matrix`, gamma_pi_est, gamma_pi_ref, gamma_A_est, gamma_A_ref, gamma_B_est, gamma_B_ref)
+cost_matrix_singlechannel <- function(gamma_pi_est, gamma_pi_ref, gamma_A_est, gamma_A_ref, gamma_B_est, gamma_B_ref) {
+    .Call(`_seqHMM_cost_matrix_singlechannel`, gamma_pi_est, gamma_pi_ref, gamma_A_est, gamma_A_ref, gamma_B_est, gamma_B_ref)
+}
+
+cost_matrix_multichannel <- function(gamma_pi_est, gamma_pi_ref, gamma_A_est, gamma_A_ref, gamma_B_est, gamma_B_ref) {
+    .Call(`_seqHMM_cost_matrix_multichannel`, gamma_pi_est, gamma_pi_ref, gamma_A_est, gamma_A_ref, gamma_B_est, gamma_B_ref)
 }
 
 create_Q <- function(n) {

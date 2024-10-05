@@ -114,9 +114,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cost_matrix
-arma::mat cost_matrix(const arma::mat& gamma_pi_est, const arma::mat& gamma_pi_ref, const arma::cube& gamma_A_est, const arma::cube& gamma_A_ref, const arma::cube& gamma_B_est, const arma::cube& gamma_B_ref);
-RcppExport SEXP _seqHMM_cost_matrix(SEXP gamma_pi_estSEXP, SEXP gamma_pi_refSEXP, SEXP gamma_A_estSEXP, SEXP gamma_A_refSEXP, SEXP gamma_B_estSEXP, SEXP gamma_B_refSEXP) {
+// cost_matrix_singlechannel
+arma::mat cost_matrix_singlechannel(const arma::mat& gamma_pi_est, const arma::mat& gamma_pi_ref, const arma::cube& gamma_A_est, const arma::cube& gamma_A_ref, const arma::cube& gamma_B_est, const arma::cube& gamma_B_ref);
+RcppExport SEXP _seqHMM_cost_matrix_singlechannel(SEXP gamma_pi_estSEXP, SEXP gamma_pi_refSEXP, SEXP gamma_A_estSEXP, SEXP gamma_A_refSEXP, SEXP gamma_B_estSEXP, SEXP gamma_B_refSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -126,7 +126,23 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::cube& >::type gamma_A_ref(gamma_A_refSEXP);
     Rcpp::traits::input_parameter< const arma::cube& >::type gamma_B_est(gamma_B_estSEXP);
     Rcpp::traits::input_parameter< const arma::cube& >::type gamma_B_ref(gamma_B_refSEXP);
-    rcpp_result_gen = Rcpp::wrap(cost_matrix(gamma_pi_est, gamma_pi_ref, gamma_A_est, gamma_A_ref, gamma_B_est, gamma_B_ref));
+    rcpp_result_gen = Rcpp::wrap(cost_matrix_singlechannel(gamma_pi_est, gamma_pi_ref, gamma_A_est, gamma_A_ref, gamma_B_est, gamma_B_ref));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cost_matrix_multichannel
+arma::mat cost_matrix_multichannel(const arma::mat& gamma_pi_est, const arma::mat& gamma_pi_ref, const arma::cube& gamma_A_est, const arma::cube& gamma_A_ref, const arma::field<arma::cube>& gamma_B_est, arma::field<arma::cube>& gamma_B_ref);
+RcppExport SEXP _seqHMM_cost_matrix_multichannel(SEXP gamma_pi_estSEXP, SEXP gamma_pi_refSEXP, SEXP gamma_A_estSEXP, SEXP gamma_A_refSEXP, SEXP gamma_B_estSEXP, SEXP gamma_B_refSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type gamma_pi_est(gamma_pi_estSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type gamma_pi_ref(gamma_pi_refSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type gamma_A_est(gamma_A_estSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type gamma_A_ref(gamma_A_refSEXP);
+    Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type gamma_B_est(gamma_B_estSEXP);
+    Rcpp::traits::input_parameter< arma::field<arma::cube>& >::type gamma_B_ref(gamma_B_refSEXP);
+    rcpp_result_gen = Rcpp::wrap(cost_matrix_multichannel(gamma_pi_est, gamma_pi_ref, gamma_A_est, gamma_A_ref, gamma_B_est, gamma_B_ref));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -940,7 +956,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_backward_nhmm_multichannel", (DL_FUNC) &_seqHMM_backward_nhmm_multichannel, 6},
     {"_seqHMM_backward_mnhmm_singlechannel", (DL_FUNC) &_seqHMM_backward_mnhmm_singlechannel, 5},
     {"_seqHMM_backward_mnhmm_multichannel", (DL_FUNC) &_seqHMM_backward_mnhmm_multichannel, 6},
-    {"_seqHMM_cost_matrix", (DL_FUNC) &_seqHMM_cost_matrix, 6},
+    {"_seqHMM_cost_matrix_singlechannel", (DL_FUNC) &_seqHMM_cost_matrix_singlechannel, 6},
+    {"_seqHMM_cost_matrix_multichannel", (DL_FUNC) &_seqHMM_cost_matrix_multichannel, 6},
     {"_seqHMM_create_Q", (DL_FUNC) &_seqHMM_create_Q, 1},
     {"_seqHMM_eta_to_gamma_mat", (DL_FUNC) &_seqHMM_eta_to_gamma_mat, 1},
     {"_seqHMM_eta_to_gamma_cube", (DL_FUNC) &_seqHMM_eta_to_gamma_cube, 1},

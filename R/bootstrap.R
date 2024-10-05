@@ -15,35 +15,59 @@ bootstrap_model <- function(model) {
   }
   model
 }
+permute_states <- function(gammas_boot, gammas_mle) {
+  C <- if(is.list(gammas_mle$B)) length(gammas_mle$B) else 1
+  if (C == 1) {
+    m <- cost_matrix_singlechannel(
+      gammas_boot$pi, gammas_mle$pi,
+      gammas_boot$A, gammas_mle$A,
+      gammas_boot$B, gammas_mle$B
+    )
+  } else {
+    m <- cost_matrix_multichannel(
+      gammas_boot$pi, gammas_mle$pi,
+      gammas_boot$A, gammas_mle$A,
+      gammas_boot$B, gammas_mle$B
+    )
+  }
+  perm <- RcppHungarian::HungarianSolver(m)$pairs[, 2]
+  gammas_boot$pi <- gammas_boot$pi[perm, , drop = FALSE]
+  gammas_boot$A <- gammas_boot$A[perm, , perm, drop = FALSE]
+  if (C == 1) {
+    gammas_boot$B <- gammas_boot$B[, , perm, drop = FALSE]
+  } else {
+    for (c in seq_len(C)) {
+      gammas_boot$B[[c]] <- gammas_boot$B[[c]][, , perm, drop = FALSE]
+    }
+  }
+  gammas_boot
+}
 #' @export
 bootstrap_coefs.nhmm <- function(model, B = 1000, 
                                  method = c("nonparametric", "parametric"),
-                                 penalty) {
+                                 penalty, verbose = FALSE, ...) {
   method <- match.arg(method)
   stopifnot_(
     checkmate::test_int(x = B, lower = 0L), 
     "Argument {.arg B} must be a single positive integer."
   )
-  init <- model$coefficients
+  init <- model$etas
   if (missing(penalty)) {
     penalty <- model$estimation_results$penalty
+  } else {
+    penalty <- 4
   }
-  mle_coefficients <- model$coefficients
+  gammas_mle <- model$gammas
+  
+  coefs <- matrix(NA, length(unlist(gammas_mle)), B)
   if (method == "nonparametric") {
-    coefs <- matrix(NA, length(unlist(init)), B)
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
-      fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, FALSE)
-      m <- cost_matrix(fit$coefficients$eta_pi, mle_coefficients$eta_pi,
-                       fit$coefficients$eta_A, mle_coefficients$eta_A,
-                       fit$coefficients$eta_B, mle_coefficients$eta_B,
-                       fit$X_initial, fit$X_transition, fit$X_emission)
-      perm <- RcppHungarian:HungarianSolver(m)$pairs[, 2]
-      fit$coefficients$gamma_pi[perm]
-      coefs[, i] <- unlist(fit$coefficients)
+      fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, ...)
+      coefs[, i] <- unlist(permute_states(fit$gammas, gammas_mle))
+      if(verbose) print(paste0("Bootstrap replication ", i, " complete."))
     }
   } else {
-    coefs <- matrix(NA, length(unlist(init)), B)
     N <- model$n_sequences
     T_ <- model$sequence_lengths
     M <- model$n_symbols
@@ -58,15 +82,17 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
       mod <- simulate_nhmm(
         N, T_, M, S, formula_pi, formula_A, formula_B,
         data = d, time, id, init)$model
-      fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, FALSE)
-      coefs[, i] <- unlist(fit$coefficients)
+      fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, ...)
+      coefs[, i] <- unlist(permute_states(fit$gammas, gammas_mle))
+      print(paste0("Bootstrap replication ", i, " complete."))
     }
   }
   return(coefs)
 }
 #' @export
 bootstrap_coefs.mnhmm <- function(model, B = 1000, 
-                                  method = c("nonparametric", "parametric")) {
+                                  method = c("nonparametric", "parametric"),
+                                  verbose = FALSE) {
   method <- match.arg(method)
   stopifnot_(
     checkmate::test_int(x = B, lower = 0L), 
@@ -82,6 +108,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
       mod <- bootstrap_model(model)
       fit <- fit_mnhmm(mod, init, 0, 0, 1, penalty, FALSE)
       coefs[, i] <- unlist(fit$coefficients)
+      print(paste0("Bootstrap replication ", i, " complete."))
     }
   } else {
     coefs <- matrix(NA, length(unlist(init)), B)
@@ -103,6 +130,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
         data = d, time, id, init)$model
       fit <- fit_mnhmm(mod, init, 0, 0, 1, penalty, FALSE)
       coefs[, i] <- unlist(fit$coefficients)
+      print(paste0("Bootstrap replication ", i, " complete."))
     }
   }
   return(coefs)
