@@ -202,8 +202,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
     if (is.null(dots$print_level)) dots$print_level <- 0
     if (is.null(dots$xtol_abs)) dots$xtol_abs <- 1e-2
     if (is.null(dots$ftol_abs)) dots$ftol_abs <- 1e-2
-    if (is.null(dots$xtol_rel)) dots$xtol_rel <- 1e-2
-    if (is.null(dots$xtol_rel)) dots$ftol_rel <- 1e-4
+    if (is.null(dots$xtol_rel)) dots$xtol_rel <- 1e-4
+    if (is.null(dots$xtol_rel)) dots$ftol_rel <- 1e-8
     if (is.null(dots$check_derivatives)) dots$check_derivatives <- FALSE
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
       init <- unlist(create_initial_values(
