@@ -19,9 +19,7 @@ fill_time <- function(data, id_var, time_var) {
   n_group <- length(ids)
   time_duplicated <- logical(n_group)
   time_missing <- logical(n_group)
-  group_bounds <- c(0L, unlist(lapply(ids, function(g) {
-    max(which(data[[id_var]] == g))
-  })))
+  group_bounds <- c(0L, cumsum(rle(data[[id_var]])$lengths))
   for (i in seq_len(n_group)) {
     idx_group <- seq(group_bounds[i] + 1L, group_bounds[i + 1L])
     sub <- data[idx_group, ]
