@@ -58,6 +58,18 @@ Rcpp::List log_objective_nhmm_singlechannel(
     log_alpha = univariate_forward_nhmm(log_Pi, log_A, log_py);
     log_beta = univariate_backward_nhmm(log_A, log_py);
     double ll = logSumExp(log_alpha.col(T - 1));
+    if (!std::isfinite(ll)) {
+      double small = -arma::datum::inf; // -std::max(std::min(1e10, N * 1e5), 1e3);
+      grad_pi.fill(small);
+      grad_A.fill(small);
+      grad_B.fill(small);
+      return Rcpp::List::create(
+        Rcpp::Named("loglik") = -arma::datum::inf, 
+        Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
+        Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
+        Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B)
+      );
+    }
     loglik(i) = ll;
     // gradient wrt gamma_pi
     grad_pi += gradient_wrt_pi(Qs, log_py, log_beta, ll, Pi, X_i, i);
@@ -145,6 +157,20 @@ Rcpp::List log_objective_nhmm_multichannel(
     log_alpha = univariate_forward_nhmm(log_Pi, log_A, log_py);
     log_beta = univariate_backward_nhmm(log_A, log_py);
     double ll = logSumExp(log_alpha.col(T - 1));
+    if (!std::isfinite(ll)) {
+      double small = -arma::datum::inf; // -std::max(std::min(1e10, N * 1e5), 1e3);
+      grad_pi.fill(small);
+      grad_A.fill(small);
+      for (unsigned int c = 0; c < C; c++) {
+        grad_B(c).fill(small);
+      }
+      return Rcpp::List::create(
+        Rcpp::Named("loglik") = -arma::datum::inf, 
+        Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
+        Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
+        Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B)
+      );
+    }
     loglik(i) = ll;
     // gradient wrt gamma_pi
     grad_pi += gradient_wrt_pi(Qs, log_py, log_beta, ll, Pi, X_i, i);
@@ -255,6 +281,22 @@ Rcpp::List log_objective_mnhmm_singlechannel(
       loglik_i(d) = logSumExp(log_alpha.slice(d).col(T - 1));
     }
     loglik(i) = logSumExp(log_omega + loglik_i);
+    if (!std::isfinite(loglik(i))) {
+      double small = -arma::datum::inf; // -std::max(std::min(1e10, N * 1e5), 1e3);
+      grad_omega.fill(small);
+      for (unsigned int d = 0; d < D; d++) {
+        grad_pi(d).fill(small);
+        grad_A(d).fill(small);
+        grad_B(d).fill(small);
+      }
+      return Rcpp::List::create(
+        Rcpp::Named("loglik") = -arma::datum::inf,
+        Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
+        Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
+        Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B),
+        Rcpp::Named("gradient_omega") = Rcpp::wrap(grad_omega)
+      );
+    }
     // gradient wrt gamma_pi
     // d loglik / d pi
     for (unsigned int d = 0; d < D; d++) {
@@ -378,6 +420,24 @@ Rcpp::List log_objective_mnhmm_multichannel(
       loglik_i(d) = logSumExp(log_alpha.slice(d).col(T - 1));
     }
     loglik(i) = logSumExp(log_omega + loglik_i);
+    if (!std::isfinite(loglik(i))) {
+      double small = -arma::datum::inf; // -std::max(std::min(1e10, N * 1e5), 1e3);
+      grad_omega.fill(small);
+      for (unsigned int d = 0; d < D; d++) {
+        grad_pi(d).fill(small);
+        grad_A(d).fill(small);
+        for (unsigned int c = 0; c < C; c++) {
+        grad_B(c, d).fill(small);
+        }
+      }
+      return Rcpp::List::create(
+        Rcpp::Named("loglik") = -arma::datum::inf,
+        Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
+        Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
+        Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B),
+        Rcpp::Named("gradient_omega") = Rcpp::wrap(grad_omega)
+      );
+    }
     // gradient wrt gamma_pi
     // d loglik / d pi
     for (unsigned int d = 0; d < D; d++) {

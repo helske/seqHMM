@@ -191,8 +191,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
       }
     }
   }
-  user_def_penalty <- penalty
-  if (penalty == 0) penalty <- 4
+  start_time <- proc.time()
   if (restarts > 0L) {
     if (threads > 1L) {
       future::plan(future::multisession, workers = threads)
@@ -203,8 +202,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
     if (is.null(dots$print_level)) dots$print_level <- 0
     if (is.null(dots$xtol_abs)) dots$xtol_abs <- 1e-2
     if (is.null(dots$ftol_abs)) dots$ftol_abs <- 1e-2
-    if (is.null(dots$xtol_rel)) dots$xtol_rel <- 1e-4
-    if (is.null(dots$xtol_rel)) dots$ftol_rel <- 1e-8
+    if (is.null(dots$xtol_rel)) dots$xtol_rel <- 1e-2
+    if (is.null(dots$xtol_rel)) dots$ftol_rel <- 1e-4
     if (is.null(dots$check_derivatives)) dots$check_derivatives <- FALSE
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
       init <- unlist(create_initial_values(
@@ -235,11 +234,11 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
   if (is.null(dots$xtol_rel)) dots$xtol_rel <- 1e-4
   if (is.null(dots$xtol_rel)) dots$ftol_rel <- 1e-8
   if (is.null(dots$check_derivatives)) dots$check_derivatives <- FALSE
-  penalty <- user_def_penalty
   out <- nloptr(
     x0 = init, eval_f = objectivef,
     opts = dots
   )
+  end_time <- proc.time()
   if (out$status < 0) {
     warning_(paste("Optimization terminated due to error:", out$message))
   }
@@ -285,7 +284,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
     iterations = out$iterations,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
-    penalty = penalty
+    penalty = penalty,
+    time = end_time - start_time
   )
   model
 }

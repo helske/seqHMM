@@ -13,6 +13,7 @@ bootstrap_model <- function(model) {
   if (!is.null(model$X_cluster)) {
     model$X_cluster <- model$X_cluster[, idx, drop = FALSE]
   }
+  model$sequence_lengths <- model$sequence_lengths[idx]
   model
 }
 permute_states <- function(gammas_boot, gammas_mle) {
@@ -54,8 +55,6 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
   init <- model$etas
   if (missing(penalty)) {
     penalty <- model$estimation_results$penalty
-  } else {
-    penalty <- 4
   }
   gammas_mle <- model$gammas
   
