@@ -39,6 +39,8 @@ Rcpp::List log_objective_nhmm_singlechannel(
   arma::mat gamma_pi = eta_to_gamma(eta_pi, Qs.t());
   arma::cube gamma_A = eta_to_gamma(eta_A, Qs.t());
   arma::cube gamma_B = eta_to_gamma(eta_B, Qm.t());
+  arma::mat tmpmat(S, S);
+  arma::vec tmpvec(M);
   for (unsigned int i = 0; i < N; i++) {
     if (iv_pi || i == 0) {
       Pi = get_pi(gamma_pi, X_i.col(i));
@@ -72,21 +74,21 @@ Rcpp::List log_objective_nhmm_singlechannel(
     }
     loglik(i) = ll;
     // gradient wrt gamma_pi
-    grad_pi += gradient_wrt_pi(Qs, log_py, log_beta, ll, Pi, X_i, i);
+    gradient_wrt_pi(grad_pi, tmpmat, Qs, log_py, log_beta, ll, Pi, X_i, i);
     // gradient wrt gamma_A
     for (unsigned int t = 0; t < (Ti(i) - 1); t++) {
       for (unsigned int s = 0; s < S; s++) {
-        grad_A.slice(s) += gradient_wrt_A(Qs, log_py, log_alpha, log_beta, ll, A, X_s, i, t, s);
+        gradient_wrt_A(grad_A.slice(s), tmpmat, Qs, log_py, log_alpha, log_beta, ll, A, X_s, i, t, s);
       }
     }
     // gradient wrt gamma_B
     for (unsigned int s = 0; s < S; s++) {
       if (obs(0, i) < M) {
-        grad_B.slice(s) += gradient_wrt_B_t0(Qm, obs, log_Pi, log_beta, ll, B, X_o, i, s);
+        gradient_wrt_B_t0(grad_B.slice(s), tmpvec, Qm, obs, log_Pi, log_beta, ll, B, X_o, i, s);
       }
       for (unsigned int t = 0; t < (Ti(i) - 1); t++) {
         if (obs(t + 1, i) < M) {
-          grad_B.slice(s) += gradient_wrt_B(Qm, obs, log_alpha, log_beta, ll, log_A, B, X_o, i, s, t);
+          gradient_wrt_B(grad_B.slice(s), tmpvec, Qm, obs, log_alpha, log_beta, ll, log_A, B, X_o, i, s, t);
         }
       }
     }
@@ -133,6 +135,11 @@ Rcpp::List log_objective_nhmm_multichannel(
   arma::mat gamma_pi = eta_to_gamma(eta_pi, Qs.t());
   arma::cube gamma_A = eta_to_gamma(eta_A, Qs.t());
   arma::field<arma::cube> gamma_B = eta_to_gamma(eta_B);
+  arma::mat tmpmat(S, S);
+  arma::field<arma::vec> tmpvec(C);
+  for (unsigned int c = 0; c < C; c++) {
+    tmpvec(c) = arma::vec(M(c));
+  }
   for (unsigned int i = 0; i < N; i++) {
     log_py.zeros();
     if (iv_pi || i == 0) {
@@ -173,28 +180,29 @@ Rcpp::List log_objective_nhmm_multichannel(
     }
     loglik(i) = ll;
     // gradient wrt gamma_pi
-    grad_pi += gradient_wrt_pi(Qs, log_py, log_beta, ll, Pi, X_i, i);
+    gradient_wrt_pi(grad_pi, tmpmat, Qs, log_py, log_beta, ll, Pi, X_i, i);
     // gradient wrt gamma_A
     for (unsigned int t = 0; t < (Ti(i) - 1); t++) {
       for (unsigned int s = 0; s < S; s++) {
-        grad_A.slice(s) += gradient_wrt_A(Qs, log_py, log_alpha, log_beta, ll, A, X_s, i, t, s);
+        gradient_wrt_A(
+          grad_A.slice(s), tmpmat, Qs, log_py, log_alpha, log_beta, ll, A, 
+          X_s, i, t, s
+        );
       }
     }
     for (unsigned int c = 0; c < C; c++) {
       for (unsigned int s = 0; s < S; s++) {
         if (obs(c, 0, i) < M(c)) {
-          grad_B(c).slice(s) += gradient_wrt_B_t0(
-            Qm(c), 
-            obs, log_Pi, log_beta, ll,
+          gradient_wrt_B_t0(
+            grad_B(c).slice(s), tmpvec(c), Qm(c), obs, log_Pi, log_beta, ll, 
             log_B, B, X_o, M, i, s, c
           );
         }
         for (unsigned int t = 0; t < (Ti(i) - 1); t++) {
           if (obs(c, t + 1, i) < M(c)) {
-            grad_B(c).slice(s) += gradient_wrt_B(
-              Qm(c), 
-              obs, log_alpha, log_beta, ll, log_A,
-              log_B, B, X_o, M, i, s, t, c
+            gradient_wrt_B(
+              grad_B(c).slice(s), tmpvec(c), Qm(c), obs, log_alpha, log_beta, 
+              ll, log_A, log_B, B, X_o, M, i, s, t, c
             );
           }
         }
@@ -253,6 +261,9 @@ Rcpp::List log_objective_mnhmm_singlechannel(
   arma::field<arma::mat> gamma_pi = eta_to_gamma(eta_pi, Qs.t());
   arma::field<arma::cube> gamma_A = eta_to_gamma(eta_A, Qs.t());
   arma::field<arma::cube> gamma_B = eta_to_gamma(eta_B, Qm.t());
+  arma::mat tmpmat(S, S);
+  arma::mat tmpmatD(D, D);
+  arma::vec tmpvec(M);
   for (unsigned int i = 0; i < N; i++) {
     log_py.zeros();
     if (iv_omega || i == 0) {
@@ -301,34 +312,37 @@ Rcpp::List log_objective_mnhmm_singlechannel(
     // d loglik / d pi
     for (unsigned int d = 0; d < D; d++) {
       // gradient wrt gamma_pi
-      grad_pi(d) += gradient_wrt_pi(
-        Qs, log_omega, log_py, log_beta, loglik, Pi, X_i, i, d
+      gradient_wrt_pi(
+        grad_pi(d), tmpmat, Qs, log_omega, log_py, log_beta, loglik, Pi, X_i, 
+        i, d
       );
       // gradient wrt gamma_A
       for (unsigned int t = 0; t < (Ti(i) - 1); t++) {
         for (unsigned int s = 0; s < S; s++) {
-          grad_A(d).slice(s) += gradient_wrt_A(
-            Qs, log_omega, log_py, log_alpha, log_beta, loglik, A, X_s, i, t, s, d
+          gradient_wrt_A(
+            grad_A(d).slice(s), tmpmat, Qs, log_omega, log_py, log_alpha, 
+            log_beta, loglik, A, X_s, i, t, s, d
           );
         }
       }
       for (unsigned int s = 0; s < S; s++) {
         if (obs(0, i) < M) {
-          grad_B(d).slice(s) += gradient_wrt_B_t0(
-            Qm, log_omega, obs, log_Pi, log_beta, loglik, B, X_o, i, s, d
+          gradient_wrt_B_t0(
+            grad_B(d).slice(s), tmpvec, Qm, log_omega, obs, log_Pi, log_beta, 
+            loglik, B, X_o, i, s, d
           );
         }
         for (unsigned int t = 0; t < (T - 1); t++) {
           if (obs(t + 1, i) < M) {
-            grad_B(d).slice(s) += gradient_wrt_B(
-              Qm, log_omega, obs, log_alpha, log_beta, loglik, log_A, B, X_o, 
-              i, s, t, d
+            gradient_wrt_B(
+              grad_B(d).slice(s), tmpvec, Qm, log_omega, obs, log_alpha, 
+              log_beta, loglik, log_A, B, X_o, i, s, t, d
             );
           }
         }
       }
     }
-    grad_omega += gradient_wrt_omega(Qd, omega, loglik_i, loglik, X_d, i);
+    gradient_wrt_omega(grad_omega, tmpmatD, Qd, omega, loglik_i, loglik, X_d, i);
   }
   return Rcpp::List::create(
     Rcpp::Named("loglik") = sum(loglik),
@@ -385,6 +399,12 @@ Rcpp::List log_objective_mnhmm_multichannel(
   arma::field<arma::mat> gamma_pi = eta_to_gamma(eta_pi, Qs.t());
   arma::field<arma::cube> gamma_A = eta_to_gamma(eta_A, Qs.t());
   arma::field<arma::cube> gamma_B = eta_to_gamma(eta_B);
+  arma::mat tmpmat(S, S);
+  arma::mat tmpmatD(D, D);
+  arma::field<arma::vec> tmpvec(C);
+  for (unsigned int c = 0; c < C; c++) {
+    tmpvec(c) = arma::vec(M(c));
+  }
   for (unsigned int i = 0; i < N; i++) {
     log_py.zeros();
     if (iv_omega || i == 0) {
@@ -427,7 +447,7 @@ Rcpp::List log_objective_mnhmm_multichannel(
         grad_pi(d).fill(small);
         grad_A(d).fill(small);
         for (unsigned int c = 0; c < C; c++) {
-        grad_B(c, d).fill(small);
+          grad_B(c, d).fill(small);
         }
       }
       return Rcpp::List::create(
@@ -441,15 +461,16 @@ Rcpp::List log_objective_mnhmm_multichannel(
     // gradient wrt gamma_pi
     // d loglik / d pi
     for (unsigned int d = 0; d < D; d++) {
-      grad_pi(d) += gradient_wrt_pi(
-        Qs, log_omega, log_py, log_beta, loglik, Pi, X_i, i, d
+      gradient_wrt_pi(
+        grad_pi(d), tmpmat, Qs, log_omega, log_py, log_beta, loglik, Pi, X_i, 
+        i, d
       );
       // gradient wrt gamma_A
       for (unsigned int t = 0; t < (Ti(i) - 1); t++) {
         for (unsigned int s = 0; s < S; s++) {
-          grad_A(d).slice(s) += gradient_wrt_A(
-            Qs, log_omega, log_py, log_alpha, log_beta, loglik, A, X_s, i, t, 
-            s, d
+          gradient_wrt_A(
+            grad_A(d).slice(s), tmpmat, Qs, log_omega, log_py, log_alpha, 
+            log_beta, loglik, A, X_s, i, t, s, d
           );
         }
       }
@@ -457,23 +478,24 @@ Rcpp::List log_objective_mnhmm_multichannel(
       for (unsigned int c = 0; c < C; c++) {
         for (unsigned int s = 0; s < S; s++) {
           if (obs(c, 0, i) < M(c)) {
-            grad_B(c, d).slice(s) += gradient_wrt_B_t0(
-              Qm(c), log_omega, obs, log_Pi, log_beta, loglik, log_B, B, X_o, 
-              M, i, s, c, d
+            gradient_wrt_B_t0(
+              grad_B(c, d).slice(s), tmpvec(c), Qm(c), log_omega, obs, log_Pi, 
+              log_beta, loglik, log_B, B, X_o, M, i, s, c, d
             );
           }
           for (unsigned int t = 0; t < (T - 1); t++) {
             if (obs(c, t + 1, i) < M(c)) {
-              grad_B(c, d).slice(s) += gradient_wrt_B(
-                Qm(c), log_omega, obs,log_alpha, log_beta, loglik, log_A, 
-                log_B, B, X_o, M, i, s, t, c, d
+              gradient_wrt_B(
+                grad_B(c, d).slice(s), tmpvec(c), Qm(c), log_omega, obs, 
+                log_alpha, log_beta, loglik, log_A, log_B, B, X_o, M, i, s, t, 
+                c, d
               );
             }
           }
         }
       }
     }
-    grad_omega += gradient_wrt_omega(Qd, omega, loglik_i, loglik, X_d, i);
+    gradient_wrt_omega(grad_omega, tmpmatD, Qd, omega, loglik_i, loglik, X_d, i);
   }
   return Rcpp::List::create(
     Rcpp::Named("loglik") = sum(loglik),

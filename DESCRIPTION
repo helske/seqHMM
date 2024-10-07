@@ -29,7 +29,7 @@ Description: Designed for fitting hidden (latent) Markov models and mixture
 LazyData: true
 LinkingTo: 
     Rcpp (>= 0.12.0),
-    RcppArmadillo,
+    RcppArmadillo
 Depends:
     R (>= 4.1.0)
 Imports:
