@@ -43,6 +43,18 @@ permute_states <- function(gammas_boot, gammas_mle) {
   }
   gammas_boot
 }
+#' Bootstrap Sampling of NHMM Coefficients
+#' 
+#' @param model An `nhmm` or `mnhmm` object.
+#' @param B number of bootstrap samples.
+#' @param method Either `"nonparametric"` or `"parametric"`, to define whether 
+#' nonparametric or parametric bootstrap should be used. The former samples 
+#' sequences with replacement, whereas the latter simulates new datasets based 
+#' on the model.
+#' @param A penalty term for model estimation. By default, same penalty is used 
+#' as was in model estimation by `estimate_nhmm` or `estimate_mnhmm`.
+#' @param verbose Should the progress bar be displayed? Default is `FALSE`.
+#' @rdname bootstrap
 #' @export
 bootstrap_coefs.nhmm <- function(model, B = 1000, 
                                  method = c("nonparametric", "parametric"),
@@ -59,12 +71,13 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
   gammas_mle <- model$gammas
   
   coefs <- matrix(NA, length(unlist(gammas_mle)), B)
+  pb <- utils::txtProgressBar(min = 0, max = 100, style = 3)
   if (method == "nonparametric") {
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
       fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, ...)
       coefs[, i] <- unlist(permute_states(fit$gammas, gammas_mle))
-      if(verbose) print(paste0("Bootstrap replication ", i, " complete."))
+      if (verbose) setTxtProgressBar(pb, i)
     }
   } else {
     N <- model$n_sequences
@@ -83,11 +96,14 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
         data = d, time, id, init)$model
       fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, ...)
       coefs[, i] <- unlist(permute_states(fit$gammas, gammas_mle))
-      print(paste0("Bootstrap replication ", i, " complete."))
+      if (verbose) setTxtProgressBar(pb, i)
     }
   }
+  close(pb)
   return(coefs)
 }
+#' @inheritParams bootstrap_coefs.nhmm
+#' @rdname bootstrap
 #' @export
 bootstrap_coefs.mnhmm <- function(model, B = 1000, 
                                   method = c("nonparametric", "parametric"),
@@ -101,13 +117,14 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
   if (missing(penalty)) {
     penalty <- model$estimation_results$penalty
   }
+  pb <- utils::txtProgressBar(min = 0, max = 100, style = 3)
   if (method == "nonparametric") {
     coefs <- matrix(NA, length(unlist(init)), B)
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
       fit <- fit_mnhmm(mod, init, 0, 0, 1, penalty, FALSE)
       coefs[, i] <- unlist(fit$coefficients)
-      print(paste0("Bootstrap replication ", i, " complete."))
+      if (verbose) setTxtProgressBar(pb, i)
     }
   } else {
     coefs <- matrix(NA, length(unlist(init)), B)
@@ -129,8 +146,9 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
         data = d, time, id, init)$model
       fit <- fit_mnhmm(mod, init, 0, 0, 1, penalty, FALSE)
       coefs[, i] <- unlist(fit$coefficients)
-      print(paste0("Bootstrap replication ", i, " complete."))
+      if (verbose) setTxtProgressBar(pb, i)
     }
   }
+  close(pb)
   return(coefs)
 }

@@ -51,6 +51,7 @@ Imports:
     numDeriv,
     patchwork,
     Rcpp (>= 0.12.0),
+    RcppHungarian,
     rlang,
     stats,
     TraMineR (>= 2.2-7),

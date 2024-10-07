@@ -820,6 +820,76 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// simulate_nhmm_singlechannel
+Rcpp::List simulate_nhmm_singlechannel(const arma::mat& eta_pi, const arma::mat& X_i, const arma::cube& eta_A, const arma::cube& X_s, const arma::cube& eta_B, const arma::cube& X_o);
+RcppExport SEXP _seqHMM_simulate_nhmm_singlechannel(SEXP eta_piSEXP, SEXP X_iSEXP, SEXP eta_ASEXP, SEXP X_sSEXP, SEXP eta_BSEXP, SEXP X_oSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type eta_pi(eta_piSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_i(X_iSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type eta_A(eta_ASEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_s(X_sSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type eta_B(eta_BSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_o(X_oSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_nhmm_singlechannel(eta_pi, X_i, eta_A, X_s, eta_B, X_o));
+    return rcpp_result_gen;
+END_RCPP
+}
+// simulate_nhmm_multichannel
+Rcpp::List simulate_nhmm_multichannel(const arma::mat& eta_pi, const arma::mat& X_i, const arma::cube& eta_A, const arma::cube& X_s, const arma::field<arma::cube>& eta_B, const arma::cube& X_o, const arma::uvec& M);
+RcppExport SEXP _seqHMM_simulate_nhmm_multichannel(SEXP eta_piSEXP, SEXP X_iSEXP, SEXP eta_ASEXP, SEXP X_sSEXP, SEXP eta_BSEXP, SEXP X_oSEXP, SEXP MSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type eta_pi(eta_piSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_i(X_iSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type eta_A(eta_ASEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_s(X_sSEXP);
+    Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type eta_B(eta_BSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_o(X_oSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type M(MSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_nhmm_multichannel(eta_pi, X_i, eta_A, X_s, eta_B, X_o, M));
+    return rcpp_result_gen;
+END_RCPP
+}
+// simulate_mnhmm_singlechannel
+Rcpp::List simulate_mnhmm_singlechannel(const arma::field<arma::mat>& eta_pi, const arma::mat& X_i, const arma::field<arma::cube>& eta_A, const arma::cube& X_s, const arma::field<arma::cube>& eta_B, const arma::cube& X_o, const arma::mat& eta_omega, const arma::mat& X_d);
+RcppExport SEXP _seqHMM_simulate_mnhmm_singlechannel(SEXP eta_piSEXP, SEXP X_iSEXP, SEXP eta_ASEXP, SEXP X_sSEXP, SEXP eta_BSEXP, SEXP X_oSEXP, SEXP eta_omegaSEXP, SEXP X_dSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::field<arma::mat>& >::type eta_pi(eta_piSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_i(X_iSEXP);
+    Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type eta_A(eta_ASEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_s(X_sSEXP);
+    Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type eta_B(eta_BSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_o(X_oSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type eta_omega(eta_omegaSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_d(X_dSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_mnhmm_singlechannel(eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d));
+    return rcpp_result_gen;
+END_RCPP
+}
+// simulate_mnhmm_multichannel
+Rcpp::List simulate_mnhmm_multichannel(const arma::field<arma::mat>& eta_pi, const arma::mat& X_i, const arma::field<arma::cube>& eta_A, const arma::cube& X_s, const arma::field<arma::cube>& eta_B, const arma::cube& X_o, const arma::mat& eta_omega, const arma::mat& X_d, const arma::uvec& M);
+RcppExport SEXP _seqHMM_simulate_mnhmm_multichannel(SEXP eta_piSEXP, SEXP X_iSEXP, SEXP eta_ASEXP, SEXP X_sSEXP, SEXP eta_BSEXP, SEXP X_oSEXP, SEXP eta_omegaSEXP, SEXP X_dSEXP, SEXP MSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::field<arma::mat>& >::type eta_pi(eta_piSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_i(X_iSEXP);
+    Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type eta_A(eta_ASEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_s(X_sSEXP);
+    Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type eta_B(eta_BSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_o(X_oSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type eta_omega(eta_omegaSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_d(X_dSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type M(MSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_mnhmm_multichannel(eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, M));
+    return rcpp_result_gen;
+END_RCPP
+}
 // softmax
 arma::vec softmax(const arma::vec& x);
 RcppExport SEXP _seqHMM_softmax(SEXP xSEXP) {
@@ -999,6 +1069,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_log_objectivex", (DL_FUNC) &_seqHMM_log_objectivex, 12},
     {"_seqHMM_objective", (DL_FUNC) &_seqHMM_objective, 9},
     {"_seqHMM_objectivex", (DL_FUNC) &_seqHMM_objectivex, 12},
+    {"_seqHMM_simulate_nhmm_singlechannel", (DL_FUNC) &_seqHMM_simulate_nhmm_singlechannel, 6},
+    {"_seqHMM_simulate_nhmm_multichannel", (DL_FUNC) &_seqHMM_simulate_nhmm_multichannel, 7},
+    {"_seqHMM_simulate_mnhmm_singlechannel", (DL_FUNC) &_seqHMM_simulate_mnhmm_singlechannel, 8},
+    {"_seqHMM_simulate_mnhmm_multichannel", (DL_FUNC) &_seqHMM_simulate_mnhmm_multichannel, 9},
     {"_seqHMM_softmax", (DL_FUNC) &_seqHMM_softmax, 1},
     {"_seqHMM_varcoef", (DL_FUNC) &_seqHMM_varcoef, 2},
     {"_seqHMM_viterbi", (DL_FUNC) &_seqHMM_viterbi, 4},

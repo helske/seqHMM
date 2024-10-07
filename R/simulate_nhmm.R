@@ -69,71 +69,57 @@ simulate_nhmm <- function(
     if (is.null(coefs$transition_probs)) coefs$transition_probs <- NULL
     if (is.null(coefs$emission_probs)) coefs$emission_probs <- NULL
   }
-  K_i <- nrow(model$X_initial)
-  K_s <- nrow(model$X_transition)
-  K_o <- nrow(model$X_emission)
-  model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
-  model$gammas$A <- eta_to_gamma_cube(model$etas$A)
+  model$etas <- create_initial_values(
+    coefs, model$n_states, model$n_symbols, init_sd, nrow(model$X_initial), 
+    nrow(model$X_transition), nrow(model$X_emission)
+  )
   if (n_channels == 1L) {
-    model$gammas$B <- eta_to_gamma_cube(model$etas$B)
+    out <- simulate_nhmm_singlechannel(
+      model$etas$pi, model$X_initial, 
+      model$etas$A, model$X_transition, 
+      model$etas$B, model$X_emission
+    )
   } else {
-    model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
+    out <- simulate_nhmm_multichannel(
+      model$etas$pi, model$X_initial, 
+      model$etas$A, model$X_transition, 
+      model$etas$B, model$X_emission, 
+      model$n_symbols
+    )
   }
-  probs <- get_probs(model)
-  states <- array(NA_character_, c(max(sequence_lengths), n_sequences))
-  obs <- array(NA_character_, c(max(sequence_lengths), n_channels, n_sequences))
-  ids <- unique(data[[id]])
-  times <- sort(unique(data[[time]]))
+  T_ <- model$length_of_sequences
+  for (i in seq_len(model$n_sequences)) {
+    Ti <- sequence_lengths[i]
+    if (Ti < T_) {
+      out$states[(Ti + 1):T_, i] <- NA
+      out$observations[(Ti + 1):T_, i] <- NA
+    }
+  }
   state_names <- model$state_names
-  for (i in seq_len(n_sequences)) {
-    p_init <- probs$initial[
-      probs$initial[[time]] == time[1] & probs$initial[[id]] == ids[i],
-      "probability"
-    ]
-    states[1, i] <- sample(state_names, 1, prob = p_init)
-    for (k in seq_len(n_channels)) {
-      p_emission <- probs$emission[
-        probs$emission[[time]] == time[1] & probs$emission[[id]] == ids[i] &
-          probs$emission$state == states[1, i] & probs$emission$channel == k,
-        "probability"
-      ]
-      obs[1, k, i] <- sample(symbol_names[[k]], 1, prob = p_emission)
-    }
-  }
-  
-  for (i in seq_len(n_sequences)) {
-    for (t in 2:sequence_lengths[i]) {
-      p_transition <- probs$transition[
-        probs$transition[[time]] == times[t] & probs$transition[[id]] == ids[i] &
-          probs$transition$state_from == states[t - 1, i], "probability"
-      ]
-      states[t, i] <- sample(state_names, 1, prob = p_transition)
-      for (k in seq_len(n_channels)) {
-        p_emission <- probs$emission[
-          probs$emission[[time]] == time[t] & probs$emission[[id]] == ids[i] &
-            probs$emission$state == states[t, i] & probs$emission$channel == k,
-          "probability"
-        ]
-        obs[t, k, i] <- sample(symbol_names[[k]], 1, prob = p_emission)
-      }
-    }
-  }
+  symbol_names <- model$symbol_names
+  out$states[] <- state_names[c(out$states) + 1]
   states <- suppressWarnings(suppressMessages(
     seqdef(
       matrix(
-        t(states),
+        t(out$states),
         n_sequences, max(sequence_lengths)
       ), 
       alphabet = state_names
     )
   ))
-  obs <- lapply(seq_len(n_channels), function(i) {
-    suppressWarnings(suppressMessages(
-      seqdef(t(obs[, i, ]), alphabet = symbol_names[[i]])
+  if (n_channels == 1) {
+    out$observations[] <- symbol_names[c(out$observations) + 1]
+    model$observations <- suppressWarnings(suppressMessages(
+      seqdef(t(out$observations), alphabet = symbol_names)
     ))
-  })
-  names(obs) <- model$channel_names
-  if (n_channels == 1) obs <- obs[[1]]
-  model$observations <- obs
+  } else {
+    model$observations <- lapply(seq_len(n_channels), function(i) {
+      out$observations[, , i] <- symbol_names[[i]][c(out$observations[, , i]) + 1]
+      suppressWarnings(suppressMessages(
+        seqdef(t(out$observations[, , i]), alphabet = symbol_names[[i]])
+      ))
+    })
+    names(model$observations) <- model$channel_names
+  }
   list(model = model, states = states)
 }

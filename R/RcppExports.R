@@ -197,6 +197,22 @@ objectivex <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols,
     .Call(`_seqHMM_objectivex`, transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads)
 }
 
+simulate_nhmm_singlechannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o) {
+    .Call(`_seqHMM_simulate_nhmm_singlechannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o)
+}
+
+simulate_nhmm_multichannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o, M) {
+    .Call(`_seqHMM_simulate_nhmm_multichannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o, M)
+}
+
+simulate_mnhmm_singlechannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d) {
+    .Call(`_seqHMM_simulate_mnhmm_singlechannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d)
+}
+
+simulate_mnhmm_multichannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, M) {
+    .Call(`_seqHMM_simulate_mnhmm_multichannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, M)
+}
+
 softmax <- function(x) {
     .Call(`_seqHMM_softmax`, x)
 }
