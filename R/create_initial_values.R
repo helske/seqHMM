@@ -1,52 +1,52 @@
 
-create_eta_pi_nhmm <- function(x, S, K) {
-  matrix(x, S - 1, K)
+create_eta_pi_nhmm <- function(x, S, K, sd = 0) {
+  matrix(rnorm((S - 1) * K, x, sd), S - 1, K)
 }
-create_eta_A_nhmm <- function(x, S, K) {
-  array(x, c(S - 1, K, S))
+create_eta_A_nhmm <- function(x, S, K, sd = 0) {
+  array(rnorm((S - 1) * K * S, x, sd), c(S - 1, K, S))
 }
-create_eta_B_nhmm <- function(x, S, M, K) {
-  array(x, c(M - 1, K, S))
+create_eta_B_nhmm <- function(x, S, M, K, sd = 0) {
+  array(rnorm((M - 1) * K * S, x, sd), c(M - 1, K, S))
   
 }
-create_eta_multichannel_B_nhmm <- function(x, S, M, K) {
+create_eta_multichannel_B_nhmm <- function(x, S, M, K, sd = 0) {
   n <- c(0, cumsum((M - 1) * K * S))
   lapply(seq_len(length(M)), function(i) {
-    create_eta_B_nhmm(x[(n[i] + 1):(n[i + 1])], S, M[i], K)
+    create_eta_B_nhmm(x[(n[i] + 1):(n[i + 1])], S, M[i], K, sd)
   })
 }
-create_eta_pi_mnhmm <- function(x, S, K, D) {
+create_eta_pi_mnhmm <- function(x, S, K, D, sd = 0) {
   n <- (S - 1) * K
   lapply(seq_len(D), function(i) {
-    create_eta_pi_nhmm(x[(i - 1) * n + 1:n], S, K)
+    create_eta_pi_nhmm(x[(i - 1) * n + 1:n], S, K, sd)
   })
 }
-create_eta_A_mnhmm <- function(x, S, K, D) {
+create_eta_A_mnhmm <- function(x, S, K, D, sd = 0) {
   n <- (S - 1) * K * S
   lapply(seq_len(D), function(i) {
-    create_eta_A_nhmm(x[(i - 1) * n + 1:n], S, K)
+    create_eta_A_nhmm(x[(i - 1) * n + 1:n], S, K, sd)
   })
 }
-create_eta_B_mnhmm <- function(x, S, M, K, D) {
+create_eta_B_mnhmm <- function(x, S, M, K, D, sd = 0) {
   n <- (M - 1) * K * S
   lapply(seq_len(D), function(i) {
-    create_eta_B_nhmm(x[(i - 1) * n + 1:n], S, M, K)
+    create_eta_B_nhmm(x[(i - 1) * n + 1:n], S, M, K, sd)
   })
 }
-create_eta_multichannel_B_mnhmm <- function(x, S, M, K, D) {
+create_eta_multichannel_B_mnhmm <- function(x, S, M, K, D, sd = 0) {
   n <- sum((M - 1) * K * S)
   lapply(seq_len(D), function(i) {
-    create_eta_multichannel_B_nhmm(x[(i - 1) * n + 1:n], S, M, K)
+    create_eta_multichannel_B_nhmm(x[(i - 1) * n + 1:n], S, M, K, sd)
   })
 }
-create_eta_omega_mnhmm <- function(x, D, K) {
-  matrix(x, D - 1, K)
+create_eta_omega_mnhmm <- function(x, D, K, sd = 0) {
+  matrix(rnorm((D - 1) * K, x, sd), D - 1, K)
 }
 
 create_eta_pi_inits <- function(x, S, K, init_sd = 0, D = 1) {
   if (D > 1) {
     if (is.null(x)) {
-      create_eta_pi_mnhmm(rnorm((S - 1) * K * D, sd = init_sd), S, K, D)
+      create_eta_pi_mnhmm(numeric((S - 1) * K * D), S, K, D, init_sd)
     } else {
       stopifnot_(
         length(unlist(x)) == (S - 1) * K * D,
@@ -55,11 +55,11 @@ create_eta_pi_inits <- function(x, S, K, init_sd = 0, D = 1) {
           "(S - 1) * K * D = {(S - 1) * K * D}."
         )
       )
-      create_eta_pi_mnhmm(x, S, K, D)
+      create_eta_pi_mnhmm(unlist(x), S, K, D, init_sd)
     }
   } else {
     if (is.null(x)) {
-      create_eta_pi_nhmm(rnorm((S - 1) * K, sd = init_sd), S, K)
+      create_eta_pi_nhmm(numeric((S - 1) * K), S, K, init_sd)
     } else {
       stopifnot_(
         length(x) == (S - 1) * K,
@@ -68,14 +68,14 @@ create_eta_pi_inits <- function(x, S, K, init_sd = 0, D = 1) {
           "(S - 1) * K = {(S - 1) * K}."
         )
       )
-      create_eta_pi_nhmm(x, S, K)
+      create_eta_pi_nhmm(x, S, K, init_sd)
     }
   }
 }
 create_eta_A_inits <- function(x, S, K, init_sd = 0, D = 1) {
   if (D > 1) {
     if (is.null(x)) {
-      create_eta_A_mnhmm(rnorm((S - 1) * K * S * D, sd = init_sd), S, K, D)
+      create_eta_A_mnhmm(numeric((S - 1) * K * S * D), S, K, D, init_sd)
     } else {
       stopifnot_(
         length(unlist(x)) == (S - 1) * K * S * D,
@@ -84,11 +84,11 @@ create_eta_A_inits <- function(x, S, K, init_sd = 0, D = 1) {
           "(S - 1) * K * S * D = {(S - 1) * K * S * D}."
         )
       )
-      create_eta_A_mnhmm(x, S, K, D)
+      create_eta_A_mnhmm(unlist(x), S, K, D, init_sd)
     }
   } else {
     if (is.null(x)) {
-      create_eta_A_nhmm(rnorm((S - 1) * K * S, sd = init_sd), S, K)
+      create_eta_A_nhmm(numeric((S - 1) * K * S), S, K, init_sd)
     } else {
       stopifnot_(
         length(x) == (S - 1) * K * S,
@@ -97,7 +97,7 @@ create_eta_A_inits <- function(x, S, K, init_sd = 0, D = 1) {
           "(S - 1) * K * S = {(S - 1) * K * S}."
         )
       )
-      create_eta_A_nhmm(x, S, K)
+      create_eta_A_nhmm(x, S, K, init_sd)
     }
   }
 }
@@ -106,7 +106,8 @@ create_eta_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
     if (D > 1) {
       if (is.null(x)) {
         create_eta_multichannel_B_mnhmm(
-          rnorm(sum((M - 1) * K * S) * D, sd = init_sd), S, M, K, D
+          numeric(sum((M - 1) * K * S) * D), 
+          S, M, K, D, init_sd
         )
       } else {
         stopifnot_(
@@ -116,13 +117,13 @@ create_eta_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
             "sum((M - 1) * K * S) * D = {sum((M - 1) * K * S) * D}."
           )
         )
-        create_eta_multichannel_B_mnhmm(x, S, M, K, D)
+        create_eta_multichannel_B_mnhmm(unlist(x), S, M, K, D, init_sd)
       }
     } else {
       if (is.null(x)) {
         create_eta_multichannel_B_nhmm(
-          rnorm(sum((M - 1) * K * S), sd = init_sd), S, M, K
-        )
+          numeric(sum((M - 1) * K * S)), S, M, K, init_sd
+          )
       } else {
         stopifnot_(
           length(x) == sum((M - 1) * K * S),
@@ -131,15 +132,13 @@ create_eta_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
             "sum((M - 1) * K * S) = {sum((M - 1) * K * S)}."
           )
         )
-        create_eta_multichannel_B_nhmm(x, S, M, K)
+        create_eta_multichannel_B_nhmm(x, S, M, K, init_sd)
       }
     }
   } else {
     if (D > 1) {
       if (is.null(x)) {
-        create_eta_B_mnhmm(
-          rnorm((M - 1) * K * S * D, sd = init_sd), S, M, K, D
-        )
+        create_eta_B_mnhmm(numeric((M - 1) * K * S * D), S, M, K, D, init_sd)
       } else {
         stopifnot_(
           length(unlist(x)) == (M - 1) * K * S * D,
@@ -148,11 +147,11 @@ create_eta_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
             "(M - 1) * K * S * D = {(M - 1) * K * S * D}."
           )
         )
-        create_eta_B_mnhmm(x, S, M, K, D)
+        create_eta_B_mnhmm(unlist(x), S, M, K, D, init_sd)
       }
     } else {
       if (is.null(x)) {
-        create_eta_B_nhmm(rnorm((M - 1) * K * S, sd = init_sd), S, M, K)
+        create_eta_B_nhmm(numeric((M - 1) * K * S), S, M, K, init_sd)
       } else {
         stopifnot_(
           length(x) == (M - 1) * K * S,
@@ -161,7 +160,7 @@ create_eta_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
             "(M - 1) * K * S = {(M - 1) * K * S}."
           )
         )
-        create_eta_B_nhmm(x, S, M, K)
+        create_eta_B_nhmm(x, S, M, K, init_sd)
       }
     }
   }
@@ -169,7 +168,7 @@ create_eta_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
 create_eta_omega_inits <- function(x, D, K, init_sd = 0) {
   
   if (is.null(x)) {
-    create_eta_omega_mnhmm(rnorm((D - 1) * K, sd = init_sd), D, K)
+    create_eta_omega_mnhmm(numeric((D - 1) * K), D, K, init_sd)
   } else {
     stopifnot_(
       length(x) == (D - 1) * K,
@@ -178,7 +177,7 @@ create_eta_omega_inits <- function(x, D, K, init_sd = 0) {
         "(D - 1) * K = {(D - 1) * K}."
       )
     )
-    create_eta_omega_mnhmm(x, D, K)
+    create_eta_omega_mnhmm(x, D, K, init_sd)
   }
 }
 #' Convert Initial Values for Inverse Softmax Scale
