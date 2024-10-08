@@ -2,12 +2,13 @@
 #' Models
 #' 
 #' @param object An object of class `nhmm` or `mnhmm`.
-#' @param probs Vector defining the quantiles of interest. Default is 
-#' `c(0.025, 0.5, 0.975)`.
+#' @param probs Vector defining the quantiles of interest. When missing (default), 
+#' no quantiles are computed. The quantiles are based on bootstrap samples of 
+#' coefficients, stored in `object$boot`.
 #' @param ... Ignored.
 #' @rdname coef
 #' @export
-coef.nhmm <- function(object, probs = c(0.025, 0.975), ...) {
+coef.nhmm <- function(object, probs, ...) {
   S <- object$n_states
   M <- object$n_symbols
   gamma_pi <- data.frame(
@@ -38,49 +39,31 @@ coef.nhmm <- function(object, probs = c(0.025, 0.975), ...) {
       estimate = unlist(object$gammas$B)
     )
   }
-  
-  # stopifnot_(
-  #   checkmate::test_numeric(
-  #     x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
-  #   ),
-  #   "Argument {.arg probs} must be a {.cls numeric} vector with values
-  #     between 0 and 1."
-  # )
-  # p_i <- length(gamma_pi)
-  # p_s <- length(gamma_A)
-  # p_o <- length(gamma_B)
-  # sds <- try(
-  #   diag(solve(-object$estimation_results$hessian)), 
-  #   silent = TRUE
-  # )
-  # if (inherits(sds, "try-error")) {
-  #   warning_(
-  #     paste0(
-  #       "Standard errors could not be computed due to singular Hessian. ",
-  #       "Confidence intervals will not be provided."
-  #     )
-  #   )
-  #   sds <- rep(NA, p_i + p_s + p_o)
-  # } else {
-  #   if (any(sds < 0)) {
-  #     warning_(
-  #       paste0(
-  #         "Standard errors could not be computed due to negative variances. ",
-  #         "Confidence intervals will not be provided."
-  #       )
-  #     )
-  #     sds <- rep(NA, p_i + p_s + p_o)
-  #   } else {
-  #     sds <- sqrt(sds)
-  #   }
-  # }
-  # for(i in seq_along(probs)) {
-  #   q <- qnorm(probs[i])
-  #   gamma_pi[paste0("q", 100 * probs[i])] <- gamma_pi + q * sds[seq_len(p_i)]
-  #   gamma_A[paste0("q", 100 * probs[i])] <- gamma_A + q * sds[p_i + seq_len(p_s)]
-  #   gamma_B[paste0("q", 100 * probs[i])] <- gamma_B + q * sds[p_i + p_s + seq_len(p_o)]
-  # }
-  
+  if (!missing(probs)) {
+    stopifnot_(
+      checkmate::test_numeric(
+        x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
+      ),
+      "Argument {.arg probs} must be a {.cls numeric} vector with values
+      between 0 and 1."
+    )
+    p_i <- length(gamma_pi)
+    p_s <- length(gamma_A)
+    p_o <- length(gamma_B)
+    stopifnot_(
+      !is.null(object$boot),
+      paste0(
+        "Model does not contain bootstrap samples of coefficients. ",
+        "Run {.fn bootstrap_coefs} first."
+      )
+    )
+    qs <- seqHMM:::fast_quantiles(object$boot, probs)
+    for(i in seq_along(probs)) {
+      gamma_pi[paste0("q", 100 * probs[i])] <- qs[seq_len(p_i), i]
+      gamma_A[paste0("q", 100 * probs[i])] <- qs[p_i + seq_len(p_s), i]
+      gamma_B[paste0("q", 100 * probs[i])] <- qs[p_i + p_s + seq_len(p_o), i]
+    }
+  }
   list(
     initial = gamma_pi, 
     transition = gamma_A, 
@@ -89,7 +72,7 @@ coef.nhmm <- function(object, probs = c(0.025, 0.975), ...) {
 }
 #' @rdname coef
 #' @export
-coef.mnhmm <- function(object, probs = c(0.025, 0.5, 0.975), ...) {
+coef.mnhmm <- function(object, probs, ...) {
   
   S <- object$n_states
   M <- object$n_symbols
@@ -137,38 +120,35 @@ coef.mnhmm <- function(object, probs = c(0.025, 0.5, 0.975), ...) {
     parameter = rep(object$coef_names_cluster, each = D),
     estimate = c(object$gammas$omega)
   )
-  
-  # stopifnot_(
-  #   checkmate::test_numeric(
-  #     x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
-  #   ),
-  #   "Argument {.arg probs} must be a {.cls numeric} vector with values
-  #     between 0 and 1."
-  # )
-  # p_i <- length(gamma_pi)
-  # p_s <- length(gamma_A)
-  # p_o <- length(gamma_B)
-  # p_d <- length(gamma_omega)
-  # sds <- try(
-  #   sqrt(diag(solve(-object$estimation_results$hessian))), 
-  #   silent = TRUE
-  # )
-  # if (inherits(sds, "try-error")) {
-  #   warning_(
-  #     "Standard errors could not be computed due to singular Hessian. 
-  #     Confidence intervals will not be provided."
-  #   )
-  #   sds <- rep(NA, p_i + p_s + p_o + p_d)
-  # }
-  # 
-  # for(i in seq_along(probs)) {
-  #   q <- qnorm(probs[i])
-  #   gamma_pi[paste0("q", 100 * probs[i])] <- gamma_pi + q * sds[seq_len(p_i)]
-  #   gamma_A[paste0("q", 100 * probs[i])] <- gamma_A + q * sds[p_i + seq_len(p_s)]
-  #   gamma_B[paste0("q", 100 * probs[i])] <- gamma_B + q * sds[p_i + p_s + seq_len(p_o)]
-  #   gamma_omega[paste0("q", 100 * probs[i])] <- gamma_omega + q * sds[p_i + p_s + p_o + seq_len(p_d)]
-  # }
-  
+  if(!missing(probs)) {
+    stopifnot_(
+      checkmate::test_numeric(
+        x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
+      ),
+      "Argument {.arg probs} must be a {.cls numeric} vector with values
+      between 0 and 1."
+    )
+    p_i <- length(gamma_pi)
+    p_s <- length(gamma_A)
+    p_o <- length(gamma_B)
+    p_d <- length(gamma_omega)
+    
+    stopifnot_(
+      !is.null(object$boot),
+      paste0(
+        "Model does not contain bootstrap samples of coefficients. ",
+        "Run {.fn bootstrap_coefs} first."
+      )
+    )
+    qs <- seqHMM:::fast_quantiles(object$boot, probs)
+    for(i in seq_along(probs)) {
+      gamma_pi[paste0("q", 100 * probs[i])] <- qs[seq_len(p_i), i]
+      gamma_A[paste0("q", 100 * probs[i])] <- qs[p_i + seq_len(p_s), i]
+      gamma_B[paste0("q", 100 * probs[i])] <- qs[p_i + p_s + seq_len(p_o), i]
+      gamma_omega[paste0("q", 100 * probs[i])] <- 
+        qs[p_i + p_s + p_o + seq_len(p_d), i]
+    }
+  }
   list(
     initial = gamma_pi, 
     transition = gamma_A, 

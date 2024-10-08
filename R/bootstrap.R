@@ -52,8 +52,12 @@ permute_states <- function(gammas_boot, gammas_mle) {
 #' sequences with replacement, whereas the latter simulates new datasets based 
 #' on the model.
 #' @param penalty penalty term for model estimation. By default, same penalty is used 
-#' as was in model estimation by `estimate_nhmm` or `estimate_mnhmm`.
+#' as was in model estimation by [estimate_nhmm()] or [estimate_mnhmm()].
 #' @param verbose Should the progress bar be displayed? Default is `FALSE`.
+#' @param ... Additional arguments to [nloptr()].
+#' @return The original model with additional element `model$boot`, which 
+#' contains A n * B matrix where n is the number of coefficients. The order of 
+#' coefficients match `unlist(model$gammas)`. 
 #' @rdname bootstrap
 #' @export
 bootstrap_coefs.nhmm <- function(model, B = 1000, 
@@ -100,7 +104,8 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
     }
   }
   close(pb)
-  return(coefs)
+  model$boot <- coefs
+  model
 }
 #' @inheritParams bootstrap_coefs.nhmm
 #' @rdname bootstrap
@@ -150,5 +155,6 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
     }
   }
   close(pb)
-  return(coefs)
+  model$boot <- coefs
+  model
 }
