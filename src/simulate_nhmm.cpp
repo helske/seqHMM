@@ -12,7 +12,7 @@ Rcpp::List simulate_nhmm_singlechannel(
   unsigned int T = X_s.n_cols;
   unsigned int S = eta_A.n_slices;
   unsigned int M = eta_B.n_rows + 1;
-  arma::umat y(T, N);
+  arma::ucube y(1, T, N);
   arma::umat z(T, N);
   arma::mat gamma_pi = eta_to_gamma(eta_pi);
   arma::cube gamma_A = eta_to_gamma(eta_A);
@@ -27,10 +27,10 @@ Rcpp::List simulate_nhmm_singlechannel(
     A = get_A(gamma_A, X_s.slice(i));
     B = get_B(gamma_B, X_o.slice(i), false);
     z(0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, Pi));
-    y(0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(0).row(z(0, i)).t()));
+    y(0, 0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(0).row(z(0, i)).t()));
     for (unsigned int t = 1; t < T; t++) {
       z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A.slice(t).row(z(t - 1, i)).t()));
-      y(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(t).row(z(t, i)).t()));
+      y(0, t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(t).row(z(t, i)).t()));
     }
   }
   return Rcpp::List::create(
@@ -96,7 +96,7 @@ Rcpp::List simulate_mnhmm_singlechannel(
   unsigned int S = eta_A.n_slices;
   unsigned int M = eta_B.n_rows + 1;
   unsigned int D = eta_omega.n_rows + 1;
-  arma::umat y(T, N);
+  arma::ucube y(1, T, N);
   arma::umat z(T, N);
   
   arma::mat gamma_omega = eta_to_gamma(eta_omega);
@@ -117,10 +117,10 @@ Rcpp::List simulate_mnhmm_singlechannel(
     A = get_A(gamma_A(cluster), X_s.slice(i));
     B = get_B(gamma_B(cluster), X_o.slice(i), false);
     z(0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, Pi));
-    y(0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(0).row(z(0, i)).t()));
+    y(0, 0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(0).row(z(0, i)).t()));
     for (unsigned int t = 1; t < T; t++) {
       z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A.slice(t).row(z(t - 1, i)).t()));
-      y(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(t).row(z(t, i)).t()));
+      y(0, t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(t).row(z(t, i)).t()));
     }
     z.col(i) += cluster * S;
   }

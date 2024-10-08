@@ -82,6 +82,7 @@ simulate_mnhmm <- function(
     nrow(model$X_transition), nrow(model$X_emission), nrow(model$X_cluster), 
     n_clusters
   )
+  T_ <- model$length_of_sequences
   if (n_channels == 1L) {
     out <- simulate_mnhmm_singlechannel(
       model$etas$pi, model$X_initial, 
@@ -98,12 +99,12 @@ simulate_mnhmm <- function(
       model$n_symbols
     )
   }
-  T_ <- model$length_of_sequences
+
   for (i in seq_len(model$n_sequences)) {
     Ti <- sequence_lengths[i]
     if (Ti < T_) {
       out$states[(Ti + 1):T_, i] <- NA
-      out$observations[(Ti + 1):T_, i] <- NA
+      out$observations[, (Ti + 1):T_, i] <- NA
     }
   }
   state_names <- paste0(
@@ -122,15 +123,16 @@ simulate_mnhmm <- function(
     )
   ))
   if (n_channels == 1) {
+    dim(out$observations) <- dim(out$observations)[2:3]
     out$observations[] <- symbol_names[c(out$observations) + 1]
     model$observations <- suppressWarnings(suppressMessages(
       seqdef(t(out$observations), alphabet = symbol_names)
     ))
   } else {
     model$observations <- lapply(seq_len(n_channels), function(i) {
-      out$observations[, , i] <- symbol_names[[i]][c(out$observations[, , i]) + 1]
+      out$observations[i, , ] <- symbol_names[[i]][c(out$observations[i, , ]) + 1]
       suppressWarnings(suppressMessages(
-        seqdef(t(out$observations[, , i]), alphabet = symbol_names[[i]])
+        seqdef(t(out$observations[i, , ]), alphabet = symbol_names[[i]])
       ))
     })
     names(model$observations) <- model$channel_names
