@@ -51,7 +51,7 @@ permute_states <- function(gammas_boot, gammas_mle) {
 #' nonparametric or parametric bootstrap should be used. The former samples 
 #' sequences with replacement, whereas the latter simulates new datasets based 
 #' on the model.
-#' @param A penalty term for model estimation. By default, same penalty is used 
+#' @param penalty penalty term for model estimation. By default, same penalty is used 
 #' as was in model estimation by `estimate_nhmm` or `estimate_mnhmm`.
 #' @param verbose Should the progress bar be displayed? Default is `FALSE`.
 #' @rdname bootstrap
@@ -77,7 +77,7 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
       mod <- bootstrap_model(model)
       fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, ...)
       coefs[, i] <- unlist(permute_states(fit$gammas, gammas_mle))
-      if (verbose) setTxtProgressBar(pb, i)
+      if (verbose) utils::setTxtProgressBar(pb, i)
     }
   } else {
     N <- model$n_sequences
@@ -96,7 +96,7 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
         data = d, time, id, init)$model
       fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, ...)
       coefs[, i] <- unlist(permute_states(fit$gammas, gammas_mle))
-      if (verbose) setTxtProgressBar(pb, i)
+      if (verbose) utils::setTxtProgressBar(pb, i)
     }
   }
   close(pb)
@@ -124,7 +124,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
       mod <- bootstrap_model(model)
       fit <- fit_mnhmm(mod, init, 0, 0, 1, penalty, FALSE)
       coefs[, i] <- unlist(fit$coefficients)
-      if (verbose) setTxtProgressBar(pb, i)
+      if (verbose) utils::setTxtProgressBar(pb, i)
     }
   } else {
     coefs <- matrix(NA, length(unlist(init)), B)
@@ -146,7 +146,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
         data = d, time, id, init)$model
       fit <- fit_mnhmm(mod, init, 0, 0, 1, penalty, FALSE)
       coefs[, i] <- unlist(fit$coefficients)
-      if (verbose) setTxtProgressBar(pb, i)
+      if (verbose) utils::setTxtProgressBar(pb, i)
     }
   }
   close(pb)

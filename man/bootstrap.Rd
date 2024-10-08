@@ -31,10 +31,10 @@ nonparametric or parametric bootstrap should be used. The former samples
 sequences with replacement, whereas the latter simulates new datasets based
 on the model.}
 
-\item{verbose}{Should the progress bar be displayed? Default is \code{FALSE}.}
-
-\item{A}{penalty term for model estimation. By default, same penalty is used
+\item{penalty}{penalty term for model estimation. By default, same penalty is used
 as was in model estimation by \code{estimate_nhmm} or \code{estimate_mnhmm}.}
+
+\item{verbose}{Should the progress bar be displayed? Default is \code{FALSE}.}
 }
 \description{
 Bootstrap Sampling of NHMM Coefficients
