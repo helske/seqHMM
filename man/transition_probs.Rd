@@ -10,7 +10,7 @@
 \usage{
 get_transition_probs(model, ...)
 
-\method{get_transition_probs}{nhmm}(model, ...)
+\method{get_transition_probs}{nhmm}(model, probs, ...)
 
 \method{get_transition_probs}{mnhmm}(model, ...)
 
@@ -22,6 +22,10 @@ get_transition_probs(model, ...)
 \item{model}{A hidden Markov model.}
 
 \item{...}{Ignored.}
+
+\item{probs}{Vector defining the quantiles of interest. Default is
+\code{c(0.025, 0.5, 0.975)}. The quantiles are based on bootstrap samples of
+coefficients, stored in \code{object$boot}.}
 }
 \description{
 Extract the State Transition Probabilities of Hidden Markov Model

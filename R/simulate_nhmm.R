@@ -73,6 +73,13 @@ simulate_nhmm <- function(
     coefs, model$n_states, model$n_symbols, init_sd, nrow(model$X_initial), 
     nrow(model$X_transition), nrow(model$X_emission)
   )
+  model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
+  model$gammas$A <- eta_to_gamma_cube(model$etas$A)
+  if (n_channels == 1) {
+    model$gammas$B <- eta_to_gamma_cube(model$etas$B)
+  } else {
+    model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
+  }
   if (n_channels == 1L) {
     out <- simulate_nhmm_singlechannel(
       model$etas$pi, model$X_initial, 

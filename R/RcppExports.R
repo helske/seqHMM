@@ -105,6 +105,10 @@ get_pi_all <- function(gamma, X) {
     .Call(`_seqHMM_get_pi_all`, gamma, X)
 }
 
+get_pi_boot <- function(gamma, X) {
+    .Call(`_seqHMM_get_pi_boot`, gamma, X)
+}
+
 get_A <- function(gamma, X, tv) {
     .Call(`_seqHMM_get_A`, gamma, X, tv)
 }

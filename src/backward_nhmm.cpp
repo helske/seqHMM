@@ -2,27 +2,6 @@
 #include "backward_nhmm.h"
 #include "get_parameters.h"
 #include "eta_to_gamma.h"
-#include "logsumexp.h"
-
-arma::mat univariate_backward_nhmm(
-    const arma::cube& log_transition, 
-    const arma::mat& log_py) {
-  
-  unsigned int S = log_py.n_rows;
-  unsigned int T = log_py.n_cols;
-  
-  arma::mat log_beta(S, T);
-  log_beta.col(T - 1).zeros();
-  for (int t = (T - 2); t >= 0; t--) {
-    arma::vec tmpbeta(S);
-    for (unsigned int i = 0; i < S; i++) {
-      log_beta(i, t) = logSumExp(
-        log_beta.col(t + 1) + log_transition.slice(t).row(i).t() + log_py.col(t + 1)
-      );
-    }
-  }
-  return log_beta;
-}
 
 // [[Rcpp::export]]
 arma::cube backward_nhmm_singlechannel(
@@ -48,7 +27,7 @@ arma::cube backward_nhmm_singlechannel(
         log_py(s, t) = log_B(s, obs(t, i), t);
       }
     }
-    log_beta.slice(i) = univariate_backward_nhmm(log_A, log_py);
+    univariate_backward_nhmm(log_beta.slice(i), log_A, log_py);
   }
   return log_beta;
 }
@@ -78,7 +57,7 @@ arma::cube backward_nhmm_multichannel(
         log_py.col(t) += log_B(c).slice(t).col(obs(c, t, i));
       }
     }
-    log_beta.slice(i) = univariate_backward_nhmm(log_A, log_py);
+    univariate_backward_nhmm(log_beta.slice(i), log_A, log_py);
   }
   return log_beta;
 }
@@ -107,7 +86,8 @@ arma::cube backward_mnhmm_singlechannel(
       for (unsigned int t = 0; t < T; t++) {
         log_py.col(t) = log_B.slice(t).col(obs(t, i));
       }
-      log_beta.slice(i).rows(d * S, (d + 1) * S - 1) = univariate_backward_nhmm(log_A, log_py);
+      arma::subview<double> submat = log_beta.slice(i).rows(d * S, (d + 1) * S - 1);
+      univariate_backward_nhmm(submat, log_A, log_py);
     }
   }
   return log_beta;
@@ -141,7 +121,8 @@ arma::cube backward_mnhmm_multichannel(
           log_py.col(t) += log_B(c).slice(t).col(obs(c, t, i));
         }
       }
-      log_beta.slice(i).rows(d * S, (d + 1) * S - 1) = univariate_backward_nhmm(log_A, log_py);
+      arma::subview<double> submat = log_beta.slice(i).rows(d * S, (d + 1) * S - 1);
+      univariate_backward_nhmm(submat, log_A, log_py);
     }
   }
   return log_beta;

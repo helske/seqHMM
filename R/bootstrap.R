@@ -60,6 +60,11 @@ permute_states <- function(gammas_boot, gammas_mle) {
 #' coefficients match `unlist(model$gammas)`. 
 #' @rdname bootstrap
 #' @export
+bootstrap_coefs <- function(model, ...) {
+  UseMethod("bootstrap_coefs", model)
+}
+#' @rdname bootstrap
+#' @export
 bootstrap_coefs.nhmm <- function(model, B = 1000, 
                                  method = c("nonparametric", "parametric"),
                                  penalty, verbose = FALSE, ...) {
@@ -73,15 +78,14 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
     penalty <- model$estimation_results$penalty
   }
   gammas_mle <- model$gammas
-  
   coefs <- matrix(NA, length(unlist(gammas_mle)), B)
-  pb <- utils::txtProgressBar(min = 0, max = 100, style = 3)
+  if (verbose) pb <- utils::txtProgressBar(min = 0, max = 100, style = 3)
   if (method == "nonparametric") {
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
       fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, ...)
       coefs[, i] <- unlist(permute_states(fit$gammas, gammas_mle))
-      if (verbose) utils::setTxtProgressBar(pb, i)
+      if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
     }
   } else {
     N <- model$n_sequences
@@ -100,44 +104,52 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
         data = d, time, id, init)$model
       fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, ...)
       coefs[, i] <- unlist(permute_states(fit$gammas, gammas_mle))
-      if (verbose) utils::setTxtProgressBar(pb, i)
+      if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
     }
   }
-  close(pb)
+  if (verbose) close(pb)
   model$boot <- coefs
   model
 }
-#' @inheritParams bootstrap_coefs.nhmm
 #' @rdname bootstrap
 #' @export
 bootstrap_coefs.mnhmm <- function(model, B = 1000, 
                                   method = c("nonparametric", "parametric"),
-                                  verbose = FALSE) {
+                                  penalty, verbose = FALSE, ...) {
   method <- match.arg(method)
   stopifnot_(
     checkmate::test_int(x = B, lower = 0L), 
     "Argument {.arg B} must be a single positive integer."
   )
-  init <- model$coefficients
+  init <- model$etas
   if (missing(penalty)) {
     penalty <- model$estimation_results$penalty
   }
-  pb <- utils::txtProgressBar(min = 0, max = 100, style = 3)
+  gammas_mle <- model$gammas
+  coefs <- matrix(NA, length(unlist(gammas_mle)), B)
+  D <- model$n_clusters
+  if (verbose) pb <- utils::txtProgressBar(min = 0, max = 100, style = 3)
   if (method == "nonparametric") {
-    coefs <- matrix(NA, length(unlist(init)), B)
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
-      fit <- fit_mnhmm(mod, init, 0, 0, 1, penalty, FALSE)
-      coefs[, i] <- unlist(fit$coefficients)
-      if (verbose) utils::setTxtProgressBar(pb, i)
+      fit <- fit_mnhmm(mod, init, 0, 0, 1, penalty, ...)
+      for (j in seq_len(D)) {
+        out <- permute_states(
+          lapply(fit$gammas[-4], "[[", j), 
+          lapply(gammas_mle[-4], "[[", j)
+        )
+        fit$gammas$pi[[j]] <- out$pi
+        fit$gammas$A[[j]] <- out$A
+        fit$gammas$B[[j]] <- out$B
+      }
+      coefs[, i] <- unlist(fit$gammas)
+      if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
     }
   } else {
-    coefs <- matrix(NA, length(unlist(init)), B)
     N <- model$n_sequences
     T_ <- model$sequence_lengths
     M <- model$n_symbols
     S <- model$n_states
-    D <- model$n_clusters
     formula_pi <- model$initial_formula
     formula_A <- model$transition_formula
     formula_B <- model$emission_formula
@@ -149,12 +161,21 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
       mod <- simulate_mnhmm(
         N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
         data = d, time, id, init)$model
-      fit <- fit_mnhmm(mod, init, 0, 0, 1, penalty, FALSE)
-      coefs[, i] <- unlist(fit$coefficients)
-      if (verbose) utils::setTxtProgressBar(pb, i)
+      fit <- fit_mnhmm(mod, init, 0, 0, 1, penalty, ...)
+      for (j in seq_len(D)) {
+        out <- permute_states(
+          lapply(fit$gammas[-4], "[[", j), 
+          lapply(gammas_mle[-4], "[[", j)
+        )
+        fit$gammas$pi[[j]] <- out$pi
+        fit$gammas$A[[j]] <- out$A
+        fit$gammas$B[[j]] <- out$B
+      }
+      coefs[, i] <- unlist(fit$gammas)
+      if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
     }
   }
-  close(pb)
+  if (verbose) close(pb)
   model$boot <- coefs
   model
 }

@@ -57,8 +57,8 @@ Rcpp::List log_objective_nhmm_singlechannel(
     for (unsigned int t = 0; t < Ti(i); t++) {
       log_py.col(t) = log_B.slice(t).col(obs(t, i));
     }
-    log_alpha = univariate_forward_nhmm(log_Pi, log_A, log_py);
-    log_beta = univariate_backward_nhmm(log_A, log_py);
+    univariate_forward_nhmm(log_alpha, log_Pi, log_A, log_py);
+    univariate_backward_nhmm(log_beta, log_A, log_py);
     double ll = logSumExp(log_alpha.col(T - 1));
     if (!std::isfinite(ll)) {
       double small = -arma::datum::inf; // -std::max(std::min(1e10, N * 1e5), 1e3);
@@ -161,8 +161,8 @@ Rcpp::List log_objective_nhmm_multichannel(
         log_py.col(t) += log_B(c).slice(t).col(obs(c, t, i));
       }
     }
-    log_alpha = univariate_forward_nhmm(log_Pi, log_A, log_py);
-    log_beta = univariate_backward_nhmm(log_A, log_py);
+    univariate_forward_nhmm(log_alpha, log_Pi, log_A, log_py);
+    univariate_backward_nhmm(log_beta, log_A, log_py);
     double ll = logSumExp(log_alpha.col(T - 1));
     if (!std::isfinite(ll)) {
       double small = -arma::datum::inf; // -std::max(std::min(1e10, N * 1e5), 1e3);
@@ -286,9 +286,10 @@ Rcpp::List log_objective_mnhmm_singlechannel(
       for (unsigned int t = 0; t < Ti(i); t++) {
         log_py.slice(d).col(t) = log_B(d).slice(t).col(obs(t, i));
       }
-      log_alpha.slice(d) = univariate_forward_nhmm(
-        log_Pi(d), log_A(d), log_py.slice(d));
-      log_beta.slice(d) = univariate_backward_nhmm(log_A(d), log_py.slice(d));
+      univariate_forward_nhmm(
+        log_alpha.slice(d), log_Pi(d), log_A(d), log_py.slice(d)
+      );
+      univariate_backward_nhmm(log_beta.slice(d), log_A(d), log_py.slice(d));
       loglik_i(d) = logSumExp(log_alpha.slice(d).col(T - 1));
     }
     loglik(i) = logSumExp(log_omega + loglik_i);
@@ -433,10 +434,10 @@ Rcpp::List log_objective_mnhmm_multichannel(
           log_py.slice(d).col(t) += log_B(d * C + c).slice(t).col(obs(c, t, i));
         }
       }
-      log_alpha.slice(d) = univariate_forward_nhmm(
-        log_Pi(d), log_A(d), log_py.slice(d)
+      univariate_forward_nhmm(
+        log_alpha.slice(d), log_Pi(d), log_A(d), log_py.slice(d)
       );
-      log_beta.slice(d) = univariate_backward_nhmm(log_A(d), log_py.slice(d));
+      univariate_backward_nhmm(log_beta.slice(d), log_A(d), log_py.slice(d));
       loglik_i(d) = logSumExp(log_alpha.slice(d).col(T - 1));
     }
     loglik(i) = logSumExp(log_omega + loglik_i);

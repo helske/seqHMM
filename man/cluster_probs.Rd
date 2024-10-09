@@ -8,7 +8,7 @@
 \usage{
 get_cluster_probs(model, ...)
 
-\method{get_cluster_probs}{mnhmm}(model, ...)
+\method{get_cluster_probs}{mnhmm}(model, probs, ...)
 
 \method{get_cluster_probs}{mhmm}(model, ...)
 }
@@ -16,6 +16,10 @@ get_cluster_probs(model, ...)
 \item{model}{A mixture hidden Markov model.}
 
 \item{...}{Ignored.}
+
+\item{probs}{Vector defining the quantiles of interest. Default is
+\code{c(0.025, 0.5, 0.975)}. The quantiles are based on bootstrap samples of
+coefficients, stored in \code{object$boot}.}
 }
 \description{
 Extract the Prior Cluster Probabilities of MHMM or MNHMM

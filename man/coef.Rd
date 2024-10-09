@@ -6,15 +6,16 @@
 \title{Get the Estimated Regression Coefficients of Non-Homogeneous Hidden Markov
 Models}
 \usage{
-\method{coef}{nhmm}(object, probs = c(0.025, 0.975), ...)
+\method{coef}{nhmm}(object, probs, ...)
 
-\method{coef}{mnhmm}(object, probs = c(0.025, 0.5, 0.975), ...)
+\method{coef}{mnhmm}(object, probs, ...)
 }
 \arguments{
 \item{object}{An object of class \code{nhmm} or \code{mnhmm}.}
 
-\item{probs}{Vector defining the quantiles of interest. Default is
-\code{c(0.025, 0.5, 0.975)}.}
+\item{probs}{Vector defining the quantiles of interest. When missing (default),
+no quantiles are computed. The quantiles are based on bootstrap samples of
+coefficients, stored in \code{object$boot}.}
 
 \item{...}{Ignored.}
 }

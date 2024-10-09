@@ -20,31 +20,62 @@ get_cluster_probs <- function(model, ...) {
 }
 #' Extract the Initial State Probabilities of Hidden Markov Model
 #' @param model A hidden Markov model.
+#' @param probs Vector defining the quantiles of interest. Default is 
+#' `c(0.025, 0.5, 0.975)`. The quantiles are based on bootstrap samples of 
+#' coefficients, stored in `object$boot`.
 #' @param ... Ignored.
 #' @rdname initial_probs
 #' @export
-get_initial_probs.nhmm <- function(model, ...) {
+get_initial_probs.nhmm <- function(model, probs, ...) {
   if (model$n_channels == 1L) {
     ids <- rownames(model$observations)
   } else {
     ids <- rownames(model$observations[[1]])
   }
-  if (!attr(model, "iv_pi")) {
-    d <- data.frame(
-      id = rep(ids, each = model$n_states),
-      state = model$state_names,
-      estimate = get_pi(
-        model$gammas$pi, model$X_initial[, 1L]
+  if (missing(probs)) {
+    if (!attr(model, "iv_pi")) {
+      d <- data.frame(
+        id = rep(ids, each = model$n_states),
+        state = model$state_names,
+        estimate = get_pi(
+          model$gammas$pi, model$X_initial[, 1L]
+        )
       )
-    )
+    } else {
+      d <- data.frame(
+        id = rep(ids, each = model$n_states),
+        state = model$state_names,
+        estimate = c(
+          get_pi_all(model$gammas$pi, model$X_initial)
+        )
+      )
+    }
   } else {
-    d <- data.frame(
-      id = rep(ids, each = model$n_states),
-      state = model$state_names,
-      estimate = c(
-        get_pi_all(model$gammas$pi, model$X_initial)
+    p_i <- length(model$gamma_pi)
+    B <- ncol(model$boot)
+    S <- model$n_states
+    K <- nrow(model$X_initial)
+    if (!attr(model, "iv_pi")) {
+      d <- data.frame(
+        id = rep(ids, each = model$n_states),
+        state = model$state_names,
+        estimate = get_pi_boot(
+          array(model$boot[seq_len(pi), ], c(S, K, B)), 
+          model$X_initial[, 1L, drop = FALSE]
+        )
       )
-    )
+    } else {
+      d <- data.frame(
+        id = rep(ids, each = model$n_states),
+        state = model$state_names,
+        estimate = c(
+          get_pi_boot(
+            array(model$boot[seq_len(pi), ], c(S, K, B)), 
+            model$X_initial
+          )
+        )
+      )
+    }
   }
   stats::setNames(d, c(model$id_variable, "state", "estimate"))
 }
@@ -101,10 +132,13 @@ get_initial_probs.mhmm <- function(model, ...) {
 }
 #' Extract the State Transition Probabilities of Hidden Markov Model
 #' @param model A hidden Markov model.
+#' @param probs Vector defining the quantiles of interest. Default is 
+#' `c(0.025, 0.5, 0.975)`. The quantiles are based on bootstrap samples of 
+#' coefficients, stored in `object$boot`.
 #' @param ... Ignored.
 #' @rdname transition_probs
 #' @export
-get_transition_probs.nhmm <- function(model, ...) {
+get_transition_probs.nhmm <- function(model, probs, ...) {
   S <- model$n_states
   T_ <- model$length_of_sequences
   model$X_transition[attr(model, "missing_X_transition")] <- NA
@@ -217,6 +251,9 @@ get_transition_probs.mhmm <- function(model, ...) {
 }
 #' Extract the Emission Probabilities of Hidden Markov Model
 #' @param model A hidden Markov model.
+#' @param probs Vector defining the quantiles of interest. Default is 
+#' `c(0.025, 0.5, 0.975)`. The quantiles are based on bootstrap samples of 
+#' coefficients, stored in `object$boot`.
 #' @param ... Ignored.
 #' @rdname emission_probs
 #' @export
@@ -370,11 +407,14 @@ get_emission_probs.mhmm <- function(model, ...) {
 #' Extract the Prior Cluster Probabilities of MHMM or MNHMM
 #' 
 #' @param model A mixture hidden Markov model.
+#' @param probs Vector defining the quantiles of interest. Default is 
+#' `c(0.025, 0.5, 0.975)`. The quantiles are based on bootstrap samples of 
+#' coefficients, stored in `object$boot`.
 #' @param ... Ignored.
 #' @rdname cluster_probs
 #' @export
 #' @seealso [posterior_cluster_probabilities()].
-get_cluster_probs.mnhmm <- function(model, ...) {
+get_cluster_probs.mnhmm <- function(model, probs, ...) {
   if (model$n_channels == 1L) {
     ids <- rownames(model$observations)
   } else {

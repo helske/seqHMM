@@ -82,6 +82,25 @@ simulate_mnhmm <- function(
     nrow(model$X_transition), nrow(model$X_emission), nrow(model$X_cluster), 
     n_clusters
   )
+  model$gammas$pi <- c(eta_to_gamma_mat_field(
+    model$etas$pi
+  ))
+  model$gammas$A <- c(eta_to_gamma_cube_field(
+    model$etas$A
+  ))
+  if (model$n_channels == 1L) {
+    model$gammas$B <- c(eta_to_gamma_cube_field(
+      model$etas$B
+    ))
+  } else {
+    l <- lengths(model$etas$B)
+    gamma_B <- c(eta_to_gamma_cube_field(unlist(model$etas$B, recursive = FALSE)))
+    model$gammas$B <- split(gamma_B, rep(seq_along(l), l))
+  }
+ 
+  model$gammas$omega <- eta_to_gamma_mat(
+    model$etas$omega
+  )
   T_ <- model$length_of_sequences
   if (n_channels == 1L) {
     out <- simulate_mnhmm_singlechannel(

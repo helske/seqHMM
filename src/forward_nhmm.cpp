@@ -2,27 +2,6 @@
 #include "forward_nhmm.h"
 #include "get_parameters.h"
 #include "eta_to_gamma.h"
-#include "logsumexp.h"
-
-arma::mat univariate_forward_nhmm(
-    const arma::vec& log_init, 
-    const arma::cube& log_transition, 
-    const arma::mat& log_py) {
-  
-  unsigned int S = log_py.n_rows;
-  unsigned int T = log_py.n_cols;
-  
-  arma::mat log_alpha(S, T);
-  log_alpha.col(0) = log_init + log_py.col(0);
-  for (unsigned int t = 1; t < T; t++) {
-    for (unsigned int i = 0; i < S; i++) {
-      log_alpha(i, t) = logSumExp(
-        log_alpha.col(t - 1) + log_transition.slice(t - 1).col(i) + log_py(i, t)
-      );
-    }
-  }
-  return log_alpha;
-}
 
 // [[Rcpp::export]]
 arma::cube forward_nhmm_singlechannel(
@@ -50,7 +29,7 @@ arma::cube forward_nhmm_singlechannel(
     for (unsigned int t = 0; t < T; t++) {
       log_py.col(t) = log_B.slice(t).col(obs(t, i));
     }
-    log_alpha.slice(i) = univariate_forward_nhmm(log_Pi, log_A, log_py);
+    univariate_forward_nhmm(log_alpha.slice(i), log_Pi, log_A, log_py);
   }
   return log_alpha;
 }
@@ -84,11 +63,10 @@ arma::cube forward_nhmm_multichannel(
         log_py.col(t) += log_B(c).slice(t).col(obs(c, t, i));
       }
     }
-    log_alpha.slice(i) = univariate_forward_nhmm(log_Pi, log_A, log_py);
+    univariate_forward_nhmm(log_alpha.slice(i), log_Pi, log_A, log_py);
   }
   return log_alpha;
 }
-
 
 // [[Rcpp::export]]
 arma::cube forward_mnhmm_singlechannel(
@@ -122,8 +100,9 @@ arma::cube forward_mnhmm_singlechannel(
       for (unsigned int t = 0; t < T; t++) {
         log_py.col(t) = log_B.slice(t).col(obs(t, i));
       }
-      log_alpha.slice(i).rows(d * S, (d + 1) * S - 1) = log_omega(d) + 
-        univariate_forward_nhmm(log_Pi, log_A, log_py);
+      log_alpha.slice(i).rows(d * S, (d + 1) * S - 1) = log_omega(d); 
+      arma::subview<double> submat = log_alpha.slice(i).rows(d * S, (d + 1) * S - 1);
+      univariate_forward_nhmm(submat, log_Pi, log_A, log_py);
     }
   }
   return log_alpha;
@@ -165,7 +144,8 @@ arma::cube forward_mnhmm_multichannel(
           log_py.col(t) += log_B(c).slice(t).col(obs(c, t, i));
         }
       }
-      log_alpha.slice(i).rows(d * S, (d + 1) * S - 1) = log_omega(d) + univariate_forward_nhmm(log_Pi, log_A, log_py);
+      arma::subview<double> submat = log_alpha.slice(i).rows(d * S, (d + 1) * S - 1);
+      univariate_forward_nhmm(submat, log_Pi, log_A, log_py);
     }
   }
   return log_alpha;

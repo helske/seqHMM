@@ -44,7 +44,19 @@ arma::mat get_pi_all(const arma::mat& gamma, const arma::mat& X) {
   }
   return pi;
 }
-
+// gamma is (S - 1) x K x B (start from, covariates, sample)
+// X a K x N matrix
+// [[Rcpp::export]]
+arma::cube get_pi_boot(const arma::cube& gamma, const arma::mat& X) {
+  unsigned int B = gamma.n_slices;
+  arma::cube pi(gamma.n_rows, X.n_cols, B);
+  for (unsigned int b = 0; b < B; b++) {
+    for (unsigned int i = 0; i < X.n_cols; i++) {
+      pi.slice(b).col(i) = softmax(gamma.slice(b) * X.col(i));
+    }
+  }
+  return pi;
+}
 // gamma is (S - 1) x K x S (transition to, covariates, transition from)
 // X is K x T matrix (covariates, time points)
 // [[Rcpp::export]]
