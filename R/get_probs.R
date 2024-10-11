@@ -32,93 +32,39 @@ get_initial_probs.nhmm <- function(model, probs, ...) {
   } else {
     ids <- rownames(model$observations[[1]])
   }
-  if (missing(probs)) {
-    if (!attr(model, "iv_pi")) {
-      d <- data.frame(
-        id = rep(ids, each = model$n_states),
-        state = model$state_names,
-        estimate = get_pi(
-          model$gammas$pi, model$X_initial[, 1L]
-        )
-      )
-    } else {
-      d <- data.frame(
-        id = rep(ids, each = model$n_states),
-        state = model$state_names,
-        estimate = c(
-          get_pi_all(model$gammas$pi, model$X_initial)
-        )
-      )
-    }
+  if (!attr(model, "iv_pi")) {
+    X <- model$X_initial[, 1L, drop = FALSE]
   } else {
-    p_i <- length(model$gamma_pi)
-    B <- ncol(model$boot)
+    X <- model$X_initial
+  }
+  d <- data.frame(
+    id = rep(ids, each = model$n_states),
+    state = model$state_names,
+    estimate = c(
+      get_pi_all(model$gammas$pi, X)
+    )
+  )
+  d <- stats::setNames(d, c(model$id_variable, "state", "estimate"))
+  if (!missing(probs)) {
+    B <- length(model$boot$gamma_pi)
     S <- model$n_states
-    K <- nrow(model$X_initial)
-    if (!attr(model, "iv_pi")) {
-      d <- data.frame(
-        id = rep(ids, each = model$n_states),
-        state = model$state_names,
-        estimate = get_pi_boot(
-          array(model$boot[seq_len(pi), ], c(S, K, B)), 
-          model$X_initial[, 1L, drop = FALSE]
-        )
-      )
-    } else {
-      d <- data.frame(
-        id = rep(ids, each = model$n_states),
-        state = model$state_names,
-        estimate = c(
-          get_pi_boot(
-            array(model$boot[seq_len(pi), ], c(S, K, B)), 
-            model$X_initial
-          )
-        )
-      )
+    K <- nrow(X)
+    boot <- get_pi_boot(
+      array(unlist(model$boot$gamma_pi), c(S, K, B)), 
+      X
+    )
+    qs <- seqHMM:::fast_quantiles(matrix(boot, ncol = B), probs)
+    for(i in seq_along(probs)) {
+      d[paste0("q", 100 * probs[i])] <- qs[, i]
     }
   }
-  stats::setNames(d, c(model$id_variable, "state", "estimate"))
+  d
 }
 #' @rdname initial_probs
 #' @export
-get_initial_probs.mnhmm <- function(model, ...) {
-  if (model$n_channels == 1L) {
-    ids <- rownames(model$observations)
-  } else {
-    ids <- rownames(model$observations[[1]])
-  }
-  if (!attr(model, "iv_pi")) {
-    d <- do.call(
-      rbind,
-      lapply(seq_len(model$n_clusters), function(i) {
-        data.frame(
-          cluster = model$cluster_names[i],
-          id = rep(ids, each = model$n_states),
-          state = model$state_names[[i]],
-          estimate = c(
-            get_pi(model$gammas$pi[[i]], model$X_initial[, 1L])
-          )
-        )
-      })
-    )
-  } else {
-    d <- do.call(
-      rbind,
-      lapply(seq_len(model$n_clusters), function(i) {
-        data.frame(
-          cluster = model$cluster_names[i],
-          id = rep(ids, each = model$n_states),
-          state = model$state_names[[i]],
-          estimate = c(
-            get_pi_all(
-              model$gammas$pi[[i]], model$X_initial
-            )
-          )
-        )
-      })
-    )
-  }
-  stats::setNames(d, c("cluster", model$id_variable, "state", "estimate"))
+get_initial_probs.mnhmm <- function(model, probs, ...) {
+  x <- lapply(split_mnhmm(model), get_initial_probs)
+  dplyr::bind_rows(x, .id = "cluster")
 }
 #' @rdname initial_probs
 #' @export
@@ -151,93 +97,46 @@ get_transition_probs.nhmm <- function(model, probs, ...) {
   }
   if (!attr(model, "iv_A")) {
     X <- matrix(model$X_transition[, , 1L], ncol = model$length_of_sequences)
-    d <- data.frame(
-      id = rep(ids, each = S^2 * T_),
-      time = rep(times, each = S^2),
-      state_from = model$state_names,
-      state_to = rep(model$state_names, each = S),
-      estimate = c(get_A(
-        model$gammas$A, X, attr(model, "tv_A")
-      ))
-    )
   } else {
-    d <- data.frame(
-      id = rep(ids, each = S^2 * T_),
-      time = rep(times, each = S^2),
-      state_from = model$state_names,
-      state_to = rep(model$state_names, each = S),
-      estimate = unlist(
-        get_A_all(
-          model$gammas$A, model$X_transition, 
-          attr(model, "tv_A")
-        )
-      )
-    )
+    X <- model$X_transition
   }
-  stats::setNames(
+  d <- data.frame(
+    id = rep(ids, each = S^2 * T_),
+    time = rep(times, each = S^2),
+    state_from = model$state_names,
+    state_to = rep(model$state_names, each = S),
+    estimate = unlist(get_A_all(
+      model$gammas$A, X, attr(model, "tv_A")
+    ))
+  )
+  
+  d <- stats::setNames(
     d, 
     c(
       model$id_variable, model$time_variable, 
       "state_from", "state_to", "estimate"
     )
   )
+  if (!missing(probs)) {
+    B <- length(model$boot$gamma_A)
+    S <- model$n_states
+    K <- nrow(model$X_transition)
+    boot <- unlist(get_A_boot(
+      model$boot$gamma_A, 
+      X, attr(model, "tv_A")
+    ))
+    qs <- seqHMM:::fast_quantiles(matrix(boot, ncol = B), probs)
+    for(i in seq_along(probs)) {
+      d[paste0("q", 100 * probs[i])] <- qs[, i]
+    }
+  }
+  d
 }
 #' @rdname transition_probs
 #' @export
-get_transition_probs.mnhmm <- function(model, ...) {
-  S <- model$n_states
-  T_ <- model$length_of_sequences
-  D <- model$n_clusters
-  model$X_transition[attr(model, "missing_X_transition")] <- NA
-  if (model$n_channels == 1L) {
-    ids <- rownames(model$observations)
-    times <- colnames(model$observations)
-  } else {
-    ids <- rownames(model$observations[[1]])
-    times <- colnames(model$observations[[1]])
-  }
-  if (!attr(model, "iv_A")) {
-    X <- matrix(model$X_transition[, , 1L], ncol = model$length_of_sequences)
-    d <- do.call(
-      rbind,
-      lapply(seq_len(D), function(i) {
-        data.frame(
-          cluster = model$cluster_names[i],
-          id = rep(ids, each = S^2 * T_),
-          time = rep(times, each = S^2),
-          state_from = model$state_names[[i]],
-          state_to = rep(model$state_names[[i]], each = S),
-          estimate = c(get_A(
-            model$gammas$A[[i]], X, attr(model, "tv_A")
-          ))
-        )
-      })
-    )
-  } else {
-    d <- do.call(
-      rbind,
-      lapply(seq_len(D), function(i) {
-        data.frame(
-          cluster = model$cluster_names[i],
-          id = rep(ids, each = S^2 * T_),
-          time = rep(times, each = S^2),
-          state_from = model$state_names[[i]],
-          state_to = rep(model$state_names[[i]], each = S),
-          estimate = unlist(
-            get_A_all(
-              model$gammas$A[[i]], model$X_transition, 
-              attr(model, "tv_A")
-            )
-          )
-        )
-      })
-    )
-  }
-  stats::setNames(
-    d, 
-    c("cluster", model$id_variable, model$time_variable, 
-      "state_from", "state_to", "estimate")
-  )
+get_transition_probs.mnhmm <- function(model, probs, ...) {
+  x <- lapply(split_mnhmm(model), get_transition_probs)
+  dplyr::bind_rows(x, .id = "cluster")
 }
 #' @rdname transition_probs
 #' @export
@@ -257,7 +156,7 @@ get_transition_probs.mhmm <- function(model, ...) {
 #' @param ... Ignored.
 #' @rdname emission_probs
 #' @export
-get_emission_probs.nhmm <- function(model, ...) {
+get_emission_probs.nhmm <- function(model, probs, ...) {
   S <- model$n_states
   C <- model$n_channels
   T_ <- model$length_of_sequences
@@ -275,124 +174,60 @@ get_emission_probs.nhmm <- function(model, ...) {
   }
   if (!attr(model, "iv_B")) {
     X <- matrix(model$X_emission[, , 1L], ncol = model$length_of_sequences)
-    d <- do.call(
-      rbind,
-      lapply(seq_len(C), function(i) {
-        data.frame(
-          id = rep(ids, each = S * M[i] * T_),
-          time = rep(times, each = S * M[i]),
-          state = model$state_names,
-          channel = model$channel_names[i],
-          observation = rep(symbol_names[[i]], each = S),
-          estimate = c(get_B(
-            model$gammas$B[[i]], X, FALSE, 
-            attr(model, "tv_B"))
-          )
-        )
-      })
-    )
   } else {
-    d <- do.call(
-      rbind,
-      lapply(seq_len(C), function(i) {
-        data.frame(
-          id = rep(ids, each = S * M[i] * T_),
-          time = rep(times, each = S * M[i]),
-          state = model$state_names,
-          channel = model$channel_names[i],
-          observation = rep(symbol_names[[i]], each = S),
-          estimate = unlist(
-            get_B_all(
-              model$gammas$B[[i]], model$X_emission, 
-              FALSE, attr(model, "tv_B")
-            )
-          )
-        )
-      })
-    )
+    X <- model$X_emission
   }
-  stats::setNames(
+  d <- do.call(
+    rbind,
+    lapply(seq_len(C), function(i) {
+      data.frame(
+        id = rep(ids, each = S * M[i] * T_),
+        time = rep(times, each = S * M[i]),
+        state = model$state_names,
+        channel = model$channel_names[i],
+        observation = rep(symbol_names[[i]], each = S),
+        estimate = unlist(get_B_all(
+          model$gammas$B[[i]], X, FALSE, 
+          attr(model, "tv_B"))
+        )
+      )
+    })
+  )
+  d <- stats::setNames(
     d, 
     c(model$id_variable, model$time_variable, "state", "channel", 
       "observation", "estimate")
   )
+  if (!missing(probs)) {
+    B <- length(model$boot$gamma_B)
+    S <- model$n_states
+    K <- nrow(model$X_emission)
+    if (C == 1) {
+      boot <- get_B_boot(
+        model$boot$gamma_B, 
+        X, attr(model, "tv_B")
+      )
+    } else {
+      boot <- lapply(seq_len(C), function(i) {
+        get_B_boot(
+          lapply(model$boot$gamma_B, "[[", i), 
+          X, attr(model, "tv_B")
+        )
+      })
+      
+    }
+    qs <- seqHMM:::fast_quantiles(matrix(unlist(boot), ncol = B), probs)
+    for(i in seq_along(probs)) {
+      d[paste0("q", 100 * probs[i])] <- qs[, i]
+    }
+  }
+  d
 }
 #' @rdname emission_probs
 #' @export
-get_emission_probs.mnhmm <- function(model, ...) {
-  S <- model$n_states
-  C <- model$n_channels
-  D <- model$n_clusters
-  T_ <- model$length_of_sequences
-  M <- model$n_symbols
-  model$X_emission[attr(model, "missing_X_emission")] <- NA
-  if (C == 1L) {
-    ids <- rownames(model$observations)
-    times <- colnames(model$observations)
-    symbol_names <- list(model$symbol_names)
-    model$gammas$B <- lapply(
-      model$gammas$B, list
-    )
-  } else {
-    ids <- rownames(model$observations[[1]])
-    times <- colnames(model$observations[[1]])
-    symbol_names <- model$symbol_names
-  }
-  if (!attr(model, "iv_B")) {
-    X <- matrix(model$X_emission[, , 1L], ncol = model$length_of_sequences)
-    d <- do.call(
-      rbind,
-      lapply(seq_len(D), function(j) {
-        do.call(
-          rbind,
-          lapply(seq_len(C), function(i) {
-            data.frame(
-              cluster = model$cluster_names[j],
-              id = rep(ids, each = S * M[i] * T_),
-              time = rep(times, each = S * M[i]),
-              state = model$state_names[[j]],
-              channel = model$channel_names[i],
-              observation = rep(symbol_names[[i]], each = S),
-              estimate = c(get_B(
-                model$gammas$B[[j]][[i]], X, FALSE, 
-                attr(model, "tv_B"))
-              )
-            )
-          })
-        )
-      })
-    )
-  } else {
-    d <- do.call(
-      rbind,
-      lapply(seq_len(D), function(j) {
-        do.call(
-          rbind,
-          lapply(seq_len(C), function(i) {
-            data.frame(
-              cluster = model$cluster_names[j],
-              id = rep(ids, each = S * M[i] * T_),
-              time = rep(times, each = S * M[i]),
-              state = model$state_names[[j]],
-              channel = model$channel_names[i],
-              observation = rep(symbol_names[[i]], each = S),
-              estimate = unlist(
-                get_B_all(
-                  model$gammas$B[[j]][[i]], model$X_emission, 
-                  FALSE, attr(model, "tv_B")
-                )
-              )
-            )
-          })
-        )
-      })
-    )
-  }
-  stats::setNames(
-    d, 
-    c("cluster", model$id_variable, model$time_variable, "state", "channel", 
-      "observation", "estimate")
-  )
+get_emission_probs.mnhmm <- function(model, probs, ...) {
+  x <- lapply(split_mnhmm(model), get_emission_probs)
+  dplyr::bind_rows(x, .id = "cluster")
 }
 #' @rdname emission_probs
 #' @export
@@ -421,25 +256,32 @@ get_cluster_probs.mnhmm <- function(model, probs, ...) {
     ids <- rownames(model$observations[[1]])
   }
   if (!attr(model, "iv_omega")) {
-    d <- data.frame(
-      cluster = model$cluster_names,
-      id = rep(ids, each = model$n_clusters),
-      estimate = c(get_omega(
-        model$gammas$omega, model$X_cluster[, 1L]
-      ))
-    )
+    X <- model$X_cluster[, 1L]
   } else {
-    d <- data.frame(
-      cluster = model$cluster_names,
-      id = rep(ids, each = model$n_clusters),
-      estimate = c(
-        get_omega_all(
-          model$gammas$omega, model$X_cluster
-        )
-      )
-    )
+    X <- model$X_cluster
   }
-  stats::setNames(d, c("cluster", model$id_variable, "estimate"))
+  d <- data.frame(
+    cluster = model$cluster_names,
+    id = rep(ids, each = model$n_clusters),
+    estimate = c(get_omega_all(
+      model$gammas$omega, X
+    ))
+  )
+  d <- stats::setNames(d, c("cluster", model$id_variable, "estimate"))
+  if (!missing(probs)) {
+    B <- length(model$boot$gamma_omega)
+    D <- model$n_clusters
+    K <- nrow(X)
+    boot <- get_omega_boot(
+      array(unlist(model$boot$gamma_omega), c(D, K, B)), 
+      X
+    )
+    qs <- seqHMM:::fast_quantiles(matrix(boot, ncol = B), probs)
+    for(i in seq_along(probs)) {
+      d[paste0("q", 100 * probs[i])] <- qs[, i]
+    }
+  }
+  d
 }
 #' @rdname cluster_probs
 #' @export
@@ -461,6 +303,9 @@ get_cluster_probs.mhmm <- function(model, ...) {
 #' Probabilities for NHMM or MNHMM
 #' 
 #' @param model An object of class `nhmm` or `mnhmm`.
+#' @param probs Vector defining the quantiles of interest. Default is 
+#' `c(0.025, 0.5, 0.975)`. The quantiles are based on bootstrap samples of 
+#' coefficients, stored in `object$boot`.
 #' @param newdata An optional data frame containing the new data to be used in 
 #' computing the probabilities.
 #' @param remove_voids Should the time points corresponding to `TraMineR`'s 
@@ -473,7 +318,7 @@ get_probs <- function(model, ...) {
 }
 #' @rdname get_probs
 #' @export
-get_probs.nhmm <- function(model, newdata = NULL, remove_voids = TRUE, ...) {
+get_probs.nhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ...) {
   stopifnot_(
     checkmate::test_flag(x = remove_voids), 
     "Argument {.arg remove_voids} must be a single {.cls logical} value."
@@ -501,9 +346,9 @@ get_probs.nhmm <- function(model, newdata = NULL, remove_voids = TRUE, ...) {
   N <- model$n_sequences
   T_ <- model$length_of_sequences
   out <- list(
-    initial_probs = get_initial_probs(model),
-    transition_probs = get_transition_probs(model),
-    emission_probs = get_emission_probs(model)
+    initial_probs = get_initial_probs(model, probs),
+    transition_probs = get_transition_probs(model, probs),
+    emission_probs = get_emission_probs(model, probs)
   )
   rownames(out$initial_probs) <- NULL
   rownames(out$transition_probs) <- NULL
@@ -518,7 +363,7 @@ get_probs.nhmm <- function(model, newdata = NULL, remove_voids = TRUE, ...) {
 }
 #' @rdname get_probs
 #' @export
-get_probs.mnhmm <- function(model, newdata = NULL, remove_voids = TRUE, ...) {
+get_probs.mnhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ...) {
   
   stopifnot_(
     checkmate::test_flag(x = remove_voids), 
@@ -547,10 +392,10 @@ get_probs.mnhmm <- function(model, newdata = NULL, remove_voids = TRUE, ...) {
   N <- model$n_sequences
   T_ <- model$length_of_sequences
   out <- list(
-    initial_probs = get_initial_probs(model),
-    transition_probs = get_transition_probs(model),
-    emission_probs = get_emission_probs(model),
-    cluster_probs = get_cluster_probs(model)
+    initial_probs = get_initial_probs(model, probs),
+    transition_probs = get_transition_probs(model, probs),
+    emission_probs = get_emission_probs(model, probs),
+    cluster_probs = get_cluster_probs(model, probs)
   )
   rownames(out$initial_probs) <- NULL
   rownames(out$transition_probs) <- NULL

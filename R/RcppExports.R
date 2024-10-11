@@ -101,24 +101,12 @@ get_log_pi <- function(gamma, X) {
     .Call(`_seqHMM_get_log_pi`, gamma, X)
 }
 
-get_pi_all <- function(gamma, X) {
-    .Call(`_seqHMM_get_pi_all`, gamma, X)
-}
-
-get_pi_boot <- function(gamma, X) {
-    .Call(`_seqHMM_get_pi_boot`, gamma, X)
-}
-
 get_A <- function(gamma, X, tv) {
     .Call(`_seqHMM_get_A`, gamma, X, tv)
 }
 
 get_log_A <- function(gamma, X, tv) {
     .Call(`_seqHMM_get_log_A`, gamma, X, tv)
-}
-
-get_A_all <- function(gamma, X, tv) {
-    .Call(`_seqHMM_get_A_all`, gamma, X, tv)
 }
 
 get_B <- function(gamma, X, add_missing, tv) {
@@ -129,8 +117,32 @@ get_log_B <- function(gamma, X, add_missing, tv) {
     .Call(`_seqHMM_get_log_B`, gamma, X, add_missing, tv)
 }
 
+get_pi_all <- function(gamma, X) {
+    .Call(`_seqHMM_get_pi_all`, gamma, X)
+}
+
+get_A_all <- function(gamma, X, tv) {
+    .Call(`_seqHMM_get_A_all`, gamma, X, tv)
+}
+
 get_B_all <- function(gamma, X, add_missing, tv) {
     .Call(`_seqHMM_get_B_all`, gamma, X, add_missing, tv)
+}
+
+get_pi_boot <- function(gamma, X) {
+    .Call(`_seqHMM_get_pi_boot`, gamma, X)
+}
+
+get_A_boot <- function(gamma, X, tv) {
+    .Call(`_seqHMM_get_A_boot`, gamma, X, tv)
+}
+
+get_B_boot <- function(gamma, X, tv) {
+    .Call(`_seqHMM_get_B_boot`, gamma, X, tv)
+}
+
+get_omega_boot <- function(gamma, X) {
+    .Call(`_seqHMM_get_omega_boot`, gamma, X)
 }
 
 logLikHMM <- function(transition, emission, init, obs, threads) {

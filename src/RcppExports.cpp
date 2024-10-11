@@ -382,30 +382,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// get_pi_all
-arma::mat get_pi_all(const arma::mat& gamma, const arma::mat& X);
-RcppExport SEXP _seqHMM_get_pi_all(SEXP gammaSEXP, SEXP XSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type gamma(gammaSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_pi_all(gamma, X));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_pi_boot
-arma::cube get_pi_boot(const arma::cube& gamma, const arma::mat& X);
-RcppExport SEXP _seqHMM_get_pi_boot(SEXP gammaSEXP, SEXP XSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::cube& >::type gamma(gammaSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_pi_boot(gamma, X));
-    return rcpp_result_gen;
-END_RCPP
-}
 // get_A
 arma::cube get_A(const arma::cube& gamma, const arma::mat& X, const bool tv);
 RcppExport SEXP _seqHMM_get_A(SEXP gammaSEXP, SEXP XSEXP, SEXP tvSEXP) {
@@ -429,19 +405,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const bool >::type tv(tvSEXP);
     rcpp_result_gen = Rcpp::wrap(get_log_A(gamma, X, tv));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_A_all
-arma::field<arma::cube> get_A_all(const arma::cube& gamma, const arma::cube& X, const bool tv);
-RcppExport SEXP _seqHMM_get_A_all(SEXP gammaSEXP, SEXP XSEXP, SEXP tvSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::cube& >::type gamma(gammaSEXP);
-    Rcpp::traits::input_parameter< const arma::cube& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const bool >::type tv(tvSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_A_all(gamma, X, tv));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -473,6 +436,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// get_pi_all
+arma::mat get_pi_all(const arma::mat& gamma, const arma::mat& X);
+RcppExport SEXP _seqHMM_get_pi_all(SEXP gammaSEXP, SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_pi_all(gamma, X));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_A_all
+arma::field<arma::cube> get_A_all(const arma::cube& gamma, const arma::cube& X, const bool tv);
+RcppExport SEXP _seqHMM_get_A_all(SEXP gammaSEXP, SEXP XSEXP, SEXP tvSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::cube& >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const bool >::type tv(tvSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_A_all(gamma, X, tv));
+    return rcpp_result_gen;
+END_RCPP
+}
 // get_B_all
 arma::field<arma::cube> get_B_all(const arma::cube& gamma, const arma::cube& X, const bool add_missing, const bool tv);
 RcppExport SEXP _seqHMM_get_B_all(SEXP gammaSEXP, SEXP XSEXP, SEXP add_missingSEXP, SEXP tvSEXP) {
@@ -484,6 +472,56 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const bool >::type add_missing(add_missingSEXP);
     Rcpp::traits::input_parameter< const bool >::type tv(tvSEXP);
     rcpp_result_gen = Rcpp::wrap(get_B_all(gamma, X, add_missing, tv));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_pi_boot
+arma::cube get_pi_boot(const arma::cube& gamma, const arma::mat& X);
+RcppExport SEXP _seqHMM_get_pi_boot(SEXP gammaSEXP, SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::cube& >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_pi_boot(gamma, X));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_A_boot
+arma::field<arma::cube> get_A_boot(const arma::field<arma::cube>& gamma, const arma::cube& X, const bool tv);
+RcppExport SEXP _seqHMM_get_A_boot(SEXP gammaSEXP, SEXP XSEXP, SEXP tvSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const bool >::type tv(tvSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_A_boot(gamma, X, tv));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_B_boot
+arma::field<arma::cube> get_B_boot(const arma::field<arma::cube>& gamma, const arma::cube& X, const bool tv);
+RcppExport SEXP _seqHMM_get_B_boot(SEXP gammaSEXP, SEXP XSEXP, SEXP tvSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const bool >::type tv(tvSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_B_boot(gamma, X, tv));
+    return rcpp_result_gen;
+END_RCPP
+}
+// get_omega_boot
+arma::cube get_omega_boot(const arma::cube& gamma, const arma::mat& X);
+RcppExport SEXP _seqHMM_get_omega_boot(SEXP gammaSEXP, SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::cube& >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_omega_boot(gamma, X));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -1057,14 +1095,17 @@ static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_get_omega_all", (DL_FUNC) &_seqHMM_get_omega_all, 2},
     {"_seqHMM_get_pi", (DL_FUNC) &_seqHMM_get_pi, 2},
     {"_seqHMM_get_log_pi", (DL_FUNC) &_seqHMM_get_log_pi, 2},
-    {"_seqHMM_get_pi_all", (DL_FUNC) &_seqHMM_get_pi_all, 2},
-    {"_seqHMM_get_pi_boot", (DL_FUNC) &_seqHMM_get_pi_boot, 2},
     {"_seqHMM_get_A", (DL_FUNC) &_seqHMM_get_A, 3},
     {"_seqHMM_get_log_A", (DL_FUNC) &_seqHMM_get_log_A, 3},
-    {"_seqHMM_get_A_all", (DL_FUNC) &_seqHMM_get_A_all, 3},
     {"_seqHMM_get_B", (DL_FUNC) &_seqHMM_get_B, 4},
     {"_seqHMM_get_log_B", (DL_FUNC) &_seqHMM_get_log_B, 4},
+    {"_seqHMM_get_pi_all", (DL_FUNC) &_seqHMM_get_pi_all, 2},
+    {"_seqHMM_get_A_all", (DL_FUNC) &_seqHMM_get_A_all, 3},
     {"_seqHMM_get_B_all", (DL_FUNC) &_seqHMM_get_B_all, 4},
+    {"_seqHMM_get_pi_boot", (DL_FUNC) &_seqHMM_get_pi_boot, 2},
+    {"_seqHMM_get_A_boot", (DL_FUNC) &_seqHMM_get_A_boot, 3},
+    {"_seqHMM_get_B_boot", (DL_FUNC) &_seqHMM_get_B_boot, 3},
+    {"_seqHMM_get_omega_boot", (DL_FUNC) &_seqHMM_get_omega_boot, 2},
     {"_seqHMM_logLikHMM", (DL_FUNC) &_seqHMM_logLikHMM, 5},
     {"_seqHMM_logLikMixHMM", (DL_FUNC) &_seqHMM_logLikMixHMM, 8},
     {"_seqHMM_logSumExp", (DL_FUNC) &_seqHMM_logSumExp, 1},

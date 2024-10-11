@@ -1,8 +1,24 @@
-#' Filter data.frame Rows with Time not Exceeding Sequence Length
+#' Split mnhmm for multiple nhmms for get_probs
+#' 
 #' @noRd
-non_void_rows <- function(d, time, id, sequence_lengths) {
-  d[d[[time]] <= sequence_lengths[match(d[[id]], unique(d[[id]]))], ]
+split_mnhmm <- function(x) {
+  D <- x$n_clusters
+  models <- lapply(seq_len(D), function(i) {
+    z <- x
+    z$etas[1:3] <- lapply(x$etas[1:3], "[[", i)
+    z$gammas[1:3] <- lapply(x$gammas[1:3], "[[", i)
+    z$boot$gamma_pi <- lapply(x$boot$gamma_pi, "[[", i)
+    z$boot$gamma_A <- lapply(x$boot$gamma_A, "[[", i)
+    z$boot$gamma_B <- lapply(x$boot$gamma_B, "[[", i)
+    z$state_names <- x$state_names[[i]]
+    z$n_clusters <- 1L
+    class(z) <- "nhmm"
+    z
+  })
+  names(models) <- x$cluster_names
+  models
 }
+
 #' Check If an Object Is a List of Lists
 #' 
 #' @noRd

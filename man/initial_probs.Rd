@@ -12,7 +12,7 @@ get_initial_probs(model, ...)
 
 \method{get_initial_probs}{nhmm}(model, probs, ...)
 
-\method{get_initial_probs}{mnhmm}(model, ...)
+\method{get_initial_probs}{mnhmm}(model, probs, ...)
 
 \method{get_initial_probs}{hmm}(model, ...)
 

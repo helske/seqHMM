@@ -9,14 +9,18 @@ Probabilities for NHMM or MNHMM}
 \usage{
 get_probs(model, ...)
 
-\method{get_probs}{nhmm}(model, newdata = NULL, remove_voids = TRUE, ...)
+\method{get_probs}{nhmm}(model, probs, newdata = NULL, remove_voids = TRUE, ...)
 
-\method{get_probs}{mnhmm}(model, newdata = NULL, remove_voids = TRUE, ...)
+\method{get_probs}{mnhmm}(model, probs, newdata = NULL, remove_voids = TRUE, ...)
 }
 \arguments{
 \item{model}{An object of class \code{nhmm} or \code{mnhmm}.}
 
 \item{...}{Ignored.}
+
+\item{probs}{Vector defining the quantiles of interest. Default is
+\code{c(0.025, 0.5, 0.975)}. The quantiles are based on bootstrap samples of
+coefficients, stored in \code{object$boot}.}
 
 \item{newdata}{An optional data frame containing the new data to be used in
 computing the probabilities.}

@@ -123,16 +123,16 @@ create_eta_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
       if (is.null(x)) {
         create_eta_multichannel_B_nhmm(
           numeric(sum((M - 1) * K * S)), S, M, K, init_sd
-          )
+        )
       } else {
         stopifnot_(
-          length(x) == sum((M - 1) * K * S),
+          length(unlist(x)) == sum((M - 1) * K * S),
           paste0(
             "Number of initial values for {.val eta_B} is not equal to ",
             "sum((M - 1) * K * S) = {sum((M - 1) * K * S)}."
           )
         )
-        create_eta_multichannel_B_nhmm(x, S, M, K, init_sd)
+        create_eta_multichannel_B_nhmm(unlist(x), S, M, K, init_sd)
       }
     }
   } else {

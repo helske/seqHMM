@@ -21,7 +21,9 @@ bootstrap_coefs(model, ...)
   model,
   B = 1000,
   method = c("nonparametric", "parametric"),
-  verbose = FALSE
+  penalty,
+  verbose = FALSE,
+  ...
 )
 }
 \arguments{

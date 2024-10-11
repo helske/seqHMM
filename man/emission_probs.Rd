@@ -10,9 +10,9 @@
 \usage{
 get_emission_probs(model, ...)
 
-\method{get_emission_probs}{nhmm}(model, ...)
+\method{get_emission_probs}{nhmm}(model, probs, ...)
 
-\method{get_emission_probs}{mnhmm}(model, ...)
+\method{get_emission_probs}{mnhmm}(model, probs, ...)
 
 \method{get_emission_probs}{hmm}(model, ...)
 

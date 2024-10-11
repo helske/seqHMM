@@ -78,13 +78,18 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
     penalty <- model$estimation_results$penalty
   }
   gammas_mle <- model$gammas
-  coefs <- matrix(NA, length(unlist(gammas_mle)), B)
+  gamma_pi <- replicate(B, gammas_mle$pi, simplify = FALSE)
+  gamma_A <- replicate(B, gammas_mle$A, simplify = FALSE)
+  gamma_B <- replicate(B, gammas_mle$B, simplify = FALSE)
   if (verbose) pb <- utils::txtProgressBar(min = 0, max = 100, style = 3)
   if (method == "nonparametric") {
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
       fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, ...)
-      coefs[, i] <- unlist(permute_states(fit$gammas, gammas_mle))
+      fit$gammas <- permute_states(fit$gammas, gammas_mle)
+      gamma_pi[[i]] <- fit$gammas$pi
+      gamma_A[[i]] <- fit$gammas$A
+      gamma_B[[i]] <- fit$gammas$B
       if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
     }
   } else {
@@ -103,12 +108,15 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
         N, T_, M, S, formula_pi, formula_A, formula_B,
         data = d, time, id, init)$model
       fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, ...)
-      coefs[, i] <- unlist(permute_states(fit$gammas, gammas_mle))
+      fit$gammas <- permute_states(fit$gammas, gammas_mle)
+      gamma_pi[[i]] <- fit$gammas$pi
+      gamma_A[[i]] <- fit$gammas$A
+      gamma_B[[i]] <- fit$gammas$B
       if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
     }
   }
   if (verbose) close(pb)
-  model$boot <- coefs
+  model$boot <- list(gamma_pi = gamma_pi, gamma_A = gamma_A, gamma_B = gamma_B)
   model
 }
 #' @rdname bootstrap
@@ -126,7 +134,10 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
     penalty <- model$estimation_results$penalty
   }
   gammas_mle <- model$gammas
-  coefs <- matrix(NA, length(unlist(gammas_mle)), B)
+  gamma_pi <- replicate(B, gammas_mle$pi, simplify = FALSE)
+  gamma_A <- replicate(B, gammas_mle$A, simplify = FALSE)
+  gamma_B <- replicate(B, gammas_mle$B, simplify = FALSE)
+  gamma_omega <- replicate(B, gammas_mle$omega, simplify = FALSE)
   D <- model$n_clusters
   if (verbose) pb <- utils::txtProgressBar(min = 0, max = 100, style = 3)
   if (method == "nonparametric") {
@@ -142,7 +153,10 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
         fit$gammas$A[[j]] <- out$A
         fit$gammas$B[[j]] <- out$B
       }
-      coefs[, i] <- unlist(fit$gammas)
+      gamma_pi[[i]] <- fit$gammas$pi
+      gamma_A[[i]] <- fit$gammas$A
+      gamma_B[[i]] <- fit$gammas$B
+      gamma_omega[[i]] <- fit$gammas$omega
       if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
     }
   } else {
@@ -171,11 +185,17 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
         fit$gammas$A[[j]] <- out$A
         fit$gammas$B[[j]] <- out$B
       }
-      coefs[, i] <- unlist(fit$gammas)
+      gamma_pi[[i]] <- fit$gammas$pi
+      gamma_A[[i]] <- fit$gammas$A
+      gamma_B[[i]] <- fit$gammas$B
+      gamma_omega[[i]] <- fit$gammas$omega
       if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
     }
   }
   if (verbose) close(pb)
-  model$boot <- coefs
+  model$boot <- list(
+    gamma_pi = gamma_pi, gamma_A = gamma_A, gamma_B = gamma_B,
+    gamma_omega = gamma_omega
+  )
   model
 }

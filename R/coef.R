@@ -47,9 +47,9 @@ coef.nhmm <- function(object, probs, ...) {
       "Argument {.arg probs} must be a {.cls numeric} vector with values
       between 0 and 1."
     )
-    p_i <- length(gamma_pi)
-    p_s <- length(gamma_A)
-    p_o <- length(gamma_B)
+    p_i <- length(unlist(object$gammas$pi))
+    p_s <- length(unlist(object$gammas$A))
+    p_o <- length(unlist(object$gammas$B))
     stopifnot_(
       !is.null(object$boot),
       paste0(
@@ -57,11 +57,14 @@ coef.nhmm <- function(object, probs, ...) {
         "Run {.fn bootstrap_coefs} first."
       )
     )
-    qs <- seqHMM:::fast_quantiles(object$boot, probs)
+    B <- length(object$boot$gamma_pi)
+    q_pi <- seqHMM:::fast_quantiles(matrix(unlist(object$boot$gamma_pi), ncol = B), probs)
+    q_A <- seqHMM:::fast_quantiles(matrix(unlist(object$boot$gamma_A), ncol = B), probs)
+    q_B <- seqHMM:::fast_quantiles(matrix(unlist(object$boot$gamma_B), ncol = B), probs)
     for(i in seq_along(probs)) {
-      gamma_pi[paste0("q", 100 * probs[i])] <- qs[seq_len(p_i), i]
-      gamma_A[paste0("q", 100 * probs[i])] <- qs[p_i + seq_len(p_s), i]
-      gamma_B[paste0("q", 100 * probs[i])] <- qs[p_i + p_s + seq_len(p_o), i]
+      gamma_pi[paste0("q", 100 * probs[i])] <- q_pi[, i]
+      gamma_A[paste0("q", 100 * probs[i])] <- q_A[, i]
+      gamma_B[paste0("q", 100 * probs[i])] <- q_B[, i]
     }
   }
   list(
@@ -80,39 +83,39 @@ coef.mnhmm <- function(object, probs, ...) {
   K_i <- length(object$coef_names_initial)
   object$state_names <- unname(object$state_names)
   gamma_pi <- data.frame(
+    cluster = rep(object$cluster_names, each = S * K_i),
     state = unlist(object$state_names),
     parameter = rep(object$coef_names_initial, each = S),
-    estimate = unlist(object$gammas$pi),
-    cluster = rep(object$cluster_names, each = S * K_i)
+    estimate = unlist(object$gammas$pi)
   )
   K_s <- length(object$coef_names_transition)
   gamma_A <- data.frame(
+    cluster = rep(object$cluster_names, each = S * S * K_s),
     state_from = unlist(object$state_names),
     state_to = rep(unlist(object$state_names), each = S),
     parameter = rep(object$coef_names_transition, each = S * S),
-    estimate = unlist(object$gammas$A),
-    cluster = rep(object$cluster_names, each = S * S * K_s)
+    estimate = unlist(object$gammas$A)
   )
   K_o <- length(object$coef_names_emission)
   if (object$n_channels == 1) {
     gamma_B <- data.frame(
+      cluster =  rep(object$cluster_names, each = S * M * K_o),
       state = unlist(object$state_names),
       observations = rep(object$symbol_names, each = S),
       parameter = rep(object$coef_names_emission, each = S * M),
-      estimate = unlist(object$gammas$B),
-      cluster =  rep(object$cluster_names, each = S * M * K_o)
+      estimate = unlist(object$gammas$B)
     )
   } else {
     gamma_B <- data.frame(
+      cluster =  unlist(lapply(seq_len(object$n_channels), function(i) {
+        rep(object$cluster_names, each = S * M[i] * K_o)
+      })),
       state = unlist(object$state_names),
       observations = rep(unlist(object$symbol_names), each = S),
       parameter = unlist(lapply(seq_len(object$n_channels), function(i) {
         rep(object$coef_names_emission, each = S * M[i])
       })),
-      estimate = unlist(object$gammas$B),
-      cluster =  unlist(lapply(seq_len(object$n_channels), function(i) {
-        rep(object$cluster_names, each = S * M[i] * K_o)
-      }))
+      estimate = unlist(object$gammas$B)
     )
   }
   gamma_omega <- data.frame(
@@ -128,10 +131,10 @@ coef.mnhmm <- function(object, probs, ...) {
       "Argument {.arg probs} must be a {.cls numeric} vector with values
       between 0 and 1."
     )
-    p_i <- length(gamma_pi)
-    p_s <- length(gamma_A)
-    p_o <- length(gamma_B)
-    p_d <- length(gamma_omega)
+    p_i <- length(unlist(object$gammas$pi))
+    p_s <- length(unlist(object$gammas$A))
+    p_o <- length(unlist(object$gammas$B))
+    p_d <- length(object$gammas$omega)
     
     stopifnot_(
       !is.null(object$boot),
@@ -140,13 +143,16 @@ coef.mnhmm <- function(object, probs, ...) {
         "Run {.fn bootstrap_coefs} first."
       )
     )
-    qs <- seqHMM:::fast_quantiles(object$boot, probs)
+    B <- length(object$boot$gamma_pi)
+    q_pi <- seqHMM:::fast_quantiles(matrix(unlist(object$boot$gamma_pi), ncol = B), probs)
+    q_A <- seqHMM:::fast_quantiles(matrix(unlist(object$boot$gamma_A), ncol = B), probs)
+    q_B <- seqHMM:::fast_quantiles(matrix(unlist(object$boot$gamma_B), ncol = B), probs)
+    q_omega <- seqHMM:::fast_quantiles(matrix(unlist(object$boot$gamma_omega), ncol = B), probs)
     for(i in seq_along(probs)) {
-      gamma_pi[paste0("q", 100 * probs[i])] <- qs[seq_len(p_i), i]
-      gamma_A[paste0("q", 100 * probs[i])] <- qs[p_i + seq_len(p_s), i]
-      gamma_B[paste0("q", 100 * probs[i])] <- qs[p_i + p_s + seq_len(p_o), i]
-      gamma_omega[paste0("q", 100 * probs[i])] <- 
-        qs[p_i + p_s + p_o + seq_len(p_d), i]
+      gamma_pi[paste0("q", 100 * probs[i])] <- q_pi[, i]
+      gamma_A[paste0("q", 100 * probs[i])] <- q_A[, i]
+      gamma_B[paste0("q", 100 * probs[i])] <- q_B[, i]
+      gamma_omega[paste0("q", 100 * probs[i])] <- q_omega[, i]
     }
   }
   list(
