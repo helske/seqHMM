@@ -54,9 +54,9 @@ permute_clusters <- function(model, pcp_mle) {
   m <- cost_matrix_clusters(pcp, pcp_mle)
   perm <- RcppHungarian::HungarianSolver(m)$pairs[, 2]
   model$gammas$omega[perm, , drop = FALSE]
-  model$gammas$pi <- lapply(model$gammas$pi, "[", perm)
-  model$gammas$A <- lapply(model$gammas$A, "[", perm)
-  model$gammas$B <- lapply(model$gammas$B, "[", perm)
+  model$gammas$pi <- model$gammas$pi[perm]
+  model$gammas$A <- model$gammas$A[perm]
+  model$gammas$B <- model$gammas$B[perm]
   model
 }
 #' Bootstrap Sampling of NHMM Coefficients
