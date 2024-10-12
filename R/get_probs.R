@@ -96,7 +96,7 @@ get_transition_probs.nhmm <- function(model, probs, ...) {
     times <- colnames(model$observations[[1]])
   }
   if (!attr(model, "iv_A")) {
-    X <- matrix(model$X_transition[, , 1L], ncol = model$length_of_sequences)
+    X <- model$X_transition[, , 1L, drop = FALSE]
   } else {
     X <- model$X_transition
   }
@@ -173,7 +173,7 @@ get_emission_probs.nhmm <- function(model, probs, ...) {
     symbol_names <- model$symbol_names
   }
   if (!attr(model, "iv_B")) {
-    X <- matrix(model$X_emission[, , 1L], ncol = model$length_of_sequences)
+    X <- model$X_emission[, , 1L, drop = FALSE]
   } else {
     X <- model$X_emission
   }
@@ -256,7 +256,7 @@ get_cluster_probs.mnhmm <- function(model, probs, ...) {
     ids <- rownames(model$observations[[1]])
   }
   if (!attr(model, "iv_omega")) {
-    X <- model$X_cluster[, 1L]
+    X <- model$X_cluster[, 1L, drop = FALSE]
   } else {
     X <- model$X_cluster
   }
