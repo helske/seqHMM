@@ -53,7 +53,7 @@ get_initial_probs.nhmm <- function(model, probs, ...) {
       array(unlist(model$boot$gamma_pi), c(S, K, B)), 
       X
     )
-    qs <- seqHMM:::fast_quantiles(matrix(boot, ncol = B), probs)
+    qs <- fast_quantiles(matrix(boot, ncol = B), probs)
     for(i in seq_along(probs)) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
     }
@@ -125,7 +125,7 @@ get_transition_probs.nhmm <- function(model, probs, ...) {
       model$boot$gamma_A, 
       X, attr(model, "tv_A")
     ))
-    qs <- seqHMM:::fast_quantiles(matrix(boot, ncol = B), probs)
+    qs <- fast_quantiles(matrix(boot, ncol = B), probs)
     for(i in seq_along(probs)) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
     }
@@ -216,7 +216,7 @@ get_emission_probs.nhmm <- function(model, probs, ...) {
       })
       
     }
-    qs <- seqHMM:::fast_quantiles(matrix(unlist(boot), ncol = B), probs)
+    qs <- fast_quantiles(matrix(unlist(boot), ncol = B), probs)
     for(i in seq_along(probs)) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
     }
@@ -276,7 +276,7 @@ get_cluster_probs.mnhmm <- function(model, probs, ...) {
       array(unlist(model$boot$gamma_omega), c(D, K, B)), 
       X
     )
-    qs <- seqHMM:::fast_quantiles(matrix(boot, ncol = B), probs)
+    qs <- fast_quantiles(matrix(boot, ncol = B), probs)
     for(i in seq_along(probs)) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
     }

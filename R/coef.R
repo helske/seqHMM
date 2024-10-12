@@ -58,9 +58,9 @@ coef.nhmm <- function(object, probs, ...) {
       )
     )
     B <- length(object$boot$gamma_pi)
-    q_pi <- seqHMM:::fast_quantiles(matrix(unlist(object$boot$gamma_pi), ncol = B), probs)
-    q_A <- seqHMM:::fast_quantiles(matrix(unlist(object$boot$gamma_A), ncol = B), probs)
-    q_B <- seqHMM:::fast_quantiles(matrix(unlist(object$boot$gamma_B), ncol = B), probs)
+    q_pi <- fast_quantiles(matrix(unlist(object$boot$gamma_pi), ncol = B), probs)
+    q_A <- fast_quantiles(matrix(unlist(object$boot$gamma_A), ncol = B), probs)
+    q_B <- fast_quantiles(matrix(unlist(object$boot$gamma_B), ncol = B), probs)
     for(i in seq_along(probs)) {
       gamma_pi[paste0("q", 100 * probs[i])] <- q_pi[, i]
       gamma_A[paste0("q", 100 * probs[i])] <- q_A[, i]
@@ -144,10 +144,10 @@ coef.mnhmm <- function(object, probs, ...) {
       )
     )
     B <- length(object$boot$gamma_pi)
-    q_pi <- seqHMM:::fast_quantiles(matrix(unlist(object$boot$gamma_pi), ncol = B), probs)
-    q_A <- seqHMM:::fast_quantiles(matrix(unlist(object$boot$gamma_A), ncol = B), probs)
-    q_B <- seqHMM:::fast_quantiles(matrix(unlist(object$boot$gamma_B), ncol = B), probs)
-    q_omega <- seqHMM:::fast_quantiles(matrix(unlist(object$boot$gamma_omega), ncol = B), probs)
+    q_pi <- fast_quantiles(matrix(unlist(object$boot$gamma_pi), ncol = B), probs)
+    q_A <- fast_quantiles(matrix(unlist(object$boot$gamma_A), ncol = B), probs)
+    q_B <- fast_quantiles(matrix(unlist(object$boot$gamma_B), ncol = B), probs)
+    q_omega <- fast_quantiles(matrix(unlist(object$boot$gamma_omega), ncol = B), probs)
     for(i in seq_along(probs)) {
       gamma_pi[paste0("q", 100 * probs[i])] <- q_pi[, i]
       gamma_A[paste0("q", 100 * probs[i])] <- q_A[, i]
