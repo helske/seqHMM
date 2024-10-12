@@ -203,7 +203,7 @@ arma::field<arma::cube> get_B_all(
   unsigned int N = X.n_slices;
   arma::field<arma::cube> B(N);
   for (unsigned int i = 0; i < N; i++) {
-    B(i) = get_B(gamma, X, add_missing, tv);
+    B(i) = get_B(gamma, X.slice(i), add_missing, tv);
   }
   return B;
 }
@@ -250,7 +250,7 @@ arma::field<arma::cube> get_B_boot(const arma::field<arma::cube>& gamma,
   arma::field<arma::cube> B(N, L);
   for (unsigned int b = 0; b < L; b++) {
     for (unsigned int i = 0; i < N; i++) {
-      B(i, b) = get_B(gamma(b), X.slice(i), tv);
+      B(i, b) = get_B(gamma(b), X.slice(i), false, tv);
     }
   }
   return B;

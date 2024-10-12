@@ -63,7 +63,7 @@ get_initial_probs.nhmm <- function(model, probs, ...) {
 #' @rdname initial_probs
 #' @export
 get_initial_probs.mnhmm <- function(model, probs, ...) {
-  x <- lapply(split_mnhmm(model), get_initial_probs)
+  x <- lapply(split_mnhmm(model), get_initial_probs, probs = probs)
   dplyr::bind_rows(x, .id = "cluster")
 }
 #' @rdname initial_probs
@@ -135,7 +135,7 @@ get_transition_probs.nhmm <- function(model, probs, ...) {
 #' @rdname transition_probs
 #' @export
 get_transition_probs.mnhmm <- function(model, probs, ...) {
-  x <- lapply(split_mnhmm(model), get_transition_probs)
+  x <- lapply(split_mnhmm(model), get_transition_probs, probs = probs)
   dplyr::bind_rows(x, .id = "cluster")
 }
 #' @rdname transition_probs
@@ -226,7 +226,7 @@ get_emission_probs.nhmm <- function(model, probs, ...) {
 #' @rdname emission_probs
 #' @export
 get_emission_probs.mnhmm <- function(model, probs, ...) {
-  x <- lapply(split_mnhmm(model), get_emission_probs)
+  x <- lapply(split_mnhmm(model), get_emission_probs, probs = probs)
   dplyr::bind_rows(x, .id = "cluster")
 }
 #' @rdname emission_probs
