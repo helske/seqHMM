@@ -1,3 +1,5 @@
+#' Bootstrap observations
+#' @noRd
 bootstrap_model <- function(model) {
   idx <- sample.int(model$n_sequences, replace = TRUE)
   if (model$n_channels  == 1) {
@@ -16,6 +18,8 @@ bootstrap_model <- function(model) {
   model$sequence_lengths <- model$sequence_lengths[idx]
   model
 }
+#' Permute states of bootstrap sample to match MLE
+#' @noRd
 permute_states <- function(gammas_boot, gammas_mle) {
   C <- if(is.list(gammas_mle$B)) length(gammas_mle$B) else 1
   if (C == 1) {
@@ -42,6 +46,18 @@ permute_states <- function(gammas_boot, gammas_mle) {
     }
   }
   gammas_boot
+}
+#' Permute clusters of bootstrap sample to match MLE
+#' @noRd
+permute_clusters <- function(model, pcp_mle) {
+  pcp <- posterior_cluster_probabilities(model)
+  m <- cost_matrix_clusters(pcp, pcp_mle)
+  perm <- RcppHungarian::HungarianSolver(m)$pairs[, 2]
+  model$gammas$omega[perm, , drop = FALSE]
+  model$gammas$pi <- lapply(model$gammas$pi, "[", perm)
+  model$gammas$A <- lapply(model$gammas$A, "[", perm)
+  model$gammas$B <- lapply(model$gammas$B, "[", perm)
+  model
 }
 #' Bootstrap Sampling of NHMM Coefficients
 #' 
@@ -134,6 +150,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
     penalty <- model$estimation_results$penalty
   }
   gammas_mle <- model$gammas
+  pcp_mle <- posterior_cluster_probabilities(model)
   gamma_pi <- replicate(B, gammas_mle$pi, simplify = FALSE)
   gamma_A <- replicate(B, gammas_mle$A, simplify = FALSE)
   gamma_B <- replicate(B, gammas_mle$B, simplify = FALSE)
@@ -144,6 +161,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
       fit <- fit_mnhmm(mod, init, 0, 0, 1, penalty, ...)
+      fit <- permute_clusters(fit, pcp_mle)
       for (j in seq_len(D)) {
         out <- permute_states(
           lapply(fit$gammas[-4], "[[", j), 
@@ -176,6 +194,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
         N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
         data = d, time, id, init)$model
       fit <- fit_mnhmm(mod, init, 0, 0, 1, penalty, ...)
+      fit <- permute_clusters(fit, pcp_mle)
       for (j in seq_len(D)) {
         out <- permute_states(
           lapply(fit$gammas[-4], "[[", j), 

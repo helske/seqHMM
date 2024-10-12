@@ -33,6 +33,10 @@ cost_matrix_multichannel <- function(gamma_pi_est, gamma_pi_ref, gamma_A_est, ga
     .Call(`_seqHMM_cost_matrix_multichannel`, gamma_pi_est, gamma_pi_ref, gamma_A_est, gamma_A_ref, gamma_B_est, gamma_B_ref)
 }
 
+cost_matrix_clusters <- function(pcp_est, pcp_mle) {
+    .Call(`_seqHMM_cost_matrix_clusters`, pcp_est, pcp_mle)
+}
+
 create_Q <- function(n) {
     .Call(`_seqHMM_create_Q`, n)
 }
