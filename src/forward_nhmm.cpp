@@ -100,7 +100,7 @@ arma::cube forward_mnhmm_singlechannel(
       for (unsigned int t = 0; t < T; t++) {
         log_py.col(t) = log_B.slice(t).col(obs(t, i));
       }
-      log_alpha.slice(i).rows(d * S, (d + 1) * S - 1) = log_omega(d); 
+      log_alpha.slice(i).rows(d * S, (d + 1) * S - 1).fill(log_omega(d)); 
       arma::subview<double> submat = log_alpha.slice(i).rows(d * S, (d + 1) * S - 1);
       univariate_forward_nhmm(submat, log_Pi, log_A, log_py);
     }
@@ -144,6 +144,7 @@ arma::cube forward_mnhmm_multichannel(
           log_py.col(t) += log_B(c).slice(t).col(obs(c, t, i));
         }
       }
+      log_alpha.slice(i).rows(d * S, (d + 1) * S - 1).fill(log_omega(d)); 
       arma::subview<double> submat = log_alpha.slice(i).rows(d * S, (d + 1) * S - 1);
       univariate_forward_nhmm(submat, log_Pi, log_A, log_py);
     }
