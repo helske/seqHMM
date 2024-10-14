@@ -101,7 +101,8 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
   if (method == "nonparametric") {
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
-      fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, ...)
+      fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, threads = 1, 
+                      penalty = penalty, ...)
       fit$gammas <- permute_states(fit$gammas, gammas_mle)
       gamma_pi[[i]] <- fit$gammas$pi
       gamma_A[[i]] <- fit$gammas$A
@@ -123,7 +124,8 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
       mod <- simulate_nhmm(
         N, T_, M, S, formula_pi, formula_A, formula_B,
         data = d, time, id, init)$model
-      fit <- fit_nhmm(mod, init, 0, 0, 1, penalty, ...)
+      fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, threads = 1, 
+                       penalty = penalty, ...)
       fit$gammas <- permute_states(fit$gammas, gammas_mle)
       gamma_pi[[i]] <- fit$gammas$pi
       gamma_A[[i]] <- fit$gammas$A
@@ -160,7 +162,8 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
   if (method == "nonparametric") {
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
-      fit <- fit_mnhmm(mod, init, 0, 0, 1, penalty, ...)
+      fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, threads = 1, 
+                       penalty = penalty, ...)
       fit <- permute_clusters(fit, pcp_mle)
       for (j in seq_len(D)) {
         out <- permute_states(
@@ -193,7 +196,8 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
       mod <- simulate_mnhmm(
         N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
         data = d, time, id, init)$model
-      fit <- fit_mnhmm(mod, init, 0, 0, 1, penalty, ...)
+      fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, threads = 1, 
+                        penalty = penalty, ...)
       fit <- permute_clusters(fit, pcp_mle)
       for (j in seq_len(D)) {
         out <- permute_states(

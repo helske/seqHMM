@@ -1,7 +1,7 @@
 #' Estimate a Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
+fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all_solutions = FALSE, ...) {
   stopifnot_(
     checkmate::test_int(x = threads, lower = 1L), 
     "Argument {.arg threads} must be a single positive integer."
@@ -134,6 +134,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
       }
     }
   }
+  all_solutions <- NULL
   start_time <- proc.time()
   if (restarts > 0L) {
     if (threads > 1L) {
@@ -164,6 +165,9 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
     successful <- which(return_codes > 0)
     optimum <- successful[which.max(logliks[successful])]
     init <- out[[optimum]]$solution
+    if (save_all_solutions) {
+      all_solutions <- out
+    }
   } else {
     init <- unlist(create_initial_values(
       inits, S, M, init_sd, K_i, K_s, K_o
@@ -209,6 +213,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
     iterations = out$iterations,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
+    all_solutions = all_solutions,
     penalty = penalty,
     time = end_time - start_time
   )

@@ -1,7 +1,8 @@
 #' Estimate a Mixture Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
+fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, 
+                      save_all_solutions = FALSE, ...) {
   stopifnot_(
     checkmate::test_int(x = threads, lower = 1L), 
     "Argument {.arg threads} must be a single positive integer."
@@ -58,27 +59,36 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
     model$etas$pi <- create_eta_pi_mnhmm(
       pars[seq_len(n_i)], S, K_i, D
     )
-    model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
+    model$gammas$pi <- c(eta_to_gamma_mat_field(
+      model$etas$pi
+    ))
     model$etas$A <- create_eta_A_mnhmm(
       pars[n_i + seq_len(n_s)], S, K_s, D
     )
-    model$gammas$A <- eta_to_gamma_cube(model$etas$A)
+    model$gammas$A <- c(eta_to_gamma_cube_field(
+      model$etas$A
+    ))
     if (model$n_channels == 1L) {
       model$etas$B <- create_eta_B_mnhmm(
         pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
       )
-      model$gammas$B <- eta_to_gamma_cube(model$etas$B)
+      model$gammas$B <- c(eta_to_gamma_cube_field(
+        model$etas$B
+      ))
     } else {
       model$etas$B <- create_eta_multichannel_B_mnhmm(
         pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
       )
-
-      model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
+      l <- lengths(model$etas$B)
+      gamma_B <- c(eta_to_gamma_cube_field(unlist(model$etas$B, recursive = FALSE)))
+      model$gammas$B <- split(gamma_B, rep(seq_along(l), l))
     }
     model$etas$omega <- create_eta_omega_mnhmm(
       pars[n_i + n_s + n_o + seq_len(n_d)], D, K_d
     )
-    model$gammas$omega <- eta_to_gamma_mat(model$etas$omega)
+    model$gammas$omega <- eta_to_gamma_mat(
+      model$etas$omega
+    )
     return(model)
   }
   
@@ -191,6 +201,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
       }
     }
   }
+  all_solutions <- NULL
   start_time <- proc.time()
   if (restarts > 0L) {
     if (threads > 1L) {
@@ -221,6 +232,9 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
     successful <- which(return_codes > 0)
     optimum <- successful[which.max(logliks[successful])]
     init <- out[[optimum]]$solution
+    if (save_all_solutions) {
+      all_solutions <- out
+    }
   } else {
     init <- unlist(create_initial_values(
       inits, S, M, init_sd, K_i, K_s, K_o, K_d, D
@@ -284,6 +298,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, ...) {
     iterations = out$iterations,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
+    all_solutions = all_solutions,
     penalty = penalty,
     time = end_time - start_time
   )
