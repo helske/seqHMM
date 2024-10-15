@@ -46,17 +46,23 @@ get_initial_probs.nhmm <- function(model, probs, ...) {
   )
   d <- stats::setNames(d, c(model$id_variable, "state", "estimate"))
   if (!missing(probs)) {
+    stopifnot_(
+      !is.null(model$boot),
+      paste0(
+        "Model does not contain bootstrap samples of coefficients. ",
+        "Run {.fn bootstrap_coefs} first."
+      )
+    )
     B <- length(model$boot$gamma_pi)
     S <- model$n_states
     K <- nrow(X)
-    boot <- get_pi_boot(
+    qs <- get_pi_qs(
       array(unlist(model$boot$gamma_pi), c(S, K, B)), 
-      X
+      X, probs
     )
-    qs <- fast_quantiles(matrix(boot, ncol = B), probs)
     for(i in seq_along(probs)) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
-    }
+    } 
   }
   d
 }
@@ -64,7 +70,9 @@ get_initial_probs.nhmm <- function(model, probs, ...) {
 #' @export
 get_initial_probs.mnhmm <- function(model, probs, ...) {
   x <- lapply(split_mnhmm(model), get_initial_probs, probs = probs)
-  dplyr::bind_rows(x, .id = "cluster")
+  do.call(rbind, lapply(seq_along(x), function(i) {
+    cbind(cluster = names(x)[i], x[[i]])
+  }))
 }
 #' @rdname initial_probs
 #' @export
@@ -118,14 +126,17 @@ get_transition_probs.nhmm <- function(model, probs, ...) {
     )
   )
   if (!missing(probs)) {
-    B <- length(model$boot$gamma_A)
-    S <- model$n_states
-    K <- nrow(model$X_transition)
-    boot <- unlist(get_A_boot(
+    stopifnot_(
+      !is.null(model$boot),
+      paste0(
+        "Model does not contain bootstrap samples of coefficients. ",
+        "Run {.fn bootstrap_coefs} first."
+      )
+    )
+    qs <- get_A_qs(
       model$boot$gamma_A, 
-      X, attr(model, "tv_A")
-    ))
-    qs <- fast_quantiles(matrix(boot, ncol = B), probs)
+      X, attr(model, "tv_A"), probs
+    )
     for(i in seq_along(probs)) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
     }
@@ -136,7 +147,9 @@ get_transition_probs.nhmm <- function(model, probs, ...) {
 #' @export
 get_transition_probs.mnhmm <- function(model, probs, ...) {
   x <- lapply(split_mnhmm(model), get_transition_probs, probs = probs)
-  dplyr::bind_rows(x, .id = "cluster")
+  do.call(rbind, lapply(seq_along(x), function(i) {
+    cbind(cluster = names(x)[i], x[[i]])
+  }))
 }
 #' @rdname transition_probs
 #' @export
@@ -187,9 +200,8 @@ get_emission_probs.nhmm <- function(model, probs, ...) {
         channel = model$channel_names[i],
         observation = rep(symbol_names[[i]], each = S),
         estimate = unlist(get_B_all(
-          model$gammas$B[[i]], X, FALSE, 
-          attr(model, "tv_B"))
-        )
+          model$gammas$B[[i]], X, attr(model, "tv_B"), FALSE
+        ))
       )
     })
   )
@@ -199,24 +211,29 @@ get_emission_probs.nhmm <- function(model, probs, ...) {
       "observation", "estimate")
   )
   if (!missing(probs)) {
-    B <- length(model$boot$gamma_B)
-    S <- model$n_states
-    K <- nrow(model$X_emission)
+    stopifnot_(
+      !is.null(model$boot),
+      paste0(
+        "Model does not contain bootstrap samples of coefficients. ",
+        "Run {.fn bootstrap_coefs} first."
+      )
+    )
     if (C == 1) {
-      boot <- get_B_boot(
+      qs <- get_B_qs(
         model$boot$gamma_B, 
-        X, attr(model, "tv_B")
+        X, attr(model, "tv_B"), probs
       )
     } else {
-      boot <- lapply(seq_len(C), function(i) {
-        get_B_boot(
-          lapply(model$boot$gamma_B, "[[", i), 
-          X, attr(model, "tv_B")
-        )
-      })
-      
+      qs <- do.call(
+        rbind,
+        lapply(seq_len(C), function(i) {
+          get_B_qs(
+            lapply(model$boot$gamma_B, "[[", i), 
+            X, attr(model, "tv_B"), probs
+          )
+        })
+      )
     }
-    qs <- fast_quantiles(matrix(unlist(boot), ncol = B), probs)
     for(i in seq_along(probs)) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
     }
@@ -227,7 +244,9 @@ get_emission_probs.nhmm <- function(model, probs, ...) {
 #' @export
 get_emission_probs.mnhmm <- function(model, probs, ...) {
   x <- lapply(split_mnhmm(model), get_emission_probs, probs = probs)
-  dplyr::bind_rows(x, .id = "cluster")
+  do.call(rbind, lapply(seq_along(x), function(i) {
+    cbind(cluster = names(x)[i], x[[i]])
+  }))
 }
 #' @rdname emission_probs
 #' @export
@@ -269,14 +288,20 @@ get_cluster_probs.mnhmm <- function(model, probs, ...) {
   )
   d <- stats::setNames(d, c("cluster", model$id_variable, "estimate"))
   if (!missing(probs)) {
+    stopifnot_(
+      !is.null(model$boot),
+      paste0(
+        "Model does not contain bootstrap samples of coefficients. ",
+        "Run {.fn bootstrap_coefs} first."
+      )
+    )
     B <- length(model$boot$gamma_omega)
     D <- model$n_clusters
     K <- nrow(X)
-    boot <- get_omega_boot(
+    qs <- get_omega_qs(
       array(unlist(model$boot$gamma_omega), c(D, K, B)), 
-      X
+      X, probs
     )
-    qs <- fast_quantiles(matrix(boot, ncol = B), probs)
     for(i in seq_along(probs)) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
     }

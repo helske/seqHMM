@@ -35,7 +35,6 @@ Depends:
 Imports:
     checkmate,
     cli,
-    dplyr,
     future,
     future.apply,
     ggplot2,
