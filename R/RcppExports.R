@@ -113,8 +113,8 @@ get_log_A <- function(gamma, X, tv) {
     .Call(`_seqHMM_get_log_A`, gamma, X, tv)
 }
 
-get_B <- function(gamma, X, add_missing, tv) {
-    .Call(`_seqHMM_get_B`, gamma, X, add_missing, tv)
+get_B <- function(gamma, X, tv, add_missing) {
+    .Call(`_seqHMM_get_B`, gamma, X, tv, add_missing)
 }
 
 get_log_B <- function(gamma, X, add_missing, tv) {
@@ -133,20 +133,36 @@ get_B_all <- function(gamma, X, add_missing, tv) {
     .Call(`_seqHMM_get_B_all`, gamma, X, add_missing, tv)
 }
 
-get_pi_boot <- function(gamma, X) {
-    .Call(`_seqHMM_get_pi_boot`, gamma, X)
+get_pi_qs <- function(gamma, X, probs) {
+    .Call(`_seqHMM_get_pi_qs`, gamma, X, probs)
 }
 
-get_A_boot <- function(gamma, X, tv) {
-    .Call(`_seqHMM_get_A_boot`, gamma, X, tv)
+get_A_qs <- function(gamma, X, tv, probs) {
+    .Call(`_seqHMM_get_A_qs`, gamma, X, tv, probs)
 }
 
-get_B_boot <- function(gamma, X, tv) {
-    .Call(`_seqHMM_get_B_boot`, gamma, X, tv)
+get_B_qs <- function(gamma, X, tv, probs) {
+    .Call(`_seqHMM_get_B_qs`, gamma, X, tv, probs)
 }
 
-get_omega_boot <- function(gamma, X) {
-    .Call(`_seqHMM_get_omega_boot`, gamma, X)
+get_omega_qs <- function(gamma, X, probs) {
+    .Call(`_seqHMM_get_omega_qs`, gamma, X, probs)
+}
+
+get_pi_ame <- function(gamma, X1, X2, probs) {
+    .Call(`_seqHMM_get_pi_ame`, gamma, X1, X2, probs)
+}
+
+get_A_ame <- function(gamma, X1, X2, tv, probs) {
+    .Call(`_seqHMM_get_A_ame`, gamma, X1, X2, tv, probs)
+}
+
+get_B_ame <- function(gamma, X1, X2, tv, probs) {
+    .Call(`_seqHMM_get_B_ame`, gamma, X1, X2, tv, probs)
+}
+
+get_omega_ame <- function(gamma, X1, X2, probs) {
+    .Call(`_seqHMM_get_omega_ame`, gamma, X1, X2, probs)
 }
 
 logLikHMM <- function(transition, emission, init, obs, threads) {

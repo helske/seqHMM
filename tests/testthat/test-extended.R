@@ -10,7 +10,7 @@ test_that("build_mhmm and estimate_mnhmm give comparable results", {
   fit1 <- fit_model(
     build_mhmm(seqdef(mvad[, 15:86]),
                n_states = c(3, 3),
-               data = d |> dplyr::filter(time == 1), 
+               data = d[d$time == 1, ], 
                formula = ~gcse5eq
     ), control_em = list(restart = list(times = 1000))
   )

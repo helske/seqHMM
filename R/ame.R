@@ -3,11 +3,8 @@
 #' @param model A Hidden Markov Model of class `nhmm` or `mnhmm`.
 #' @param variable Name of the variable of interest.
 #' @param values Vector containing one or two values for `variable`.
-#' @param marginalize_B_over Character string defining the dimensions over which
-#' emission probabilities are marginalized. Default is `"sequences"`. Other 
-#' options are `"states"` and `"clusters"`.
 #' @param newdata Optional data frame which is used for marginalization.
-#' @param ... Further arguments passed to specific methods.
+#' @param ... Ignored.
 #' @rdname ame
 #' @export
 ame <- function(model, variable, values, ...) {
@@ -16,20 +13,11 @@ ame <- function(model, variable, values, ...) {
 #' @rdname ame
 #' @export
 ame.nhmm <- function(
-    model, variable, values, marginalize_B_over = "sequences", newdata = NULL, 
+    model, variable, values, newdata = NULL, 
     ...) {
-  # avoid warnings of NSEs
-  cluster <- state <- estimate <- state_from <- state_to <- time_var <- 
-    channel <- observation <- NULL
   stopifnot_(
     attr(model, "intercept_only") == FALSE,
     "Model does not contain any covariates."
-  )
-  marginalize_B_over <- match.arg(
-    marginalize_B_over, c("sequences", "states", "clusters"))
-  stopifnot_(
-    marginalize_B_over != "clusters",
-    "Cannot marginalize over clusters as {.arg model} is not a {.cls mnhmm} object."
   )
   stopifnot_(
     checkmate::test_string(x = variable), 
@@ -66,68 +54,60 @@ ame.nhmm <- function(
     )
     newdata <- model$data
   }
-  # use same RNG seed so that the same samples of coefficients are drawn
-  newdata[[variable]] <- values[1]
-  pred <- get_probs(model, newdata)
-  newdata[[variable]] <- values[2]
-  pred2 <- get_probs(model, newdata)
-  pars <- c("initial_probs", "transition_probs", "emission_probs")
-  for (i in pars) {
-    pred[[i]]$estimate <- pred[[i]]$estimate - pred2[[i]]$estimate
-  }
   channel <- if (model$n_channels > 1) "channel" else NULL
-  group_by_B <- switch(
-    marginalize_B_over,
-    "states" = c("time", channel, "observation"),
-    "sequences" = c("time", "state", channel, "observation")
-  )
   
-  qs <- function(x, probs) {
-    x <- quantile(x, probs)
-    names(x) <- paste0("q", 100 * probs)
-    as.data.frame(t(x))
+  newdata[[variable]] <- values[1]
+  model1 <- update(model, newdata)
+  newdata[[variable]] <- values[2]
+  model2 <- update(model, newdata)
+  
+  if (!attr(model, "iv_pi")) {
+    X1 <- model1$X_initial[, 1L, drop = FALSE]
+    X2 <- model2$X_initial[, 1L, drop = FALSE]
+  } else {
+    X1 <- model1$X_initial
+    X2 <- model2$X_initial
   }
-  out <- list()
-  out$initial_probs <- pred$initial_probs |> 
-    dplyr::group_by(state) |>
-    dplyr::summarise(estimate = mean(estimate)) |> 
-    dplyr::ungroup()
-  
-  out$transition_probs <- pred$transition_probs |> 
-    dplyr::group_by(time, state_from, state_to) |>
-    dplyr::summarise(estimate = mean(estimate)) |> 
-    dplyr::ungroup() |> 
-    dplyr::rename(!!time := time)
-  
-  out$emission_probs <- pred$emission_probs |> 
-    dplyr::group_by(dplyr::pick(group_by_B)) |>
-    dplyr::summarise(estimate = mean(estimate)) |> 
-    dplyr::ungroup() |> 
-    dplyr::rename(!!time := time)
-  
+  ame_pi <- get_pi_ame(model$gammas$pi, X1, X2, probs)
+  if (!attr(model, "iv_A")) {
+    X1 <- model1$X_transition[, 1L, drop = FALSE]
+    X2 <- model2$X_transition[, 1L, drop = FALSE]
+  } else {
+    X1 <- model1$X_transition
+    X2 <- model2$X_transition
+  }
+  ame_A <- get_A_ame(model$gammas$A, X1, X2, attr(model, "tv_A"), probs)
+  if (!attr(model, "iv_B")) {
+    X1 <- model1$X_emission[, 1L, drop = FALSE]
+    X2 <- model2$X_emission[, 1L, drop = FALSE]
+  } else {
+    X1 <- model1$X_emission
+    X2 <- model2$X_emission
+  }
+  ame_B <- do.call(
+    rbind,
+    lapply(seq_len(model$n_channels), function(i) {
+      get_B_ame(model$gammas$B[[i]], X1, X2, attr(model, "tv_B"), probs)
+    })
+  )
+  out <- list(
+    pi = ame_pi,
+    A = ame_A,
+    B = ame_B
+  )
   class(out) <- "amp"
   attr(out, "model") <- "nhmm"
-  attr(out, "marginalize_B_over") <- marginalize_B_over
   out
 }
 
 #' @rdname ame
 #' @export
 ame.mnhmm <- function(
-    model, variable, values, marginalize_B_over = "sequences", newdata = NULL, 
+    model, variable, values, newdata = NULL, 
     ...) {
-  # avoid warnings of NSEs
-  cluster <- state <- estimate <- state_from <- state_to <- time_var <- 
-    channel <- observation <- NULL
   stopifnot_(
     attr(model, "intercept_only") == FALSE,
     "Model does not contain any covariates."
-  )
-  marginalize_B_over <- match.arg(
-    marginalize_B_over, c("sequences", "states", "clusters"), several.ok = TRUE)
-  stopifnot_(
-    marginalize_B_over != "clusters" || model$n_clusters > 1,
-    "Cannot marginalize over clusters as {.arg model} is not a {.cls mnhmm} object."
   )
   stopifnot_(
     checkmate::test_string(x = variable), 
@@ -164,50 +144,64 @@ ame.mnhmm <- function(
     )
     newdata <- model$data
   }
-  # use same RNG seed so that the same samples of coefficients are drawn
+  
   newdata[[variable]] <- values[1]
-  pred <- get_probs(model, newdata)
-  
+  model1 <- update(model, newdata)
   newdata[[variable]] <- values[2]
-  pred2 <- get_probs(model, newdata)
-  pars <- c("initial_probs", "transition_probs", "emission_probs",
-            "cluster_probs")
-  for (i in pars) {
-    pred[[i]]$estimate <- pred[[i]]$estimate - pred2[[i]]$estimate
+  model2 <- update(model, newdata)
+  D <- model$n_clusters
+  
+  if (!attr(model, "iv_pi")) {
+    X1 <- model1$X_initial[, 1L, drop = FALSE]
+    X2 <- model2$X_initial[, 1L, drop = FALSE]
+  } else {
+    X1 <- model1$X_initial
+    X2 <- model2$X_initial
   }
-  channel <- if (model$n_channels > 1) "channel" else NULL
-  group_by_B <- switch(
-    marginalize_B_over,
-    "clusters" = c("time", channel, "observation"),
-    "states" = c("cluster", "time", channel, "observation"),
-    "sequences" = c("cluster", "time", "state", channel, "observation")
+  ame_pi <- do.call(
+    rbind,
+    lapply(seq_len(D), function(i) {
+      get_pi_ame(model$gammas$pi[[i]], X1, X2, probs)
+    })
   )
-  
-  out <- list()
-  out$initial_probs <- pred$initial_probs |> 
-    dplyr::group_by(cluster, state) |>
-    dplyr::summarise(estimate = mean(estimate)) |> 
-    dplyr::ungroup()
-  
-  out$transition_probs <- pred$transition_probs |> 
-    dplyr::group_by(cluster, time, state_from, state_to) |>
-    dplyr::summarise(estimate = mean(estimate)) |> 
-    dplyr::ungroup() |> 
-    dplyr::rename(!!time := time)
-  
-  out$emission_probs <- pred$emission_probs |> 
-    dplyr::group_by(dplyr::pick(group_by_B)) |>
-    dplyr::summarise(estimate = mean(estimate)) |> 
-    dplyr::ungroup() |> 
-    dplyr::rename(!!time := time)
-  
-  out$cluster_probs <- pred$cluster_probs |> 
-    dplyr::group_by(cluster) |>
-    dplyr::summarise(estimate = mean(estimate)) |> 
-    dplyr::ungroup()
+  if (!attr(model, "iv_A")) {
+    X1 <- model1$X_transition[, 1L, drop = FALSE]
+    X2 <- model2$X_transition[, 1L, drop = FALSE]
+  } else {
+    X1 <- model1$X_transition
+    X2 <- model2$X_transition
+  }
+  ame_A <- do.call(
+    rbind,
+    lapply(seq_len(D), function(i) {
+      get_A_ame(model$gammas$A[[i]], X1, X2, attr(model, "tv_A"), probs)
+    })
+  )
+  if (!attr(model, "iv_B")) {
+    X1 <- model1$X_emission[, 1L, drop = FALSE]
+    X2 <- model2$X_emission[, 1L, drop = FALSE]
+  } else {
+    X1 <- model1$X_emission
+    X2 <- model2$X_emission
+  }
+  ame_B <- do.call(
+    rbind,
+    lapply(seq_len(D), function(i) {
+      do.call(
+        rbind,
+        lapply(seq_len(model$n_channels), function(j) {
+          get_B_ame(model$gammas$B[[i]][[j]], X1, X2, attr(model, "tv_B"), probs)
+        })
+      )
+    })
+  )
+  out <- list(
+    pi = ame_pi,
+    A = ame_A,
+    B = ame_B
+  )
   
   class(out) <- "amp"
   attr(out, "model") <- "mnhmm"
-  attr(out, "marginalize_B_over") <- marginalize_B_over
   out
 }

@@ -51,7 +51,7 @@ Rcpp::List log_objective_nhmm_singlechannel(
       log_A = arma::log(A);
     }
     if (iv_B || i == 0) {
-      B = get_B(gamma_B, X_o.slice(i), true, tv_B);
+      B = get_B(gamma_B, X_o.slice(i), tv_B, true);
       log_B = arma::log(B);
     }
     for (unsigned int t = 0; t < Ti(i); t++) {
@@ -151,7 +151,7 @@ Rcpp::List log_objective_nhmm_multichannel(
       log_A = arma::log(A);
     }
     if (iv_B || i == 0) {
-      B = get_B(gamma_B, X_o.slice(i), M, true, tv_B);
+      B = get_B(gamma_B, X_o.slice(i), M, tv_B, true);
       for (unsigned int c = 0; c < C; c++) {
         log_B(c) = arma::log(B(c));
       }
@@ -280,7 +280,7 @@ Rcpp::List log_objective_mnhmm_singlechannel(
         log_A(d) = arma::log(A(d));
       }
       if (iv_B || i == 0) {
-        B(d) = get_B(gamma_B(d), X_o.slice(i), true, tv_B);
+        B(d) = get_B(gamma_B(d), X_o.slice(i), tv_B, true);
         log_B(d) = arma::log(B(d));
       }
       for (unsigned int t = 0; t < Ti(i); t++) {
@@ -423,7 +423,7 @@ Rcpp::List log_objective_mnhmm_multichannel(
       }
       if (iv_B || i == 0) {
         B.rows(d * C, (d + 1) * C - 1) = get_B(
-          gamma_B.rows(d * C, (d + 1) * C - 1), X_o.slice(i), M, true, tv_B
+          gamma_B.rows(d * C, (d + 1) * C - 1), X_o.slice(i), M, tv_B, true
         );
         for(unsigned int c = 0; c < C; c++) {
           log_B(d * C + c) = arma::log(B(d * C + c));
