@@ -62,7 +62,6 @@ Rcpp::List simulate_nhmm_multichannel(
   arma::field<arma::uvec> seqM(C);
   for (unsigned int c = 0; c < C; c++) {
     seqM(c) = arma::linspace<arma::uvec>(0, M(c) - 1, M(c));
-    B(c) = arma::cube(M(c) - 1, X_o.n_rows, S);
   }
   for (unsigned int i = 0; i < N; i++) {
     Pi = get_pi(gamma_pi, X_i.col(i));
@@ -156,7 +155,6 @@ Rcpp::List simulate_mnhmm_multichannel(
   arma::field<arma::uvec> seqM(C);
   for (unsigned int c = 0; c < C; c++) {
     seqM(c) = arma::linspace<arma::uvec>(0, M(c) - 1, M(c));
-    B(c) = arma::cube(M(c) - 1, X_o.n_rows, S);
   }
   arma::uvec seqS = arma::linspace<arma::uvec>(0, S - 1, S);
   arma::uvec seqD = arma::linspace<arma::uvec>(0, D - 1, D);

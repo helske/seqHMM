@@ -22,8 +22,8 @@ Description: Designed for fitting hidden (latent) Markov models and mixture
     provides functions for evaluating and comparing
     models, as well as functions for visualizing of multichannel sequence data and
     hidden Markov models. Models are estimated using maximum likelihood via the EM
-    algorithm, direct numerical maximization with analytical gradients or 
-    automatic differentiation. All main algorithms are written in C++ with 
+    algorithm or direct numerical maximization with analytical gradients. 
+    All main algorithms are written in C++ with 
     support for parallel computation. Documentation is available via several 
     vignettes, and the paper by Helske and Helske (2019, <doi:10.18637/jss.v088.i03>).
 LazyData: true

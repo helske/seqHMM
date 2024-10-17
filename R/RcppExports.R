@@ -117,8 +117,8 @@ get_B <- function(gamma, X, tv, add_missing) {
     .Call(`_seqHMM_get_B`, gamma, X, tv, add_missing)
 }
 
-get_log_B <- function(gamma, X, add_missing, tv) {
-    .Call(`_seqHMM_get_log_B`, gamma, X, add_missing, tv)
+get_log_B <- function(gamma, X, tv, add_missing) {
+    .Call(`_seqHMM_get_log_B`, gamma, X, tv, add_missing)
 }
 
 get_pi_all <- function(gamma, X) {
@@ -129,8 +129,8 @@ get_A_all <- function(gamma, X, tv) {
     .Call(`_seqHMM_get_A_all`, gamma, X, tv)
 }
 
-get_B_all <- function(gamma, X, add_missing, tv) {
-    .Call(`_seqHMM_get_B_all`, gamma, X, add_missing, tv)
+get_B_all <- function(gamma, X, tv) {
+    .Call(`_seqHMM_get_B_all`, gamma, X, tv)
 }
 
 get_pi_qs <- function(gamma, X, probs) {
