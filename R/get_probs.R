@@ -56,10 +56,7 @@ get_initial_probs.nhmm <- function(model, probs, ...) {
     B <- length(model$boot$gamma_pi)
     S <- model$n_states
     K <- nrow(X)
-    qs <- get_pi_qs(
-      array(unlist(model$boot$gamma_pi), c(S, K, B)), 
-      X, probs
-    )
+    qs <- get_pi_qs(model$boot$gamma_pi, X, probs)
     for(i in seq_along(probs)) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
     } 
@@ -200,7 +197,7 @@ get_emission_probs.nhmm <- function(model, probs, ...) {
         channel = model$channel_names[i],
         observation = rep(symbol_names[[i]], each = S),
         estimate = unlist(get_B_all(
-          model$gammas$B[[i]], X, attr(model, "tv_B"), FALSE
+          model$gammas$B[[i]], X, attr(model, "tv_B")
         ))
       )
     })
@@ -298,10 +295,7 @@ get_cluster_probs.mnhmm <- function(model, probs, ...) {
     B <- length(model$boot$gamma_omega)
     D <- model$n_clusters
     K <- nrow(X)
-    qs <- get_omega_qs(
-      array(unlist(model$boot$gamma_omega), c(D, K, B)), 
-      X, probs
-    )
+    qs <- get_omega_qs(model$boot$gamma_omega, X, probs)
     for(i in seq_along(probs)) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
     }
