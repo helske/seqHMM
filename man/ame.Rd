@@ -8,23 +8,9 @@
 \usage{
 ame(model, variable, values, ...)
 
-\method{ame}{nhmm}(
-  model,
-  variable,
-  values,
-  marginalize_B_over = "sequences",
-  newdata = NULL,
-  ...
-)
+\method{ame}{nhmm}(model, variable, values, newdata = NULL, probs = c(0.05, 0.95), ...)
 
-\method{ame}{mnhmm}(
-  model,
-  variable,
-  values,
-  marginalize_B_over = "sequences",
-  newdata = NULL,
-  ...
-)
+\method{ame}{mnhmm}(model, variable, values, newdata = NULL, probs = c(0.05, 0.95), ...)
 }
 \arguments{
 \item{model}{A Hidden Markov Model of class \code{nhmm} or \code{mnhmm}.}
@@ -33,11 +19,7 @@ ame(model, variable, values, ...)
 
 \item{values}{Vector containing one or two values for \code{variable}.}
 
-\item{...}{Further arguments passed to specific methods.}
-
-\item{marginalize_B_over}{Character string defining the dimensions over which
-emission probabilities are marginalized. Default is \code{"sequences"}. Other
-options are \code{"states"} and \code{"clusters"}.}
+\item{...}{Ignored.}
 
 \item{newdata}{Optional data frame which is used for marginalization.}
 }
