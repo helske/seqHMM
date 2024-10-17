@@ -51,7 +51,7 @@ Rcpp::List viterbi_nhmm_singlechannel(
   for (unsigned int i = 0; i < N; i++) {
     log_Pi = get_log_pi(gamma_pi, X_i.col(i));
     log_A = get_log_A(gamma_A, X_s.slice(i));
-    log_B = get_log_B(gamma_B, X_o.slice(i), true);
+    log_B = get_log_B(gamma_B, X_o.slice(i), true, true);
     for (unsigned int t = 0; t < T; t++) {
       log_py.col(t) = log_B.slice(t).col(obs(t, i));
     }
@@ -87,7 +87,7 @@ Rcpp::List viterbi_nhmm_multichannel(
     log_py.zeros();
     log_Pi = get_log_pi(gamma_pi, X_i.col(i));
     log_A = get_log_A(gamma_A, X_s.slice(i));
-    log_B = get_log_B(gamma_B, X_o.slice(i), M, true);
+    log_B = get_log_B(gamma_B, X_o.slice(i), M, true, true);
     for (unsigned int t = 0; t < T; t++) {
       for (unsigned int c = 0; c < C; c++) {
         log_py.col(t) += log_B(c).slice(t).col(obs(c, t, i));
@@ -135,7 +135,7 @@ Rcpp::List viterbi_mnhmm_singlechannel(
       log_A.tube(d * S, d * S, (d + 1) * S - 1, (d + 1) * S - 1) = 
         get_log_A(gamma_A(d), X_s.slice(i));
       log_B.rows(d * S, (d + 1) * S - 1) = get_log_B(
-        gamma_B(d), X_o.slice(i), true
+        gamma_B(d), X_o.slice(i), true, true
       );
     }
     for (unsigned int t = 0; t < T; t++) {
@@ -180,7 +180,7 @@ Rcpp::List viterbi_mnhmm_multichannel(
       log_A.tube(d * S, d * S, (d + 1) * S - 1, (d + 1) * S - 1) = 
         get_log_A(gamma_A(d), X_s.slice(i));
       log_B = get_log_B(
-        gamma_B.rows(d * C, (d + 1) * C - 1), X_o.slice(i), M, true
+        gamma_B.rows(d * C, (d + 1) * C - 1), X_o.slice(i), M, true, true
       );
       for (unsigned int t = 0; t < T; t++) {
         for (unsigned int s = 0; s < S; s++) {
