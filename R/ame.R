@@ -4,6 +4,7 @@
 #' @param variable Name of the variable of interest.
 #' @param values Vector containing one or two values for `variable`.
 #' @param newdata Optional data frame which is used for marginalization.
+#' @param probs Quantiles of interest of average marginal effect.
 #' @param ... Ignored.
 #' @rdname ame
 #' @export

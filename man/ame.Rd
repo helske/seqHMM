@@ -22,6 +22,8 @@ ame(model, variable, values, ...)
 \item{...}{Ignored.}
 
 \item{newdata}{Optional data frame which is used for marginalization.}
+
+\item{probs}{Quantiles of interest of average marginal effect.}
 }
 \description{
 Average Marginal Effects for Non-homogenous Hidden Markov Models
