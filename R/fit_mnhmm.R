@@ -209,7 +209,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
     } else {
       future::plan(future::sequential)
     }
-    if (is.null(dots$maxeval)) dots$maxeval <- 1000L
+    if (is.null(dots$maxeval)) dots$maxeval <- 10000L
     if (is.null(dots$print_level)) dots$print_level <- 0
     if (is.null(dots$xtol_abs)) dots$xtol_abs <- 1e-2
     if (is.null(dots$ftol_abs)) dots$ftol_abs <- 1e-2
