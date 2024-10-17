@@ -134,6 +134,7 @@ stacked_sequence_plot <- function(
         "or integer between 1 and {n_channels}."
         )
       )
+      if (n_channels > 1) names(y) <- channel_names
       y <- sort_sequences(y, sort_by, sort_channel, dist_method)
       sort_by <- NULL
     } else {
