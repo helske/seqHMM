@@ -31,9 +31,10 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
     iv <- FALSE
   } else {
     first_time_point <- min(data[[time]])
+    data <- data[data[[time]] == first_time_point, ]
     X <- stats::model.matrix.lm(
       formula, 
-      data = data[data[[time]] == first_time_point, ], 
+      data = data, 
       na.action = stats::na.pass
     )
     missing_values <- which(!complete.cases(X))
