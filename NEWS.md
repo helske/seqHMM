@@ -1,8 +1,9 @@
 seqHMM 2.0.0
 ==============
-  * Added support for non-homogeneous HMMs where initial, transition, and 
-emission probabilities can depend on individual-specific covariates. 
-Models can be estimated using direct maximum likelihood estimation using 
+  * Added support for non-homogeneous HMMs (NHMMs) where initial, transition, 
+and emission probabilities can depend on individual-specific covariates. For
+mixture NHMMs cluster probabilities can also depend on covariates. These
+models can be estimated using direct maximum likelihood estimation using 
 analytical gradients with `nloptr`.
   * Rewrote sequence visualization functions using `ggseqplot` and `patchwork` 
 packages. Old plotting functions are deprecated and will be removed in the 

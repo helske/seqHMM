@@ -44,7 +44,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
   K_s <- nrow(X_s)
   K_o <- nrow(X_o)
   Ti <- model$sequence_lengths
-  
+  n_obs <- nobs(model)
   dots <- list(...)
   if (isTRUE(dots$maxeval < 0)) {
     pars <- unlist(create_initial_values(
@@ -69,8 +69,21 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
     return(model)
   }
   
-  if (is.null(dots$algorithm)) dots$algorithm <- "NLOPT_LD_LBFGS"
+  if (is.null(dots$algorithm)) 
+    dots$algorithm <- "NLOPT_LD_LBFGS"
   need_grad <- grepl("NLOPT_LD_", dots$algorithm)
+  if (is.null(dots$maxeval)) 
+    dots$maxeval <- 10000L
+  if (is.null(dots$xtol_abs)) 
+    dots$xtol_abs <- 1e-4
+  if (is.null(dots$ftol_abs)) 
+    dots$ftol_abs <- 1e-4
+  if (is.null(dots$xtol_rel)) 
+    dots$xtol_rel <- 1e-4
+  if (is.null(dots$xtol_rel)) 
+    dots$ftol_rel <- 1e-8
+  if (is.null(dots$check_derivatives)) 
+    dots$check_derivatives <- FALSE
   
   if (model$n_channels == 1L) {
     Qs <- t(create_Q(S))
@@ -86,8 +99,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
           Qs, Qm, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs,
           iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
-        list(objective = - out$loglik + 0.5 * sum(pars^2) * penalty,
-             gradient = - unlist(out[-1]) + pars * penalty)
+        list(objective = - (out$loglik + 0.5 * sum(pars^2) * penalty) / n_obs,
+             gradient = - (unlist(out[-1]) + pars * penalty)/ n_obs)
       }
     } else {
       objectivef <- function(pars) {
@@ -100,7 +113,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
           eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs
         )
         
-        - sum(apply(out[, T_, ], 2, logSumExp)) + 0.5 * sum(pars^2) * penalty
+        - (sum(apply(out[, T_, ], 2, logSumExp))  + 0.5 * sum(pars^2) * penalty) / n_obs
       }
     }
   } else {
@@ -117,8 +130,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
           Qs, Qm, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M,
           iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
-        list(objective = - out$loglik + 0.5 * sum(pars^2) * penalty,
-             gradient = - unlist(out[-1]) + pars * penalty)
+        list(objective = - (out$loglik + 0.5 * sum(pars^2) * penalty) / n_obs,
+             gradient = - (unlist(out[-1]) + pars * penalty)/ n_obs)
       }
     } else {
       objectivef <- function(pars) {
@@ -130,7 +143,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
         out <- forward_nhmm_multichannel(
           eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M
         )
-        - sum(apply(out[, T_, ], 2, logSumExp)) + 0.5 * sum(pars^2) * penalty
+        - (sum(apply(out[, T_, ], 2, logSumExp)) + 0.5 * sum(pars^2) * penalty) / n_obs
       }
     }
   }
@@ -142,25 +155,32 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
     } else {
       future::plan(future::sequential)
     }
-    if (is.null(dots$maxeval)) dots$maxeval <- 10000L
-    if (is.null(dots$print_level)) dots$print_level <- 0
-    if (is.null(dots$xtol_abs)) dots$xtol_abs <- 1e-2
-    if (is.null(dots$ftol_abs)) dots$ftol_abs <- 1e-2
-    if (is.null(dots$xtol_rel)) dots$xtol_rel <- 1e-4
-    if (is.null(dots$xtol_rel)) dots$ftol_rel <- 1e-8
-    if (is.null(dots$check_derivatives)) dots$check_derivatives <- FALSE
+    dots$control_restart$algorithm <- dots$algorithm
+    if (is.null(dots$control_restart$maxeval)) 
+      dots$control_restart$maxeval <- dots$maxeval
+    if (is.null(dots$control_restart$print_level)) 
+      dots$control_restart$print_level <- 0
+    if (is.null(dots$control_restart$xtol_abs)) 
+      dots$control_restart$xtol_abs <-dots$xtol_abs
+    if (is.null(dots$control_restart$ftol_abs)) 
+      dots$control_restart$ftol_abs <-  dots$ftol_abs
+    if (is.null(dots$control_restart$xtol_rel)) 
+      dots$control_restart$xtol_rel <- dots$xtol_rel
+    if (is.null(dots$control_restart$xtol_rel)) 
+      dots$control_restart$ftol_rel <- dots$ftol_rel
+    
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
       init <- unlist(create_initial_values(
         inits, S, M, init_sd, K_i, K_s, K_o
       ))
       nloptr(
         x0 = init, eval_f = objectivef,
-        opts = dots
+        opts = dots$control_restart
       )
     },
     future.seed = TRUE)
     
-    logliks <- -unlist(lapply(out, "[[", "objective"))
+    logliks <- -unlist(lapply(out, "[[", "objective")) * n_obs
     return_codes <- unlist(lapply(out, "[[", "status"))
     successful <- which(return_codes > 0)
     optimum <- successful[which.max(logliks[successful])]
@@ -173,14 +193,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
       inits, S, M, init_sd, K_i, K_s, K_o
     ))
   }
-  dots <- list(...)
-  if (is.null(dots$algorithm)) dots$algorithm <- "NLOPT_LD_LBFGS"
-  if (is.null(dots$maxeval)) dots$maxeval <- 10000L
-  if (is.null(dots$xtol_abs)) dots$xtol_abs <- 1e-4
-  if (is.null(dots$ftol_abs)) dots$ftol_abs <- 1e-4
-  if (is.null(dots$xtol_rel)) dots$xtol_rel <- 1e-4
-  if (is.null(dots$xtol_rel)) dots$ftol_rel <- 1e-8
-  if (is.null(dots$check_derivatives)) dots$check_derivatives <- FALSE
+
   out <- nloptr(
     x0 = init, eval_f = objectivef,
     opts = dots
