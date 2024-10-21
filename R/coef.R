@@ -13,20 +13,20 @@ coef.nhmm <- function(object, probs, ...) {
   M <- object$n_symbols
   gamma_pi <- data.frame(
     state = object$state_names,
-    parameter = rep(object$coef_names_initial, each = S),
+    parameter = rep(attr(object$X_initial, "coef_names"), each = S),
     estimate = c(object$gammas$pi)
   )
   gamma_A <- data.frame(
     state_from = object$state_names,
     state_to = rep(object$state_names, each = S),
-    parameter = rep(object$coef_names_transition, each = S^2),
+    parameter = rep(attr(object$X_transition, "coef_names"), each = S^2),
     estimate = c(object$gammas$A)
   )
   if (object$n_channels == 1) {
     gamma_B <- data.frame(
       state = object$state_names,
       observation = rep(object$symbol_names, each = S),
-      parameter = rep(object$coef_names_emission, each = S * M),
+      parameter = rep(attr(object$X_emission, "coef_names"), each = S * M),
       estimate = c(object$gammas$B)
     )
   } else {
@@ -34,7 +34,7 @@ coef.nhmm <- function(object, probs, ...) {
       state = object$state_names,
       observation = rep(unlist(object$symbol_names), each = S),
       parameter = unlist(lapply(seq_len(object$n_channels), function(i) {
-        rep(object$coef_names_emission, each = S * M[i])
+        rep(attr(object$X_emission, "coef_names"), each = S * M[i])
       })),
       estimate = unlist(object$gammas$B)
     )
@@ -80,29 +80,29 @@ coef.mnhmm <- function(object, probs, ...) {
   S <- object$n_states
   M <- object$n_symbols
   D <- object$n_clusters
-  K_i <- length(object$coef_names_initial)
+  K_i <- length(attr(object$X_initial, "coef_names"))
   object$state_names <- unname(object$state_names)
   gamma_pi <- data.frame(
     cluster = rep(object$cluster_names, each = S * K_i),
     state = unlist(object$state_names),
-    parameter = rep(object$coef_names_initial, each = S),
+    parameter = rep(attr(object$X_initial, "coef_names"), each = S),
     estimate = unlist(object$gammas$pi)
   )
-  K_s <- length(object$coef_names_transition)
+  K_s <- length(attr(object$X_transition, "coef_names"))
   gamma_A <- data.frame(
     cluster = rep(object$cluster_names, each = S * S * K_s),
     state_from = unlist(object$state_names),
     state_to = rep(unlist(object$state_names), each = S),
-    parameter = rep(object$coef_names_transition, each = S * S),
+    parameter = rep(attr(object$X_transition, "coef_names"), each = S * S),
     estimate = unlist(object$gammas$A)
   )
-  K_o <- length(object$coef_names_emission)
+  K_o <- length(attr(object$X_emission, "coef_names"))
   if (object$n_channels == 1) {
     gamma_B <- data.frame(
       cluster =  rep(object$cluster_names, each = S * M * K_o),
       state = unlist(object$state_names),
       observations = rep(object$symbol_names, each = S),
-      parameter = rep(object$coef_names_emission, each = S * M),
+      parameter = rep(attr(object$X_emission, "coef_names"), each = S * M),
       estimate = unlist(object$gammas$B)
     )
   } else {
@@ -113,14 +113,14 @@ coef.mnhmm <- function(object, probs, ...) {
       state = unlist(object$state_names),
       observations = rep(unlist(object$symbol_names), each = S),
       parameter = unlist(lapply(seq_len(object$n_channels), function(i) {
-        rep(object$coef_names_emission, each = S * M[i])
+        rep(attr(object$X_emission, "coef_names"), each = S * M[i])
       })),
       estimate = unlist(object$gammas$B)
     )
   }
   gamma_omega <- data.frame(
     cluster = object$cluster_names,
-    parameter = rep(object$coef_names_cluster, each = D),
+    parameter = rep(attr(object$X_cluster, "coef_names"), each = D),
     estimate = c(object$gammas$omega)
   )
   if(!missing(probs)) {

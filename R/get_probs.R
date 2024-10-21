@@ -32,7 +32,7 @@ get_initial_probs.nhmm <- function(model, probs, ...) {
   } else {
     ids <- rownames(model$observations[[1]])
   }
-  if (!attr(model, "iv_pi")) {
+  if (!attr(model$X_initial, "iv")) {
     X <- model$X_initial[, 1L, drop = FALSE]
   } else {
     X <- model$X_initial
@@ -92,7 +92,7 @@ get_initial_probs.mhmm <- function(model, ...) {
 get_transition_probs.nhmm <- function(model, probs, ...) {
   S <- model$n_states
   T_ <- model$length_of_sequences
-  model$X_transition[attr(model, "missing_X_transition")] <- NA
+  model$X_transition[attr(model$X_transition, "missing")] <- NA
   if (model$n_channels == 1L) {
     ids <- rownames(model$observations)
     times <- colnames(model$observations)
@@ -100,7 +100,7 @@ get_transition_probs.nhmm <- function(model, probs, ...) {
     ids <- rownames(model$observations[[1]])
     times <- colnames(model$observations[[1]])
   }
-  if (!attr(model, "iv_A")) {
+  if (!attr(model$X_transition, "iv")) {
     X <- model$X_transition[, , 1L, drop = FALSE]
   } else {
     X <- model$X_transition
@@ -111,7 +111,7 @@ get_transition_probs.nhmm <- function(model, probs, ...) {
     state_from = model$state_names,
     state_to = rep(model$state_names, each = S),
     estimate = unlist(get_A_all(
-      model$gammas$A, X, attr(model, "tv_A")
+      model$gammas$A, X, attr(model$X_transition, "tv")
     ))
   )
   
@@ -132,7 +132,7 @@ get_transition_probs.nhmm <- function(model, probs, ...) {
     )
     qs <- get_A_qs(
       model$boot$gamma_A, 
-      X, attr(model, "tv_A"), probs
+      X, attr(model$X_transition, "tv"), probs
     )
     for(i in seq_along(probs)) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
@@ -171,7 +171,7 @@ get_emission_probs.nhmm <- function(model, probs, ...) {
   C <- model$n_channels
   T_ <- model$length_of_sequences
   M <- model$n_symbols
-  model$X_emission[attr(model, "missing_X_emission")] <- NA
+  model$X_emission[attr(model$X_emission, "missing")] <- NA
   if (C == 1L) {
     ids <- rownames(model$observations)
     times <- colnames(model$observations)
@@ -182,7 +182,7 @@ get_emission_probs.nhmm <- function(model, probs, ...) {
     times <- colnames(model$observations[[1]])
     symbol_names <- model$symbol_names
   }
-  if (!attr(model, "iv_B")) {
+  if (!attr(model$X_emission, "iv")) {
     X <- model$X_emission[, , 1L, drop = FALSE]
   } else {
     X <- model$X_emission
@@ -197,7 +197,7 @@ get_emission_probs.nhmm <- function(model, probs, ...) {
         channel = model$channel_names[i],
         observation = rep(symbol_names[[i]], each = S),
         estimate = unlist(get_B_all(
-          model$gammas$B[[i]], X, attr(model, "tv_B")
+          model$gammas$B[[i]], X, attr(model$X_emission, "tv")
         ))
       )
     })
@@ -218,7 +218,7 @@ get_emission_probs.nhmm <- function(model, probs, ...) {
     if (C == 1) {
       qs <- get_B_qs(
         model$boot$gamma_B, 
-        X, attr(model, "tv_B"), probs
+        X, attr(model$X_emission, "tv"), probs
       )
     } else {
       qs <- do.call(
@@ -226,7 +226,7 @@ get_emission_probs.nhmm <- function(model, probs, ...) {
         lapply(seq_len(C), function(i) {
           get_B_qs(
             lapply(model$boot$gamma_B, "[[", i), 
-            X, attr(model, "tv_B"), probs
+            X, attr(model$X_emission, "tv"), probs
           )
         })
       )
@@ -271,7 +271,7 @@ get_cluster_probs.mnhmm <- function(model, probs, ...) {
   } else {
     ids <- rownames(model$observations[[1]])
   }
-  if (!attr(model, "iv_omega")) {
+  if (!attr(model$X_omega, "iv")) {
     X <- model$X_cluster[, 1L, drop = FALSE]
   } else {
     X <- model$X_cluster

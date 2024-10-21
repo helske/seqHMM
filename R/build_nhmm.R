@@ -9,23 +9,16 @@ build_nhmm <- function(
   out <- create_base_nhmm(
     observations, data, time, id, n_states, state_names, channel_names,
     initial_formula, transition_formula, emission_formula) 
-  out[c("cluster_names", "n_clusters", "X_cluster", "coef_names_cluster")] <- NULL
+  out[c("cluster_names", "n_clusters", "X_cluster")] <- NULL
   structure(
     out$model,
     class = "nhmm",
-    nobs = attr(out$observations, "nobs"),
+    nobs = attr(out$model$observations, "nobs"),
     df = out$extras$np_pi + out$extras$np_A + out$extras$np_B,
     type = paste0(out$extras$multichannel, "nhmm"),
     intercept_only = out$extras$intercept_only,
-    iv_pi = out$extras$iv_pi,
-    iv_A =  out$extras$iv_A,
-    iv_B = out$extras$iv_B,
-    tv_A =  out$extras$tv_A,
-    tv_B =  out$extras$tv_B,
     np_pi = out$extras$np_pi,
     np_A = out$extras$np_A,
-    np_B = out$extras$np_B,
-    missing_X_transition = out$extras$missing_X_transition,
-    missing_X_emission = out$extras$missing_X_emission
+    np_B = out$extras$np_B
   )
 }

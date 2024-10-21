@@ -85,8 +85,10 @@ i.e. no penalization as the penalty is of form \code{0.5 * sum(pars^2) * penalty
 \item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}}. Most importantly,
 argument \code{maxeval} defines the maximum number of iterations for optimization.
 The default is \code{1000} for restarts and \code{10000} for the final optimization.
-Other useful arguments are \code{algorithm} (default uses LBFGS), and
-\code{print_level} (default is \code{0}, no console output of optimization).}
+Other useful arguments are \code{algorithm} (default uses LBFGS),
+\code{print_level} (default is \code{0}, no console output of optimization), and
+arguments for adjusting the stopping criteria of the optimization
+(see details).}
 }
 \value{
 Object of class \code{nhmm}.
@@ -95,6 +97,15 @@ Object of class \code{nhmm}.
 Function \code{estimate_nhmm} estimates a hidden Markov model object of class
 \code{nhmm} where initial, transition and emission probabilities
 (potentially) depend on covariates.
+}
+\details{
+By default, the model parameters are estimated using LBFGS algorithm of
+\code{\link[nloptr:nloptr]{nloptr::nloptr()}}. The log-likelihood or the penalized log-likelihood is
+scaled by the number of non-missing observations (\code{nobs(model)}), and the
+convergence is claimed when either the absolute or relative change of this
+objective function is less than \code{1e-8}, or the absolute change of the
+parameters is less than \code{1e-8}. The covariate data is standardardized before
+optimization.
 }
 \examples{
 data("mvad", package = "TraMineR")

@@ -4,6 +4,14 @@
 #' `nhmm` where initial, transition and emission probabilities 
 #' (potentially) depend on covariates.
 #' 
+#' By default, the model parameters are estimated using LBFGS algorithm of 
+#' [nloptr::nloptr()]. The log-likelihood or the penalized log-likelihood is 
+#' scaled by the number of non-missing observations (`nobs(model)`), and the 
+#' convergence is claimed when either the absolute or relative change of this 
+#' objective function is less than `1e-8`, or the absolute change of the 
+#' parameters is less than `1e-8`. The covariate data is standardardized before 
+#' optimization.
+#' 
 #' @param observations Either the name of the response variable in `data`, or 
 #' an `stslist` object (see [TraMineR::seqdef()]) containing the 
 #' sequences. In case of multichannel data, `observations` should be a vector 
@@ -48,8 +56,10 @@
 #' @param ... Additional arguments to [nloptr::nloptr()]. Most importantly,
 #' argument `maxeval` defines the maximum number of iterations for optimization.
 #' The default is `1000` for restarts and `10000` for the final optimization. 
-#' Other useful arguments are `algorithm` (default uses LBFGS), and 
-#' `print_level` (default is `0`, no console output of optimization).
+#' Other useful arguments are `algorithm` (default uses LBFGS),
+#' `print_level` (default is `0`, no console output of optimization), and 
+#' arguments for adjusting the stopping criteria of the optimization 
+#' (see details).
 #' @return Object of class `nhmm`.
 #' @export
 #' @examples

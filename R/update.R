@@ -10,32 +10,25 @@
 update.nhmm <- function(object, newdata, ...) {
   newdata <- .check_data(newdata, object$time_variable, object$id_variable)
   if (!is.null(object$data)) object$data <- newdata
-  X <- model_matrix_initial_formula(
+  object$X_initial <- model_matrix_initial_formula(
     object$initial_formula, newdata, object$n_sequences,
     object$length_of_sequences, object$n_states, object$time_variable, 
-    object$id_variable
+    object$id_variable, 
+    attr(object$X_initial, "X_mean"), attr(object$X_initial, "X_sd")
   )
-  object$X_initial <- X$X
-  attr(object, "iv_pi") <- X$iv
-  X <- model_matrix_transition_formula(
+  object$X_transition <- model_matrix_transition_formula(
     object$transition_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$time_variable, 
-    object$id_variable, object$sequence_lengths
+    object$id_variable, object$sequence_lengths,
+    attr(object$X_transition, "X_mean"), attr(object$X_transition, "X_sd")
   )
-  object$X_transition <- X$X
-  attr(object, "iv_A") <- X$iv
-  attr(object, "tv_A") <- X$tv
-  attr(object, "missing_X_transition") <- X$missing_X_transition
-  X <- model_matrix_emission_formula(
+  object$X_emission <- model_matrix_emission_formula(
     object$emission_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$n_symbols, 
     object$n_channels, object$time_variable, object$id_variable, 
-    object$sequence_lengths
+    object$sequence_lengths,
+    attr(object$X_emission, "X_mean"), attr(object$X_emission, "X_sd")
   )
-  object$X_emission <- X$X
-  attr(object, "iv_B") <- X$iv
-  attr(object, "tv_B") <- X$tv
-  attr(object, "missing_X_emission") <- X$missing_X_emission
   object
 }
 #' @rdname update_nhmm
@@ -43,37 +36,29 @@ update.nhmm <- function(object, newdata, ...) {
 update.mnhmm <- function(object, newdata, ...) {
   newdata <- .check_data(newdata, object$time_variable, object$id_variable)
   if (!is.null(object$data)) object$data <- newdata
-  X <- model_matrix_initial_formula(
+  object$X_initial <- model_matrix_initial_formula(
     object$initial_formula, newdata, object$n_sequences,
     object$length_of_sequences, object$n_states, object$time_variable, 
-    object$id_variable
+    object$id_variable,
+    attr(object$X_initial, "X_mean"), attr(object$X_initial, "X_sd")
   )
-  object$X_initial <- X$X
-  attr(object, "iv_pi") <- X$iv
-  X <- model_matrix_transition_formula(
+  object$X_transition <- model_matrix_transition_formula(
     object$transition_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$time_variable, 
-    object$id_variable, object$sequence_lengths
+    object$id_variable, object$sequence_lengths,
+    attr(object$X_transition, "X_mean"), attr(object$X_transition, "X_sd")
   )
-  object$X_transition <- X$X
-  attr(object, "iv_A") <- X$iv
-  attr(object, "tv_A") <- X$tv
-  attr(object, "missing_X_transition") <- X$missing_X_transition
-  X <- model_matrix_emission_formula(
+  object$X_emission <- model_matrix_emission_formula(
     object$emission_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$n_symbols, 
     object$n_channels, object$time_variable, object$id_variable, 
-    object$sequence_lengths
+    object$sequence_lengths,
+    attr(object$X_emission, "X_mean"), attr(object$X_emission, "X_sd")
   )
-  object$X_emission <- X$X
-  attr(object, "iv_B") <- X$iv
-  attr(object, "tv_B") <- X$tv
-  attr(object, "missing_X_emission") <- X$missing_X_emission
-  X <- model_matrix_cluster_formula(
+  object$X_cluster <- model_matrix_cluster_formula(
     object$cluster_formula, newdata, object$n_sequences, object$n_clusters,
-    object$time_variable, object$id_variable
+    object$time_variable, object$id_variable,
+    attr(object$X_cluster, "X_mean"), attr(object$X_cluster, "X_sd")
   )
-  object$X_cluster <- X$X
-  attr(object, "iv_omega") <- X$iv
   object
 }

@@ -34,12 +34,12 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
   n_s <- attr(model, "np_A")
   n_o <- attr(model, "np_B")
   n_d <- attr(model, "np_omega")
-  iv_pi <- attr(model, "iv_pi")
-  iv_A <- attr(model, "iv_A")
-  iv_B <- attr(model, "iv_B")
-  iv_omega <- attr(model, "iv_omega")
-  tv_A <- attr(model, "tv_A")
-  tv_B <- attr(model, "tv_B")
+  iv_pi <- attr(model$X_initial, "iv")
+  iv_A <- attr(model$X_transition, "iv")
+  iv_B <- attr(model$X_emission, "iv")
+  iv_omega <- attr(model$X_omega, "iv")
+  tv_A <- attr(model$X_transition, "tv")
+  tv_B <- attr(model$X_emission, "tv")
   X_i <- model$X_initial
   X_s <- model$X_transition
   X_o <- model$X_emission
@@ -97,12 +97,12 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
   if (is.null(dots$maxeval)) 
     dots$maxeval <- 10000L
   if (is.null(dots$xtol_abs)) 
-    dots$xtol_abs <- 1e-4
+    dots$xtol_abs <- rep(1e-8, attr(model, "df"))
+  if (is.null(dots$xtol_rel)) 
+    dots$xtol_rel <- 0
   if (is.null(dots$ftol_abs)) 
-    dots$ftol_abs <- 1e-4
-  if (is.null(dots$xtol_rel)) 
-    dots$xtol_rel <- 1e-4
-  if (is.null(dots$xtol_rel)) 
+    dots$ftol_abs <- 1e-8
+  if (is.null(dots$ftol_rel)) 
     dots$ftol_rel <- 1e-8
   if (is.null(dots$check_derivatives)) 
     dots$check_derivatives <- FALSE
@@ -220,7 +220,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
       dots$control_restart$ftol_abs <-  dots$ftol_abs
     if (is.null(dots$control_restart$xtol_rel)) 
       dots$control_restart$xtol_rel <- dots$xtol_rel
-    if (is.null(dots$control_restart$xtol_rel)) 
+    if (is.null(dots$control_restart$ftol_rel)) 
       dots$control_restart$ftol_rel <- dots$ftol_rel
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
       init <- unlist(create_initial_values(
@@ -290,7 +290,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
   )
   
   model$estimation_results <- list(
-    loglik = -out$objective, 
+    loglik = -out$objective * n_obs, 
     return_code = out$status,
     message = out$message,
     iterations = out$iterations,

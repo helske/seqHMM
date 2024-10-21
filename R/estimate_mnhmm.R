@@ -9,7 +9,7 @@
 #' (mixtures).
 #' @param cluster_formula of class [formula()] for the
 #' mixture probabilities.
-#'  @param inits If `inits = "random"` (default), random initial values are 
+#' @param inits If `inits = "random"` (default), random initial values are 
 #' used. Otherwise `inits` should be list of initial values. If coefficients 
 #' are given using list components `eta_pi`, `eta_A`, `eta_B`, 
 #' and `eta_omega`, these are used as is, alternatively initial values 
@@ -20,6 +20,7 @@
 #' @param cluster_names A vector of optional labels for the clusters. If this
 #' is `NULL` (the default), numbered clusters are used.
 #' @return Object of class `mnhmm`.
+#' @seealso [estimate_nhmm()] for further details.
 #' @export
 #' @examples
 #' data("mvad", package = "TraMineR")

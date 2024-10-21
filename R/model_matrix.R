@@ -22,13 +22,15 @@ check_unique_N <- function(arr) {
 #' @noRd
 model_matrix_initial_formula <- function(formula, data, n_sequences, 
                                          length_of_sequences, n_states, 
-                                         time, id) {
+                                         time, id, X_mean, X_sd) {
   icp_only <- intercept_only(formula)
   if (icp_only) {
     n_pars <- n_states - 1L
     X <- matrix(1, n_sequences, 1)
     coef_names <- "(Intercept)"
     iv <- FALSE
+    X_mean <- NULL
+    X_sd <- NULL
   } else {
     first_time_point <- min(data[[time]])
     data <- data[data[[time]] == first_time_point, ]
@@ -37,6 +39,15 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
       data = data, 
       na.action = stats::na.pass
     )
+    cols <- which(colnames(X) != "(Intercept)")
+    if (missing(X_mean)) {
+      X_mean <- X_sd <- TRUE
+    }
+    X_scaled <- scale(X[, cols], X_mean, X_sd)
+    X[, cols] <- X_scaled
+    X_mean <- attr(X_scaled, "scaled:center")
+    X_sd <- attr(X_scaled, "scaled:scale")
+    
     missing_values <- which(!complete.cases(X))
     stopifnot_(
       length(missing_values) == 0L,
@@ -53,15 +64,20 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
     coef_names <- colnames(X)
     n_pars <- (n_states - 1L) * ncol(X)
   }
-  list(formula = formula, n_pars = n_pars, X = t(X), coef_names = coef_names, 
-       iv = iv)
+  X <- t(X)
+  attr(X, "X_mean") <- X_mean
+  attr(X, "X_sd") <- X_sd
+  attr(X, "coef_names") <- coef_names
+  attr(X, "iv") <- iv
+  list(formula = formula, n_pars = n_pars, X = X)
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
 #' @noRd
 model_matrix_transition_formula <- function(formula, data, n_sequences,
                                             length_of_sequences, n_states,
-                                            time, id, sequence_lengths) {
+                                            time, id, sequence_length, 
+                                            X_mean, X_sd) {
   icp_only <- intercept_only(formula)
   if (icp_only) {
     n_pars <-  n_states * (n_states - 1L)
@@ -69,12 +85,23 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     coef_names <- "(Intercept)"
     iv <- tv <- FALSE
     missing_values <- integer(0)
+    X_mean <- NULL
+    X_sd <- NULL
   } else {
     X <- stats::model.matrix.lm(
       formula, 
       data = data, 
       na.action = stats::na.pass
     )
+    cols <- which(colnames(X) != "(Intercept)")
+    if (missing(X_mean)) {
+      X_mean <- X_sd <- TRUE
+    }
+    X_scaled <- scale(X[, cols], X_mean, X_sd)
+    X[, cols] <- X_scaled
+    X_mean <- attr(X_scaled, "scaled:center")
+    X_sd <- attr(X_scaled, "scaled:scale")
+    
     missing_values <- which(!complete.cases(X))
     if (length(missing_values) > 0) {
       ends <- sequence_lengths[match(data[[id]], unique(data[[id]]))]
@@ -104,10 +131,14 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     iv <- iv_X(X)
     tv <- tv_X(X)
   }
-  list(
-    formula = formula, n_pars = n_pars, X = aperm(X, c(3, 1, 2)), 
-    coef_names = coef_names, iv = iv, tv = tv, missing = missing_values
-  )
+  X <- aperm(X, c(3, 1, 2))
+  attr(X, "X_mean") <- X_mean
+  attr(X, "X_sd") <- X_sd
+  attr(X, "coef_names") <- coef_names
+  attr(X, "iv") <- iv
+  attr(X, "tv") <- tv
+  attr(X, "missing") <- missing_values
+  list(formula = formula, n_pars = n_pars, X = X)
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
@@ -115,7 +146,8 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
 model_matrix_emission_formula <- function(formula, data, n_sequences, 
                                           length_of_sequences, n_states,
                                           n_symbols, n_channels,
-                                          time, id, sequence_lengths) {
+                                          time, id, sequence_lengths, 
+                                          X_mean, X_sd) {
   icp_only <- intercept_only(formula)
   if (icp_only) {
     n_pars <-  sum(n_states * (n_symbols - 1L))
@@ -123,12 +155,23 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     coef_names <- "(Intercept)"
     iv <- tv <- FALSE
     missing_values <- integer(0)
+    attr(X, "X_mean") <- NULL
+    attr(X, "X_sd") <- NULL
   } else {
     X <- stats::model.matrix.lm(
       formula, 
       data = data, 
       na.action = stats::na.pass
     )
+    cols <- which(colnames(X) != "(Intercept)")
+    if (missing(X_mean)) {
+      X_mean <- X_sd <- TRUE
+    }
+    X_scaled <- scale(X[, cols], X_mean, X_sd)
+    X[, cols] <- X_scaled
+    X_mean <- attr(X_scaled, "scaled:center")
+    X_sd <- attr(X_scaled, "scaled:scale")
+    
     missing_values <- which(!complete.cases(X))
     if (length(missing_values) > 0) {
       ends <- sequence_lengths[match(data[[id]], unique(data[[id]]))]
@@ -160,22 +203,28 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     iv <- iv_X(X)
     tv <- tv_X(X)
   }
-  list(
-    formula = formula, n_pars = n_pars, X = aperm(X, c(3, 1, 2)), 
-    coef_names = coef_names, iv = iv, tv = tv, missing = missing_values
-  )
+  X <- aperm(X, c(3, 1, 2))
+  attr(X, "X_mean") <- X_mean
+  attr(X, "X_sd") <- X_sd
+  attr(X, "coef_names") <- coef_names
+  attr(X, "iv") <- iv
+  attr(X, "tv") <- tv
+  attr(X, "missing") <- missing_values
+  list(formula = formula, n_pars = n_pars, X = X)
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
 #' @noRd
 model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters, 
-                                         time, id) {
+                                         time, id, X_mean, X_sd) {
   icp_only <- intercept_only(formula)
   if (icp_only) {
     n_pars <- n_clusters - 1L
     X <- matrix(1, n_sequences, 1)
     coef_names <- "(Intercept)"
     iv <- FALSE
+    attr(X, "X_mean") <- NULL
+    attr(X, "X_sd") <- NULL
   } else {
     first_time_point <- min(data[[time]])
     X <- stats::model.matrix.lm(
@@ -183,6 +232,15 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
       data = data[data[[time]] == first_time_point, ], 
       na.action = stats::na.pass
     )
+    cols <- which(colnames(X) != "(Intercept)")
+    if (missing(X_mean)) {
+      X_mean <- X_sd <- TRUE
+    }
+    X_scaled <- scale(X[, cols], X_mean, X_sd)
+    X[, cols] <- X_scaled
+    X_mean <- attr(X_scaled, "scaled:center")
+    X_sd <- attr(X_scaled, "scaled:scale")
+    
     missing_values <- which(!complete.cases(X))
     stopifnot_(
       length(missing_values) == 0L,
@@ -199,6 +257,10 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
     coef_names <- colnames(X)
     n_pars <- (n_clusters - 1L) * ncol(X)
   }
-  list(formula = formula, n_pars = n_pars, X = t(X), coef_names = coef_names, 
-       iv = iv)
+  X <- t(X)
+  attr(X, "X_mean") <- X_mean
+  attr(X, "X_sd") <- X_sd
+  attr(X, "coef_names") <- coef_names
+  attr(X, "iv") <- iv
+  list(formula = formula, n_pars = n_pars, X = X)
 }

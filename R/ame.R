@@ -74,7 +74,7 @@ ame.nhmm <- function(
     times <- colnames(model$observations[[1]])
     symbol_names <- model$symbol_names
   }
-  if (!attr(model, "iv_pi")) {
+  if (!attr(model$X_initial, "iv")) {
     X1 <- model1$X_initial[, 1L, drop = FALSE]
     X2 <- model2$X_initial[, 1L, drop = FALSE]
   } else {
@@ -92,16 +92,16 @@ ame.nhmm <- function(
     ),
     qs_pi
   )
-  model1$X_transition[attr(model, "missing_X_transition")] <- NA
-  model2$X_transition[attr(model, "missing_X_transition")] <- NA
-  if (!attr(model, "iv_A")) {
+  model1$X_transition[attr(model$X_transition, "missing")] <- NA
+  model2$X_transition[attr(model$X_transition, "missing")] <- NA
+  if (!attr(model$X_transition, "iv")) {
     X1 <- model1$X_transition[, 1L, , drop = FALSE]
     X2 <- model2$X_transition[, 1L, , drop = FALSE]
   } else {
     X1 <- model1$X_transition
     X2 <- model2$X_transition
   }
-  tv_A <- attr(model, "tv_A")
+  tv_A <- attr(model$X_transition, "tv")
   S <- model$n_states
   N <- model$n_sequences
   T_ <- model$length_of_sequences
@@ -126,16 +126,16 @@ ame.nhmm <- function(
   )
   colnames(ame_A)[1] <- model$time_variable
   
-  model1$X_emission[attr(model, "missing_X_emission")] <- NA
-  model2$X_emission[attr(model, "missing_X_emission")] <- NA
-  if (!attr(model, "iv_B")) {
+  model1$X_emission[attr(model$X_emission, "missing")] <- NA
+  model1$X_emission[attr(model$X_emission, "missing")] <- NA
+  if (!attr(model$X_emission, "iv")) {
     X1 <- model1$X_emission[, 1L, drop = FALSE]
     X2 <- model2$X_emission[, 1L, drop = FALSE]
   } else {
     X1 <- model1$X_emission
     X2 <- model2$X_emission
   }
-  tv_B <- attr(model, "tv_B")
+  tv_B <- attr(model$X_emission, "tv")
   M <- model$n_symbols
   if (C == 1) {
     qs_B <- get_B_ame(
@@ -216,7 +216,7 @@ ame.mnhmm <- function(
   newdata[[variable]] <- values[2]
   model2 <- update(model, newdata)
   
-  if (!attr(model, "iv_omega")) {
+  if (!attr(model$X_omega, "iv")) {
     X1 <- model1$X_cluster[, 1L, drop = FALSE]
     X2 <- model2$X_cluster[, 1L, drop = FALSE]
   } else {

@@ -48,15 +48,7 @@ state transition probabilities.}
 state emission probabilities.}
 
 \item{cluster_formula}{of class \code{\link[=formula]{formula()}} for the
-mixture probabilities.
-@param inits If \code{inits = "random"} (default), random initial values are
-used. Otherwise \code{inits} should be list of initial values. If coefficients
-are given using list components \code{eta_pi}, \code{eta_A}, \code{eta_B},
-and \code{eta_omega}, these are used as is, alternatively initial values
-can be given in terms of the initial state, transition, emission, and mixture
-probabilities using list components \code{initial_probs}, \code{emission_probs},
-\code{transition_probs}, and \code{cluster_probs}. These can also be mixed, i.e. you
-can give only \code{initial_probs} and \code{eta_A}.}
+mixture probabilities.}
 
 \item{data}{A data frame containing the variables used in the model
 formulas. Can be omitted in case of model with no covariates and observations
@@ -79,10 +71,11 @@ is \code{NULL} (the default), numbered clusters are used.}
 \item{inits}{If \code{inits = "random"} (default), random initial values are
 used. Otherwise \code{inits} should be list of initial values. If coefficients
 are given using list components \code{eta_pi}, \code{eta_A}, \code{eta_B},
-these are used as is, alternatively initial values can be given in terms of
-the initial state, transition, and emission probabilities using list
-components \code{initial_probs}, \code{emission_probs}, and \code{transition_probs}. These
-can also be mixed, i.e. you can give only \code{initial_probs} and \code{eta_A}.}
+and \code{eta_omega}, these are used as is, alternatively initial values
+can be given in terms of the initial state, transition, emission, and mixture
+probabilities using list components \code{initial_probs}, \code{emission_probs},
+\code{transition_probs}, and \code{cluster_probs}. These can also be mixed, i.e. you
+can give only \code{initial_probs} and \code{eta_A}.}
 
 \item{init_sd}{Standard deviation of the normal distribution used to generate
 random initial values. Default is \code{2}. If you want to fix the initial values
@@ -105,8 +98,10 @@ i.e. no penalization as the penalty is of form \code{0.5 * sum(pars^2) * penalty
 \item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}}. Most importantly,
 argument \code{maxeval} defines the maximum number of iterations for optimization.
 The default is \code{1000} for restarts and \code{10000} for the final optimization.
-Other useful arguments are \code{algorithm} (default uses LBFGS), and
-\code{print_level} (default is \code{0}, no console output of optimization).}
+Other useful arguments are \code{algorithm} (default uses LBFGS),
+\code{print_level} (default is \code{0}, no console output of optimization), and
+arguments for adjusting the stopping criteria of the optimization
+(see details).}
 }
 \value{
 Object of class \code{mnhmm}.
@@ -133,4 +128,7 @@ fit <- estimate_mnhmm("activity", n_states = 3, n_clusters = 2,
   transition_formula = ~ male + gcse5eq, inits = "random"
   )
 }
+}
+\seealso{
+\code{\link[=estimate_nhmm]{estimate_nhmm()}} for further details.
 }

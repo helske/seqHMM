@@ -44,15 +44,7 @@ state transition probabilities.}
 state emission probabilities.}
 
 \item{cluster_formula}{of class \code{\link[=formula]{formula()}} for the
-mixture probabilities.
-@param inits If \code{inits = "random"} (default), random initial values are
-used. Otherwise \code{inits} should be list of initial values. If coefficients
-are given using list components \code{eta_pi}, \code{eta_A}, \code{eta_B},
-and \code{eta_omega}, these are used as is, alternatively initial values
-can be given in terms of the initial state, transition, emission, and mixture
-probabilities using list components \code{initial_probs}, \code{emission_probs},
-\code{transition_probs}, and \code{cluster_probs}. These can also be mixed, i.e. you
-can give only \code{initial_probs} and \code{eta_A}.}
+mixture probabilities.}
 
 \item{data}{A data frame containing the variables used in the model
 formulas. Can be omitted in case of model with no covariates and observations

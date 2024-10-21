@@ -139,7 +139,7 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
       n_states, n_symbols, 0, 
       length(pi$coef_names), length(A$coef_names), length(B$coef_names)
     )
-    omega <- list(n_pars = 0, iv = FALSE)
+    omega <- list(n_pars = 0, iv = FALSE, X_mean = NULL, X_sd = NULL)
   }
   list(
     model = list(
@@ -165,26 +165,14 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
       n_states = n_states,
       n_symbols = attr(observations, "n_symbols"),
       n_channels = attr(observations, "n_channels"),
-      n_clusters = n_clusters,
-      coef_names_initial = pi$coef_names,
-      coef_names_transition = A$coef_names,
-      coef_names_emission = B$coef_names,
-      coef_names_cluster = if(mixture) omega$coef_names else NULL
+      n_clusters = n_clusters
     ),
     extras = list(
-      missing_X_transition = A$missing,
-      missing_X_emission = B$missing,
       np_pi = pi$n_pars,
       np_A = A$n_pars,
       np_B = B$n_pars,
       np_omega = omega$n_pars,
       multichannel = ifelse(n_channels > 1, "multichannel_", ""),
-      iv_pi = pi$iv,
-      iv_A = A$iv,
-      iv_B = B$iv,
-      iv_omega = omega$iv,
-      tv_A = A$tv,
-      tv_B = B$tv,
       intercept_only = icp_only_i && icp_only_s && icp_only_o && icp_only_d
     )
   )
