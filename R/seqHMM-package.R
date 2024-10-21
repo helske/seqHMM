@@ -23,7 +23,7 @@
 #' @import nloptr
 #' @import Rcpp
 #' @importFrom Rcpp loadModule evalCpp
-#' @importFrom stats logLik complete.cases model.matrix BIC rnorm runif vcov predict update coef qnorm quantile
+#' @importFrom stats logLik complete.cases model.matrix BIC rnorm runif vcov predict update coef qnorm quantile nobs
 #' @importFrom TraMineR alphabet seqstatf seqdef seqlegend
 #' @importFrom graphics par plot.new
 #' @importFrom methods hasArg
