@@ -1,7 +1,7 @@
 #' Estimate a Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all_solutions = FALSE, ...) {
+fit_nhmm <- function(model, inits, init_sd, restarts, threads, save_all_solutions = FALSE, ...) {
   stopifnot_(
     checkmate::test_int(x = threads, lower = 1L), 
     "Argument {.arg threads} must be a single positive integer."
@@ -10,14 +10,14 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
     checkmate::test_int(x = restarts, lower = 0L), 
     "Argument {.arg restarts} must be a single integer."
   )
-  obs <- create_obsArray(model)
-  if (model$n_channels == 1) {
-    obs <- array(obs, dim(obs)[2:3])
-  }
   M <- model$n_symbols
   S <- model$n_states
   T_ <- model$length_of_sequences
-  
+  C <- model$n_channels
+  obs <- create_obsArray(model)
+  if (C == 1) {
+    obs <- array(obs, dim(obs)[2:3])
+  }
   if (identical(inits, "random")) {
     inits <- list(
       initial_probs = NULL, 
@@ -45,6 +45,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
   K_o <- nrow(X_o)
   Ti <- model$sequence_lengths
   n_obs <- nobs(model)
+ 
   dots <- list(...)
   if (isTRUE(dots$maxeval < 0)) {
     pars <- unlist(create_initial_values(
@@ -54,7 +55,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
     model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
     model$etas$A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
     model$gammas$A <- eta_to_gamma_cube(model$etas$A)
-    if (model$n_channels == 1L) {
+    if (C == 1L) {
       model$etas$B <- create_eta_B_nhmm(
         pars[n_i + n_s + seq_len(n_o)], S, M, K_o
       )
@@ -85,7 +86,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
   if (is.null(dots$check_derivatives)) 
     dots$check_derivatives <- FALSE
   
-  if (model$n_channels == 1L) {
+  if (C == 1L) {
     Qs <- t(create_Q(S))
     Qm <- t(create_Q(M))
     if (need_grad) {
@@ -99,8 +100,10 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
           Qs, Qm, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs,
           iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
-        list(objective = - (out$loglik + 0.5 * sum(pars^2) * penalty) / n_obs,
-             gradient = - (unlist(out[-1]) + pars * penalty)/ n_obs)
+        list(
+          objective = - out$loglik / n_obs, 
+          gradient = - unlist(out[-1]) / n_obs
+        )
       }
     } else {
       objectivef <- function(pars) {
@@ -112,8 +115,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
         out <- forward_nhmm_singlechannel(
           eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs
         )
-        
-        - (sum(apply(out[, T_, ], 2, logSumExp))  + 0.5 * sum(pars^2) * penalty) / n_obs
+        - sum(apply(out[, T_, ], 2, logSumExp)) / n_obs
       }
     }
   } else {
@@ -130,8 +132,10 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
           Qs, Qm, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M,
           iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
-        list(objective = - (out$loglik + 0.5 * sum(pars^2) * penalty) / n_obs,
-             gradient = - (unlist(out[-1]) + pars * penalty)/ n_obs)
+        list(
+          objective = - out$loglik / n_obs, 
+          gradient = - unlist(out[-1]) / n_obs
+        )
       }
     } else {
       objectivef <- function(pars) {
@@ -143,7 +147,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
         out <- forward_nhmm_multichannel(
           eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M
         )
-        - (sum(apply(out[, T_, ], 2, logSumExp)) + 0.5 * sum(pars^2) * penalty) / n_obs
+        - sum(apply(out[, T_, ], 2, logSumExp)) / n_obs
       }
     }
   }
@@ -193,7 +197,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
       inits, S, M, init_sd, K_i, K_s, K_o
     ))
   }
-
+  
   out <- nloptr(
     x0 = init, eval_f = objectivef,
     opts = dots
@@ -207,15 +211,15 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
   model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
   model$etas$A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
   model$gammas$A <- eta_to_gamma_cube(model$etas$A)
-  if (model$n_channels == 1L) {
+  if (C == 1L) {
     model$etas$B <- create_eta_B_nhmm(
-        pars[n_i + n_s + seq_len(n_o)], S, M, K_o
-      )
+      pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+    )
     model$gammas$B <- eta_to_gamma_cube(model$etas$B)
   } else {
     model$etas$B <- create_eta_multichannel_B_nhmm(
-        pars[n_i + n_s + seq_len(n_o)], S, M, K_o
-      )
+      pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+    )
     model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
   }
   
@@ -227,7 +231,6 @@ fit_nhmm <- function(model, inits, init_sd, restarts, threads, penalty, save_all
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
     all_solutions = all_solutions,
-    penalty = penalty,
     time = end_time - start_time
   )
   model

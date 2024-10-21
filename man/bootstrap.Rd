@@ -12,7 +12,6 @@ bootstrap_coefs(model, ...)
   model,
   B = 1000,
   method = c("nonparametric", "parametric"),
-  penalty,
   verbose = FALSE,
   ...
 )
@@ -21,7 +20,6 @@ bootstrap_coefs(model, ...)
   model,
   B = 1000,
   method = c("nonparametric", "parametric"),
-  penalty,
   verbose = FALSE,
   ...
 )
@@ -37,9 +35,6 @@ bootstrap_coefs(model, ...)
 nonparametric or parametric bootstrap should be used. The former samples
 sequences with replacement, whereas the latter simulates new datasets based
 on the model.}
-
-\item{penalty}{penalty term for model estimation. By default, same penalty is used
-as was in model estimation by \code{\link[=estimate_nhmm]{estimate_nhmm()}} or \code{\link[=estimate_mnhmm]{estimate_mnhmm()}}.}
 
 \item{verbose}{Should the progress bar be displayed? Default is \code{FALSE}.}
 }

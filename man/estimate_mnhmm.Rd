@@ -23,7 +23,6 @@ estimate_mnhmm(
   restarts = 0L,
   threads = 1L,
   store_data = TRUE,
-  penalty = 0,
   ...
 )
 }
@@ -91,9 +90,6 @@ Default is 1.}
 is stored to the model object. For large datasets, this can be set to
 \code{FALSE}, in which case you might need to pass the data separately to some
 post-prosessing functions.}
-
-\item{penalty}{Penalty for penalized maximum likelihood. Default is \code{0}
-i.e. no penalization as the penalty is of form \code{0.5 * sum(pars^2) * penalty}.}
 
 \item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}}. Most importantly,
 argument \code{maxeval} defines the maximum number of iterations for optimization.

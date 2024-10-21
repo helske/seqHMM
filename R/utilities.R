@@ -1,3 +1,6 @@
+no_itcp_idx <- function(x) {
+  which(arrayInd(seq_along(x), dim(x))[ , 2] != 1)
+}
 #' Split mnhmm for multiple nhmms for get_probs
 #' 
 #' @noRd

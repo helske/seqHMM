@@ -20,7 +20,6 @@ estimate_nhmm(
   restarts = 0L,
   threads = 1L,
   store_data = TRUE,
-  penalty = 0,
   ...
 )
 }
@@ -79,9 +78,6 @@ is stored to the model object. For large datasets, this can be set to
 \code{FALSE}, in which case you might need to pass the data separately to some
 post-prosessing functions.}
 
-\item{penalty}{Penalty for penalized maximum likelihood. Default is \code{0}
-i.e. no penalization as the penalty is of form \code{0.5 * sum(pars^2) * penalty}.}
-
 \item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}}. Most importantly,
 argument \code{maxeval} defines the maximum number of iterations for optimization.
 The default is \code{1000} for restarts and \code{10000} for the final optimization.
@@ -100,7 +96,7 @@ Function \code{estimate_nhmm} estimates a hidden Markov model object of class
 }
 \details{
 By default, the model parameters are estimated using LBFGS algorithm of
-\code{\link[nloptr:nloptr]{nloptr::nloptr()}}. The log-likelihood or the penalized log-likelihood is
+\code{\link[nloptr:nloptr]{nloptr::nloptr()}}. The log-likelihood is
 scaled by the number of non-missing observations (\code{nobs(model)}), and the
 convergence is claimed when either the absolute or relative change of this
 objective function is less than \code{1e-8}, or the absolute change of the

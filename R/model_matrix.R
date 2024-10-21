@@ -76,7 +76,7 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
 #' @noRd
 model_matrix_transition_formula <- function(formula, data, n_sequences,
                                             length_of_sequences, n_states,
-                                            time, id, sequence_length, 
+                                            time, id, sequence_lengths, 
                                             X_mean, X_sd) {
   icp_only <- intercept_only(formula)
   if (icp_only) {
@@ -155,8 +155,8 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     coef_names <- "(Intercept)"
     iv <- tv <- FALSE
     missing_values <- integer(0)
-    attr(X, "X_mean") <- NULL
-    attr(X, "X_sd") <- NULL
+    X_mean <- NULL
+    X_sd <- NULL
   } else {
     X <- stats::model.matrix.lm(
       formula, 
@@ -223,8 +223,8 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
     X <- matrix(1, n_sequences, 1)
     coef_names <- "(Intercept)"
     iv <- FALSE
-    attr(X, "X_mean") <- NULL
-    attr(X, "X_sd") <- NULL
+    X_mean <- NULL
+    X_sd <- NULL
   } else {
     first_time_point <- min(data[[time]])
     X <- stats::model.matrix.lm(
@@ -232,7 +232,7 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
       data = data[data[[time]] == first_time_point, ], 
       na.action = stats::na.pass
     )
-    cols <- which(colnames(X) != "(Intercept)")
+    cols <- which(colnames(X) != "(Intercept)") #always first column(?)
     if (missing(X_mean)) {
       X_mean <- X_sd <- TRUE
     }

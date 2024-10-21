@@ -271,7 +271,7 @@ get_cluster_probs.mnhmm <- function(model, probs, ...) {
   } else {
     ids <- rownames(model$observations[[1]])
   }
-  if (!attr(model$X_omega, "iv")) {
+  if (!attr(model$X_cluster, "iv")) {
     X <- model$X_cluster[, 1L, drop = FALSE]
   } else {
     X <- model$X_cluster

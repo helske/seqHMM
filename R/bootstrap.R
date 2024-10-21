@@ -67,8 +67,6 @@ permute_clusters <- function(model, pcp_mle) {
 #' nonparametric or parametric bootstrap should be used. The former samples 
 #' sequences with replacement, whereas the latter simulates new datasets based 
 #' on the model.
-#' @param penalty penalty term for model estimation. By default, same penalty is used 
-#' as was in model estimation by [estimate_nhmm()] or [estimate_mnhmm()].
 #' @param verbose Should the progress bar be displayed? Default is `FALSE`.
 #' @param ... Additional arguments to [nloptr()].
 #' @return The original model with additional element `model$boot`, which 
@@ -83,16 +81,13 @@ bootstrap_coefs <- function(model, ...) {
 #' @export
 bootstrap_coefs.nhmm <- function(model, B = 1000, 
                                  method = c("nonparametric", "parametric"),
-                                 penalty, verbose = FALSE, ...) {
+                                 verbose = FALSE, ...) {
   method <- match.arg(method)
   stopifnot_(
     checkmate::test_int(x = B, lower = 0L), 
     "Argument {.arg B} must be a single positive integer."
   )
   init <- model$etas
-  if (missing(penalty)) {
-    penalty <- model$estimation_results$penalty
-  }
   gammas_mle <- model$gammas
   gamma_pi <- replicate(B, gammas_mle$pi, simplify = FALSE)
   gamma_A <- replicate(B, gammas_mle$A, simplify = FALSE)
@@ -102,7 +97,7 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
       fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, threads = 1, 
-                      penalty = penalty, ...)
+                      ...)
       fit$gammas <- permute_states(fit$gammas, gammas_mle)
       gamma_pi[[i]] <- fit$gammas$pi
       gamma_A[[i]] <- fit$gammas$A
@@ -125,7 +120,7 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
         N, T_, M, S, formula_pi, formula_A, formula_B,
         data = d, time, id, init)$model
       fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, threads = 1, 
-                       penalty = penalty, ...)
+                      ...)
       fit$gammas <- permute_states(fit$gammas, gammas_mle)
       gamma_pi[[i]] <- fit$gammas$pi
       gamma_A[[i]] <- fit$gammas$A
@@ -141,16 +136,13 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
 #' @export
 bootstrap_coefs.mnhmm <- function(model, B = 1000, 
                                   method = c("nonparametric", "parametric"),
-                                  penalty, verbose = FALSE, ...) {
+                                  verbose = FALSE, ...) {
   method <- match.arg(method)
   stopifnot_(
     checkmate::test_int(x = B, lower = 0L), 
     "Argument {.arg B} must be a single positive integer."
   )
   init <- model$etas
-  if (missing(penalty)) {
-    penalty <- model$estimation_results$penalty
-  }
   gammas_mle <- model$gammas
   pcp_mle <- posterior_cluster_probabilities(model)
   gamma_pi <- replicate(B, gammas_mle$pi, simplify = FALSE)
@@ -163,7 +155,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
       fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, threads = 1, 
-                       penalty = penalty, ...)
+                       ...)
       fit <- permute_clusters(fit, pcp_mle)
       for (j in seq_len(D)) {
         out <- permute_states(
@@ -197,7 +189,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
         N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
         data = d, time, id, init)$model
       fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, threads = 1, 
-                        penalty = penalty, ...)
+                       ...)
       fit <- permute_clusters(fit, pcp_mle)
       for (j in seq_len(D)) {
         out <- permute_states(

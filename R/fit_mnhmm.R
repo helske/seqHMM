@@ -1,7 +1,7 @@
 #' Estimate a Mixture Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty, 
+fit_mnhmm <- function(model, inits, init_sd, restarts, threads, 
                       save_all_solutions = FALSE, ...) {
   stopifnot_(
     checkmate::test_int(x = threads, lower = 1L), 
@@ -11,14 +11,15 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
     checkmate::test_int(x = restarts, lower = 0L), 
     "Argument {.arg restarts} must be a single integer."
   )
-  obs <- create_obsArray(model)
-  if (model$n_channels == 1) {
-    obs <- array(obs, dim(obs)[2:3])
-  }
   M <- model$n_symbols
   S <- model$n_states
   D <- model$n_clusters
   T_ <- model$length_of_sequences
+  C <- model$n_channels
+  obs <- create_obsArray(model)
+  if (C == 1) {
+    obs <- array(obs, dim(obs)[2:3])
+  }
   if (identical(inits, "random")) {
     inits <- list(
       initial_probs = NULL, 
@@ -37,7 +38,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
   iv_pi <- attr(model$X_initial, "iv")
   iv_A <- attr(model$X_transition, "iv")
   iv_B <- attr(model$X_emission, "iv")
-  iv_omega <- attr(model$X_omega, "iv")
+  iv_omega <- attr(model$X_cluster, "iv")
   tv_A <- attr(model$X_transition, "tv")
   tv_B <- attr(model$X_emission, "tv")
   X_i <- model$X_initial
@@ -68,7 +69,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
     model$gammas$A <- c(eta_to_gamma_cube_field(
       model$etas$A
     ))
-    if (model$n_channels == 1L) {
+    if (C == 1L) {
       model$etas$B <- create_eta_B_mnhmm(
         pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
       )
@@ -107,7 +108,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
   if (is.null(dots$check_derivatives)) 
     dots$check_derivatives <- FALSE
   
-  if (model$n_channels == 1L) {
+  if (C == 1L) {
     Qs <- t(create_Q(S))
     Qm <- t(create_Q(M))
     Qd <- t(create_Q(D))
@@ -126,8 +127,10 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
           eta_omega, X_d, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega, 
           Ti
         )
-        list(objective = - (out$loglik + 0.5 * sum(pars^2) * penalty) / n_obs,
-             gradient = - (unlist(out[-1]) + pars * penalty) / n_obs)
+        list(
+          objective = - out$loglik / n_obs, 
+          gradient = - unlist(out[-1]) / n_obs
+        )
       }
     } else {
       objectivef <- function(pars) {
@@ -144,7 +147,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
           eta_omega, X_d, obs
         )
         
-        - (sum(apply(out[, T_, ], 2, logSumExp)) + 0.5 * sum(pars^2) * penalty) / n_obs
+        - sum(apply(out[, T_, ], 2, logSumExp)) / n_obs
       }
     }
   } else {
@@ -172,8 +175,10 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
           eta_omega, X_d, obs, M, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega,
           Ti
         )
-        list(objective = - (out$loglik + 0.5 * sum(pars^2) * penalty) / n_obs,
-             gradient = - (unlist(out[-1]) + pars * penalty) / n_obs)
+        list(
+          objective = - out$loglik / n_obs,
+          gradient = - unlist(out[-1]) / n_obs
+        )
       }
     } else {
       objectivef <- function(pars) {
@@ -196,8 +201,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
           eta_B, X_o,
           eta_omega, X_d,
           obs, M)
-        
-        - (sum(apply(out[, T_, ], 2, logSumExp)) + 0.5 * sum(pars^2) * penalty) / n_obs
+
+        - sum(apply(out[, T_, ], 2, logSumExp)) / n_obs
       }
     }
   }
@@ -267,7 +272,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
   model$gammas$A <- c(eta_to_gamma_cube_field(
     model$etas$A
   ))
-  if (model$n_channels == 1L) {
+  if (C == 1L) {
     model$etas$B <- create_eta_B_mnhmm(
       pars[n_i + n_s + seq_len(n_o)], S, M, K_o, D
     )
@@ -297,7 +302,6 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads, penalty,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
     all_solutions = all_solutions,
-    penalty = penalty,
     time = end_time - start_time
   )
   model

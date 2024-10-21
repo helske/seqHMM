@@ -5,7 +5,7 @@
 #' (potentially) depend on covariates.
 #' 
 #' By default, the model parameters are estimated using LBFGS algorithm of 
-#' [nloptr::nloptr()]. The log-likelihood or the penalized log-likelihood is 
+#' [nloptr::nloptr()]. The log-likelihood is 
 #' scaled by the number of non-missing observations (`nobs(model)`), and the 
 #' convergence is claimed when either the absolute or relative change of this 
 #' objective function is less than `1e-8`, or the absolute change of the 
@@ -51,8 +51,6 @@
 #' is stored to the model object. For large datasets, this can be set to 
 #' `FALSE`, in which case you might need to pass the data separately to some 
 #' post-prosessing functions.
-#' @param penalty Penalty for penalized maximum likelihood. Default is `0` 
-#' i.e. no penalization as the penalty is of form `0.5 * sum(pars^2) * penalty`.
 #' @param ... Additional arguments to [nloptr::nloptr()]. Most importantly,
 #' argument `maxeval` defines the maximum number of iterations for optimization.
 #' The default is `1000` for restarts and `10000` for the final optimization. 
@@ -81,7 +79,7 @@ estimate_nhmm <- function(
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, channel_names = NULL, 
     inits = "random", init_sd = 2, restarts = 0L, threads = 1L, 
-    store_data = TRUE, penalty = 0, ...) {
+    store_data = TRUE, ...) {
   
   call <- match.call()
   
@@ -97,7 +95,7 @@ estimate_nhmm <- function(
   if (store_data) {
     model$data <- data
   }
-  out <- fit_nhmm(model, inits, init_sd, restarts, threads, penalty, ...)
+  out <- fit_nhmm(model, inits, init_sd, restarts, threads, ...)
   attr(out, "call") <- call
   out
 }

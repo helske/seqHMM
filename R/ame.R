@@ -216,7 +216,7 @@ ame.mnhmm <- function(
   newdata[[variable]] <- values[2]
   model2 <- update(model, newdata)
   
-  if (!attr(model$X_omega, "iv")) {
+  if (!attr(model$X_cluster, "iv")) {
     X1 <- model1$X_cluster[, 1L, drop = FALSE]
     X2 <- model2$X_cluster[, 1L, drop = FALSE]
   } else {

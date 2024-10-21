@@ -122,14 +122,10 @@
   dim(sequence_lengths) <- length(sequence_lengths)
   if (n_channels > 1L) {
     nobs <- sum(sapply(x, function(x) {
-      sum(!(x == attr(x[[1]], "nr") |
-              x == attr(x[[1]], "void") |
-              is.na(x)))
+      sum(!(x == attr(x, "nr") | x == attr(x, "void") | is.na(x)))
     })) / n_channels
   } else {
-    nobs <- sum(!(x == attr(x, "nr") |
-                    x == attr(x, "void") |
-                    is.na(x)))
+    nobs <- sum(!(x == attr(x, "nr") | x == attr(x, "void") | is.na(x)))
   }
   
   attr(x, "n_channels") <- ifelse(
