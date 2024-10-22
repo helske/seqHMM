@@ -86,10 +86,12 @@ get_initial_probs.mhmm <- function(model, ...) {
 #' @param probs Vector defining the quantiles of interest. Default is 
 #' `c(0.025, 0.5, 0.975)`. The quantiles are based on bootstrap samples of 
 #' coefficients, stored in `object$boot`.
+#' @param remove_voids Should the time points corresponding to `TraMineR`'s 
+#' void in the observed sequences be removed? Default is `TRUE`.
 #' @param ... Ignored.
 #' @rdname transition_probs
 #' @export
-get_transition_probs.nhmm <- function(model, probs, ...) {
+get_transition_probs.nhmm <- function(model, probs, remove_voids = TRUE, ...) {
   S <- model$n_states
   T_ <- model$length_of_sequences
   model$X_transition[attr(model$X_transition, "missing")] <- NA
@@ -114,7 +116,6 @@ get_transition_probs.nhmm <- function(model, probs, ...) {
       model$gammas$A, X, attr(model$X_transition, "tv")
     ))
   )
-  
   d <- stats::setNames(
     d, 
     c(
@@ -138,12 +139,17 @@ get_transition_probs.nhmm <- function(model, probs, ...) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
     }
   }
-  d
+  if (remove_voids) {
+    d[complete.cases(d), ]
+  } else {
+    d
+  }
 }
 #' @rdname transition_probs
 #' @export
-get_transition_probs.mnhmm <- function(model, probs, ...) {
-  x <- lapply(split_mnhmm(model), get_transition_probs, probs = probs)
+get_transition_probs.mnhmm <- function(model, probs, remove_voids = TRUE, ...) {
+  x <- lapply(split_mnhmm(model), 
+              get_transition_probs, probs = probs, remove_voids = remove_voids)
   do.call(rbind, lapply(seq_along(x), function(i) {
     cbind(cluster = names(x)[i], x[[i]])
   }))
@@ -163,10 +169,12 @@ get_transition_probs.mhmm <- function(model, ...) {
 #' @param probs Vector defining the quantiles of interest. Default is 
 #' `c(0.025, 0.5, 0.975)`. The quantiles are based on bootstrap samples of 
 #' coefficients, stored in `object$boot`.
+#' @param remove_voids Should the time points corresponding to `TraMineR`'s 
+#' void in the observed sequences be removed? Default is `TRUE`.
 #' @param ... Ignored.
 #' @rdname emission_probs
 #' @export
-get_emission_probs.nhmm <- function(model, probs, ...) {
+get_emission_probs.nhmm <- function(model, probs, remove_voids = TRUE, ...) {
   S <- model$n_states
   C <- model$n_channels
   T_ <- model$length_of_sequences
@@ -235,12 +243,17 @@ get_emission_probs.nhmm <- function(model, probs, ...) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
     }
   }
-  d
+  if (remove_voids) {
+    d[complete.cases(d), ]
+  } else {
+    d
+  }
 }
 #' @rdname emission_probs
 #' @export
-get_emission_probs.mnhmm <- function(model, probs, ...) {
-  x <- lapply(split_mnhmm(model), get_emission_probs, probs = probs)
+get_emission_probs.mnhmm <- function(model, probs, remove_voids = TRUE, ...) {
+  x <- lapply(split_mnhmm(model), 
+              get_emission_probs, probs = probs, remove_voids = remove_voids)
   do.call(rbind, lapply(seq_along(x), function(i) {
     cbind(cluster = names(x)[i], x[[i]])
   }))
@@ -366,19 +379,13 @@ get_probs.nhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ..
   T_ <- model$length_of_sequences
   out <- list(
     initial_probs = get_initial_probs(model, probs),
-    transition_probs = get_transition_probs(model, probs),
-    emission_probs = get_emission_probs(model, probs)
+    transition_probs = get_transition_probs(model, probs, remove_voids),
+    emission_probs = get_emission_probs(model, probs, remove_voids)
   )
   rownames(out$initial_probs) <- NULL
   rownames(out$transition_probs) <- NULL
   rownames(out$emission_probs) <- NULL
-  if (remove_voids) {
-    list(
-      initial_probs = out$initial_probs, 
-      transition_probs = out$transition_probs[complete.cases(out$transition_probs), ],
-      emission_probs = out$emission_probs[complete.cases(out$emission_probs), ]
-    )
-  } else out
+  out
 }
 #' @rdname get_probs
 #' @export
@@ -412,20 +419,13 @@ get_probs.mnhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, .
   T_ <- model$length_of_sequences
   out <- list(
     initial_probs = get_initial_probs(model, probs),
-    transition_probs = get_transition_probs(model, probs),
-    emission_probs = get_emission_probs(model, probs),
+    transition_probs = get_transition_probs(model, probs, remove_voids),
+    emission_probs = get_emission_probs(model, probs, remove_voids),
     cluster_probs = get_cluster_probs(model, probs)
   )
   rownames(out$initial_probs) <- NULL
   rownames(out$transition_probs) <- NULL
   rownames(out$emission_probs) <- NULL
   rownames(out$cluster_probs) <- NULL
-  if (remove_voids) {
-    list(
-      initial_probs = out$initial_probs, 
-      transition_probs = out$transition_probs[complete.cases(out$transition_probs), ],
-      emission_probs = out$emission_probs[complete.cases(out$emission_probs), ],
-      cluster_probs = out$cluster_probs
-    )
-  } else out
+  out
 }
