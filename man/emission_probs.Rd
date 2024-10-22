@@ -10,9 +10,9 @@
 \usage{
 get_emission_probs(model, ...)
 
-\method{get_emission_probs}{nhmm}(model, probs, ...)
+\method{get_emission_probs}{nhmm}(model, probs, remove_voids = TRUE, ...)
 
-\method{get_emission_probs}{mnhmm}(model, probs, ...)
+\method{get_emission_probs}{mnhmm}(model, probs, remove_voids = TRUE, ...)
 
 \method{get_emission_probs}{hmm}(model, ...)
 
@@ -26,6 +26,9 @@ get_emission_probs(model, ...)
 \item{probs}{Vector defining the quantiles of interest. Default is
 \code{c(0.025, 0.5, 0.975)}. The quantiles are based on bootstrap samples of
 coefficients, stored in \code{object$boot}.}
+
+\item{remove_voids}{Should the time points corresponding to \code{TraMineR}'s
+void in the observed sequences be removed? Default is \code{TRUE}.}
 }
 \description{
 Extract the Emission Probabilities of Hidden Markov Model
