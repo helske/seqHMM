@@ -81,7 +81,7 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
   icp_only <- intercept_only(formula)
   if (icp_only) {
     n_pars <-  n_states * (n_states - 1L)
-    X <- array(1, c(length_of_sequences, n_sequences, 1L))
+    X <- array(1, c(1L, length_of_sequences, n_sequences))
     coef_names <- "(Intercept)"
     iv <- tv <- FALSE
     missing_values <- integer(0)
@@ -124,14 +124,14 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     }
     coef_names <- colnames(X)
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
-    missing_values <- which(is.na(X))
-    # Replace NAs in void cases with zero
-    X[is.na(X)] <- 0
     n_pars <- n_states * (n_states - 1L) * dim(X)[3]
     iv <- iv_X(X)
     tv <- tv_X(X)
+    X <- aperm(X, c(3, 1, 2))
+    missing_values <- which(is.na(X))
+    # Replace NAs in void cases with zero
+    X[is.na(X)] <- 0
   }
-  X <- aperm(X, c(3, 1, 2))
   attr(X, "X_mean") <- X_mean
   attr(X, "X_sd") <- X_sd
   attr(X, "coef_names") <- coef_names
@@ -151,7 +151,7 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
   icp_only <- intercept_only(formula)
   if (icp_only) {
     n_pars <-  sum(n_states * (n_symbols - 1L))
-    X <- array(1, c(length_of_sequences, n_sequences, 1L))
+    X <- array(1, c(1L, length_of_sequences, n_sequences))
     coef_names <- "(Intercept)"
     iv <- tv <- FALSE
     missing_values <- integer(0)
@@ -196,14 +196,14 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     }
     coef_names <- colnames(X)
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
-    missing_values <- which(is.na(X))
-    # Replace NAs in void cases with zero
-    X[is.na(X)] <- 0
     n_pars <- sum(n_states * (n_symbols - 1L) * dim(X)[3])
     iv <- iv_X(X)
     tv <- tv_X(X)
+    X <- aperm(X, c(3, 1, 2))
+    missing_values <- which(is.na(X))
+    # Replace NAs in void cases with zero
+    X[is.na(X)] <- 0
   }
-  X <- aperm(X, c(3, 1, 2))
   attr(X, "X_mean") <- X_mean
   attr(X, "X_sd") <- X_sd
   attr(X, "coef_names") <- coef_names
