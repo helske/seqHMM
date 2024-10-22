@@ -21,7 +21,6 @@ estimate_mnhmm(
   inits = "random",
   init_sd = 2,
   restarts = 0L,
-  threads = 1L,
   store_data = TRUE,
   ...
 )
@@ -82,9 +81,6 @@ of the regression coefficients to zero, use \code{init_sd = 0}.}
 
 \item{restarts}{Number of times to run optimization using random starting
 values (in addition to the final run). Default is 0.}
-
-\item{threads}{Number of parallel threads for optimization with restarts.
-Default is 1.}
 
 \item{store_data}{If \code{TRUE} (default), original data frame passed as \code{data}
 is stored to the model object. For large datasets, this can be set to

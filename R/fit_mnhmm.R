@@ -1,12 +1,8 @@
 #' Estimate a Mixture Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_mnhmm <- function(model, inits, init_sd, restarts, threads, 
+fit_mnhmm <- function(model, inits, init_sd, restarts, 
                       save_all_solutions = FALSE, ...) {
-  stopifnot_(
-    checkmate::test_int(x = threads, lower = 1L), 
-    "Argument {.arg threads} must be a single positive integer."
-  )
   stopifnot_(
     checkmate::test_int(x = restarts, lower = 0L), 
     "Argument {.arg restarts} must be a single integer."
@@ -209,11 +205,6 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, threads,
   all_solutions <- NULL
   start_time <- proc.time()
   if (restarts > 0L) {
-    if (threads > 1L) {
-      future::plan(future::multisession, workers = threads)
-    } else {
-      future::plan(future::sequential)
-    }
     dots$control_restart$algorithm <- dots$algorithm
     if (is.null(dots$control_restart$maxeval)) 
       dots$control_restart$maxeval <- dots$maxeval

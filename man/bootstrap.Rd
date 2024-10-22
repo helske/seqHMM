@@ -44,5 +44,7 @@ contains A n * B matrix where n is the number of coefficients. The order of
 coefficients match \code{unlist(model$gammas)}.
 }
 \description{
-Bootstrap Sampling of NHMM Coefficients
+It is possible to parallelize the bootstrap runs using the \code{future} package,
+e.g., by calling \code{future::plan(multisession, workers = 2)} before
+\code{bootstrap_coefs()}. See \code{\link[future:plan]{future::plan()}} for details.
 }

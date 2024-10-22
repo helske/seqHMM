@@ -12,6 +12,11 @@
 #' parameters is less than `1e-8`. The covariate data is standardardized before 
 #' optimization.
 #' 
+#' With multiple runs of optimization (by using the `restarts` argument), it is 
+#' possible to parallelize these runs using the `future` package, e.g., by 
+#' calling `future::plan(multisession, workers = 2)` before `estimate_nhmm()`.
+#' See [future::plan()] for details.
+#' 
 #' @param observations Either the name of the response variable in `data`, or 
 #' an `stslist` object (see [TraMineR::seqdef()]) containing the 
 #' sequences. In case of multichannel data, `observations` should be a vector 
@@ -45,8 +50,6 @@
 #' of the regression coefficients to zero, use `init_sd = 0`.
 #' @param restarts Number of times to run optimization using random starting 
 #' values (in addition to the final run). Default is 0.
-#' @param threads Number of parallel threads for optimization with restarts. 
-#' Default is 1.
 #' @param store_data If `TRUE` (default), original data frame passed as `data` 
 #' is stored to the model object. For large datasets, this can be set to 
 #' `FALSE`, in which case you might need to pass the data separately to some 
@@ -78,7 +81,7 @@ estimate_nhmm <- function(
     observations, n_states, initial_formula = ~1, 
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, channel_names = NULL, 
-    inits = "random", init_sd = 2, restarts = 0L, threads = 1L, 
+    inits = "random", init_sd = 2, restarts = 0L,
     store_data = TRUE, ...) {
   
   call <- match.call()
@@ -95,7 +98,7 @@ estimate_nhmm <- function(
   if (store_data) {
     model$data <- data
   }
-  out <- fit_nhmm(model, inits, init_sd, restarts, threads, ...)
+  out <- fit_nhmm(model, inits, init_sd, restarts, ...)
   attr(out, "call") <- call
   out
 }

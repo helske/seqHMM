@@ -61,6 +61,10 @@ permute_clusters <- function(model, pcp_mle) {
 }
 #' Bootstrap Sampling of NHMM Coefficients
 #' 
+#' It is possible to parallelize the bootstrap runs using the `future` package, 
+#' e.g., by calling `future::plan(multisession, workers = 2)` before 
+#' `bootstrap_coefs()`. See [future::plan()] for details.
+#' 
 #' @param model An `nhmm` or `mnhmm` object.
 #' @param B number of bootstrap samples.
 #' @param method Either `"nonparametric"` or `"parametric"`, to define whether 
@@ -92,17 +96,17 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
   gamma_pi <- replicate(B, gammas_mle$pi, simplify = FALSE)
   gamma_A <- replicate(B, gammas_mle$A, simplify = FALSE)
   gamma_B <- replicate(B, gammas_mle$B, simplify = FALSE)
+  
   if (verbose) pb <- utils::txtProgressBar(min = 0, max = 100, style = 3)
   if (method == "nonparametric") {
-    for (i in seq_len(B)) {
-      mod <- bootstrap_model(model)
-      fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, threads = 1, ...)
-      fit$gammas <- permute_states(fit$gammas, gammas_mle)
-      gamma_pi[[i]] <- fit$gammas$pi
-      gamma_A[[i]] <- fit$gammas$A
-      gamma_B[[i]] <- fit$gammas$B
-      if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
-    }
+    out <- future.apply::future_lapply(
+      seq_len(B), function(i) {
+        mod <- bootstrap_model(model)
+        fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, ...)
+        if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
+        permute_states(fit$gammas, gammas_mle)
+      }
+    )
   } else {
     N <- model$n_sequences
     T_ <- model$sequence_lengths
@@ -114,19 +118,19 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
     d <- model$data
     time <- model$time_variable
     id <- model$id_variable
-    for (i in seq_len(B)) {
-      mod <- simulate_nhmm(
-        N, T_, M, S, formula_pi, formula_A, formula_B,
-        data = d, time, id, init)$model
-      fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, threads = 1, ...)
-      fit$gammas <- permute_states(fit$gammas, gammas_mle)
-      gamma_pi[[i]] <- fit$gammas$pi
-      gamma_A[[i]] <- fit$gammas$A
-      gamma_B[[i]] <- fit$gammas$B
-      if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
-    }
+    out <- future.apply::future_lapply(
+      seq_len(B), function(i) {
+        mod <- simulate_nhmm(
+          N, T_, M, S, formula_pi, formula_A, formula_B,
+          data = d, time, id, init)$model
+        fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, ...)
+        if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
+        fit$gammas <- permute_states(fit$gammas, gammas_mle)
+      }
+    )
   }
   if (verbose) close(pb)
+  browser()
   model$boot <- list(gamma_pi = gamma_pi, gamma_A = gamma_A, gamma_B = gamma_B)
   model
 }
@@ -152,7 +156,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
   if (method == "nonparametric") {
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
-      fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, threads = 1, ...)
+      fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, ...)
       fit <- permute_clusters(fit, pcp_mle)
       for (j in seq_len(D)) {
         out <- permute_states(
@@ -185,7 +189,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
       mod <- simulate_mnhmm(
         N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
         data = d, time, id, init)$model
-      fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, threads = 1, ...)
+      fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, ...)
       fit <- permute_clusters(fit, pcp_mle)
       for (j in seq_len(D)) {
         out <- permute_states(

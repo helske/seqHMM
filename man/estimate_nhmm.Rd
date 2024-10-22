@@ -18,7 +18,6 @@ estimate_nhmm(
   inits = "random",
   init_sd = 2,
   restarts = 0L,
-  threads = 1L,
   store_data = TRUE,
   ...
 )
@@ -70,9 +69,6 @@ of the regression coefficients to zero, use \code{init_sd = 0}.}
 \item{restarts}{Number of times to run optimization using random starting
 values (in addition to the final run). Default is 0.}
 
-\item{threads}{Number of parallel threads for optimization with restarts.
-Default is 1.}
-
 \item{store_data}{If \code{TRUE} (default), original data frame passed as \code{data}
 is stored to the model object. For large datasets, this can be set to
 \code{FALSE}, in which case you might need to pass the data separately to some
@@ -102,6 +98,11 @@ convergence is claimed when either the absolute or relative change of this
 objective function is less than \code{1e-8}, or the absolute change of the
 parameters is less than \code{1e-8}. The covariate data is standardardized before
 optimization.
+
+With multiple runs of optimization (by using the \code{restarts} argument), it is
+possible to parallelize these runs using the \code{future} package, e.g., by
+calling \code{future::plan(multisession, workers = 2)} before \code{estimate_nhmm()}.
+See \code{\link[future:plan]{future::plan()}} for details.
 }
 \examples{
 data("mvad", package = "TraMineR")

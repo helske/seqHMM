@@ -41,7 +41,7 @@ is_list_of_lists <- function(x) {
 #' @noRd
 p_to_eta <-function(x) {
   Q <- create_Q(length(x))
-  x <- pmin(pmax(x, 0.001), 0.999)
+  x <- pmin(pmax(x, 1e-6), 1-1e-6)
   x <- x / sum(x)
   log_x <- log(x)
   t(Q) %*% (log_x - mean(log_x))
