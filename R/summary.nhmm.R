@@ -22,7 +22,7 @@ summary.nhmm <- function(object, ...) {
 #' @param object Non-homogeneous hidden Markov model of class `mnhmm`.
 summary.mnhmm <- function(object, ...) {
   cf <- coef(object)
-  pr <- exp(object$X_cluster %*% object$gammas$omega)
+  pr <- exp(object$X_omega %*% object$gammas$omega)
   prior_cluster_probabilities <- pr / rowSums(pr)
   pcp <- posterior_cluster_probabilities(object)
   mpc <- factor(

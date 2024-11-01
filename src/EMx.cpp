@@ -7,7 +7,7 @@
 // [[Rcpp::export]]
 Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const arma::vec& init_,
   const arma::ucube& obs, const arma::uvec& nSymbols, const arma::mat& coef_, const arma::mat& X,
-  const arma::uvec& numberOfStates, int itermax, double tol, int trace, unsigned int threads) {
+  const arma::uvec& numberOfStates, int itermax, double tol, int trace, arma::uword threads) {
   
   // Make sure we don't alter the original vec/mat/cube
   // needed for cube, in future maybe in other cases as well
@@ -24,7 +24,7 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
   weights.each_row() /= sum(weights, 0);
   
   arma::mat initk(emission.n_rows, obs.n_slices);
-  for (unsigned int k = 0; k < obs.n_slices; k++) {
+  for (arma::uword k = 0; k < obs.n_slices; k++) {
     initk.col(k) = init % reparma(weights.col(k), numberOfStates);
   }
   
@@ -48,11 +48,11 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
     arma::mat bsi(emission.n_rows, obs.n_slices);
     sumlogLik_new = 0;
     double max_sf = 1;
-    unsigned int error_code = 0;
+    arma::uword error_code = 0;
     
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) reduction(+:sumlogLik_new) num_threads(threads) \
     default(shared) //shared(bsi, initk, transition, obs, emission, delta, ksii, gamma, nSymbols, error_code, max_sf, arma::fill::zeros)
-      for (unsigned int k = 0; k < obs.n_slices; k++) {
+      for (arma::uword k = 0; k < obs.n_slices; k++) {
         
         if (error_code == 0) {
           arma::mat alpha(emission.n_rows, obs.n_cols); //m,n,k
@@ -68,12 +68,12 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
           arma::vec delta_k(emission.n_rows);
           delta_k = alpha.col(0) % beta.col(0) / scales(0);
           
-          for (unsigned int i = 0; i < emission.n_rows; i++) {
-            for (unsigned int j = 0; j < emission.n_rows; j++) {
+          for (arma::uword i = 0; i < emission.n_rows; i++) {
+            for (arma::uword j = 0; j < emission.n_rows; j++) {
               if (transition(i, j) > 0.0) {
-                for (unsigned int t = 0; t < (obs.n_cols - 1); t++) {
+                for (arma::uword t = 0; t < (obs.n_cols - 1); t++) {
                   double tmp = alpha(i, t) * transition(i, j) * beta(j, t + 1);
-                  for (unsigned int r = 0; r < obs.n_rows; r++) {
+                  for (arma::uword r = 0; r < obs.n_rows; r++) {
                     tmp *= emission(j, obs(r, t + 1, k), r);
                   }
                   ksii_k(i, j) += tmp;
@@ -81,11 +81,11 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
               }
             }
           }
-          for (unsigned int r = 0; r < emission.n_slices; r++) {
-            for (unsigned int l = 0; l < nSymbols(r); l++) {
-              for (unsigned int i = 0; i < emission.n_rows; i++) {
+          for (arma::uword r = 0; r < emission.n_slices; r++) {
+            for (arma::uword l = 0; l < nSymbols(r); l++) {
+              for (arma::uword i = 0; i < emission.n_rows; i++) {
                 if (emission(i, l, r) > 0.0) {
-                  for (unsigned int t = 0; t < obs.n_cols; t++) {
+                  for (arma::uword t = 0; t < obs.n_cols; t++) {
                     if (l == (obs(r, t, k))) {
                       double tmp = alpha(i, t) * beta(i, t) / scales(t);
                       gamma_k(i, l, r) += tmp;
@@ -96,7 +96,7 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
             }
           }
           
-          for (unsigned int j = 0; j < emission.n_rows; j++) {
+          for (arma::uword j = 0; j < emission.n_rows; j++) {
             bsi(j, k) = beta(j, 0)  * initk(j, k);
           }
           
@@ -139,7 +139,7 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
         }
       }
       if (change > tol) {
-        unsigned int error = optCoef(weights, obs, emission, bsi, coef, X, cumsumstate,
+        arma::uword error = optCoef(weights, obs, emission, bsi, coef, X, cumsumstate,
           numberOfStates, trace);
         if (error != 0) {
           return Rcpp::List::create(Rcpp::Named("error") = error);
@@ -147,7 +147,7 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
         
         if (obs.n_cols > 1) {
           arma::vec rsums = sum(ksii, 1);
-          for (unsigned int kk = 0; kk < ksii.n_rows; kk++) {
+          for (arma::uword kk = 0; kk < ksii.n_rows; kk++) {
             if (rsums(kk) == 0) {
               rsums(kk) = 1;
             }
@@ -155,20 +155,20 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
           ksii.each_col() /= rsums;
           transition = ksii;
         }
-        for (unsigned int r = 0; r < emission.n_slices; r++) {
+        for (arma::uword r = 0; r < emission.n_slices; r++) {
           
           gamma.slice(r).cols(0, nSymbols(r) - 1).each_col() /= sum(
             gamma.slice(r).cols(0, nSymbols(r) - 1), 1);
           emission.slice(r).cols(0, nSymbols(r) - 1) = gamma.slice(r).cols(0, nSymbols(r) - 1);
         }
         
-        for (unsigned int i = 0; i < numberOfStates.n_elem; i++) {
+        for (arma::uword i = 0; i < numberOfStates.n_elem; i++) {
           delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1) /= arma::as_scalar(
             arma::accu(delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1)));
         }
         init = delta;
         
-        for (unsigned int k = 0; k < obs.n_slices; k++) {
+        for (arma::uword k = 0; k < obs.n_slices; k++) {
           initk.col(k) = init % reparma(weights.col(k), numberOfStates);
         }
       }

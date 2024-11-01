@@ -25,7 +25,7 @@ print.hmm <- function(x, digits = 3, ...) {
       cat("\nNumber of sequences:", x$n_sequences)
       cat("\nNumber of time points:", x$length_of_sequences)
       cat("\nNumber of observed symbols:", paste(x$n_symbols, collapse = ", "))
-      cat("\nNumber of hidden states:", x$n_states)
+      cat("\nNumber of hidden states:", x$n_states, "\n")
       print.listof(list(
         "Initial probabilities" = x$initial_probs,
         "Transition probabilities" = x$transition_probs,
@@ -38,7 +38,7 @@ print.hmm <- function(x, digits = 3, ...) {
     cat("\nNumber of time points:", x$length_of_sequences)
     cat("\nNumber of observation channels:", x$n_channels)
     cat("\nNumber of observed symbols:", paste(x$n_symbols, collapse = ", "))
-    cat("\nNumber of hidden states:", x$n_states)
+    cat("\nNumber of hidden states:", x$n_states, "\n")
     print.listof(list("Initial probabilities" = x$initial_probs), digits = digits, ...)
     cat("\n")
     print.listof(list("Transition probabilities" = x$transition_probs), digits = digits, ...)

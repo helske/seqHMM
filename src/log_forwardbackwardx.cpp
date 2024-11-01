@@ -8,7 +8,7 @@
 Rcpp::List log_forwardbackwardx(const arma::mat& transition_, 
   const arma::cube& emission_, const arma::vec& init_,
   const arma::ucube& obs, const arma::mat& coef, const arma::mat& X,
-    const arma::uvec& numberOfStates, bool forwardonly, unsigned int threads) {
+    const arma::uvec& numberOfStates, bool forwardonly, arma::uword threads) {
 
   arma::vec init = log(init_);
   arma::mat transition = log(transition_);
@@ -19,7 +19,7 @@ Rcpp::List log_forwardbackwardx(const arma::mat& transition_,
   weights = log(weights);
 
   arma::mat initk(emission.n_rows, obs.n_slices);
-  for (unsigned int k = 0; k < obs.n_slices; k++) {
+  for (arma::uword k = 0; k < obs.n_slices; k++) {
     initk.col(k) = init + reparma(weights.col(k), numberOfStates);
   }
   arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k

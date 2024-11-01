@@ -9,11 +9,11 @@ bootstrap_model <- function(model) {
       model$observations[[i]] <- model$observations[[i]][idx, , drop = FALSE]
     }
   }
-  model$X_initial <- model$X_initial[, idx, drop = FALSE]
-  model$X_transition <- model$X_transition[, , idx, drop = FALSE]
-  model$X_emission <- model$X_emission[, , idx, drop = FALSE]
-  if (!is.null(model$X_cluster)) {
-    model$X_cluster <- model$X_cluster[, idx, drop = FALSE]
+  model$X_pi <- model$X_pi[, idx, drop = FALSE]
+  model$X_A <- model$X_A[, , idx, drop = FALSE]
+  model$X_B <- model$X_B[, , idx, drop = FALSE]
+  if (!is.null(model$X_omega)) {
+    model$X_omega <- model$X_omega[, idx, drop = FALSE]
   }
   model$sequence_lengths <- model$sequence_lengths[idx]
   model
@@ -97,13 +97,13 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
   gamma_A <- replicate(B, gammas_mle$A, simplify = FALSE)
   gamma_B <- replicate(B, gammas_mle$B, simplify = FALSE)
   
-  if (verbose) pb <- utils::txtProgressBar(min = 0, max = 100, style = 3)
+  if (verbose) pb <- utils::txtProgressBar(min = 0, max = B, style = 3)
   if (method == "nonparametric") {
     out <- future.apply::future_lapply(
       seq_len(B), function(i) {
         mod <- bootstrap_model(model)
         fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, ...)
-        if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
+        if (verbose) utils::setTxtProgressBar(pb, i)
         permute_states(fit$gammas, gammas_mle)
       }
     )
@@ -124,7 +124,7 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
           N, T_, M, S, formula_pi, formula_A, formula_B,
           data = d, time, id, init)$model
         fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, ...)
-        if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
+        if (verbose) utils::setTxtProgressBar(pb, i)
         fit$gammas <- permute_states(fit$gammas, gammas_mle)
       }
     )
@@ -152,7 +152,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
   gamma_B <- replicate(B, gammas_mle$B, simplify = FALSE)
   gamma_omega <- replicate(B, gammas_mle$omega, simplify = FALSE)
   D <- model$n_clusters
-  if (verbose) pb <- utils::txtProgressBar(min = 0, max = 100, style = 3)
+  if (verbose) pb <- utils::txtProgressBar(min = 0, max = B, style = 3)
   if (method == "nonparametric") {
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
@@ -171,7 +171,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
       gamma_A[[i]] <- fit$gammas$A
       gamma_B[[i]] <- fit$gammas$B
       gamma_omega[[i]] <- fit$gammas$omega
-      if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
+      if (verbose) utils::setTxtProgressBar(pb, i)
     }
   } else {
     N <- model$n_sequences
@@ -204,7 +204,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
       gamma_A[[i]] <- fit$gammas$A
       gamma_B[[i]] <- fit$gammas$B
       gamma_omega[[i]] <- fit$gammas$omega
-      if (verbose) utils::setTxtProgressBar(pb, 100 * i/B)
+      if (verbose) utils::setTxtProgressBar(pb, i)
     }
   }
   if (verbose) close(pb)

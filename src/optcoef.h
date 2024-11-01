@@ -3,7 +3,7 @@
 
 #define ARMA_WARN_LEVEL 1
 #include <RcppArmadillo.h>
-unsigned int optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cube& emission,
+arma::uword optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cube& emission,
                      const arma::mat& bsi, arma::mat& coef, const arma::mat& X,
                      const arma::uvec& cumsumstate, const arma::uvec& numberOfStates, int trace);
 
@@ -15,7 +15,7 @@ arma::mat hCoef(const arma::mat& weights, const arma::mat& X);
 
 //log-space versions
 
-unsigned int log_optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cube& emission, const arma::mat& initk,
+arma::uword log_optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cube& emission, const arma::mat& initk,
                          const arma::cube& beta, const arma::vec& ll, arma::mat& coef, const arma::mat& X,
                          const arma::uvec& cumsumstate, const arma::uvec& numberOfStates, int trace);
 

@@ -9,22 +9,6 @@ EMx <- function(transition_, emission_, init_, obs, nSymbols, coef_, X, numberOf
     .Call(`_seqHMM_EMx`, transition_, emission_, init_, obs, nSymbols, coef_, X, numberOfStates, itermax, tol, trace, threads)
 }
 
-backward_nhmm_singlechannel <- function(eta_A, X_s, eta_B, X_o, obs) {
-    .Call(`_seqHMM_backward_nhmm_singlechannel`, eta_A, X_s, eta_B, X_o, obs)
-}
-
-backward_nhmm_multichannel <- function(eta_A, X_s, eta_B, X_o, obs, M) {
-    .Call(`_seqHMM_backward_nhmm_multichannel`, eta_A, X_s, eta_B, X_o, obs, M)
-}
-
-backward_mnhmm_singlechannel <- function(eta_A, X_s, eta_B, X_o, obs) {
-    .Call(`_seqHMM_backward_mnhmm_singlechannel`, eta_A, X_s, eta_B, X_o, obs)
-}
-
-backward_mnhmm_multichannel <- function(eta_A, X_s, eta_B, X_o, obs, M) {
-    .Call(`_seqHMM_backward_mnhmm_multichannel`, eta_A, X_s, eta_B, X_o, obs, M)
-}
-
 cost_matrix_singlechannel <- function(gamma_pi_est, gamma_pi_ref, gamma_A_est, gamma_A_ref, gamma_B_est, gamma_B_ref) {
     .Call(`_seqHMM_cost_matrix_singlechannel`, gamma_pi_est, gamma_pi_ref, gamma_A_est, gamma_A_ref, gamma_B_est, gamma_B_ref)
 }
@@ -59,22 +43,6 @@ eta_to_gamma_cube_field <- function(eta) {
 
 fast_quantiles <- function(X, probs) {
     .Call(`_seqHMM_fast_quantiles`, X, probs)
-}
-
-forward_nhmm_singlechannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs) {
-    .Call(`_seqHMM_forward_nhmm_singlechannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs)
-}
-
-forward_nhmm_multichannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M) {
-    .Call(`_seqHMM_forward_nhmm_multichannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M)
-}
-
-forward_mnhmm_singlechannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, obs) {
-    .Call(`_seqHMM_forward_mnhmm_singlechannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, obs)
-}
-
-forward_mnhmm_multichannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, obs, M) {
-    .Call(`_seqHMM_forward_mnhmm_multichannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, obs, M)
 }
 
 forwardbackward <- function(transition, emission, init, obs, forwardonly, threads) {
@@ -205,24 +173,88 @@ log_objective <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbo
     .Call(`_seqHMM_log_objective`, transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, threads)
 }
 
-log_objective_nhmm_singlechannel <- function(Qs, Qm, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti) {
-    .Call(`_seqHMM_log_objective_nhmm_singlechannel`, Qs, Qm, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti)
-}
-
-log_objective_nhmm_multichannel <- function(Qs, Qm, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti) {
-    .Call(`_seqHMM_log_objective_nhmm_multichannel`, Qs, Qm, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti)
-}
-
-log_objective_mnhmm_singlechannel <- function(Qs, Qm, Qd, eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega, Ti) {
-    .Call(`_seqHMM_log_objective_mnhmm_singlechannel`, Qs, Qm, Qd, eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega, Ti)
-}
-
-log_objective_mnhmm_multichannel <- function(Qs, Qm, Qd, eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, obs, M, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega, Ti) {
-    .Call(`_seqHMM_log_objective_mnhmm_multichannel`, Qs, Qm, Qd, eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, obs, M, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega, Ti)
-}
-
 log_objectivex <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads) {
     .Call(`_seqHMM_log_objectivex`, transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads)
+}
+
+backward_nhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_pi, iv_A, iv_B, tv_A, tv_B) {
+    .Call(`_seqHMM_backward_nhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_pi, iv_A, iv_B, tv_A, tv_B)
+}
+
+backward_nhmm_multichannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_pi, iv_A, iv_B, tv_A, tv_B) {
+    .Call(`_seqHMM_backward_nhmm_multichannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_pi, iv_A, iv_B, tv_A, tv_B)
+}
+
+backward_mnhmm_singlechannel <- function(eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B) {
+    .Call(`_seqHMM_backward_mnhmm_singlechannel`, eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B)
+}
+
+backward_mnhmm_multichannel <- function(eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B) {
+    .Call(`_seqHMM_backward_mnhmm_multichannel`, eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B)
+}
+
+forward_nhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_pi, iv_A, iv_B, tv_A, tv_B) {
+    .Call(`_seqHMM_forward_nhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_pi, iv_A, iv_B, tv_A, tv_B)
+}
+
+forward_nhmm_multichannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_pi, iv_A, iv_B, tv_A, tv_B) {
+    .Call(`_seqHMM_forward_nhmm_multichannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_pi, iv_A, iv_B, tv_A, tv_B)
+}
+
+forward_mnhmm_singlechannel <- function(eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B) {
+    .Call(`_seqHMM_forward_mnhmm_singlechannel`, eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B)
+}
+
+forward_mnhmm_multichannel <- function(eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B) {
+    .Call(`_seqHMM_forward_mnhmm_multichannel`, eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B)
+}
+
+log_objective_nhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti) {
+    .Call(`_seqHMM_log_objective_nhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti)
+}
+
+log_objective_nhmm_multichannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti) {
+    .Call(`_seqHMM_log_objective_nhmm_multichannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti)
+}
+
+log_objective_mnhmm_singlechannel <- function(eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega, Ti) {
+    .Call(`_seqHMM_log_objective_mnhmm_singlechannel`, eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega, Ti)
+}
+
+log_objective_mnhmm_multichannel <- function(eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega, Ti) {
+    .Call(`_seqHMM_log_objective_mnhmm_multichannel`, eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, iv_omega, Ti)
+}
+
+simulate_nhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B) {
+    .Call(`_seqHMM_simulate_nhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B)
+}
+
+simulate_nhmm_multichannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, M) {
+    .Call(`_seqHMM_simulate_nhmm_multichannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, M)
+}
+
+simulate_mnhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, eta_omega, X_omega) {
+    .Call(`_seqHMM_simulate_mnhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, eta_omega, X_omega)
+}
+
+simulate_mnhmm_multichannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, eta_omega, X_omega, M) {
+    .Call(`_seqHMM_simulate_mnhmm_multichannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, eta_omega, X_omega, M)
+}
+
+viterbi_nhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_pi, iv_A, iv_B, tv_A, tv_B) {
+    .Call(`_seqHMM_viterbi_nhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_pi, iv_A, iv_B, tv_A, tv_B)
+}
+
+viterbi_nhmm_multichannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_pi, iv_A, iv_B, tv_A, tv_B) {
+    .Call(`_seqHMM_viterbi_nhmm_multichannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_pi, iv_A, iv_B, tv_A, tv_B)
+}
+
+viterbi_mnhmm_singlechannel <- function(eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B) {
+    .Call(`_seqHMM_viterbi_mnhmm_singlechannel`, eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B)
+}
+
+viterbi_mnhmm_multichannel <- function(eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B) {
+    .Call(`_seqHMM_viterbi_mnhmm_multichannel`, eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B)
 }
 
 objective <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, threads) {
@@ -231,22 +263,6 @@ objective <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, 
 
 objectivex <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads) {
     .Call(`_seqHMM_objectivex`, transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads)
-}
-
-simulate_nhmm_singlechannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o) {
-    .Call(`_seqHMM_simulate_nhmm_singlechannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o)
-}
-
-simulate_nhmm_multichannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o, M) {
-    .Call(`_seqHMM_simulate_nhmm_multichannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o, M)
-}
-
-simulate_mnhmm_singlechannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d) {
-    .Call(`_seqHMM_simulate_mnhmm_singlechannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d)
-}
-
-simulate_mnhmm_multichannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, M) {
-    .Call(`_seqHMM_simulate_mnhmm_multichannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, M)
 }
 
 softmax <- function(x) {
@@ -259,22 +275,6 @@ varcoef <- function(coef, X) {
 
 viterbi <- function(transition, emission, init, obs) {
     .Call(`_seqHMM_viterbi`, transition, emission, init, obs)
-}
-
-viterbi_nhmm_singlechannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs) {
-    .Call(`_seqHMM_viterbi_nhmm_singlechannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs)
-}
-
-viterbi_nhmm_multichannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M) {
-    .Call(`_seqHMM_viterbi_nhmm_multichannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M)
-}
-
-viterbi_mnhmm_singlechannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, obs) {
-    .Call(`_seqHMM_viterbi_mnhmm_singlechannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, obs)
-}
-
-viterbi_mnhmm_multichannel <- function(eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, obs, M) {
-    .Call(`_seqHMM_viterbi_mnhmm_multichannel`, eta_pi, X_i, eta_A, X_s, eta_B, X_o, eta_omega, X_d, obs, M)
 }
 
 viterbix <- function(transition, emission, init, obs, coef, X, numberOfStates) {

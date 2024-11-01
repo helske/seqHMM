@@ -78,8 +78,8 @@ simulate_mnhmm <- function(
     if (is.null(coefs$cluster_probs)) coefs$cluster_probs <- NULL
   }
   model$etas <- create_initial_values(
-    coefs, model$n_states, model$n_symbols, init_sd, nrow(model$X_initial), 
-    nrow(model$X_transition), nrow(model$X_emission), nrow(model$X_cluster), 
+    coefs, model$n_states, model$n_symbols, init_sd, nrow(model$X_pi), 
+    nrow(model$X_A), nrow(model$X_B), nrow(model$X_omega), 
     n_clusters
   )
   model$gammas$pi <- c(eta_to_gamma_mat_field(
@@ -104,17 +104,18 @@ simulate_mnhmm <- function(
   T_ <- model$length_of_sequences
   if (n_channels == 1L) {
     out <- simulate_mnhmm_singlechannel(
-      model$etas$pi, model$X_initial, 
-      model$etas$A, model$X_transition, 
-      model$etas$B, model$X_emission,
-      model$etas$omega, model$X_cluster
+      model$etas$pi, model$X_pi, 
+      model$etas$A, model$X_A, 
+      model$etas$B, model$X_B,
+      model$etas$omega, model$X_omega
     )
   } else {
+    eta_B <- unlist(model$etas$B, recursive = FALSE)
     out <- simulate_mnhmm_multichannel(
-      model$etas$pi, model$X_initial, 
-      model$etas$A, model$X_transition, 
-      unlist(model$etas$B, recursive = FALSE), model$X_emission,
-      model$etas$omega, model$X_cluster,
+      model$etas$pi, model$X_pi, 
+      model$etas$A, model$X_A, 
+      eta_B, model$X_B,
+      model$etas$omega, model$X_omega,
       model$n_symbols
     )
   }

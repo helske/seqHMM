@@ -8,13 +8,13 @@
 // IMA Journal of Numerical Analysis, 41, 4, 2311–2330
 // [[Rcpp::export]]
 double logSumExp(const arma::vec& x) {
-  unsigned int maxi = x.index_max();
+  arma::uword maxi = x.index_max();
   double maxv = x(maxi);
   if (!std::isfinite(maxv)) {
     return maxv;
   }
   double cumsum = 0.0;
-  for (unsigned int i = 0; i < x.n_elem; i++) {
+  for (arma::uword i = 0; i < x.n_elem; i++) {
     if ((i != maxi) && (x(i) > -arma::datum::inf)) {
       cumsum += exp(x(i) - maxv);
     }

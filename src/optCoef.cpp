@@ -1,7 +1,7 @@
 //Estimation of beta coefficients
 #include "optcoef.h"
 
-unsigned int optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cube& emission,
+arma::uword optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cube& emission,
     const arma::mat& bsi, arma::mat& coef,
     const arma::mat& X, const arma::uvec& cumsumstate, const arma::uvec& numberOfStates,
     int trace) {
@@ -18,7 +18,7 @@ unsigned int optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cub
     }
 
     arma::mat coefnew(coef.n_rows, coef.n_cols - 1);
-    for (unsigned int i = 0; i < (weights.n_rows - 1); i++) {
+    for (arma::uword i = 0; i < (weights.n_rows - 1); i++) {
       coefnew.col(i) = coef.col(i + 1) - tmpvec.subvec(i * X.n_cols, (i + 1) * X.n_cols - 1);
     }
     change = arma::accu(arma::abs(coef.submat(0, 1, coef.n_rows - 1, coef.n_cols - 1) - coefnew))
@@ -48,11 +48,11 @@ arma::vec gCoef(const arma::ucube& obs, const arma::mat& bsi,
   arma::vec grad(q * (weights.n_rows - 1), arma::fill::zeros);
   double tmp;
 
-  for (unsigned int k = 0; k < obs.n_slices; k++) {
-    for (unsigned int jj = 1; jj < numberOfStates.n_elem; jj++) {
-      for (unsigned int j = 0; j < emission.n_rows; j++) {
+  for (arma::uword k = 0; k < obs.n_slices; k++) {
+    for (arma::uword jj = 1; jj < numberOfStates.n_elem; jj++) {
+      for (arma::uword j = 0; j < emission.n_rows; j++) {
         tmp = 1.0;
-        for (unsigned int r = 0; r < obs.n_rows; r++) {
+        for (arma::uword r = 0; r < obs.n_rows; r++) {
           tmp *= emission(j, obs(r, 0, k), r);
         }
         if ((j >= (cumsumstate(jj) - numberOfStates(jj))) && (j < cumsumstate(jj))) {
@@ -72,10 +72,10 @@ arma::mat hCoef(const arma::mat& weights, const arma::mat& X) {
 
   int p = X.n_cols;
   arma::mat hess(p * (weights.n_rows - 1), p * (weights.n_rows - 1), arma::fill::zeros);
-  for (unsigned int i = 0; i < X.n_rows; i++) {
+  for (arma::uword i = 0; i < X.n_rows; i++) {
     arma::mat XX = X.row(i).t() * X.row(i);
-    for (unsigned int j = 0; j < (weights.n_rows - 1); j++) {
-      for (unsigned int k = 0; k < (weights.n_rows - 1); k++) {
+    for (arma::uword j = 0; j < (weights.n_rows - 1); j++) {
+      for (arma::uword k = 0; k < (weights.n_rows - 1); k++) {
         if (j != k) {
           hess.submat(j * p, k * p, (j + 1) * p - 1, (k + 1) * p - 1) += XX * weights(j + 1, i)
               * weights(k + 1, i);

@@ -3,7 +3,7 @@
 #include "useomp.h"
 // [[Rcpp::export]]
 Rcpp::List forwardbackward(const arma::mat& transition, const arma::cube& emission,
-  const arma::vec& init, const arma::ucube& obs, bool forwardonly, unsigned int threads) {
+  const arma::vec& init, const arma::ucube& obs, bool forwardonly, arma::uword threads) {
   
   arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
   arma::mat scales(obs.n_cols, obs.n_slices); //n,k

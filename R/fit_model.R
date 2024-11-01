@@ -16,7 +16,7 @@
 #'   [nloptr()] (possibly after the EM and/or global steps). The default is `FALSE`.
 #' @param control_em Optional list of control parameters for the EM algorithm.
 #' Possible arguments are 
-#' * The maximum number of iterations, the default is 1000. Note that iteration 
+#' * `maxeval`\cr The maximum number of iterations, the default is 1000. Note that iteration 
 #'   counter starts with -1 so with `maxeval = 1` you get already two iterations.
 #'   This is for backward compatibility reasons.
 #' * `print_level`\cr The level of printing. Possible values are 0

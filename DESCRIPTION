@@ -27,7 +27,8 @@ Description: Designed for fitting hidden (latent) Markov models and mixture
     support for parallel computation. Documentation is available via several 
     vignettes, and the paper by Helske and Helske (2019, <doi:10.18637/jss.v088.i03>).
 LazyData: true
-LinkingTo: 
+LinkingTo:
+    nloptr,
     Rcpp (>= 0.12.0),
     RcppArmadillo
 Depends:

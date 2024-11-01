@@ -75,16 +75,22 @@ hidden_paths.nhmm <- function(model, respect_void = TRUE, ...) {
   obsArray <- create_obsArray(model)
   if (model$n_channels == 1) {
     out <- viterbi_nhmm_singlechannel(
-      model$etas$pi, model$X_initial,
-      model$etas$A, model$X_transition,
-      model$etas$B, model$X_emission,
-      obsArray[1, , ])
+      model$etas$pi, model$X_pi,
+      model$etas$A, model$X_A,
+      model$etas$B, model$X_B,
+      obsArray[1, , ], model$sequence_lengths, 
+      attr(model$X_pi, "iv"),
+      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
+      attr(model$X_B, "tv"))
   } else {
     out <- viterbi_nhmm_multichannel(
-      model$etas$pi, model$X_initial,
-      model$etas$A, model$X_transition,
-      model$etas$B, model$X_emission,
-      obsArray, model$n_symbols)
+      model$etas$pi, model$X_pi,
+      model$etas$A, model$X_A,
+      model$etas$B, model$X_B,
+      obsArray, model$sequence_lengths, 
+      attr(model$X_pi, "iv"),
+      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
+      attr(model$X_B, "tv"))
   }
   create_mpp_seq(out, model, respect_void)
 }
@@ -95,19 +101,28 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
   obsArray <- create_obsArray(model)
   if (model$n_channels == 1) {
     out <- viterbi_mnhmm_singlechannel(
-      model$etas$pi, model$X_initial,
-      model$etas$A, model$X_transition,
-      model$etas$B, model$X_emission,
-      model$etas$omega, model$X_cluster,
-      array(obsArray, dim(obsArray)[2:3]))
+      model$etas$omega, model$X_omega,
+      model$etas$pi, model$X_pi,
+      model$etas$A, model$X_A,
+      model$etas$B, model$X_B,
+      array(obsArray, dim(obsArray)[2:3]), model$sequence_lengths, 
+      attr(model$X_omega, "iv"), attr(model$X_pi, "iv"),
+      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
+      attr(model$X_B, "tv")
+    )
   } else {
+    eta_B <- unlist(model$etas$B, recursive = FALSE)
     out <- viterbi_mnhmm_multichannel(
-      model$etas$pi, model$X_initial,
-      model$etas$A, model$X_transition,
-      unlist(model$etas$B, recursive = FALSE),
-      model$X_emission,
-      model$etas$omega, model$X_cluster,
-      obsArray, model$n_symbols)
+      model$etas$omega, model$X_omega,
+      model$etas$pi, model$X_pi,
+      model$etas$A, model$X_A,
+      eta_B,
+      model$X_B,
+      obsArray, model$sequence_lengths, 
+      attr(model$X_omega, "iv"), attr(model$X_pi, "iv"),
+      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
+      attr(model$X_B, "tv")
+    )
   }
   if (identical(model$state_names[[1]], model$state_names[[2]])) {
     model$state_names <- paste0(

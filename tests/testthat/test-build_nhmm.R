@@ -113,3 +113,4 @@ test_that("build_nhmm works with missing observations", {
       62L, 63L, 64L, 65L)
   )
 })
+

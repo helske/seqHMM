@@ -431,7 +431,7 @@ Next we will test the performance of the MLSL optimization by setting \texttt{gl
 
 <<'fitHMM_global', cache=TRUE>>=
 mc_fit_global <- fit_model(mc_hmm, em_step = FALSE,
-  global = TRUE, local = TRUE, threads = 4,
+  global = TRUE, local = TRUE, threads = 2,
   control_global = list(maxtime = 0, maxeval = 10000))
 
 -mc_fit_global$global_results$objective

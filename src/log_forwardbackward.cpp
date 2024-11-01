@@ -5,7 +5,7 @@
 
 // [[Rcpp::export]]
 Rcpp::List log_forwardbackward(const arma::mat& transition_, const arma::cube& emission_, 
-  const arma::vec& init_, const arma::ucube& obs, bool forwardonly, unsigned int threads) {
+  const arma::vec& init_, const arma::ucube& obs, bool forwardonly, arma::uword threads) {
 
   arma::vec init = log(init_);
   arma::mat transition = log(transition_);

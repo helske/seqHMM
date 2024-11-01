@@ -9,7 +9,7 @@ build_nhmm <- function(
   out <- create_base_nhmm(
     observations, data, time, id, n_states, state_names, channel_names,
     initial_formula, transition_formula, emission_formula) 
-  out[c("cluster_names", "n_clusters", "X_cluster")] <- NULL
+  out[c("cluster_names", "n_clusters", "X_omega")] <- NULL
   structure(
     out$model,
     class = "nhmm",

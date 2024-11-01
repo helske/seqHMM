@@ -70,8 +70,8 @@ simulate_nhmm <- function(
     if (is.null(coefs$emission_probs)) coefs$emission_probs <- NULL
   }
   model$etas <- create_initial_values(
-    coefs, model$n_states, model$n_symbols, init_sd, nrow(model$X_initial), 
-    nrow(model$X_transition), nrow(model$X_emission)
+    coefs, model$n_states, model$n_symbols, init_sd, nrow(model$X_pi), 
+    nrow(model$X_A), nrow(model$X_B)
   )
   model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
   model$gammas$A <- eta_to_gamma_cube(model$etas$A)
@@ -82,15 +82,15 @@ simulate_nhmm <- function(
   }
   if (n_channels == 1L) {
     out <- simulate_nhmm_singlechannel(
-      model$etas$pi, model$X_initial, 
-      model$etas$A, model$X_transition, 
-      model$etas$B, model$X_emission
+      model$etas$pi, model$X_pi, 
+      model$etas$A, model$X_A, 
+      model$etas$B, model$X_B
     )
   } else {
     out <- simulate_nhmm_multichannel(
-      model$etas$pi, model$X_initial, 
-      model$etas$A, model$X_transition, 
-      model$etas$B, model$X_emission, 
+      model$etas$pi, model$X_pi, 
+      model$etas$A, model$X_A, 
+      model$etas$B, model$X_B, 
       model$n_symbols
     )
   }

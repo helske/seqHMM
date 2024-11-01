@@ -4,7 +4,7 @@
 arma::vec reparma(const arma::vec& x, const arma::uvec& y) {
   arma::vec res(sum(y));
   int ind = 0;
-  for (unsigned int i = 0; i < y.n_elem; ++i) {
+  for (arma::uword i = 0; i < y.n_elem; ++i) {
     std::fill(res.begin() + ind, res.begin() + ind + y(i), x(i));
     ind += y(i);
   }

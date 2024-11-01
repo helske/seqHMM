@@ -130,14 +130,15 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
     etas <- create_initial_values(
       list(gamma_pi = NULL, gamma_A = NULL, gamma_B = NULL, gamma_omega = NULL), 
       n_states, n_symbols, 0, 
-      length(pi$coef_names), length(A$coef_names), length(B$coef_names),
-      length(omega$coef_names), n_clusters
+      length(attr(pi$X, "coef_names")), length(attr(A$X, "coef_names")), 
+      length(attr(B$X, "coef_names")), length(attr(omega$X, "coef_names")), n_clusters
     )
   } else {
     etas <- create_initial_values(
       list(pi = NULL, A = NULL, B = NULL), 
       n_states, n_symbols, 0, 
-      length(pi$coef_names), length(A$coef_names), length(B$coef_names)
+      length(attr(pi$X, "coef_names")), length(attr(A$X, "coef_names")), 
+      length(attr(B$X, "coef_names"))
     )
     omega <- list(n_pars = 0, iv = FALSE, X_mean = NULL, X_sd = NULL)
   }
@@ -146,10 +147,10 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
       observations = observations, 
       time_variable = if (is.null(time)) "time" else time,
       id_variable = if (is.null(id)) "id" else id,
-      X_initial = pi$X, 
-      X_transition = A$X, 
-      X_emission = B$X,
-      X_cluster = if(mixture) omega$X else NULL,
+      X_pi = pi$X, 
+      X_A = A$X, 
+      X_B = B$X,
+      X_omega = if(mixture) omega$X else NULL,
       initial_formula = pi$formula, 
       transition_formula = A$formula,
       emission_formula = B$formula,

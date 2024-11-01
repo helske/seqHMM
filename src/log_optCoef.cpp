@@ -1,7 +1,7 @@
 // estimation of gamma coefficients using log-space
 #include "optcoef.h"
 
-unsigned int log_optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cube& emission,
+arma::uword log_optCoef(arma::mat& weights, const arma::ucube& obs, const arma::cube& emission,
     const arma::mat& initk, const arma::cube& beta, const arma::vec& ll, arma::mat& coef,
     const arma::mat& X, const arma::uvec& cumsumstate, const arma::uvec& numberOfStates,
     int trace) {
@@ -21,7 +21,7 @@ unsigned int log_optCoef(arma::mat& weights, const arma::ucube& obs, const arma:
     }
 
     arma::mat coefnew(coef.n_rows, coef.n_cols - 1);
-    for (unsigned int i = 0; i < (weights.n_rows - 1); i++) {
+    for (arma::uword i = 0; i < (weights.n_rows - 1); i++) {
       coefnew.col(i) = coef.col(i + 1) - tmpvec.subvec(i * X.n_cols, (i + 1) * X.n_cols - 1);
     }
     change = arma::accu(arma::abs(coef.submat(0, 1, coef.n_rows - 1, coef.n_cols - 1) - coefnew))
@@ -51,11 +51,11 @@ arma::vec log_gCoef(const arma::ucube& obs, const arma::cube& beta, const arma::
   int q = X.n_cols;
   arma::vec grad(q * (weights.n_rows - 1), arma::fill::zeros);
   double tmp;
-  for (unsigned int jj = 1; jj < numberOfStates.n_elem; jj++) {
-    for (unsigned int k = 0; k < obs.n_slices; k++) {
-      for (unsigned int j = 0; j < emission.n_rows; j++) {
+  for (arma::uword jj = 1; jj < numberOfStates.n_elem; jj++) {
+    for (arma::uword k = 0; k < obs.n_slices; k++) {
+      for (arma::uword j = 0; j < emission.n_rows; j++) {
         tmp = 0.0;
-        for (unsigned int r = 0; r < obs.n_rows; r++) {
+        for (arma::uword r = 0; r < obs.n_rows; r++) {
           tmp += emission(j, obs(r, 0, k), r);
         }
         if ((j >= (cumsumstate(jj) - numberOfStates(jj))) && (j < cumsumstate(jj))) {

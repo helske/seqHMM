@@ -23,12 +23,12 @@ arma::vec2 givens(const double a, const double b) {
 // Simplified version of Algorithm 2.6 in 
 // Hammarling, S., & Lucas, C. (2008).
 // R and Q are identity matrices
-arma::mat compute_cs(const unsigned int n) {
+arma::mat compute_cs(const arma::uword n) {
   arma::vec u(n, arma::fill::ones);
   u = -u;
   arma::mat R(n, n, arma::fill::eye);
   arma::mat cs(2, n);
-  for (unsigned int j = 0; j < n; j++) {
+  for (arma::uword j = 0; j < n; j++) {
     cs.col(j) = givens(R(j, j), u(j));
     R(j, j) = cs(0, j) * R(j, j) - cs(1, j) * u(j);
     if (j < n - 1) {
@@ -41,12 +41,12 @@ arma::mat compute_cs(const unsigned int n) {
   return cs;
 }
 // [[Rcpp::export]]
-arma::mat create_Q(const unsigned int n) {
+arma::mat create_Q(const arma::uword n) {
   arma::mat cs = compute_cs(n - 1);
   arma::mat Q(n, n, arma::fill::eye);
   arma::vec t1(n);
   arma::vec t2(n);
-  for (unsigned int j = 0; j < n - 1; j++) {
+  for (arma::uword j = 0; j < n - 1; j++) {
     t1 = Q.col(j);
     t2 = Q.col(n - 1);
     Q.col(j) = cs(0, j) * t1 - cs(1, j) * t2;

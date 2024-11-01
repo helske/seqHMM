@@ -11,11 +11,11 @@
 coef.nhmm <- function(object, probs, ...) {
   S <- object$n_states
   M <- object$n_symbols
-  coef_names <- attr(object$X_initial, "coef_names")
+  coef_names <- attr(object$X_pi, "coef_names")
   sd_pi_X <- rep(
     c(
       if(coef_names[1] == "(Intercept)") 1 else NULL, 
-      attr(object$X_initial, "X_sd")
+      attr(object$X_pi, "X_sd")
     ), each = S
   )
   gamma_pi <- data.frame(
@@ -23,11 +23,11 @@ coef.nhmm <- function(object, probs, ...) {
     parameter = rep(coef_names, each = S),
     estimate = c(object$gammas$pi) / sd_pi_X
   )
-  coef_names <- attr(object$X_transition, "coef_names")
+  coef_names <- attr(object$X_A, "coef_names")
   sd_A_X <- rep(
     c(
       if(coef_names[1] == "(Intercept)") 1 else NULL, 
-      attr(object$X_transition, "X_sd")
+      attr(object$X_A, "X_sd")
     ), each = S^2
   )
   gamma_A <- data.frame(
@@ -36,10 +36,10 @@ coef.nhmm <- function(object, probs, ...) {
     parameter = rep(coef_names, each = S^2),
     estimate = c(object$gammas$A) / sd_A_X
   )
-  coef_names <- attr(object$X_emission, "coef_names")
+  coef_names <- attr(object$X_B, "coef_names")
   sd_B_X <- c(
     if(coef_names[1] == "(Intercept)") 1 else NULL, 
-    attr(object$X_emission, "X_sd")
+    attr(object$X_B, "X_sd")
   )
   if (object$n_channels == 1) {
     gamma_B <- data.frame(
@@ -107,44 +107,44 @@ coef.mnhmm <- function(object, probs, ...) {
   M <- object$n_symbols
   D <- object$n_clusters
   object$state_names <- unname(object$state_names)
-  coef_names <- attr(object$X_initial, "coef_names")
+  coef_names <- attr(object$X_pi, "coef_names")
   sd_pi_X <- rep(
     c(
       if(coef_names[1] == "(Intercept)") 1 else NULL, 
-      attr(object$X_initial, "X_sd")
+      attr(object$X_pi, "X_sd")
     ), each = S
   )
-  K_i <- length(coef_names)
+  K_pi <- length(coef_names)
   gamma_pi <- data.frame(
-    cluster = rep(object$cluster_names, each = S * K_i),
+    cluster = rep(object$cluster_names, each = S * K_pi),
     state = unlist(object$state_names),
     parameter = rep(coef_names, each = S),
     estimate = unlist(object$gammas$pi) / sd_pi_X
   )
-  coef_names <- attr(object$X_transition, "coef_names")
+  coef_names <- attr(object$X_A, "coef_names")
   sd_A_X <- rep(
     c(
       if(coef_names[1] == "(Intercept)") 1 else NULL, 
-      attr(object$X_transition, "X_sd")
+      attr(object$X_A, "X_sd")
     ), each = S^2
   )
-  K_s <- length(coef_names)
+  K_A <- length(coef_names)
   gamma_A <- data.frame(
-    cluster = rep(object$cluster_names, each = S * S * K_s),
+    cluster = rep(object$cluster_names, each = S * S * K_A),
     state_from = unlist(object$state_names),
     state_to = rep(unlist(object$state_names), each = S),
     parameter = rep(coef_names, each = S * S),
     estimate = unlist(object$gammas$A) / sd_A_X
   )
-  coef_names <- attr(object$X_emission, "coef_names")
+  coef_names <- attr(object$X_B, "coef_names")
   sd_B_X <- c(
     if(coef_names[1] == "(Intercept)") 1 else NULL, 
-    attr(object$X_emission, "X_sd")
+    attr(object$X_B, "X_sd")
   )
-  K_o <- length(coef_names)
+  K_B <- length(coef_names)
   if (object$n_channels == 1) {
     gamma_B <- data.frame(
-      cluster =  rep(object$cluster_names, each = S * M * K_o),
+      cluster =  rep(object$cluster_names, each = S * M * K_B),
       state = unlist(object$state_names),
       observation = rep(object$symbol_names, each = S),
       parameter = rep(coef_names, each = S * M),
@@ -160,7 +160,7 @@ coef.mnhmm <- function(object, probs, ...) {
             lapply(
               seq_len(object$n_channels), function(i) {
                 data.frame(
-                  cluster = rep(object$cluster_names[d], each = S * M[i] * K_o),
+                  cluster = rep(object$cluster_names[d], each = S * M[i] * K_B),
                   state = object$state_names[[d]],
                   observation = rep(object$symbol_names[[i]], each = S),
                   parameter = rep(coef_names, each = S * M[i]),
@@ -173,11 +173,11 @@ coef.mnhmm <- function(object, probs, ...) {
       )
     )
   }
-  coef_names <- attr(object$X_cluster, "coef_names")
+  coef_names <- attr(object$X_omega, "coef_names")
   sd_omega_X <- rep(
     c(
       if(coef_names[1] == "(Intercept)") 1 else NULL, 
-      attr(object$X_cluster, "X_sd")
+      attr(object$X_omega, "X_sd")
     ), each = D
   )
   gamma_omega <- data.frame(

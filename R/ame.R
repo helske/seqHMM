@@ -74,12 +74,12 @@ ame.nhmm <- function(
     times <- colnames(model$observations[[1]])
     symbol_names <- model$symbol_names
   }
-  if (!attr(model$X_initial, "iv")) {
-    X1 <- model1$X_initial[, 1L, drop = FALSE]
-    X2 <- model2$X_initial[, 1L, drop = FALSE]
+  if (!attr(model$X_pi, "iv")) {
+    X1 <- model1$X_pi[, 1L, drop = FALSE]
+    X2 <- model2$X_pi[, 1L, drop = FALSE]
   } else {
-    X1 <- model1$X_initial
-    X2 <- model2$X_initial
+    X1 <- model1$X_pi
+    X2 <- model2$X_pi
   }
   qs_pi <- get_pi_ame(model$boot$gamma_pi, X1, X2, probs)
   colnames(qs_pi) <- paste0("q", 100 * probs)
@@ -92,16 +92,16 @@ ame.nhmm <- function(
     ),
     qs_pi
   )
-  model1$X_transition[attr(model$X_transition, "missing")] <- NA
-  model2$X_transition[attr(model$X_transition, "missing")] <- NA
-  if (!attr(model$X_transition, "iv")) {
-    X1 <- model1$X_transition[, 1L, , drop = FALSE]
-    X2 <- model2$X_transition[, 1L, , drop = FALSE]
+  model1$X_A[attr(model$X_A, "missing")] <- NA
+  model2$X_A[attr(model$X_A, "missing")] <- NA
+  if (!attr(model$X_A, "iv")) {
+    X1 <- model1$X_A[, 1L, , drop = FALSE]
+    X2 <- model2$X_A[, 1L, , drop = FALSE]
   } else {
-    X1 <- model1$X_transition
-    X2 <- model2$X_transition
+    X1 <- model1$X_A
+    X2 <- model2$X_A
   }
-  tv_A <- attr(model$X_transition, "tv")
+  tv_A <- attr(model$X_A, "tv")
   S <- model$n_states
   N <- model$n_sequences
   T_ <- model$length_of_sequences
@@ -126,16 +126,16 @@ ame.nhmm <- function(
   )
   colnames(ame_A)[1] <- model$time_variable
   
-  model1$X_emission[attr(model$X_emission, "missing")] <- NA
-  model1$X_emission[attr(model$X_emission, "missing")] <- NA
-  if (!attr(model$X_emission, "iv")) {
-    X1 <- model1$X_emission[, 1L, drop = FALSE]
-    X2 <- model2$X_emission[, 1L, drop = FALSE]
+  model1$X_B[attr(model$X_B, "missing")] <- NA
+  model1$X_B[attr(model$X_B, "missing")] <- NA
+  if (!attr(model$X_B, "iv")) {
+    X1 <- model1$X_B[, 1L, drop = FALSE]
+    X2 <- model2$X_B[, 1L, drop = FALSE]
   } else {
-    X1 <- model1$X_emission
-    X2 <- model2$X_emission
+    X1 <- model1$X_B
+    X2 <- model2$X_B
   }
-  tv_B <- attr(model$X_emission, "tv")
+  tv_B <- attr(model$X_B, "tv")
   M <- model$n_symbols
   if (C == 1) {
     qs_B <- get_B_ame(
@@ -216,12 +216,12 @@ ame.mnhmm <- function(
   newdata[[variable]] <- values[2]
   model2 <- update(model, newdata)
   
-  if (!attr(model$X_cluster, "iv")) {
-    X1 <- model1$X_cluster[, 1L, drop = FALSE]
-    X2 <- model2$X_cluster[, 1L, drop = FALSE]
+  if (!attr(model$X_omega, "iv")) {
+    X1 <- model1$X_omega[, 1L, drop = FALSE]
+    X2 <- model2$X_omega[, 1L, drop = FALSE]
   } else {
-    X1 <- model1$X_cluster
-    X2 <- model2$X_cluster
+    X1 <- model1$X_omega
+    X2 <- model2$X_omega
   }
   qs_omega <- get_omega_ame(model$boot$gamma_omega, X1, X2, probs)
   colnames(qs_omega) <- paste0("q", 100 * probs)

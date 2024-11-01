@@ -39,7 +39,8 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
       data = data, 
       na.action = stats::na.pass
     )
-    cols <- which(colnames(X) != "(Intercept)")
+    coef_names <- colnames(X)
+    cols <- which(coef_names != "(Intercept)")
     if (missing(X_mean)) {
       X_mean <- X_sd <- TRUE
     }
@@ -61,7 +62,6 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
       )
     )
     iv <- nrow(unique(X)) > 1L
-    coef_names <- colnames(X)
     n_pars <- (n_states - 1L) * ncol(X)
   }
   X <- t(X)
@@ -93,7 +93,8 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
       data = data, 
       na.action = stats::na.pass
     )
-    cols <- which(colnames(X) != "(Intercept)")
+    coef_names <- colnames(X)
+    cols <- which(coef_names != "(Intercept)")
     if (missing(X_mean)) {
       X_mean <- X_sd <- TRUE
     }
@@ -122,7 +123,6 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
         )
       )
     }
-    coef_names <- colnames(X)
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
     n_pars <- n_states * (n_states - 1L) * dim(X)[3]
     iv <- iv_X(X)
@@ -163,7 +163,8 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
       data = data, 
       na.action = stats::na.pass
     )
-    cols <- which(colnames(X) != "(Intercept)")
+    coef_names <- colnames(X)
+    cols <- which(coef_names != "(Intercept)")
     if (missing(X_mean)) {
       X_mean <- X_sd <- TRUE
     }
@@ -194,7 +195,7 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
         )
       )
     }
-    coef_names <- colnames(X)
+    
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
     n_pars <- sum(n_states * (n_symbols - 1L) * dim(X)[3])
     iv <- iv_X(X)
@@ -232,7 +233,8 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
       data = data[data[[time]] == first_time_point, ], 
       na.action = stats::na.pass
     )
-    cols <- which(colnames(X) != "(Intercept)") #always first column(?)
+    coef_names <- colnames(X)
+    cols <- which(coef_names != "(Intercept)")
     if (missing(X_mean)) {
       X_mean <- X_sd <- TRUE
     }
@@ -254,7 +256,6 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
       )
     )
     iv <- nrow(unique(X)) > 1L
-    coef_names <- colnames(X)
     n_pars <- (n_clusters - 1L) * ncol(X)
   }
   X <- t(X)

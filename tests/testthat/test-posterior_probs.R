@@ -55,7 +55,7 @@ test_that("'posterior_probs' works for 'nhmm'", {
   expect_error(
     fit <- estimate_nhmm(
       hmm_biofam$observations[[1]], n_states = 3,
-      restarts = 2, threads = 1, maxeval = 1
+      restarts = 2, maxeval = 1
     ),
     NA
   )

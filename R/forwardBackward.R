@@ -154,15 +154,22 @@ forward_backward.nhmm <- function(model, forward_only = FALSE,
   out <- list()
   if (model$n_channels == 1) {
     out$forward_probs <- forward_nhmm_singlechannel(
-      model$etas$pi, model$X_initial,
-      model$etas$A, model$X_transition,
-      model$etas$B, model$X_emission,
-      array(obsArray[1, , ], dim(obsArray)[2:3]))
+      model$etas$pi, model$X_pi,
+      model$etas$A, model$X_A,
+      model$etas$B, model$X_B,
+      array(obsArray[1, , ], dim(obsArray)[2:3]),
+      model$sequence_lengths, attr(model$X_pi, "iv"),
+      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
+      attr(model$X_B, "tv"))
     if (!forward_only) {
       out$backward_probs <- backward_nhmm_singlechannel(
-        model$etas$A, model$X_transition,
-        model$etas$B, model$X_emission,
-        array(obsArray[1, , ], dim(obsArray)[2:3]))
+        model$etas$pi, model$X_pi,
+        model$etas$A, model$X_A,
+        model$etas$B, model$X_B,
+        array(obsArray[1, , ], dim(obsArray)[2:3]),
+        model$sequence_lengths, attr(model$X_pi, "iv"),
+        attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
+        attr(model$X_B, "tv"))
     }
     if (is.null(time_names <- colnames(model$observations))) {
       time_names <- seq_len(model$length_of_sequences)
@@ -172,15 +179,21 @@ forward_backward.nhmm <- function(model, forward_only = FALSE,
     }
   } else {
     out$forward_probs <- forward_nhmm_multichannel(
-      model$etas$pi, model$X_initial,
-      model$etas$A, model$X_transition,
-      model$etas$B, model$X_emission,
-      obsArray, model$n_symbols)
+      model$etas$pi, model$X_pi,
+      model$etas$A, model$X_A,
+      model$etas$B, model$X_B,
+      obsArray,
+      model$sequence_lengths, attr(model$X_pi, "iv"),
+      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
+      attr(model$X_B, "tv"))
     if (!forward_only) {
       out$backward_probs <- backward_nhmm_multichannel(
-        model$etas$A, model$X_transition,
-        model$etas$B, model$X_emission,
-        obsArray, model$n_symbols)
+        model$etas$pi, model$X_pi,
+        model$etas$A, model$X_A,
+        model$etas$B, model$X_B,
+        obsArray, model$sequence_lengths, attr(model$X_pi, "iv"),
+        attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
+        attr(model$X_B, "tv"))
     }
     if (is.null(time_names <- colnames(model$observations[[1]]))) {
       time_names <- seq_len(model$length_of_sequences)
@@ -219,16 +232,24 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,
   out <- list()
   if (model$n_channels == 1) {
     out$forward_probs <- forward_mnhmm_singlechannel(
-      model$etas$pi, model$X_initial,
-      model$etas$A, model$X_transition,
-      model$etas$B, model$X_emission,
-      model$etas$omega, model$X_cluster,
-      array(obsArray, dim(obsArray)[2:3]))
+      model$etas$omega, model$X_omega,
+      model$etas$pi, model$X_pi,
+      model$etas$A, model$X_A,
+      model$etas$B, model$X_B,
+      array(obsArray, dim(obsArray)[2:3]),
+      model$sequence_lengths, attr(model$X_omega, "iv"), attr(model$X_pi, "iv"),
+      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
+      attr(model$X_B, "tv"))
     if (!forward_only) {
       out$backward_probs <- backward_mnhmm_singlechannel(
-        model$etas$A, model$X_transition,
-        model$etas$B, model$X_emission,
-        array(obsArray, dim(obsArray)[2:3]))
+        model$etas$omega, model$X_omega,
+        model$etas$pi, model$X_pi,
+        model$etas$A, model$X_A,
+        model$etas$B, model$X_B,
+        array(obsArray, dim(obsArray)[2:3]), model$sequence_lengths, 
+        attr(model$X_omega, "iv"), attr(model$X_pi, "iv"),
+        attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
+        attr(model$X_B, "tv"))
     }
     if (is.null(time_names <- colnames(model$observations))) {
       time_names <- seq_len(model$length_of_sequences)
@@ -239,16 +260,24 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,
   } else {
     eta_B <- unlist(model$etas$B, recursive = FALSE)
     out$forward_probs <- forward_mnhmm_multichannel(
-      model$etas$pi, model$X_initial,
-      model$etas$A, model$X_transition,
-      eta_B, model$X_emission,
-      model$etas$omega, model$X_cluster,
-      obsArray, model$n_symbols)
+      model$etas$omega, model$X_omega,
+      model$etas$pi, model$X_pi,
+      model$etas$A, model$X_A,
+      eta_B, model$X_B,
+      obsArray, model$sequence_lengths, 
+      attr(model$X_omega, "iv"), attr(model$X_pi, "iv"),
+      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
+      attr(model$X_B, "tv"))
     if (!forward_only) {
       out$backward_probs <- backward_mnhmm_multichannel(
-        model$etas$A, model$X_transition,
-        eta_B, model$X_emission,
-        obsArray, model$n_symbols)
+        model$etas$omega, model$X_omega,
+        model$etas$pi, model$X_pi,
+        model$etas$A, model$X_A,
+        eta_B, model$X_B,
+        obsArray, model$sequence_lengths, 
+        attr(model$X_omega, "iv"), attr(model$X_pi, "iv"),
+        attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
+        attr(model$X_B, "tv"))
     }
     if (is.null(time_names <- colnames(model$observations[[1]]))) {
       time_names <- seq_len(model$length_of_sequences)

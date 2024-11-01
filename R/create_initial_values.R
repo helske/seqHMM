@@ -196,22 +196,22 @@ create_inits_matrix <- function(x, n, m, K, sd = 0) {
   z
 }
 
-create_initial_values <- function(inits, S, M, init_sd, K_i, K_s, K_o, K_d = 0, 
+create_initial_values <- function(inits, S, M, init_sd, K_pi, K_A, K_B, K_omega = 0, 
                                   D = 1) {
   
   if(!is.null(inits$initial_probs)) {
     if (D > 1) {
       pi <- lapply(
         seq_len(D), function(i) {
-          create_inits_vector(inits$initial_probs[[i]], S, K_i, init_sd)
+          create_inits_vector(inits$initial_probs[[i]], S, K_pi, init_sd)
         }
       )
     } else {
-      pi <- create_inits_vector(inits$initial_probs, S, K_i, init_sd)
+      pi <- create_inits_vector(inits$initial_probs, S, K_pi, init_sd)
     }
   } else {
     pi <- create_eta_pi_inits(
-      inits$pi, S, K_i, init_sd, D
+      inits$pi, S, K_pi, init_sd, D
     )
   }
   
@@ -219,16 +219,16 @@ create_initial_values <- function(inits, S, M, init_sd, K_i, K_s, K_o, K_d = 0,
     if (D > 1) {
       A <- lapply(
         seq_len(D), function(i) {
-          create_inits_matrix(inits$transition_probs[[i]], S, S, K_s, init_sd)
+          create_inits_matrix(inits$transition_probs[[i]], S, S, K_A, init_sd)
         }
       )
     } else {
       A <- create_inits_matrix(
-        inits$transition_probs, S, S, K_s, init_sd
+        inits$transition_probs, S, S, K_A, init_sd
       )
     }
   } else {
-    A <- create_eta_A_inits(inits$A, S, K_s, init_sd, D)
+    A <- create_eta_A_inits(inits$A, S, K_A, init_sd, D)
   }
   
   if(!is.null(inits$emission_probs)) {
@@ -238,13 +238,13 @@ create_initial_values <- function(inits, S, M, init_sd, K_i, K_s, K_o, K_d = 0,
           seq_len(D), function(i) {
             lapply(seq_len(length(M)), function(j) {
               create_inits_matrix(
-                inits$emission_probs[[i]][[j]], S, M[j], K_o, init_sd)
+                inits$emission_probs[[i]][[j]], S, M[j], K_B, init_sd)
             })
           })
       } else {
         B <- lapply(
           seq_len(D), function(i) {
-            create_inits_matrix(inits$emission_probs[[i]], S, M, K_o, init_sd)
+            create_inits_matrix(inits$emission_probs[[i]], S, M, K_B, init_sd)
           }
         )
       }
@@ -252,16 +252,16 @@ create_initial_values <- function(inits, S, M, init_sd, K_i, K_s, K_o, K_d = 0,
       if (length(M) > 1) {
         B <- lapply(seq_len(length(M)), function(j) {
           create_inits_matrix(
-            inits$emission_probs[[j]], S, M[j], K_o, init_sd)
+            inits$emission_probs[[j]], S, M[j], K_B, init_sd)
         })
       } else {
         B <- create_inits_matrix(
-          inits$emission_probs, S, M, K_o, init_sd
+          inits$emission_probs, S, M, K_B, init_sd
         )
       }
     }
   } else {
-    B <- create_eta_B_inits(inits$B, S, M, K_o, init_sd, D)
+    B <- create_eta_B_inits(inits$B, S, M, K_B, init_sd, D)
   }
   out <- list(
     pi = pi,
@@ -271,11 +271,11 @@ create_initial_values <- function(inits, S, M, init_sd, K_i, K_s, K_o, K_d = 0,
   if (D > 1) {
     if(!is.null(inits$cluster_probs)) {
       omega <- create_inits_vector(
-        inits$cluster_probs, D, K_d, init_sd
+        inits$cluster_probs, D, K_omega, init_sd
       )
     } else {
       omega <- create_eta_omega_inits(
-        inits$omega, D, K_d, init_sd
+        inits$omega, D, K_omega, init_sd
       )
     }
     out$omega <- omega

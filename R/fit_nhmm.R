@@ -29,37 +29,37 @@ fit_nhmm <- function(model, inits, init_sd, restarts, save_all_solutions = FALSE
   n_i <- attr(model, "np_pi")
   n_s <- attr(model, "np_A")
   n_o <- attr(model, "np_B")
-  iv_pi <- attr(model$X_initial, "iv")
-  iv_A <- attr(model$X_transition, "iv")
-  iv_B <- attr(model$X_emission, "iv")
-  tv_A <- attr(model$X_transition, "tv")
-  tv_B <- attr(model$X_emission, "tv")
-  X_i <- model$X_initial
-  X_s <- model$X_transition
-  X_o <- model$X_emission
-  K_i <- nrow(X_i)
-  K_s <- nrow(X_s)
-  K_o <- nrow(X_o)
+  iv_pi <- attr(model$X_pi, "iv")
+  iv_A <- attr(model$X_A, "iv")
+  iv_B <- attr(model$X_B, "iv")
+  tv_A <- attr(model$X_A, "tv")
+  tv_B <- attr(model$X_B, "tv")
+  X_pi <- model$X_pi
+  X_A <- model$X_A
+  X_B <- model$X_B
+  K_pi <- nrow(X_pi)
+  K_A <- nrow(X_A)
+  K_B <- nrow(X_B)
   Ti <- model$sequence_lengths
   n_obs <- nobs(model)
  
   dots <- list(...)
   if (isTRUE(dots$maxeval < 0)) {
     pars <- unlist(create_initial_values(
-      inits, S, M, init_sd, K_i, K_s, K_o
+      inits, S, M, init_sd, K_pi, K_A, K_B
     ))
-    model$etas$pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
+    model$etas$pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
     model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
-    model$etas$A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+    model$etas$A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
     model$gammas$A <- eta_to_gamma_cube(model$etas$A)
     if (C == 1L) {
       model$etas$B <- create_eta_B_nhmm(
-        pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+        pars[n_i + n_s + seq_len(n_o)], S, M, K_B
       )
       model$gammas$B <- eta_to_gamma_cube(model$etas$B)
     } else {
       model$etas$B <- create_eta_multichannel_B_nhmm(
-        pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+        pars[n_i + n_s + seq_len(n_o)], S, M, K_B
       )
       model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
     }
@@ -84,17 +84,15 @@ fit_nhmm <- function(model, inits, init_sd, restarts, save_all_solutions = FALSE
     dots$check_derivatives <- FALSE
   
   if (C == 1L) {
-    Qs <- t(create_Q(S))
-    Qm <- t(create_Q(M))
     if (need_grad) {
       objectivef <- function(pars) {
-        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
-        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
         eta_B <- create_eta_B_nhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
         )
         out <- log_objective_nhmm_singlechannel(
-          Qs, Qm, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs,
+         eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs,
           iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
         list(
@@ -104,29 +102,27 @@ fit_nhmm <- function(model, inits, init_sd, restarts, save_all_solutions = FALSE
       }
     } else {
       objectivef <- function(pars) {
-        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
-        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
         eta_B <- create_eta_B_nhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
         )
         out <- forward_nhmm_singlechannel(
-          eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs
+          eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs
         )
         - sum(apply(out[, T_, ], 2, logSumExp)) / n_obs
       }
     }
   } else {
-    Qs <- t(create_Q(S))
-    Qm <- lapply(M, function(m) t(create_Q(m)))
     if (need_grad) {
       objectivef <- function(pars) {
-        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
-        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
         eta_B <- create_eta_multichannel_B_nhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
         )
         out <- log_objective_nhmm_multichannel(
-          Qs, Qm, eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M,
+          eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs,
           iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
         list(
@@ -136,13 +132,13 @@ fit_nhmm <- function(model, inits, init_sd, restarts, save_all_solutions = FALSE
       }
     } else {
       objectivef <- function(pars) {
-        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
-        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
         eta_B <- create_eta_multichannel_B_nhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
         )
         out <- forward_nhmm_multichannel(
-          eta_pi, X_i, eta_A, X_s, eta_B, X_o, obs, M
+          eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs
         )
         - sum(apply(out[, T_, ], 2, logSumExp)) / n_obs
       }
@@ -167,7 +163,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, save_all_solutions = FALSE
     
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
       init <- unlist(create_initial_values(
-        inits, S, M, init_sd, K_i, K_s, K_o
+        inits, S, M, init_sd, K_pi, K_A, K_B
       ))
       nloptr(
         x0 = init, eval_f = objectivef,
@@ -186,7 +182,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, save_all_solutions = FALSE
     }
   } else {
     init <- unlist(create_initial_values(
-      inits, S, M, init_sd, K_i, K_s, K_o
+      inits, S, M, init_sd, K_pi, K_A, K_B
     ))
   }
   
@@ -199,18 +195,18 @@ fit_nhmm <- function(model, inits, init_sd, restarts, save_all_solutions = FALSE
     warning_(paste("Optimization terminated due to error:", out$message))
   }
   pars <- out$solution
-  model$etas$pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_i)
+  model$etas$pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
   model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
-  model$etas$A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_s)
+  model$etas$A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
   model$gammas$A <- eta_to_gamma_cube(model$etas$A)
   if (C == 1L) {
     model$etas$B <- create_eta_B_nhmm(
-      pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+      pars[n_i + n_s + seq_len(n_o)], S, M, K_B
     )
     model$gammas$B <- eta_to_gamma_cube(model$etas$B)
   } else {
     model$etas$B <- create_eta_multichannel_B_nhmm(
-      pars[n_i + n_s + seq_len(n_o)], S, M, K_o
+      pars[n_i + n_s + seq_len(n_o)], S, M, K_B
     )
     model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
   }

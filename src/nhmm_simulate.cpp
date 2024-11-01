@@ -5,13 +5,13 @@
 
 // [[Rcpp::export]]
 Rcpp::List simulate_nhmm_singlechannel(
-    const arma::mat& eta_pi, const arma::mat& X_i,
-    const arma::cube& eta_A, const arma::cube& X_s,
-    const arma::cube& eta_B, const arma::cube& X_o) {
-  unsigned int N = X_s.n_slices;
-  unsigned int T = X_s.n_cols;
-  unsigned int S = eta_A.n_slices;
-  unsigned int M = eta_B.n_rows + 1;
+    const arma::mat& eta_pi, const arma::mat& X_pi,
+    const arma::cube& eta_A, const arma::cube& X_A,
+    const arma::cube& eta_B, const arma::cube& X_B) {
+  arma::uword N = X_A.n_slices;
+  arma::uword T = X_A.n_cols;
+  arma::uword S = eta_A.n_slices;
+  arma::uword M = eta_B.n_rows + 1;
   arma::ucube y(1, T, N);
   arma::umat z(T, N);
   arma::mat gamma_pi = eta_to_gamma(eta_pi);
@@ -22,13 +22,13 @@ Rcpp::List simulate_nhmm_singlechannel(
   arma::cube B(S, M, T);
   arma::uvec seqS = arma::linspace<arma::uvec>(0, S - 1, S);
   arma::uvec seqM = arma::linspace<arma::uvec>(0, M - 1, M);
-  for (unsigned int i = 0; i < N; i++) {
-    Pi = get_pi(gamma_pi, X_i.col(i));
-    A = get_A(gamma_A, X_s.slice(i));
-    B = get_B(gamma_B, X_o.slice(i));
+  for (arma::uword i = 0; i < N; i++) {
+    Pi = get_pi(gamma_pi, X_pi.col(i));
+    A = get_A(gamma_A, X_A.slice(i));
+    B = get_B(gamma_B, X_B.slice(i));
     z(0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, Pi));
     y(0, 0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(0).row(z(0, i)).t()));
-    for (unsigned int t = 1; t < T; t++) {
+    for (arma::uword t = 1; t < T; t++) {
       z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A.slice(t).row(z(t - 1, i)).t()));
       y(0, t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(t).row(z(t, i)).t()));
     }
@@ -40,14 +40,14 @@ Rcpp::List simulate_nhmm_singlechannel(
 }
 // [[Rcpp::export]]
 Rcpp::List simulate_nhmm_multichannel(
-    const arma::mat& eta_pi, const arma::mat& X_i,
-    const arma::cube& eta_A, const arma::cube& X_s,
-    const arma::field<arma::cube>& eta_B, const arma::cube& X_o, 
+    const arma::mat& eta_pi, const arma::mat& X_pi,
+    const arma::cube& eta_A, const arma::cube& X_A,
+    const arma::field<arma::cube>& eta_B, const arma::cube& X_B, 
     const arma::uvec& M) {
-  unsigned int N = X_s.n_slices;
-  unsigned int T = X_s.n_cols;
-  unsigned int S = eta_A.n_slices;
-  unsigned int C = M.n_elem;
+  arma::uword N = X_A.n_slices;
+  arma::uword T = X_A.n_cols;
+  arma::uword S = eta_A.n_slices;
+  arma::uword C = M.n_elem;
   
   arma::ucube y(C, T, N);
   arma::umat z(T, N);
@@ -60,20 +60,20 @@ Rcpp::List simulate_nhmm_multichannel(
   arma::field<arma::cube> B(C);
   arma::uvec seqS = arma::linspace<arma::uvec>(0, S - 1, S);
   arma::field<arma::uvec> seqM(C);
-  for (unsigned int c = 0; c < C; c++) {
+  for (arma::uword c = 0; c < C; c++) {
     seqM(c) = arma::linspace<arma::uvec>(0, M(c) - 1, M(c));
   }
-  for (unsigned int i = 0; i < N; i++) {
-    Pi = get_pi(gamma_pi, X_i.col(i));
-    A = get_A(gamma_A, X_s.slice(i));
-    B = get_B(gamma_B, X_o.slice(i), M);
+  for (arma::uword i = 0; i < N; i++) {
+    Pi = get_pi(gamma_pi, X_pi.col(i));
+    A = get_A(gamma_A, X_A.slice(i));
+    B = get_B(gamma_B, X_B.slice(i), M);
     z(0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, Pi));
-    for (unsigned int c = 0; c < C; c++) {
+    for (arma::uword c = 0; c < C; c++) {
       y(c, 0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM(c), 1, false, B(c).slice(0).row(z(0, i)).t()));
     }
-    for (unsigned int t = 1; t < T; t++) {
+    for (arma::uword t = 1; t < T; t++) {
       z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A.slice(t).row(z(t - 1, i)).t()));
-      for (unsigned int c = 0; c < C; c++) {
+      for (arma::uword c = 0; c < C; c++) {
         y(c, t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM(c), 1, false, B(c).slice(t).row(z(t, i)).t()));
       }
     }
@@ -86,15 +86,15 @@ Rcpp::List simulate_nhmm_multichannel(
 
 // [[Rcpp::export]]
 Rcpp::List simulate_mnhmm_singlechannel(
-    const arma::field<arma::mat>& eta_pi, const arma::mat& X_i,
-    const arma::field<arma::cube>& eta_A, const arma::cube& X_s,
-    const arma::field<arma::cube>& eta_B, const arma::cube& X_o,
-    const arma::mat& eta_omega, const arma::mat& X_d) {
-  unsigned int N = X_s.n_slices;
-  unsigned int T = X_s.n_cols;
-  unsigned int S = eta_A.n_slices;
-  unsigned int M = eta_B.n_rows + 1;
-  unsigned int D = eta_omega.n_rows + 1;
+    const arma::field<arma::mat>& eta_pi, const arma::mat& X_pi,
+    const arma::field<arma::cube>& eta_A, const arma::cube& X_A,
+    const arma::field<arma::cube>& eta_B, const arma::cube& X_B,
+    const arma::mat& eta_omega, const arma::mat& X_omega) {
+  arma::uword N = X_A.n_slices;
+  arma::uword T = X_A.n_cols;
+  arma::uword S = eta_A.n_slices;
+  arma::uword M = eta_B.n_rows + 1;
+  arma::uword D = eta_omega.n_rows + 1;
   arma::ucube y(1, T, N);
   arma::umat z(T, N);
   
@@ -109,15 +109,15 @@ Rcpp::List simulate_mnhmm_singlechannel(
   arma::uvec seqS = arma::linspace<arma::uvec>(0, S - 1, S);
   arma::uvec seqM = arma::linspace<arma::uvec>(0, M - 1, M);
   arma::uvec seqD = arma::linspace<arma::uvec>(0, D - 1, D);
-  for (unsigned int i = 0; i < N; i++) {
-    omega = get_omega(gamma_omega, X_d.col(i));
-    unsigned int cluster = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqD, 1, false, omega));
-    Pi = get_pi(gamma_pi(cluster), X_i.col(i));
-    A = get_A(gamma_A(cluster), X_s.slice(i));
-    B = get_B(gamma_B(cluster), X_o.slice(i));
+  for (arma::uword i = 0; i < N; i++) {
+    omega = get_omega(gamma_omega, X_omega.col(i));
+    arma::uword cluster = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqD, 1, false, omega));
+    Pi = get_pi(gamma_pi(cluster), X_pi.col(i));
+    A = get_A(gamma_A(cluster), X_A.slice(i));
+    B = get_B(gamma_B(cluster), X_B.slice(i));
     z(0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, Pi));
     y(0, 0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(0).row(z(0, i)).t()));
-    for (unsigned int t = 1; t < T; t++) {
+    for (arma::uword t = 1; t < T; t++) {
       z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A.slice(t).row(z(t - 1, i)).t()));
       y(0, t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(t).row(z(t, i)).t()));
     }
@@ -132,16 +132,16 @@ Rcpp::List simulate_mnhmm_singlechannel(
 
 // [[Rcpp::export]]
 Rcpp::List simulate_mnhmm_multichannel(
-    const arma::field<arma::mat>& eta_pi, const arma::mat& X_i,
-    const arma::field<arma::cube>& eta_A, const arma::cube& X_s,
-    const arma::field<arma::cube>& eta_B, const arma::cube& X_o,
-    const arma::mat& eta_omega, const arma::mat& X_d, 
+    const arma::field<arma::mat>& eta_pi, const arma::mat& X_pi,
+    const arma::field<arma::cube>& eta_A, const arma::cube& X_A,
+    const arma::field<arma::cube>& eta_B, const arma::cube& X_B,
+    const arma::mat& eta_omega, const arma::mat& X_omega, 
     const arma::uvec& M) {
-  unsigned int N = X_s.n_slices;
-  unsigned int T = X_s.n_cols;
-  unsigned int S = eta_A(0).n_slices;
-  unsigned int D = eta_omega.n_rows + 1;
-  unsigned int C = M.n_elem;
+  arma::uword N = X_A.n_slices;
+  arma::uword T = X_A.n_cols;
+  arma::uword S = eta_A(0).n_slices;
+  arma::uword D = eta_omega.n_rows + 1;
+  arma::uword C = M.n_elem;
   arma::ucube y(C, T, N);
   arma::umat z(T, N);
   arma::mat gamma_omega = eta_to_gamma(eta_omega);
@@ -153,24 +153,24 @@ Rcpp::List simulate_mnhmm_multichannel(
   arma::cube A(S, S, T);
   arma::field<arma::cube> B(C);
   arma::field<arma::uvec> seqM(C);
-  for (unsigned int c = 0; c < C; c++) {
+  for (arma::uword c = 0; c < C; c++) {
     seqM(c) = arma::linspace<arma::uvec>(0, M(c) - 1, M(c));
   }
   arma::uvec seqS = arma::linspace<arma::uvec>(0, S - 1, S);
   arma::uvec seqD = arma::linspace<arma::uvec>(0, D - 1, D);
-  for (unsigned int i = 0; i < N; i++) {
-    omega = get_omega(gamma_omega, X_d.col(i));
-    unsigned int cluster = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqD, 1, false, omega));
-    Pi = get_pi(gamma_pi(cluster), X_i.col(i));
-    A = get_A(gamma_A(cluster), X_s.slice(i));
-    B = get_B(gamma_B.rows(cluster * C, (cluster + 1) * C - 1), X_o.slice(i), M);
+  for (arma::uword i = 0; i < N; i++) {
+    omega = get_omega(gamma_omega, X_omega.col(i));
+    arma::uword cluster = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqD, 1, false, omega));
+    Pi = get_pi(gamma_pi(cluster), X_pi.col(i));
+    A = get_A(gamma_A(cluster), X_A.slice(i));
+    B = get_B(gamma_B.rows(cluster * C, (cluster + 1) * C - 1), X_B.slice(i), M);
     z(0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, Pi));
-    for (unsigned int c = 0; c < C; c++) {
+    for (arma::uword c = 0; c < C; c++) {
       y(c, 0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM(c), 1, false, B(c).slice(0).row(z(0, i)).t()));
     }
-    for (unsigned int t = 1; t < T; t++) {
+    for (arma::uword t = 1; t < T; t++) {
       z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A.slice(t).row(z(t - 1, i)).t()));
-      for (unsigned int c = 0; c < C; c++) {
+      for (arma::uword c = 0; c < C; c++) {
         y(c, t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM(c), 1, false, B(c).slice(t).row(z(t, i)).t()));
       }
     }
