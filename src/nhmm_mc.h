@@ -36,8 +36,8 @@ struct nhmm_mc : public nhmm_base {
     arma::field<arma::cube>& eta_B_)
     : nhmm_base(S_, X_pi_, X_s_, X_o_, Ti_, iv_pi_, iv_A_, iv_B_, tv_A_, tv_B_, eta_pi_, eta_A_),
       obs(obs_), 
-      eta_B(eta_B_),
       C(obs.n_rows), 
+      eta_B(eta_B_),
       M(arma::uvec(C)), 
       Qm(arma::field<arma::mat>(C)),
       gamma_B(arma::field<arma::cube>(C)),

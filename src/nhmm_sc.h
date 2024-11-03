@@ -7,6 +7,12 @@
 #include "softmax.h"
 #include "nhmm_base.h"
 
+struct nhmm_sc_opt_data_B {
+  const arma::field<arma::cube>& E_B;
+  arma::uword s;
+  nhmm_sc_opt_data_B(const arma::field<arma::cube>& E_B_) : E_B(E_B_), s(0) {}
+};
+
 struct nhmm_sc : public nhmm_base {
   
   const arma::umat& obs;
@@ -73,5 +79,10 @@ struct nhmm_sc : public nhmm_base {
       log_py.col(t) = log_B.slice(t).col(obs(t, i));
     }
   }
+  void mstep_B(const arma::field<arma::cube>& E_B,
+             const double xtol_abs, const double ftol_abs, const double xtol_rel,
+             const double ftol_rel, arma::uword maxeval);
+  
+  double objective_B(const arma::vec& x, arma::vec& grad, const nhmm_sc_opt_data_B& opt_data);
 };
 #endif

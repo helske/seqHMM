@@ -6,6 +6,15 @@
 #include "eta_to_gamma.h"
 #include "softmax.h"
 
+struct nhmm_opt_data_pi {
+  const arma::field<arma::vec>& E_Pi;
+  nhmm_opt_data_pi(const arma::field<arma::vec>& E_Pi_) : E_Pi(E_Pi_) {}
+};
+struct nhmm_opt_data_A {
+  const arma::field<arma::cube>& E_A;
+  arma::uword s;
+  nhmm_opt_data_A(const arma::field<arma::cube>& E_A_) : E_A(E_A_), s(0) {}
+};
 struct nhmm_base {
   const arma::uword S;
   const arma::mat& X_pi;
@@ -94,5 +103,14 @@ struct nhmm_base {
     }
     log_A = arma::log(A);
   }
+  
+  void mstep_pi(const arma::field<arma::vec>& E_Pi,
+               const double xtol_abs, const double ftol_abs, const double xtol_rel,
+               const double ftol_rel, arma::uword maxeval);
+  void mstep_A(const arma::field<arma::cube>& E_A,
+               const double xtol_abs, const double ftol_abs, const double xtol_rel,
+               const double ftol_rel, arma::uword maxeval);
+  double objective_pi(const arma::vec& x, arma::vec& grad, const nhmm_opt_data_pi& opt_data);
+  double objective_A(const arma::vec& x, arma::vec& grad, const nhmm_opt_data_A& opt_data);
 };
 #endif

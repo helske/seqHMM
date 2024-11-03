@@ -177,6 +177,10 @@ log_objectivex <- function(transition, emission, init, obs, ANZ, BNZ, INZ, nSymb
     .Call(`_seqHMM_log_objectivex`, transition, emission, init, obs, ANZ, BNZ, INZ, nSymbols, coef, X, numberOfStates, threads)
 }
 
+EM_LBFGS_nhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti, n_obs, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level) {
+    .Call(`_seqHMM_EM_LBFGS_nhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti, n_obs, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level)
+}
+
 backward_nhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_pi, iv_A, iv_B, tv_A, tv_B) {
     .Call(`_seqHMM_backward_nhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, iv_pi, iv_A, iv_B, tv_A, tv_B)
 }
