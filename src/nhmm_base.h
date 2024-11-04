@@ -81,7 +81,12 @@ struct nhmm_base {
       A(S, S, T),
       log_A(S, S, T),
       log_py(S, T) {}
-  
+  void update_gamma_pi() {
+    gamma_pi = eta_to_gamma(eta_pi, Qs);
+  }
+  void update_gamma_A() {
+    gamma_A = eta_to_gamma(eta_A, Qs);
+  }
   void update_pi(arma::uword i) {
     Pi = softmax(gamma_pi * X_pi.col(i));
     log_Pi = arma::log(Pi);

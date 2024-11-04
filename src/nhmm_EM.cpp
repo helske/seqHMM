@@ -28,12 +28,16 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
   arma::mat log_beta(model.S, model.T);
   
   // EM-algorithm begins
+  arma::uword n_pi = eta_pi.n_elem;
+  arma::uword n_A = eta_A.n_elem;
+  arma::uword n_B = eta_B.n_elem;
+  arma::rowvec pars(n_pi + n_A + n_B);
+  if (print_level > 1) {
+    pars.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
+    pars.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
+    pars.cols(n_pi + n_A, n_pi + n_A + n_B - 1) = arma::vectorise(model.eta_B).t();
+  }
   
-  double relative_change = ftol_rel + 1.0;
-  double absolute_change = ftol_abs + 1.0;
-  arma::uword iter = 0;
-  double ll_new = 0;
-  double ll = -1e150;
   arma::field<arma::vec> E_Pi(model.N);
   arma::field<arma::cube> E_A(model.N);
   arma::field<arma::cube> E_B(model.N);
@@ -42,7 +46,11 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     E_A(i) = arma::cube(model.S, model.S, model.T);
     E_B(i) = arma::cube(model.S, model.M, model.T);
   }// create opt_data object(s) already here?
-  
+  double relative_change = ftol_rel + 1.0;
+  double absolute_change = ftol_abs + 1.0;
+  arma::uword iter = 0;
+  double ll_new;
+  double ll = -1e150;
   while ((relative_change > ftol_rel) && (absolute_change > ftol_abs) && (iter < maxeval)) {
     iter++;
     ll_new = 0;
@@ -97,19 +105,34 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     
     // Minimize obj(E_pi, E_A, E_B, eta_pi, eta_A, eta_B, X_pi, X_A, X_B)
     // with respect to eta_pi, eta_A, eta_B
-    model.mstep_pi(E_Pi, xtol_abs_m, ftol_abs_m, xtol_rel_m,
-                ftol_rel_m, maxeval_m);
-    model.mstep_A(E_A, xtol_abs_m, ftol_abs_m, xtol_rel_m,
-                   ftol_rel_m, maxeval_m);
-    model.mstep_B(E_B, xtol_abs_m, ftol_abs_m, xtol_rel_m,
-                   ftol_rel_m, maxeval_m);
+    model.mstep_pi(
+      E_Pi, xtol_abs_m, ftol_abs_m, xtol_rel_m,
+      ftol_rel_m, maxeval_m
+    );
+    model.mstep_A(
+      E_A, xtol_abs_m, ftol_abs_m, xtol_rel_m, ftol_rel_m, maxeval_m
+    );
+    model.mstep_B(
+      E_B, xtol_abs_m, ftol_abs_m, xtol_rel_m, ftol_rel_m, maxeval_m
+    );
     relative_change = (ll_new - ll) / (std::abs(ll) + 1e-8);
     absolute_change = (ll_new - ll) / n_obs;
     ll = ll_new;
+    model.update_gamma_pi();
+    model.update_gamma_A();
+    model.update_gamma_B();
     if (print_level > 0) {
-      Rcpp::Rcout<<"Iteration: "<<iter<< "log-likelihood "<<ll<<std::endl;
-      Rcpp::Rcout<<"           "<<iter<< "relative change "<<relative_change<<std::endl;
-      Rcpp::Rcout<<"           "<<iter<< "absolute change "<<absolute_change<<std::endl;
+      Rcpp::Rcout<<"Iteration: "<<iter<<std::endl;
+      Rcpp::Rcout<<"           "<<"log-likelihood: "<<ll<<std::endl;
+      Rcpp::Rcout<<"           "<<"relative change: "<<relative_change<<std::endl;
+      Rcpp::Rcout<<"           "<<"absolute change: "<<absolute_change<<std::endl;
+      if (print_level > 1) {
+        pars.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
+        pars.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
+        pars.cols(n_pi + n_A, n_pi + n_A + n_B - 1) = arma::vectorise(model.eta_B).t();
+        Rcpp::Rcout << "current parameter values"<< std::endl;
+        Rcpp::Rcout<<pars<<std::endl;
+      }
     }
   }
   // Final log-likelihood

@@ -48,6 +48,10 @@ struct nhmm_sc : public nhmm_base {
       B(S, M + 1, T),
       log_B(S, M + 1, T) {}
   
+  void update_gamma_B() {
+    gamma_B = eta_to_gamma(eta_B, Qm);
+  }
+  
   void update_B(const arma::uword i) {
     arma::mat Btmp(M + 1, S, arma::fill::ones);
     if (tv_B) {

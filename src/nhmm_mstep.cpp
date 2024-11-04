@@ -70,7 +70,7 @@ double nhmm_sc::objective_B(const arma::vec& x, arma::vec& grad, const nhmm_sc_o
       tmp = gamma_Brow * X_B.slice(i).col(0);
       B1 = softmax(tmp);
     }
-    for (arma::uword t = 0; t < (Ti(i) - 1); t++) {
+    for (arma::uword t = 0; t < Ti(i); t++) {
       if (tv_B) {
         tmp = gamma_Brow * X_B.slice(i).col(t);
         B1 = softmax(tmp);
@@ -120,6 +120,7 @@ void nhmm_base::mstep_pi(const arma::field<arma::vec>& E_Pi,
 void nhmm_base::mstep_A(const arma::field<arma::cube>& E_A, 
                          const double xtol_abs, const double ftol_abs, const double xtol_rel,
                          const double ftol_rel, arma::uword maxeval) {
+ 
   nhmm_opt_data_A opt_data(E_A);
   // Prepare wrapper data with both `this` and `opt_data` pointers
   std::pair<nhmm_base*, nhmm_opt_data_A*> wrapper_data = {this, &opt_data};
@@ -128,7 +129,7 @@ void nhmm_base::mstep_A(const arma::field<arma::cube>& E_A,
   // A
   auto objective_A_wrapper = [](unsigned n, const double* x, double* grad, void* data) -> double {
     auto* wrapper_data = static_cast<std::pair<nhmm_base*, nhmm_opt_data_A*>*>(data);
-    nhmm_base* self = wrapper_data->first; 
+    nhmm_base* self = wrapper_data->first;
     nhmm_opt_data_A* opt_data = wrapper_data->second;
     // Wrap raw pointers in Armadillo objects
     arma::vec x_vec(const_cast<double*>(x), n, false, false);
@@ -144,7 +145,7 @@ void nhmm_base::mstep_A(const arma::field<arma::cube>& E_A,
   nlopt_set_xtol_rel(opt_A, xtol_rel);
   nlopt_set_ftol_rel(opt_A, ftol_rel);
   nlopt_set_maxeval(opt_A, maxeval);
-  for (arma::uword s = 0; s < S; s ++) {
+  for (arma::uword s = 0; s < S; s++) {
     opt_data.s = s;
     x_A = arma::vectorise(eta_A.slice(s));
     status = nlopt_optimize(opt_A, x_A.memptr(), &minf);
@@ -182,7 +183,7 @@ void nhmm_sc::mstep_B(const arma::field<arma::cube>& E_B,
   nlopt_set_xtol_rel(opt_B, xtol_rel);
   nlopt_set_ftol_rel(opt_B, ftol_rel);
   nlopt_set_maxeval(opt_B, maxeval);
-  for (arma::uword s = 0; s < S; s ++) {
+  for (arma::uword s = 0; s < S; s++) {
     opt_data.s = s;
     x_B = arma::vectorise(eta_B.slice(s));
     status = nlopt_optimize(opt_B, x_B.memptr(), &minf);
