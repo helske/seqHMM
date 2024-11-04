@@ -6,15 +6,6 @@
 #include "eta_to_gamma.h"
 #include "softmax.h"
 
-struct nhmm_opt_data_pi {
-  const arma::field<arma::vec>& E_Pi;
-  nhmm_opt_data_pi(const arma::field<arma::vec>& E_Pi_) : E_Pi(E_Pi_) {}
-};
-struct nhmm_opt_data_A {
-  const arma::field<arma::cube>& E_A;
-  arma::uword s;
-  nhmm_opt_data_A(const arma::field<arma::cube>& E_A_) : E_A(E_A_), s(0) {}
-};
 struct nhmm_base {
   const arma::uword S;
   const arma::mat& X_pi;
@@ -42,7 +33,10 @@ struct nhmm_base {
   arma::cube A;
   arma::cube log_A;
   arma::mat log_py;
-  
+  // excepted counts for EM algorithm
+  arma::mat E_Pi;
+  arma::field<arma::cube> E_A;
+  arma::uword current_s;
   nhmm_base(
     const arma::uword S_,
     const arma::mat& X_pi_,
@@ -80,7 +74,11 @@ struct nhmm_base {
       log_Pi(S),
       A(S, S, T),
       log_A(S, S, T),
-      log_py(S, T) {}
+      log_py(S, T), E_Pi(S, N), E_A(S), current_s(0) {
+    for (arma::uword s = 0; s < S; s++) {
+      E_A(s) = arma::cube(S, N, T);
+    }
+  }
   void update_gamma_pi() {
     gamma_pi = eta_to_gamma(eta_pi, Qs);
   }
@@ -109,13 +107,28 @@ struct nhmm_base {
     log_A = arma::log(A);
   }
   
-  void mstep_pi(const arma::field<arma::vec>& E_Pi,
-               const double xtol_abs, const double ftol_abs, const double xtol_rel,
+  void estep_pi(const arma::uword i, const arma::vec& log_alpha, 
+                const arma::vec& log_beta, const double ll) {
+    E_Pi.col(i) = arma::exp(log_alpha + log_beta - ll);
+  }
+  void estep_A(const arma::uword i, const arma::mat& log_alpha, 
+               const arma::mat& log_beta, const double ll) {
+    for (arma::uword k = 0; k < S; k++) { // from
+      for (arma::uword j = 0; j < S; j++) { // to
+        for (arma::uword t = 0; t < (Ti(i) - 1); t++) { // time
+          E_A(k)(j, i, t) = exp(log_alpha(k, t) + log_A(k, j, t) + 
+            log_beta(j, t + 1) + log_py(j, t + 1) - ll);
+        }
+      }
+    }
+  }
+  
+  void mstep_pi(const double xtol_abs, const double ftol_abs, const double xtol_rel,
+                const double ftol_rel, arma::uword maxeval);
+  void mstep_A(const double xtol_abs, const double ftol_abs, const double xtol_rel,
                const double ftol_rel, arma::uword maxeval);
-  void mstep_A(const arma::field<arma::cube>& E_A,
-               const double xtol_abs, const double ftol_abs, const double xtol_rel,
-               const double ftol_rel, arma::uword maxeval);
-  double objective_pi(const arma::vec& x, arma::vec& grad, const nhmm_opt_data_pi& opt_data);
-  double objective_A(const arma::vec& x, arma::vec& grad, const nhmm_opt_data_A& opt_data);
+  double objective_pi(const arma::vec& x, arma::vec& grad);
+  double objective_A(const arma::vec& x, arma::vec& grad);
 };
+
 #endif

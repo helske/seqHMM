@@ -7,12 +7,6 @@
 #include "softmax.h"
 #include "nhmm_base.h"
 
-struct nhmm_sc_opt_data_B {
-  const arma::field<arma::cube>& E_B;
-  arma::uword s;
-  nhmm_sc_opt_data_B(const arma::field<arma::cube>& E_B_) : E_B(E_B_), s(0) {}
-};
-
 struct nhmm_sc : public nhmm_base {
   
   const arma::umat& obs;
@@ -23,7 +17,8 @@ struct nhmm_sc : public nhmm_base {
   // these store Pi, A, B, and log_p(y) of _one_ id we are currently working with
   arma::cube B;
   arma::cube log_B;
-  
+  // excepted counts for EM algorithm
+  arma::field<arma::cube> E_B;
   nhmm_sc(
     const arma::uword S_,
     const arma::mat& X_pi_,
@@ -46,7 +41,12 @@ struct nhmm_sc : public nhmm_base {
       Qm(create_Q(M)), 
       gamma_B(eta_to_gamma(eta_B, Qm)),
       B(S, M + 1, T),
-      log_B(S, M + 1, T) {}
+      log_B(S, M + 1, T), 
+      E_B(S) {
+    for (arma::uword s = 0; s < S; s++) {
+      E_B(s) = arma::cube(M, N, T);
+    }
+  }
   
   void update_gamma_B() {
     gamma_B = eta_to_gamma(eta_B, Qm);
@@ -83,10 +83,22 @@ struct nhmm_sc : public nhmm_base {
       log_py.col(t) = log_B.slice(t).col(obs(t, i));
     }
   }
-  void mstep_B(const arma::field<arma::cube>& E_B,
-             const double xtol_abs, const double ftol_abs, const double xtol_rel,
-             const double ftol_rel, arma::uword maxeval);
+  void estep_B(const arma::uword i, const arma::mat& log_alpha, 
+               const arma::mat& log_beta, const double ll) {
+    for (arma::uword k = 0; k < S; k++) { // state
+      for (arma::uword m = 0; m < M; m++) { // emit
+        for (arma::uword t = 0; t < Ti(i); t++) { // time
+          if (m == obs(t, i)) {
+            E_B(k)(m, i, t) = exp(log_alpha(k, t) + log_beta(k, t) - ll);
+          }
+        }
+      }
+    }
+  }
   
-  double objective_B(const arma::vec& x, arma::vec& grad, const nhmm_sc_opt_data_B& opt_data);
+  void mstep_B(const double xtol_abs, const double ftol_abs, const double xtol_rel,
+               const double ftol_rel, arma::uword maxeval);
+  
+  double objective_B(const arma::vec& x, arma::vec& grad);
 };
 #endif
