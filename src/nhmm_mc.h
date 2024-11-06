@@ -18,6 +18,9 @@ struct nhmm_mc : public nhmm_base {
   // these store Pi, A, B, and log_p(y) of _one_ id we are currently working with
   arma::field<arma::cube> B;
   arma::field<arma::cube> log_B;
+  // excepted counts for EM algorithm
+  arma::field<arma::cube> E_B;
+  arma::uword current_c; // for EM
   
   nhmm_mc(
     const arma::uword S_,
@@ -33,8 +36,9 @@ struct nhmm_mc : public nhmm_base {
     const arma::ucube& obs_,
     arma::mat& eta_pi_,
     arma::cube& eta_A_,
-    arma::field<arma::cube>& eta_B_)
-    : nhmm_base(S_, X_pi_, X_s_, X_o_, Ti_, iv_pi_, iv_A_, iv_B_, tv_A_, tv_B_, eta_pi_, eta_A_),
+    arma::field<arma::cube>& eta_B_,
+    const double penalty = 0)
+    : nhmm_base(S_, X_pi_, X_s_, X_o_, Ti_, iv_pi_, iv_A_, iv_B_, tv_A_, tv_B_, eta_pi_, eta_A_, penalty),
       obs(obs_), 
       C(obs.n_rows), 
       eta_B(eta_B_),
@@ -42,8 +46,8 @@ struct nhmm_mc : public nhmm_base {
       Qm(arma::field<arma::mat>(C)),
       gamma_B(arma::field<arma::cube>(C)),
       B(arma::field<arma::cube>(C)),
-      log_B(arma::field<arma::cube>(C)) {
-    
+      log_B(arma::field<arma::cube>(C)),
+      current_c(0) {
     for (arma::uword c = 0; c < C; c++) {
       M(c) = eta_B(c).n_rows + 1;
       Qm(c) = create_Q(M(c));
@@ -52,6 +56,13 @@ struct nhmm_mc : public nhmm_base {
       log_B(c) = arma::cube(S, M(c) + 1, T); // log_B field initialization
     }
   }
+  
+  void update_gamma_B() {
+    for (arma::uword c = 0; c < C; c++) {
+      gamma_B(c) = eta_to_gamma(eta_B(c), Qm(c));
+    }
+  }
+  
   void update_B(const arma::uword i) {
     for (arma::uword c = 0; c < C; c++) {
       arma::mat Btmp(M(c) + 1, S, arma::fill::ones);
@@ -88,5 +99,26 @@ struct nhmm_mc : public nhmm_base {
       }
     }
   }
+  void estep_B(const arma::uword i, const arma::mat& log_alpha, 
+               const arma::mat& log_beta, const double ll) {
+    for (arma::uword k = 0; k < S; k++) { // state
+      for (arma::uword t = 0; t < Ti(i); t++) { // time
+        double pp = exp(log_alpha(k, t) + log_beta(k, t) - ll);
+        for (arma::uword c = 0; c < C; c++) { // channel
+          if (obs(c, t, i) < M(c)) {
+            E_B(c)(t, i, k) = pp;
+          } else {
+            E_B(c)(t, i, k) = 0.0;
+          }
+        }
+      }
+    }
+  }
+  
+  void mstep_B(const double ftol_abs, const double ftol_rel, 
+               const double xtol_abs, const double xtol_rel, 
+               arma::uword maxeval);
+  
+  double objective_B(const arma::vec& x, arma::vec& grad);
 };
 #endif

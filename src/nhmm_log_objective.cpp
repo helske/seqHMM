@@ -54,12 +54,12 @@ Rcpp::List log_objective_nhmm_singlechannel(
     );
     double ll = logSumExp(log_alpha.col(model.Ti(i) - 1));
     if (!std::isfinite(ll)) {
-      double small = -arma::datum::inf;
+      double small = -std::numeric_limits<double>::max();
       grad_pi.fill(small);
       grad_A.fill(small);
       grad_B.fill(small);
       return Rcpp::List::create(
-        Rcpp::Named("loglik") = -arma::datum::inf,
+        Rcpp::Named("loglik") = small,
         Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
         Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
         Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B)
@@ -144,14 +144,14 @@ Rcpp::List log_objective_nhmm_multichannel(
     );
     double ll = logSumExp(log_alpha.col(model.Ti(i) - 1));
     if (!std::isfinite(ll)) {
-      double small = -arma::datum::inf; // -std::max(std::min(1e10, N * 1e5), 1e3);
+      double small = -std::numeric_limits<double>::max();
       grad_pi.fill(small);
       grad_A.fill(small);
       for (arma::uword c = 0; c < model.C; c++) {
         grad_B(c).fill(small);
       }
       return Rcpp::List::create(
-        Rcpp::Named("loglik") = -arma::datum::inf,
+        Rcpp::Named("loglik") = small,
         Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
         Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
         Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B)
@@ -253,7 +253,7 @@ Rcpp::List log_objective_mnhmm_singlechannel(
     }
     loglik(i) = logSumExp(model.log_omega + loglik_i);
     if (!std::isfinite(loglik(i))) {
-      double small = -arma::datum::inf; // -std::max(std::min(1e10, N * 1e5), 1e3);
+      double small = -std::numeric_limits<double>::max();
       grad_omega.fill(small);
       for (arma::uword d = 0; d < model.D; d++) {
         grad_pi(d).fill(small);
@@ -261,7 +261,7 @@ Rcpp::List log_objective_mnhmm_singlechannel(
         grad_B(d).fill(small);
       }
       return Rcpp::List::create(
-        Rcpp::Named("loglik") = -arma::datum::inf,
+        Rcpp::Named("loglik") = small,
         Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
         Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
         Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B),
@@ -375,7 +375,7 @@ Rcpp::List log_objective_mnhmm_multichannel(
     }
     loglik(i) = logSumExp(model.log_omega + loglik_i);
     if (!std::isfinite(loglik(i))) {
-      double small = -arma::datum::inf; // -std::max(std::min(1e10, N * 1e5), 1e3);
+      double small = -std::numeric_limits<double>::max();
       grad_omega.fill(small);
       for (arma::uword d = 0; d < model.D; d++) {
         grad_pi(d).fill(small);
@@ -385,7 +385,7 @@ Rcpp::List log_objective_mnhmm_multichannel(
         }
       }
       return Rcpp::List::create(
-        Rcpp::Named("loglik") = -arma::datum::inf,
+        Rcpp::Named("loglik") = small,
         Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
         Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
         Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B),

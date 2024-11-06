@@ -657,8 +657,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // EM_LBFGS_nhmm_singlechannel
-Rcpp::List EM_LBFGS_nhmm_singlechannel(arma::mat& eta_pi, const arma::mat& X_pi, arma::cube& eta_A, const arma::cube& X_A, arma::cube& eta_B, const arma::cube& X_B, const arma::umat& obs, const bool iv_pi, const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B, const arma::uvec& Ti, const arma::uword n_obs, const arma::uword maxeval, const double ftol_abs, const double ftol_rel, const double xtol_abs, const double xtol_rel, const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level);
-RcppExport SEXP _seqHMM_EM_LBFGS_nhmm_singlechannel(SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP obsSEXP, SEXP iv_piSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP TiSEXP, SEXP n_obsSEXP, SEXP maxevalSEXP, SEXP ftol_absSEXP, SEXP ftol_relSEXP, SEXP xtol_absSEXP, SEXP xtol_relSEXP, SEXP maxeval_mSEXP, SEXP ftol_abs_mSEXP, SEXP ftol_rel_mSEXP, SEXP xtol_abs_mSEXP, SEXP xtol_rel_mSEXP, SEXP print_levelSEXP) {
+Rcpp::List EM_LBFGS_nhmm_singlechannel(arma::mat& eta_pi, const arma::mat& X_pi, arma::cube& eta_A, const arma::cube& X_A, arma::cube& eta_B, const arma::cube& X_B, const arma::umat& obs, const bool iv_pi, const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B, const arma::uvec& Ti, const arma::uword n_obs, const arma::uword maxeval, const double ftol_abs, const double ftol_rel, const double xtol_abs, const double xtol_rel, const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level, const double penalty);
+RcppExport SEXP _seqHMM_EM_LBFGS_nhmm_singlechannel(SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP obsSEXP, SEXP iv_piSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP TiSEXP, SEXP n_obsSEXP, SEXP maxevalSEXP, SEXP ftol_absSEXP, SEXP ftol_relSEXP, SEXP xtol_absSEXP, SEXP xtol_relSEXP, SEXP maxeval_mSEXP, SEXP ftol_abs_mSEXP, SEXP ftol_rel_mSEXP, SEXP xtol_abs_mSEXP, SEXP xtol_rel_mSEXP, SEXP print_levelSEXP, SEXP penaltySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -687,7 +687,44 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double >::type xtol_abs_m(xtol_abs_mSEXP);
     Rcpp::traits::input_parameter< const double >::type xtol_rel_m(xtol_rel_mSEXP);
     Rcpp::traits::input_parameter< const arma::uword >::type print_level(print_levelSEXP);
-    rcpp_result_gen = Rcpp::wrap(EM_LBFGS_nhmm_singlechannel(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti, n_obs, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level));
+    Rcpp::traits::input_parameter< const double >::type penalty(penaltySEXP);
+    rcpp_result_gen = Rcpp::wrap(EM_LBFGS_nhmm_singlechannel(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti, n_obs, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level, penalty));
+    return rcpp_result_gen;
+END_RCPP
+}
+// EM_LBFGS_nhmm_multichannel
+Rcpp::List EM_LBFGS_nhmm_multichannel(arma::mat& eta_pi, const arma::mat& X_pi, arma::cube& eta_A, const arma::cube& X_A, arma::field<arma::cube>& eta_B, const arma::cube& X_B, const arma::ucube& obs, const bool iv_pi, const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B, const arma::uvec& Ti, const arma::uword n_obs, const arma::uword maxeval, const double ftol_abs, const double ftol_rel, const double xtol_abs, const double xtol_rel, const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level, const double penalty);
+RcppExport SEXP _seqHMM_EM_LBFGS_nhmm_multichannel(SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP obsSEXP, SEXP iv_piSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP TiSEXP, SEXP n_obsSEXP, SEXP maxevalSEXP, SEXP ftol_absSEXP, SEXP ftol_relSEXP, SEXP xtol_absSEXP, SEXP xtol_relSEXP, SEXP maxeval_mSEXP, SEXP ftol_abs_mSEXP, SEXP ftol_rel_mSEXP, SEXP xtol_abs_mSEXP, SEXP xtol_rel_mSEXP, SEXP print_levelSEXP, SEXP penaltySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type eta_pi(eta_piSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_pi(X_piSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type eta_A(eta_ASEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_A(X_ASEXP);
+    Rcpp::traits::input_parameter< arma::field<arma::cube>& >::type eta_B(eta_BSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_B(X_BSEXP);
+    Rcpp::traits::input_parameter< const arma::ucube& >::type obs(obsSEXP);
+    Rcpp::traits::input_parameter< const bool >::type iv_pi(iv_piSEXP);
+    Rcpp::traits::input_parameter< const bool >::type iv_A(iv_ASEXP);
+    Rcpp::traits::input_parameter< const bool >::type iv_B(iv_BSEXP);
+    Rcpp::traits::input_parameter< const bool >::type tv_A(tv_ASEXP);
+    Rcpp::traits::input_parameter< const bool >::type tv_B(tv_BSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type Ti(TiSEXP);
+    Rcpp::traits::input_parameter< const arma::uword >::type n_obs(n_obsSEXP);
+    Rcpp::traits::input_parameter< const arma::uword >::type maxeval(maxevalSEXP);
+    Rcpp::traits::input_parameter< const double >::type ftol_abs(ftol_absSEXP);
+    Rcpp::traits::input_parameter< const double >::type ftol_rel(ftol_relSEXP);
+    Rcpp::traits::input_parameter< const double >::type xtol_abs(xtol_absSEXP);
+    Rcpp::traits::input_parameter< const double >::type xtol_rel(xtol_relSEXP);
+    Rcpp::traits::input_parameter< const arma::uword >::type maxeval_m(maxeval_mSEXP);
+    Rcpp::traits::input_parameter< const double >::type ftol_abs_m(ftol_abs_mSEXP);
+    Rcpp::traits::input_parameter< const double >::type ftol_rel_m(ftol_rel_mSEXP);
+    Rcpp::traits::input_parameter< const double >::type xtol_abs_m(xtol_abs_mSEXP);
+    Rcpp::traits::input_parameter< const double >::type xtol_rel_m(xtol_rel_mSEXP);
+    Rcpp::traits::input_parameter< const arma::uword >::type print_level(print_levelSEXP);
+    Rcpp::traits::input_parameter< const double >::type penalty(penaltySEXP);
+    rcpp_result_gen = Rcpp::wrap(EM_LBFGS_nhmm_multichannel(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti, n_obs, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level, penalty));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -1294,7 +1331,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_log_logLikMixHMM", (DL_FUNC) &_seqHMM_log_logLikMixHMM, 8},
     {"_seqHMM_log_objective", (DL_FUNC) &_seqHMM_log_objective, 9},
     {"_seqHMM_log_objectivex", (DL_FUNC) &_seqHMM_log_objectivex, 12},
-    {"_seqHMM_EM_LBFGS_nhmm_singlechannel", (DL_FUNC) &_seqHMM_EM_LBFGS_nhmm_singlechannel, 25},
+    {"_seqHMM_EM_LBFGS_nhmm_singlechannel", (DL_FUNC) &_seqHMM_EM_LBFGS_nhmm_singlechannel, 26},
+    {"_seqHMM_EM_LBFGS_nhmm_multichannel", (DL_FUNC) &_seqHMM_EM_LBFGS_nhmm_multichannel, 26},
     {"_seqHMM_backward_nhmm_singlechannel", (DL_FUNC) &_seqHMM_backward_nhmm_singlechannel, 13},
     {"_seqHMM_backward_nhmm_multichannel", (DL_FUNC) &_seqHMM_backward_nhmm_multichannel, 13},
     {"_seqHMM_backward_mnhmm_singlechannel", (DL_FUNC) &_seqHMM_backward_mnhmm_singlechannel, 16},

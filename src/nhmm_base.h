@@ -37,6 +37,9 @@ struct nhmm_base {
   arma::mat E_Pi;
   arma::field<arma::cube> E_A;
   arma::uword current_s;
+  arma::uword n_obs;
+  double penalty;
+  
   nhmm_base(
     const arma::uword S_,
     const arma::mat& X_pi_,
@@ -49,7 +52,8 @@ struct nhmm_base {
     const bool tv_A_, 
     const bool tv_B_,
     arma::mat& eta_pi_,
-    arma::cube& eta_A_)
+    arma::cube& eta_A_,
+    const double penalty = 0)
     : S(S_), 
       X_pi(X_pi_),
       X_A(X_s_),
@@ -74,7 +78,12 @@ struct nhmm_base {
       log_Pi(S),
       A(S, S, T),
       log_A(S, S, T),
-      log_py(S, T), E_Pi(S, N), E_A(S), current_s(0) {
+      log_py(S, T), 
+      E_Pi(S, N), 
+      E_A(S), 
+      current_s(0), 
+      n_obs(sum(Ti)),
+      penalty(penalty) {
     for (arma::uword s = 0; s < S; s++) {
       E_A(s) = arma::cube(S, N, T);
     }
@@ -123,10 +132,12 @@ struct nhmm_base {
     }
   }
   
-  void mstep_pi(const double xtol_abs, const double ftol_abs, const double xtol_rel,
-                const double ftol_rel, arma::uword maxeval);
-  void mstep_A(const double xtol_abs, const double ftol_abs, const double xtol_rel,
-               const double ftol_rel, arma::uword maxeval);
+  void mstep_pi(const double ftol_abs, const double ftol_rel, 
+                const double xtol_abs, const double xtol_rel, 
+                arma::uword maxeval);
+  void mstep_A(const double ftol_abs, const double ftol_rel, 
+               const double xtol_abs, const double xtol_rel, 
+               arma::uword maxeval);
   double objective_pi(const arma::vec& x, arma::vec& grad);
   double objective_A(const arma::vec& x, arma::vec& grad);
 };

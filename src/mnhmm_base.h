@@ -42,7 +42,8 @@ struct mnhmm_base {
   arma::field<arma::cube> A;
   arma::field<arma::cube> log_A;
   arma::cube log_py;
-  
+  arma::uword n_obs;
+  double penalty;
   mnhmm_base(
     const arma::uword S_,
     const arma::uword D_,
@@ -59,7 +60,8 @@ struct mnhmm_base {
     const bool tv_B_,
     arma::mat& eta_omega_,
     arma::field<arma::mat>& eta_pi_,
-    arma::field<arma::cube>& eta_A_)
+    arma::field<arma::cube>& eta_A_,
+    const double penalty = 0)
     : S(S_),
       D(D_), 
       X_omega(X_d_),
@@ -93,7 +95,9 @@ struct mnhmm_base {
       log_Pi(D),
       A(D),
       log_A(D),
-      log_py(S, T, D) {
+      log_py(S, T, D), 
+      n_obs(sum(Ti)),
+      penalty(penalty){
     for (arma::uword d = 0; d < D; d++) {
       Pi(d) = arma::vec(S);
       log_Pi(d) = arma::vec(S);
