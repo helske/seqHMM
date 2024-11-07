@@ -39,7 +39,7 @@ test_that("'forward_backward' works for multichannel 'nhmm'", {
       hmm_biofam$observations, n_states = 5,
       inits = hmm_biofam[
         c("initial_probs", "transition_probs", "emission_probs")
-      ], maxeval = 1
+      ], maxeval = 1, lambda = 1
     ),
     NA
   )
@@ -65,7 +65,7 @@ test_that("'forward_backward' works for single-channel 'nhmm'", {
   expect_error(
     fit <- estimate_nhmm(
       hmm_biofam$observations[[1]][1:10,], n_states = 3,
-      restarts = 2, maxeval = 2
+      restarts = 2, maxeval = 2, lambda = 1
     ),
     NA
   )

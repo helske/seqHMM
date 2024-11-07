@@ -39,7 +39,7 @@ of the parameter estimation. The default is \code{TRUE}.}
 \item{control_em}{Optional list of control parameters for the EM algorithm.
 Possible arguments are
 \itemize{
-\item The maximum number of iterations, the default is 1000. Note that iteration
+\item \code{maxeval}\cr The maximum number of iterations, the default is 1000. Note that iteration
 counter starts with -1 so with \code{maxeval = 1} you get already two iterations.
 This is for backward compatibility reasons.
 \item \code{print_level}\cr The level of printing. Possible values are 0

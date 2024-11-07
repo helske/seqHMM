@@ -35,7 +35,8 @@ test_that("estimate_nhmm returns object of class 'nhmm'", {
   expect_error(
     fit <- estimate_nhmm(
       "y", s, initial_formula = ~ x, transition_formula = ~z,
-      emission_formula = ~ z, data = data, time = "time", id = "id"),
+      emission_formula = ~ z, data = data, time = "time", id = "id",
+      lambda = 1),
     NA
   )
   expect_s3_class(
@@ -95,7 +96,7 @@ test_that("estimate_nhmm errors with incorrect observations", {
 })
 test_that("build_nhmm works with vector of characters as observations", {
   expect_error(
-    estimate_nhmm("y", s, data = data, time = "time", id = "id"),
+    estimate_nhmm("y", s, data = data, time = "time", id = "id", lambda = 1),
     NA
   )
 })
@@ -104,7 +105,7 @@ test_that("build_nhmm works with missing observations", {
   data$y[50:55] <- NA
   expect_error(
     model <- estimate_nhmm(
-      "y", s, data = data, time = "time", id = "id"),
+      "y", s, data = data, time = "time", id = "id", lambda = 1),
     NA
   )
   expect_equal(
@@ -113,4 +114,3 @@ test_that("build_nhmm works with missing observations", {
       62L, 63L, 64L, 65L)
   )
 })
-

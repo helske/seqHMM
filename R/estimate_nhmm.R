@@ -50,6 +50,12 @@
 #' of the regression coefficients to zero, use `init_sd = 0`.
 #' @param restarts Number of times to run optimization using random starting 
 #' values (in addition to the final run). Default is 0.
+#' @param lambda Penalization factor `lambda` for penalized log-likelihood, where the 
+#' penalization is `lambda * sum(parameters^2)/(2 * n_obs)`, where `n_obs` is 
+#' the number of non-missing observations.
+#' @param method Optimization method used. Default is `"EM"` which uses EM
+#' algorithm with L-BFGS in the M-step. Another option is `"DNM"` which uses 
+#' direct maximization of the log-likelihood using [nloptr::nloptr()].
 #' @param store_data If `TRUE` (default), original data frame passed as `data` 
 #' is stored to the model object. For large datasets, this can be set to 
 #' `FALSE`, in which case you might need to pass the data separately to some 
@@ -81,10 +87,12 @@ estimate_nhmm <- function(
     observations, n_states, initial_formula = ~1, 
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, channel_names = NULL, 
-    inits = "random", init_sd = 2, restarts = 0L,
+    inits = "random", init_sd = 2, restarts = 0L, lambda = 0, method = "EM",
     store_data = TRUE, ...) {
   
   call <- match.call()
+  
+  method <- match.arg(method, c("DNM", "EM"))
   
   model <- build_nhmm(
     observations, n_states, initial_formula, 
@@ -95,10 +103,14 @@ estimate_nhmm <- function(
     checkmate::test_flag(x = store_data), 
     "Argument {.arg store_data} must be a single {.cls logical} value."
   )
+  stopifnot_(
+    checkmate::check_number(lambda, lower = 0), 
+    "Argument {.arg lambda} must be a single non-negative {.cls numeric} value."
+  )
   if (store_data) {
     model$data <- data
   }
-  out <- fit_nhmm(model, inits, init_sd, restarts, ...)
+  out <- fit_nhmm(model, inits, init_sd, restarts, lambda, method, ...)
   attr(out, "call") <- call
   out
 }

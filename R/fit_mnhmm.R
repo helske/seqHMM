@@ -1,12 +1,28 @@
 #' Estimate a Mixture Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_mnhmm <- function(model, inits, init_sd, restarts, 
-                      save_all_solutions = FALSE, ...) {
+fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
+                      save_all_solutions = FALSE,
+                      control_restart = list(), control_mstep = list(), ...) {
   stopifnot_(
     checkmate::test_int(x = restarts, lower = 0L), 
     "Argument {.arg restarts} must be a single integer."
   )
+  control <- utils::modifyList(
+    list(
+      ftol_abs = 1e-8,
+      ftol_rel = 1e-8,
+      xtol_abs = 1e-4,
+      xtol_rel = 1e-4,
+      maxeval = 1e4,
+      print_level = 0,
+      algorithm = "NLOPT_LD_LBFGS"
+    ),
+    list(...)
+  )
+  control_restart <- utils::modifyList(control, control_restart)
+  control_mstep <- utils::modifyList(control, control_mstep)
+  
   M <- model$n_symbols
   S <- model$n_states
   D <- model$n_clusters
@@ -47,9 +63,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts,
   K_omega <- nrow(X_omega)
   Ti <- model$sequence_lengths
   n_obs <- nobs(model)
-  dots <- list(...)
   
-  if (isTRUE(dots$maxeval < 0)) {
+  if (isTRUE(control$maxeval < 0)) {
     pars <- unlist(create_initial_values(
       inits, S, M, init_sd, K_pi, K_A, K_B, K_omega, D
     ))
@@ -88,22 +103,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts,
     )
     return(model)
   }
-  if (is.null(dots$algorithm)) 
-    dots$algorithm <- "NLOPT_LD_LBFGS"
-  need_grad <- grepl("NLOPT_LD_", dots$algorithm)
-  if (is.null(dots$maxeval)) 
-    dots$maxeval <- 10000L
-  if (is.null(dots$xtol_abs)) 
-    dots$xtol_abs <- rep(1e-8, attr(model, "df"))
-  if (is.null(dots$xtol_rel)) 
-    dots$xtol_rel <- 0
-  if (is.null(dots$ftol_abs)) 
-    dots$ftol_abs <- 1e-8
-  if (is.null(dots$ftol_rel)) 
-    dots$ftol_rel <- 1e-8
-  if (is.null(dots$check_derivatives)) 
-    dots$check_derivatives <- FALSE
-  
+  need_grad <- grepl("NLOPT_LD_", control$algorithm)
   if (C == 1L) {
     if (need_grad) {
       objectivef <- function(pars) {
@@ -120,8 +120,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts,
           obs, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
         list(
-          objective = - out$loglik / n_obs, 
-          gradient = - unlist(out[-1]) / n_obs
+          objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
+          gradient = - (unlist(out[-1]) - lambda * pars) / n_obs
         )
       }
     } else {
@@ -139,7 +139,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts,
           obs, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
         
-        - sum(apply(out[, T_, ], 2, logSumExp)) / n_obs
+        - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
       }
     }
   } else {
@@ -164,8 +164,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts,
           obs, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
         )
         list(
-          objective = - out$loglik / n_obs,
-          gradient = - unlist(out[-1]) / n_obs
+          objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
+          gradient = - (unlist(out[-1]) - lambda * pars) / n_obs
         )
       }
     } else {
@@ -190,33 +190,20 @@ fit_mnhmm <- function(model, inits, init_sd, restarts,
           eta_omega, X_omega,
           obs, M)
 
-        - sum(apply(out[, T_, ], 2, logSumExp)) / n_obs
+        - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
       }
     }
   }
   all_solutions <- NULL
   start_time <- proc.time()
   if (restarts > 0L) {
-    dots$control_restart$algorithm <- dots$algorithm
-    if (is.null(dots$control_restart$maxeval)) 
-      dots$control_restart$maxeval <- dots$maxeval
-    if (is.null(dots$control_restart$print_level)) 
-      dots$control_restart$print_level <- 0
-    if (is.null(dots$control_restart$xtol_abs)) 
-      dots$control_restart$xtol_abs <-dots$xtol_abs
-    if (is.null(dots$control_restart$ftol_abs)) 
-      dots$control_restart$ftol_abs <-  dots$ftol_abs
-    if (is.null(dots$control_restart$xtol_rel)) 
-      dots$control_restart$xtol_rel <- dots$xtol_rel
-    if (is.null(dots$control_restart$ftol_rel)) 
-      dots$control_restart$ftol_rel <- dots$ftol_rel
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
       init <- unlist(create_initial_values(
         inits, S, M, init_sd, K_pi, K_A, K_B, K_omega, D
       ))
       nloptr(
         x0 = init, eval_f = objectivef,
-        opts = dots$control_restart
+        opts = control_restart
       )
     },
     future.seed = TRUE)
@@ -236,7 +223,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts,
   }
   out <- nloptr(
     x0 = init, eval_f = objectivef,
-    opts = dots
+    opts = control
   )
   end_time <- proc.time()
   if (out$status < 0) {

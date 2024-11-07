@@ -1,12 +1,29 @@
 #' Estimate a Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_nhmm <- function(model, inits, init_sd, restarts, save_all_solutions = FALSE, ...) {
- 
+fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, 
+                     save_all_solutions = FALSE,
+                     control_restart = list(), control_mstep = list(), ...) {
+  
   stopifnot_(
     checkmate::test_int(x = restarts, lower = 0L), 
     "Argument {.arg restarts} must be a single integer."
   )
+  control <- utils::modifyList(
+    list(
+      ftol_abs = 1e-8,
+      ftol_rel = 1e-8,
+      xtol_abs = 1e-4,
+      xtol_rel = 1e-4,
+      maxeval = 1e4,
+      print_level = 0,
+      algorithm = "NLOPT_LD_LBFGS"
+    ),
+    list(...)
+  )
+  control_restart <- utils::modifyList(control, control_restart)
+  control_mstep <- utils::modifyList(control, control_mstep)
+  
   M <- model$n_symbols
   S <- model$n_states
   T_ <- model$length_of_sequences
@@ -42,9 +59,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, save_all_solutions = FALSE
   K_B <- nrow(X_B)
   Ti <- model$sequence_lengths
   n_obs <- nobs(model)
- 
-  dots <- list(...)
-  if (isTRUE(dots$maxeval < 0)) {
+  
+  if (isTRUE(control$maxeval < 0)) {
     pars <- unlist(create_initial_values(
       inits, S, M, init_sd, K_pi, K_A, K_B
     ))
@@ -63,163 +79,233 @@ fit_nhmm <- function(model, inits, init_sd, restarts, save_all_solutions = FALSE
       )
       model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
     }
-    
     return(model)
   }
-  
-  if (is.null(dots$algorithm)) 
-    dots$algorithm <- "NLOPT_LD_LBFGS"
-  need_grad <- grepl("NLOPT_LD_", dots$algorithm)
-  if (is.null(dots$maxeval)) 
-    dots$maxeval <- 10000L
-  if (is.null(dots$xtol_abs)) 
-    dots$xtol_abs <- rep(1e-8, attr(model, "df"))
-  if (is.null(dots$xtol_rel)) 
-    dots$xtol_rel <- 0
-  if (is.null(dots$ftol_abs)) 
-    dots$ftol_abs <- 1e-8
-  if (is.null(dots$ftol_rel)) 
-    dots$ftol_rel <- 1e-8
-  if (is.null(dots$check_derivatives)) 
-    dots$check_derivatives <- FALSE
-  
-  if (C == 1L) {
-    if (need_grad) {
-      objectivef <- function(pars) {
-        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
-        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
-        eta_B <- create_eta_B_nhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-        )
-        out <- log_objective_nhmm_singlechannel(
-         eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs,
-          iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
-        )
-        list(
-          objective = - out$loglik / n_obs, 
-          gradient = - unlist(out[-1]) / n_obs
-        )
-      }
-    } else {
-      objectivef <- function(pars) {
-        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
-        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
-        eta_B <- create_eta_B_nhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-        )
-        out <- forward_nhmm_singlechannel(
-          eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs
-        )
-        - sum(apply(out[, T_, ], 2, logSumExp)) / n_obs
-      }
-    }
-  } else {
-    if (need_grad) {
-      objectivef <- function(pars) {
-        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
-        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
-        eta_B <- create_eta_multichannel_B_nhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-        )
-        out <- log_objective_nhmm_multichannel(
-          eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs,
-          iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
-        )
-        list(
-          objective = - out$loglik / n_obs, 
-          gradient = - unlist(out[-1]) / n_obs
-        )
-      }
-    } else {
-      objectivef <- function(pars) {
-        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
-        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
-        eta_B <- create_eta_multichannel_B_nhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-        )
-        out <- forward_nhmm_multichannel(
-          eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs
-        )
-        - sum(apply(out[, T_, ], 2, logSumExp)) / n_obs
-      }
-    }
-  }
   all_solutions <- NULL
-  start_time <- proc.time()
-  if (restarts > 0L) {
-    dots$control_restart$algorithm <- dots$algorithm
-    if (is.null(dots$control_restart$maxeval)) 
-      dots$control_restart$maxeval <- dots$maxeval
-    if (is.null(dots$control_restart$print_level)) 
-      dots$control_restart$print_level <- 0
-    if (is.null(dots$control_restart$xtol_abs)) 
-      dots$control_restart$xtol_abs <-dots$xtol_abs
-    if (is.null(dots$control_restart$ftol_abs)) 
-      dots$control_restart$ftol_abs <-  dots$ftol_abs
-    if (is.null(dots$control_restart$xtol_rel)) 
-      dots$control_restart$xtol_rel <- dots$xtol_rel
-    if (is.null(dots$control_restart$ftol_rel)) 
-      dots$control_restart$ftol_rel <- dots$ftol_rel
-    
-    out <- future.apply::future_lapply(seq_len(restarts), function(i) {
+  if (method == "DNM") {
+    need_grad <- grepl("NLOPT_LD_", control$algorithm)
+    if (C == 1L) {
+      if (need_grad) {
+        objectivef <- function(pars) {
+          eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+          eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
+          eta_B <- create_eta_B_nhmm(
+            pars[n_i + n_s + seq_len(n_o)], S, M, K_B
+          )
+          out <- log_objective_nhmm_singlechannel(
+            eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs,
+            iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
+          )
+          list(
+            objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
+            gradient = - (unlist(out[-1]) - lambda * pars) / n_obs
+          )
+        }
+      } else {
+        objectivef <- function(pars) {
+          eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+          eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
+          eta_B <- create_eta_B_nhmm(
+            pars[n_i + n_s + seq_len(n_o)], S, M, K_B
+          )
+          out <- forward_nhmm_singlechannel(
+            eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs
+          )
+          - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
+        }
+      }
+    } else {
+      if (need_grad) {
+        objectivef <- function(pars) {
+          eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+          eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
+          eta_B <- create_eta_multichannel_B_nhmm(
+            pars[n_i + n_s + seq_len(n_o)], S, M, K_B
+          )
+          out <- log_objective_nhmm_multichannel(
+            eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs,
+            iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
+          )
+          list(
+            objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
+            gradient = - (unlist(out[-1]) - lambda * pars) / n_obs
+          )
+        }
+      } else {
+        objectivef <- function(pars) {
+          eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+          eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
+          eta_B <- create_eta_multichannel_B_nhmm(
+            pars[n_i + n_s + seq_len(n_o)], S, M, K_B
+          )
+          out <- forward_nhmm_multichannel(
+            eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs
+          )
+          - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
+        }
+      }
+    }
+   
+    start_time <- proc.time()
+    if (restarts > 0L) {
+      
+      out <- future.apply::future_lapply(seq_len(restarts), function(i) {
+        init <- unlist(create_initial_values(
+          inits, S, M, init_sd, K_pi, K_A, K_B
+        ))
+        nloptr(
+          x0 = init, eval_f = objectivef,
+          opts = control_restart
+        )
+      },
+      future.seed = TRUE)
+      
+      logliks <- -unlist(lapply(out, "[[", "objective")) * n_obs
+      return_codes <- unlist(lapply(out, "[[", "status"))
+      successful <- which(return_codes > 0)
+      optimum <- successful[which.max(logliks[successful])]
+      init <- out[[optimum]]$solution
+      if (save_all_solutions) {
+        all_solutions <- out
+      }
+    } else {
       init <- unlist(create_initial_values(
         inits, S, M, init_sd, K_pi, K_A, K_B
       ))
-      nloptr(
-        x0 = init, eval_f = objectivef,
-        opts = dots$control_restart
-      )
-    },
-    future.seed = TRUE)
-    
-    logliks <- -unlist(lapply(out, "[[", "objective")) * n_obs
-    return_codes <- unlist(lapply(out, "[[", "status"))
-    successful <- which(return_codes > 0)
-    optimum <- successful[which.max(logliks[successful])]
-    init <- out[[optimum]]$solution
-    if (save_all_solutions) {
-      all_solutions <- out
     }
+    
+    out <- nloptr(
+      x0 = init, eval_f = objectivef,
+      opts = control
+    )
+    end_time <- proc.time()
+    if (out$status < 0) {
+      warning_(paste("Optimization terminated due to error:", out$message))
+    }
+    pars <- out$solution
+    model$etas$pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+    model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
+    model$etas$A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
+    model$gammas$A <- eta_to_gamma_cube(model$etas$A)
+    if (C == 1L) {
+      model$etas$B <- create_eta_B_nhmm(
+        pars[n_i + n_s + seq_len(n_o)], S, M, K_B
+      )
+      model$gammas$B <- eta_to_gamma_cube(model$etas$B)
+    } else {
+      model$etas$B <- create_eta_multichannel_B_nhmm(
+        pars[n_i + n_s + seq_len(n_o)], S, M, K_B
+      )
+      model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
+    }
+    model$estimation_results <- list(
+      loglik = -out$objective * n_obs, 
+      return_code = out$status,
+      message = out$message,
+      iterations = out$iterations,
+      logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
+      return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
+      all_solutions = all_solutions,
+      time = end_time - start_time
+    )
   } else {
-    init <- unlist(create_initial_values(
-      inits, S, M, init_sd, K_pi, K_A, K_B
-    ))
+    start_time <- proc.time()
+    if (restarts > 0L) {
+      out <- future.apply::future_lapply(seq_len(restarts), function(i) {
+        init <- create_initial_values(
+          inits, S, M, init_sd, K_pi, K_A, K_B
+        )
+        if (C == 1) {
+          EM_LBFGS_nhmm_singlechannel(
+            init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B,
+            obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti,
+            n_obs, control_restart$maxeval,
+            control_restart$ftol_abs, control_restart$ftol_rel,
+            control_restart$xtol_abs, control_restart$xtol_rel, 
+            control_restart$print_level, control_mstep$maxeval,
+            control_mstep$ftol_abs, control_mstep$ftol_rel,
+            control_mstep$xtol_abs, control_mstep$xtol_rel, 
+            control_mstep$print_level, lambda)
+        } else {
+          EM_LBFGS_nhmm_multichannel(
+            init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B,
+            obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti,
+            n_obs, control_restart$maxeval,
+            control_restart$ftol_abs, control_restart$ftol_rel,
+            control_restart$xtol_abs, control_restart$xtol_rel, 
+            control_restart$print_level, control_mstep$maxeval,
+            control_mstep$ftol_abs, control_mstep$ftol_rel,
+            control_mstep$xtol_abs, control_mstep$xtol_rel, 
+            control_mstep$print_level, lambda)
+        }
+      },
+      future.seed = TRUE)
+      
+      logliks <- unlist(lapply(out, "[[", "penalized_logLik")) * n_obs
+      optimum <- out[[which.max(logliks)]]
+      init <- setNames(
+        optimum[c("eta_pi", "eta_A", "eta_B")], c("pi", "A", "B")
+      )
+      if (save_all_solutions) {
+        all_solutions <- out
+      }
+    } else {
+      init <- create_initial_values(
+        inits, S, M, init_sd, K_pi, K_A, K_B
+      )
+    }
+    if (C == 1) {
+      out <- EM_LBFGS_nhmm_singlechannel(
+        init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B,
+        obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti,
+        n_obs, control$maxeval,
+        control$ftol_abs, control$ftol_rel,
+        control$xtol_abs, control$xtol_rel, 
+        control$print_level, control_mstep$maxeval,
+        control_mstep$ftol_abs, control_mstep$ftol_rel,
+        control_mstep$xtol_abs, control_mstep$xtol_rel, 
+        control_mstep$print_level, lambda)
+    } else {
+      out <- EM_LBFGS_nhmm_multichannel(
+        init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B,
+        obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti,
+        n_obs, control$maxeval,
+        control$ftol_abs, control$ftol_rel,
+        control$xtol_abs, control$xtol_rel, 
+        control$print_level, control_mstep$maxeval,
+        control_mstep$ftol_abs, control_mstep$ftol_rel,
+        control_mstep$xtol_abs, control_mstep$xtol_rel, 
+        control_mstep$print_level, lambda)
+    }
+    end_time <- proc.time()
+    # if (out$status < 0) {
+    #   warning_(paste("Optimization terminated due to error:", out$message))
+    # }
+    
+    model$etas$pi[] <- out$eta_pi
+    model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
+    model$etas$A <- out$eta_A
+    model$gammas$A <- eta_to_gamma_cube(model$etas$A)
+    if (C == 1L) {
+      model$etas$B[] <- out$eta_B
+      model$gammas$B <- eta_to_gamma_cube(model$etas$B)
+    } else {
+      for (i in seq_len(C)) model$etas_B[[i]] <- out$eta_B[[i]]
+      model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
+    }
+    
+    model$estimation_results <- list(
+      loglik = out$penalized_logLik * n_obs,
+      iterations = out$iterations,
+      logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
+      all_solutions = all_solutions,
+      time = end_time - start_time,
+      f_rel_change = out$relative_f_change,
+      f_abs_change = out$absolute_f_change,
+      x_rel_change = out$relative_x_change,
+      x_abs_change = out$absolute_x_change
+    ) 
   }
   
-  out <- nloptr(
-    x0 = init, eval_f = objectivef,
-    opts = dots
-  )
-  end_time <- proc.time()
-  if (out$status < 0) {
-    warning_(paste("Optimization terminated due to error:", out$message))
-  }
-  pars <- out$solution
-  model$etas$pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
-  model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
-  model$etas$A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
-  model$gammas$A <- eta_to_gamma_cube(model$etas$A)
-  if (C == 1L) {
-    model$etas$B <- create_eta_B_nhmm(
-      pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-    )
-    model$gammas$B <- eta_to_gamma_cube(model$etas$B)
-  } else {
-    model$etas$B <- create_eta_multichannel_B_nhmm(
-      pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-    )
-    model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
-  }
-  
-  model$estimation_results <- list(
-    loglik = -out$objective * n_obs, 
-    return_code = out$status,
-    message = out$message,
-    iterations = out$iterations,
-    logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
-    return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
-    all_solutions = all_solutions,
-    time = end_time - start_time
-  )
   model
 }

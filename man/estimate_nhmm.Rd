@@ -18,6 +18,8 @@ estimate_nhmm(
   inits = "random",
   init_sd = 2,
   restarts = 0L,
+  penalty = 0,
+  method = "EM",
   store_data = TRUE,
   ...
 )
@@ -68,6 +70,14 @@ of the regression coefficients to zero, use \code{init_sd = 0}.}
 
 \item{restarts}{Number of times to run optimization using random starting
 values (in addition to the final run). Default is 0.}
+
+\item{penalty}{Penalization factor for penalized log-likelihood, where the
+penalization is \code{penalty * sum(parameters^2)/(2 * n_obs)}, where \code{n_obs} is
+the number of non-missing observations.}
+
+\item{method}{Optimization method used. Default is \code{"EM"} which uses EM
+algorithm with L-BFGS in the M-step. Another option is \code{"DNM"} which uses
+direct maximization of the log-likelihood using \code{\link[nloptr:nloptr]{nloptr::nloptr()}}.}
 
 \item{store_data}{If \code{TRUE} (default), original data frame passed as \code{data}
 is stored to the model object. For large datasets, this can be set to

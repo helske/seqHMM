@@ -34,11 +34,11 @@ struct nhmm_sc : public nhmm_base {
     arma::mat& eta_pi_,
     arma::cube& eta_A_,
     arma::cube& eta_B_,
-    const double penalty = 0)
-    : nhmm_base(S_, X_pi_, X_s_, X_o_, Ti_, iv_pi_, iv_A_, iv_B_, tv_A_, tv_B_, eta_pi_, eta_A_, penalty),
+    const double lambda = 0)
+    : nhmm_base(S_, X_pi_, X_s_, X_o_, Ti_, iv_pi_, iv_A_, iv_B_, tv_A_, tv_B_, eta_pi_, eta_A_, lambda),
       obs(obs_),  
       eta_B(eta_B_), 
-      M(eta_B_.n_rows + 1), 
+      M(eta_B.n_rows + 1), 
       Qm(create_Q(M)), 
       gamma_B(eta_to_gamma(eta_B, Qm)),
       B(S, M + 1, T),
@@ -96,7 +96,7 @@ struct nhmm_sc : public nhmm_base {
   
   void mstep_B(const double ftol_abs, const double ftol_rel, 
                const double xtol_abs, const double xtol_rel, 
-               arma::uword maxeval);
+               const arma::uword maxeval, const arma::uword print_level);
   
   double objective_B(const arma::vec& x, arma::vec& grad);
 };

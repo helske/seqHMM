@@ -38,7 +38,7 @@ struct nhmm_base {
   arma::field<arma::cube> E_A;
   arma::uword current_s;
   arma::uword n_obs;
-  double penalty;
+  double lambda;
   
   nhmm_base(
     const arma::uword S_,
@@ -53,7 +53,7 @@ struct nhmm_base {
     const bool tv_B_,
     arma::mat& eta_pi_,
     arma::cube& eta_A_,
-    const double penalty = 0)
+    const double lambda = 0)
     : S(S_), 
       X_pi(X_pi_),
       X_A(X_s_),
@@ -83,7 +83,7 @@ struct nhmm_base {
       E_A(S), 
       current_s(0), 
       n_obs(sum(Ti)),
-      penalty(penalty) {
+      lambda(lambda) {
     for (arma::uword s = 0; s < S; s++) {
       E_A(s) = arma::cube(S, N, T);
     }
@@ -134,10 +134,10 @@ struct nhmm_base {
   
   void mstep_pi(const double ftol_abs, const double ftol_rel, 
                 const double xtol_abs, const double xtol_rel, 
-                arma::uword maxeval);
+                const arma::uword maxeval, const arma::uword print_level);
   void mstep_A(const double ftol_abs, const double ftol_rel, 
                const double xtol_abs, const double xtol_rel, 
-               arma::uword maxeval);
+               const arma::uword maxeval, const arma::uword print_level);
   double objective_pi(const arma::vec& x, arma::vec& grad);
   double objective_A(const arma::vec& x, arma::vec& grad);
 };

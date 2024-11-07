@@ -25,7 +25,7 @@ test_that("'hidden_paths' works for 'nhmm'", {
       hmm_biofam$observations, n_states = 5,
       inits = hmm_biofam[
         c("initial_probs", "transition_probs", "emission_probs")
-      ], maxeval = 1
+      ], maxeval = 1, labmda = 1
     ),
     NA
   )
@@ -40,7 +40,7 @@ test_that("'hidden_paths' works for 'nhmm'", {
   expect_error(
     fit <- estimate_nhmm(
       hmm_biofam$observations[[1]], n_states = 3,
-      restarts = 2, maxeval = 1
+      restarts = 2, maxeval = 1, method = "DNM"
     ),
     NA
   )

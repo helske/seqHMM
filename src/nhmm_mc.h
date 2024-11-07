@@ -19,8 +19,8 @@ struct nhmm_mc : public nhmm_base {
   arma::field<arma::cube> B;
   arma::field<arma::cube> log_B;
   // excepted counts for EM algorithm
-  arma::field<arma::cube> E_B;
   arma::uword current_c; // for EM
+  arma::field<arma::cube> E_B;
   
   nhmm_mc(
     const arma::uword S_,
@@ -37,8 +37,8 @@ struct nhmm_mc : public nhmm_base {
     arma::mat& eta_pi_,
     arma::cube& eta_A_,
     arma::field<arma::cube>& eta_B_,
-    const double penalty = 0)
-    : nhmm_base(S_, X_pi_, X_s_, X_o_, Ti_, iv_pi_, iv_A_, iv_B_, tv_A_, tv_B_, eta_pi_, eta_A_, penalty),
+    const double lambda = 0)
+    : nhmm_base(S_, X_pi_, X_s_, X_o_, Ti_, iv_pi_, iv_A_, iv_B_, tv_A_, tv_B_, eta_pi_, eta_A_, lambda),
       obs(obs_), 
       C(obs.n_rows), 
       eta_B(eta_B_),
@@ -47,13 +47,15 @@ struct nhmm_mc : public nhmm_base {
       gamma_B(arma::field<arma::cube>(C)),
       B(arma::field<arma::cube>(C)),
       log_B(arma::field<arma::cube>(C)),
-      current_c(0) {
+      current_c(0),
+      E_B(arma::field<arma::cube>(C)) {
     for (arma::uword c = 0; c < C; c++) {
       M(c) = eta_B(c).n_rows + 1;
       Qm(c) = create_Q(M(c));
       gamma_B(c) = eta_to_gamma(eta_B(c), Qm(c));
       B(c) = arma::cube(S, M(c) + 1, T);   // B field initialization
       log_B(c) = arma::cube(S, M(c) + 1, T); // log_B field initialization
+      E_B(c) = arma::cube(T, N, S);
     }
   }
   
@@ -117,7 +119,7 @@ struct nhmm_mc : public nhmm_base {
   
   void mstep_B(const double ftol_abs, const double ftol_rel, 
                const double xtol_abs, const double xtol_rel, 
-               arma::uword maxeval);
+               const arma::uword maxeval, const arma::uword print_level);
   
   double objective_B(const arma::vec& x, arma::vec& grad);
 };
