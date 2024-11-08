@@ -68,6 +68,6 @@ test_that("build_mmm returns the correct number of states", {
   )
   expect_equal(
     lengths(model$initial_probs),
-    setNames(rep(s, k), paste("Cluster", 1:k))
+    stats::setNames(rep(s, k), paste("Cluster", 1:k))
   )
 })

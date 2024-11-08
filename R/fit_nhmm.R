@@ -243,7 +243,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
       
       logliks <- unlist(lapply(out, "[[", "penalized_logLik")) * n_obs
       optimum <- out[[which.max(logliks)]]
-      init <- setNames(
+      init <- stats::setNames(
         optimum[c("eta_pi", "eta_A", "eta_B")], c("pi", "A", "B")
       )
       if (save_all_solutions) {

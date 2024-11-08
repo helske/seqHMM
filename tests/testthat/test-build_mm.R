@@ -86,11 +86,11 @@ test_that("build_mm returns the correct probabilities", {
   )
   expect_equal(
     rowSums(model$transition_probs),
-    setNames(rep(1, s), letters[1:s])
+    stats::setNames(rep(1, s), letters[1:s])
   )
   expect_equal(
     rowSums(model$emission_probs),
-    setNames(rep(1, s), letters[1:s])
+    stats::setNames(rep(1, s), letters[1:s])
   )
   expect_true(all(model$transition_probs >= 0))
   expect_true(all(model$emission_probs >= 0))

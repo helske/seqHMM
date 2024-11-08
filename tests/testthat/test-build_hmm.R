@@ -83,11 +83,11 @@ test_that("build_hmm returns the correct probabilities", {
   
   expect_equal(
     rowSums(model$transition_probs),
-    setNames(rep(1, s), paste("State", 1:s))
+    stats::setNames(rep(1, s), paste("State", 1:s))
   )
   expect_equal(
     rowSums(model$emission_probs),
-    setNames(rep(1, s), paste("State", 1:s))
+    stats::setNames(rep(1, s), paste("State", 1:s))
   )
   expect_equal(colnames(model$emission_probs), letters[1:s])
   expect_true(all(model$transition_probs >= 0))
