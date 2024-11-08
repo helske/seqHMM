@@ -1,7 +1,7 @@
 //log-sum-exp trick
 #include "logsumexp.h"
 
-// No idea how I decuded to implement logSumExp like this, but apparently this
+// No idea how I decided to implement logSumExp like this, but apparently this
 // is now recommended in
 // Pierre Blanchard, Desmond J Higham, Nicholas J Higham (2021). 
 // Accurately computing the log-sum-exp and softmax functions, 

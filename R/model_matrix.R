@@ -16,19 +16,69 @@ check_unique_N <- function(arr) {
   # Check for unique rows
   length(unique(as.data.frame(t(flattened_N)))) > 1
 }
-
+#' Create the Model Matrix based on NHMM Formulas
+#'
+#' @noRd
+model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters, 
+                                         time, id, X_mean, X_sd, check = TRUE) {
+  icpt_only <- intercept_only(formula)
+  if (icpt_only) {
+    n_pars <- n_clusters - 1L
+    X <- matrix(1, n_sequences, 1)
+    coef_names <- "(Intercept)"
+    iv <- FALSE
+    X_mean <- NULL
+    X_sd <- NULL
+  } else {
+    first_time_point <- min(data[[time]])
+    X <- stats::model.matrix.lm(
+      formula, 
+      data = data[data[[time]] == first_time_point, ], 
+      na.action = stats::na.pass
+    )
+    coef_names <- colnames(X)
+    cols <- which(coef_names != "(Intercept)")
+    if (missing(X_mean)) {
+      X_mean <- X_sd <- TRUE
+    }
+    X_scaled <- scale(X[, cols], X_mean, X_sd)
+    X[, cols] <- X_scaled
+    X_mean <- attr(X_scaled, "scaled:center")
+    X_sd <- attr(X_scaled, "scaled:scale")
+    
+    missing_values <- which(!complete.cases(X))
+    stopifnot_(
+      length(missing_values) == 0L,
+      c(
+        "Missing cases are not allowed in covariates of `cluster_formula`.",
+        "Use {.fn complete.cases} to detect them, then fix or impute them.",
+        paste0(
+          "First missing value found for ID ",
+          "{data[missing_values[1], id]}."
+        )
+      )
+    )
+    n_pars <- (n_clusters - 1L) * ncol(X)
+    if (check) .check_identifiability(X, "cluster")
+  }
+  X <- t(X)
+  attr(X, "X_mean") <- X_mean
+  attr(X, "X_sd") <- X_sd
+  attr(X, "coef_names") <- coef_names
+  attr(X, "icpt_only") <- icpt_only
+  list(formula = formula, n_pars = n_pars, X = X)
+}
 #' Create the Model Matrix based on NHMM Formulas
 #'
 #' @noRd
 model_matrix_initial_formula <- function(formula, data, n_sequences, 
                                          length_of_sequences, n_states, 
-                                         time, id, X_mean, X_sd) {
-  icp_only <- intercept_only(formula)
-  if (icp_only) {
+                                         time, id, X_mean, X_sd, check = TRUE) {
+  icpt_only <- intercept_only(formula)
+  if (icpt_only) {
     n_pars <- n_states - 1L
     X <- matrix(1, n_sequences, 1)
     coef_names <- "(Intercept)"
-    iv <- FALSE
     X_mean <- NULL
     X_sd <- NULL
   } else {
@@ -61,14 +111,14 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
         )
       )
     )
-    iv <- nrow(unique(X)) > 1L
     n_pars <- (n_states - 1L) * ncol(X)
+    if (check) .check_identifiability(X, "initial")
   }
   X <- t(X)
   attr(X, "X_mean") <- X_mean
   attr(X, "X_sd") <- X_sd
   attr(X, "coef_names") <- coef_names
-  attr(X, "iv") <- iv
+  attr(X, "icpt_only") <- icpt_only
   list(formula = formula, n_pars = n_pars, X = X)
 }
 #' Create the Model Matrix based on NHMM Formulas
@@ -77,9 +127,9 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
 model_matrix_transition_formula <- function(formula, data, n_sequences,
                                             length_of_sequences, n_states,
                                             time, id, sequence_lengths, 
-                                            X_mean, X_sd) {
-  icp_only <- intercept_only(formula)
-  if (icp_only) {
+                                            X_mean, X_sd, check = TRUE) {
+  icpt_only <- intercept_only(formula)
+  if (icpt_only) {
     n_pars <-  n_states * (n_states - 1L)
     X <- array(1, c(1L, length_of_sequences, n_sequences))
     coef_names <- "(Intercept)"
@@ -131,12 +181,14 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     missing_values <- which(is.na(X))
     # Replace NAs in void cases with zero
     X[is.na(X)] <- 0
+    if (check) .check_identifiability(X, "transition")
   }
   attr(X, "X_mean") <- X_mean
   attr(X, "X_sd") <- X_sd
   attr(X, "coef_names") <- coef_names
   attr(X, "iv") <- iv
   attr(X, "tv") <- tv
+  attr(X, "icpt_only") <- icpt_only
   attr(X, "missing") <- missing_values
   list(formula = formula, n_pars = n_pars, X = X)
 }
@@ -147,9 +199,9 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
                                           length_of_sequences, n_states,
                                           n_symbols, n_channels,
                                           time, id, sequence_lengths, 
-                                          X_mean, X_sd) {
-  icp_only <- intercept_only(formula)
-  if (icp_only) {
+                                          X_mean, X_sd, check = TRUE) {
+  icpt_only <- intercept_only(formula)
+  if (icpt_only) {
     n_pars <-  sum(n_states * (n_symbols - 1L))
     X <- array(1, c(1L, length_of_sequences, n_sequences))
     coef_names <- "(Intercept)"
@@ -204,64 +256,15 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     missing_values <- which(is.na(X))
     # Replace NAs in void cases with zero
     X[is.na(X)] <- 0
+    if (check) .check_identifiability(X, "emission")
   }
   attr(X, "X_mean") <- X_mean
   attr(X, "X_sd") <- X_sd
   attr(X, "coef_names") <- coef_names
   attr(X, "iv") <- iv
   attr(X, "tv") <- tv
+  attr(X, "icpt_only") <- icpt_only
   attr(X, "missing") <- missing_values
   list(formula = formula, n_pars = n_pars, X = X)
 }
-#' Create the Model Matrix based on NHMM Formulas
-#'
-#' @noRd
-model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters, 
-                                         time, id, X_mean, X_sd) {
-  icp_only <- intercept_only(formula)
-  if (icp_only) {
-    n_pars <- n_clusters - 1L
-    X <- matrix(1, n_sequences, 1)
-    coef_names <- "(Intercept)"
-    iv <- FALSE
-    X_mean <- NULL
-    X_sd <- NULL
-  } else {
-    first_time_point <- min(data[[time]])
-    X <- stats::model.matrix.lm(
-      formula, 
-      data = data[data[[time]] == first_time_point, ], 
-      na.action = stats::na.pass
-    )
-    coef_names <- colnames(X)
-    cols <- which(coef_names != "(Intercept)")
-    if (missing(X_mean)) {
-      X_mean <- X_sd <- TRUE
-    }
-    X_scaled <- scale(X[, cols], X_mean, X_sd)
-    X[, cols] <- X_scaled
-    X_mean <- attr(X_scaled, "scaled:center")
-    X_sd <- attr(X_scaled, "scaled:scale")
-    
-    missing_values <- which(!complete.cases(X))
-    stopifnot_(
-      length(missing_values) == 0L,
-      c(
-        "Missing cases are not allowed in covariates of `cluster_formula`.",
-        "Use {.fn complete.cases} to detect them, then fix or impute them.",
-        paste0(
-          "First missing value found for ID ",
-          "{data[missing_values[1], id]}."
-        )
-      )
-    )
-    iv <- nrow(unique(X)) > 1L
-    n_pars <- (n_clusters - 1L) * ncol(X)
-  }
-  X <- t(X)
-  attr(X, "X_mean") <- X_mean
-  attr(X, "X_sd") <- X_sd
-  attr(X, "coef_names") <- coef_names
-  attr(X, "iv") <- iv
-  list(formula = formula, n_pars = n_pars, X = X)
-}
+

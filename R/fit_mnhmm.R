@@ -47,10 +47,12 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
   n_s <- attr(model, "np_A")
   n_o <- attr(model, "np_B")
   n_d <- attr(model, "np_omega")
-  iv_pi <- attr(model$X_pi, "iv")
+  icpt_only_omega <- attr(model$X_omega, "icpt_only")
+  icpt_only_pi <- attr(model$X_pi, "icpt_only")
+  icpt_only_A <- attr(model$X_A, "icpt_only")
+  icpt_only_B <- attr(model$X_B, "icpt_only")
   iv_A <- attr(model$X_A, "iv")
   iv_B <- attr(model$X_B, "iv")
-  iv_omega <- attr(model$X_omega, "iv")
   tv_A <- attr(model$X_A, "tv")
   tv_B <- attr(model$X_B, "tv")
   X_pi <- model$X_pi
@@ -117,7 +119,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
         )
         out <- log_objective_mnhmm_singlechannel(
           eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B,
-          obs, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
+          obs, Ti, icpt_only_omega, icpt_only_pi, icpt_only_A, icpt_only_B, 
+          iv_A, iv_B, tv_A, tv_B
         )
         list(
           objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
@@ -136,7 +139,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
         )
         out <- forward_mnhmm_singlechannel(
           eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, 
-          obs, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
+          obs, Ti, icpt_only_omega, icpt_only_pi, icpt_only_A, icpt_only_B, 
+          iv_A, iv_B, tv_A, tv_B
         )
         
         - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
@@ -161,7 +165,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
         )
         out <- log_objective_mnhmm_multichannel(
           eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B,
-          obs, iv_omega, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
+          obs, Ti, icpt_only_omega, icpt_only_pi, icpt_only_A, icpt_only_B, 
+          iv_A, iv_B, tv_A, tv_B
         )
         list(
           objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
@@ -184,11 +189,10 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
           pars[n_i + n_s + n_o + seq_len(n_d)], D, K_omega
         )
         out <- forward_mnhmm_multichannel(
-          eta_pi, X_pi,
-          eta_A, X_A,
-          eta_B, X_B,
-          eta_omega, X_omega,
-          obs, M)
+          eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, 
+          obs, Ti, icpt_only_omega, icpt_only_pi, icpt_only_A, icpt_only_B, 
+          iv_A, iv_B, tv_A, tv_B
+        )
 
         - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
       }

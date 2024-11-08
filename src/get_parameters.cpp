@@ -1,6 +1,6 @@
 #include "get_parameters.h"
 
-// eta_omega is D x K (start from, covariates)
+// gamma_omega is D x K (start from, covariates)
 // X a vector of length K
 // [[Rcpp::export]]
 arma::vec get_omega(const arma::mat& gamma, const arma::vec& X) {

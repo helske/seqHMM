@@ -20,7 +20,7 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
   arma::mat tmpgrad(S, K_pi, arma::fill::zeros);
   
   for (arma::uword i = 0; i < N; i++) {
-    if (iv_pi || i == 0) {
+    if (!icpt_only_pi || i == 0) {
       update_pi(i);
     }
     double val = arma::dot(E_Pi.col(i), log_Pi);
@@ -49,6 +49,11 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
 void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs, 
                          const double xtol_rel, const double ftol_rel, 
                          const arma::uword maxeval, const arma::uword print_level) {
+  if (icpt_only_pi) {
+    eta_pi = Qs.t() * log(arma::sum(E_Pi, 1));
+    return;
+  }
+  
   auto objective_pi_wrapper = [](unsigned n, const double* x, double* grad, void* data) -> double {
     auto* self = static_cast<nhmm_base*>(data);
     arma::vec x_vec(const_cast<double*>(x), n, false, true);
@@ -145,6 +150,17 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
                         const double xtol_abs, const double xtol_rel, 
                         const arma::uword maxeval, 
                         const arma::uword print_level) {
+  
+  if (icpt_only_A) {
+    arma::vec tmp(S);
+    for (arma::uword s = 0; s < S; s++) { // from
+      for (arma::uword k = 0; k < S; k++) { //to
+        tmp(k) = arma::accu(E_A(s).row(k));
+      }
+      eta_A.slice(s).col(0) = Qs.t() * log(tmp);
+    }
+    return;
+  }
   
   auto objective_A_wrapper = [](unsigned n, const double* x, double* grad, void* data) -> double {
     auto* self = static_cast<nhmm_base*>(data);
@@ -250,7 +266,20 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
                       const double xtol_abs, const double xtol_rel, 
                       const arma::uword maxeval, 
                       const arma::uword print_level) {
-  
+  if (icpt_only_B) {
+    arma::vec tmp(M, arma::fill::zeros);
+    for (arma::uword s = 0; s < S; s++) {
+      for (arma::uword i = 0; i < N; i++) {
+        for (arma::uword t = 0; t < Ti(i); t++) {
+          if (obs(t, i) < M) {
+            tmp(obs(t, i)) += E_B(t, i, s);
+          }
+        }
+      }
+      eta_B.slice(s).col(0) = Qm.t() * tmp;
+    }
+    return;
+  }
   auto objective_B_wrapper = [](unsigned n, const double* x, double* grad, void* data) -> double {
     auto* self = static_cast<nhmm_sc*>(data);
     arma::vec x_vec(const_cast<double*>(x), n, false, true);
@@ -356,7 +385,22 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
                       const double xtol_abs, const double xtol_rel, 
                       const arma::uword maxeval, 
                       const arma::uword print_level) {
-  
+  if (icpt_only_B) {
+    for (arma::uword c = 0; c < C; c++) {
+      arma::vec tmp(M(c), arma::fill::zeros);
+      for (arma::uword s = 0; s < S; s++) {
+        for (arma::uword i = 0; i < N; i++) {
+          for (arma::uword t = 0; t < Ti(i); t++) {
+            if (obs(c, t, i) < M(c)) {
+              tmp(obs(c, t, i)) += E_B(c)(t, i, s);
+            }
+          }
+        }
+        eta_B(c).slice(s).col(0) = Qm(c).t() * tmp;
+      }
+    }
+    return;
+  }
   auto objective_B_wrapper = [](unsigned n, const double* x, double* grad, void* data) -> double {
     auto* self = static_cast<nhmm_mc*>(data);
     arma::vec x_vec(const_cast<double*>(x), n, false, true);
@@ -407,8 +451,10 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     arma::mat& eta_pi, const arma::mat& X_pi,
     arma::cube& eta_A, const arma::cube& X_A,
     arma::cube& eta_B, const arma::cube& X_B,
-    const arma::umat& obs, const bool iv_pi, const bool iv_A, const bool iv_B,
-    const bool tv_A, const bool tv_B, const arma::uvec& Ti, const arma::uword n_obs,
+    const arma::umat& obs, const arma::uvec& Ti,
+    const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, 
+    const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B, 
+    const arma::uword n_obs,
     const arma::uword maxeval, const double ftol_abs, const double ftol_rel, 
     const double xtol_abs, const double xtol_rel, const arma::uword print_level,
     const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, 
@@ -416,8 +462,8 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     const double lambda) {
   
   nhmm_sc model(
-      eta_A.n_slices, X_pi, X_A, X_B, Ti,
-      iv_pi, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B, lambda
+      eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
+      icpt_only_B, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B, lambda
   );
   
   // EM-algorithm begins
@@ -443,7 +489,7 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
   
   // Initial log-likelihood
   for (arma::uword i = 0; i < model.N; i++) {
-    if (model.iv_pi || i == 0) {
+    if (!model.icpt_only_pi || i == 0) {
       model.update_pi(i);
     }
     if (model.iv_A || i == 0) {
@@ -501,7 +547,7 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     model.update_gamma_A();
     model.update_gamma_B();
     for (arma::uword i = 0; i < model.N; i++) {
-      if (model.iv_pi || i == 0) {
+      if (!model.icpt_only_pi || i == 0) {
         model.update_pi(i);
       }
       if (model.iv_A || i == 0) {
@@ -572,9 +618,10 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     arma::mat& eta_pi, const arma::mat& X_pi,
     arma::cube& eta_A, const arma::cube& X_A,
     arma::field<arma::cube>& eta_B, const arma::cube& X_B,
-    const arma::ucube& obs, const bool iv_pi,
-    const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B,
-    const arma::uvec& Ti, const arma::uword n_obs,
+    const arma::ucube& obs, const arma::uvec& Ti,   
+    const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, 
+    const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B, 
+    const arma::uword n_obs,
     const arma::uword maxeval, const double ftol_abs, const double ftol_rel, 
     const double xtol_abs, const double xtol_rel, const arma::uword print_level,
     const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, 
@@ -582,8 +629,8 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     const double lambda) {
   
   nhmm_mc model(
-      eta_A.n_slices, X_pi, X_A, X_B, Ti,
-      iv_pi, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B, lambda
+      eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
+      icpt_only_B, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B, lambda
   );
   
   // EM-algorithm begins
@@ -616,7 +663,7 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
   
   // Initial log-likelihood
   for (arma::uword i = 0; i < model.N; i++) {
-    if (model.iv_pi || i == 0) {
+    if (!model.icpt_only_pi || i == 0) {
       model.update_pi(i);
     }
     if (model.iv_A || i == 0) {
@@ -669,7 +716,7 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     model.update_gamma_A();
     model.update_gamma_B();
     for (arma::uword i = 0; i < model.N; i++) {
-      if (model.iv_pi || i == 0) {
+      if (!model.icpt_only_pi || i == 0) {
         model.update_pi(i);
       }
       if (model.iv_A || i == 0) {

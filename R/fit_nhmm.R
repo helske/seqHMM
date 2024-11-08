@@ -46,7 +46,9 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
   n_i <- attr(model, "np_pi")
   n_s <- attr(model, "np_A")
   n_o <- attr(model, "np_B")
-  iv_pi <- attr(model$X_pi, "iv")
+  icpt_only_pi <- attr(model$X_pi, "icpt_only")
+  icpt_only_A <- attr(model$X_A, "icpt_only")
+  icpt_only_B <- attr(model$X_B, "icpt_only")
   iv_A <- attr(model$X_A, "iv")
   iv_B <- attr(model$X_B, "iv")
   tv_A <- attr(model$X_A, "tv")
@@ -93,8 +95,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
             pars[n_i + n_s + seq_len(n_o)], S, M, K_B
           )
           out <- log_objective_nhmm_singlechannel(
-            eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs,
-            iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
+            eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti,
+            icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
           )
           list(
             objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
@@ -109,7 +111,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
             pars[n_i + n_s + seq_len(n_o)], S, M, K_B
           )
           out <- forward_nhmm_singlechannel(
-            eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs
+            eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti,
+            icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
           )
           - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
         }
@@ -123,8 +126,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
             pars[n_i + n_s + seq_len(n_o)], S, M, K_B
           )
           out <- log_objective_nhmm_multichannel(
-            eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs,
-            iv_pi, iv_A, iv_B, tv_A, tv_B, Ti
+            eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti,
+            icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
           )
           list(
             objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
@@ -139,7 +142,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
             pars[n_i + n_s + seq_len(n_o)], S, M, K_B
           )
           out <- forward_nhmm_multichannel(
-            eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs
+            eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti,
+            icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
           )
           - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
         }
@@ -217,8 +221,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
         )
         if (C == 1) {
           EM_LBFGS_nhmm_singlechannel(
-            init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B,
-            obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti,
+            init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
+            Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
             n_obs, control_restart$maxeval,
             control_restart$ftol_abs, control_restart$ftol_rel,
             control_restart$xtol_abs, control_restart$xtol_rel, 
@@ -228,8 +232,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
             control_mstep$print_level, lambda)
         } else {
           EM_LBFGS_nhmm_multichannel(
-            init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B,
-            obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti,
+            init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
+            Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
             n_obs, control_restart$maxeval,
             control_restart$ftol_abs, control_restart$ftol_rel,
             control_restart$xtol_abs, control_restart$xtol_rel, 
@@ -256,8 +260,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
     }
     if (C == 1) {
       out <- EM_LBFGS_nhmm_singlechannel(
-        init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B,
-        obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti,
+        init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
+        Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
         n_obs, control$maxeval,
         control$ftol_abs, control$ftol_rel,
         control$xtol_abs, control$xtol_rel, 
@@ -267,8 +271,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
         control_mstep$print_level, lambda)
     } else {
       out <- EM_LBFGS_nhmm_multichannel(
-        init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B,
-        obs, iv_pi, iv_A, iv_B, tv_A, tv_B, Ti,
+        init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
+        Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
         n_obs, control$maxeval,
         control$ftol_abs, control$ftol_rel,
         control$xtol_abs, control$xtol_rel, 

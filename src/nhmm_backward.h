@@ -47,8 +47,15 @@ void univariate_backward_nhmm(
 template <typename Model>
 void backward_nhmm(Model& model, arma::cube& log_beta) {
   for (arma::uword i = 0; i < model.N; i++) {
-    model.update_probs(i);
-    model.update_log_py(i);
+    if (!model.icpt_only_pi || i == 0) {
+      model.update_pi(i);
+    }
+    if (model.iv_A || i == 0) {
+      model.update_A(i);
+    }
+    if (model.iv_B || i == 0) {
+      model.update_B(i);
+    }
     univariate_backward_nhmm(
       log_beta.slice(i),
       model.log_A, 
@@ -61,7 +68,12 @@ void backward_nhmm(Model& model, arma::cube& log_beta) {
 template <typename Model>
 void backward_mnhmm(Model& model, arma::cube& log_beta) {
   for (arma::uword i = 0; i < model.N; i++) {
-    model.update_probs(i);
+    if (model.iv_A || i == 0) {
+      model.update_A(i);
+    }
+    if (model.iv_B || i == 0) {
+      model.update_B(i);
+    }
     model.update_log_py(i);
     for (arma::uword d = 0; d < model.D; d++) {
       arma::subview<double> submat = 

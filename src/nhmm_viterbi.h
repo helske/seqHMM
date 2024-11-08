@@ -34,8 +34,15 @@ double univariate_viterbi_nhmm(
 template <typename Model>
 void viterbi_nhmm(Model& model, arma::umat& q, arma::vec& logp) {
   for (arma::uword i = 0; i < model.N; i++) {
-    model.update_probs(i);
-    model.update_log_py(i);
+    if (!model.icpt_only_pi || i == 0) {
+      model.update_pi(i);
+    }
+    if (model.iv_A || i == 0) {
+      model.update_A(i);
+    }
+    if (model.iv_B || i == 0) {
+      model.update_B(i);
+    }
     arma::subview_col<unsigned int> subcol = q.col(i);
     logp(i) = univariate_viterbi_nhmm(
       subcol,
@@ -51,8 +58,18 @@ void viterbi_mnhmm(Model& model, arma::umat& q, arma::vec& logp) {
   double logp_d;
   arma::uvec q_d(q.n_rows);
   for (arma::uword i = 0; i < model.N; i++) {
-    model.update_omega(i);
-    model.update_probs(i);
+    if (!model.icpt_only_omega || i == 0) {
+      model.update_omega(i);
+    }
+    if (!model.icpt_only_pi || i == 0) {
+      model.update_pi(i);
+    }
+    if (model.iv_A || i == 0) {
+      model.update_A(i);
+    }
+    if (model.iv_B || i == 0) {
+      model.update_B(i);
+    }
     model.update_log_py(i);
     for (arma::uword d = 0; d < model.D; d++) {
       logp_d = univariate_viterbi_nhmm(

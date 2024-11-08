@@ -47,7 +47,15 @@ void univariate_forward_nhmm(
 template <typename Model>
 void forward_nhmm(Model& model, arma::cube& log_alpha) {
   for (arma::uword i = 0; i < model.N; i++) {
-    model.update_probs(i);
+    if (!model.icpt_only_pi || i == 0) {
+      model.update_pi(i);
+    }
+    if (model.iv_A || i == 0) {
+      model.update_A(i);
+    }
+    if (model.iv_B || i == 0) {
+      model.update_B(i);
+    }
     model.update_log_py(i);
     univariate_forward_nhmm(
       log_alpha.slice(i),
@@ -61,8 +69,18 @@ void forward_nhmm(Model& model, arma::cube& log_alpha) {
 template <typename Model>
 void forward_mnhmm(Model& model, arma::cube& log_alpha) {
   for (arma::uword i = 0; i < model.N; i++) {
-    
-    model.update_omega(i);
+    if (!model.icpt_only_omega || i == 0) {
+      model.update_omega(i);
+    }
+    if (!model.icpt_only_pi || i == 0) {
+      model.update_pi(i);
+    }
+    if (model.iv_A || i == 0) {
+      model.update_A(i);
+    }
+    if (model.iv_B || i == 0) {
+      model.update_B(i);
+    }
     model.update_probs(i);
     model.update_log_py(i);
     for (arma::uword d = 0; d < model.D; d++) {

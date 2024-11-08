@@ -14,7 +14,7 @@ struct mnhmm_mc : public mnhmm_base {
   arma::uvec M;
   arma::field<arma::mat> Qm;
   arma::field<arma::cube> gamma_B;
-  // these store Pi, A, B, and log_p(y) of _one_ id and clusterwe are currently working with
+  // these store Pi, A, B, and log_p(y) of _one_ id and cluster we are currently working with
   arma::field<arma::cube> B;
   arma::field<arma::cube> log_B;
   
@@ -26,11 +26,13 @@ struct mnhmm_mc : public mnhmm_base {
     const arma::cube& X_s_,
     const arma::cube& X_o_,
     const arma::uvec& Ti_,
-    const bool iv_omega_,
-    const bool iv_pi_,
+    const bool icpt_only_omega_,
+    const bool icpt_only_pi_,
+    const bool icpt_only_A_,
+    const bool icpt_only_B_,
     const bool iv_A_,
     const bool iv_B_,
-    const bool tv_A_,
+    const bool tv_A_, 
     const bool tv_B_,
     const arma::ucube& obs_,
     arma::mat& eta_omega_,
@@ -38,7 +40,8 @@ struct mnhmm_mc : public mnhmm_base {
     arma::field<arma::cube>& eta_A_,
     arma::field<arma::cube>& eta_B_,
     const double lambda = 0)
-    : mnhmm_base(S_, D_, X_d_, X_pi_, X_s_, X_o_, Ti_, iv_omega_, iv_pi_, iv_A_,
+    : mnhmm_base(S_, D_, X_d_, X_pi_, X_s_, X_o_, Ti_, icpt_only_omega_, 
+      icpt_only_pi_, icpt_only_A_, icpt_only_B_, iv_A_, 
       iv_B_, tv_A_, tv_B_, eta_omega_, eta_pi_, eta_A_, lambda),
       obs(obs_),
       C(obs.n_rows),
@@ -62,30 +65,45 @@ struct mnhmm_mc : public mnhmm_base {
   }
   
   void update_B(const arma::uword i) {
-    if (tv_B) {
-      for (arma::uword c = 0; c < C; c++) {
-        arma::mat Btmp(M(c) + 1, S, arma::fill::ones);
-        for (arma::uword d = 0; d < D; d++) {
-          for (arma::uword t = 0; t < Ti(i); t++) { // time
-            for (arma::uword s = 0; s < S; s++) { // from states
-              Btmp.col(s).rows(0, M(c) - 1) = softmax(gamma_B(c, d).slice(s) * X_B.slice(i).col(t));
-            }
-            B(c, d).slice(t) = Btmp.t();
-          }
-          log_B(c, d) = arma::log(B(c, d));
-        }
-      }
-    } else {
+    if (icpt_only_B) {
       for (arma::uword c = 0; c < C; c++) {
         arma::mat Btmp(M(c) + 1, S, arma::fill::ones);
         for (arma::uword d = 0; d < D; d++) {
           for (arma::uword s = 0; s < S; s++) { // from states
             Btmp.col(s).rows(0, M(c) - 1) = softmax(
-              gamma_B(c, d).slice(s) * X_B.slice(i).col(0)
+              gamma_B(c, d).slice(s).col(0)
             );
           }
           B(c, d).each_slice() = Btmp.t();
           log_B(c, d) = arma::log(B(c, d));
+        }
+      }
+    } else { 
+      if (tv_B) {
+        for (arma::uword c = 0; c < C; c++) {
+          arma::mat Btmp(M(c) + 1, S, arma::fill::ones);
+          for (arma::uword d = 0; d < D; d++) {
+            for (arma::uword t = 0; t < Ti(i); t++) { // time
+              for (arma::uword s = 0; s < S; s++) { // from states
+                Btmp.col(s).rows(0, M(c) - 1) = softmax(gamma_B(c, d).slice(s) * X_B.slice(i).col(t));
+              }
+              B(c, d).slice(t) = Btmp.t();
+            }
+            log_B(c, d) = arma::log(B(c, d));
+          }
+        }
+      } else {
+        for (arma::uword c = 0; c < C; c++) {
+          arma::mat Btmp(M(c) + 1, S, arma::fill::ones);
+          for (arma::uword d = 0; d < D; d++) {
+            for (arma::uword s = 0; s < S; s++) { // from states
+              Btmp.col(s).rows(0, M(c) - 1) = softmax(
+                gamma_B(c, d).slice(s) * X_B.slice(i).col(0)
+              );
+            }
+            B(c, d).each_slice() = Btmp.t();
+            log_B(c, d) = arma::log(B(c, d));
+          }
         }
       }
     }

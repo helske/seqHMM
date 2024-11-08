@@ -286,3 +286,30 @@
   data <- data[order(data[[id]], data[[time]]), ]
   fill_time(data, id, time)
 }
+#' Checks that the design matrix is of full rank
+#' @noRd
+.check_identifiability <- function(X, type) {
+  n <- nrow(X)
+  nc <- ncol(X)
+  
+  # Check if matrix is full rank
+  if (!identical(qr(X)$rank, min(n, nc))) {
+    # Check for zero-only columns
+    zero_col <- apply(X, 2L, function(x) all(x == 0))
+    
+    if (any(zero_col)) {
+      k <- sum(zero_col)
+      stop_(
+        "{cli::qty(k)} Predictor{?s} {.var {colnames(X)[zero_col]}}
+         {cli::qty(k)} contain{?s/} only zeros in the design matrix for {.var {type}_formula}."
+      )
+    } else {
+      stop_(
+        "Perfect collinearity found between predictor variables of
+        {.var {type}_formula}."
+      )
+    }
+    return(FALSE)
+  }
+  TRUE
+}

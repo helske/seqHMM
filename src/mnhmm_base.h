@@ -20,8 +20,10 @@ struct mnhmm_base {
   const arma::uword N;
   const arma::uword T;
   const arma::uvec& Ti;
-  const bool iv_omega;
-  const bool iv_pi;
+  const bool icpt_only_omega;
+  const bool icpt_only_pi;
+  const bool icpt_only_A;
+  const bool icpt_only_B;
   const bool iv_A;
   const bool iv_B;
   const bool tv_A; 
@@ -52,8 +54,10 @@ struct mnhmm_base {
     const arma::cube& X_s_,
     const arma::cube& X_o_,
     const arma::uvec& Ti_,
-    const bool iv_omega_,
-    const bool iv_pi_,
+    const bool icpt_only_omega_,
+    const bool icpt_only_pi_,
+    const bool icpt_only_A_,
+    const bool icpt_only_B_,
     const bool iv_A_,
     const bool iv_B_,
     const bool tv_A_, 
@@ -75,8 +79,10 @@ struct mnhmm_base {
       N(X_A.n_slices),
       T(X_A.n_cols),
       Ti(Ti_),
-      iv_omega(iv_omega_),
-      iv_pi(iv_pi_),
+      icpt_only_omega(icpt_only_omega_),
+      icpt_only_pi(icpt_only_pi_),
+      icpt_only_A(icpt_only_A_),
+      icpt_only_B(icpt_only_B_),
       iv_A(iv_A_),
       iv_B(iv_B_),
       tv_A(tv_A_),
@@ -107,32 +113,53 @@ struct mnhmm_base {
   }
   
   void update_omega(arma::uword i) {
-    omega = softmax(gamma_omega * X_omega.col(i));
+    if (icpt_only_omega) {
+      omega = softmax(gamma_omega.col(0));
+    } else {
+      omega = softmax(gamma_omega * X_omega.col(i));  
+    }
     log_omega = arma::log(omega);
   }
   void update_pi(arma::uword i) {
-    for (arma::uword d = 0; d < D; d++) {
-      Pi(d) = softmax(gamma_pi(d) * X_pi.col(i));
-      log_Pi(d) = arma::log(Pi(d));
+    if (icpt_only_pi) {
+      for (arma::uword d = 0; d < D; d++) {
+        Pi(d) = softmax(gamma_pi(d).col(0));
+        log_Pi(d) = arma::log(Pi(d));
+      }
+    } else {
+      for (arma::uword d = 0; d < D; d++) {
+        Pi(d) = softmax(gamma_pi(d) * X_pi.col(i));
+        log_Pi(d) = arma::log(Pi(d));
+      }
     }
   }
   void update_A(arma::uword i) {
     arma::mat Atmp(S, S);
-    for (arma::uword d = 0; d < D; d++) {
-      if (tv_A) {
-        for (arma::uword t = 0; t < Ti(i); t++) { // time
-          for (arma::uword j = 0; j < S; j ++) { // from states
-            Atmp.col(j) = softmax(gamma_A(d).slice(j) * X_A.slice(i).col(t));
-          }
-          A(d).slice(t) = Atmp.t();
-        }
-      } else {
-        for (arma::uword j = 0; j < S; j ++) { // from states
-          Atmp.col(j) = softmax(gamma_A(d).slice(j) * X_A.slice(i).col(0));
+    if (icpt_only_A) {
+      for (arma::uword d = 0; d < D; d++) {
+        for (arma::uword s = 0; s < S; s++) { // from states
+          Atmp.col(s) = softmax(gamma_A(d).slice(s).col(0));
         }
         A(d).each_slice() = Atmp.t();
+        log_A(d) = arma::log(A(d));
       }
-      log_A(d) = arma::log(A(d));
+    } else {
+      for (arma::uword d = 0; d < D; d++) {
+        if (tv_A) {
+          for (arma::uword t = 0; t < Ti(i); t++) { // time
+            for (arma::uword s = 0; s < S; s++) { // from states
+              Atmp.col(s) = softmax(gamma_A(d).slice(s) * X_A.slice(i).col(t));
+            }
+            A(d).slice(t) = Atmp.t();
+          }
+        } else {
+          for (arma::uword s = 0; s < S; s++) { // from states
+            Atmp.col(s) = softmax(gamma_A(d).slice(s) * X_A.slice(i).col(0));
+          }
+          A(d).each_slice() = Atmp.t();
+        }
+        log_A(d) = arma::log(A(d));
+      }
     }
   }
 };

@@ -67,12 +67,12 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
     }
   }
   
-  icp_only_i <- intercept_only(initial_formula)
-  icp_only_s <- intercept_only(transition_formula)
-  icp_only_o <- intercept_only(emission_formula)
-  icp_only_d <- ifelse(mixture, intercept_only(cluster_formula), TRUE)
+  icpt_only_i <- intercept_only(initial_formula)
+  icpt_only_s <- intercept_only(transition_formula)
+  icpt_only_o <- intercept_only(emission_formula)
+  icpt_only_d <- ifelse(mixture, intercept_only(cluster_formula), TRUE)
   y_in_data <- checkmate::test_character(observations)
-  if (!icp_only_i || !icp_only_s || !icp_only_o || !icp_only_d || y_in_data) {
+  if (!icpt_only_i || !icpt_only_s || !icpt_only_o || !icpt_only_d || y_in_data) {
     data <- .check_data(data, time, id)
     ids <- unique(data[[id]])
     times <- unique(data[[time]])
@@ -174,7 +174,7 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
       np_B = B$n_pars,
       np_omega = omega$n_pars,
       multichannel = ifelse(n_channels > 1, "multichannel_", ""),
-      intercept_only = icp_only_i && icp_only_s && icp_only_o && icp_only_d
+      intercept_only = icpt_only_i && icpt_only_s && icpt_only_o && icpt_only_d
     )
   )
 }
