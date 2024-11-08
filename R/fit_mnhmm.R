@@ -274,5 +274,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
     all_solutions = all_solutions,
     time = end_time - start_time
   )
+  
+  model$estimation_results$lambda <- lambda
   model
 }

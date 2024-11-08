@@ -67,7 +67,7 @@ permute_clusters <- function(model, pcp_mle) {
 #' 
 #' @param model An `nhmm` or `mnhmm` object.
 #' @param B number of bootstrap samples.
-#' @param method Either `"nonparametric"` or `"parametric"`, to define whether 
+#' @param type Either `"nonparametric"` or `"parametric"`, to define whether 
 #' nonparametric or parametric bootstrap should be used. The former samples 
 #' sequences with replacement, whereas the latter simulates new datasets based 
 #' on the model.
@@ -84,9 +84,9 @@ bootstrap_coefs <- function(model, ...) {
 #' @rdname bootstrap
 #' @export
 bootstrap_coefs.nhmm <- function(model, B = 1000, 
-                                 method = c("nonparametric", "parametric"),
+                                 type = c("nonparametric", "parametric"),
                                  verbose = FALSE, ...) {
-  method <- match.arg(method)
+  type <- match.arg(type)
   stopifnot_(
     checkmate::test_int(x = B, lower = 0L), 
     "Argument {.arg B} must be a single positive integer."
@@ -96,13 +96,15 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
   gamma_pi <- replicate(B, gammas_mle$pi, simplify = FALSE)
   gamma_A <- replicate(B, gammas_mle$A, simplify = FALSE)
   gamma_B <- replicate(B, gammas_mle$B, simplify = FALSE)
+  lambda <- model$estimation_results$lambda
   
   if (verbose) pb <- utils::txtProgressBar(min = 0, max = B, style = 3)
-  if (method == "nonparametric") {
+  if (type == "nonparametric") {
     out <- future.apply::future_lapply(
       seq_len(B), function(i) {
         mod <- bootstrap_model(model)
-        fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, ...)
+        fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
+                        ...)
         if (verbose) utils::setTxtProgressBar(pb, i)
         permute_states(fit$gammas, gammas_mle)
       }
@@ -123,7 +125,8 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
         mod <- simulate_nhmm(
           N, T_, M, S, formula_pi, formula_A, formula_B,
           data = d, time, id, init)$model
-        fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, ...)
+        fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
+                        ...)
         if (verbose) utils::setTxtProgressBar(pb, i)
         fit$gammas <- permute_states(fit$gammas, gammas_mle)
       }
@@ -137,9 +140,9 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
 #' @rdname bootstrap
 #' @export
 bootstrap_coefs.mnhmm <- function(model, B = 1000, 
-                                  method = c("nonparametric", "parametric"),
+                                  type = c("nonparametric", "parametric"),
                                   verbose = FALSE, ...) {
-  method <- match.arg(method)
+  type <- match.arg(type)
   stopifnot_(
     checkmate::test_int(x = B, lower = 0L), 
     "Argument {.arg B} must be a single positive integer."
@@ -151,12 +154,14 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
   gamma_A <- replicate(B, gammas_mle$A, simplify = FALSE)
   gamma_B <- replicate(B, gammas_mle$B, simplify = FALSE)
   gamma_omega <- replicate(B, gammas_mle$omega, simplify = FALSE)
+  lambda <- model$estimation_results$lambda
   D <- model$n_clusters
   if (verbose) pb <- utils::txtProgressBar(min = 0, max = B, style = 3)
-  if (method == "nonparametric") {
+  if (type == "nonparametric") {
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
-      fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, ...)
+      fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
+                       ...)
       fit <- permute_clusters(fit, pcp_mle)
       for (j in seq_len(D)) {
         out <- permute_states(
@@ -189,7 +194,8 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
       mod <- simulate_mnhmm(
         N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
         data = d, time, id, init)$model
-      fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, ...)
+      fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
+                       ...)
       fit <- permute_clusters(fit, pcp_mle)
       for (j in seq_len(D)) {
         out <- permute_states(

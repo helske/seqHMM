@@ -11,7 +11,7 @@ bootstrap_coefs(model, ...)
 \method{bootstrap_coefs}{nhmm}(
   model,
   B = 1000,
-  method = c("nonparametric", "parametric"),
+  type = c("nonparametric", "parametric"),
   verbose = FALSE,
   ...
 )
@@ -19,7 +19,7 @@ bootstrap_coefs(model, ...)
 \method{bootstrap_coefs}{mnhmm}(
   model,
   B = 1000,
-  method = c("nonparametric", "parametric"),
+  type = c("nonparametric", "parametric"),
   verbose = FALSE,
   ...
 )
@@ -31,7 +31,7 @@ bootstrap_coefs(model, ...)
 
 \item{B}{number of bootstrap samples.}
 
-\item{method}{Either \code{"nonparametric"} or \code{"parametric"}, to define whether
+\item{type}{Either \code{"nonparametric"} or \code{"parametric"}, to define whether
 nonparametric or parametric bootstrap should be used. The former samples
 sequences with replacement, whereas the latter simulates new datasets based
 on the model.}

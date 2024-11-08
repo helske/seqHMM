@@ -306,6 +306,6 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
       x_abs_change = out$absolute_x_change
     ) 
   }
-  
+  model$estimation_results$lambda <- lambda
   model
 }
