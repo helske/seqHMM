@@ -1,6 +1,7 @@
 
-#include "pre-log_forward_backward.h"
+#include "pre2-log_forward_backward.h"
 #include "reparma.h"
+#include "logsumexp.h"
 #include "useomp.h"
 // Forward-backward algorithm for non-mixture hidden Markov models using log-space
 // [[Rcpp::export]]
