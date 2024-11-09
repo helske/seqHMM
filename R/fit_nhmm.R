@@ -2,8 +2,8 @@
 #'
 #' @noRd
 fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, 
-                     save_all_solutions = FALSE,
-                     control_restart = list(), control_mstep = list(), ...) {
+                     save_all_solutions = FALSE, control_restart = list(), 
+                     control_mstep = list(), ...) {
   
   stopifnot_(
     checkmate::test_int(x = restarts, lower = 0L), 
@@ -22,7 +22,10 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
     list(...)
   )
   control_restart <- utils::modifyList(control, control_restart)
-  control_mstep <- utils::modifyList(control, control_mstep)
+  control_mstep <- utils::modifyList(
+    c(control, list(pseudocount = 0)), 
+    control_mstep
+  )
   
   M <- model$n_symbols
   S <- model$n_states
@@ -149,7 +152,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
         }
       }
     }
-   
+    
     start_time <- proc.time()
     if (restarts > 0L) {
       
@@ -212,7 +215,10 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
       all_solutions = all_solutions,
       time = end_time - start_time
     )
-  } else {
+    model$estimation_results$lambda <- lambda
+    return(model)
+  }
+  if (method == "EM") {
     start_time <- proc.time()
     if (restarts > 0L) {
       out <- future.apply::future_lapply(seq_len(restarts), function(i) {
@@ -268,7 +274,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
         control$print_level, control_mstep$maxeval,
         control_mstep$ftol_abs, control_mstep$ftol_rel,
         control_mstep$xtol_abs, control_mstep$xtol_rel, 
-        control_mstep$print_level, lambda)
+        control_mstep$print_level, lambda, control_mstep$pseudocount)
     } else {
       out <- EM_LBFGS_nhmm_multichannel(
         init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
@@ -279,7 +285,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
         control$print_level, control_mstep$maxeval,
         control_mstep$ftol_abs, control_mstep$ftol_rel,
         control_mstep$xtol_abs, control_mstep$xtol_rel, 
-        control_mstep$print_level, lambda)
+        control_mstep$print_level, lambda, control_mstep$pseudocount)
     }
     end_time <- proc.time()
     # if (out$status < 0) {
@@ -309,8 +315,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
       f_abs_change = out$absolute_f_change,
       x_rel_change = out$relative_x_change,
       x_abs_change = out$absolute_x_change
-    ) 
+    )
+    model$estimation_results$lambda <- lambda
+    return(model)
   }
-  model$estimation_results$lambda <- lambda
-  model
 }

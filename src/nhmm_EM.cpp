@@ -48,7 +48,8 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
 }
 void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs, 
                          const double xtol_rel, const double ftol_rel, 
-                         const arma::uword maxeval, const arma::uword print_level) {
+                         const arma::uword maxeval, 
+                         const arma::uword print_level) {
   
   // Use closed form solution
   if (icpt_only_pi && lambda < 1e-12) {
@@ -493,7 +494,7 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     const double xtol_abs, const double xtol_rel, const arma::uword print_level,
     const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, 
     const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m,
-    const double lambda) {
+    const double lambda, const double pseudocount) {
   
   nhmm_sc model(
       eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
@@ -546,9 +547,9 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     
     double ll_i = logSumExp(log_alpha.col(model.Ti(i) - 1));
     ll += ll_i;
-    model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i);
-    model.estep_A(i, log_alpha, log_beta, ll_i);
-    model.estep_B(i, log_alpha, log_beta, ll_i);
+    model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i, pseudocount);
+    model.estep_A(i, log_alpha, log_beta, ll_i, pseudocount);
+    model.estep_B(i, log_alpha, log_beta, ll_i, pseudocount);
   }
   double penalty_term = 0.5 * lambda  * arma::dot(pars, pars);
   ll -= penalty_term;
@@ -601,9 +602,9 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
       );
       double ll_i = logSumExp(log_alpha.col(model.Ti(i) - 1));
       ll_new += ll_i;
-      model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i);
-      model.estep_A(i, log_alpha, log_beta, ll_i);
-      model.estep_B(i, log_alpha, log_beta, ll_i);
+      model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i, pseudocount);
+      model.estep_A(i, log_alpha, log_beta, ll_i, pseudocount);
+      model.estep_B(i, log_alpha, log_beta, ll_i, pseudocount);
     }
     
     pars_new.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
@@ -632,6 +633,9 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     }
     ll = ll_new;
     pars = pars_new;
+    if (absolute_change < -1e6) {
+      Rcpp::warning("EM algorithm encountered decreasing log-likelihood.");
+    }
   }
   
   return Rcpp::List::create(
@@ -662,7 +666,7 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     const double xtol_abs, const double xtol_rel, const arma::uword print_level,
     const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, 
     const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m,
-    const double lambda) {
+    const double lambda, const double pseudocount) {
   
   nhmm_mc model(
       eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
@@ -718,9 +722,9 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     );
     double ll_i = logSumExp(log_alpha.col(model.Ti(i) - 1));
     ll += ll_i;
-    model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i);
-    model.estep_A(i, log_alpha, log_beta, ll_i);
-    model.estep_B(i, log_alpha, log_beta, ll_i);
+    model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i, pseudocount);
+    model.estep_A(i, log_alpha, log_beta, ll_i, pseudocount);
+    model.estep_B(i, log_alpha, log_beta, ll_i, pseudocount);
   }
   double penalty_term = 0.5 * lambda  * arma::dot(pars, pars);
   ll -= penalty_term;
@@ -773,9 +777,9 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
       );
       double ll_i = logSumExp(log_alpha.col(model.Ti(i) - 1));
       ll_new += ll_i;
-      model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i);
-      model.estep_A(i, log_alpha, log_beta, ll_i);
-      model.estep_B(i, log_alpha, log_beta, ll_i);
+      model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i, pseudocount);
+      model.estep_A(i, log_alpha, log_beta, ll_i, pseudocount);
+      model.estep_B(i, log_alpha, log_beta, ll_i, pseudocount);
     }
     pars_new.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
     pars_new.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
@@ -807,6 +811,9 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     }
     ll = ll_new;
     pars = pars_new;
+    if (absolute_change < -1e6) {
+      Rcpp::warning("EM algorithm encountered decreasing log-likelihood.");
+    }
   }
   
   return Rcpp::List::create(

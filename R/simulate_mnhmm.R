@@ -54,9 +54,10 @@ simulate_mnhmm <- function(
   sequence_lengths <- rep(sequence_lengths, length.out = n_sequences)
   n_channels <- length(n_symbols)
   symbol_names <- lapply(seq_len(n_channels), function(i) seq_len(n_symbols[i]))
+  T_ <- max(sequence_lengths)
   obs <- lapply(seq_len(n_channels), function(i) {
     suppressWarnings(suppressMessages(
-      seqdef(matrix(symbol_names[[i]][1], n_sequences, max(sequence_lengths)),
+      seqdef(matrix(symbol_names[[i]][1], n_sequences, T_),
              alphabet = symbol_names[[i]]
       )))
   })
@@ -139,20 +140,23 @@ simulate_mnhmm <- function(
         t(out$states),
         n_sequences, max(sequence_lengths)
       ), 
-      alphabet = state_names
+      alphabet = state_names, cnames = seq_len(T_)
     )
   ))
+ 
   if (n_channels == 1) {
     dim(out$observations) <- dim(out$observations)[2:3]
     out$observations[] <- symbol_names[c(out$observations) + 1]
+    colnames(out$observations) <- seq_len(T_)
     model$observations <- suppressWarnings(suppressMessages(
-      seqdef(t(out$observations), alphabet = symbol_names)
+      seqdef(t(out$observations), alphabet = symbol_names, cnames = seq_len(T_))
     ))
   } else {
     model$observations <- lapply(seq_len(n_channels), function(i) {
       out$observations[i, , ] <- symbol_names[[i]][c(out$observations[i, , ]) + 1]
       suppressWarnings(suppressMessages(
-        seqdef(t(out$observations[i, , ]), alphabet = symbol_names[[i]])
+        seqdef(t(out$observations[i, , ]), alphabet = symbol_names[[i]], 
+               cnames = seq_len(T_))
       ))
     })
     names(model$observations) <- model$channel_names
