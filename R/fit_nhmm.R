@@ -1,7 +1,7 @@
 #' Estimate a Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, 
+fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocount = 0,
                      save_all_solutions = FALSE, control_restart = list(), 
                      control_mstep = list(), ...) {
   
@@ -22,10 +22,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
     list(...)
   )
   control_restart <- utils::modifyList(control, control_restart)
-  control_mstep <- utils::modifyList(
-    c(control, list(pseudocount = 0)), 
-    control_mstep
-  )
+  control_mstep <- utils::modifyList(control, control_mstep)
   
   M <- model$n_symbols
   S <- model$n_states
@@ -235,7 +232,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
             control_restart$print_level, control_mstep$maxeval,
             control_mstep$ftol_abs, control_mstep$ftol_rel,
             control_mstep$xtol_abs, control_mstep$xtol_rel, 
-            control_mstep$print_level, lambda)
+            control_mstep$print_level, lambda, pseudocount)
         } else {
           EM_LBFGS_nhmm_multichannel(
             init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
@@ -246,7 +243,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
             control_restart$print_level, control_mstep$maxeval,
             control_mstep$ftol_abs, control_mstep$ftol_rel,
             control_mstep$xtol_abs, control_mstep$xtol_rel, 
-            control_mstep$print_level, lambda)
+            control_mstep$print_level, lambda, pseudocount)
         }
       },
       future.seed = TRUE)
@@ -274,7 +271,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
         control$print_level, control_mstep$maxeval,
         control_mstep$ftol_abs, control_mstep$ftol_rel,
         control_mstep$xtol_abs, control_mstep$xtol_rel, 
-        control_mstep$print_level, lambda, control_mstep$pseudocount)
+        control_mstep$print_level, lambda, pseudocount)
     } else {
       out <- EM_LBFGS_nhmm_multichannel(
         init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
@@ -285,7 +282,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
         control$print_level, control_mstep$maxeval,
         control_mstep$ftol_abs, control_mstep$ftol_rel,
         control_mstep$xtol_abs, control_mstep$xtol_rel, 
-        control_mstep$print_level, lambda, control_mstep$pseudocount)
+        control_mstep$print_level, lambda, pseudocount)
     }
     end_time <- proc.time()
     # if (out$status < 0) {

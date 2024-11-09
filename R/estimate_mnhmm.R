@@ -44,7 +44,8 @@ estimate_mnhmm <- function(
     transition_formula = ~1, emission_formula = ~1, cluster_formula = ~1,
     data = NULL, time = NULL, id = NULL, state_names = NULL, 
     channel_names = NULL, cluster_names = NULL, inits = "random", init_sd = 2, 
-    restarts = 0L, lambda = 0, method = "EM", store_data = TRUE, ...) {
+    restarts = 0L, lambda = 0, method = "EM", pseudocount = 0, 
+    store_data = TRUE, ...) {
   
   call <- match.call()
   model <- build_mnhmm(
@@ -63,7 +64,8 @@ estimate_mnhmm <- function(
   if (store_data) {
     model$data <- data
   }
-  out <- fit_mnhmm(model, inits, init_sd, restarts, lambda, method, ...)
+  out <- fit_mnhmm(model, inits, init_sd, restarts, lambda, method, 
+                   pseudocount, ...)
   
   attr(out, "call") <- call
   out

@@ -58,7 +58,8 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
       Rcpp::stop(
         "Some of the values in gamma_pi are nonfinite likely due to zero "
         "expected initial state counts.\n" 
-        "Try increasing the penalty lambda to avoid extreme probabilities."
+        "Try increasing the penalty lambda or adding pseudocounts "
+        "to avoid extreme probabilities."
       );
     }
     return;
@@ -95,8 +96,8 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
   if (status < 0) {
     Rcpp::stop(
       "M-step of initial state probabilities errored with error code %i.\n"
-      "Try increasing the penalty lambda to avoid extreme probabilities.", 
-      status
+      "Try increasing the penalty lambda or adding pseudocounts "
+      "to avoid extreme probabilities.", status
     );
   }
   eta_pi = arma::mat(x_pi.memptr(), S - 1, K_pi);
@@ -172,7 +173,8 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
         Rcpp::stop(
           "Some of the values in gamma_A are nonfinite likely due to zero "
           "expected transition counts.\n" 
-          "Try increasing the penalty lambda to avoid extreme probabilities."
+          "Try increasing the penalty lambda or adding pseudocounts "
+          "to avoid extreme probabilities."
         );
       }
     }
@@ -216,8 +218,8 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
     if (status < 0) {
       Rcpp::stop(
         "M-step of transition probabilities errored with error code %i.\n"
-        "Try increasing the penalty lambda to avoid extreme probabilities.", 
-        status
+        "Try increasing the penalty lambda or adding pseudocounts "
+        "to avoid extreme probabilities.", status
       );
     }
     eta_A.slice(s) = arma::mat(x_A.memptr(), S - 1, K_A);
@@ -300,7 +302,8 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
         Rcpp::stop(
           "Some of the values in gamma_B are nonfinite likely due to zero "
           "expected emission counts.\n" 
-          "Try increasing the penalty lambda to avoid extreme probabilities."
+          "Try increasing the penalty lambda or adding pseudocounts "
+          "to avoid extreme probabilities."
         );
       }
     }
@@ -341,8 +344,8 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
     if (status < 0) {
       Rcpp::stop(
         "M-step of emission probabilities errored with error code %i.\n"
-        "Try increasing the penalty lambda to avoid extreme probabilities.", 
-        status
+        "Try increasing the penalty lambda or adding pseudocounts "
+        "to avoid extreme probabilities.", status
       );
     }
     eta_B.slice(s) = arma::mat(x_B.memptr(), M - 1, K_B);
@@ -429,7 +432,8 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
           Rcpp::stop(
             "Some of the values in gamma_B are nonfinite likely due to zero "
             "expected emission counts.\n" 
-            "Try increasing the penalty lambda to avoid extreme probabilities."
+            "Try increasing the penalty lambda or adding pseudocounts "
+            "to avoid extreme probabilities."
           );
         }
       }
@@ -472,8 +476,8 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
       if (status < 0) {
         Rcpp::stop(
           "M-step of emission probabilities errored with error code %i.\n"
-          "Try increasing the penalty lambda to avoid extreme probabilities.", 
-          status
+          "Try increasing the penalty lambda or adding pseudocounts "
+          "to avoid extreme probabilities.", status
         );
       }
       eta_B(c).slice(s) = arma::mat(x_B.memptr(), M(c) - 1, K_B);

@@ -23,6 +23,7 @@ estimate_mnhmm(
   restarts = 0L,
   lambda = 0,
   method = "EM",
+  pseudocount = 0,
   store_data = TRUE,
   ...
 )

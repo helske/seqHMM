@@ -1,9 +1,9 @@
 #' Estimate a Mixture Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
-                      save_all_solutions = FALSE, control_restart = list(), 
-                      control_mstep = list(), ...) {
+fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method, 
+                      pseudocount = 0, save_all_solutions = FALSE, 
+                      control_restart = list(), control_mstep = list(), ...) {
   stopifnot_(
     checkmate::test_int(x = restarts, lower = 0L), 
     "Argument {.arg restarts} must be a single integer."
@@ -21,10 +21,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
     list(...)
   )
   control_restart <- utils::modifyList(control, control_restart)
-  control_mstep <- utils::modifyList(
-    c(control, list(pseudocount = 0)), 
-    control_mstep
-  )
+  control_mstep <- utils::modifyList(control, control_mstep)
   
   M <- model$n_symbols
   S <- model$n_states

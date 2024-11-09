@@ -20,6 +20,7 @@ estimate_nhmm(
   restarts = 0L,
   lambda = 0,
   method = "EM",
+  pseudocount = 0,
   store_data = TRUE,
   ...
 )
@@ -91,6 +92,11 @@ Other useful arguments are \code{algorithm} (default uses LBFGS),
 \code{print_level} (default is \code{0}, no console output of optimization), and
 arguments for adjusting the stopping criteria of the optimization
 (see details).}
+
+\item{pseudocount.}{A positive scalar to be added for the expected counts of
+E-step. Only used in EM algorithm. Default is 0. Larger values can be used
+to avoid zero probabilities in initial, transition, and emission
+probabilities, i.e. these have similar role as \code{lambda}.}
 }
 \value{
 Object of class \code{nhmm}.
