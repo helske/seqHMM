@@ -267,8 +267,9 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
                       const arma::uword maxeval, 
                       const arma::uword print_level) {
   if (icpt_only_B) {
-    arma::vec tmp(M, arma::fill::zeros);
+    arma::vec tmp(M);
     for (arma::uword s = 0; s < S; s++) {
+      tmp.zeros();
       for (arma::uword i = 0; i < N; i++) {
         for (arma::uword t = 0; t < Ti(i); t++) {
           if (obs(t, i) < M) {
@@ -387,8 +388,9 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
                       const arma::uword print_level) {
   if (icpt_only_B) {
     for (arma::uword c = 0; c < C; c++) {
-      arma::vec tmp(M(c), arma::fill::zeros);
+      arma::vec tmp(M(c));
       for (arma::uword s = 0; s < S; s++) {
+        tmp.zeros();
         for (arma::uword i = 0; i < N; i++) {
           for (arma::uword t = 0; t < Ti(i); t++) {
             if (obs(c, t, i) < M(c)) {

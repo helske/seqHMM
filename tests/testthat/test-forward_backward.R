@@ -64,7 +64,7 @@ test_that("'forward_backward' works for single-channel 'nhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_nhmm(
-      hmm_biofam$observations[[1]][1:10,], n_states = 3,
+      hmm_biofam$observations[[1]][1:100,], n_states = 3,
       restarts = 2, maxeval = 2, lambda = 1
     ),
     NA

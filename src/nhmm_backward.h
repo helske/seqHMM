@@ -56,6 +56,7 @@ void backward_nhmm(Model& model, arma::cube& log_beta) {
     if (model.iv_B || i == 0) {
       model.update_B(i);
     }
+    model.update_log_py(i);
     univariate_backward_nhmm(
       log_beta.slice(i),
       model.log_A, 

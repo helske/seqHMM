@@ -37,7 +37,7 @@ test_that("Gradients for singlechannel-NHMM are correct", {
   obs <- create_obsArray(model)
   obs <- array(obs, dim(obs)[2:3])
   pars <- rnorm(n_i + n_s + n_o)
- 
+  
   f <- function(pars) {
     eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
     eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
@@ -45,10 +45,9 @@ test_that("Gradients for singlechannel-NHMM are correct", {
       pars[n_i + n_s + seq_len(n_o)], S, M, K_B
     )
     -log_objective_nhmm_singlechannel(
-      eta_pi, X_pi,
-      eta_A, X_A,
-      eta_B, X_B,
-      obs, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)$loglik
+      eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, model$sequence_lengths, 
+      FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE
+    )$loglik
     
   }
   g <- function(pars) {
@@ -58,8 +57,9 @@ test_that("Gradients for singlechannel-NHMM are correct", {
       pars[n_i + n_s + seq_len(n_o)], S, M, K_B
     )
     -unname(unlist(log_objective_nhmm_singlechannel(
-      eta_pi, X_pi, eta_A, X_A, eta_B, X_B,
-      obs, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)[-1]))
+      eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, model$sequence_lengths, 
+      FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE)[-1])
+    )
   }
   expect_equal(g(pars), numDeriv::grad(f, pars))
 })
@@ -120,8 +120,9 @@ test_that("Gradients for multichannel-NHMM are correct", {
       pars[n_i + n_s + seq_len(n_o)], S, M, K_B
     )
     -log_objective_nhmm_multichannel(
-      eta_pi, X_pi, eta_A, X_A, eta_B, X_B,
-      obs, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)$loglik
+      eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, model$sequence_lengths, 
+      FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE
+    )$loglik
     
   }
   g <- function(pars) {
@@ -131,8 +132,9 @@ test_that("Gradients for multichannel-NHMM are correct", {
       pars[n_i + n_s + seq_len(n_o)], S, M, K_B
     )
     -unname(unlist(log_objective_nhmm_multichannel(
-      eta_pi, X_pi, eta_A, X_A, eta_B, X_B,
-      obs, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)[-1]))
+      eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, model$sequence_lengths, 
+      FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE
+    )[-1]))
   }
   expect_equal(g(pars), numDeriv::grad(f, pars))
 })
@@ -191,8 +193,10 @@ test_that("Gradients for singlechannel-MNHMM are correct", {
       pars[n_i + n_s + n_o + seq_len(n_d)], D, K_omega
     )
     -log_objective_mnhmm_singlechannel(
-      eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B,
-      obs, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)$loglik
+      eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, 
+      model$sequence_lengths, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, 
+      TRUE
+    )$loglik
     
   }
   g <- function(pars) {
@@ -205,8 +209,9 @@ test_that("Gradients for singlechannel-MNHMM are correct", {
       pars[n_i + n_s + n_o + seq_len(n_d)],  D, K_omega
     )
     -unname(unlist(log_objective_mnhmm_singlechannel(
-      eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B,
-      obs, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)[-1]))
+      eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, 
+      model$sequence_lengths, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, 
+      TRUE)[-1]))
   }
   expect_equal(g(pars), numDeriv::grad(f, pars))
 })
@@ -277,8 +282,10 @@ test_that("Gradients for multichannel-MNHMM are correct", {
       pars[n_i + n_s + n_o + seq_len(n_d)], D, K_omega
     )
     -log_objective_mnhmm_multichannel(
-      eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B,
-      obs, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)$loglik
+      eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, 
+      model$sequence_lengths, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, 
+      TRUE
+      )$loglik
     
   }
   g <- function(pars) {
@@ -294,8 +301,9 @@ test_that("Gradients for multichannel-MNHMM are correct", {
       pars[n_i + n_s + n_o + seq_len(n_d)], D, K_omega
     )
     -unname(unlist(log_objective_mnhmm_multichannel(
-      eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B,
-      obs, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, model$sequence_lengths)[-1]))
+      eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, 
+      model$sequence_lengths, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, 
+      TRUE)[-1]))
   }
   expect_equal(g(pars), numDeriv::grad(f, pars))
 })
