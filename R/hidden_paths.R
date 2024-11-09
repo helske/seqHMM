@@ -79,7 +79,8 @@ hidden_paths.nhmm <- function(model, respect_void = TRUE, ...) {
       model$etas$A, model$X_A,
       model$etas$B, model$X_B,
       obsArray[1, , ], model$sequence_lengths, 
-      attr(model$X_pi, "iv"),
+      attr(model$X_pi, "icpt_only"), attr(model$X_A, "icpt_only"), 
+      attr(model$X_B, "icpt_only"),
       attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
       attr(model$X_B, "tv"))
   } else {
@@ -88,7 +89,8 @@ hidden_paths.nhmm <- function(model, respect_void = TRUE, ...) {
       model$etas$A, model$X_A,
       model$etas$B, model$X_B,
       obsArray, model$sequence_lengths, 
-      attr(model$X_pi, "iv"),
+      attr(model$X_pi, "icpt_only"), attr(model$X_A, "icpt_only"), 
+      attr(model$X_B, "icpt_only"),
       attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
       attr(model$X_B, "tv"))
   }
@@ -106,7 +108,8 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
       model$etas$A, model$X_A,
       model$etas$B, model$X_B,
       array(obsArray, dim(obsArray)[2:3]), model$sequence_lengths, 
-      attr(model$X_omega, "iv"), attr(model$X_pi, "iv"),
+      attr(model$X_omega, "icpt_only"), attr(model$X_pi, "icpt_only"), 
+      attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
       attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
       attr(model$X_B, "tv")
     )
@@ -119,7 +122,8 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
       eta_B,
       model$X_B,
       obsArray, model$sequence_lengths, 
-      attr(model$X_omega, "iv"), attr(model$X_pi, "iv"),
+      attr(model$X_omega, "icpt_only"), attr(model$X_pi, "icpt_only"), 
+      attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
       attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
       attr(model$X_B, "tv")
     )

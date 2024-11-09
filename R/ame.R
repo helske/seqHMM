@@ -74,7 +74,7 @@ ame.nhmm <- function(
     times <- colnames(model$observations[[1]])
     symbol_names <- model$symbol_names
   }
-  if (!attr(model$X_pi, "iv")) {
+  if (attr(model$X_pi, "icpt_only")) {
     X1 <- model1$X_pi[, 1L, drop = FALSE]
     X2 <- model2$X_pi[, 1L, drop = FALSE]
   } else {
@@ -216,7 +216,7 @@ ame.mnhmm <- function(
   newdata[[variable]] <- values[2]
   model2 <- update(model, newdata)
   
-  if (!attr(model$X_omega, "iv")) {
+  if (!attr(model$X_omega, "icpt_only")) {
     X1 <- model1$X_omega[, 1L, drop = FALSE]
     X2 <- model2$X_omega[, 1L, drop = FALSE]
   } else {

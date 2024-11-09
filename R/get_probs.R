@@ -32,7 +32,7 @@ get_initial_probs.nhmm <- function(model, probs, ...) {
   } else {
     ids <- rownames(model$observations[[1]])
   }
-  if (!attr(model$X_pi, "iv")) {
+  if (!attr(model$X_pi, "icpt_only")) {
     X <- model$X_pi[, 1L, drop = FALSE]
   } else {
     X <- model$X_pi
@@ -284,7 +284,7 @@ get_cluster_probs.mnhmm <- function(model, probs, ...) {
   } else {
     ids <- rownames(model$observations[[1]])
   }
-  if (!attr(model$X_omega, "iv")) {
+  if (!attr(model$X_omega, "icpt_only")) {
     X <- model$X_omega[, 1L, drop = FALSE]
   } else {
     X <- model$X_omega

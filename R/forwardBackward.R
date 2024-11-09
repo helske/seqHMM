@@ -158,7 +158,8 @@ forward_backward.nhmm <- function(model, forward_only = FALSE,
       model$etas$A, model$X_A,
       model$etas$B, model$X_B,
       array(obsArray[1, , ], dim(obsArray)[2:3]),
-      model$sequence_lengths, attr(model$X_pi, "iv"),
+      model$sequence_lengths, attr(model$X_pi, "icpt_only"), 
+      attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
       attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
       attr(model$X_B, "tv"))
     if (!forward_only) {
@@ -167,7 +168,8 @@ forward_backward.nhmm <- function(model, forward_only = FALSE,
         model$etas$A, model$X_A,
         model$etas$B, model$X_B,
         array(obsArray[1, , ], dim(obsArray)[2:3]),
-        model$sequence_lengths, attr(model$X_pi, "iv"),
+        model$sequence_lengths, attr(model$X_pi, "icpt_only"), 
+        attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
         attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
         attr(model$X_B, "tv"))
     }
@@ -183,7 +185,8 @@ forward_backward.nhmm <- function(model, forward_only = FALSE,
       model$etas$A, model$X_A,
       model$etas$B, model$X_B,
       obsArray,
-      model$sequence_lengths, attr(model$X_pi, "iv"),
+      model$sequence_lengths, attr(model$X_pi, "icpt_only"), 
+      attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
       attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
       attr(model$X_B, "tv"))
     if (!forward_only) {
@@ -191,7 +194,8 @@ forward_backward.nhmm <- function(model, forward_only = FALSE,
         model$etas$pi, model$X_pi,
         model$etas$A, model$X_A,
         model$etas$B, model$X_B,
-        obsArray, model$sequence_lengths, attr(model$X_pi, "iv"),
+        obsArray, model$sequence_lengths, attr(model$X_pi, "icpt_only"), 
+        attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
         attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
         attr(model$X_B, "tv"))
     }
@@ -237,7 +241,9 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,
       model$etas$A, model$X_A,
       model$etas$B, model$X_B,
       array(obsArray, dim(obsArray)[2:3]),
-      model$sequence_lengths, attr(model$X_omega, "iv"), attr(model$X_pi, "iv"),
+      model$sequence_lengths, attr(model$X_omega, "icpt_only"), 
+      attr(model$X_pi, "icpt_only"), attr(model$X_A, "icpt_only"), 
+      attr(model$X_B, "icpt_only"),
       attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
       attr(model$X_B, "tv"))
     if (!forward_only) {
@@ -247,7 +253,8 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,
         model$etas$A, model$X_A,
         model$etas$B, model$X_B,
         array(obsArray, dim(obsArray)[2:3]), model$sequence_lengths, 
-        attr(model$X_omega, "iv"), attr(model$X_pi, "iv"),
+        attr(model$X_omega, "icpt_only"), attr(model$X_pi, "icpt_only"), 
+        attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
         attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
         attr(model$X_B, "tv"))
     }
@@ -265,7 +272,8 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,
       model$etas$A, model$X_A,
       eta_B, model$X_B,
       obsArray, model$sequence_lengths, 
-      attr(model$X_omega, "iv"), attr(model$X_pi, "iv"),
+      attr(model$X_omega, "icpt_only"), attr(model$X_pi, "icpt_only"), 
+      attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
       attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
       attr(model$X_B, "tv"))
     if (!forward_only) {
@@ -275,7 +283,8 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,
         model$etas$A, model$X_A,
         eta_B, model$X_B,
         obsArray, model$sequence_lengths, 
-        attr(model$X_omega, "iv"), attr(model$X_pi, "iv"),
+        attr(model$X_omega, "icpt_only"), attr(model$X_pi, "icpt_only"), 
+        attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
         attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
         attr(model$X_B, "tv"))
     }
