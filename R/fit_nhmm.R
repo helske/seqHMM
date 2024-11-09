@@ -299,7 +299,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
     }
     
     model$estimation_results <- list(
-      loglik = out$penalized_logLik * n_obs,
+      loglik = out$penalized_logLik,
+      penalty = out$penalty_term,
       iterations = out$iterations,
       logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
       all_solutions = all_solutions,

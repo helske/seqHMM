@@ -49,8 +49,17 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
 void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs, 
                          const double xtol_rel, const double ftol_rel, 
                          const arma::uword maxeval, const arma::uword print_level) {
-  if (icpt_only_pi) {
+  
+  // Use closed form solution
+  if (icpt_only_pi && lambda < 1e-12) {
     eta_pi = Qs.t() * log(arma::sum(E_Pi, 1));
+    if (!eta_pi.is_finite()) {
+      Rcpp::stop(
+        "Some of the values in gamma_pi are nonfinite likely due to zero "
+        "expected initial state counts.\n" 
+        "Try increasing the penalty lambda to avoid extreme probabilities."
+      );
+    }
     return;
   }
   
@@ -150,14 +159,21 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
                         const double xtol_abs, const double xtol_rel, 
                         const arma::uword maxeval, 
                         const arma::uword print_level) {
-  
-  if (icpt_only_A) {
+  // Use closed form solution
+  if (icpt_only_A && lambda < 1e-12) {
     arma::vec tmp(S);
     for (arma::uword s = 0; s < S; s++) { // from
       for (arma::uword k = 0; k < S; k++) { //to
         tmp(k) = arma::accu(E_A(s).row(k));
       }
       eta_A.slice(s).col(0) = Qs.t() * log(tmp);
+      if (!eta_A.slice(s).col(0).is_finite()) {
+        Rcpp::stop(
+          "Some of the values in gamma_A are nonfinite likely due to zero "
+          "expected transition counts.\n" 
+          "Try increasing the penalty lambda to avoid extreme probabilities."
+        );
+      }
     }
     return;
   }
@@ -266,7 +282,8 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
                       const double xtol_abs, const double xtol_rel, 
                       const arma::uword maxeval, 
                       const arma::uword print_level) {
-  if (icpt_only_B) {
+  // use closed form solution
+  if (icpt_only_B && lambda < 1e-12) {
     arma::vec tmp(M);
     for (arma::uword s = 0; s < S; s++) {
       tmp.zeros();
@@ -278,6 +295,13 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
         }
       }
       eta_B.slice(s).col(0) = Qm.t() * log(tmp);
+      if (!eta_B.slice(s).col(0).is_finite()) {
+        Rcpp::stop(
+          "Some of the values in gamma_B are nonfinite likely due to zero "
+          "expected emission counts.\n" 
+          "Try increasing the penalty lambda to avoid extreme probabilities."
+        );
+      }
     }
     return;
   }
@@ -386,7 +410,8 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
                       const double xtol_abs, const double xtol_rel, 
                       const arma::uword maxeval, 
                       const arma::uword print_level) {
-  if (icpt_only_B) {
+  // use closed form solution
+  if (icpt_only_B && lambda < 1e-12) {
     for (arma::uword c = 0; c < C; c++) {
       arma::vec tmp(M(c));
       for (arma::uword s = 0; s < S; s++) {
@@ -399,6 +424,13 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
           }
         }
         eta_B(c).slice(s).col(0) = Qm(c).t() * log(tmp);
+        if (!eta_B(c).slice(s).col(0).is_finite()) {
+          Rcpp::stop(
+            "Some of the values in gamma_B are nonfinite likely due to zero "
+            "expected emission counts.\n" 
+            "Try increasing the penalty lambda to avoid extreme probabilities."
+          );
+        }
       }
     }
     return;
@@ -472,12 +504,12 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
   arma::uword n_pi = model.eta_pi.n_elem;
   arma::uword n_A = model.eta_A.n_elem;
   arma::uword n_B = model.eta_B.n_elem;
-  arma::rowvec current_pars(n_pi + n_A + n_B);
-  arma::rowvec previous_pars(n_pi + n_A + n_B);
+  arma::rowvec pars_new(n_pi + n_A + n_B);
+  arma::rowvec pars(n_pi + n_A + n_B);
   
-  previous_pars.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
-  previous_pars.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
-  previous_pars.cols(n_pi + n_A, n_pi + n_A + n_B - 1) = arma::vectorise(model.eta_B).t();
+  pars.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
+  pars.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
+  pars.cols(n_pi + n_A, n_pi + n_A + n_B - 1) = arma::vectorise(model.eta_B).t();
   
   double relative_change = ftol_rel + 1.0;
   double absolute_change = ftol_abs + 1.0;
@@ -518,14 +550,15 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     model.estep_A(i, log_alpha, log_beta, ll_i);
     model.estep_B(i, log_alpha, log_beta, ll_i);
   }
-  double penalty_term = 0.5 * lambda * arma::dot(previous_pars, previous_pars);
+  double penalty_term = 0.5 * lambda  * arma::dot(pars, pars);
   ll -= penalty_term;
+  ll /= model.n_obs;
   
   if (print_level > 0) {
     Rcpp::Rcout<<"Initial value of the log-likelihood: "<<ll<<std::endl;
     if (print_level > 1) {
       Rcpp::Rcout<<"Initial parameter values"<<std::endl;
-      Rcpp::Rcout<<previous_pars<<std::endl;
+      Rcpp::Rcout<<pars<<std::endl;
     }
   }
   while (relative_change > ftol_rel && absolute_change > ftol_abs && 
@@ -573,40 +606,41 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
       model.estep_B(i, log_alpha, log_beta, ll_i);
     }
     
-    current_pars.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
-    current_pars.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
-    current_pars.cols(n_pi + n_A, n_pi + n_A + n_B - 1) = arma::vectorise(model.eta_B).t();
+    pars_new.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
+    pars_new.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
+    pars_new.cols(n_pi + n_A, n_pi + n_A + n_B - 1) = arma::vectorise(model.eta_B).t();
     
-    penalty_term = 0.5 * lambda * arma::dot(current_pars, current_pars);
+    penalty_term = 0.5 * lambda  * arma::dot(pars_new, pars_new);
     ll_new -= penalty_term;
+    ll_new /= model.n_obs;
     
     relative_change = (ll_new - ll) / (std::abs(ll) + 1e-8);
-    absolute_change = (ll_new - ll) / model.n_obs;
-    absolute_x_change = arma::max(arma::abs(current_pars - previous_pars));
-    relative_x_change = arma::norm(current_pars - previous_pars, 1) / arma::norm(current_pars, 1);
+    absolute_change = ll_new - ll;
+    absolute_x_change = arma::max(arma::abs(pars_new - pars));
+    relative_x_change = arma::norm(pars_new - pars, 1) / arma::norm(pars, 1);
     if (print_level > 0) {
       Rcpp::Rcout<<"Iteration: "<<iter<<std::endl;
-      Rcpp::Rcout<<"           "<<"log-likelihood: "<<ll_new<<std::endl;
-      Rcpp::Rcout<<"           "<<"relative change of log-likelihood: "<<relative_change<<std::endl;
-      Rcpp::Rcout<<"           "<<"absolute change of scaled log-likelihood: "<<absolute_change<<std::endl;
-      Rcpp::Rcout<<"           "<<"relative change of parameters: "<<relative_x_change<<std::endl;
-      Rcpp::Rcout<<"           "<<"maximum absolute change of parameters: "<<absolute_x_change<<std::endl;
+      Rcpp::Rcout<<"           "<<"Scaled log-likelihood: "<<ll_new<<std::endl;
+      Rcpp::Rcout<<"           "<<"Relative change of log-likelihood: "<<relative_change<<std::endl;
+      Rcpp::Rcout<<"           "<<"Absolute change of scaled log-likelihood: "<<absolute_change<<std::endl;
+      Rcpp::Rcout<<"           "<<"Relative change of parameters: "<<relative_x_change<<std::endl;
+      Rcpp::Rcout<<"           "<<"Maximum absolute change of parameters: "<<absolute_x_change<<std::endl;
       if (print_level > 1) {
-        Rcpp::Rcout << "current parameter values"<< std::endl;
-        Rcpp::Rcout<<current_pars<<std::endl;
+        Rcpp::Rcout << "Current parameter values"<< std::endl;
+        Rcpp::Rcout<<pars_new<<std::endl;
       }
     }
     ll = ll_new;
-    previous_pars = current_pars;
+    pars = pars_new;
   }
   
   return Rcpp::List::create(
     Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
     Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
     Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
-    Rcpp::Named("penalized_logLik") = ll,
-    Rcpp::Named("penalty_term") = penalty_term,
-    Rcpp::Named("logLik") = ll + penalty_term,
+    Rcpp::Named("penalized_logLik") = ll * model.n_obs,
+    Rcpp::Named("penalty_term") = penalty_term * model.n_obs,
+    Rcpp::Named("logLik") = (ll + penalty_term) * model.n_obs,
     Rcpp::Named("iterations") = iter,
     Rcpp::Named("relative_f_change") = relative_change,
     Rcpp::Named("absolute_f_change") = absolute_change,
@@ -643,13 +677,13 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     n_Bc(c) = n_Bc(c - 1) + model.eta_B(c - 1).n_elem;
   }
   arma::uword n_B = n_Bc(model.C);
-  arma::rowvec current_pars(n_pi + n_A + n_B);
-  arma::rowvec previous_pars(n_pi + n_A + n_B);
+  arma::rowvec pars_new(n_pi + n_A + n_B);
+  arma::rowvec pars(n_pi + n_A + n_B);
   
-  previous_pars.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
-  previous_pars.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
+  pars.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
+  pars.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
   for (arma::uword c = 0; c < model.C; c++) {
-    previous_pars.cols(
+    pars.cols(
       n_pi + n_A + n_Bc(c), n_pi + n_A + n_Bc(c + 1) - 1
     ) = arma::vectorise(model.eta_B(c)).t();
   }
@@ -688,13 +722,15 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     model.estep_A(i, log_alpha, log_beta, ll_i);
     model.estep_B(i, log_alpha, log_beta, ll_i);
   }
-  double penalty_term = 0.5 * lambda * arma::dot(previous_pars, previous_pars);
+  double penalty_term = 0.5 * lambda  * arma::dot(pars, pars);
   ll -= penalty_term;
+  ll /= model.n_obs;
+  
   if (print_level > 0) {
     Rcpp::Rcout<<"Initial value of the log-likelihood: "<<ll<<std::endl;
     if (print_level > 1) {
       Rcpp::Rcout<<"Initial parameter values"<<std::endl;
-      Rcpp::Rcout<<previous_pars<<std::endl;
+      Rcpp::Rcout<<pars<<std::endl;
     }
   }
   while (relative_change > ftol_rel && absolute_change > ftol_abs && 
@@ -741,44 +777,45 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
       model.estep_A(i, log_alpha, log_beta, ll_i);
       model.estep_B(i, log_alpha, log_beta, ll_i);
     }
-    current_pars.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
-    current_pars.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
+    pars_new.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
+    pars_new.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
     for (arma::uword c = 0; c < model.C; c++) {
-      current_pars.cols(
+      pars_new.cols(
         n_pi + n_A + n_Bc(c), n_pi + n_A + n_Bc(c + 1) - 1
       ) = arma::vectorise(model.eta_B(c)).t();
     }
     
-    penalty_term = 0.5 * lambda * arma::dot(current_pars, current_pars);
+    penalty_term = 0.5 * lambda * arma::dot(pars_new, pars_new);
     ll_new -= penalty_term;
+    ll_new /= model.n_obs;
     
     relative_change = (ll_new - ll) / (std::abs(ll) + 1e-8);
-    absolute_change = (ll_new - ll) / model.n_obs;
-    absolute_x_change = arma::max(arma::abs(current_pars - previous_pars));
-    relative_x_change = arma::norm(current_pars - previous_pars, 1) / arma::norm(current_pars, 1);
+    absolute_change = ll_new - ll;
+    absolute_x_change = arma::max(arma::abs(pars_new - pars));
+    relative_x_change = arma::norm(pars_new - pars, 1) / arma::norm(pars, 1);
     if (print_level > 0) {
       Rcpp::Rcout<<"Iteration: "<<iter<<std::endl;
-      Rcpp::Rcout<<"           "<<"log-likelihood: "<<ll_new<<std::endl;
-      Rcpp::Rcout<<"           "<<"relative change of log-likelihood: "<<relative_change<<std::endl;
-      Rcpp::Rcout<<"           "<<"absolute change of scaled log-likelihood: "<<absolute_change<<std::endl;
-      Rcpp::Rcout<<"           "<<"relative change of parameters: "<<relative_x_change<<std::endl;
-      Rcpp::Rcout<<"           "<<"maximum absolute change of parameters: "<<absolute_x_change<<std::endl;
+      Rcpp::Rcout<<"           "<<"Scaled log-likelihood: "<<ll_new<<std::endl;
+      Rcpp::Rcout<<"           "<<"Relative change of log-likelihood: "<<relative_change<<std::endl;
+      Rcpp::Rcout<<"           "<<"Absolute change of scaled log-likelihood: "<<absolute_change<<std::endl;
+      Rcpp::Rcout<<"           "<<"Relative change of parameters: "<<relative_x_change<<std::endl;
+      Rcpp::Rcout<<"           "<<"Maximum absolute change of parameters: "<<absolute_x_change<<std::endl;
       if (print_level > 1) {
-        Rcpp::Rcout << "current parameter values"<< std::endl;
-        Rcpp::Rcout<<current_pars<<std::endl;
+        Rcpp::Rcout << "Current parameter values"<< std::endl;
+        Rcpp::Rcout<<pars_new<<std::endl;
       }
     }
     ll = ll_new;
-    previous_pars = current_pars;
+    pars = pars_new;
   }
   
   return Rcpp::List::create(
     Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
     Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
     Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
-    Rcpp::Named("penalized_logLik") = ll,
-    Rcpp::Named("penalty_term") = penalty_term,
-    Rcpp::Named("logLik") = ll + penalty_term,
+    Rcpp::Named("penalized_logLik") = ll * model.n_obs,
+    Rcpp::Named("penalty_term") = penalty_term * model.n_obs,
+    Rcpp::Named("logLik") = (ll + penalty_term) * model.n_obs,
     Rcpp::Named("iterations") = iter,
     Rcpp::Named("relative_f_change") = relative_change,
     Rcpp::Named("absolute_f_change") = absolute_change,
