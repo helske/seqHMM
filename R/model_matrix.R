@@ -152,8 +152,8 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     X[, cols] <- X_scaled
     X_mean <- attr(X_scaled, "scaled:center")
     X_sd <- attr(X_scaled, "scaled:scale")
-    
-    missing_values <- which(!complete.cases(X))
+    complete <- complete.cases(X)
+    missing_values <- which(!complete)
     if (length(missing_values) > 0) {
       ends <- sequence_lengths[match(data[[id]], unique(data[[id]]))]
       stopifnot_(
@@ -173,6 +173,8 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
         )
       )
     }
+    
+    if (check) .check_identifiability(X[complete, ], "transition")
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
     n_pars <- n_states * (n_states - 1L) * dim(X)[3]
     iv <- iv_X(X)
@@ -181,7 +183,6 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     missing_values <- which(is.na(X))
     # Replace NAs in void cases with zero
     X[is.na(X)] <- 0
-    if (check) .check_identifiability(X, "transition")
   }
   attr(X, "X_mean") <- X_mean
   attr(X, "X_sd") <- X_sd
@@ -225,7 +226,8 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     X_mean <- attr(X_scaled, "scaled:center")
     X_sd <- attr(X_scaled, "scaled:scale")
     
-    missing_values <- which(!complete.cases(X))
+    complete <- complete.cases(X)
+    missing_values <- which(!complete)
     if (length(missing_values) > 0) {
       ends <- sequence_lengths[match(data[[id]], unique(data[[id]]))]
       stopifnot_(
@@ -247,7 +249,7 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
         )
       )
     }
-    
+    if (check) .check_identifiability(X[complete, ], "emission")
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
     n_pars <- sum(n_states * (n_symbols - 1L) * dim(X)[3])
     iv <- iv_X(X)
@@ -256,7 +258,6 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     missing_values <- which(is.na(X))
     # Replace NAs in void cases with zero
     X[is.na(X)] <- 0
-    if (check) .check_identifiability(X, "emission")
   }
   attr(X, "X_mean") <- X_mean
   attr(X, "X_sd") <- X_sd
