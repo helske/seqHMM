@@ -20,6 +20,12 @@ void internalForward(
     arma::mat& scales, arma::uword threads
 );
 
+void internalForward(
+    const arma::mat& transition_t, const arma::cube& emission,
+    const arma::mat& init, const arma::ucube& obs, arma::cube& alpha, 
+    arma::mat& scales, arma::uword threads
+);
+
 void internalBackward(
     const arma::mat& transition, const arma::cube& emission,
     const arma::ucube& obs, arma::cube& beta, const arma::mat& scales, 
