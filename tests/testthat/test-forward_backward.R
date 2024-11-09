@@ -39,7 +39,7 @@ test_that("'forward_backward' works for multichannel 'nhmm'", {
       hmm_biofam$observations, n_states = 5,
       inits = hmm_biofam[
         c("initial_probs", "transition_probs", "emission_probs")
-      ], maxeval = 1, lambda = 1
+      ], maxeval = 1
     ),
     NA
   )

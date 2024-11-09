@@ -294,7 +294,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
       model$etas$B[] <- out$eta_B
       model$gammas$B <- eta_to_gamma_cube(model$etas$B)
     } else {
-      for (i in seq_len(C)) model$etas_B[[i]] <- out$eta_B[[i]]
+      for (i in seq_len(C)) model$etas$B[[i]] <- out$eta_B[[i]]
       model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
     }
     

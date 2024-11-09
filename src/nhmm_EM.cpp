@@ -276,7 +276,7 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
           }
         }
       }
-      eta_B.slice(s).col(0) = Qm.t() * tmp;
+      eta_B.slice(s).col(0) = Qm.t() * log(tmp);
     }
     return;
   }
@@ -396,7 +396,7 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
             }
           }
         }
-        eta_B(c).slice(s).col(0) = Qm(c).t() * tmp;
+        eta_B(c).slice(s).col(0) = Qm(c).t() * log(tmp);
       }
     }
     return;
