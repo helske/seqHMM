@@ -56,7 +56,7 @@
 #' @param method Optimization method used. Default is `"EM"` which uses EM
 #' algorithm with L-BFGS in the M-step. Another option is `"DNM"` which uses 
 #' direct maximization of the log-likelihood using [nloptr::nloptr()].
-#' @param pseudocount. A positive scalar to be added for the expected counts of 
+#' @param pseudocount A positive scalar to be added for the expected counts of 
 #' E-step. Only used in EM algorithm. Default is 0. Larger values can be used 
 #' to avoid zero probabilities in initial, transition, and emission 
 #' probabilities, i.e. these have similar role as `lambda`.

@@ -93,6 +93,11 @@ the number of non-missing observations.}
 algorithm with L-BFGS in the M-step. Another option is \code{"DNM"} which uses
 direct maximization of the log-likelihood using \code{\link[nloptr:nloptr]{nloptr::nloptr()}}.}
 
+\item{pseudocount}{A positive scalar to be added for the expected counts of
+E-step. Only used in EM algorithm. Default is 0. Larger values can be used
+to avoid zero probabilities in initial, transition, and emission
+probabilities, i.e. these have similar role as \code{lambda}.}
+
 \item{store_data}{If \code{TRUE} (default), original data frame passed as \code{data}
 is stored to the model object. For large datasets, this can be set to
 \code{FALSE}, in which case you might need to pass the data separately to some
