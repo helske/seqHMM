@@ -12,7 +12,7 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
   mstep_iter++;
   
   double value = 0;
- 
+  
   eta_pi = arma::mat(x.memptr(), S - 1, K_pi);
   gamma_pi = sum_to_zero(eta_pi, Qs);
   arma::mat tmpgrad(S, K_pi, arma::fill::zeros);
@@ -602,7 +602,17 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     if (model.mstep_error_code != 0) {
       return Rcpp::List::create(
         Rcpp::Named("return_code") = model.mstep_error_code,
-        Rcpp::Named("penalized_logLik") = arma::datum::nan
+        Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
+        Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
+        Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
+        Rcpp::Named("penalized_logLik") = arma::datum::nan,
+        Rcpp::Named("penalty_term") = arma::datum::nan,
+        Rcpp::Named("logLik") = arma::datum::nan,
+        Rcpp::Named("iterations") = iter,
+        Rcpp::Named("relative_f_change") = relative_change,
+        Rcpp::Named("absolute_f_change") = absolute_change,
+        Rcpp::Named("absolute_x_change") = absolute_x_change,
+        Rcpp::Named("relative_x_change") = relative_x_change
       );
     }
     model.mstep_A(
@@ -611,7 +621,17 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     if (model.mstep_error_code != 0) {
       return Rcpp::List::create(
         Rcpp::Named("return_code") = model.mstep_error_code,
-        Rcpp::Named("penalized_logLik") = arma::datum::nan
+        Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
+        Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
+        Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
+        Rcpp::Named("penalized_logLik") = arma::datum::nan,
+        Rcpp::Named("penalty_term") = arma::datum::nan,
+        Rcpp::Named("logLik") = arma::datum::nan,
+        Rcpp::Named("iterations") = iter,
+        Rcpp::Named("relative_f_change") = relative_change,
+        Rcpp::Named("absolute_f_change") = absolute_change,
+        Rcpp::Named("absolute_x_change") = absolute_x_change,
+        Rcpp::Named("relative_x_change") = relative_x_change
       );
     }
     model.mstep_B(
@@ -620,7 +640,17 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     if (model.mstep_error_code != 0) {
       return Rcpp::List::create(
         Rcpp::Named("return_code") = model.mstep_error_code,
-        Rcpp::Named("penalized_logLik") = arma::datum::nan
+        Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
+        Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
+        Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
+        Rcpp::Named("penalized_logLik") = arma::datum::nan,
+        Rcpp::Named("penalty_term") = arma::datum::nan,
+        Rcpp::Named("logLik") = arma::datum::nan,
+        Rcpp::Named("iterations") = iter,
+        Rcpp::Named("relative_f_change") = relative_change,
+        Rcpp::Named("absolute_f_change") = absolute_change,
+        Rcpp::Named("absolute_x_change") = absolute_x_change,
+        Rcpp::Named("relative_x_change") = relative_x_change
       );
     }
     // Update model
@@ -795,7 +825,17 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     if (model.mstep_error_code != 0) {
       return Rcpp::List::create(
         Rcpp::Named("return_code") = model.mstep_error_code,
-        Rcpp::Named("penalized_logLik") = arma::datum::nan
+        Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
+        Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
+        Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
+        Rcpp::Named("penalized_logLik") = arma::datum::nan,
+        Rcpp::Named("penalty_term") = arma::datum::nan,
+        Rcpp::Named("logLik") = arma::datum::nan,
+        Rcpp::Named("iterations") = iter,
+        Rcpp::Named("relative_f_change") = relative_change,
+        Rcpp::Named("absolute_f_change") = absolute_change,
+        Rcpp::Named("absolute_x_change") = absolute_x_change,
+        Rcpp::Named("relative_x_change") = relative_x_change
       );
     }
     model.mstep_A(
@@ -804,7 +844,17 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     if (model.mstep_error_code != 0) {
       return Rcpp::List::create(
         Rcpp::Named("return_code") = model.mstep_error_code,
-        Rcpp::Named("penalized_logLik") = arma::datum::nan
+        Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
+        Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
+        Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
+        Rcpp::Named("penalized_logLik") = arma::datum::nan,
+        Rcpp::Named("penalty_term") = arma::datum::nan,
+        Rcpp::Named("logLik") = arma::datum::nan,
+        Rcpp::Named("iterations") = iter,
+        Rcpp::Named("relative_f_change") = relative_change,
+        Rcpp::Named("absolute_f_change") = absolute_change,
+        Rcpp::Named("absolute_x_change") = absolute_x_change,
+        Rcpp::Named("relative_x_change") = relative_x_change
       );
     }
     model.mstep_B(
@@ -813,7 +863,17 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     if (model.mstep_error_code != 0) {
       return Rcpp::List::create(
         Rcpp::Named("return_code") = model.mstep_error_code,
-        Rcpp::Named("penalized_logLik") = arma::datum::nan
+        Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
+        Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
+        Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
+        Rcpp::Named("penalized_logLik") = arma::datum::nan,
+        Rcpp::Named("penalty_term") = arma::datum::nan,
+        Rcpp::Named("logLik") = arma::datum::nan,
+        Rcpp::Named("iterations") = iter,
+        Rcpp::Named("relative_f_change") = relative_change,
+        Rcpp::Named("absolute_f_change") = absolute_change,
+        Rcpp::Named("absolute_x_change") = absolute_x_change,
+        Rcpp::Named("relative_x_change") = relative_x_change
       );
     }
     // Update model
