@@ -46,6 +46,10 @@ struct mnhmm_base {
   arma::cube log_py;
   arma::uword n_obs;
   double lambda;
+  
+  int mstep_iter;
+  int mstep_error_code;
+  
   mnhmm_base(
     const arma::uword S_,
     const arma::uword D_,
@@ -65,7 +69,9 @@ struct mnhmm_base {
     arma::mat& eta_omega_,
     arma::field<arma::mat>& eta_pi_,
     arma::field<arma::cube>& eta_A_,
-    const double lambda = 0)
+    const double lambda = 0,
+    int imstep_ter = 0,
+    int mstep_error_code = 0)
     : S(S_),
       D(D_), 
       X_omega(X_d_),

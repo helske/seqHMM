@@ -23,7 +23,7 @@ estimate_mnhmm(
   restarts = 0L,
   lambda = 0,
   method = "EM",
-  pseudocount = 0,
+  pseudocount = 1e-04,
   store_data = TRUE,
   ...
 )
@@ -94,7 +94,7 @@ algorithm with L-BFGS in the M-step. Another option is \code{"DNM"} which uses
 direct maximization of the log-likelihood using \code{\link[nloptr:nloptr]{nloptr::nloptr()}}.}
 
 \item{pseudocount}{A positive scalar to be added for the expected counts of
-E-step. Only used in EM algorithm. Default is 0. Larger values can be used
+E-step. Only used in EM algorithm. Default is 1e-4. Larger values can be used
 to avoid zero probabilities in initial, transition, and emission
 probabilities, i.e. these have similar role as \code{lambda}.}
 

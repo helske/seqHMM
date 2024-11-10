@@ -57,7 +57,7 @@
 #' algorithm with L-BFGS in the M-step. Another option is `"DNM"` which uses 
 #' direct maximization of the log-likelihood using [nloptr::nloptr()].
 #' @param pseudocount A positive scalar to be added for the expected counts of 
-#' E-step. Only used in EM algorithm. Default is 0. Larger values can be used 
+#' E-step. Only used in EM algorithm. Default is 1e-4. Larger values can be used 
 #' to avoid zero probabilities in initial, transition, and emission 
 #' probabilities, i.e. these have similar role as `lambda`.
 #' @param store_data If `TRUE` (default), original data frame passed as `data` 
@@ -92,7 +92,7 @@ estimate_nhmm <- function(
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, channel_names = NULL, 
     inits = "random", init_sd = 2, restarts = 0L, lambda = 0, method = "EM",
-    pseudocount = 0, store_data = TRUE, ...) {
+    pseudocount = 1e-4, store_data = TRUE, ...) {
   
   call <- match.call()
   

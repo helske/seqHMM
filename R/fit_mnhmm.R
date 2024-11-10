@@ -2,7 +2,7 @@
 #'
 #' @noRd
 fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method, 
-                      pseudocount = 0, save_all_solutions = FALSE, 
+                      pseudocount, save_all_solutions = FALSE, 
                       control_restart = list(), control_mstep = list(), ...) {
   stopifnot_(
     checkmate::test_int(x = restarts, lower = 0L), 
@@ -215,6 +215,11 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
     logliks <- -unlist(lapply(out, "[[", "objective")) * n_obs
     return_codes <- unlist(lapply(out, "[[", "status"))
     successful <- which(return_codes > 0)
+    stopifnot_(
+      length(successful) > 0,
+      c("All optimizations terminated due to error.",
+        "Error of first restart: ", error_msg(return_codes[1]))
+    ) 
     optimum <- successful[which.max(logliks[successful])]
     init <- out[[optimum]]$solution
     if (save_all_solutions) {
@@ -230,9 +235,10 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
     opts = control
   )
   end_time <- proc.time()
-  if (out$status < 0) {
-    warning_(paste("Optimization terminated due to error:", out$message))
-  }
+  stopifnot_(
+    out$status >= 0,
+    paste("Optimization terminated due to error:", error_msg(out$status))
+  )
   pars <- out$solution
   model$etas$pi <- create_eta_pi_mnhmm(
     pars[seq_len(n_i)], S, K_pi, D

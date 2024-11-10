@@ -141,3 +141,43 @@ create_emissionArray <- function(model) {
   }
   emissionArray
 }
+#' Convert error message to text
+#' @noRd
+error_msg <- function(error) {
+  gamma <- dplyr::case_when(
+    error %in% c(-(1:4)) ~ "",
+    error %in% c(1, -(101:104)) ~ "gamma_pi",
+    error %in% c(2, -(201:204)) ~ "gamma_A",
+    error == 3 | error %in% -301:-304 ~ "gamma_B"
+  )
+  
+  nonfinite_msg <- paste0(
+    "Error: Some of the values in ", gamma, " are nonfinite, likely due to ",
+    "zero expected counts. Try increasing the penalty lambda or ",
+    "pseudocounts to avoid extreme probabilities.")
+  if (!(error %in% -(1:4))) {
+    mstep <- paste0("Error in M-step of ", gamma, ". ")
+  } else {
+    mstep <- ""
+  }
+  
+  e <- seq(0, 300, by = 100)
+  msg <- dplyr::case_when(
+    error %in% 1:3 ~ nonfinite_msg,
+    error %in% (-1 - e) ~ paste0(
+      mstep, "NLOPT_FAILURE: Generic failure code."
+    ),
+    error %in% (-2 - e) ~ paste0(
+      mstep, "NLOPT_INVALID_ARGS: Invalid arguments (e.g., lower bounds are ",
+      "bigger than upper bounds, an unknown algorithm was specified)."
+    ),
+    error %in% (-3 - e) ~ paste0(
+      mstep, "NLOPT_OUT_OF_MEMORY: Ran out of memory."
+    ),
+    error %in% (-4 - e) ~ paste0(
+      mstep, 
+      "NLOPT_ROUNDOFF_LIMITED: Halted because roundoff errors limited progress."
+    )
+  )
+  msg
+}

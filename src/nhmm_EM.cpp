@@ -8,13 +8,11 @@
 #include "sum_to_zero.h"
 #include <nloptrAPI.h>
 
-static int iter;
-
 double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
-  iter++;
+  mstep_iter++;
   
   double value = 0;
-  
+ 
   eta_pi = arma::mat(x.memptr(), S - 1, K_pi);
   gamma_pi = sum_to_zero(eta_pi, Qs);
   arma::mat tmpgrad(S, K_pi, arma::fill::zeros);
@@ -23,6 +21,7 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
     if (!icpt_only_pi || i == 0) {
       update_pi(i);
     }
+    double sum_epi = sum(E_Pi.col(i)); // this is != 1 if pseudocounts are used
     double val = arma::dot(E_Pi.col(i), log_Pi);
     if (!std::isfinite(val)) {
       if (!grad.is_empty()) {
@@ -33,7 +32,7 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
     value -= val;
     // Only update grad if it's non-empty (i.e., for gradient-based optimization)
     if (!grad.is_empty()) {
-      tmpgrad -= (E_Pi.col(i) - Pi) * X_pi.col(i).t();
+      tmpgrad -= sum_epi * (E_Pi.col(i) / sum_epi - Pi) * X_pi.col(i).t();
       if (!tmpgrad.is_finite()) {
         grad.fill(std::numeric_limits<double>::max());
         return std::numeric_limits<double>::max();
@@ -50,17 +49,19 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
                          const double xtol_rel, const double ftol_rel, 
                          const arma::uword maxeval, 
                          const arma::uword print_level) {
-  
+  mstep_error_code = 0;
   // Use closed form solution
   if (icpt_only_pi && lambda < 1e-12) {
     eta_pi = Qs.t() * log(arma::sum(E_Pi, 1));
     if (!eta_pi.is_finite()) {
-      Rcpp::stop(
-        "Some of the values in gamma_pi are nonfinite likely due to zero "
-        "expected initial state counts.\n" 
-        "Try increasing the penalty lambda or adding pseudocounts "
-        "to avoid extreme probabilities."
-      );
+      mstep_error_code = 1;
+      return;
+      // Rcpp::stop(
+      //   "Some of the values in gamma_pi are nonfinite likely due to zero "
+      //   "expected initial state counts.\n" 
+      //   "Try increasing the penalty lambda or adding pseudocounts "
+      //   "to avoid extreme probabilities."
+      // );
     }
     return;
   }
@@ -87,25 +88,28 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
   nlopt_set_ftol_rel(opt_pi, ftol_rel);
   nlopt_set_maxeval(opt_pi, maxeval);
   double minf;
-  iter = 0;
+  mstep_iter = 0;
   int status = nlopt_optimize(opt_pi, x_pi.memptr(), &minf);
   if (print_level > 0 && status > 0) {
     Rcpp::Rcout<<"M-step of initial probabilities ended with status "<<status<<
-      " after "<<iter<<" iterations."<<std::endl;
+      " after "<<mstep_iter<<" iterations."<<std::endl;
   }
   if (status < 0) {
-    Rcpp::stop(
-      "M-step of initial state probabilities errored with error code %i.\n"
-      "Try increasing the penalty lambda or adding pseudocounts "
-      "to avoid extreme probabilities.", status
-    );
+    mstep_error_code = status - 100;
+    nlopt_destroy(opt_pi);
+    return;
+    // Rcpp::stop(
+    //   "M-step of initial state probabilities errored with error code %i.\n"
+    //   "Try increasing the penalty lambda or adding pseudocounts "
+    //   "to avoid extreme probabilities.", status
+    // );
   }
   eta_pi = arma::mat(x_pi.memptr(), S - 1, K_pi);
   nlopt_destroy(opt_pi);
 }
 
 double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
-  iter++;
+  mstep_iter++;
   double value = 0;
   
   arma::mat eta_Arow = arma::mat(x.memptr(), S - 1, K_A);
@@ -161,6 +165,8 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
                         const double xtol_abs, const double xtol_rel, 
                         const arma::uword maxeval, 
                         const arma::uword print_level) {
+  mstep_error_code = 0;
+  
   // Use closed form solution
   if (icpt_only_A && lambda < 1e-12) {
     arma::vec tmp(S);
@@ -170,12 +176,14 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
       }
       eta_A.slice(s).col(0) = Qs.t() * log(tmp);
       if (!eta_A.slice(s).col(0).is_finite()) {
-        Rcpp::stop(
-          "Some of the values in gamma_A are nonfinite likely due to zero "
-          "expected transition counts.\n" 
-          "Try increasing the penalty lambda or adding pseudocounts "
-          "to avoid extreme probabilities."
-        );
+        mstep_error_code = 2;
+        return;
+        // Rcpp::stop(
+        //   "Some of the values in gamma_A are nonfinite likely due to zero "
+        //   "expected transition counts.\n" 
+        //   "Try increasing the penalty lambda or adding pseudocounts "
+        //   "to avoid extreme probabilities."
+        // );
       }
     }
     return;
@@ -208,19 +216,22 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
   for (arma::uword s = 0; s < S; s++) {
     current_s = s;
     x_A = arma::vectorise(eta_A.slice(s));
-    iter = 0;
+    mstep_iter = 0;
     status = nlopt_optimize(opt_A, x_A.memptr(), &minf);
     if (print_level > 0 && status > 0) {
       Rcpp::Rcout<<"M-step of transition probabilities of state "<<s + 1<<
-        " ended with status "<<status<<" after "<<iter<<
+        " ended with status "<<status<<" after "<<mstep_iter<<
           " iterations."<<std::endl;
     }
     if (status < 0) {
-      Rcpp::stop(
-        "M-step of transition probabilities errored with error code %i.\n"
-        "Try increasing the penalty lambda or adding pseudocounts "
-        "to avoid extreme probabilities.", status
-      );
+      mstep_error_code = status - 200;
+      nlopt_destroy(opt_A);
+      return;
+      // Rcpp::stop(
+      //   "M-step of transition probabilities errored with error code %i.\n"
+      //   "Try increasing the penalty lambda or adding pseudocounts "
+      //   "to avoid extreme probabilities.", status
+      // );
     }
     eta_A.slice(s) = arma::mat(x_A.memptr(), S - 1, K_A);
   }
@@ -228,7 +239,7 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
 }
 
 double nhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
-  iter++;
+  mstep_iter++;
   double value = 0;
   arma::mat eta_Brow = arma::mat(x.memptr(), M - 1, K_B);
   arma::mat gamma_Brow = sum_to_zero(eta_Brow, Qm);
@@ -285,6 +296,7 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
                       const double xtol_abs, const double xtol_rel, 
                       const arma::uword maxeval, 
                       const arma::uword print_level) {
+  mstep_error_code = 0;
   // use closed form solution
   if (icpt_only_B && lambda < 1e-12) {
     arma::vec tmp(M);
@@ -299,12 +311,14 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
       }
       eta_B.slice(s).col(0) = Qm.t() * log(tmp);
       if (!eta_B.slice(s).col(0).is_finite()) {
-        Rcpp::stop(
-          "Some of the values in gamma_B are nonfinite likely due to zero "
-          "expected emission counts.\n" 
-          "Try increasing the penalty lambda or adding pseudocounts "
-          "to avoid extreme probabilities."
-        );
+        mstep_error_code = 3;
+        return;
+        // Rcpp::stop(
+        //   "Some of the values in gamma_B are nonfinite likely due to zero "
+        //   "expected emission counts.\n" 
+        //   "Try increasing the penalty lambda or adding pseudocounts "
+        //   "to avoid extreme probabilities."
+        // );
       }
     }
     return;
@@ -334,19 +348,22 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
   for (arma::uword s = 0; s < S; s++) {
     current_s = s;
     x_B = arma::vectorise(eta_B.slice(s));
-    iter = 0;
+    mstep_iter = 0;
     status = nlopt_optimize(opt_B, x_B.memptr(), &minf);
     if (print_level > 0 && status > 0) {
       Rcpp::Rcout<<"M-step of emission probabilities of state "<<s + 1<<
-        " ended with status "<<status<<" after "<<iter<<
+        " ended with status "<<status<<" after "<<mstep_iter<<
           " iterations."<<std::endl;
     }
     if (status < 0) {
-      Rcpp::stop(
-        "M-step of emission probabilities errored with error code %i.\n"
-        "Try increasing the penalty lambda or adding pseudocounts "
-        "to avoid extreme probabilities.", status
-      );
+      mstep_error_code = status - 300;
+      nlopt_destroy(opt_B);
+      return;
+      // Rcpp::stop(
+      //   "M-step of emission probabilities errored with error code %i.\n"
+      //   "Try increasing the penalty lambda or adding pseudocounts "
+      //   "to avoid extreme probabilities.", status
+      // );
     }
     eta_B.slice(s) = arma::mat(x_B.memptr(), M - 1, K_B);
   }
@@ -354,7 +371,7 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
 }
 
 double nhmm_mc::objective_B(const arma::vec& x, arma::vec& grad) {
-  iter++;
+  mstep_iter++;
   double value = 0;
   arma::uword Mc = M(current_c);
   arma::mat eta_Brow = arma::mat(x.memptr(), Mc - 1, K_B);
@@ -414,6 +431,7 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
                       const double xtol_abs, const double xtol_rel, 
                       const arma::uword maxeval, 
                       const arma::uword print_level) {
+  mstep_error_code = 0;
   // use closed form solution
   if (icpt_only_B && lambda < 1e-12) {
     for (arma::uword c = 0; c < C; c++) {
@@ -429,12 +447,14 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
         }
         eta_B(c).slice(s).col(0) = Qm(c).t() * log(tmp);
         if (!eta_B(c).slice(s).col(0).is_finite()) {
-          Rcpp::stop(
-            "Some of the values in gamma_B are nonfinite likely due to zero "
-            "expected emission counts.\n" 
-            "Try increasing the penalty lambda or adding pseudocounts "
-            "to avoid extreme probabilities."
-          );
+          mstep_error_code = 3;
+          return;
+          // Rcpp::stop(
+          //   "Some of the values in gamma_B are nonfinite likely due to zero "
+          //   "expected emission counts.\n" 
+          //   "Try increasing the penalty lambda or adding pseudocounts "
+          //   "to avoid extreme probabilities."
+          // );
         }
       }
     }
@@ -466,19 +486,22 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
     for (arma::uword s = 0; s < S; s++) {
       current_s = s;
       x_B = arma::vectorise(eta_B(c).slice(s));
-      iter = 0;
+      mstep_iter = 0;
       status = nlopt_optimize(opt_B, x_B.memptr(), &minf);
       if (print_level > 0 && status > 0) {
         Rcpp::Rcout<<"M-step of emission probabilities of state "<<s + 1<<
-          " and channel "<<c<<" ended with status "<<status<<" after "<<iter<<
+          " and channel "<<c<<" ended with status "<<status<<" after "<<mstep_iter<<
             " iterations."<<std::endl;
       }
       if (status < 0) {
-        Rcpp::stop(
-          "M-step of emission probabilities errored with error code %i.\n"
-          "Try increasing the penalty lambda or adding pseudocounts "
-          "to avoid extreme probabilities.", status
-        );
+        mstep_error_code = status - 300;
+        nlopt_destroy(opt_B);
+        return;
+        // Rcpp::stop(
+        //   "M-step of emission probabilities errored with error code %i.\n"
+        //   "Try increasing the penalty lambda or adding pseudocounts "
+        //   "to avoid extreme probabilities.", status
+        // );
       }
       eta_B(c).slice(s) = arma::mat(x_B.memptr(), M(c) - 1, K_B);
     }
@@ -576,12 +599,30 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     model.mstep_pi(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
+    if (model.mstep_error_code != 0) {
+      return Rcpp::List::create(
+        Rcpp::Named("return_code") = model.mstep_error_code,
+        Rcpp::Named("penalized_logLik") = arma::datum::nan
+      );
+    }
     model.mstep_A(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
+    if (model.mstep_error_code != 0) {
+      return Rcpp::List::create(
+        Rcpp::Named("return_code") = model.mstep_error_code,
+        Rcpp::Named("penalized_logLik") = arma::datum::nan
+      );
+    }
     model.mstep_B(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
+    if (model.mstep_error_code != 0) {
+      return Rcpp::List::create(
+        Rcpp::Named("return_code") = model.mstep_error_code,
+        Rcpp::Named("penalized_logLik") = arma::datum::nan
+      );
+    }
     // Update model
     model.update_gamma_pi();
     model.update_gamma_A();
@@ -643,6 +684,7 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
   }
   
   return Rcpp::List::create(
+    Rcpp::Named("return_code") = 0,
     Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
     Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
     Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
@@ -750,13 +792,30 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     model.mstep_pi(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
+    if (model.mstep_error_code != 0) {
+      return Rcpp::List::create(
+        Rcpp::Named("return_code") = model.mstep_error_code,
+        Rcpp::Named("penalized_logLik") = arma::datum::nan
+      );
+    }
     model.mstep_A(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
+    if (model.mstep_error_code != 0) {
+      return Rcpp::List::create(
+        Rcpp::Named("return_code") = model.mstep_error_code,
+        Rcpp::Named("penalized_logLik") = arma::datum::nan
+      );
+    }
     model.mstep_B(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
-    
+    if (model.mstep_error_code != 0) {
+      return Rcpp::List::create(
+        Rcpp::Named("return_code") = model.mstep_error_code,
+        Rcpp::Named("penalized_logLik") = arma::datum::nan
+      );
+    }
     // Update model
     model.update_gamma_pi();
     model.update_gamma_A();
@@ -821,6 +880,7 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
   }
   
   return Rcpp::List::create(
+    Rcpp::Named("return_code") = 0,
     Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
     Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
     Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),

@@ -7,6 +7,7 @@
 #include "softmax.h"
 
 struct nhmm_base {
+ 
   const arma::uword S;
   const arma::mat& X_pi;
   const arma::cube& X_A;
@@ -42,6 +43,9 @@ struct nhmm_base {
   arma::uword n_obs;
   double lambda;
   
+  int mstep_iter;
+  int mstep_error_code;
+  
   nhmm_base(
     const arma::uword S_,
     const arma::mat& X_pi_,
@@ -57,7 +61,9 @@ struct nhmm_base {
     const bool tv_B_,
     arma::mat& eta_pi_,
     arma::cube& eta_A_,
-    const double lambda = 0)
+    const double lambda = 0,
+    int mstep_iter = 0,
+    int mstep_error_code = 0)
     : S(S_), 
       X_pi(X_pi_),
       X_A(X_s_),

@@ -1,7 +1,7 @@
 #' Estimate a Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocount = 0,
+fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocount,
                      save_all_solutions = FALSE, control_restart = list(), 
                      control_mstep = list(), ...) {
   
@@ -167,6 +167,11 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
       logliks <- -unlist(lapply(out, "[[", "objective")) * n_obs
       return_codes <- unlist(lapply(out, "[[", "status"))
       successful <- which(return_codes > 0)
+      stopifnot_(
+        length(successful) > 0,
+        c("All optimizations terminated due to error.",
+          "Error of first restart: ", error_msg(return_codes[1]))
+      ) 
       optimum <- successful[which.max(logliks[successful])]
       init <- out[[optimum]]$solution
       if (save_all_solutions) {
@@ -183,9 +188,11 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
       opts = control
     )
     end_time <- proc.time()
-    if (out$status < 0) {
-      warning_(paste("Optimization terminated due to error:", out$message))
-    }
+    stopifnot_(
+      out$status >= 0,
+      paste("Optimization terminated due to error:", error_msg(out$status))
+    )
+    
     pars <- out$solution
     model$etas$pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
     model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
@@ -247,7 +254,12 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
         }
       },
       future.seed = TRUE)
-      
+      return_codes <- unlist(lapply(out, "[[", "return_code"))
+      stopifnot_(
+        any(return_codes == 0),
+        c("All optimizations terminated due to error.",
+        "Error of first restart: ", error_msg(return_codes[1]))
+      ) 
       logliks <- unlist(lapply(out, "[[", "penalized_logLik")) * n_obs
       optimum <- out[[which.max(logliks)]]
       init <- stats::setNames(
@@ -285,9 +297,10 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
         control_mstep$print_level, lambda, pseudocount)
     }
     end_time <- proc.time()
-    # if (out$status < 0) {
-    #   warning_(paste("Optimization terminated due to error:", out$message))
-    # }
+    stopifnot_(
+      out$return_code == 0,
+      paste("Optimization terminated due to error:", error_msg(out$return_code))
+    )
     
     model$etas$pi[] <- out$eta_pi
     model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
@@ -305,7 +318,9 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
       loglik = out$penalized_logLik,
       penalty = out$penalty_term,
       iterations = out$iterations,
+      return_code = out$return_code,
       logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
+      return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
       all_solutions = all_solutions,
       time = end_time - start_time,
       f_rel_change = out$relative_f_change,

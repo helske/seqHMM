@@ -35,8 +35,7 @@ test_that("estimate_nhmm returns object of class 'nhmm'", {
   expect_error(
     fit <- estimate_nhmm(
       "y", s, initial_formula = ~ x, transition_formula = ~z,
-      emission_formula = ~ z, data = data, time = "time", id = "id",
-      lambda = 1),
+      emission_formula = ~ z, data = data, time = "time", id = "id"),
     NA
   )
   expect_s3_class(
