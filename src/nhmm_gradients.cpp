@@ -1,28 +1,28 @@
 #include "nhmm_gradients.h"
 
 void gradient_wrt_omega(
-    arma::mat& grad, arma::mat& tmpmat, const arma::mat& Q, 
+    arma::mat& grad, arma::mat& tmpmat, 
     const arma::vec& omega, 
     const arma::vec& loglik_i, const arma::vec& loglik, const arma::mat& X, 
     const arma::uword i) {
   
   tmpmat = -omega * omega.t();
   tmpmat.diag() += omega;
-  grad += Q.t() * tmpmat * exp(loglik_i - loglik(i)) * X.col(i).t();
+  grad += tmpmat * exp(loglik_i - loglik(i)) * X.col(i).t();
 }
 
 void gradient_wrt_pi(
-    arma::mat& grad, arma::mat& tmpmat, const arma::mat& Q,
+    arma::mat& grad, arma::mat& tmpmat, 
     const arma::mat& log_py, const arma::mat& log_beta, const double ll, 
     const arma::vec& Pi, const arma::mat& X, const arma::uword i) {
   
   tmpmat = -Pi * Pi.t();
   tmpmat.diag() += Pi;
-  grad += Q.t() * tmpmat * exp(log_py.col(0) + log_beta.col(0) - ll) * X.col(i).t();
+  grad += tmpmat * exp(log_py.col(0) + log_beta.col(0) - ll) * X.col(i).t();
 }
 
 void gradient_wrt_pi(
-    arma::mat& grad, arma::mat& tmpmat, const arma::mat& Q,
+    arma::mat& grad, arma::mat& tmpmat, 
     const arma::vec& log_omega, const arma::cube& log_py, 
     const arma::cube& log_beta, const arma::vec& loglik, 
     const arma::field<arma::vec>& Pi, const arma::mat& X, const arma::uword i,
@@ -30,12 +30,12 @@ void gradient_wrt_pi(
   
   tmpmat = -Pi(d) * Pi(d).t();
   tmpmat.diag() += Pi(d);
-  grad += Q.t() * tmpmat * exp(log_omega(d) + log_py.slice(d).col(0) + 
+  grad += tmpmat * exp(log_omega(d) + log_py.slice(d).col(0) + 
     log_beta.slice(d).col(0) - loglik(i)) * X.col(i).t();
 }
 
 void gradient_wrt_A(
-    arma::mat& grad, arma::mat& tmpmat, const arma::mat& Q,
+    arma::mat& grad, arma::mat& tmpmat,
     const arma::mat& log_py, const arma::mat& log_alpha, 
     const arma::mat& log_beta, const double ll, const arma::cube& A, 
     const arma::cube& X, const arma::uword i, const arma::uword t, 
@@ -43,11 +43,11 @@ void gradient_wrt_A(
   
   tmpmat = -A.slice(t).row(s).t() * A.slice(t).row(s);
   tmpmat.diag() += A.slice(t).row(s);
-  grad += Q.t() * tmpmat * exp(log_alpha(s, t) + log_py.col(t + 1) + 
+  grad += tmpmat * exp(log_alpha(s, t) + log_py.col(t + 1) + 
     log_beta.col(t + 1) - ll) * X.slice(i).col(t).t();
 }
 void gradient_wrt_A(
-    arma::mat& grad, arma::mat& tmpmat, const arma::mat& Q,
+    arma::mat& grad, arma::mat& tmpmat, 
     const arma::vec& log_omega, const arma::cube& log_py, 
     const arma::cube& log_alpha, const arma::cube& log_beta, 
     const arma::vec& loglik, const arma::field<arma::cube> A,
@@ -56,13 +56,13 @@ void gradient_wrt_A(
   
   tmpmat = -A(d).slice(t).row(s).t() * A(d).slice(t).row(s);
   tmpmat.diag() += A(d).slice(t).row(s);
-  grad += Q.t() * tmpmat * exp(log_omega(d) + log_alpha(s, t, d) + 
+  grad += tmpmat * exp(log_omega(d) + log_alpha(s, t, d) + 
     log_py.slice(d).col(t + 1) + log_beta.slice(d).col(t + 1) - 
     loglik(i)) * X.slice(i).col(t).t();
 }
 // NHMM singlechannel
 void gradient_wrt_B_t0(
-    arma::mat& grad, arma::vec& tmpvec, const arma::mat& Q,
+    arma::mat& grad, arma::vec& tmpvec, 
     const arma::umat& obs, const arma::vec& log_Pi, const arma::mat& log_beta, 
     const double ll, const arma::cube& B, const arma::cube& X, 
     const arma::uword i, const arma::uword s) {
@@ -72,10 +72,10 @@ void gradient_wrt_B_t0(
   double brow = Brow(idx);
   tmpvec = -Brow.t() * brow;
   tmpvec(idx) += brow;
-  grad += Q.t() * exp(log_Pi(s) + log_beta(s, 0) - ll) * tmpvec * X.slice(i).col(0).t();
+  grad += exp(log_Pi(s) + log_beta(s, 0) - ll) * tmpvec * X.slice(i).col(0).t();
 }
 void gradient_wrt_B(
-    arma::mat& grad, arma::vec& tmpvec, const arma::mat& Q,
+    arma::mat& grad, arma::vec& tmpvec, 
     const arma::umat& obs, const arma::mat& log_alpha, 
     const arma::mat& log_beta, const double ll, 
     const arma::cube& log_A, const arma::cube& B, const arma::cube& X, 
@@ -86,12 +86,12 @@ void gradient_wrt_B(
   double brow = Brow(idx);
   tmpvec = -Brow.t() * brow;
   tmpvec(idx) += brow;
-  grad += Q.t() * arma::accu(exp(log_alpha.col(t) + log_A.slice(t).col(s) + 
+  grad += arma::accu(exp(log_alpha.col(t) + log_A.slice(t).col(s) + 
     log_beta(s, t + 1) - ll)) * tmpvec * X.slice(i).col(t + 1).t();
 }
 // NHMM multichannel
 void gradient_wrt_B_t0(
-    arma::mat& grad, arma::vec& tmpvec, const arma::mat& Q,
+    arma::mat& grad, arma::vec& tmpvec, 
     const arma::ucube& obs, const arma::vec& log_Pi, const arma::mat& log_beta, 
     const double ll, const arma::field<arma::cube>& log_B, 
     const arma::field<arma::cube>& B, const arma::cube& X, 
@@ -110,11 +110,11 @@ void gradient_wrt_B_t0(
       logpy += log_B(cc)(s, obs(cc, 0, i), 0);
     }
   }
-  grad += Q.t() * exp(log_Pi(s) + logpy + log_beta(s, 0) - ll) * tmpvec * 
+  grad += exp(log_Pi(s) + logpy + log_beta(s, 0) - ll) * tmpvec * 
     X.slice(i).col(0).t();
 }
 void gradient_wrt_B(
-    arma::mat& grad, arma::vec& tmpvec, const arma::mat& Q,
+    arma::mat& grad, arma::vec& tmpvec, 
     const arma::ucube& obs, const arma::mat& log_alpha, 
     const arma::mat& log_beta, const double ll, const arma::cube& log_A, 
     const arma::field<arma::cube>& log_B, const arma::field<arma::cube>& B, 
@@ -133,12 +133,12 @@ void gradient_wrt_B(
       logpy += log_B(cc)(s, obs(cc, t + 1, i), t + 1);
     }
   }
-  grad += Q.t() * arma::accu(exp(log_alpha.col(t) + log_A.slice(t).col(s) + 
+  grad += arma::accu(exp(log_alpha.col(t) + log_A.slice(t).col(s) + 
     logpy + log_beta(s, t + 1) - ll)) * tmpvec * X.slice(i).col(t + 1).t();
 }
 // MNHMM singlechannel
 void gradient_wrt_B_t0(
-    arma::mat& grad, arma::vec& tmpvec, const arma::mat& Q,
+    arma::mat& grad, arma::vec& tmpvec, 
     const arma::vec& log_omega,
     const arma::umat& obs, const arma::field<arma::vec>& log_Pi, 
     const arma::cube& log_beta, 
@@ -151,11 +151,11 @@ void gradient_wrt_B_t0(
   double brow = Brow(idx);
   tmpvec = -Brow.t() * brow;
   tmpvec(idx) += brow;
-  grad += Q.t() * exp(log_omega(d) + log_Pi(d)(s) + log_beta(s, 0, d) - 
+  grad += exp(log_omega(d) + log_Pi(d)(s) + log_beta(s, 0, d) - 
     loglik(i)) * tmpvec * X.slice(i).col(0).t();
 }
 void gradient_wrt_B(
-    arma::mat& grad, arma::vec& tmpvec, const arma::mat& Q,
+    arma::mat& grad, arma::vec& tmpvec, 
     const arma::vec& log_omega,
     const arma::umat& obs, const arma::cube& log_alpha, 
     const arma::cube& log_beta, const arma::vec& loglik, 
@@ -169,13 +169,13 @@ void gradient_wrt_B(
   double brow = Brow(idx);
   tmpvec = -Brow.t() * brow;
   tmpvec(idx) += brow;
-  grad += Q.t() * arma::accu(exp(log_omega(d) + log_alpha.slice(d).col(t) + 
+  grad += arma::accu(exp(log_omega(d) + log_alpha.slice(d).col(t) + 
     log_A(d).slice(t).col(s) + log_beta(s, t + 1, d) - loglik(i))) * 
     tmpvec * X.slice(i).col(t + 1).t();
 }
 // MNHMM MC
 void gradient_wrt_B_t0(
-    arma::mat& grad, arma::vec& tmpvec, const arma::mat& Q,
+    arma::mat& grad, arma::vec& tmpvec, 
     const arma::vec& log_omega,
     const arma::ucube& obs, const arma::field<arma::vec>& log_Pi, 
     const arma::cube& log_beta, 
@@ -196,13 +196,13 @@ void gradient_wrt_B_t0(
       logpy += log_B(d * C + cc)(s, obs(cc, 0, i), 0);
     }
   }
-  grad += Q.t() * exp(log_omega(d) + log_Pi(d)(s) + logpy + 
+  grad += exp(log_omega(d) + log_Pi(d)(s) + logpy + 
     log_beta(s, 0, d) - loglik(i)) * tmpvec * X.slice(i).col(0).t();
 }
 
 // MNHMM MC
 void gradient_wrt_B(
-    arma::mat& grad, arma::vec& tmpvec, const arma::mat& Q,
+    arma::mat& grad, arma::vec& tmpvec, 
     const arma::vec& log_omega,
     const arma::ucube& obs, const arma::cube& log_alpha, 
     const arma::cube& log_beta, const arma::vec& loglik, 
@@ -224,7 +224,7 @@ void gradient_wrt_B(
       logpy += log_B(d * C + cc)(s, obs(cc, t + 1, i), t + 1);
     }
   }
-  grad += Q.t() * arma::accu(exp(log_omega(d) + log_alpha.slice(d).col(t) + 
+  grad += arma::accu(exp(log_omega(d) + log_alpha.slice(d).col(t) + 
     log_A(d).slice(t).col(s) + logpy + log_beta(s, t + 1, d) - loglik(i))) * 
     tmpvec * X.slice(i).col(t + 1).t();
 }

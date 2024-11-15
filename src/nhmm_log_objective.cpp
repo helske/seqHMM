@@ -29,9 +29,9 @@ Rcpp::List log_objective_nhmm_singlechannel(
   arma::mat log_alpha(model.S, model.T);
   arma::mat log_beta(model.S, model.T);
   
-  arma::mat grad_pi(model.S - 1, model.K_pi, arma::fill::zeros);
-  arma::cube grad_A(model.S - 1, model.K_A, model.S, arma::fill::zeros);
-  arma::cube grad_B(model.M - 1, model.K_B, model.S, arma::fill::zeros);
+  arma::mat grad_pi(model.S, model.K_pi, arma::fill::zeros);
+  arma::cube grad_A(model.S, model.K_A, model.S, arma::fill::zeros);
+  arma::cube grad_B(model.M, model.K_B, model.S, arma::fill::zeros);
   
   arma::mat tmpmat(model.S, model.S);
   arma::vec tmpvec(model.M);
@@ -68,30 +68,37 @@ Rcpp::List log_objective_nhmm_singlechannel(
     }
     loglik(i) = ll;
     // gradient wrt gamma_pi
-    gradient_wrt_pi(grad_pi, tmpmat, model.Qs, model.log_py, log_beta, ll, model.Pi, model.X_pi, i);
+    gradient_wrt_pi(grad_pi, tmpmat, model.log_py, log_beta, ll, model.Pi, model.X_pi, i);
     // gradient wrt gamma_A
     for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
       for (arma::uword s = 0; s < model.S; s++) {
-        gradient_wrt_A(grad_A.slice(s), tmpmat, model.Qs, model.log_py, log_alpha, log_beta, ll, model.A, model.X_A, i, t, s);
+        gradient_wrt_A(grad_A.slice(s), tmpmat, model.log_py, log_alpha, log_beta, ll, model.A, model.X_A, i, t, s);
       }
     }
     // gradient wrt gamma_B
     for (arma::uword s = 0; s < model.S; s++) {
       if (model.obs(0, i) < model.M) {
-        gradient_wrt_B_t0(grad_B.slice(s), tmpvec, model.Qm, model.obs, model.log_Pi, log_beta, ll, model.B, model.X_B, i, s);
+        gradient_wrt_B_t0(grad_B.slice(s), tmpvec, model.obs, model.log_Pi, log_beta, ll, model.B, model.X_B, i, s);
       }
       for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
         if (obs(t + 1, i) < model.M) {
-          gradient_wrt_B(grad_B.slice(s), tmpvec, model.Qm, model.obs, log_alpha, log_beta, ll, model.log_A, model.B, model.X_B, i, s, t);
+          gradient_wrt_B(grad_B.slice(s), tmpvec, model.obs, log_alpha, log_beta, ll, model.log_A, model.B, model.X_B, i, s, t);
         }
       }
     }
   }
+  arma::cube grad_A2(model.S - 1, model.K_A, model.S);
+  arma::cube grad_B2(model.M - 1, model.K_B, model.S);
+  arma::mat grad_pi2 = model.Qs.t() * grad_pi;
+  for (arma::uword s = 0; s < model.S; s++) {
+    grad_A2.slice(s) = model.Qs.t() * grad_A.slice(s);
+    grad_B2.slice(s) = model.Qm.t() * grad_B.slice(s);
+  }
   return Rcpp::List::create(
     Rcpp::Named("loglik") = sum(loglik),
-    Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
-    Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
-    Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B)
+    Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi2),
+    Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A2),
+    Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2)
   );
 }
 
@@ -114,11 +121,11 @@ Rcpp::List log_objective_nhmm_multichannel(
   arma::mat log_alpha(model.S, model.T);
   arma::mat log_beta(model.S, model.T);
   
-  arma::mat grad_pi(model.S - 1, model.K_pi, arma::fill::zeros);
-  arma::cube grad_A(model.S - 1, model.K_A, model.S, arma::fill::zeros);
+  arma::mat grad_pi(model.S, model.K_pi, arma::fill::zeros);
+  arma::cube grad_A(model.S, model.K_A, model.S, arma::fill::zeros);
   arma::field<arma::cube> grad_B(model.C);
   for (arma::uword c = 0; c < model.C; c++) {
-    grad_B(c) = arma::cube(model.M(c) - 1, model.K_B, model.S, arma::fill::zeros);
+    grad_B(c) = arma::cube(model.M(c), model.K_B, model.S, arma::fill::zeros);
   }
   arma::mat tmpmat(model.S, model.S);
   arma::field<arma::vec> tmpvec(model.C);
@@ -160,12 +167,12 @@ Rcpp::List log_objective_nhmm_multichannel(
     }
     loglik(i) = ll;
     // gradient wrt gamma_pi
-    gradient_wrt_pi(grad_pi, tmpmat, model.Qs, model.log_py, log_beta, ll, model.Pi, model.X_pi, i);
+    gradient_wrt_pi(grad_pi, tmpmat, model.log_py, log_beta, ll, model.Pi, model.X_pi, i);
     // gradient wrt gamma_A
     for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
       for (arma::uword s = 0; s < model.S; s++) {
         gradient_wrt_A(
-          grad_A.slice(s), tmpmat, model.Qs, model.log_py, log_alpha, log_beta, ll, model.A,
+          grad_A.slice(s), tmpmat, model.log_py, log_alpha, log_beta, ll, model.A,
           model.X_A, i, t, s
         );
       }
@@ -174,14 +181,14 @@ Rcpp::List log_objective_nhmm_multichannel(
       for (arma::uword s = 0; s < model.S; s++) {
         if (model.obs(c, 0, i) < model.M(c)) {
           gradient_wrt_B_t0(
-            grad_B(c).slice(s), tmpvec(c), model.Qm(c), model.obs, model.log_Pi, log_beta, ll,
+            grad_B(c).slice(s), tmpvec(c), model.obs, model.log_Pi, log_beta, ll,
             model.log_B, model.B, model.X_B, model.M, i, s, c
           );
         }
         for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
           if (model.obs(c, t + 1, i) < model.M(c)) {
             gradient_wrt_B(
-              grad_B(c).slice(s), tmpvec(c), model.Qm(c), model.obs, log_alpha, log_beta,
+              grad_B(c).slice(s), tmpvec(c), model.obs, log_alpha, log_beta,
               ll, model.log_A, model.log_B, model.B, model.X_B, model.M, i, s, t, c
             );
           }
@@ -189,11 +196,26 @@ Rcpp::List log_objective_nhmm_multichannel(
       }
     }
   }
+  
+  arma::cube grad_A2(model.S - 1, model.K_A, model.S);
+  arma::field<arma::cube> grad_B2(model.C);
+  for (arma::uword c = 0; c < model.C; c++) {
+    grad_B2(c) = arma::cube(model.M(c) - 1, model.K_B, model.S);
+  }
+  arma::mat grad_pi2 = model.Qs.t() * grad_pi;
+  for (arma::uword s = 0; s < model.S; s++) {
+    grad_A2.slice(s) = model.Qs.t() * grad_A.slice(s);
+  }
+  for (arma::uword c = 0; c < model.C; c++) {
+    for (arma::uword s = 0; s < model.S; s++) {
+      grad_B2(c).slice(s) = model.Qm(c).t() * grad_B(c).slice(s);
+    }
+  }
   return Rcpp::List::create(
     Rcpp::Named("loglik") = sum(loglik),
-    Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
-    Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
-    Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B)
+    Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi2),
+    Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A2),
+    Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2)
   );
 }
 
@@ -217,14 +239,14 @@ Rcpp::List log_objective_mnhmm_singlechannel(
   arma::vec loglik_i(model.D);
   arma::cube log_alpha(model.S, model.T, model.D);
   arma::cube log_beta(model.S, model.T, model.D);
-  arma::mat grad_omega(model.D - 1, model.K_omega, arma::fill::zeros);
+  arma::mat grad_omega(model.D, model.K_omega, arma::fill::zeros);
   arma::field<arma::mat> grad_pi(model.D);
   arma::field<arma::cube> grad_A(model.D);
   arma::field<arma::cube> grad_B(model.D);
   for (arma::uword d = 0; d < model.D; d++) {
-    grad_pi(d) = arma::mat(model.S - 1, model.K_pi, arma::fill::zeros);
-    grad_A(d) = arma::cube(model.S - 1, model.K_A, model.S, arma::fill::zeros);
-    grad_B(d) = arma::cube(model.M - 1, model.K_B, model.S, arma::fill::zeros);
+    grad_pi(d) = arma::mat(model.S, model.K_pi, arma::fill::zeros);
+    grad_A(d) = arma::cube(model.S, model.K_A, model.S, arma::fill::zeros);
+    grad_B(d) = arma::cube(model.M, model.K_B, model.S, arma::fill::zeros);
   }
   arma::mat tmpmat(model.S, model.S);
   arma::mat tmpmatD(model.D, model.D);
@@ -275,14 +297,14 @@ Rcpp::List log_objective_mnhmm_singlechannel(
     for (arma::uword d = 0; d < model.D; d++) {
       // gradient wrt gamma_pi
       gradient_wrt_pi(
-        grad_pi(d), tmpmat, model.Qs, model.log_omega, model.log_py, log_beta, loglik, model.Pi, model.X_pi,
+        grad_pi(d), tmpmat, model.log_omega, model.log_py, log_beta, loglik, model.Pi, model.X_pi,
         i, d
       );
       // gradient wrt gamma_A
       for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
         for (arma::uword s = 0; s < model.S; s++) {
           gradient_wrt_A(
-            grad_A(d).slice(s), tmpmat, model.Qs, model.log_omega, model.log_py, log_alpha,
+            grad_A(d).slice(s), tmpmat, model.log_omega, model.log_py, log_alpha,
             log_beta, loglik, model.A, model.X_A, i, t, s, d
           );
         }
@@ -290,28 +312,41 @@ Rcpp::List log_objective_mnhmm_singlechannel(
       for (arma::uword s = 0; s < model.S; s++) {
         if (model.obs(0, i) < model.M) {
           gradient_wrt_B_t0(
-            grad_B(d).slice(s), tmpvec, model.Qm, model.log_omega, model.obs, model.log_Pi, log_beta,
+            grad_B(d).slice(s), tmpvec, model.log_omega, model.obs, model.log_Pi, log_beta,
             loglik, model.B, model.X_B, i, s, d
           );
         }
         for (arma::uword t = 0; t < (model.T - 1); t++) {
           if (model.obs(t + 1, i) < model.M) {
             gradient_wrt_B(
-              grad_B(d).slice(s), tmpvec, model.Qm, model.log_omega, model.obs, log_alpha,
+              grad_B(d).slice(s), tmpvec, model.log_omega, model.obs, log_alpha,
               log_beta, loglik, model.log_A, model.B, model.X_B, i, s, t, d
             );
           }
         }
       }
     }
-    gradient_wrt_omega(grad_omega, tmpmatD, model.Qd, model.omega, loglik_i, loglik, model.X_omega, i);
+    gradient_wrt_omega(grad_omega, tmpmatD, model.omega, loglik_i, loglik, model.X_omega, i);
+  }
+  arma::mat grad_omega2 = model.Qd.t() * grad_omega;
+  arma::field<arma::mat> grad_pi2(model.D);
+  arma::field<arma::cube> grad_A2(model.D);
+  arma::field<arma::cube> grad_B2(model.D);
+  for (arma::uword d = 0; d < model.D; d++) {
+    grad_pi2(d) = model.Qs.t() * grad_pi(d);
+    grad_A2(d) = arma::cube(model.S - 1, model.K_A, model.S);
+    grad_B2(d) = arma::cube(model.M - 1, model.K_B, model.S);
+    for (arma::uword s = 0; s < model.S; s++) {
+      grad_A2(d).slice(s) = model.Qs.t() * grad_A(d).slice(s);
+      grad_B2(d).slice(s) =  model.Qm.t() * grad_B(d).slice(s);
+    }
   }
   return Rcpp::List::create(
     Rcpp::Named("loglik") = sum(loglik),
-    Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
-    Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
-    Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B),
-    Rcpp::Named("gradient_omega") = Rcpp::wrap(grad_omega)
+    Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi2),
+    Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A2),
+    Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2),
+    Rcpp::Named("gradient_omega") = Rcpp::wrap(grad_omega2)
   );
 }
 
@@ -335,15 +370,15 @@ Rcpp::List log_objective_mnhmm_multichannel(
   arma::vec loglik_i(model.D);
   arma::cube log_alpha(model.S, model.T, model.D);
   arma::cube log_beta(model.S, model.T, model.D);
-  arma::mat grad_omega(model.D - 1, model.K_omega, arma::fill::zeros);
+  arma::mat grad_omega(model.D, model.K_omega, arma::fill::zeros);
   arma::field<arma::mat> grad_pi(model.D);
   arma::field<arma::cube> grad_A(model.D);
   arma::field<arma::cube> grad_B(model.C, model.D);
   for (arma::uword d = 0; d < model.D; d++) {
-    grad_pi(d) = arma::mat(model.S - 1, model.K_pi, arma::fill::zeros);
-    grad_A(d) = arma::cube(model.S - 1, model.K_A, model.S, arma::fill::zeros);
+    grad_pi(d) = arma::mat(model.S, model.K_pi, arma::fill::zeros);
+    grad_A(d) = arma::cube(model.S, model.K_A, model.S, arma::fill::zeros);
     for (arma::uword c = 0; c < model.C; c++) {
-      grad_B(c, d) = arma::cube(model.M(c) - 1, model.K_B, model.S, arma::fill::zeros);
+      grad_B(c, d) = arma::cube(model.M(c), model.K_B, model.S, arma::fill::zeros);
     }
   }
   arma::mat tmpmat(model.S, model.S);
@@ -400,14 +435,14 @@ Rcpp::List log_objective_mnhmm_multichannel(
     for (arma::uword d = 0; d < model.D; d++) {
       // gradient wrt gamma_pi
       gradient_wrt_pi(
-        grad_pi(d), tmpmat, model.Qs, model.log_omega, model.log_py, log_beta, loglik, model.Pi, model.X_pi,
+        grad_pi(d), tmpmat, model.log_omega, model.log_py, log_beta, loglik, model.Pi, model.X_pi,
         i, d
       );
       // gradient wrt gamma_A
       for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
         for (arma::uword s = 0; s < model.S; s++) {
           gradient_wrt_A(
-            grad_A(d).slice(s), tmpmat, model.Qs, model.log_omega, model.log_py, log_alpha,
+            grad_A(d).slice(s), tmpmat,model.log_omega, model.log_py, log_alpha,
             log_beta, loglik, model.A, model.X_A, i, t, s, d
           );
         }
@@ -417,14 +452,14 @@ Rcpp::List log_objective_mnhmm_multichannel(
         for (arma::uword s = 0; s < model.S; s++) {
           if (model.obs(c, 0, i) < model.M(c)) {
             gradient_wrt_B_t0(
-              grad_B(c, d).slice(s), tmpvec(c), model.Qm(c), model.log_omega, model.obs, model.log_Pi,
+              grad_B(c, d).slice(s), tmpvec(c), model.log_omega, model.obs, model.log_Pi,
               log_beta, loglik, model.log_B, model.B, model.X_B, model.M, i, s, c, d
             );
           }
           for (arma::uword t = 0; t < (model.T - 1); t++) {
             if (model.obs(c, t + 1, i) < model.M(c)) {
               gradient_wrt_B(
-                grad_B(c, d).slice(s), tmpvec(c), model.Qm(c), model.log_omega, model.obs,
+                grad_B(c, d).slice(s), tmpvec(c),model.log_omega, model.obs,
                 log_alpha, log_beta, loglik, model.log_A, model.log_B, model.B, model.X_B, model.M, i, s, t,
                 c, d
               );
@@ -433,13 +468,34 @@ Rcpp::List log_objective_mnhmm_multichannel(
         }
       }
     }
-    gradient_wrt_omega(grad_omega, tmpmatD, model.Qd, model.omega, loglik_i, loglik, model.X_omega, i);
+    gradient_wrt_omega(grad_omega, tmpmatD, model.omega, loglik_i, loglik, model.X_omega, i);
   }
+  
+  arma::mat grad_omega2 = model.Qd.t() * grad_omega;
+  arma::field<arma::mat> grad_pi2(model.D);
+  arma::field<arma::cube> grad_A2(model.D);
+  arma::field<arma::cube> grad_B2(model.C, model.D);
+  for (arma::uword d = 0; d < model.D; d++) {
+    grad_pi2(d) = model.Qs.t() * grad_pi(d);
+    grad_A2(d) = arma::cube(model.S - 1, model.K_A, model.S);
+    for (arma::uword s = 0; s < model.S; s++) {
+      grad_A2(d).slice(s) = model.Qs.t() * grad_A(d).slice(s);
+    }
+  }
+  for (arma::uword c = 0; c < model.C; c++) {
+    for (arma::uword d = 0; d < model.D; d++) {
+      grad_B2(c, d) = arma::cube(model.M(c) - 1, model.K_B, model.S);
+      for (arma::uword s = 0; s < model.S; s++) {
+        grad_B2(c, d).slice(s) =  model.Qm(c).t() * grad_B(c, d).slice(s);
+      }
+    }
+  }
+  
   return Rcpp::List::create(
     Rcpp::Named("loglik") = sum(loglik),
-    Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
-    Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
-    Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B),
-    Rcpp::Named("gradient_omega") = Rcpp::wrap(grad_omega)
+    Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi2),
+    Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A2),
+    Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2),
+    Rcpp::Named("gradient_omega") = Rcpp::wrap(grad_omega2)
   );
 }
