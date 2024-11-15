@@ -82,12 +82,6 @@ struct nhmm_sc : public nhmm_base {
     log_B = arma::log(B);
   }
   
-  void update_probs(const arma::uword i) {
-    update_pi(i);
-    update_A(i);
-    update_B(i);
-  }
-  
   void update_log_py(const arma::uword i) {
     for (arma::uword t = 0; t < Ti(i); t++) {
       log_py.col(t) = log_B.slice(t).col(obs(t, i));
@@ -112,5 +106,9 @@ struct nhmm_sc : public nhmm_base {
                const arma::uword maxeval, const arma::uword print_level);
   
   double objective_B(const arma::vec& x, arma::vec& grad);
+  
+  void compute_state_obs_probs(
+      const arma::uword start, arma::cube& obs_prob, arma::cube& state_prob
+  );
 };
 #endif

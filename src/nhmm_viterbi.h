@@ -74,7 +74,7 @@ void viterbi_mnhmm(Model& model, arma::umat& q, arma::vec& logp) {
     for (arma::uword d = 0; d < model.D; d++) {
       logp_d = univariate_viterbi_nhmm(
         q_d,
-        model.omega(d) + model.log_Pi(d),
+        model.log_omega(d) + model.log_Pi(d),
         model.log_A(d).slices(0, model.Ti(i) - 1),
         model.log_py.slice(d).cols(0, model.Ti(i) - 1)
       );

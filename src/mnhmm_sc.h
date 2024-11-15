@@ -92,11 +92,7 @@ struct mnhmm_sc : public mnhmm_base {
       }
     }
   }
-  void update_probs(const arma::uword i) {
-    update_pi(i);
-    update_A(i);
-    update_B(i);
-  }
+ 
   void update_log_py(const arma::uword i) {
     for (arma::uword d = 0; d < D; d++) {
       for (arma::uword t = 0; t < Ti(i); t++) {
@@ -104,5 +100,8 @@ struct mnhmm_sc : public mnhmm_base {
       }
     }
   }
+  void compute_state_obs_probs(
+    const arma::uword start, arma::cube& obs_prob, arma::cube& state_prob
+  );
 };
 #endif

@@ -36,7 +36,7 @@ struct mnhmm_base {
   arma::field<arma::mat> gamma_pi;
   arma::field<arma::cube> eta_A;
   arma::field<arma::cube> gamma_A;
-  // Pi, A, and log_p(y) of _one_ id and cluster we are currently working with
+  // Pi, A, and log_p(y) of _one_ id we are currently working with
   arma::vec omega;
   arma::vec log_omega;
   arma::field<arma::vec> Pi;

@@ -9,6 +9,7 @@
 .project
 .settings
 # Extra source folders and compiled code
+vignettes/cache
 src-i386
 src-x64
 *.o

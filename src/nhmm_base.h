@@ -165,6 +165,7 @@ struct nhmm_base {
                const arma::uword maxeval, const arma::uword print_level);
   double objective_pi(const arma::vec& x, arma::vec& grad);
   double objective_A(const arma::vec& x, arma::vec& grad);
+  
 };
 
 #endif

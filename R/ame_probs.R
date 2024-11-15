@@ -1,19 +1,37 @@
-#' Average Marginal Effects for Non-homogenous Hidden Markov Models
+#' Average Marginal Effects on NHMM Parameters
+#' 
+#' The function `ame_probs` computes the average marginal effect (AME) of the 
+#' model covariate \eqn{X} on the model parameters by marginalizing over the sequences. 
+#' Under the assumption of no unobserved confounding (i.e., there are no 
+#' unobserved variables that influence the covariate \eqn{X} and the outcome), 
+#' these can be regarded as the causal effects of the covariate on 
+#' the initial,  emission, and transition probabilities of the model. In case 
+#' `values` argument is a single value \eqn{x}, the function returns the 
+#' interventional initial, transition, emission probabilities
+#' \deqn{P(z_1 | do(X_1 = x))}
+#' \deqn{P(z_t | do(X_{t-1} = x), z_{t-1})}
+#' \deqn{P(y_t | do(X_t = x), z_t)}
+#' and in a case `values` contains two values \eqn{x} and \eqn{w} a shift in 
+#' interventional distributions, i.e.,
+#' \deqn{P(z_1 | do(X_1 = x)) - P(z_1 | do(X_1 = w))}
+#' \deqn{P(z_t | do(X_{t-1} = x), z_{t-1}) - P(z_t | do(X_{t-1} = w), z_{t-1})}
+#' \deqn{P(y_t | do(X_t = x), z_t) - P(y_t | do(X_t = w), z_t)}.
 #' 
 #' @param model A Hidden Markov Model of class `nhmm` or `mnhmm`.
 #' @param variable Name of the variable of interest.
-#' @param values Vector containing one or two values for `variable`.
+#' @param values Vector containing one or two values for `variable`. 
+#' See details.
 #' @param newdata Optional data frame which is used for marginalization.
 #' @param probs Quantiles of interest of average marginal effect.
 #' @param ... Ignored.
-#' @rdname ame
+#' @rdname ame_probs
 #' @export
-ame <- function(model, variable, values, ...) {
-  UseMethod("ame", model)
+ame_probs <- function(model, variable, values, ...) {
+  UseMethod("ame_probs", model)
 }
-#' @rdname ame
+#' @rdname ame_probs
 #' @export
-ame.nhmm <- function(
+ame_probs.nhmm <- function(
     model, variable, values, newdata = NULL, probs = c(0.05, 0.95),
     ...) {
   stopifnot_(
@@ -184,19 +202,19 @@ ame.nhmm <- function(
     transition = ame_A,
     emission = ame_B
   )
-  class(out) <- "amp"
+  class(out) <- "ace_prob"
   attr(out, "model") <- "nhmm"
   out
 }
 
-#' @rdname ame
+#' @rdname ame_probs
 #' @export
-ame.mnhmm <- function(
+ame_probs.mnhmm <- function(
     model, variable, values, newdata = NULL, probs = c(0.05, 0.95),
     ...) {
   
   x <- lapply(
-    split_mnhmm(model), ame, variable = variable, values = values, 
+    split_mnhmm(model), ame_probs, variable = variable, values = values, 
     newdata = newdata, probs = probs
   )
   out <- lapply(c("pi", "A", "B"), function(z) {
@@ -235,7 +253,7 @@ ame.mnhmm <- function(
     ),
     qs_omega
   )
-  class(out) <- "amp"
+  class(out) <- "ace_prob"
   attr(out, "model") <- "mnhmm"
   out
 }

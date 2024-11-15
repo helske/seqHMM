@@ -1325,6 +1325,116 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// state_obs_probs_nhmm_singlechannel
+Rcpp::List state_obs_probs_nhmm_singlechannel(arma::mat& eta_pi, const arma::mat& X_pi, arma::cube& eta_A, const arma::cube& X_A, arma::cube& eta_B, const arma::cube& X_B, const arma::umat& obs, const arma::uvec Ti, const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B, const arma::uword start);
+RcppExport SEXP _seqHMM_state_obs_probs_nhmm_singlechannel(SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP obsSEXP, SEXP TiSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP startSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type eta_pi(eta_piSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_pi(X_piSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type eta_A(eta_ASEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_A(X_ASEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type eta_B(eta_BSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_B(X_BSEXP);
+    Rcpp::traits::input_parameter< const arma::umat& >::type obs(obsSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec >::type Ti(TiSEXP);
+    Rcpp::traits::input_parameter< const bool >::type icpt_only_pi(icpt_only_piSEXP);
+    Rcpp::traits::input_parameter< const bool >::type icpt_only_A(icpt_only_ASEXP);
+    Rcpp::traits::input_parameter< const bool >::type icpt_only_B(icpt_only_BSEXP);
+    Rcpp::traits::input_parameter< const bool >::type iv_A(iv_ASEXP);
+    Rcpp::traits::input_parameter< const bool >::type iv_B(iv_BSEXP);
+    Rcpp::traits::input_parameter< const bool >::type tv_A(tv_ASEXP);
+    Rcpp::traits::input_parameter< const bool >::type tv_B(tv_BSEXP);
+    Rcpp::traits::input_parameter< const arma::uword >::type start(startSEXP);
+    rcpp_result_gen = Rcpp::wrap(state_obs_probs_nhmm_singlechannel(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, start));
+    return rcpp_result_gen;
+END_RCPP
+}
+// state_obs_probs_nhmm_multichannel
+Rcpp::List state_obs_probs_nhmm_multichannel(arma::mat& eta_pi, const arma::mat& X_pi, arma::cube& eta_A, const arma::cube& X_A, arma::field<arma::cube>& eta_B, const arma::cube& X_B, const arma::ucube& obs, const arma::uvec Ti, const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B, const arma::uword start);
+RcppExport SEXP _seqHMM_state_obs_probs_nhmm_multichannel(SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP obsSEXP, SEXP TiSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP startSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type eta_pi(eta_piSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_pi(X_piSEXP);
+    Rcpp::traits::input_parameter< arma::cube& >::type eta_A(eta_ASEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_A(X_ASEXP);
+    Rcpp::traits::input_parameter< arma::field<arma::cube>& >::type eta_B(eta_BSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_B(X_BSEXP);
+    Rcpp::traits::input_parameter< const arma::ucube& >::type obs(obsSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec >::type Ti(TiSEXP);
+    Rcpp::traits::input_parameter< const bool >::type icpt_only_pi(icpt_only_piSEXP);
+    Rcpp::traits::input_parameter< const bool >::type icpt_only_A(icpt_only_ASEXP);
+    Rcpp::traits::input_parameter< const bool >::type icpt_only_B(icpt_only_BSEXP);
+    Rcpp::traits::input_parameter< const bool >::type iv_A(iv_ASEXP);
+    Rcpp::traits::input_parameter< const bool >::type iv_B(iv_BSEXP);
+    Rcpp::traits::input_parameter< const bool >::type tv_A(tv_ASEXP);
+    Rcpp::traits::input_parameter< const bool >::type tv_B(tv_BSEXP);
+    Rcpp::traits::input_parameter< const arma::uword >::type start(startSEXP);
+    rcpp_result_gen = Rcpp::wrap(state_obs_probs_nhmm_multichannel(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, start));
+    return rcpp_result_gen;
+END_RCPP
+}
+// state_obs_probs_mnhmm_singlechannel
+Rcpp::List state_obs_probs_mnhmm_singlechannel(arma::mat& eta_omega, const arma::mat& X_omega, arma::field<arma::mat>& eta_pi, const arma::mat& X_pi, arma::field<arma::cube>& eta_A, const arma::cube& X_A, arma::field<arma::cube>& eta_B, const arma::cube& X_B, const arma::umat& obs, const arma::uvec Ti, const bool icpt_only_omega, const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B, const arma::uword start);
+RcppExport SEXP _seqHMM_state_obs_probs_mnhmm_singlechannel(SEXP eta_omegaSEXP, SEXP X_omegaSEXP, SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP obsSEXP, SEXP TiSEXP, SEXP icpt_only_omegaSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP startSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type eta_omega(eta_omegaSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_omega(X_omegaSEXP);
+    Rcpp::traits::input_parameter< arma::field<arma::mat>& >::type eta_pi(eta_piSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_pi(X_piSEXP);
+    Rcpp::traits::input_parameter< arma::field<arma::cube>& >::type eta_A(eta_ASEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_A(X_ASEXP);
+    Rcpp::traits::input_parameter< arma::field<arma::cube>& >::type eta_B(eta_BSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_B(X_BSEXP);
+    Rcpp::traits::input_parameter< const arma::umat& >::type obs(obsSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec >::type Ti(TiSEXP);
+    Rcpp::traits::input_parameter< const bool >::type icpt_only_omega(icpt_only_omegaSEXP);
+    Rcpp::traits::input_parameter< const bool >::type icpt_only_pi(icpt_only_piSEXP);
+    Rcpp::traits::input_parameter< const bool >::type icpt_only_A(icpt_only_ASEXP);
+    Rcpp::traits::input_parameter< const bool >::type icpt_only_B(icpt_only_BSEXP);
+    Rcpp::traits::input_parameter< const bool >::type iv_A(iv_ASEXP);
+    Rcpp::traits::input_parameter< const bool >::type iv_B(iv_BSEXP);
+    Rcpp::traits::input_parameter< const bool >::type tv_A(tv_ASEXP);
+    Rcpp::traits::input_parameter< const bool >::type tv_B(tv_BSEXP);
+    Rcpp::traits::input_parameter< const arma::uword >::type start(startSEXP);
+    rcpp_result_gen = Rcpp::wrap(state_obs_probs_mnhmm_singlechannel(eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, icpt_only_omega, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, start));
+    return rcpp_result_gen;
+END_RCPP
+}
+// state_obs_probs_mnhmm_multichannel
+Rcpp::List state_obs_probs_mnhmm_multichannel(arma::mat& eta_omega, const arma::mat& X_omega, arma::field<arma::mat>& eta_pi, const arma::mat& X_pi, arma::field<arma::cube>& eta_A, const arma::cube& X_A, arma::field<arma::cube>& eta_B, const arma::cube& X_B, const arma::ucube& obs, const arma::uvec Ti, const bool icpt_only_omega, const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B, const arma::uword start);
+RcppExport SEXP _seqHMM_state_obs_probs_mnhmm_multichannel(SEXP eta_omegaSEXP, SEXP X_omegaSEXP, SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP obsSEXP, SEXP TiSEXP, SEXP icpt_only_omegaSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP startSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type eta_omega(eta_omegaSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_omega(X_omegaSEXP);
+    Rcpp::traits::input_parameter< arma::field<arma::mat>& >::type eta_pi(eta_piSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_pi(X_piSEXP);
+    Rcpp::traits::input_parameter< arma::field<arma::cube>& >::type eta_A(eta_ASEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_A(X_ASEXP);
+    Rcpp::traits::input_parameter< arma::field<arma::cube>& >::type eta_B(eta_BSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_B(X_BSEXP);
+    Rcpp::traits::input_parameter< const arma::ucube& >::type obs(obsSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec >::type Ti(TiSEXP);
+    Rcpp::traits::input_parameter< const bool >::type icpt_only_omega(icpt_only_omegaSEXP);
+    Rcpp::traits::input_parameter< const bool >::type icpt_only_pi(icpt_only_piSEXP);
+    Rcpp::traits::input_parameter< const bool >::type icpt_only_A(icpt_only_ASEXP);
+    Rcpp::traits::input_parameter< const bool >::type icpt_only_B(icpt_only_BSEXP);
+    Rcpp::traits::input_parameter< const bool >::type iv_A(iv_ASEXP);
+    Rcpp::traits::input_parameter< const bool >::type iv_B(iv_BSEXP);
+    Rcpp::traits::input_parameter< const bool >::type tv_A(tv_ASEXP);
+    Rcpp::traits::input_parameter< const bool >::type tv_B(tv_BSEXP);
+    Rcpp::traits::input_parameter< const arma::uword >::type start(startSEXP);
+    rcpp_result_gen = Rcpp::wrap(state_obs_probs_mnhmm_multichannel(eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, icpt_only_omega, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, start));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_cost_matrix_singlechannel", (DL_FUNC) &_seqHMM_cost_matrix_singlechannel, 6},
@@ -1399,6 +1509,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_viterbi", (DL_FUNC) &_seqHMM_viterbi, 4},
     {"_seqHMM_viterbix", (DL_FUNC) &_seqHMM_viterbix, 7},
     {"_seqHMM_softmax", (DL_FUNC) &_seqHMM_softmax, 1},
+    {"_seqHMM_state_obs_probs_nhmm_singlechannel", (DL_FUNC) &_seqHMM_state_obs_probs_nhmm_singlechannel, 16},
+    {"_seqHMM_state_obs_probs_nhmm_multichannel", (DL_FUNC) &_seqHMM_state_obs_probs_nhmm_multichannel, 16},
+    {"_seqHMM_state_obs_probs_mnhmm_singlechannel", (DL_FUNC) &_seqHMM_state_obs_probs_mnhmm_singlechannel, 19},
+    {"_seqHMM_state_obs_probs_mnhmm_multichannel", (DL_FUNC) &_seqHMM_state_obs_probs_mnhmm_multichannel, 19},
     {NULL, NULL, 0}
 };
 
