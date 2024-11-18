@@ -10,8 +10,15 @@ obs <- suppressMessages(seqdef(
     n_id, n_time
   )
 ))
+obs2 <- suppressMessages(seqdef(
+  matrix(
+    sample(letters[1:(s + 1)], n_id * n_time, replace = TRUE), 
+    n_id, n_time
+  )
+))
 data <- data.frame(
   y = unlist(obs), 
+  y2 = unlist(obs2), 
   x = rnorm(n_id * n_time), 
   z = rnorm(n_id * n_time),
   time = rep(1:n_time, each = n_id),
@@ -36,6 +43,17 @@ test_that("estimate_mnhmm returns object of class 'mnhmm'", {
   expect_error(
     fit <- estimate_mnhmm(
       "y", s, d, initial_formula = ~ x, transition_formula = ~z,
+      emission_formula = ~ z, cluster_formula = ~ x,
+      data = data, time = "time", id = "id", maxeval = 1),
+    NA
+  )
+  expect_s3_class(
+    fit,
+    "mnhmm"
+  )
+  expect_error(
+    fit <- estimate_mnhmm(
+      c("y", "y2"), s, d, initial_formula = ~ x, transition_formula = ~z,
       emission_formula = ~ z, cluster_formula = ~ x,
       data = data, time = "time", id = "id", maxeval = 1),
     NA

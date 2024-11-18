@@ -50,7 +50,7 @@ test_that("'state_obs_probs' works for single-channel 'nhmm'", {
       attr(fit$X_pi, "icpt_only"), attr(fit$X_A, "icpt_only"), 
       attr(fit$X_B, "icpt_only"), attr(fit$X_A, "iv"), 
       attr(fit$X_B, "iv"), attr(fit$X_A, "tv"), attr(fit$X_B, "tv"),
-      start = 3L),
+      start = 1L),
     NA
   )
   expect_gte(min(out$obs_prob), 0)
@@ -61,7 +61,7 @@ test_that("'state_obs_probs' works for single-channel 'nhmm'", {
   expect_true(all(abs(apply(out$state_prob, 2:3, sum) - 1) < sqrt(.Machine$double.eps)))
 })
 
-test_that("'forward_backward' works for multichannel 'mnhmm'", {
+test_that("'state_obs_probs' works for multichannel 'mnhmm'", {
   data("hmm_biofam")
   set.seed(1)
   expect_error(
@@ -71,24 +71,28 @@ test_that("'forward_backward' works for multichannel 'mnhmm'", {
     ),
     NA
   )
+  obs <- create_obsArray(fit)
   expect_error(
-    fb <- forward_backward(fit, as_data_frame = FALSE),
+    out <- state_obs_probs_mnhmm_multichannel( 
+      fit$etas$omega, fit$X_omega, fit$etas$pi, fit$X_pi, fit$etas$A, fit$X_A, 
+      unlist(fit$etas$B, recursive = FALSE), fit$X_B, obs, fit$sequence_lengths, 
+      attr(fit$X_omega, "icpt_only"), attr(fit$X_pi, "icpt_only"), 
+      attr(fit$X_A, "icpt_only"), attr(fit$X_B, "icpt_only"), 
+      attr(fit$X_A, "iv"), attr(fit$X_B, "iv"), attr(fit$X_A, "tv"), 
+      attr(fit$X_B, "tv"), start = 3L),
     NA
   )
-  expect_gte(min(fb$forward_probs), -2000)
-  expect_gte(min(fb$backward_probs), -2000)
-  expect_lte(max(fb$forward_probs), 0)
-  expect_lte(max(fb$backward_probs), 0)
-  
-  expect_error(
-    fb <- forward_backward(fit),
-    NA
-  )
-  expect_lte(max(exp(fb$log_probability)), 1)
-  expect_gte(min(exp(fb$log_probability)), 0)
+  expect_gte(min(unlist(out$obs_prob)), 0)
+  expect_lte(max(unlist(out$obs_prob)), 1)
+  expect_gte(min(out$state_prob), 0)
+  expect_lte(max(out$state_prob), 1)
+  expect_true(all(abs(apply(out$obs_prob[[1]], 2:3, sum) - 1) < sqrt(.Machine$double.eps)))
+  expect_true(all(abs(apply(out$obs_prob[[2]], 2:3, sum) - 1) < sqrt(.Machine$double.eps)))
+  expect_true(all(abs(apply(out$obs_prob[[3]], 2:3, sum) - 1) < sqrt(.Machine$double.eps)))
+  expect_true(all(abs(apply(out$state_prob, 2:3, sum) - 1) < sqrt(.Machine$double.eps)))
 })
 
-test_that("'forward_backward' works for single-channel 'mnhmm'", {
+test_that("'state_obs_probs' works for single-channel 'mnhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_mnhmm(
@@ -102,11 +106,10 @@ test_that("'forward_backward' works for single-channel 'mnhmm'", {
     out <- state_obs_probs_mnhmm_singlechannel( 
       fit$etas$omega, fit$X_omega, fit$etas$pi, fit$X_pi, fit$etas$A, fit$X_A, 
       fit$etas$B, fit$X_B, obs, fit$sequence_lengths, 
-      attr(fit$X_pi, "icpt_only"), attr(fit$X_omega, "icpt_only"),
-      attr(fit$X_A, "icpt_only"), 
-      attr(fit$X_B, "icpt_only"), attr(fit$X_A, "iv"), 
-      attr(fit$X_B, "iv"), attr(fit$X_A, "tv"), attr(fit$X_B, "tv"),
-      start = 3L),
+      attr(fit$X_omega, "icpt_only"), attr(fit$X_pi, "icpt_only"), 
+      attr(fit$X_A, "icpt_only"), attr(fit$X_B, "icpt_only"), 
+      attr(fit$X_A, "iv"), attr(fit$X_B, "iv"), attr(fit$X_A, "tv"), 
+      attr(fit$X_B, "tv"), start = 3L),
     NA
   )
   expect_gte(min(out$obs_prob), 0)
