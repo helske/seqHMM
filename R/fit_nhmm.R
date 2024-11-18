@@ -219,9 +219,11 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
       logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
       return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
       all_solutions = all_solutions,
-      time = end_time - start_time
+      time = end_time - start_time,
+      lambda = lambda,
+      pseudocount = pseudocount,
+      method = method
     )
-    model$estimation_results$lambda <- lambda
     return(model)
   }
   if (method == "EM") {
@@ -329,9 +331,11 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
       f_rel_change = out$relative_f_change,
       f_abs_change = out$absolute_f_change,
       x_rel_change = out$relative_x_change,
-      x_abs_change = out$absolute_x_change
+      x_abs_change = out$absolute_x_change,
+      lambda = lambda,
+      pseudocount = pseudocount,
+      method = method
     )
-    model$estimation_results$lambda <- lambda
     return(model)
   }
 }

@@ -6,11 +6,12 @@
 #include "nhmm_mc.h"
 #include "logsumexp.h"
 #include "sum_to_zero.h"
+#include "mstep_error.h"
 #include <nloptrAPI.h>
 
 double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
-  mstep_iter++;
   
+  mstep_iter++;
   double value = 0;
   
   eta_pi = arma::mat(x.memptr(), S - 1, K_pi);
@@ -21,7 +22,7 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
     if (!icpt_only_pi || i == 0) {
       update_pi(i);
     }
-    double sum_epi = sum(E_Pi.col(i)); // this is != 1 if pseudocounts are used
+    double sum_epi = arma::accu(E_Pi.col(i)); // this is != 1 if pseudocounts are used
     double val = arma::dot(E_Pi.col(i), log_Pi);
     if (!std::isfinite(val)) {
       if (!grad.is_empty()) {
@@ -56,12 +57,6 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
     if (!eta_pi.is_finite()) {
       mstep_error_code = 1;
       return;
-      // Rcpp::stop(
-      //   "Some of the values in gamma_pi are nonfinite likely due to zero "
-      //   "expected initial state counts.\n" 
-      //   "Try increasing the penalty lambda or adding pseudocounts "
-      //   "to avoid extreme probabilities."
-      // );
     }
     return;
   }
@@ -98,25 +93,19 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
     mstep_error_code = status - 100;
     nlopt_destroy(opt_pi);
     return;
-    // Rcpp::stop(
-    //   "M-step of initial state probabilities errored with error code %i.\n"
-    //   "Try increasing the penalty lambda or adding pseudocounts "
-    //   "to avoid extreme probabilities.", status
-    // );
   }
   eta_pi = arma::mat(x_pi.memptr(), S - 1, K_pi);
   nlopt_destroy(opt_pi);
 }
 
 double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
+  
   mstep_iter++;
   double value = 0;
-  
   arma::mat eta_Arow = arma::mat(x.memptr(), S - 1, K_A);
   arma::mat gamma_Arow = sum_to_zero(eta_Arow, Qs);
   arma::vec A1(S);
   arma::vec log_A1(S);
-  
   arma::mat tmpgrad(S, K_A, arma::fill::zeros);
   if (!iv_A && !tv_A) {
     A1 = softmax(gamma_Arow * X_A.slice(0).col(0));
@@ -129,7 +118,7 @@ double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
       log_A1 = log(A1);
     }
     for (arma::uword t = 0; t < (Ti(i) - 1); t++) {
-      double sum_ea = sum(E_A(current_s).slice(t).col(i));
+      double sum_ea = arma::accu(E_A(current_s).slice(t).col(i));
       if (sum_ea > arma::datum::eps) {
         if (tv_A) {
           A1 = softmax(gamma_Arow * X_A.slice(i).col(t));
@@ -178,12 +167,6 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
       if (!eta_A.slice(s).col(0).is_finite()) {
         mstep_error_code = 2;
         return;
-        // Rcpp::stop(
-        //   "Some of the values in gamma_A are nonfinite likely due to zero "
-        //   "expected transition counts.\n" 
-        //   "Try increasing the penalty lambda or adding pseudocounts "
-        //   "to avoid extreme probabilities."
-        // );
       }
     }
     return;
@@ -227,11 +210,6 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
       mstep_error_code = status - 200;
       nlopt_destroy(opt_A);
       return;
-      // Rcpp::stop(
-      //   "M-step of transition probabilities errored with error code %i.\n"
-      //   "Try increasing the penalty lambda or adding pseudocounts "
-      //   "to avoid extreme probabilities.", status
-      // );
     }
     eta_A.slice(s) = arma::mat(x_A.memptr(), S - 1, K_A);
   }
@@ -313,12 +291,6 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
       if (!eta_B.slice(s).col(0).is_finite()) {
         mstep_error_code = 3;
         return;
-        // Rcpp::stop(
-        //   "Some of the values in gamma_B are nonfinite likely due to zero "
-        //   "expected emission counts.\n" 
-        //   "Try increasing the penalty lambda or adding pseudocounts "
-        //   "to avoid extreme probabilities."
-        // );
       }
     }
     return;
@@ -359,11 +331,6 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
       mstep_error_code = status - 300;
       nlopt_destroy(opt_B);
       return;
-      // Rcpp::stop(
-      //   "M-step of emission probabilities errored with error code %i.\n"
-      //   "Try increasing the penalty lambda or adding pseudocounts "
-      //   "to avoid extreme probabilities.", status
-      // );
     }
     eta_B.slice(s) = arma::mat(x_B.memptr(), M - 1, K_B);
   }
@@ -449,12 +416,6 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
         if (!eta_B(c).slice(s).col(0).is_finite()) {
           mstep_error_code = 3;
           return;
-          // Rcpp::stop(
-          //   "Some of the values in gamma_B are nonfinite likely due to zero "
-          //   "expected emission counts.\n" 
-          //   "Try increasing the penalty lambda or adding pseudocounts "
-          //   "to avoid extreme probabilities."
-          // );
         }
       }
     }
@@ -497,11 +458,6 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
         mstep_error_code = status - 300;
         nlopt_destroy(opt_B);
         return;
-        // Rcpp::stop(
-        //   "M-step of emission probabilities errored with error code %i.\n"
-        //   "Try increasing the penalty lambda or adding pseudocounts "
-        //   "to avoid extreme probabilities.", status
-        // );
       }
       eta_B(c).slice(s) = arma::mat(x_B.memptr(), M(c) - 1, K_B);
     }
@@ -600,58 +556,25 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
     if (model.mstep_error_code != 0) {
-      return Rcpp::List::create(
-        Rcpp::Named("return_code") = model.mstep_error_code,
-        Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
-        Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
-        Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
-        Rcpp::Named("penalized_logLik") = arma::datum::nan,
-        Rcpp::Named("penalty_term") = arma::datum::nan,
-        Rcpp::Named("logLik") = arma::datum::nan,
-        Rcpp::Named("iterations") = iter,
-        Rcpp::Named("relative_f_change") = relative_change,
-        Rcpp::Named("absolute_f_change") = absolute_change,
-        Rcpp::Named("absolute_x_change") = absolute_x_change,
-        Rcpp::Named("relative_x_change") = relative_x_change
-      );
+      return mstep_error_nhmm(
+        model.mstep_error_code, model, iter, relative_change, 
+        absolute_change, absolute_x_change, relative_x_change);
     }
     model.mstep_A(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
     if (model.mstep_error_code != 0) {
-      return Rcpp::List::create(
-        Rcpp::Named("return_code") = model.mstep_error_code,
-        Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
-        Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
-        Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
-        Rcpp::Named("penalized_logLik") = arma::datum::nan,
-        Rcpp::Named("penalty_term") = arma::datum::nan,
-        Rcpp::Named("logLik") = arma::datum::nan,
-        Rcpp::Named("iterations") = iter,
-        Rcpp::Named("relative_f_change") = relative_change,
-        Rcpp::Named("absolute_f_change") = absolute_change,
-        Rcpp::Named("absolute_x_change") = absolute_x_change,
-        Rcpp::Named("relative_x_change") = relative_x_change
-      );
+      return mstep_error_nhmm(
+        model.mstep_error_code, model, iter, relative_change, 
+        absolute_change, absolute_x_change, relative_x_change);
     }
     model.mstep_B(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
     if (model.mstep_error_code != 0) {
-      return Rcpp::List::create(
-        Rcpp::Named("return_code") = model.mstep_error_code,
-        Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
-        Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
-        Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
-        Rcpp::Named("penalized_logLik") = arma::datum::nan,
-        Rcpp::Named("penalty_term") = arma::datum::nan,
-        Rcpp::Named("logLik") = arma::datum::nan,
-        Rcpp::Named("iterations") = iter,
-        Rcpp::Named("relative_f_change") = relative_change,
-        Rcpp::Named("absolute_f_change") = absolute_change,
-        Rcpp::Named("absolute_x_change") = absolute_x_change,
-        Rcpp::Named("relative_x_change") = relative_x_change
-      );
+      return mstep_error_nhmm(
+        model.mstep_error_code, model, iter, relative_change, 
+        absolute_change, absolute_x_change, relative_x_change);
     }
     // Update model
     model.update_gamma_pi();
@@ -752,20 +675,21 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
   // EM-algorithm begins
   arma::uword n_pi = model.eta_pi.n_elem;
   arma::uword n_A = model.eta_A.n_elem;
-  arma::uvec n_Bc(model.C + 1);
-  for (arma::uword c = 1; c < model.C + 1; c++) {
-    n_Bc(c) = n_Bc(c - 1) + model.eta_B(c - 1).n_elem;
+  arma::uvec n_Bc(model.C);
+  for (arma::uword c = 0; c < model.C; c++) {
+    n_Bc(c) = model.eta_B(c, 0).n_elem;
   }
-  arma::uword n_B = n_Bc(model.C);
+  arma::uword n_B = arma::accu(n_Bc);
   arma::rowvec pars_new(n_pi + n_A + n_B);
   arma::rowvec pars(n_pi + n_A + n_B);
   
   pars.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
   pars.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
+  int ii = 0;
   for (arma::uword c = 0; c < model.C; c++) {
-    pars.cols(
-      n_pi + n_A + n_Bc(c), n_pi + n_A + n_Bc(c + 1) - 1
-    ) = arma::vectorise(model.eta_B(c)).t();
+    pars.cols(n_pi + n_A + ii, n_pi + n_A + ii + n_Bc(c) - 1) = 
+      arma::vectorise(model.eta_B(c)).t();
+    ii += n_Bc(c);
   }
   double relative_change = ftol_rel + 1.0;
   double absolute_change = ftol_abs + 1.0;
@@ -823,58 +747,25 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
     if (model.mstep_error_code != 0) {
-      return Rcpp::List::create(
-        Rcpp::Named("return_code") = model.mstep_error_code,
-        Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
-        Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
-        Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
-        Rcpp::Named("penalized_logLik") = arma::datum::nan,
-        Rcpp::Named("penalty_term") = arma::datum::nan,
-        Rcpp::Named("logLik") = arma::datum::nan,
-        Rcpp::Named("iterations") = iter,
-        Rcpp::Named("relative_f_change") = relative_change,
-        Rcpp::Named("absolute_f_change") = absolute_change,
-        Rcpp::Named("absolute_x_change") = absolute_x_change,
-        Rcpp::Named("relative_x_change") = relative_x_change
-      );
+      return mstep_error_nhmm(
+        model.mstep_error_code, model, iter, relative_change, 
+        absolute_change, absolute_x_change, relative_x_change);
     }
     model.mstep_A(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
     if (model.mstep_error_code != 0) {
-      return Rcpp::List::create(
-        Rcpp::Named("return_code") = model.mstep_error_code,
-        Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
-        Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
-        Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
-        Rcpp::Named("penalized_logLik") = arma::datum::nan,
-        Rcpp::Named("penalty_term") = arma::datum::nan,
-        Rcpp::Named("logLik") = arma::datum::nan,
-        Rcpp::Named("iterations") = iter,
-        Rcpp::Named("relative_f_change") = relative_change,
-        Rcpp::Named("absolute_f_change") = absolute_change,
-        Rcpp::Named("absolute_x_change") = absolute_x_change,
-        Rcpp::Named("relative_x_change") = relative_x_change
-      );
+      return mstep_error_nhmm(
+        model.mstep_error_code, model, iter, relative_change, 
+        absolute_change, absolute_x_change, relative_x_change);
     }
     model.mstep_B(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
     if (model.mstep_error_code != 0) {
-      return Rcpp::List::create(
-        Rcpp::Named("return_code") = model.mstep_error_code,
-        Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
-        Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
-        Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
-        Rcpp::Named("penalized_logLik") = arma::datum::nan,
-        Rcpp::Named("penalty_term") = arma::datum::nan,
-        Rcpp::Named("logLik") = arma::datum::nan,
-        Rcpp::Named("iterations") = iter,
-        Rcpp::Named("relative_f_change") = relative_change,
-        Rcpp::Named("absolute_f_change") = absolute_change,
-        Rcpp::Named("absolute_x_change") = absolute_x_change,
-        Rcpp::Named("relative_x_change") = relative_x_change
-      );
+      return mstep_error_nhmm(
+        model.mstep_error_code, model, iter, relative_change, 
+        absolute_change, absolute_x_change, relative_x_change);
     }
     // Update model
     model.update_gamma_pi();
@@ -906,10 +797,11 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     }
     pars_new.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
     pars_new.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
+    ii = 0;
     for (arma::uword c = 0; c < model.C; c++) {
-      pars_new.cols(
-        n_pi + n_A + n_Bc(c), n_pi + n_A + n_Bc(c + 1) - 1
-      ) = arma::vectorise(model.eta_B(c)).t();
+      pars.cols(n_pi + n_A + ii, n_pi + n_A + ii + n_Bc(c) - 1) = 
+        arma::vectorise(model.eta_B(c)).t();
+      ii += n_Bc(c);
     }
     
     penalty_term = 0.5 * lambda * arma::dot(pars_new, pars_new);

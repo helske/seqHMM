@@ -148,6 +148,7 @@ error_msg <- function(error) {
   if (error %in% c(1, -(101:104))) gamma <- "gamma_pi"
   if (error %in% c(2, -(201:204))) gamma <- "gamma_A"
   if (error %in% c(3, -(301:304))) gamma <- "gamma_B"
+  if (error %in% c(4, -(401:404))) gamma <- "gamma_omega"
   
   nonfinite_msg <- paste0(
     "Error: Some of the values in ", gamma, " are nonfinite, likely due to ",
@@ -159,8 +160,8 @@ error_msg <- function(error) {
     mstep <- ""
   }
   
-  e <- seq(0, 300, by = 100)
-  if (error %in% 1:3) {
+  e <- seq(0, 400, by = 100)
+  if (error %in% 1:4) {
     msg <- nonfinite_msg
   }
   if (error %in% (-1 - e)) {

@@ -45,13 +45,13 @@ struct nhmm_mc : public nhmm_base {
       obs(obs_), 
       C(obs.n_rows), 
       eta_B(eta_B_),
-      M(arma::uvec(C)), 
-      Qm(arma::field<arma::mat>(C)),
-      gamma_B(arma::field<arma::cube>(C)),
-      B(arma::field<arma::cube>(C)),
-      log_B(arma::field<arma::cube>(C)),
+      M(C), 
+      Qm(C),
+      gamma_B(C),
+      B(C),
+      log_B(C),
       current_c(0),
-      E_B(arma::field<arma::cube>(C)) {
+      E_B(C) {
     for (arma::uword c = 0; c < C; c++) {
       M(c) = eta_B(c).n_rows + 1;
       Qm(c) = create_Q(M(c));

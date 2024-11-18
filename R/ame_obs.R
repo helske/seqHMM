@@ -28,6 +28,25 @@ ame_obs <- function(model, variable, values, start_time, ...) {
 }
 #' @rdname ame_obs
 #' @export
+#' @examples
+#' data("mvad", package = "TraMineR")
+#' 
+#' d <- reshape(mvad, direction = "long", varying = list(15:86), 
+#'   v.names = "activity")
+#' d <- d[d$id < 20, ] # smaller data to speed up example
+#' 
+#' # Small number of iterations for faster CRAN check, not an MLE!
+#' set.seed(1)
+#' fit <- estimate_nhmm(
+#'   "activity", n_states = 3,
+#'   data = d, time = "time", id = "id", 
+#'   initial_formula = ~ 1, emission_formula =  ~ male + gcse5eq,
+#'   transition_formula = ~ male + gcse5eq, maxeval = 2 # NOTE maxeval
+#' )
+#' fit <- bootstrap_coefs(fit, B = 2, type = "nonparametric")
+#' out <- ame_obs(
+#'   fit, variable = "male", values = c("yes", "no"), start_time = 5
+#' )
 ame_obs.nhmm <- function(
     model, variable, values, start_time, newdata = NULL, probs = c(0.05, 0.95),
     ...) {
@@ -77,10 +96,12 @@ ame_obs.nhmm <- function(
       "Run {.fn bootstrap_coefs} first."
     )
   )
-  newdata[[variable]] <- values[1]
+  newdata[[variable]][] <- values[1]
   model1 <- update(model, newdata)
-  newdata[[variable]] <- values[2]
+  model1$boot <- NULL
+  newdata[[variable]][] <- values[2]
   model2 <- update(model, newdata)
+  model2$boot <- NULL
   C <- model$n_channels
   if (C == 1L) {
     times <- colnames(model$observations)
@@ -89,9 +110,7 @@ ame_obs.nhmm <- function(
     times <- colnames(model$observations[[1]])
     symbol_names <- model$symbol_names
   }
-  stop("WIP")
   if (model$n_channels == 1) {
-    
     obs <- create_obsArray(model)[1L, , ]
     out1 <- state_obs_probs_nhmm_singlechannel( 
       model1$etas$pi, model1$X_pi, model1$etas$A, model1$X_A, 
@@ -99,16 +118,49 @@ ame_obs.nhmm <- function(
       attr(model1$X_pi, "icpt_only"), attr(model1$X_A, "icpt_only"), 
       attr(model1$X_B, "icpt_only"), attr(model1$X_A, "iv"), 
       attr(model1$X_B, "iv"), attr(model1$X_A, "tv"), attr(model1$X_B, "tv"),
-      start = start_time)
+      start = start_time)$obs_prob 
     out2 <- state_obs_probs_nhmm_singlechannel( 
       model2$etas$pi, model2$X_pi, model2$etas$A, model2$X_A, 
       model2$etas$B, model2$X_B, obs, model2$sequence_lengths, 
       attr(model2$X_pi, "icpt_only"), attr(model2$X_A, "icpt_only"), 
       attr(model2$X_B, "icpt_only"), attr(model2$X_A, "iv"), 
       attr(model2$X_B, "iv"), attr(model2$X_A, "tv"), attr(model2$X_B, "tv"),
-      start = start_time)
+      start = start_time)$obs_prob
+    point_estimate <- apply(out1 - out2, 1:2, mean)
+    tQs <- t(create_Q(model$n_states))
+    tQm <- t(create_Q(model$n_symbols))
+    B_samples <- length(model$boot$gamma_pi)
+    out <- array(0, dim = c(dim(point_estimate), B_samples))
+    for (i in seq_len(B_samples)) {
+      model1$etas$pi <- tQs %*% model$boot$gamma_pi[[i]]
+      for (s in seq_len(model$n_states)) {
+        model1$etas$A[, , s] <- tQs %*% model$boot$gamma_A[[i]][, , s]
+        model1$etas$B[, , s] <- tQm %*% model$boot$gamma_B[[i]][, , s]
+      }
+      out1 <- state_obs_probs_nhmm_singlechannel( 
+        model$etas$pi, model1$X_pi, model$etas$A, model1$X_A, 
+        model$etas$B, model1$X_B, obs, model1$sequence_lengths, 
+        attr(model1$X_pi, "icpt_only"), attr(model1$X_A, "icpt_only"), 
+        attr(model1$X_B, "icpt_only"), attr(model1$X_A, "iv"), 
+        attr(model1$X_B, "iv"), attr(model1$X_A, "tv"), attr(model1$X_B, "tv"),
+        start = start_time)$obs_prob
+      model2$etas$pi <- tQs %*% model$boot$gamma_pi[[i]]
+      for (s in seq_len(model$n_states)) {
+        model2$etas$A[, , s] <- tQs %*% model$boot$gamma_A[[i]][, , s]
+        model2$etas$B[, , s] <- tQm %*% model$boot$gamma_B[[i]][, , s]
+      }
+      out2 <- state_obs_probs_nhmm_singlechannel( 
+        model$etas$pi, model2$X_pi, model$etas$A, model2$X_A, 
+        model$etas$B, model2$X_B, obs, model2$sequence_lengths, 
+        attr(model2$X_pi, "icpt_only"), attr(model2$X_A, "icpt_only"), 
+        attr(model2$X_B, "icpt_only"), attr(model2$X_A, "iv"), 
+        attr(model2$X_B, "iv"), attr(model2$X_A, "tv"), attr(model2$X_B, "tv"),
+        start = start_time)$obs_prob
+      out[, , i] <- apply(out1 - out2, 1:2, mean)
+    }
+    out <- apply(out, 1:2, quantile, probs = probs)
   }
-  
+  stop("WIP")
   class(out) <- "ame_obs"
   attr(out, "model") <- "nhmm"
   out

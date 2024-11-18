@@ -7,7 +7,7 @@
 \method{plot}{ame}(x, type, probs = c(0.025, 0.975), ...)
 }
 \arguments{
-\item{x}{Output from \code{\link[=ame]{ame()}}.}
+\item{x}{Output from \code{\link[=ame_param() or ame_prob]{ame_param() or ame_prob()}}.}
 
 \item{type}{Type of plot to create. One of \code{"initial"}, \code{"transition"},
 \code{"emission"}, or \code{"cluster"}.}

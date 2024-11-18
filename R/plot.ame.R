@@ -1,6 +1,6 @@
 #' Visualize Average Marginal Effects
 #' 
-#' @param x Output from [ame()].
+#' @param x Output from [ame_param() or ame_prob()].
 #' @param type Type of plot to create. One of `"initial"`, `"transition"`,
 #'  `"emission"`, or `"cluster"`.
 #' @param probs A numeric vector of length 2 with the lower and upper limits for 

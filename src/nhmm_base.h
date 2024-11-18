@@ -144,6 +144,7 @@ struct nhmm_base {
                 const double pseudocount = 0) {
     E_Pi.col(i) = arma::exp(log_alpha + log_beta - ll) + pseudocount;
   }
+  
   void estep_A(const arma::uword i, const arma::mat& log_alpha, 
                const arma::mat& log_beta, const double ll, 
                const double pseudocount = 0) {

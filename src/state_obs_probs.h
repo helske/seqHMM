@@ -36,7 +36,7 @@ void univariate_obs_prob(
     const arma::uword end, 
     const arma::cube& log_B) {
   arma::uword M = log_B.n_cols - 1;
-  for (arma::uword t = start; t < end; t++) {
+  for (arma::uword t = start - 1; t < end; t++) {
     for (arma::uword m = 0; m < M; m++) {
       log_obs_prob(m, t) = logSumExp(log_state_prob.col(t) + 
         log_B.slice(t).col(m));
@@ -46,12 +46,19 @@ void univariate_obs_prob(
 
 void nhmm_sc::compute_state_obs_probs(
     const arma::uword start, arma::cube& obs_prob, arma::cube& state_prob) {
-  obs_prob.cols(0, start - 1).fill(-arma::datum::inf);
+  
+  if (start > 1) {
+    obs_prob.cols(0, start - 2).fill(-arma::datum::inf);
+  }
   bool not_updated = true;
   for (arma::uword i = 0; i < N; i++) {
-    arma::uword upper_bound = std::min(start, Ti(i));
+    arma::uword upper_bound = std::min(start - 1, Ti(i));
     for (arma::uword t = 0; t < upper_bound; t++) {
-      obs_prob(obs(t, i), t, i) = 0;
+      if (obs(t, i) < M) {
+        obs_prob(obs(t, i), t, i) = 0;
+      } else {
+        obs_prob.slice(i).col(t).fill(arma::datum::nan); // could predict these as well
+      }
     }
     if (start < Ti(i)) {
       if (!icpt_only_pi || not_updated) {
@@ -87,15 +94,22 @@ void nhmm_sc::compute_state_obs_probs(
 void nhmm_mc::compute_state_obs_probs(
     const arma::uword start, arma::field<arma::cube>& obs_prob, 
     arma::cube& state_prob) {
-  for (arma::uword c = 0; c < C; c++) {
-    obs_prob(c).cols(0, start - 1).fill(-arma::datum::inf);
+  
+  if (start > 1) {
+    for (arma::uword c = 0; c < C; c++) {
+      obs_prob(c).cols(0, start - 2).fill(-arma::datum::inf);
+    }
   }
   bool not_updated = true;
   for (arma::uword i = 0; i < N; i++) {
-    arma::uword upper_bound = std::min(start, Ti(i));
+    arma::uword upper_bound = std::min(start - 1, Ti(i));
     for (arma::uword t = 0; t < upper_bound; t++) {
       for (arma::uword c = 0; c < C; c++) {
-        obs_prob(c)(obs(c, t, i), t, i) = 0;
+        if (obs(c, t, i) < M(c)) {
+          obs_prob(c)(obs(c, t, i), t, i) = 0;
+        } else {
+          obs_prob(c).slice(i).col(t).fill(arma::datum::nan); // could predict these as well
+        }
       }
     }
     if (start < Ti(i)) {
@@ -135,13 +149,20 @@ void nhmm_mc::compute_state_obs_probs(
 
 void mnhmm_sc::compute_state_obs_probs(
     const arma::uword start, arma::cube& obs_prob, arma::cube& state_prob) {
-  obs_prob.cols(0, start - 1).fill(-arma::datum::inf);
+  
+  if (start > 1) {
+    obs_prob.cols(0, start - 2).fill(-arma::datum::inf);
+  }
   bool not_updated = true;
   arma::cube tmp(M, T, D);
   for (arma::uword i = 0; i < N; i++) {
-    arma::uword upper_bound = std::min(start, Ti(i));
+    arma::uword upper_bound = std::min(start - 1, Ti(i));
     for (arma::uword t = 0; t < upper_bound; t++) {
-      obs_prob(obs(t, i), t, i) = 0;
+      if (obs(t, i) < M) {
+        obs_prob(obs(t, i), t, i) = 0;
+      } else {
+        obs_prob.slice(i).col(t).fill(arma::datum::nan); // could predict these as well
+      }
     }
     if (start < Ti(i)) {
       if (!icpt_only_omega || not_updated) {
@@ -178,7 +199,7 @@ void mnhmm_sc::compute_state_obs_probs(
           log_B(d)
         );
       }
-      for (arma::uword t = start; t < Ti(i); t++) {
+      for (arma::uword t = start - 1; t < Ti(i); t++) {
         for (arma::uword m = 0; m < M; m++) {
           obs_prob(m, t, i) = logSumExp(tmp.tube(m, t));
         }
@@ -192,21 +213,30 @@ void mnhmm_sc::compute_state_obs_probs(
 void mnhmm_mc::compute_state_obs_probs(
     const arma::uword start, arma::field<arma::cube>& obs_prob, 
     arma::cube& state_prob) {
-  for (arma::uword c = 0; c < C; c++) {
-    obs_prob(c).cols(0, start - 1).fill(-arma::datum::inf);
+  
+  if (start > 1) {
+    for (arma::uword c = 0; c < C; c++) {
+      obs_prob(c).cols(0, start - 2).fill(-arma::datum::inf);
+    }
   }
   bool not_updated = true;
   arma::field<arma::cube> tmp(C);
   for (arma::uword c = 0; c < C; c++) {
     tmp(c) = arma::cube(M(c), T, D);
   }
+  
   for (arma::uword i = 0; i < N; i++) {
-    arma::uword upper_bound = std::min(start, Ti(i));
+    arma::uword upper_bound = std::min(start - 1, Ti(i));
     for (arma::uword t = 0; t < upper_bound; t++) {
       for (arma::uword c = 0; c < C; c++) {
-        obs_prob(c)(obs(c, t, i), t, i) = 0;
+        if (obs(c, t, i) < M(c)) {
+          obs_prob(c)(obs(c, t, i), t, i) = 0;
+        } else {
+          obs_prob(c).slice(i).col(t).fill(arma::datum::nan); // could predict these as well
+        }
       }
     }
+    
     if (start < Ti(i)) {
       if (!icpt_only_omega || not_updated) {
         update_omega(i);
@@ -222,6 +252,7 @@ void mnhmm_mc::compute_state_obs_probs(
       }
       not_updated = false;
       update_log_py(i);
+      
       for (arma::uword d = 0; d < D; d++) {
         arma::subview<double> submat = 
           state_prob.slice(i).rows(d * S, (d + 1) * S - 1);
@@ -231,9 +262,11 @@ void mnhmm_mc::compute_state_obs_probs(
           log_A(d), 
           log_py.slice(d).cols(0, start - 1)
         );
+        
         univariate_state_prob(
           submat, start, Ti(i), log_A(d)
         );
+        
         submat += log_omega(d);
         for (arma::uword c = 0; c < C; c++) {
           univariate_obs_prob(
@@ -245,7 +278,7 @@ void mnhmm_mc::compute_state_obs_probs(
         }
       }
       for (arma::uword c = 0; c < C; c++) {
-        for (arma::uword t = start; t < Ti(i); t++) {
+        for (arma::uword t = start - 1; t < Ti(i); t++) {
           for (arma::uword m = 0; m < M(c); m++) {
             obs_prob(c)(m, t, i) = logSumExp(tmp(c).tube(m, t));
           }

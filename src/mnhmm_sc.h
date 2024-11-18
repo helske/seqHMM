@@ -17,7 +17,9 @@ struct mnhmm_sc : public mnhmm_base {
   // these store Pi, A, B, and log_p(y) of _one_ id we are currently working with
   arma::field<arma::cube> B;
   arma::field<arma::cube> log_B;
-  
+  // excepted counts for EM algorithm
+  arma::uword current_d;
+  arma::field<arma::cube> E_B;
   mnhmm_sc(
     const arma::uword S_,
     const arma::uword D_,
@@ -49,13 +51,20 @@ struct mnhmm_sc : public mnhmm_base {
       Qm(create_Q(M)), 
       gamma_B(eta_to_gamma(eta_B, Qm)),
       B(D),
-      log_B(D){
+      log_B(D),
+      current_d(0),
+      E_B(D){
     for (arma::uword d = 0; d < D; d++) {
       B(d) = arma::cube(S, M + 1, T);
       log_B(d) = arma::cube(S, M + 1, T);
+      E_B(d) = arma::cube(T, N, S);
     }
   }
-  
+  void update_gamma_B() {
+    for (arma::uword d = 0; d < D; d++) {
+      gamma_B(d) = eta_to_gamma(eta_B(d), Qm);
+    }
+  }
   void update_B(const arma::uword i) {
     arma::mat Btmp(M + 1, S, arma::fill::ones);
     if (icpt_only_B) {
@@ -92,7 +101,7 @@ struct mnhmm_sc : public mnhmm_base {
       }
     }
   }
- 
+  
   void update_log_py(const arma::uword i) {
     for (arma::uword d = 0; d < D; d++) {
       for (arma::uword t = 0; t < Ti(i); t++) {
@@ -100,8 +109,27 @@ struct mnhmm_sc : public mnhmm_base {
       }
     }
   }
+  void estep_B(const arma::uword i, const arma::uword d, 
+               const arma::mat& log_alpha, const arma::mat& log_beta, 
+               const double ll, const double pseudocount = 0) {
+    for (arma::uword k = 0; k < S; k++) { // state
+      for (arma::uword t = 0; t < Ti(i); t++) { // time
+        if (obs(t, i) < M) {
+          E_B(d)(t, i, k) = exp(log_alpha(k, t) + log_beta(k, t) - ll) + pseudocount;
+        } else {
+          E_B(d)(t, i, k) = 0.0;
+        }
+      }
+    }
+  }
+  void mstep_B(const double ftol_abs, const double ftol_rel, 
+               const double xtol_abs, const double xtol_rel, 
+               const arma::uword maxeval, const arma::uword print_level);
+  
+  double objective_B(const arma::vec& x, arma::vec& grad);
+  
   void compute_state_obs_probs(
-    const arma::uword start, arma::cube& obs_prob, arma::cube& state_prob
+      const arma::uword start, arma::cube& obs_prob, arma::cube& state_prob
   );
 };
 #endif

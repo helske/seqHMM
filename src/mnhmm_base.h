@@ -44,6 +44,12 @@ struct mnhmm_base {
   arma::field<arma::cube> A;
   arma::field<arma::cube> log_A;
   arma::cube log_py;
+  // excepted counts for EM algorithm
+  arma::mat E_omega;
+  arma::field<arma::mat> E_Pi;
+  arma::field<arma::cube> E_A;
+  arma::uword current_s;
+  arma::uword current_d;
   arma::uword n_obs;
   double lambda;
   
@@ -70,7 +76,7 @@ struct mnhmm_base {
     arma::field<arma::mat>& eta_pi_,
     arma::field<arma::cube>& eta_A_,
     const double lambda = 0,
-    int imstep_ter = 0,
+    int mstep_iter = 0,
     int mstep_error_code = 0)
     : S(S_),
       D(D_), 
@@ -108,6 +114,11 @@ struct mnhmm_base {
       A(D),
       log_A(D),
       log_py(S, T, D), 
+      E_omega(D, N),
+      E_Pi(D),
+      E_A(S, D),
+      current_s(0),
+      current_d(0),
       n_obs(sum(Ti)),
       lambda(lambda){
     for (arma::uword d = 0; d < D; d++) {
@@ -115,10 +126,27 @@ struct mnhmm_base {
       log_Pi(d) = arma::vec(S);
       A(d) = arma::cube(S, S, T);
       log_A(d) = arma::cube(S, S, T);
+      E_Pi(d) = arma::mat(S, N);
+      for (arma::uword s = 0; s < S; s++) {
+        E_A(s, d) = arma::cube(S, N, T);
+      }
     }
   }
-  
-  void update_omega(arma::uword i) {
+  void update_gamma_omega() {
+    gamma_omega = eta_to_gamma(eta_omega, Qd);
+    
+  }
+  void update_gamma_pi() {
+    for (arma::uword d = 0; d < D; d++) {
+      gamma_pi(d) = eta_to_gamma(eta_pi(d), Qs);
+    }
+  }
+  void update_gamma_A() {
+    for (arma::uword d = 0; d < D; d++) {
+      gamma_A(d) = eta_to_gamma(eta_A(d), Qs);
+    }
+  }
+  void update_omega(const arma::uword i) {
     if (icpt_only_omega) {
       omega = softmax(gamma_omega.col(0));
     } else {
@@ -126,7 +154,7 @@ struct mnhmm_base {
     }
     log_omega = arma::log(omega);
   }
-  void update_pi(arma::uword i) {
+  void update_pi(const arma::uword i) {
     if (icpt_only_pi) {
       for (arma::uword d = 0; d < D; d++) {
         Pi(d) = softmax(gamma_pi(d).col(0));
@@ -139,7 +167,15 @@ struct mnhmm_base {
       }
     }
   }
-  void update_A(arma::uword i) {
+  void update_pi(const arma::uword i, const arma::uword d) {
+    if (icpt_only_pi) {
+      Pi(d) = softmax(gamma_pi(d).col(0));
+    } else {
+      Pi(d) = softmax(gamma_pi(d) * X_pi.col(i));
+    }
+    log_Pi(d) = arma::log(Pi(d));
+  }
+  void update_A(const arma::uword i) {
     arma::mat Atmp(S, S);
     if (icpt_only_A) {
       for (arma::uword d = 0; d < D; d++) {
@@ -168,5 +204,67 @@ struct mnhmm_base {
       }
     }
   }
+  void update_A(const arma::uword i, const arma::uword d) {
+    arma::mat Atmp(S, S);
+    if (icpt_only_A) {
+      for (arma::uword s = 0; s < S; s++) { // from states
+        Atmp.col(s) = softmax(gamma_A(d).slice(s).col(0));
+      }
+      A(d).each_slice() = Atmp.t();
+    } else {
+      if (tv_A) {
+        for (arma::uword t = 0; t < Ti(i); t++) { // time
+          for (arma::uword s = 0; s < S; s++) { // from states
+            Atmp.col(s) = softmax(gamma_A(d).slice(s) * X_A.slice(i).col(t));
+          }
+          A(d).slice(t) = Atmp.t();
+        }
+      } else {
+        for (arma::uword s = 0; s < S; s++) { // from states
+          Atmp.col(s) = softmax(gamma_A(d).slice(s) * X_A.slice(i).col(0));
+        }
+        A(d).each_slice() = Atmp.t();
+      }
+      
+    }
+    log_A(d) = arma::log(A(d));
+  }
+  
+  void estep_omega(const arma::uword i, const arma::vec ll_i, 
+                   const double ll, const double pseudocount = 0) {
+    E_omega.col(i) = arma::exp(ll_i - ll) + pseudocount;
+  }
+  
+  void estep_pi(const arma::uword i, const arma::uword d, 
+                const arma::vec& log_alpha, 
+                const arma::vec& log_beta, const double ll, 
+                const double pseudocount = 0) {
+    E_Pi(d).col(i) = arma::exp(log_alpha + log_beta - ll) + pseudocount;
+  }
+  
+  void estep_A(const arma::uword i, const arma::uword d, 
+               const arma::mat& log_alpha, const arma::mat& log_beta, 
+               const double ll, const double pseudocount = 0) {
+    for (arma::uword k = 0; k < S; k++) { // from
+      for (arma::uword j = 0; j < S; j++) { // to
+        for (arma::uword t = 0; t < (Ti(i) - 1); t++) { // time
+          E_A(k, d)(j, i, t) = exp(log_alpha(k, t) + log_A(d)(k, j, t) + 
+            log_beta(j, t + 1) + log_py(j, t + 1, d) - ll) + pseudocount;
+        }
+      }
+    }
+  }
+  void mstep_omega(const double ftol_abs, const double ftol_rel, 
+                   const double xtol_abs, const double xtol_rel, 
+                   const arma::uword maxeval, const arma::uword print_level);
+  void mstep_pi(const double ftol_abs, const double ftol_rel, 
+                const double xtol_abs, const double xtol_rel, 
+                const arma::uword maxeval, const arma::uword print_level);
+  void mstep_A(const double ftol_abs, const double ftol_rel, 
+               const double xtol_abs, const double xtol_rel, 
+               const arma::uword maxeval, const arma::uword print_level);
+  double objective_omega(const arma::vec& x, arma::vec& grad);
+  double objective_pi(const arma::vec& x, arma::vec& grad);
+  double objective_A(const arma::vec& x, arma::vec& grad);
 };
 #endif

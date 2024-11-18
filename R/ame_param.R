@@ -1,6 +1,6 @@
 #' Average Marginal Effects on NHMM Parameters
 #' 
-#' The function `ame_probs` computes the average marginal effect (AME) of the 
+#' The function `ame_param` computes the average marginal effect (AME) of the 
 #' model covariate \eqn{X} on the model parameters by marginalizing over the sequences. 
 #' Under the assumption of no unobserved confounding (i.e., there are no 
 #' unobserved variables that influence the covariate \eqn{X} and the outcome), 
@@ -24,14 +24,14 @@
 #' @param newdata Optional data frame which is used for marginalization.
 #' @param probs Quantiles of interest of average marginal effect.
 #' @param ... Ignored.
-#' @rdname ame_probs
+#' @rdname ame_param
 #' @export
-ame_probs <- function(model, variable, values, ...) {
-  UseMethod("ame_probs", model)
+ame_param <- function(model, variable, values, ...) {
+  UseMethod("ame_param", model)
 }
-#' @rdname ame_probs
+#' @rdname ame_param
 #' @export
-ame_probs.nhmm <- function(
+ame_param.nhmm <- function(
     model, variable, values, newdata = NULL, probs = c(0.05, 0.95),
     ...) {
   stopifnot_(
@@ -80,9 +80,9 @@ ame_probs.nhmm <- function(
       "Run {.fn bootstrap_coefs} first."
     )
   )
-  newdata[[variable]] <- values[1]
+  newdata[[variable]][] <- values[1]
   model1 <- update(model, newdata)
-  newdata[[variable]] <- values[2]
+  newdata[[variable]][] <- values[2]
   model2 <- update(model, newdata)
   C <- model$n_channels
   if (C == 1L) {
@@ -202,19 +202,19 @@ ame_probs.nhmm <- function(
     transition = ame_A,
     emission = ame_B
   )
-  class(out) <- "ace_prob"
+  class(out) <- "ame_param"
   attr(out, "model") <- "nhmm"
   out
 }
 
-#' @rdname ame_probs
+#' @rdname ame_param
 #' @export
-ame_probs.mnhmm <- function(
+ame_param.mnhmm <- function(
     model, variable, values, newdata = NULL, probs = c(0.05, 0.95),
     ...) {
   
   x <- lapply(
-    split_mnhmm(model), ame_probs, variable = variable, values = values, 
+    split_mnhmm(model), ame_param, variable = variable, values = values, 
     newdata = newdata, probs = probs
   )
   out <- lapply(c("pi", "A", "B"), function(z) {
@@ -229,9 +229,9 @@ ame_probs.mnhmm <- function(
   if (is.null(newdata)) {
     newdata <- model$data
   }
-  newdata[[variable]] <- values[1]
+  newdata[[variable]][] <- values[1]
   model1 <- update(model, newdata)
-  newdata[[variable]] <- values[2]
+  newdata[[variable]][] <- values[2]
   model2 <- update(model, newdata)
   
   if (!attr(model$X_omega, "icpt_only")) {
@@ -253,7 +253,7 @@ ame_probs.mnhmm <- function(
     ),
     qs_omega
   )
-  class(out) <- "ace_prob"
+  class(out) <- "ame_param"
   attr(out, "model") <- "mnhmm"
   out
 }

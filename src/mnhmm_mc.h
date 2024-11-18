@@ -17,6 +17,10 @@ struct mnhmm_mc : public mnhmm_base {
   // these store Pi, A, B, and log_p(y) of _one_ id and cluster we are currently working with
   arma::field<arma::cube> B;
   arma::field<arma::cube> log_B;
+  // excepted counts for EM algorithm
+  arma::uword current_c; // for EM
+  arma::uword current_d; // for EM
+  arma::field<arma::cube> E_B;
   
   mnhmm_mc(
     const arma::uword S_,
@@ -45,12 +49,15 @@ struct mnhmm_mc : public mnhmm_base {
       iv_B_, tv_A_, tv_B_, eta_omega_, eta_pi_, eta_A_, lambda),
       obs(obs_),
       C(obs.n_rows),
-      eta_B(arma::field<arma::cube>(C, D)),
-      M(arma::uvec(C)),
-      Qm(arma::field<arma::mat>(C)),
-      gamma_B(arma::field<arma::cube>(C, D)),
-      B(arma::field<arma::cube>(C, D)),
-      log_B(arma::field<arma::cube>(C, D)) {
+      eta_B(C,D),
+      M(C),
+      Qm(C),
+      gamma_B(C,D),
+      B(C,D),
+      log_B(C,D),
+      current_c(0),
+      current_d(0),
+      E_B(C, D) {
     
     for (arma::uword d = 0; d < D; d++) {
       for (arma::uword c = 0; c < C; c++) {
@@ -60,10 +67,17 @@ struct mnhmm_mc : public mnhmm_base {
         gamma_B(c, d) = eta_to_gamma(eta_B(c, d), Qm(c));
         B(c, d) = arma::cube(S, M(c) + 1, T);   // B field initialization
         log_B(c, d) = arma::cube(S, M(c) + 1, T); // log_B field initialization
+        E_B(c, d) = arma::cube(T, N, S);
       }
     }
   }
-  
+  void update_gamma_B() {
+    for (arma::uword c = 0; c < C; c++) {
+      for (arma::uword d = 0; d < D; d++) {
+        gamma_B(c, d) = eta_to_gamma(eta_B(c, d), Qm(c));
+      }
+    }
+  }
   void update_B(const arma::uword i) {
     if (icpt_only_B) {
       for (arma::uword c = 0; c < C; c++) {
@@ -119,6 +133,28 @@ struct mnhmm_mc : public mnhmm_base {
       }
     }
   }
+  void estep_B(const arma::uword i, const arma::uword d, 
+               const arma::mat& log_alpha, const arma::mat& log_beta, 
+               const double ll, const double pseudocount = 0) {
+    for (arma::uword k = 0; k < S; k++) { // state
+      for (arma::uword t = 0; t < Ti(i); t++) { // time
+        double pp = exp(log_alpha(k, t) + log_beta(k, t) - ll);
+        for (arma::uword c = 0; c < C; c++) { // channel
+          if (obs(c, t, i) < M(c)) {
+            E_B(c, d)(t, i, k) = pp + pseudocount;
+          } else {
+            E_B(c, d)(t, i, k) = 0.0;
+          }
+        }
+      }
+    }
+  }
+  void mstep_B(const double ftol_abs, const double ftol_rel, 
+               const double xtol_abs, const double xtol_rel, 
+               const arma::uword maxeval, const arma::uword print_level);
+  
+  double objective_B(const arma::vec& x, arma::vec& grad);
+  
   void compute_state_obs_probs(
       const arma::uword start, arma::field<arma::cube>& obs_prob, 
       arma::cube& state_prob

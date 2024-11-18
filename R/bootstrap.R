@@ -3,17 +3,17 @@
 bootstrap_model <- function(model) {
   idx <- sample.int(model$n_sequences, replace = TRUE)
   if (model$n_channels  == 1) {
-    model$observations <- model$observations[idx, , drop = FALSE]
+    model$observations[] <- model$observations[idx, ]
   } else {
     for(i in seq_len(model$n_channels)) {
-      model$observations[[i]] <- model$observations[[i]][idx, , drop = FALSE]
+      model$observations[[i]][] <- model$observations[[i]][idx, ,]
     }
   }
-  model$X_pi <- model$X_pi[, idx, drop = FALSE]
-  model$X_A <- model$X_A[, , idx, drop = FALSE]
-  model$X_B <- model$X_B[, , idx, drop = FALSE]
+  model$X_pi[] <- model$X_pi[, idx]
+  model$X_A[] <- model$X_A[, , idx]
+  model$X_B[] <- model$X_B[, , idx]
   if (!is.null(model$X_omega)) {
-    model$X_omega <- model$X_omega[, idx, drop = FALSE]
+    model$X_omega[] <- model$X_omega[, idx]
   }
   model$sequence_lengths <- model$sequence_lengths[idx]
   model
@@ -97,17 +97,18 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
   gamma_A <- replicate(B, gammas_mle$A, simplify = FALSE)
   gamma_B <- replicate(B, gammas_mle$B, simplify = FALSE)
   lambda <- model$estimation_results$lambda
-  
+  method <- model$estimation_results$method
+  pseudocount <- model$estimation_results$pseudocount
   if (verbose) pb <- utils::txtProgressBar(min = 0, max = B, style = 3)
   if (type == "nonparametric") {
     out <- future.apply::future_lapply(
       seq_len(B), function(i) {
         mod <- bootstrap_model(model)
         fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
-                        ...)
+                        method = method, pseudocount = pseudocount, ...)
         if (verbose) utils::setTxtProgressBar(pb, i)
         permute_states(fit$gammas, gammas_mle)
-      }
+      }, future.seed = TRUE
     )
   } else {
     N <- model$n_sequences
@@ -126,14 +127,13 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
           N, T_, M, S, formula_pi, formula_A, formula_B,
           data = d, time, id, init)$model
         fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
-                        ...)
+                        method = method, pseudocount = pseudocount, ...)
         if (verbose) utils::setTxtProgressBar(pb, i)
         fit$gammas <- permute_states(fit$gammas, gammas_mle)
-      }
+      }, future.seed = TRUE
     )
   }
   if (verbose) close(pb)
-  browser()
   model$boot <- list(gamma_pi = gamma_pi, gamma_A = gamma_A, gamma_B = gamma_B)
   model
 }
@@ -155,13 +155,15 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
   gamma_B <- replicate(B, gammas_mle$B, simplify = FALSE)
   gamma_omega <- replicate(B, gammas_mle$omega, simplify = FALSE)
   lambda <- model$estimation_results$lambda
+  method <- model$estimation_results$method
+  pseudocount <- model$estimation_results$pseudocount
   D <- model$n_clusters
   if (verbose) pb <- utils::txtProgressBar(min = 0, max = B, style = 3)
   if (type == "nonparametric") {
     for (i in seq_len(B)) {
       mod <- bootstrap_model(model)
       fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
-                       ...)
+                       method = method, pseudocount = pseudocount, ...)
       fit <- permute_clusters(fit, pcp_mle)
       for (j in seq_len(D)) {
         out <- permute_states(
@@ -195,7 +197,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
         N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
         data = d, time, id, init)$model
       fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
-                       ...)
+                       method = method, pseudocount = pseudocount, ...)
       fit <- permute_clusters(fit, pcp_mle)
       for (j in seq_len(D)) {
         out <- permute_states(
