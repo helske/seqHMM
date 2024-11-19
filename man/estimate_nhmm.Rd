@@ -118,7 +118,9 @@ optimization.
 With multiple runs of optimization (by using the \code{restarts} argument), it is
 possible to parallelize these runs using the \code{future} package, e.g., by
 calling \code{future::plan(multisession, workers = 2)} before \code{estimate_nhmm()}.
-See \code{\link[future:plan]{future::plan()}} for details.
+See \code{\link[future:plan]{future::plan()}} for details. This is compatible with \code{progressr}
+package, so you can use \code{\link[progressr:with_progress]{progressr::with_progress()}} to track the progress
+of these multiple runs.
 }
 \examples{
 data("mvad", package = "TraMineR")

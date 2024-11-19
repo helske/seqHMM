@@ -49,6 +49,7 @@ Imports:
     nloptr,
     numDeriv,
     patchwork,
+    progressr,
     Rcpp (>= 0.12.0),
     RcppHungarian,
     rlang,

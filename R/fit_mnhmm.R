@@ -204,14 +204,17 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
     all_solutions <- NULL
     start_time <- proc.time()
     if (restarts > 0L) {
+      p <- progressr::progressor(along = seq_len(restarts))
       out <- future.apply::future_lapply(seq_len(restarts), function(i) {
         init <- unlist(create_initial_values(
           inits, S, M, init_sd, K_pi, K_A, K_B, K_omega, D
         ))
-        nloptr(
+        fit <- nloptr(
           x0 = init, eval_f = objectivef,
           opts = control_restart
         )
+        p()
+        fit
       },
       future.seed = TRUE)
       
@@ -297,12 +300,13 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
   if (method == "EM") {
     start_time <- proc.time()
     if (restarts > 0L) {
+      p <- progressr::progressor(along = seq_len(restarts))
       out <- future.apply::future_lapply(seq_len(restarts), function(i) {
         init <- create_initial_values(
           inits, S, M, init_sd, K_pi, K_A, K_B, K_omega, D
         )
         if (C == 1) {
-          EM_LBFGS_mnhmm_singlechannel(
+          fit <- EM_LBFGS_mnhmm_singlechannel(
             init$omega, model$X_omega, init$pi, model$X_pi, init$A, model$X_A, 
             init$B, model$X_B, obs, Ti, icpt_only_omega, icpt_only_pi, 
             icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
@@ -314,7 +318,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
             control_mstep$xtol_abs, control_mstep$xtol_rel, 
             control_mstep$print_level, lambda, pseudocount)
         } else {
-          EM_LBFGS_mnhmm_multichannel(
+          fit <- EM_LBFGS_mnhmm_multichannel(
             init$omega, model$X_omega, init$pi, model$X_pi, init$A, model$X_A, 
             init$B, model$X_B, obs, Ti, icpt_only_omega, icpt_only_pi, 
             icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
@@ -326,6 +330,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
             control_mstep$xtol_abs, control_mstep$xtol_rel, 
             control_mstep$print_level, lambda, pseudocount)
         }
+        p()
+        fit
       },
       future.seed = TRUE)
       return_codes <- unlist(lapply(out, "[[", "return_code"))

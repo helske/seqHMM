@@ -15,7 +15,9 @@
 #' With multiple runs of optimization (by using the `restarts` argument), it is 
 #' possible to parallelize these runs using the `future` package, e.g., by 
 #' calling `future::plan(multisession, workers = 2)` before `estimate_nhmm()`.
-#' See [future::plan()] for details.
+#' See [future::plan()] for details. This is compatible with `progressr` 
+#' package, so you can use [progressr::with_progress()] to track the progress 
+#' of these multiple runs.
 #' 
 #' @param observations Either the name of the response variable in `data`, or 
 #' an `stslist` object (see [TraMineR::seqdef()]) containing the 

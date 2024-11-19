@@ -8,21 +8,9 @@
 \usage{
 bootstrap_coefs(model, ...)
 
-\method{bootstrap_coefs}{nhmm}(
-  model,
-  B = 1000,
-  type = c("nonparametric", "parametric"),
-  verbose = FALSE,
-  ...
-)
+\method{bootstrap_coefs}{nhmm}(model, B = 1000, type = c("nonparametric", "parametric"), ...)
 
-\method{bootstrap_coefs}{mnhmm}(
-  model,
-  B = 1000,
-  type = c("nonparametric", "parametric"),
-  verbose = FALSE,
-  ...
-)
+\method{bootstrap_coefs}{mnhmm}(model, B = 1000, type = c("nonparametric", "parametric"), ...)
 }
 \arguments{
 \item{model}{An \code{nhmm} or \code{mnhmm} object.}
@@ -35,8 +23,6 @@ bootstrap_coefs(model, ...)
 nonparametric or parametric bootstrap should be used. The former samples
 sequences with replacement, whereas the latter simulates new datasets based
 on the model.}
-
-\item{verbose}{Should the progress bar be displayed? Default is \code{FALSE}.}
 }
 \value{
 The original model with additional element \code{model$boot}, which
@@ -47,4 +33,9 @@ coefficients match \code{unlist(model$gammas)}.
 It is possible to parallelize the bootstrap runs using the \code{future} package,
 e.g., by calling \code{future::plan(multisession, workers = 2)} before
 \code{bootstrap_coefs()}. See \code{\link[future:plan]{future::plan()}} for details.
+}
+\details{
+\code{bootstrap_coefs()} is compatible with \code{progressr} package, so you can use
+\code{progressr::with_progress(bootstrap_coefs(fit))} to track the progress of
+bootstrapping.
 }

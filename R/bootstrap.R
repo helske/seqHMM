@@ -65,13 +65,16 @@ permute_clusters <- function(model, pcp_mle) {
 #' e.g., by calling `future::plan(multisession, workers = 2)` before 
 #' `bootstrap_coefs()`. See [future::plan()] for details.
 #' 
+#' `bootstrap_coefs()` is compatible with `progressr` package, so you can use 
+#' `progressr::with_progress(bootstrap_coefs(fit))` to track the progress of 
+#' bootstrapping.
+#' 
 #' @param model An `nhmm` or `mnhmm` object.
 #' @param B number of bootstrap samples.
 #' @param type Either `"nonparametric"` or `"parametric"`, to define whether 
 #' nonparametric or parametric bootstrap should be used. The former samples 
 #' sequences with replacement, whereas the latter simulates new datasets based 
 #' on the model.
-#' @param verbose Should the progress bar be displayed? Default is `FALSE`.
 #' @param ... Additional arguments to [nloptr()].
 #' @return The original model with additional element `model$boot`, which 
 #' contains A n * B matrix where n is the number of coefficients. The order of 
@@ -85,7 +88,7 @@ bootstrap_coefs <- function(model, ...) {
 #' @export
 bootstrap_coefs.nhmm <- function(model, B = 1000, 
                                  type = c("nonparametric", "parametric"),
-                                 verbose = FALSE, ...) {
+                                 ...) {
   type <- match.arg(type)
   stopifnot_(
     checkmate::test_int(x = B, lower = 0L), 
@@ -93,21 +96,19 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
   )
   init <- model$etas
   gammas_mle <- model$gammas
-  gamma_pi <- replicate(B, gammas_mle$pi, simplify = FALSE)
-  gamma_A <- replicate(B, gammas_mle$A, simplify = FALSE)
-  gamma_B <- replicate(B, gammas_mle$B, simplify = FALSE)
   lambda <- model$estimation_results$lambda
   method <- model$estimation_results$method
   pseudocount <- model$estimation_results$pseudocount
-  if (verbose) pb <- utils::txtProgressBar(min = 0, max = B, style = 3)
+  p <- progressr::progressor(along = seq_len(B))
   if (type == "nonparametric") {
     out <- future.apply::future_lapply(
       seq_len(B), function(i) {
         mod <- bootstrap_model(model)
         fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
                         method = method, pseudocount = pseudocount, ...)
-        if (verbose) utils::setTxtProgressBar(pb, i)
-        permute_states(fit$gammas, gammas_mle)
+        fit$gammas <- permute_states(fit$gammas, gammas_mle)
+        p()
+        fit$gammas
       }, future.seed = TRUE
     )
   } else {
@@ -128,20 +129,24 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
           data = d, time, id, init)$model
         fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
                         method = method, pseudocount = pseudocount, ...)
-        if (verbose) utils::setTxtProgressBar(pb, i)
         fit$gammas <- permute_states(fit$gammas, gammas_mle)
+        p()
+        fit$gammas
       }, future.seed = TRUE
     )
   }
-  if (verbose) close(pb)
-  model$boot <- list(gamma_pi = gamma_pi, gamma_A = gamma_A, gamma_B = gamma_B)
+  model$boot <- list(
+    gamma_pi = lapply(out, "[[", "pi"), 
+    gamma_A = lapply(out, "[[", "A"), 
+    gamma_B = lapply(out, "[[", "B")
+  )
   model
 }
 #' @rdname bootstrap
 #' @export
 bootstrap_coefs.mnhmm <- function(model, B = 1000, 
                                   type = c("nonparametric", "parametric"),
-                                  verbose = FALSE, ...) {
+                                  ...) {
   type <- match.arg(type)
   stopifnot_(
     checkmate::test_int(x = B, lower = 0L), 
@@ -150,36 +155,31 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
   init <- model$etas
   gammas_mle <- model$gammas
   pcp_mle <- posterior_cluster_probabilities(model)
-  gamma_pi <- replicate(B, gammas_mle$pi, simplify = FALSE)
-  gamma_A <- replicate(B, gammas_mle$A, simplify = FALSE)
-  gamma_B <- replicate(B, gammas_mle$B, simplify = FALSE)
-  gamma_omega <- replicate(B, gammas_mle$omega, simplify = FALSE)
   lambda <- model$estimation_results$lambda
   method <- model$estimation_results$method
   pseudocount <- model$estimation_results$pseudocount
   D <- model$n_clusters
-  if (verbose) pb <- utils::txtProgressBar(min = 0, max = B, style = 3)
+  p <- progressr::progressor(along = seq_len(B))
   if (type == "nonparametric") {
-    for (i in seq_len(B)) {
-      mod <- bootstrap_model(model)
-      fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
-                       method = method, pseudocount = pseudocount, ...)
-      fit <- permute_clusters(fit, pcp_mle)
-      for (j in seq_len(D)) {
-        out <- permute_states(
-          lapply(fit$gammas[-4], "[[", j), 
-          lapply(gammas_mle[-4], "[[", j)
-        )
-        fit$gammas$pi[[j]] <- out$pi
-        fit$gammas$A[[j]] <- out$A
-        fit$gammas$B[[j]] <- out$B
-      }
-      gamma_pi[[i]] <- fit$gammas$pi
-      gamma_A[[i]] <- fit$gammas$A
-      gamma_B[[i]] <- fit$gammas$B
-      gamma_omega[[i]] <- fit$gammas$omega
-      if (verbose) utils::setTxtProgressBar(pb, i)
-    }
+    out <- future.apply::future_lapply(
+      seq_len(B), function(i) {
+        mod <- bootstrap_model(model)
+        fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
+                         method = method, pseudocount = pseudocount, ...)
+        fit <- permute_clusters(fit, pcp_mle)
+        for (j in seq_len(D)) {
+          out <- permute_states(
+            lapply(fit$gammas[c("pi", "A", "B")], "[[", j), 
+            lapply(gammas_mle[c("pi", "A", "B")], "[[", j)
+          )
+          fit$gammas$pi[[j]] <- out$pi
+          fit$gammas$A[[j]] <- out$A
+          fit$gammas$B[[j]] <- out$B
+        }
+        p()
+        fit$gammas
+      }, future.seed = TRUE
+    )
   } else {
     N <- model$n_sequences
     T_ <- model$sequence_lengths
@@ -192,33 +192,33 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
     d <- model$data
     time <- model$time_variable
     id <- model$id_variable
-    for (i in seq_len(B)) {
-      mod <- simulate_mnhmm(
-        N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
-        data = d, time, id, init)$model
-      fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
-                       method = method, pseudocount = pseudocount, ...)
-      fit <- permute_clusters(fit, pcp_mle)
-      for (j in seq_len(D)) {
-        out <- permute_states(
-          lapply(fit$gammas[-4], "[[", j), 
-          lapply(gammas_mle[-4], "[[", j)
-        )
-        fit$gammas$pi[[j]] <- out$pi
-        fit$gammas$A[[j]] <- out$A
-        fit$gammas$B[[j]] <- out$B
-      }
-      gamma_pi[[i]] <- fit$gammas$pi
-      gamma_A[[i]] <- fit$gammas$A
-      gamma_B[[i]] <- fit$gammas$B
-      gamma_omega[[i]] <- fit$gammas$omega
-      if (verbose) utils::setTxtProgressBar(pb, i)
-    }
+    out <- future.apply::future_lapply(
+      seq_len(B), function(i) {
+        mod <- simulate_mnhmm(
+          N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
+          data = d, time, id, init)$model
+        fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
+                         method = method, pseudocount = pseudocount, ...)
+        fit <- permute_clusters(fit, pcp_mle)
+        for (j in seq_len(D)) {
+          out <- permute_states(
+            lapply(fit$gammas[c("pi", "A", "B")], "[[", j), 
+            lapply(gammas_mle[c("pi", "A", "B")], "[[", j)
+          )
+          fit$gammas$pi[[j]] <- out$pi
+          fit$gammas$A[[j]] <- out$A
+          fit$gammas$B[[j]] <- out$B
+        }
+        p()
+        fit$gammas
+      }, future.seed = TRUE
+    )
   }
-  if (verbose) close(pb)
   model$boot <- list(
-    gamma_pi = gamma_pi, gamma_A = gamma_A, gamma_B = gamma_B,
-    gamma_omega = gamma_omega
+    gamma_pi = lapply(out, "[[", "pi"), 
+    gamma_A = lapply(out, "[[", "A"), 
+    gamma_B = lapply(out, "[[", "B"),
+    gamma_omega = lapply(out, "[[", "omega")
   )
   model
 }

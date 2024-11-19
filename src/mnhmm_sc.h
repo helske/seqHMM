@@ -4,7 +4,6 @@
 #include <RcppArmadillo.h>
 #include "create_Q.h"
 #include "eta_to_gamma.h"
-#include "softmax.h"
 #include "mnhmm_base.h"
 
 struct mnhmm_sc : public mnhmm_base {
