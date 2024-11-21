@@ -111,7 +111,7 @@ double mnhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
       update_pi(i, current_d);
     }
     double sum_epi = arma::accu(E_Pi(current_d).col(i)); // this is != 1 if pseudocounts are used
-    double val = arma::dot(E_Pi(current_d).col(i), log_Pi(current_d));
+    double val = arma::dot(E_Pi(current_d).col(i), log_pi(current_d));
     if (!std::isfinite(val)) {
       if (!grad.is_empty()) {
         grad.fill(std::numeric_limits<double>::max());
@@ -122,7 +122,7 @@ double mnhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
     // Only update grad if it's non-empty (i.e., for gradient-based optimization)
     if (!grad.is_empty()) {
       tmpgrad -= sum_epi * (E_Pi(current_d).col(i) / sum_epi -
-        Pi(current_d)) * X_pi.col(i).t();
+        pi(current_d)) * X_pi.col(i).t();
       if (!tmpgrad.is_finite()) {
         grad.fill(std::numeric_limits<double>::max());
         return std::numeric_limits<double>::max();
@@ -645,7 +645,7 @@ Rcpp::List EM_LBFGS_mnhmm_singlechannel(
     model.update_log_py(i);
     for (arma::uword d = 0; d < model.D; d++) {
       univariate_forward_nhmm(
-        log_alpha, model.log_Pi(d), model.log_A(d), 
+        log_alpha, model.log_pi(d), model.log_A(d), 
         model.log_py.slice(d).cols(0, model.Ti(i) - 1)
       );
       univariate_backward_nhmm(
@@ -720,7 +720,7 @@ Rcpp::List EM_LBFGS_mnhmm_singlechannel(
       model.update_log_py(i);
       for (arma::uword d = 0; d < model.D; d++) {
         univariate_forward_nhmm(
-          log_alpha, model.log_Pi(d), model.log_A(d), 
+          log_alpha, model.log_pi(d), model.log_A(d), 
           model.log_py.slice(d).cols(0, model.Ti(i) - 1)
         );
         univariate_backward_nhmm(
@@ -866,7 +866,7 @@ Rcpp::List EM_LBFGS_mnhmm_multichannel(
     model.update_log_py(i);
     for (arma::uword d = 0; d < model.D; d++) {
       univariate_forward_nhmm(
-        log_alpha, model.log_Pi(d), model.log_A(d), 
+        log_alpha, model.log_pi(d), model.log_A(d), 
         model.log_py.slice(d).cols(0, model.Ti(i) - 1)
       );
       univariate_backward_nhmm(
@@ -941,7 +941,7 @@ Rcpp::List EM_LBFGS_mnhmm_multichannel(
       model.update_log_py(i);
       for (arma::uword d = 0; d < model.D; d++) {
         univariate_forward_nhmm(
-          log_alpha, model.log_Pi(d), model.log_A(d), 
+          log_alpha, model.log_pi(d), model.log_A(d), 
           model.log_py.slice(d).cols(0, model.Ti(i) - 1)
         );
         univariate_backward_nhmm(

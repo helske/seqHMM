@@ -47,7 +47,7 @@ Rcpp::List log_objective_nhmm_singlechannel(
     }
     model.update_log_py(i);
     univariate_forward_nhmm(
-      log_alpha, model.log_Pi, model.log_A, 
+      log_alpha, model.log_pi, model.log_A, 
       model.log_py.cols(0, model.Ti(i) - 1)
     );
     univariate_backward_nhmm(
@@ -68,7 +68,7 @@ Rcpp::List log_objective_nhmm_singlechannel(
     }
     loglik(i) = ll;
     // gradient wrt gamma_pi
-    gradient_wrt_pi(grad_pi, tmpmat, model.log_py, log_beta, ll, model.Pi, model.X_pi, i);
+    gradient_wrt_pi(grad_pi, tmpmat, model.log_py, log_beta, ll, model.pi, model.X_pi, i);
     // gradient wrt gamma_A
     for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
       for (arma::uword s = 0; s < model.S; s++) {
@@ -78,7 +78,7 @@ Rcpp::List log_objective_nhmm_singlechannel(
     // gradient wrt gamma_B
     for (arma::uword s = 0; s < model.S; s++) {
       if (model.obs(0, i) < model.M) {
-        gradient_wrt_B_t0(grad_B.slice(s), tmpvec, model.obs, model.log_Pi, log_beta, ll, model.B, model.X_B, i, s);
+        gradient_wrt_B_t0(grad_B.slice(s), tmpvec, model.obs, model.log_pi, log_beta, ll, model.B, model.X_B, i, s);
       }
       for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
         if (obs(t + 1, i) < model.M) {
@@ -144,7 +144,7 @@ Rcpp::List log_objective_nhmm_multichannel(
     }
     model.update_log_py(i);
     univariate_forward_nhmm(
-      log_alpha, model.log_Pi, model.log_A, 
+      log_alpha, model.log_pi, model.log_A, 
       model.log_py.cols(0, model.Ti(i) - 1)
     );
     univariate_backward_nhmm(
@@ -167,7 +167,7 @@ Rcpp::List log_objective_nhmm_multichannel(
     }
     loglik(i) = ll;
     // gradient wrt gamma_pi
-    gradient_wrt_pi(grad_pi, tmpmat, model.log_py, log_beta, ll, model.Pi, model.X_pi, i);
+    gradient_wrt_pi(grad_pi, tmpmat, model.log_py, log_beta, ll, model.pi, model.X_pi, i);
     // gradient wrt gamma_A
     for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
       for (arma::uword s = 0; s < model.S; s++) {
@@ -181,7 +181,7 @@ Rcpp::List log_objective_nhmm_multichannel(
       for (arma::uword s = 0; s < model.S; s++) {
         if (model.obs(c, 0, i) < model.M(c)) {
           gradient_wrt_B_t0(
-            grad_B(c).slice(s), tmpvec(c), model.obs, model.log_Pi, log_beta, ll,
+            grad_B(c).slice(s), tmpvec(c), model.obs, model.log_pi, log_beta, ll,
             model.log_B, model.B, model.X_B, model.M, i, s, c
           );
         }
@@ -267,7 +267,7 @@ Rcpp::List log_objective_mnhmm_singlechannel(
     model.update_log_py(i);
     for (arma::uword d = 0; d < model.D; d++) {
       univariate_forward_nhmm(
-        log_alpha.slice(d), model.log_Pi(d), model.log_A(d), 
+        log_alpha.slice(d), model.log_pi(d), model.log_A(d), 
         model.log_py.slice(d).cols(0, model.Ti(i) - 1)
       );
       univariate_backward_nhmm(
@@ -297,7 +297,7 @@ Rcpp::List log_objective_mnhmm_singlechannel(
     for (arma::uword d = 0; d < model.D; d++) {
       // gradient wrt gamma_pi
       gradient_wrt_pi(
-        grad_pi(d), tmpmat, model.log_omega, model.log_py, log_beta, loglik, model.Pi, model.X_pi,
+        grad_pi(d), tmpmat, model.log_omega, model.log_py, log_beta, loglik, model.pi, model.X_pi,
         i, d
       );
       // gradient wrt gamma_A
@@ -312,7 +312,7 @@ Rcpp::List log_objective_mnhmm_singlechannel(
       for (arma::uword s = 0; s < model.S; s++) {
         if (model.obs(0, i) < model.M) {
           gradient_wrt_B_t0(
-            grad_B(d).slice(s), tmpvec, model.log_omega, model.obs, model.log_Pi, log_beta,
+            grad_B(d).slice(s), tmpvec, model.log_omega, model.obs, model.log_pi, log_beta,
             loglik, model.B, model.X_B, i, s, d
           );
         }
@@ -403,7 +403,7 @@ Rcpp::List log_objective_mnhmm_multichannel(
     model.update_log_py(i);
     for (arma::uword d = 0; d < model.D; d++) {
       univariate_forward_nhmm(
-        log_alpha.slice(d), model.log_Pi(d), model.log_A(d), 
+        log_alpha.slice(d), model.log_pi(d), model.log_A(d), 
         model.log_py.slice(d).cols(0, model.Ti(i) - 1)
       );
       univariate_backward_nhmm(
@@ -435,7 +435,7 @@ Rcpp::List log_objective_mnhmm_multichannel(
     for (arma::uword d = 0; d < model.D; d++) {
       // gradient wrt gamma_pi
       gradient_wrt_pi(
-        grad_pi(d), tmpmat, model.log_omega, model.log_py, log_beta, loglik, model.Pi, model.X_pi,
+        grad_pi(d), tmpmat, model.log_omega, model.log_py, log_beta, loglik, model.pi, model.X_pi,
         i, d
       );
       // gradient wrt gamma_A
@@ -452,7 +452,7 @@ Rcpp::List log_objective_mnhmm_multichannel(
         for (arma::uword s = 0; s < model.S; s++) {
           if (model.obs(c, 0, i) < model.M(c)) {
             gradient_wrt_B_t0(
-              grad_B(c, d).slice(s), tmpvec(c), model.log_omega, model.obs, model.log_Pi,
+              grad_B(c, d).slice(s), tmpvec(c), model.log_omega, model.obs, model.log_pi,
               log_beta, loglik, model.log_B, model.B, model.X_B, model.M, i, s, c, d
             );
           }

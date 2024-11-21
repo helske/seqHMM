@@ -13,17 +13,42 @@ template<typename submat>
 void univariate_state_prob(
     submat& log_state_prob,
     const arma::uword start, 
-    const arma::uword end, 
-    const arma::cube& log_A) {
+    const arma::uword end,
+    const arma::vec& log_pi,
+    const arma::cube& log_A,
+    const arma::mat& log_py) {
   
-  arma::uword S = log_A.n_rows;
-  for (arma::uword t = 0; t < start; t++) {
-    log_state_prob.col(t) -= logSumExp(log_state_prob.col(t));
+  arma::uword S = log_py.n_rows;
+  log_state_prob.col(0) = log_pi;
+  // forward algorithm until start - 1
+  if (start > 1) {
+    log_state_prob.col(0) += log_py.col(0);
+    for (arma::uword t = 1; t < start - 1; t++) {
+      for (arma::uword s = 0; s < S; s++) {
+        log_state_prob(s, t) = logSumExp(
+          log_state_prob.col(t - 1) + log_A.slice(t - 1).col(s) + log_py(s, t)
+        );
+      }
+    }
+    // predict one step ahead
+    for (arma::uword s = 0; s < S; s++) {
+      log_state_prob(s, start - 1) = logSumExp(
+        log_state_prob.col(start - 2) + log_A.slice(start - 2).col(s)
+      );
+    }
+    // normalize all
+    for (arma::uword t = 0; t < start; t++) {
+      log_state_prob.col(t) -= logSumExp(log_state_prob.col(t));
+    }
   }
+  // predict start and forward
   for (arma::uword t = start; t < end; t++) {
     for (arma::uword s = 0; s < S; s++) {
-      log_state_prob(s, t) = logSumExp(log_state_prob.col(t - 1) + log_A.slice(t - 1).col(s));
+      log_state_prob(s, t) = logSumExp(
+        log_state_prob.col(t - 1) + log_A.slice(t - 1).col(s)
+      );
     }
+    // normalize
     log_state_prob.col(t) -= logSumExp(log_state_prob.col(t));
   }
 }

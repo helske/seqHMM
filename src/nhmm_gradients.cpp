@@ -14,10 +14,10 @@ void gradient_wrt_omega(
 void gradient_wrt_pi(
     arma::mat& grad, arma::mat& tmpmat, 
     const arma::mat& log_py, const arma::mat& log_beta, const double ll, 
-    const arma::vec& Pi, const arma::mat& X, const arma::uword i) {
+    const arma::vec& pi, const arma::mat& X, const arma::uword i) {
   
-  tmpmat = -Pi * Pi.t();
-  tmpmat.diag() += Pi;
+  tmpmat = -pi * pi.t();
+  tmpmat.diag() += pi;
   grad += tmpmat * exp(log_py.col(0) + log_beta.col(0) - ll) * X.col(i).t();
 }
 
@@ -25,11 +25,11 @@ void gradient_wrt_pi(
     arma::mat& grad, arma::mat& tmpmat, 
     const arma::vec& log_omega, const arma::cube& log_py, 
     const arma::cube& log_beta, const arma::vec& loglik, 
-    const arma::field<arma::vec>& Pi, const arma::mat& X, const arma::uword i,
+    const arma::field<arma::vec>& pi, const arma::mat& X, const arma::uword i,
     const arma::uword d) {
   
-  tmpmat = -Pi(d) * Pi(d).t();
-  tmpmat.diag() += Pi(d);
+  tmpmat = -pi(d) * pi(d).t();
+  tmpmat.diag() += pi(d);
   grad += tmpmat * exp(log_omega(d) + log_py.slice(d).col(0) + 
     log_beta.slice(d).col(0) - loglik(i)) * X.col(i).t();
 }
@@ -63,7 +63,7 @@ void gradient_wrt_A(
 // NHMM singlechannel
 void gradient_wrt_B_t0(
     arma::mat& grad, arma::vec& tmpvec, 
-    const arma::umat& obs, const arma::vec& log_Pi, const arma::mat& log_beta, 
+    const arma::umat& obs, const arma::vec& log_pi, const arma::mat& log_beta, 
     const double ll, const arma::cube& B, const arma::cube& X, 
     const arma::uword i, const arma::uword s) {
   
@@ -72,7 +72,7 @@ void gradient_wrt_B_t0(
   double brow = Brow(idx);
   tmpvec = -Brow.t() * brow;
   tmpvec(idx) += brow;
-  grad += exp(log_Pi(s) + log_beta(s, 0) - ll) * tmpvec * X.slice(i).col(0).t();
+  grad += exp(log_pi(s) + log_beta(s, 0) - ll) * tmpvec * X.slice(i).col(0).t();
 }
 void gradient_wrt_B(
     arma::mat& grad, arma::vec& tmpvec, 
@@ -92,7 +92,7 @@ void gradient_wrt_B(
 // NHMM multichannel
 void gradient_wrt_B_t0(
     arma::mat& grad, arma::vec& tmpvec, 
-    const arma::ucube& obs, const arma::vec& log_Pi, const arma::mat& log_beta, 
+    const arma::ucube& obs, const arma::vec& log_pi, const arma::mat& log_beta, 
     const double ll, const arma::field<arma::cube>& log_B, 
     const arma::field<arma::cube>& B, const arma::cube& X, 
     const arma::uvec& M, const arma::uword i, const arma::uword s, 
@@ -110,7 +110,7 @@ void gradient_wrt_B_t0(
       logpy += log_B(cc)(s, obs(cc, 0, i), 0);
     }
   }
-  grad += exp(log_Pi(s) + logpy + log_beta(s, 0) - ll) * tmpvec * 
+  grad += exp(log_pi(s) + logpy + log_beta(s, 0) - ll) * tmpvec * 
     X.slice(i).col(0).t();
 }
 void gradient_wrt_B(
@@ -140,7 +140,7 @@ void gradient_wrt_B(
 void gradient_wrt_B_t0(
     arma::mat& grad, arma::vec& tmpvec, 
     const arma::vec& log_omega,
-    const arma::umat& obs, const arma::field<arma::vec>& log_Pi, 
+    const arma::umat& obs, const arma::field<arma::vec>& log_pi, 
     const arma::cube& log_beta, 
     const arma::vec& loglik, const arma::field<arma::cube>& B, const arma::cube& X, 
     const arma::uword i, const arma::uword s, const unsigned d) {
@@ -151,7 +151,7 @@ void gradient_wrt_B_t0(
   double brow = Brow(idx);
   tmpvec = -Brow.t() * brow;
   tmpvec(idx) += brow;
-  grad += exp(log_omega(d) + log_Pi(d)(s) + log_beta(s, 0, d) - 
+  grad += exp(log_omega(d) + log_pi(d)(s) + log_beta(s, 0, d) - 
     loglik(i)) * tmpvec * X.slice(i).col(0).t();
 }
 void gradient_wrt_B(
@@ -177,7 +177,7 @@ void gradient_wrt_B(
 void gradient_wrt_B_t0(
     arma::mat& grad, arma::vec& tmpvec, 
     const arma::vec& log_omega,
-    const arma::ucube& obs, const arma::field<arma::vec>& log_Pi, 
+    const arma::ucube& obs, const arma::field<arma::vec>& log_pi, 
     const arma::cube& log_beta, 
     const arma::vec& loglik, const arma::field<arma::cube>& log_B, 
     const arma::field<arma::cube>& B, const arma::cube& X, 
@@ -196,7 +196,7 @@ void gradient_wrt_B_t0(
       logpy += log_B(d * C + cc)(s, obs(cc, 0, i), 0);
     }
   }
-  grad += exp(log_omega(d) + log_Pi(d)(s) + logpy + 
+  grad += exp(log_omega(d) + log_pi(d)(s) + logpy + 
     log_beta(s, 0, d) - loglik(i)) * tmpvec * X.slice(i).col(0).t();
 }
 

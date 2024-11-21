@@ -36,11 +36,11 @@ struct mnhmm_base {
   arma::field<arma::mat> gamma_pi;
   arma::field<arma::cube> eta_A;
   arma::field<arma::cube> gamma_A;
-  // Pi, A, and log_p(y) of _one_ id we are currently working with
+  // pi, A, and log_p(y) of _one_ id we are currently working with
   arma::vec omega;
   arma::vec log_omega;
-  arma::field<arma::vec> Pi;
-  arma::field<arma::vec> log_Pi;
+  arma::field<arma::vec> pi;
+  arma::field<arma::vec> log_pi;
   arma::field<arma::cube> A;
   arma::field<arma::cube> log_A;
   arma::cube log_py;
@@ -109,8 +109,8 @@ struct mnhmm_base {
       gamma_A(eta_to_gamma(eta_A, Qs)),
       omega(D),
       log_omega(D),
-      Pi(D),
-      log_Pi(D),
+      pi(D),
+      log_pi(D),
       A(D),
       log_A(D),
       log_py(S, T, D), 
@@ -122,8 +122,8 @@ struct mnhmm_base {
       n_obs(sum(Ti)),
       lambda(lambda){
     for (arma::uword d = 0; d < D; d++) {
-      Pi(d) = arma::vec(S);
-      log_Pi(d) = arma::vec(S);
+      pi(d) = arma::vec(S);
+      log_pi(d) = arma::vec(S);
       A(d) = arma::cube(S, S, T);
       log_A(d) = arma::cube(S, S, T);
       E_Pi(d) = arma::mat(S, N);
@@ -157,23 +157,23 @@ struct mnhmm_base {
   void update_pi(const arma::uword i) {
     if (icpt_only_pi) {
       for (arma::uword d = 0; d < D; d++) {
-        Pi(d) = softmax(gamma_pi(d).col(0));
-        log_Pi(d) = arma::log(Pi(d));
+        pi(d) = softmax(gamma_pi(d).col(0));
+        log_pi(d) = arma::log(pi(d));
       }
     } else {
       for (arma::uword d = 0; d < D; d++) {
-        Pi(d) = softmax(gamma_pi(d) * X_pi.col(i));
-        log_Pi(d) = arma::log(Pi(d));
+        pi(d) = softmax(gamma_pi(d) * X_pi.col(i));
+        log_pi(d) = arma::log(pi(d));
       }
     }
   }
   void update_pi(const arma::uword i, const arma::uword d) {
     if (icpt_only_pi) {
-      Pi(d) = softmax(gamma_pi(d).col(0));
+      pi(d) = softmax(gamma_pi(d).col(0));
     } else {
-      Pi(d) = softmax(gamma_pi(d) * X_pi.col(i));
+      pi(d) = softmax(gamma_pi(d) * X_pi.col(i));
     }
-    log_Pi(d) = arma::log(Pi(d));
+    log_pi(d) = arma::log(pi(d));
   }
   void update_A(const arma::uword i) {
     arma::mat Atmp(S, S);

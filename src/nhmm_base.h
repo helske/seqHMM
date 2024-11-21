@@ -30,9 +30,9 @@ struct nhmm_base {
   arma::mat gamma_pi;
   arma::cube eta_A;
   arma::cube gamma_A;
-  // these store Pi, A, B, and log_p(y) of _one_ id we are currently working with
-  arma::vec Pi;
-  arma::vec log_Pi;
+  // these store pi, A, B, and log_p(y) of _one_ id we are currently working with
+  arma::vec pi;
+  arma::vec log_pi;
   arma::cube A;
   arma::cube log_A;
   arma::mat log_py;
@@ -86,8 +86,8 @@ struct nhmm_base {
       gamma_pi(eta_to_gamma(eta_pi, Qs)), 
       eta_A(eta_A_),
       gamma_A(eta_to_gamma(eta_A, Qs)),
-      Pi(S),
-      log_Pi(S),
+      pi(S),
+      log_pi(S),
       A(S, S, T),
       log_A(S, S, T),
       log_py(S, T), 
@@ -108,11 +108,11 @@ struct nhmm_base {
   }
   void update_pi(arma::uword i) {
     if (icpt_only_pi) {
-      Pi = softmax(gamma_pi.col(0));
+      pi = softmax(gamma_pi.col(0));
     } else {
-      Pi = softmax(gamma_pi * X_pi.col(i));
+      pi = softmax(gamma_pi * X_pi.col(i));
     }
-    log_Pi = arma::log(Pi);
+    log_pi = arma::log(pi);
   }
   void update_A(arma::uword i) {
     arma::mat Atmp(S, S);

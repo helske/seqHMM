@@ -30,6 +30,21 @@ test_that("'state_obs_probs' works for multichannel 'nhmm'", {
   expect_true(all(abs(apply(out$obs_prob[[2]], 2:3, sum) - 1) < sqrt(.Machine$double.eps)))
   expect_true(all(abs(apply(out$obs_prob[[3]], 2:3, sum) - 1) < sqrt(.Machine$double.eps)))
   expect_true(all(abs(apply(out$state_prob, 2:3, sum) - 1) < sqrt(.Machine$double.eps)))
+  obs[, 3:16, ] <- fit$n_symbols
+  f <- forward_nhmm_multichannel(
+    fit$etas$pi, fit$X_pi,
+    fit$etas$A, fit$X_A,
+    fit$etas$B, fit$X_B,
+    obs,
+    fit$sequence_lengths, attr(fit$X_pi, "icpt_only"), 
+    attr(fit$X_A, "icpt_only"), attr(fit$X_B, "icpt_only"),
+    attr(fit$X_A, "iv"), attr(fit$X_B, "iv"), attr(fit$X_A, "tv"), 
+    attr(fit$X_B, "tv"))
+  a <- f[, , 1]
+  expect_equal(
+    exp(apply(a, 2, function(x) x - seqHMM:::logSumExp(x))),
+    out$state_prob[, , 1]
+  )
 })
 
 test_that("'state_obs_probs' works for single-channel 'nhmm'", {

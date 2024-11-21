@@ -39,7 +39,7 @@ void forward_nhmm(Model& model, arma::cube& log_alpha) {
     model.update_log_py(i);
     univariate_forward_nhmm(
       log_alpha.slice(i),
-      model.log_Pi,
+      model.log_pi,
       model.log_A, 
       model.log_py.cols(0, model.Ti(i) - 1)
     );
@@ -67,7 +67,7 @@ void forward_mnhmm(Model& model, arma::cube& log_alpha) {
         log_alpha.slice(i).rows(d * model.S, (d + 1) * model.S - 1);
       univariate_forward_nhmm(
         submat,
-        model.log_omega(d) + model.log_Pi(d),
+        model.log_omega(d) + model.log_pi(d),
         model.log_A(d), 
         model.log_py.slice(d).cols(0, model.Ti(i) - 1)
       );

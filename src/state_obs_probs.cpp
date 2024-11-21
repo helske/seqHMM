@@ -38,7 +38,7 @@ Rcpp::List state_obs_probs_nhmm_multichannel(
     const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B,
     const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B,
     const arma::uword start) {
-
+  
   nhmm_mc model(
       eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A,
       icpt_only_B, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B
@@ -66,7 +66,7 @@ Rcpp::List state_obs_probs_mnhmm_singlechannel(
     const bool icpt_only_A, const bool icpt_only_B, const bool iv_A,
     const bool iv_B, const bool tv_A, const bool tv_B,
     const arma::uword start) {
-
+  
   mnhmm_sc model(
       eta_A(0).n_slices, eta_A.n_rows, X_omega, X_pi, X_A, X_B, Ti,
       icpt_only_omega, icpt_only_pi, icpt_only_A, icpt_only_B,
@@ -140,12 +140,8 @@ void nhmm_sc::compute_state_obs_probs(
       }
       not_updated = false;
       update_log_py(i);
-      univariate_forward_nhmm(
-        state_prob.slice(i), log_Pi, log_A, 
-        log_py.cols(0, start - 1)
-      );
       univariate_state_prob(
-        state_prob.slice(i), start, Ti(i), log_A
+        state_prob.slice(i), start, Ti(i), log_pi, log_A, log_py
       );
       univariate_obs_prob(
         obs_prob.slice(i), 
@@ -192,12 +188,8 @@ void nhmm_mc::compute_state_obs_probs(
       }
       not_updated = false;
       update_log_py(i);
-      univariate_forward_nhmm(
-        state_prob.slice(i), log_Pi, log_A, 
-        log_py.cols(0, start - 1)
-      );
       univariate_state_prob(
-        state_prob.slice(i), start, Ti(i), log_A
+        state_prob.slice(i), start, Ti(i), log_pi, log_A, log_py
       );
       for (arma::uword c = 0; c < C; c++) {
         univariate_obs_prob(
@@ -250,14 +242,8 @@ void mnhmm_sc::compute_state_obs_probs(
       for (arma::uword d = 0; d < D; d++) {
         arma::subview<double> submat = 
           state_prob.slice(i).rows(d * S, (d + 1) * S - 1);
-        univariate_forward_nhmm(
-          submat,
-          log_Pi(d),
-          log_A(d), 
-          log_py.slice(d).cols(0, start - 1)
-        );
         univariate_state_prob(
-          submat, start, Ti(i), log_A(d)
+          submat, start, Ti(i), log_pi(d), log_A(d), log_py.slice(d)
         );
         submat += log_omega(d);
         univariate_obs_prob(
@@ -324,17 +310,9 @@ void mnhmm_mc::compute_state_obs_probs(
       for (arma::uword d = 0; d < D; d++) {
         arma::subview<double> submat = 
           state_prob.slice(i).rows(d * S, (d + 1) * S - 1);
-        univariate_forward_nhmm(
-          submat,
-          log_Pi(d),
-          log_A(d), 
-          log_py.slice(d).cols(0, start - 1)
-        );
-        
         univariate_state_prob(
-          submat, start, Ti(i), log_A(d)
+          submat, start, Ti(i), log_pi(d), log_A(d), log_py.slice(d)
         );
-        
         submat += log_omega(d);
         for (arma::uword c = 0; c < C; c++) {
           univariate_obs_prob(

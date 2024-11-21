@@ -14,7 +14,7 @@ struct mnhmm_mc : public mnhmm_base {
   arma::uvec M;
   arma::field<arma::mat> Qm;
   arma::field<arma::cube> gamma_B;
-  // these store Pi, A, B, and log_p(y) of _one_ id and cluster we are currently working with
+  // these store pi, A, B, and log_p(y) of _one_ id and cluster we are currently working with
   arma::field<arma::cube> B;
   arma::field<arma::cube> log_B;
   // excepted counts for EM algorithm
