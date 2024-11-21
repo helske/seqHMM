@@ -90,7 +90,7 @@ penalization is \code{lambda * sum(parameters^2)/(2 * n_obs)}, where \code{n_obs
 the number of non-missing observations.}
 
 \item{method}{Optimization method used. Default is \code{"EM"} which uses EM
-algorithm with L-BFGS in the M-step. Another option is \code{"DNM"} which uses
+algorithm with L-BFGS in the M-step. Another option is \code{"LBFGS"} which uses
 direct maximization of the log-likelihood using \code{\link[nloptr:nloptr]{nloptr::nloptr()}}.}
 
 \item{pseudocount}{A positive scalar to be added for the expected counts of

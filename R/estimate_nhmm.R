@@ -56,8 +56,8 @@
 #' penalization is `lambda * sum(parameters^2)/(2 * n_obs)`, where `n_obs` is 
 #' the number of non-missing observations.
 #' @param method Optimization method used. Default is `"EM"` which uses EM
-#' algorithm with L-BFGS in the M-step. Another option is `"DNM"` which uses 
-#' direct maximization of the log-likelihood using [nloptr::nloptr()].
+#' algorithm with L-BFGS in the M-step. Another option is `"LBFGS"` which uses 
+#' only L-BFGS for direct maximization of the log-likelihood.
 #' @param pseudocount A positive scalar to be added for the expected counts of 
 #' E-step. Only used in EM algorithm. Default is 1e-4. Larger values can be used 
 #' to avoid zero probabilities in initial, transition, and emission 
@@ -98,7 +98,7 @@ estimate_nhmm <- function(
   
   call <- match.call()
   
-  method <- match.arg(method, c("DNM", "EM"))
+  method <- match.arg(method, c("LBFGS", "EM"))
   
   model <- build_nhmm(
     observations, n_states, initial_formula, 

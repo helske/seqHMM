@@ -107,7 +107,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
     return(model)
   }
   all_solutions <- NULL
-  if (method == "DNM") {
+  if (method == "LBFGS") {
     need_grad <- grepl("NLOPT_LD_", control$algorithm)
     if (C == 1L) {
       if (need_grad) {
