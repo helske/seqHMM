@@ -1,6 +1,6 @@
-#' Visualize Average Marginal Effects
+#' Visualize Average Marginal Effects on NHMM parameters
 #' 
-#' @param x Output from [ame_param() or ame_prob()].
+#' @param x Output from [ame_param()].
 #' @param type Type of plot to create. One of `"initial"`, `"transition"`,
 #'  `"emission"`, or `"cluster"`.
 #' @param probs A numeric vector of length 2 with the lower and upper limits for 
@@ -8,7 +8,7 @@
 #' found in the input object `x`, an error is thrown.
 #' @param ... Ignored.
 #' @export
-plot.ame <- function(x, type, probs = c(0.025, 0.975), ...) {
+plot.ame_params <- function(x, type, probs = c(0.025, 0.975), ...) {
   
   type <- match.arg(type, c("initial", "transition", "emission", "cluster"))
   
