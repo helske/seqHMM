@@ -47,7 +47,11 @@ simulate_nhmm <- function(
   )
   sequence_lengths <- rep(sequence_lengths, length.out = n_sequences)
   n_channels <- length(n_symbols)
-  symbol_names <- lapply(seq_len(n_channels), function(i) seq_len(n_symbols[i]))
+  symbol_names <- lapply(
+    seq_len(n_channels), function(i) {
+      as.character(seq_len(n_symbols[i]))
+    }
+  )
   T_ <- max(sequence_lengths)
   obs <- lapply(seq_len(n_channels), function(i) {
     suppressWarnings(suppressMessages(

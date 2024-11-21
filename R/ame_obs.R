@@ -102,7 +102,7 @@ ame_obs.nhmm <- function(
   X2 <- update(model, newdata)[c("X_pi", "X_A", "X_B")]
   C <- model$n_channels
   if (C == 1L) {
-    times <- colnames(model$observations)
+    times <- as.numeric(colnames(model$observations))
     symbol_names <- list(model$symbol_names)
     obs <- create_obsArray(model)[1L, , ]
     out <- ame_obs_nhmm_singlechannel( 
@@ -121,14 +121,14 @@ ame_obs.nhmm <- function(
     )
     d <- data.frame(
       observation = model$symbol_names,
-      time = rep(colnames(model$observations), each = model$n_symbols),
+      time = rep(as.numeric(colnames(model$observations)), each = model$n_symbols),
       estimate = c(out$point_estimate)
     )
     for(i in seq_along(probs)) {
       d[paste0("q", 100 * probs[i])] <- c(out$quantiles[, , i])
     }
   } else {
-    times <- colnames(model$observations[[1]])
+    times <- as.numeric(colnames(model$observations[[1]]))
     symbol_names <- model$symbol_names
     obs <- create_obsArray(model)
     out <- ame_obs_nhmm_multichannel( 
@@ -147,7 +147,7 @@ ame_obs.nhmm <- function(
     )
     d <- data.frame(
       observation = model$symbol_names,
-      time = rep(colnames(model$observations), each = model$n_symbols),
+      time = rep(as.numeric(colnames(model$observations)), each = model$n_symbols),
       estimate = c(out$point_estimate)
     )
     for(i in seq_along(probs)) {

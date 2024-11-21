@@ -97,10 +97,10 @@ get_transition_probs.nhmm <- function(model, probs, remove_voids = TRUE, ...) {
   model$X_A[attr(model$X_A, "missing")] <- NA
   if (model$n_channels == 1L) {
     ids <- rownames(model$observations)
-    times <- colnames(model$observations)
+    times <- as.numeric(colnames(model$observations))
   } else {
     ids <- rownames(model$observations[[1]])
-    times <- colnames(model$observations[[1]])
+    times <- as.numeric(colnames(model$observations[[1]]))
   }
   if (!attr(model$X_A, "iv")) {
     X <- model$X_A[, , 1L, drop = FALSE]
@@ -182,12 +182,12 @@ get_emission_probs.nhmm <- function(model, probs, remove_voids = TRUE, ...) {
   model$X_B[attr(model$X_B, "missing")] <- NA
   if (C == 1L) {
     ids <- rownames(model$observations)
-    times <- colnames(model$observations)
+    times <- as.numeric(colnames(model$observations))
     symbol_names <- list(model$symbol_names)
     model$gammas$B <- list(model$gammas$B)
   } else {
     ids <- rownames(model$observations[[1]])
-    times <- colnames(model$observations[[1]])
+    times <- as.numeric(colnames(model$observations[[1]]))
     symbol_names <- model$symbol_names
   }
   if (!attr(model$X_B, "iv")) {

@@ -53,7 +53,11 @@ simulate_mnhmm <- function(
   )
   sequence_lengths <- rep(sequence_lengths, length.out = n_sequences)
   n_channels <- length(n_symbols)
-  symbol_names <- lapply(seq_len(n_channels), function(i) seq_len(n_symbols[i]))
+  symbol_names <- lapply(
+    seq_len(n_channels), function(i) {
+      as.character(seq_len(n_symbols[i]))
+    }
+  )
   T_ <- max(sequence_lengths)
   obs <- lapply(seq_len(n_channels), function(i) {
     suppressWarnings(suppressMessages(
@@ -98,7 +102,7 @@ simulate_mnhmm <- function(
     gamma_B <- c(eta_to_gamma_cube_field(unlist(model$etas$B, recursive = FALSE)))
     model$gammas$B <- split(gamma_B, rep(seq_along(l), l))
   }
- 
+  
   model$gammas$omega <- eta_to_gamma_mat(
     model$etas$omega
   )
@@ -120,7 +124,7 @@ simulate_mnhmm <- function(
       model$n_symbols
     )
   }
-
+  
   for (i in seq_len(model$n_sequences)) {
     Ti <- sequence_lengths[i]
     if (Ti < T_) {
@@ -143,7 +147,7 @@ simulate_mnhmm <- function(
       alphabet = state_names, cnames = seq_len(T_)
     )
   ))
- 
+  
   if (n_channels == 1) {
     dim(out$observations) <- dim(out$observations)[2:3]
     out$observations[] <- symbol_names[c(out$observations) + 1]

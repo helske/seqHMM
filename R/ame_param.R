@@ -86,10 +86,10 @@ ame_param.nhmm <- function(
   model2 <- update(model, newdata)
   C <- model$n_channels
   if (C == 1L) {
-    times <- colnames(model$observations)
+    times <- as.numeric(colnames(model$observations))
     symbol_names <- list(model$symbol_names)
   } else {
-    times <- colnames(model$observations[[1]])
+    times <- as.numeric(colnames(model$observations[[1]]))
     symbol_names <- model$symbol_names
   }
   if (attr(model$X_pi, "icpt_only")) {
