@@ -22,7 +22,7 @@ estimate_mnhmm(
   init_sd = 2,
   restarts = 0L,
   lambda = 0,
-  method = "EM-LBFGS",
+  method = "EM-DNM",
   pseudocount = 1e-04,
   store_data = TRUE,
   ...
@@ -93,8 +93,8 @@ the penalization term is scaled with number of non-missing observations.}
 \item{method}{Optimization method used. Option \code{"EM"} uses EM
 algorithm with L-BFGS in the M-step. Option \code{"DNM"} uses
 direct maximization of the log-likelihood, by default using L-BFGS. Option
-\code{"EM-LBFGS"} (the default) runs first a maximum of 100 iterations of EM and
-then switches to L-BFGS.}
+\code{"EM-DNM"} (the default) runs first a maximum of 100 iterations of EM and
+then switches to L-BFGS (but other algorithms of NLopt can be used).}
 
 \item{pseudocount}{A positive scalar to be added for the expected counts of
 E-step. Only used in EM algorithm. Default is 1e-4. Larger values can be used

@@ -44,11 +44,10 @@ estimate_mnhmm <- function(
     transition_formula = ~1, emission_formula = ~1, cluster_formula = ~1,
     data = NULL, time = NULL, id = NULL, state_names = NULL, 
     channel_names = NULL, cluster_names = NULL, inits = "random", init_sd = 2, 
-    restarts = 0L, lambda = 0, method = "EM-LBFGS", pseudocount = 1e-4, 
+    restarts = 0L, lambda = 0, method = "EM-DNM", pseudocount = 1e-4, 
     store_data = TRUE, ...) {
   
   call <- match.call()
-  method <- match.arg(method, c("EM-LBFGS", "DNM", "EM"))
   model <- build_mnhmm(
     observations, n_states, n_clusters, initial_formula, 
     transition_formula, emission_formula, cluster_formula, data, time, id, 
@@ -57,10 +56,6 @@ estimate_mnhmm <- function(
   stopifnot_(
     checkmate::test_flag(x = store_data), 
     "Argument {.arg store_data} must be a single {.cls logical} value."
-  )
-  stopifnot_(
-    checkmate::check_number(lambda, lower = 0), 
-    "Argument {.arg lambda} must be a single non-negative {.cls numeric} value."
   )
   if (store_data) {
     model$data <- data

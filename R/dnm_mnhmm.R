@@ -1,4 +1,4 @@
-dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, control, 
+dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, control, 
                        control_restart, save_all_solutions) {
   M <- model$n_symbols
   S <- model$n_states

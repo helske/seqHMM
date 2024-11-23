@@ -9,6 +9,11 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
     checkmate::test_int(x = restarts, lower = 0L), 
     "Argument {.arg restarts} must be a single integer."
   )
+  method <- match.arg(method, c("EM-DNM", "DNM", "EM"))
+  stopifnot_(
+    checkmate::check_number(lambda, lower = 0), 
+    "Argument {.arg lambda} must be a single non-negative {.cls numeric} value."
+  )
   control <- utils::modifyList(
     list(
       ftol_abs = 1e-8,
@@ -18,7 +23,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
       maxeval = 1e4,
       print_level = 0,
       algorithm = "NLOPT_LD_LBFGS",
-      maxeval_em_lbfgs = 100
+      maxeval_em_dnm = 100
     ),
     list(...)
   )
@@ -53,8 +58,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
     }
     return(model)
   }
-  if (method == "EM-LBFGS") {
-    out <- lbfgs_em_nhmm(
+  if (method == "EM-DNM") {
+    out <- em_dnm_nhmm(
       model, inits, init_sd, restarts, lambda, pseudocount, control, 
       control_restart, control_mstep, save_all_solutions
     )

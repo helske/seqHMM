@@ -86,7 +86,7 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
   double minf;
   mstep_iter = 0;
   int status = nlopt_optimize(opt_pi, x_pi.memptr(), &minf);
-  if (print_level > 0 && status > 0) {
+  if (print_level > 2 && status > 0) {
     Rcpp::Rcout<<"M-step of initial probabilities ended with status "<<status<<
       " after "<<mstep_iter<<" iterations."<<std::endl;
   }
@@ -202,7 +202,7 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
     x_A = arma::vectorise(eta_A.slice(s));
     mstep_iter = 0;
     status = nlopt_optimize(opt_A, x_A.memptr(), &minf);
-    if (print_level > 0 && status > 0) {
+    if (print_level > 2 && status > 0) {
       Rcpp::Rcout<<"M-step of transition probabilities of state "<<s + 1<<
         " ended with status "<<status<<" after "<<mstep_iter<<
           " iterations."<<std::endl;
@@ -323,7 +323,7 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
     x_B = arma::vectorise(eta_B.slice(s));
     mstep_iter = 0;
     status = nlopt_optimize(opt_B, x_B.memptr(), &minf);
-    if (print_level > 0 && status > 0) {
+    if (print_level > 2 && status > 0) {
       Rcpp::Rcout<<"M-step of emission probabilities of state "<<s + 1<<
         " ended with status "<<status<<" after "<<mstep_iter<<
           " iterations."<<std::endl;
@@ -450,7 +450,7 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
       x_B = arma::vectorise(eta_B(c).slice(s));
       mstep_iter = 0;
       status = nlopt_optimize(opt_B, x_B.memptr(), &minf);
-      if (print_level > 0 && status > 0) {
+      if (print_level > 2 && status > 0) {
         Rcpp::Rcout<<"M-step of emission probabilities of state "<<s + 1<<
           " and channel "<<c<<" ended with status "<<status<<" after "<<mstep_iter<<
             " iterations."<<std::endl;

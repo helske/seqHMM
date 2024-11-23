@@ -19,7 +19,7 @@ estimate_nhmm(
   init_sd = 2,
   restarts = 0L,
   lambda = 0,
-  method = "EM-LBFGS",
+  method = "EM-DNM",
   pseudocount = 1e-04,
   store_data = TRUE,
   ...
@@ -80,8 +80,8 @@ the penalization term is scaled with number of non-missing observations.}
 \item{method}{Optimization method used. Option \code{"EM"} uses EM
 algorithm with L-BFGS in the M-step. Option \code{"DNM"} uses
 direct maximization of the log-likelihood, by default using L-BFGS. Option
-\code{"EM-LBFGS"} (the default) runs first a maximum of 100 iterations of EM and
-then switches to L-BFGS.}
+\code{"EM-DNM"} (the default) runs first a maximum of 100 iterations of EM and
+then switches to L-BFGS (but other algorithms of NLopt can be used).}
 
 \item{pseudocount}{A positive scalar to be added for the expected counts of
 E-step. Only used in EM algorithm. Default is 1e-4. Larger values can be used
@@ -105,7 +105,7 @@ Function \code{estimate_nhmm} estimates a hidden Markov model object of class
 (potentially) depend on covariates.
 }
 \details{
-By default, the model parameters are estimated using EM-LBFGS algorithm
+By default, the model parameters are estimated using EM-DNM algorithm
 which first runs some iterations (100 by default) of EM algorithm, and then
 switches to L-BFGS. Other options include any numerical optimization
 algorithm of \code{\link[nloptr:nloptr]{nloptr::nloptr()}}, or plain EM algorithm where the
@@ -129,14 +129,14 @@ by passing arguments \code{ftol_abs}, \code{ftol_rel}, \code{xtol_abs}, and \cod
 \code{...}.  These, as well as argument \code{maxeval} (maximum number of iterations,
 1e4 by default), and \code{print_level} (default is \code{0}, no console output of
 optimization, larger values are more verbose), are used by the chosen
-main optimization method. The number of initial EM iterations in \code{EM-LBFGS}
-can be set using argument \code{maxeval_em_lbfgs} (default is 100), and
+main optimization method. The number of initial EM iterations in \code{EM-DNM}
+can be set using argument \code{maxeval_em_dnm} (default is 100), and
 algorithm for direct numerical optimization can be defined using argument
 \code{algorithm} (see \code{\link[nloptr:nloptr]{nloptr::nloptr()}} for possible options). It is also
 possible to separately control these stopping criteria for the multistart
 phase by defining (some of) them via argument \code{control_restart} which takes
 a list such as \code{list(ftol_rel = 0.01, print_level = 1)}. Additionally, same
-options can be defined sepately for the M-step of EM algorithm via list
+options can be defined separately for the M-step of EM algorithm via list
 \code{control_em}.
 }
 \examples{

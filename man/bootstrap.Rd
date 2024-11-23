@@ -12,7 +12,7 @@ bootstrap_coefs(model, ...)
   model,
   B = 1000,
   type = c("nonparametric", "parametric"),
-  method = "EM-LBFGS",
+  method = "EM-DNM",
   ...
 )
 
@@ -20,7 +20,7 @@ bootstrap_coefs(model, ...)
   model,
   B = 1000,
   type = c("nonparametric", "parametric"),
-  method = "EM-LBFGS",
+  method = "EM-DNM",
   ...
 )
 }
@@ -37,7 +37,7 @@ sequences with replacement, whereas the latter simulates new datasets based
 on the model.}
 
 \item{method}{Estimation method used in bootstrapping. Defaults to
-\code{"EM-LBFGS"}.}
+\code{"EM-DNM"}.}
 }
 \value{
 The original model with additional element \code{model$boot}, which

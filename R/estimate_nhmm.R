@@ -4,7 +4,7 @@
 #' `nhmm` where initial, transition and emission probabilities 
 #' (potentially) depend on covariates.
 #' 
-#' By default, the model parameters are estimated using EM-LBFGS algorithm 
+#' By default, the model parameters are estimated using EM-DNM algorithm 
 #' which first runs some iterations (100 by default) of EM algorithm, and then 
 #' switches to L-BFGS. Other options include any numerical optimization 
 #' algorithm of [nloptr::nloptr()], or plain EM algorithm where the 
@@ -28,14 +28,14 @@
 #' `...`.  These, as well as argument `maxeval` (maximum number of iterations, 
 #' 1e4 by default), and `print_level` (default is `0`, no console output of 
 #' optimization, larger values are more verbose), are used by the chosen 
-#' main optimization method. The number of initial EM iterations in `EM-LBFGS` 
-#' can be set using argument `maxeval_em_lbfgs` (default is 100), and 
+#' main optimization method. The number of initial EM iterations in `EM-DNM` 
+#' can be set using argument `maxeval_em_dnm` (default is 100), and 
 #' algorithm for direct numerical optimization can be defined using argument
 #' `algorithm` (see [nloptr::nloptr()] for possible options). It is also 
 #' possible to separately control these stopping criteria for the multistart 
 #' phase by defining (some of) them via argument `control_restart` which takes 
 #' a list such as `list(ftol_rel = 0.01, print_level = 1)`. Additionally, same 
-#' options can be defined sepately for the M-step of EM algorithm via list 
+#' options can be defined separately for the M-step of EM algorithm via list 
 #' `control_em`. 
 #' 
 #' @param observations Either the name of the response variable in `data`, or 
@@ -78,8 +78,8 @@
 #' @param method Optimization method used. Option `"EM"` uses EM
 #' algorithm with L-BFGS in the M-step. Option `"DNM"` uses 
 #' direct maximization of the log-likelihood, by default using L-BFGS. Option 
-#' `"EM-LBFGS"` (the default) runs first a maximum of 100 iterations of EM and 
-#' then switches to L-BFGS.
+#' `"EM-DNM"` (the default) runs first a maximum of 100 iterations of EM and 
+#' then switches to L-BFGS (but other algorithms of NLopt can be used).
 #' @param pseudocount A positive scalar to be added for the expected counts of 
 #' E-step. Only used in EM algorithm. Default is 1e-4. Larger values can be used 
 #' to avoid zero probabilities in initial, transition, and emission 
@@ -111,11 +111,10 @@ estimate_nhmm <- function(
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, 
     channel_names = NULL, inits = "random", init_sd = 2, restarts = 0L, 
-    lambda = 0, method = "EM-LBFGS", pseudocount = 1e-4, store_data = TRUE, 
+    lambda = 0, method = "EM-DNM", pseudocount = 1e-4, store_data = TRUE, 
     ...) {
   
   call <- match.call()
-  method <- match.arg(method, c("EM-LBFGS", "DNM", "EM"))
   model <- build_nhmm(
     observations, n_states, initial_formula, 
     transition_formula, emission_formula, data, time, id, state_names, 
@@ -124,10 +123,6 @@ estimate_nhmm <- function(
   stopifnot_(
     checkmate::test_flag(x = store_data), 
     "Argument {.arg store_data} must be a single {.cls logical} value."
-  )
-  stopifnot_(
-    checkmate::check_number(lambda, lower = 0), 
-    "Argument {.arg lambda} must be a single non-negative {.cls numeric} value."
   )
   if (store_data) {
     model$data <- data
