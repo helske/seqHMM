@@ -53,8 +53,9 @@
 #' @param restarts Number of times to run optimization using random starting 
 #' values (in addition to the final run). Default is 0.
 #' @param lambda Penalization factor `lambda` for penalized log-likelihood, where the 
-#' penalization is `lambda * sum(parameters^2)/(2 * n_obs)`, where `n_obs` is 
-#' the number of non-missing observations.
+#' penalization is `0.5 * lambda * sum(parameters^2)`. Note that with 
+#' `method = "L-BFGS"` both objective function (log-likelihood) and 
+#' the penalization term is scaled with number of non-missing observations.
 #' @param method Optimization method used. Default is `"EM"` which uses EM
 #' algorithm with L-BFGS in the M-step. Another option is `"LBFGS"` which uses 
 #' only L-BFGS for direct maximization of the log-likelihood.
