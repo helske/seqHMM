@@ -25,7 +25,7 @@ test_that("'hidden_paths' works for 'nhmm'", {
       hmm_biofam$observations, n_states = 5,
       inits = hmm_biofam[
         c("initial_probs", "transition_probs", "emission_probs")
-      ], maxeval = 1, labmda = 1
+      ], maxeval = 1, lambda = 1, method = "DNM"
     ),
     NA
   )
@@ -57,7 +57,8 @@ test_that("'hidden_paths' works for 'mnhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_mnhmm(
-      hmm_biofam$observations, n_states = 3, n_clusters = 2, maxeval = 1
+      hmm_biofam$observations, n_states = 3, n_clusters = 2, maxeval = 1,
+      em_dnm_maxeval = 1
     ),
     NA
   )
@@ -72,7 +73,7 @@ test_that("'hidden_paths' works for 'mnhmm'", {
   expect_error(
     fit <- estimate_mnhmm(
       hmm_biofam$observations[[1]], n_states = 3, n_clusters = 2,
-      restarts = 2, maxeval = 1
+      restarts = 2, maxeval = 1, method = "EM"
     ),
     NA
   )

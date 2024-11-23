@@ -44,7 +44,8 @@ test_that("estimate_mnhmm returns object of class 'mnhmm'", {
     fit <- estimate_mnhmm(
       "y", s, d, initial_formula = ~ x, transition_formula = ~z,
       emission_formula = ~ z, cluster_formula = ~ x,
-      data = data, time = "time", id = "id", maxeval = 1),
+      data = data, time = "time", id = "id", maxeval = 1,
+      method = "EM"),
     NA
   )
   expect_s3_class(
@@ -55,7 +56,7 @@ test_that("estimate_mnhmm returns object of class 'mnhmm'", {
     fit <- estimate_mnhmm(
       c("y", "y2"), s, d, initial_formula = ~ x, transition_formula = ~z,
       emission_formula = ~ z, cluster_formula = ~ x,
-      data = data, time = "time", id = "id", maxeval = 1),
+      data = data, time = "time", id = "id", maxeval = 1, method = "DNM"),
     NA
   )
   expect_s3_class(
@@ -126,7 +127,7 @@ test_that("estimate_mnhmm errors with incorrect observations", {
 test_that("build_mnhmm works with vector of characters as observations", {
   expect_error(
     model <- estimate_mnhmm("y", s, d, data = data, time = "time", id = "id",
-                            maxeval = 1),
+                            maxeval = 1, em_dnm_maxeval = 1),
     NA
   )
   expect_error(
@@ -144,7 +145,8 @@ test_that("build_mnhmm works with missing observations", {
   data$y[50:55] <- NA
   expect_error(
     model <- estimate_mnhmm(
-      "y", s, d, data = data, time = "time", id = "id", maxeval = 1),
+      "y", s, d, data = data, time = "time", id = "id", maxeval = 1,
+      em_dnm_maxeval = 1),
     NA
   )
   expect_equal(

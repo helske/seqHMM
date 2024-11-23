@@ -42,7 +42,8 @@ test_that("simulate_mnhmm, coef and get_probs works", {
       initial_formula = ~1, transition_formula = ~ x, 
       emission_formula = ~ x + z, cluster_formula = ~w, 
       data = d, time = "month", id = "person", 
-      inits = sim$model$etas, maxeval = 1),
+      inits = sim$model$etas, maxeval = 1,
+      em_dnm_maxeval = 1),
     NA
   )
   expect_error(
