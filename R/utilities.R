@@ -153,7 +153,7 @@ error_msg <- function(error) {
   nonfinite_msg <- paste0(
     "Error: Some of the values in ", gamma, " are nonfinite, likely due to ",
     "zero expected counts. Try increasing the penalty lambda or ",
-    "pseudocounts to avoid extreme probabilities.")
+    "pseudocounts (in case of EM algorithm) to avoid extreme probabilities.")
   if (!(error %in% -(1:4))) {
     mstep <- paste0("Error in M-step of ", gamma, ". ")
   } else {

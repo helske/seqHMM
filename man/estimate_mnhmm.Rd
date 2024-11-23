@@ -86,12 +86,13 @@ of the regression coefficients to zero, use \code{init_sd = 0}.}
 values (in addition to the final run). Default is 0.}
 
 \item{lambda}{Penalization factor \code{lambda} for penalized log-likelihood, where the
-penalization is \code{lambda * sum(parameters^2)/(2 * n_obs)}, where \code{n_obs} is
-the number of non-missing observations.}
+penalization is \code{0.5 * lambda * sum(parameters^2)}. Note that with
+\code{method = "L-BFGS"} both objective function (log-likelihood) and
+the penalization term is scaled with number of non-missing observations.}
 
 \item{method}{Optimization method used. Default is \code{"EM"} which uses EM
 algorithm with L-BFGS in the M-step. Another option is \code{"LBFGS"} which uses
-direct maximization of the log-likelihood using \code{\link[nloptr:nloptr]{nloptr::nloptr()}}.}
+only L-BFGS for direct maximization of the log-likelihood.}
 
 \item{pseudocount}{A positive scalar to be added for the expected counts of
 E-step. Only used in EM algorithm. Default is 1e-4. Larger values can be used

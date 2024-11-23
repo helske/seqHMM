@@ -8,6 +8,7 @@
 #include "sum_to_zero.h"
 #include "mstep_error.h"
 #include <nloptrAPI.h>
+#include <chrono>
 
 double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
   
@@ -90,7 +91,7 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
       " after "<<mstep_iter<<" iterations."<<std::endl;
   }
   if (status < 0) {
-    mstep_error_code = status - 100;
+    mstep_error_code = -status - 100;
     nlopt_destroy(opt_pi);
     return;
   }
@@ -207,7 +208,7 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
           " iterations."<<std::endl;
     }
     if (status < 0) {
-      mstep_error_code = status - 200;
+      mstep_error_code = -status - 200;
       nlopt_destroy(opt_A);
       return;
     }
@@ -328,7 +329,7 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
           " iterations."<<std::endl;
     }
     if (status < 0) {
-      mstep_error_code = status - 300;
+      mstep_error_code = -status - 300;
       nlopt_destroy(opt_B);
       return;
     }
@@ -455,7 +456,7 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
             " iterations."<<std::endl;
       }
       if (status < 0) {
-        mstep_error_code = status - 300;
+        mstep_error_code = -status - 300;
         nlopt_destroy(opt_B);
         return;
       }
@@ -545,8 +546,20 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
       Rcpp::Rcout<<pars<<std::endl;
     }
   }
-  while (relative_change > ftol_rel && absolute_change > ftol_abs && 
-         absolute_x_change > xtol_abs && relative_x_change > xtol_rel && iter < maxeval) {
+  // check for user interrupt every two seconds
+  auto start_time = std::chrono::steady_clock::now();
+  const std::chrono::seconds check_interval(2);
+  
+  while (relative_change > ftol_rel && absolute_change > ftol_abs &&
+         absolute_x_change > xtol_abs && 
+         relative_x_change > xtol_rel && iter < maxeval) {
+    
+    auto current_time = std::chrono::steady_clock::now();
+    if (current_time - start_time >= check_interval) {
+      Rcpp::checkUserInterrupt();
+      start_time = current_time; // Reset the timer
+    }
+    
     iter++;
     ll_new = 0;
     
@@ -737,8 +750,20 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
       Rcpp::Rcout<<pars<<std::endl;
     }
   }
-  while (relative_change > ftol_rel && absolute_change > ftol_abs && 
-         absolute_x_change > xtol_abs && relative_x_change > xtol_rel && iter < maxeval) {
+  // check for user interrupt every two seconds
+  auto start_time = std::chrono::steady_clock::now();
+  const std::chrono::seconds check_interval(2);
+  
+  while (relative_change > ftol_rel && absolute_change > ftol_abs &&
+         absolute_x_change > xtol_abs && 
+         relative_x_change > xtol_rel && iter < maxeval) {
+    
+    auto current_time = std::chrono::steady_clock::now();
+    if (current_time - start_time >= check_interval) {
+      Rcpp::checkUserInterrupt();
+      start_time = current_time; // Reset the timer
+    }
+    
     iter++;
     ll_new = 0;
     // Minimize obj(E_pi, E_A, E_B, eta_pi, eta_A, eta_B, X_pi, X_A, X_B)

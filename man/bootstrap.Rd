@@ -8,14 +8,26 @@
 \usage{
 bootstrap_coefs(model, ...)
 
-\method{bootstrap_coefs}{nhmm}(model, B = 1000, type = c("nonparametric", "parametric"), ...)
+\method{bootstrap_coefs}{nhmm}(
+  model,
+  B = 1000,
+  type = c("nonparametric", "parametric"),
+  method = "LBFGS",
+  ...
+)
 
-\method{bootstrap_coefs}{mnhmm}(model, B = 1000, type = c("nonparametric", "parametric"), ...)
+\method{bootstrap_coefs}{mnhmm}(
+  model,
+  B = 1000,
+  type = c("nonparametric", "parametric"),
+  method = "LBFGS",
+  ...
+)
 }
 \arguments{
 \item{model}{An \code{nhmm} or \code{mnhmm} object.}
 
-\item{...}{Additional arguments to \code{\link[=nloptr]{nloptr()}}.}
+\item{...}{Additional arguments to \code{\link[=estimate_nhmm]{estimate_nhmm()}} or \code{\link[=estimate_mnhmm]{estimate_mnhmm()}}.}
 
 \item{B}{number of bootstrap samples.}
 
@@ -23,6 +35,10 @@ bootstrap_coefs(model, ...)
 nonparametric or parametric bootstrap should be used. The former samples
 sequences with replacement, whereas the latter simulates new datasets based
 on the model.}
+
+\item{method}{Estimation method used in bootstrapping. Defaults to \code{"LBFGS"}
+as it is typically faster that \code{"EM"}, although \code{"EM"} can be more robust to
+converge to global optimum at each bootstrap sample.}
 }
 \value{
 The original model with additional element \code{model$boot}, which

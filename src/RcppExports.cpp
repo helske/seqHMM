@@ -816,8 +816,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // log_objective_nhmm_singlechannel
-Rcpp::List log_objective_nhmm_singlechannel(arma::mat& eta_pi, const arma::mat& X_pi, arma::cube& eta_A, const arma::cube& X_A, arma::cube& eta_B, const arma::cube& X_B, const arma::umat& obs, const arma::uvec& Ti, const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B);
-RcppExport SEXP _seqHMM_log_objective_nhmm_singlechannel(SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP obsSEXP, SEXP TiSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP) {
+Rcpp::List log_objective_nhmm_singlechannel(arma::mat& eta_pi, const arma::mat& X_pi, arma::cube& eta_A, const arma::cube& X_A, arma::cube& eta_B, const arma::cube& X_B, const arma::umat& obs, const arma::uvec& Ti, const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B, const unsigned int q_type);
+RcppExport SEXP _seqHMM_log_objective_nhmm_singlechannel(SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP obsSEXP, SEXP TiSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP q_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -836,7 +836,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const bool >::type iv_B(iv_BSEXP);
     Rcpp::traits::input_parameter< const bool >::type tv_A(tv_ASEXP);
     Rcpp::traits::input_parameter< const bool >::type tv_B(tv_BSEXP);
-    rcpp_result_gen = Rcpp::wrap(log_objective_nhmm_singlechannel(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B));
+    Rcpp::traits::input_parameter< const unsigned int >::type q_type(q_typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(log_objective_nhmm_singlechannel(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, q_type));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -1606,7 +1607,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_forward_nhmm_multichannel", (DL_FUNC) &_seqHMM_forward_nhmm_multichannel, 15},
     {"_seqHMM_forward_mnhmm_singlechannel", (DL_FUNC) &_seqHMM_forward_mnhmm_singlechannel, 18},
     {"_seqHMM_forward_mnhmm_multichannel", (DL_FUNC) &_seqHMM_forward_mnhmm_multichannel, 18},
-    {"_seqHMM_log_objective_nhmm_singlechannel", (DL_FUNC) &_seqHMM_log_objective_nhmm_singlechannel, 15},
+    {"_seqHMM_log_objective_nhmm_singlechannel", (DL_FUNC) &_seqHMM_log_objective_nhmm_singlechannel, 16},
     {"_seqHMM_log_objective_nhmm_multichannel", (DL_FUNC) &_seqHMM_log_objective_nhmm_multichannel, 15},
     {"_seqHMM_log_objective_mnhmm_singlechannel", (DL_FUNC) &_seqHMM_log_objective_mnhmm_singlechannel, 18},
     {"_seqHMM_log_objective_mnhmm_multichannel", (DL_FUNC) &_seqHMM_log_objective_mnhmm_multichannel, 18},

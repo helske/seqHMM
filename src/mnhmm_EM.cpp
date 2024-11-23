@@ -8,6 +8,7 @@
 #include "sum_to_zero.h"
 #include "mstep_error.h"
 #include <nloptrAPI.h>
+#include <chrono>
 
 double mnhmm_base::objective_omega(const arma::vec& x, arma::vec& grad) {
   
@@ -90,7 +91,7 @@ void mnhmm_base::mstep_omega(const double xtol_abs, const double ftol_abs,
       " after "<<mstep_iter<<" iterations."<<std::endl;
   }
   if (status < 0) {
-    mstep_error_code = status - 400;
+    mstep_error_code = -status - 400;
     nlopt_destroy(opt_omega);
     return;
   }
@@ -186,7 +187,7 @@ void mnhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
         " after "<<mstep_iter<<" iterations."<<std::endl;
     }
     if (status < 0) {
-      mstep_error_code = status - 100;
+      mstep_error_code = -status - 100;
       nlopt_destroy(opt_pi);
       return;
     }
@@ -307,7 +308,7 @@ void mnhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
             " iterations."<<std::endl;
       }
       if (status < 0) {
-        mstep_error_code = status - 200;
+        mstep_error_code = -status - 200;
         nlopt_destroy(opt_A);
         return;
       }
@@ -434,7 +435,7 @@ void mnhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
             " iterations."<<std::endl;
       }
       if (status < 0) {
-        mstep_error_code = status - 300;
+        mstep_error_code = -status - 300;
         nlopt_destroy(opt_B);
         return;
       }
@@ -565,7 +566,7 @@ void mnhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
               " iterations."<<std::endl;
         }
         if (status < 0) {
-          mstep_error_code = status - 300;
+          mstep_error_code = -status - 300;
           nlopt_destroy(opt_B);
           return;
         }
@@ -671,8 +672,20 @@ Rcpp::List EM_LBFGS_mnhmm_singlechannel(
       Rcpp::Rcout<<pars<<std::endl;
     }
   }
+  // check for user interrupt every two seconds
+  auto start_time = std::chrono::steady_clock::now();
+  const std::chrono::seconds check_interval(2);
+
   while (relative_change > ftol_rel && absolute_change > ftol_abs &&
-         absolute_x_change > xtol_abs && relative_x_change > xtol_rel && iter < maxeval) {
+         absolute_x_change > xtol_abs && 
+         relative_x_change > xtol_rel && iter < maxeval) {
+    
+    auto current_time = std::chrono::steady_clock::now();
+    if (current_time - start_time >= check_interval) {
+      Rcpp::checkUserInterrupt();
+      start_time = current_time; // Reset the timer
+    }
+    
     iter++;
     ll_new = 0;
     model.mstep_omega(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m);
@@ -770,6 +783,8 @@ Rcpp::List EM_LBFGS_mnhmm_singlechannel(
     }
     ll = ll_new;
     pars = new_pars;
+    if (iter % 1000 == 0)
+      Rcpp::checkUserInterrupt();
   }
   return Rcpp::List::create(
     Rcpp::Named("return_code") = 0,
@@ -891,8 +906,20 @@ Rcpp::List EM_LBFGS_mnhmm_multichannel(
       Rcpp::Rcout<<pars<<std::endl;
     }
   }
+  // check for user interrupt every two seconds
+  auto start_time = std::chrono::steady_clock::now();
+  const std::chrono::seconds check_interval(2);
+  
   while (relative_change > ftol_rel && absolute_change > ftol_abs &&
-         absolute_x_change > xtol_abs && relative_x_change > xtol_rel && iter < maxeval) {
+         absolute_x_change > xtol_abs && 
+         relative_x_change > xtol_rel && iter < maxeval) {
+    
+    auto current_time = std::chrono::steady_clock::now();
+    if (current_time - start_time >= check_interval) {
+      Rcpp::checkUserInterrupt();
+      start_time = current_time; // Reset the timer
+    }
+    
     iter++;
     ll_new = 0;
     

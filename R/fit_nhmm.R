@@ -88,6 +88,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
     need_grad <- grepl("NLOPT_LD_", control$algorithm)
     if (C == 1L) {
       if (need_grad) {
+        if (is.null(q_type <- list(...)$q_type)) q_type <- 0
         objectivef <- function(pars) {
           eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
           eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
@@ -96,7 +97,8 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
           )
           out <- log_objective_nhmm_singlechannel(
             eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti,
-            icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
+            icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
+            q_type
           )
           list(
             objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
