@@ -43,7 +43,7 @@ test_that("simulate_mnhmm, coef and get_probs works", {
       emission_formula = ~ x + z, cluster_formula = ~w, 
       data = d, time = "month", id = "person", 
       inits = sim$model$etas, maxeval = 1,
-      em_dnm_maxeval = 1),
+      maxeval_em_dnm = 1),
     NA
   )
   expect_error(

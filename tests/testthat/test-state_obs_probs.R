@@ -82,7 +82,7 @@ test_that("'state_obs_probs' works for multichannel 'mnhmm'", {
   expect_error(
     fit <- estimate_mnhmm(
       hmm_biofam$observations, n_states = 3, n_clusters = 2,
-      maxeval = 1, em_dnm_maxeval = 1
+      maxeval = 1, maxeval_em_dnm = 1
     ),
     NA
   )

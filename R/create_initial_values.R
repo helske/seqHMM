@@ -12,6 +12,15 @@ create_initial_values <- function(inits, model, init_sd) {
   K_pi <- nrow(model$X_pi)
   K_A <- nrow(model$X_A)
   K_B <- nrow(model$X_B)
+  if (D > 1) {
+    K_omega <- nrow(model$X_omega)
+  } else {
+    D <- 1
+  }
+  create_initial_values_(inits, init_sd, S, M, K_pi, K_A, K_B, D, K_omega)
+}
+create_initial_values_ <- function(inits, init_sd, S, M, K_pi, K_A, K_B, D = 1, 
+                                   K_omega = 0) {
   if(!is.null(inits$initial_probs)) {
     if (D > 1) {
       pi <- lapply(
@@ -82,7 +91,6 @@ create_initial_values <- function(inits, model, init_sd) {
     B = B
   )
   if (D > 1) {
-    K_omega <- nrow(model$X_omega)
     if(!is.null(inits$cluster_probs)) {
       omega <- create_inits_vector(
         inits$cluster_probs, D, K_omega, init_sd

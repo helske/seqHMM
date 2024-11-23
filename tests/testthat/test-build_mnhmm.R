@@ -127,7 +127,7 @@ test_that("estimate_mnhmm errors with incorrect observations", {
 test_that("build_mnhmm works with vector of characters as observations", {
   expect_error(
     model <- estimate_mnhmm("y", s, d, data = data, time = "time", id = "id",
-                            maxeval = 1, em_dnm_maxeval = 1),
+                            maxeval = 1, maxeval_em_dnm = 1),
     NA
   )
   expect_error(
@@ -146,7 +146,7 @@ test_that("build_mnhmm works with missing observations", {
   expect_error(
     model <- estimate_mnhmm(
       "y", s, d, data = data, time = "time", id = "id", maxeval = 1,
-      em_dnm_maxeval = 1),
+      maxeval_em_dnm = 1),
     NA
   )
   expect_equal(
