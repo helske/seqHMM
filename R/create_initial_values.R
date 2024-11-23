@@ -5,9 +5,13 @@
 #' 
 #' @param inits List (possibly empty).
 #' @noRd
-create_initial_values <- function(
-    inits, S, M, init_sd, K_pi, K_A, K_B, K_omega = 0, D = 1) {
-  
+create_initial_values <- function(inits, model, init_sd) {
+  S <- model$n_states
+  M <- model$n_symbols
+  D <- model$n_clusters
+  K_pi <- nrow(model$X_pi)
+  K_A <- nrow(model$X_A)
+  K_B <- nrow(model$X_B)
   if(!is.null(inits$initial_probs)) {
     if (D > 1) {
       pi <- lapply(
@@ -78,6 +82,7 @@ create_initial_values <- function(
     B = B
   )
   if (D > 1) {
+    K_omega <- nrow(model$X_omega)
     if(!is.null(inits$cluster_probs)) {
       omega <- create_inits_vector(
         inits$cluster_probs, D, K_omega, init_sd

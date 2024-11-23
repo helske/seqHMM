@@ -82,11 +82,7 @@ simulate_mnhmm <- function(
     if (is.null(coefs$emission_probs)) coefs$emission_probs <- NULL
     if (is.null(coefs$cluster_probs)) coefs$cluster_probs <- NULL
   }
-  model$etas <- create_initial_values(
-    coefs, model$n_states, model$n_symbols, init_sd, nrow(model$X_pi), 
-    nrow(model$X_A), nrow(model$X_B), nrow(model$X_omega), 
-    n_clusters
-  )
+  model$etas <- create_initial_values(coefs, model, init_sd)
   model$gammas$pi <- c(eta_to_gamma_mat_field(
     model$etas$pi
   ))

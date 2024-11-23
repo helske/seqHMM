@@ -74,10 +74,7 @@ simulate_nhmm <- function(
     if (is.null(coefs$transition_probs)) coefs$transition_probs <- NULL
     if (is.null(coefs$emission_probs)) coefs$emission_probs <- NULL
   }
-  model$etas <- create_initial_values(
-    coefs, model$n_states, model$n_symbols, init_sd, nrow(model$X_pi), 
-    nrow(model$X_A), nrow(model$X_B)
-  )
+  model$etas <- create_initial_values(coefs, model, init_sd)
   model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
   model$gammas$A <- eta_to_gamma_cube(model$etas$A)
   if (n_channels == 1) {

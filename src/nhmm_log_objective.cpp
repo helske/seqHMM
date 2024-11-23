@@ -18,19 +18,12 @@ Rcpp::List log_objective_nhmm_singlechannel(
     arma::cube& eta_B, const arma::cube& X_B,
     const arma::umat& obs, const arma::uvec& Ti,
     const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, 
-    const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B,
-    const unsigned int q_type) {
+    const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B) {
   
   nhmm_sc model(
       eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
       icpt_only_B, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B
   );
-  if (q_type > 0) {
-    model.Qs.eye();
-    model.Qs.row(model.S - 1).fill(-1);
-    model.Qm.eye();
-    model.Qm.row(model.M - 1).fill(-1);
-  }
   arma::vec loglik(model.N);
   arma::mat log_alpha(model.S, model.T);
   arma::mat log_beta(model.S, model.T);

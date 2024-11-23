@@ -127,19 +127,7 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
     omega <- model_matrix_cluster_formula(
       cluster_formula, data, n_sequences, n_clusters, time, id
     )
-    etas <- create_initial_values(
-      list(gamma_pi = NULL, gamma_A = NULL, gamma_B = NULL, gamma_omega = NULL), 
-      n_states, n_symbols, 0, 
-      length(attr(pi$X, "coef_names")), length(attr(A$X, "coef_names")), 
-      length(attr(B$X, "coef_names")), length(attr(omega$X, "coef_names")), n_clusters
-    )
   } else {
-    etas <- create_initial_values(
-      list(pi = NULL, A = NULL, B = NULL), 
-      n_states, n_symbols, 0, 
-      length(attr(pi$X, "coef_names")), length(attr(A$X, "coef_names")), 
-      length(attr(B$X, "coef_names"))
-    )
     omega <- list(n_pars = 0, iv = FALSE, X_mean = NULL, X_sd = NULL)
   }
   list(
@@ -155,7 +143,6 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
       transition_formula = A$formula,
       emission_formula = B$formula,
       cluster_formula = if(mixture) omega$formula else NULL,
-      etas = etas,
       state_names = state_names,
       symbol_names = attr(observations, "symbol_names"),
       channel_names = attr(observations, "channel_names"),

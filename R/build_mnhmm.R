@@ -23,6 +23,7 @@ build_mnhmm <- function(
     observations, data, time, id, n_states, state_names, channel_names, 
     initial_formula, transition_formula, emission_formula, cluster_formula, 
     cluster_names)
+  out$model$etas <- create_initial_values(list(), out$model, 0)
   structure(
     out$model,
     class = "mnhmm",
