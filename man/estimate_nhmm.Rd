@@ -19,7 +19,7 @@ estimate_nhmm(
   init_sd = 2,
   restarts = 0L,
   lambda = 0,
-  method = "EM",
+  method = "EM-LBFGS",
   pseudocount = 1e-04,
   store_data = TRUE,
   ...
@@ -77,9 +77,11 @@ penalization is \code{0.5 * lambda * sum(parameters^2)}. Note that with
 \code{method = "L-BFGS"} both objective function (log-likelihood) and
 the penalization term is scaled with number of non-missing observations.}
 
-\item{method}{Optimization method used. Default is \code{"EM"} which uses EM
-algorithm with L-BFGS in the M-step. Another option is \code{"LBFGS"} which uses
-only L-BFGS for direct maximization of the log-likelihood.}
+\item{method}{Optimization method used. Option \code{"EM"} uses EM
+algorithm with L-BFGS in the M-step. Option \code{"DNM"} uses
+direct maximization of the log-likelihood, by default using L-BFGS. Option
+\code{"EM-LBFGS"} (the default) runs first a maximum of 100 iterations of EM and
+then switches to L-BFGS.}
 
 \item{pseudocount}{A positive scalar to be added for the expected counts of
 E-step. Only used in EM algorithm. Default is 1e-4. Larger values can be used
@@ -91,13 +93,8 @@ is stored to the model object. For large datasets, this can be set to
 \code{FALSE}, in which case you might need to pass the data separately to some
 post-prosessing functions.}
 
-\item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}}. Most importantly,
-argument \code{maxeval} defines the maximum number of iterations for optimization.
-The default is \code{1000} for restarts and \code{10000} for the final optimization.
-Other useful arguments are \code{algorithm} (default uses LBFGS),
-\code{print_level} (default is \code{0}, no console output of optimization), and
-arguments for adjusting the stopping criteria of the optimization
-(see details).}
+\item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}} and EM algorithm.
+See details.}
 }
 \value{
 Object of class \code{nhmm}.
@@ -108,13 +105,11 @@ Function \code{estimate_nhmm} estimates a hidden Markov model object of class
 (potentially) depend on covariates.
 }
 \details{
-By default, the model parameters are estimated using LBFGS algorithm of
-\code{\link[nloptr:nloptr]{nloptr::nloptr()}}. The log-likelihood is
-scaled by the number of non-missing observations (\code{nobs(model)}), and the
-convergence is claimed when either the absolute or relative change of this
-objective function is less than \code{1e-8}, or the absolute change of the
-parameters is less than \code{1e-8}. The covariate data is standardardized before
-optimization.
+By default, the model parameters are estimated using EM-LBFGS algorithm
+which first runs some iterations (100 by default) of EM algorithm, and then
+switches to L-BFGS. Other options include any numerical optimization
+algorithm of \code{\link[nloptr:nloptr]{nloptr::nloptr()}}, or plain EM algorithm where the
+M-step uses L-BFGS (provided by NLopt).
 
 With multiple runs of optimization (by using the \code{restarts} argument), it is
 possible to parallelize these runs using the \code{future} package, e.g., by
@@ -122,6 +117,27 @@ calling \code{future::plan(multisession, workers = 2)} before \code{estimate_nhm
 See \code{\link[future:plan]{future::plan()}} for details. This is compatible with \code{progressr}
 package, so you can use \code{\link[progressr:with_progress]{progressr::with_progress()}} to track the progress
 of these multiple runs.
+
+During the estimation, the log-likelihood is scaled by the number of
+non-missing observations (\code{nobs(model)}), and the the covariate data is
+standardardized before optimization.
+
+By default, the convergence is claimed when either the absolute or relative
+change of the objective function is less than \code{1e-8}, or the absolute or
+relative change of the parameters is less than \code{1e-4}. These can be changed
+by passing arguments \code{ftol_abs}, \code{ftol_rel}, \code{xtol_abs}, and \code{xtol_rel} via
+\code{...}.  These, as well as argument \code{maxeval} (maximum number of iterations,
+1e4 by default), and \code{print_level} (default is \code{0}, no console output of
+optimization, larger values are more verbose), are used by the chosen
+main optimization method. The number of initial EM iterations in \code{EM-LBFGS}
+can be set using argument \code{maxeval_em_lbfgs} (default is 100), and
+algorithm for direct numerical optimization can be defined using argument
+\code{algorithm} (see \code{\link[nloptr:nloptr]{nloptr::nloptr()}} for possible options). It is also
+possible to separately control these stopping criteria for the multistart
+phase by defining (some of) them via argument \code{control_restart} which takes
+a list such as \code{list(ftol_rel = 0.01, print_level = 1)}. Additionally, same
+options can be defined sepately for the M-step of EM algorithm via list
+\code{control_em}.
 }
 \examples{
 data("mvad", package = "TraMineR")

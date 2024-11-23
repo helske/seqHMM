@@ -40,7 +40,7 @@ test_that("'hidden_paths' works for 'nhmm'", {
   expect_error(
     fit <- estimate_nhmm(
       hmm_biofam$observations[[1]], n_states = 3,
-      restarts = 2, maxeval = 1, method = "LBFGS"
+      restarts = 2, maxeval = 1, method = "DNM"
     ),
     NA
   )

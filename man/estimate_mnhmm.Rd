@@ -22,7 +22,7 @@ estimate_mnhmm(
   init_sd = 2,
   restarts = 0L,
   lambda = 0,
-  method = "EM",
+  method = "EM-LBFGS",
   pseudocount = 1e-04,
   store_data = TRUE,
   ...
@@ -90,9 +90,11 @@ penalization is \code{0.5 * lambda * sum(parameters^2)}. Note that with
 \code{method = "L-BFGS"} both objective function (log-likelihood) and
 the penalization term is scaled with number of non-missing observations.}
 
-\item{method}{Optimization method used. Default is \code{"EM"} which uses EM
-algorithm with L-BFGS in the M-step. Another option is \code{"LBFGS"} which uses
-only L-BFGS for direct maximization of the log-likelihood.}
+\item{method}{Optimization method used. Option \code{"EM"} uses EM
+algorithm with L-BFGS in the M-step. Option \code{"DNM"} uses
+direct maximization of the log-likelihood, by default using L-BFGS. Option
+\code{"EM-LBFGS"} (the default) runs first a maximum of 100 iterations of EM and
+then switches to L-BFGS.}
 
 \item{pseudocount}{A positive scalar to be added for the expected counts of
 E-step. Only used in EM algorithm. Default is 1e-4. Larger values can be used
@@ -104,13 +106,8 @@ is stored to the model object. For large datasets, this can be set to
 \code{FALSE}, in which case you might need to pass the data separately to some
 post-prosessing functions.}
 
-\item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}}. Most importantly,
-argument \code{maxeval} defines the maximum number of iterations for optimization.
-The default is \code{1000} for restarts and \code{10000} for the final optimization.
-Other useful arguments are \code{algorithm} (default uses LBFGS),
-\code{print_level} (default is \code{0}, no console output of optimization), and
-arguments for adjusting the stopping criteria of the optimization
-(see details).}
+\item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}} and EM algorithm.
+See details.}
 }
 \value{
 Object of class \code{mnhmm}.

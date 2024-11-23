@@ -75,9 +75,8 @@ permute_clusters <- function(model, pcp_mle) {
 #' nonparametric or parametric bootstrap should be used. The former samples 
 #' sequences with replacement, whereas the latter simulates new datasets based 
 #' on the model.
-#' @param method Estimation method used in bootstrapping. Defaults to `"LBFGS"` 
-#' as it is typically faster that `"EM"`, although `"EM"` can be more robust to 
-#' converge to global optimum at each bootstrap sample.
+#' @param method Estimation method used in bootstrapping. Defaults to 
+#' `"EM-LBFGS"`.
 #' @param ... Additional arguments to [estimate_nhmm()] or [estimate_mnhmm()].
 #' @return The original model with additional element `model$boot`, which 
 #' contains A n * B matrix where n is the number of coefficients. The order of 
@@ -91,7 +90,7 @@ bootstrap_coefs <- function(model, ...) {
 #' @export
 bootstrap_coefs.nhmm <- function(model, B = 1000, 
                                  type = c("nonparametric", "parametric"),
-                                 method = "LBFGS", ...) {
+                                 method = "EM-LBFGS", ...) {
   type <- match.arg(type)
   stopifnot_(
     checkmate::test_int(x = B, lower = 0L), 
@@ -148,7 +147,7 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
 #' @export
 bootstrap_coefs.mnhmm <- function(model, B = 1000, 
                                   type = c("nonparametric", "parametric"),
-                                  method = "LBFGS", ...) {
+                                  method = "EM-LBFGS", ...) {
   type <- match.arg(type)
   stopifnot_(
     checkmate::test_int(x = B, lower = 0L), 

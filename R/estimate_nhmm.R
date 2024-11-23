@@ -4,13 +4,11 @@
 #' `nhmm` where initial, transition and emission probabilities 
 #' (potentially) depend on covariates.
 #' 
-#' By default, the model parameters are estimated using LBFGS algorithm of 
-#' [nloptr::nloptr()]. The log-likelihood is 
-#' scaled by the number of non-missing observations (`nobs(model)`), and the 
-#' convergence is claimed when either the absolute or relative change of this 
-#' objective function is less than `1e-8`, or the absolute change of the 
-#' parameters is less than `1e-8`. The covariate data is standardardized before 
-#' optimization.
+#' By default, the model parameters are estimated using EM-LBFGS algorithm 
+#' which first runs some iterations (100 by default) of EM algorithm, and then 
+#' switches to L-BFGS. Other options include any numerical optimization 
+#' algorithm of [nloptr::nloptr()], or plain EM algorithm where the 
+#' M-step uses L-BFGS (provided by NLopt).
 #' 
 #' With multiple runs of optimization (by using the `restarts` argument), it is 
 #' possible to parallelize these runs using the `future` package, e.g., by 
@@ -18,6 +16,27 @@
 #' See [future::plan()] for details. This is compatible with `progressr` 
 #' package, so you can use [progressr::with_progress()] to track the progress 
 #' of these multiple runs.
+#' 
+#' During the estimation, the log-likelihood is scaled by the number of 
+#' non-missing observations (`nobs(model)`), and the the covariate data is 
+#' standardardized before optimization.
+#'  
+#' By default, the convergence is claimed when either the absolute or relative 
+#' change of the objective function is less than `1e-8`, or the absolute or 
+#' relative change of the parameters is less than `1e-4`. These can be changed
+#' by passing arguments `ftol_abs`, `ftol_rel`, `xtol_abs`, and `xtol_rel` via
+#' `...`.  These, as well as argument `maxeval` (maximum number of iterations, 
+#' 1e4 by default), and `print_level` (default is `0`, no console output of 
+#' optimization, larger values are more verbose), are used by the chosen 
+#' main optimization method. The number of initial EM iterations in `EM-LBFGS` 
+#' can be set using argument `maxeval_em_lbfgs` (default is 100), and 
+#' algorithm for direct numerical optimization can be defined using argument
+#' `algorithm` (see [nloptr::nloptr()] for possible options). It is also 
+#' possible to separately control these stopping criteria for the multistart 
+#' phase by defining (some of) them via argument `control_restart` which takes 
+#' a list such as `list(ftol_rel = 0.01, print_level = 1)`. Additionally, same 
+#' options can be defined sepately for the M-step of EM algorithm via list 
+#' `control_em`. 
 #' 
 #' @param observations Either the name of the response variable in `data`, or 
 #' an `stslist` object (see [TraMineR::seqdef()]) containing the 
@@ -56,9 +75,11 @@
 #' penalization is `0.5 * lambda * sum(parameters^2)`. Note that with 
 #' `method = "L-BFGS"` both objective function (log-likelihood) and 
 #' the penalization term is scaled with number of non-missing observations.
-#' @param method Optimization method used. Default is `"EM"` which uses EM
-#' algorithm with L-BFGS in the M-step. Another option is `"LBFGS"` which uses 
-#' only L-BFGS for direct maximization of the log-likelihood.
+#' @param method Optimization method used. Option `"EM"` uses EM
+#' algorithm with L-BFGS in the M-step. Option `"DNM"` uses 
+#' direct maximization of the log-likelihood, by default using L-BFGS. Option 
+#' `"EM-LBFGS"` (the default) runs first a maximum of 100 iterations of EM and 
+#' then switches to L-BFGS.
 #' @param pseudocount A positive scalar to be added for the expected counts of 
 #' E-step. Only used in EM algorithm. Default is 1e-4. Larger values can be used 
 #' to avoid zero probabilities in initial, transition, and emission 
@@ -67,13 +88,8 @@
 #' is stored to the model object. For large datasets, this can be set to 
 #' `FALSE`, in which case you might need to pass the data separately to some 
 #' post-prosessing functions.
-#' @param ... Additional arguments to [nloptr::nloptr()]. Most importantly,
-#' argument `maxeval` defines the maximum number of iterations for optimization.
-#' The default is `1000` for restarts and `10000` for the final optimization. 
-#' Other useful arguments are `algorithm` (default uses LBFGS),
-#' `print_level` (default is `0`, no console output of optimization), and 
-#' arguments for adjusting the stopping criteria of the optimization 
-#' (see details).
+#' @param ... Additional arguments to [nloptr::nloptr()] and EM algorithm. 
+#' See details.
 #' @return Object of class `nhmm`.
 #' @export
 #' @examples
@@ -93,14 +109,13 @@
 estimate_nhmm <- function(
     observations, n_states, initial_formula = ~1, 
     transition_formula = ~1, emission_formula = ~1, 
-    data = NULL, time = NULL, id = NULL, state_names = NULL, channel_names = NULL, 
-    inits = "random", init_sd = 2, restarts = 0L, lambda = 0, method = "EM",
-    pseudocount = 1e-4, store_data = TRUE, ...) {
+    data = NULL, time = NULL, id = NULL, state_names = NULL, 
+    channel_names = NULL, inits = "random", init_sd = 2, restarts = 0L, 
+    lambda = 0, method = "EM-LBFGS", pseudocount = 1e-4, store_data = TRUE, 
+    ...) {
   
   call <- match.call()
-  
-  method <- match.arg(method, c("LBFGS", "EM"))
-  
+  method <- match.arg(method, c("EM-LBFGS", "DNM", "EM"))
   model <- build_nhmm(
     observations, n_states, initial_formula, 
     transition_formula, emission_formula, data, time, id, state_names, 

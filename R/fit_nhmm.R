@@ -17,11 +17,18 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
       xtol_rel = 1e-4,
       maxeval = 1e4,
       print_level = 0,
-      algorithm = "NLOPT_LD_LBFGS"
+      algorithm = "NLOPT_LD_LBFGS",
+      maxeval_em_lbfgs = 100
     ),
     list(...)
   )
   control_restart <- utils::modifyList(control, control_restart)
+  stopifnot_(
+    identical(control$algorithm, control_restart$algorithm),
+    c("Cannot mix different algorithms for multistart and final optimization.",
+      "Found algorithm {.val {control$algorithm}} for final optimization and 
+      {.val {control_restart$algorithm}} for multistart.")
+  )
   control_mstep <- utils::modifyList(control, control_mstep)
   
   if (identical(inits, "random")) {
@@ -46,8 +53,14 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
     }
     return(model)
   }
-  if (method == "LBFGS") {
-    out <- lbfgs_nhmm(
+  if (method == "EM-LBFGS") {
+    out <- lbfgs_em_nhmm(
+      model, inits, init_sd, restarts, lambda, pseudocount, control, 
+      control_restart, control_mstep, save_all_solutions
+    )
+  }
+  if (method == "DNM") {
+    out <- dnm_nhmm(
       model, inits, init_sd, restarts, lambda, control, control_restart, 
       save_all_solutions 
     )

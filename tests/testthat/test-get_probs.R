@@ -6,7 +6,7 @@ test_that("'get_probs' and 'coef' works for multichannel 'nhmm'", {
       hmm_biofam$observations, n_states = 5,
       inits = hmm_biofam[
         c("initial_probs", "transition_probs", "emission_probs")
-      ], maxeval = 1, method = "LBFGS"
+      ], maxeval = 1, method = "DNM"
     ),
     NA
   )
@@ -24,7 +24,7 @@ test_that("'get_probs' and 'coef' works for single-channel 'nhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_nhmm(
-      hmm_biofam$observations[[1]], n_states = 3, maxeval = 1, method = "LBFGS"
+      hmm_biofam$observations[[1]], n_states = 3, maxeval = 1, method = "DNM"
     ),
     NA
   )

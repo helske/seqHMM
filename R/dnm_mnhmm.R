@@ -1,4 +1,4 @@
-lbfgs_nhmm <- function(model, inits, init_sd, restarts, lambda, control, 
+dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, control, 
                        control_restart, save_all_solutions) {
   M <- model$n_symbols
   S <- model$n_states
@@ -202,7 +202,8 @@ lbfgs_nhmm <- function(model, inits, init_sd, restarts, lambda, control,
     time = end_time - start_time,
     lambda = lambda,
     pseudocount = 0,
-    method = "LBFGS"
+    method = "DNM", 
+    algorithm = control$algorithm
   )
   model
 }

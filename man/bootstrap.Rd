@@ -12,7 +12,7 @@ bootstrap_coefs(model, ...)
   model,
   B = 1000,
   type = c("nonparametric", "parametric"),
-  method = "LBFGS",
+  method = "EM-LBFGS",
   ...
 )
 
@@ -20,7 +20,7 @@ bootstrap_coefs(model, ...)
   model,
   B = 1000,
   type = c("nonparametric", "parametric"),
-  method = "LBFGS",
+  method = "EM-LBFGS",
   ...
 )
 }
@@ -36,9 +36,8 @@ nonparametric or parametric bootstrap should be used. The former samples
 sequences with replacement, whereas the latter simulates new datasets based
 on the model.}
 
-\item{method}{Estimation method used in bootstrapping. Defaults to \code{"LBFGS"}
-as it is typically faster that \code{"EM"}, although \code{"EM"} can be more robust to
-converge to global optimum at each bootstrap sample.}
+\item{method}{Estimation method used in bootstrapping. Defaults to
+\code{"EM-LBFGS"}.}
 }
 \value{
 The original model with additional element \code{model$boot}, which
