@@ -91,7 +91,7 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
       " after "<<mstep_iter<<" iterations."<<std::endl;
   }
   if (status < 0) {
-    mstep_error_code = -status - 100;
+    mstep_error_code = status - 100;
     nlopt_destroy(opt_pi);
     return;
   }
@@ -208,7 +208,7 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
           " iterations."<<std::endl;
     }
     if (status < 0) {
-      mstep_error_code = -status - 200;
+      mstep_error_code = status - 200;
       nlopt_destroy(opt_A);
       return;
     }
@@ -329,7 +329,7 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
           " iterations."<<std::endl;
     }
     if (status < 0) {
-      mstep_error_code = -status - 300;
+      mstep_error_code = status - 300;
       nlopt_destroy(opt_B);
       return;
     }
@@ -456,7 +456,7 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
             " iterations."<<std::endl;
       }
       if (status < 0) {
-        mstep_error_code = -status - 300;
+        mstep_error_code = status - 300;
         nlopt_destroy(opt_B);
         return;
       }
