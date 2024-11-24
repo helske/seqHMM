@@ -23,7 +23,7 @@
 #'  
 #' By default, the convergence is claimed when either the absolute or relative 
 #' change of the objective function is less than `1e-8`, or the absolute or 
-#' relative change of the parameters is less than `1e-4`. These can be changed
+#' relative change of the parameters is less than `1e-6`. These can be changed
 #' by passing arguments `ftol_abs`, `ftol_rel`, `xtol_abs`, and `xtol_rel` via
 #' `...`.  These, as well as argument `maxeval` (maximum number of iterations, 
 #' 1e4 by default), and `print_level` (default is `0`, no console output of 
