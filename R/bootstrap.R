@@ -127,7 +127,7 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
       seq_len(B), function(i) {
         mod <- simulate_nhmm(
           N, T_, M, S, formula_pi, formula_A, formula_B,
-          data = d, time, id, init)$model
+          d, time, id, init, 0)$model
         fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
                         method = method, pseudocount = pseudocount, ...)
         fit$gammas <- permute_states(fit$gammas, gammas_mle)
@@ -196,7 +196,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
       seq_len(B), function(i) {
         mod <- simulate_mnhmm(
           N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
-          data = d, time, id, init)$model
+          d, time, id, init, 0)$model
         fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
                          method = method, pseudocount = pseudocount, ...)
         fit <- permute_clusters(fit, pcp_mle)
