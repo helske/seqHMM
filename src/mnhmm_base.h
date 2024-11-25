@@ -50,7 +50,7 @@ struct mnhmm_base {
   arma::field<arma::cube> E_A;
   arma::uword current_s;
   arma::uword current_d;
-  arma::uword n_obs;
+  const arma::uword n_obs;
   double lambda;
   
   int mstep_iter;
@@ -75,6 +75,7 @@ struct mnhmm_base {
     arma::mat& eta_omega_,
     arma::field<arma::mat>& eta_pi_,
     arma::field<arma::cube>& eta_A_,
+    const arma::uword n_obs_ = 0,
     const double lambda = 0,
     int mstep_iter = 0,
     int mstep_error_code = 0)
@@ -119,7 +120,7 @@ struct mnhmm_base {
       E_A(S, D),
       current_s(0),
       current_d(0),
-      n_obs(sum(Ti)),
+      n_obs(n_obs_),
       lambda(lambda){
     for (arma::uword d = 0; d < D; d++) {
       pi(d) = arma::vec(S);

@@ -593,9 +593,10 @@ Rcpp::List EM_LBFGS_mnhmm_singlechannel(
     const double lambda, const double pseudocount) {
   
   mnhmm_sc model(
-      eta_A(0).n_slices, eta_A.n_rows, X_omega, X_pi, X_A, X_B, Ti, 
+      eta_A(0).n_slices, eta_A.n_rows, X_omega, X_pi, X_A, X_B, Ti,
       icpt_only_omega, icpt_only_pi, icpt_only_A, icpt_only_B, 
-      iv_A, iv_B, tv_A, tv_B, obs, eta_omega, eta_pi, eta_A, eta_B
+      iv_A, iv_B, tv_A, tv_B, obs, eta_omega, eta_pi, eta_A, eta_B, 
+      n_obs, lambda
   );
   // EM-algorithm begins
   arma::uword n_omega = model.eta_omega.n_elem;
@@ -820,9 +821,10 @@ Rcpp::List EM_LBFGS_mnhmm_multichannel(
     const double lambda, const double pseudocount) {
   
   mnhmm_mc model(
-      eta_A(0).n_slices, eta_A.n_rows, X_omega, X_pi, X_A, X_B, Ti, 
+      eta_A(0).n_slices, eta_A.n_rows, X_omega, X_pi, X_A, X_B, Ti,
       icpt_only_omega, icpt_only_pi, icpt_only_A, icpt_only_B, 
-      iv_A, iv_B, tv_A, tv_B, obs, eta_omega, eta_pi, eta_A, eta_B
+      iv_A, iv_B, tv_A, tv_B, obs, eta_omega, eta_pi, eta_A, eta_B, n_obs, 
+      lambda
   );
   // EM-algorithm begins
   arma::uword n_omega = model.eta_omega.n_elem;

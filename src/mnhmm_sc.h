@@ -40,10 +40,11 @@ struct mnhmm_sc : public mnhmm_base {
     arma::field<arma::mat>& eta_pi_,
     arma::field<arma::cube>& eta_A_,
     arma::field<arma::cube>& eta_B_,
-    const double lambda = 0)
+    const arma::uword n_obs_ = 0,
+    const double lambda_ = 0)
     : mnhmm_base(S_, D_, X_d_, X_pi_, X_s_, X_o_, Ti_, icpt_only_omega_, 
       icpt_only_pi_, icpt_only_A_, icpt_only_B_, iv_A_, 
-      iv_B_, tv_A_, tv_B_, eta_omega_, eta_pi_, eta_A_, lambda),
+      iv_B_, tv_A_, tv_B_, eta_omega_, eta_pi_, eta_A_, n_obs_, lambda_),
       obs(obs_), 
       eta_B(eta_B_), 
       M(eta_B(0).n_rows + 1),

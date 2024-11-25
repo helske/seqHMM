@@ -36,9 +36,10 @@ struct nhmm_sc : public nhmm_base {
     arma::mat& eta_pi_,
     arma::cube& eta_A_,
     arma::cube& eta_B_,
-    const double lambda = 0)
+    const arma::uword n_obs_ = 0,
+    const double lambda_ = 0)
     : nhmm_base(S_, X_pi_, X_s_, X_o_, Ti_, icpt_only_pi_, icpt_only_A_, 
-      icpt_only_B_, iv_A_, iv_B_, tv_A_, tv_B_, eta_pi_, eta_A_, lambda),
+      icpt_only_B_, iv_A_, iv_B_, tv_A_, tv_B_, eta_pi_, eta_A_, n_obs_, lambda_),
       obs(obs_),  
       eta_B(eta_B_), 
       M(eta_B.n_rows + 1), 

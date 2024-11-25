@@ -482,7 +482,8 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
   
   nhmm_sc model(
       eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
-      icpt_only_B, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B, lambda
+      icpt_only_B, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B, n_obs, 
+      lambda
   );
   
   // EM-algorithm begins
@@ -682,7 +683,8 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
   
   nhmm_mc model(
       eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
-      icpt_only_B, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B, lambda
+      icpt_only_B, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B, n_obs, 
+      lambda
   );
   
   // EM-algorithm begins

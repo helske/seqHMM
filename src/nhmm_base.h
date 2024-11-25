@@ -40,7 +40,7 @@ struct nhmm_base {
   arma::mat E_Pi;
   arma::field<arma::cube> E_A;
   arma::uword current_s;
-  arma::uword n_obs;
+  const arma::uword n_obs;
   double lambda;
   
   int mstep_iter;
@@ -51,7 +51,7 @@ struct nhmm_base {
     const arma::mat& X_pi_,
     const arma::cube& X_s_,
     const arma::cube& X_o_,
-    const arma::uvec& Ti_,
+    const arma::uvec& Ti_, 
     const bool icpt_only_pi_,
     const bool icpt_only_A_,
     const bool icpt_only_B_,
@@ -61,7 +61,8 @@ struct nhmm_base {
     const bool tv_B_,
     arma::mat& eta_pi_,
     arma::cube& eta_A_,
-    const double lambda = 0,
+    const arma::uword n_obs_ = 0,
+    const double lambda_ = 0,
     int mstep_iter = 0,
     int mstep_error_code = 0)
     : S(S_), 
@@ -73,7 +74,7 @@ struct nhmm_base {
       K_B(X_B.n_rows),
       N(X_A.n_slices),
       T(X_A.n_cols),
-      Ti(Ti_),
+      Ti(Ti_), 
       icpt_only_pi(icpt_only_pi_),
       icpt_only_A(icpt_only_A_),
       icpt_only_B(icpt_only_B_),
@@ -93,9 +94,9 @@ struct nhmm_base {
       log_py(S, T), 
       E_Pi(S, N), 
       E_A(S), 
-      current_s(0), 
-      n_obs(sum(Ti)),
-      lambda(lambda) {
+      current_s(0),
+      n_obs(n_obs_),
+      lambda(lambda_) {
     for (arma::uword s = 0; s < S; s++) {
       E_A(s) = arma::cube(S, N, T);
     }
