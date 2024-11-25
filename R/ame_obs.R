@@ -48,8 +48,7 @@ ame_obs <- function(model, variable, values, start_time, ...) {
 #'   fit, variable = "male", values = c("yes", "no"), start_time = 5
 #' )
 ame_obs.nhmm <- function(
-    model, variable, values, start_time, newdata = NULL, probs = c(0.05, 0.95),
-    ...) {
+    model, variable, values, start_time, newdata = NULL, probs, ...) {
   stopifnot_(
     attr(model, "intercept_only") == FALSE,
     "Model does not contain any covariates."
@@ -62,6 +61,33 @@ ame_obs.nhmm <- function(
     length(values) == 2, 
     "Argument {.arg values} should contain two values for 
     variable {.var variable}.")
+  if (!missing(probs)) {
+    return_quantiles <- TRUE
+    stopifnot_(
+      checkmate::test_numeric(
+        x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
+      ),
+      "Argument {.arg probs} must be a {.cls numeric} vector with values
+      between 0 and 1."
+    )
+    stopifnot_(
+      !is.null(model$boot),
+      paste0(
+        "Model does not contain bootstrap samples of coefficients. ",
+        "Run {.fn bootstrap_coefs} first in order to compute quantiles."
+      )
+    )
+  } else {
+    return_quantiles <- FALSE
+    # dummy stuff for C++
+    model$boot <- list(
+      gamma_pi = list(model$gammas$pi),
+      gamma_A = list(model$gammas$A),
+      gamma_B = list(model$gammas$B)
+    )
+    probs <- 0.5
+  }
+  
   time <- model$time_variable
   id <- model$id_variable
   if (!is.null(newdata)) {
@@ -89,16 +115,9 @@ ame_obs.nhmm <- function(
     )
     newdata <- model$data
   }
-  stopifnot_(
-    !is.null(model$boot),
-    paste0(
-      "Model does not contain bootstrap samples of coefficients. ",
-      "Run {.fn bootstrap_coefs} first."
-    )
-  )
-  newdata[[variable]][] <- values[1]
+  newdata[[variable]][newdata[[time]] >= start_time] <- values[1]
   X1 <- update(model, newdata)[c("X_pi", "X_A", "X_B")]
-  newdata[[variable]][] <- values[2]
+  newdata[[variable]][newdata[[time]] >= start_time] <- values[2]
   X2 <- update(model, newdata)[c("X_pi", "X_A", "X_B")]
   C <- model$n_channels
   if (C == 1L) {
@@ -124,8 +143,10 @@ ame_obs.nhmm <- function(
       time = rep(as.numeric(colnames(model$observations)), each = model$n_symbols),
       estimate = c(out$point_estimate)
     )
-    for(i in seq_along(probs)) {
-      d[paste0("q", 100 * probs[i])] <- c(out$quantiles[, , i])
+    if (return_quantiles) {
+      for(i in seq_along(probs)) {
+        d[paste0("q", 100 * probs[i])] <- c(out$quantiles[, , i])
+      }
     }
   } else {
     times <- as.numeric(colnames(model$observations[[1]]))
@@ -150,11 +171,13 @@ ame_obs.nhmm <- function(
       time = rep(as.numeric(colnames(model$observations)), each = model$n_symbols),
       estimate = c(out$point_estimate)
     )
-    for(i in seq_along(probs)) {
-      d[paste0("q", 100 * probs[i])] <- c(out$quantiles[, , i])
+    if (return_quantiles) {
+      for(i in seq_along(probs)) {
+        d[paste0("q", 100 * probs[i])] <- c(out$quantiles[, , i])
+      }
     }
   }
-  d
+  d[d[[time]] >= start_time, ]
 }
 
 #' @rdname ame_obs

@@ -48,39 +48,43 @@ Rcpp::List ame_obs_nhmm_singlechannel(
       point_estimate.col(t) = arma::mean(diff.cols(non_na(t)), 1);
     }
   }
-  
   arma::uword n_samples = boot_gamma_pi.n_elem;
-  arma::cube out(M, T, n_samples, arma::fill::value(arma::datum::nan));
-  for (arma::uword i = 0; i < n_samples; i++) {
-    model1.gamma_pi = boot_gamma_pi(i);
-    for (arma::uword s = 0; s < S; s++) {
-      model1.gamma_A.slice(s) = boot_gamma_A(i).slice(s);
-      model1.gamma_B.slice(s) = boot_gamma_B(i).slice(s);
-    }
-    model1.compute_state_obs_probs(start, obs_prob1, state_prob1);
-    model2.gamma_pi = boot_gamma_pi(i);
-    for (arma::uword s = 0; s < S; s++) {
-      model2.gamma_A.slice(s) = boot_gamma_A(i).slice(s);
-      model2.gamma_B.slice(s) = boot_gamma_B(i).slice(s);
-    }
-    model2.compute_state_obs_probs(start, obs_prob2, state_prob2);
-    for (arma::uword t = start - 1; t < T; t++) {
-      diff = obs_prob1.col(t) - obs_prob2.col(t);
-      if (!non_na(t).is_empty()) {
-        out.slice(i).col(t) = arma::mean(diff.cols(non_na(t)), 1);
+  if (n_samples > 1) {
+    arma::cube out(M, T, n_samples, arma::fill::value(arma::datum::nan));
+    for (arma::uword i = 0; i < n_samples; i++) {
+      model1.gamma_pi = boot_gamma_pi(i);
+      for (arma::uword s = 0; s < S; s++) {
+        model1.gamma_A.slice(s) = boot_gamma_A(i).slice(s);
+        model1.gamma_B.slice(s) = boot_gamma_B(i).slice(s);
+      }
+      model1.compute_state_obs_probs(start, obs_prob1, state_prob1);
+      model2.gamma_pi = boot_gamma_pi(i);
+      for (arma::uword s = 0; s < S; s++) {
+        model2.gamma_A.slice(s) = boot_gamma_A(i).slice(s);
+        model2.gamma_B.slice(s) = boot_gamma_B(i).slice(s);
+      }
+      model2.compute_state_obs_probs(start, obs_prob2, state_prob2);
+      for (arma::uword t = start - 1; t < T; t++) {
+        diff = obs_prob1.col(t) - obs_prob2.col(t);
+        if (!non_na(t).is_empty()) {
+          out.slice(i).col(t) = arma::mean(diff.cols(non_na(t)), 1);
+        }
       }
     }
-  }
-  
-  arma::cube quantiles(M, T, probs.n_elem, arma::fill::value(arma::datum::nan));
-  arma::mat tmp(M, n_samples);
-  for (arma::uword t = start - 1; t < T; t++) {
-    tmp = out.col(t);
-    quantiles.col(t) = arma::quantile(tmp, probs, 1);
+    
+    arma::cube quantiles(M, T, probs.n_elem, arma::fill::value(arma::datum::nan));
+    arma::mat tmp(M, n_samples);
+    for (arma::uword t = start - 1; t < T; t++) {
+      tmp = out.col(t);
+      quantiles.col(t) = arma::quantile(tmp, probs, 1);
+    }
+    return Rcpp::List::create(
+      Rcpp::Named("point_estimate") = Rcpp::wrap(point_estimate),
+      Rcpp::Named("quantiles") = Rcpp::wrap(quantiles)
+    );
   }
   return Rcpp::List::create(
-    Rcpp::Named("point_estimate") = Rcpp::wrap(point_estimate),
-    Rcpp::Named("quantiles") = Rcpp::wrap(quantiles)
+    Rcpp::Named("point_estimate") = Rcpp::wrap(point_estimate)
   );
 }
 // 

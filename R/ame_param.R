@@ -32,8 +32,7 @@ ame_param <- function(model, variable, values, ...) {
 #' @rdname ame_param
 #' @export
 ame_param.nhmm <- function(
-    model, variable, values, newdata = NULL, probs = c(0.05, 0.95),
-    ...) {
+    model, variable, values, newdata = NULL, probs, ...) {
   stopifnot_(
     attr(model, "intercept_only") == FALSE,
     "Model does not contain any covariates."
@@ -46,6 +45,27 @@ ame_param.nhmm <- function(
     length(values) == 2, 
     "Argument {.arg values} should contain two values for 
     variable {.var variable}.")
+  
+  if (!missing(probs)) {
+    return_quantiles <- TRUE
+    stopifnot_(
+      checkmate::test_numeric(
+        x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
+      ),
+      "Argument {.arg probs} must be a {.cls numeric} vector with values
+      between 0 and 1."
+    )
+    stopifnot_(
+      !is.null(model$boot),
+      paste0(
+        "Model does not contain bootstrap samples of coefficients. ",
+        "Run {.fn bootstrap_coefs} first in order to compute quantiles."
+      )
+    )
+  } else {
+    return_quantiles <- FALSE
+  }
+  
   time <- model$time_variable
   id <- model$id_variable
   if (!is.null(newdata)) {
@@ -73,13 +93,6 @@ ame_param.nhmm <- function(
     )
     newdata <- model$data
   }
-  stopifnot_(
-    !is.null(model$boot),
-    paste0(
-      "Model does not contain bootstrap samples of coefficients. ",
-      "Run {.fn bootstrap_coefs} first."
-    )
-  )
   newdata[[variable]][] <- values[1]
   model1 <- update(model, newdata)
   newdata[[variable]][] <- values[2]
@@ -88,6 +101,7 @@ ame_param.nhmm <- function(
   if (C == 1L) {
     times <- as.numeric(colnames(model$observations))
     symbol_names <- list(model$symbol_names)
+    model$gammas$B <- list(model$gammas$B)
   } else {
     times <- as.numeric(colnames(model$observations[[1]]))
     symbol_names <- model$symbol_names
@@ -99,17 +113,18 @@ ame_param.nhmm <- function(
     X1 <- model1$X_pi
     X2 <- model2$X_pi
   }
-  qs_pi <- get_pi_ame(model$boot$gamma_pi, X1, X2, probs)
-  colnames(qs_pi) <- paste0("q", 100 * probs)
-  ame_pi <- cbind(
-    data.frame(
-      state = model$state_names,
-      estimate = rowMeans(
-        get_pi_all(model$gammas$pi, X1) - get_pi_all(model$gammas$pi, X2) 
-      )
-    ),
-    qs_pi
+  ame_pi <-  data.frame(
+    state = model$state_names,
+    estimate = rowMeans(
+      get_pi_all(model$gammas$pi, X1) - get_pi_all(model$gammas$pi, X2) 
+    )
   )
+  if (return_quantiles) {
+    qs_pi <- get_pi_ame(model$boot$gamma_pi, X1, X2, probs)
+    colnames(qs_pi) <- paste0("q", 100 * probs)
+    ame_pi <- cbind(ame_pi, qs_pi)
+  }
+  
   model1$X_A[attr(model$X_A, "missing")] <- NA
   model2$X_A[attr(model$X_A, "missing")] <- NA
   if (!attr(model$X_A, "iv")) {
@@ -123,25 +138,25 @@ ame_param.nhmm <- function(
   S <- model$n_states
   N <- model$n_sequences
   T_ <- model$length_of_sequences
-  qs_A <- get_A_ame(model$boot$gamma_A, X1, X2, tv_A, probs)
-  colnames(qs_A) <- paste0("q", 100 * probs)
-  ame_A <- cbind(
-    data.frame(
-      time = rep(times, each = S^2),
-      state_from = model$state_names,
-      state_to = rep(model$state_names, each = S),
-      estimate = c(
-        apply(
-          array(
-            unlist(get_A_all(model$gammas$A, X1, tv_A)) -
-              unlist(get_A_all(model$gammas$A, X2, tv_A)), 
-            c(S, S, T_, N)
-          ), 
-          1:3, mean)
-      )
-    ),
-    qs_A
+  ame_A <- data.frame(
+    time = rep(times, each = S^2),
+    state_from = model$state_names,
+    state_to = rep(model$state_names, each = S),
+    estimate = c(
+      apply(
+        array(
+          unlist(get_A_all(model$gammas$A, X1, tv_A)) -
+            unlist(get_A_all(model$gammas$A, X2, tv_A)), 
+          c(S, S, T_, N)
+        ), 
+        1:3, mean)
+    )
   )
+  if (return_quantiles) {
+    qs_A <- get_A_ame(model$boot$gamma_A, X1, X2, tv_A, probs)
+    colnames(qs_A) <- paste0("q", 100 * probs)
+    ame_A <- cbind(ame_A, qs_A)
+  }
   colnames(ame_A)[1] <- model$time_variable
   
   model1$X_B[attr(model$X_B, "missing")] <- NA
@@ -155,46 +170,45 @@ ame_param.nhmm <- function(
   }
   tv_B <- attr(model$X_B, "tv")
   M <- model$n_symbols
-  if (C == 1) {
-    qs_B <- get_B_ame(
-      model$boot$gamma_B, X1, X2, tv_B, probs
-    )
-    model$gammas$B <- list(model$gammas$B)
-  } else {
-    qs_B <- do.call(
-      rbind,
-      lapply(seq_len(C), function(i) {
-        get_B_ame(
-          lapply(model$boot$gamma_B, "[[", i), 
-          X1, X2, tv_B, probs
+  ame_B <- do.call(
+    rbind,
+    lapply(seq_len(C), function(i) {
+      data.frame(
+        time = rep(times, each = S * M[i]),
+        state = model$state_names,
+        channel = model$channel_names[i],
+        observation = rep(symbol_names[[i]], each = S),
+        estimate = c(
+          apply(
+            array(
+              unlist(get_B_all(model$gammas$B[[i]], X1, tv_B)) -
+                unlist(get_B_all(model$gammas$B[[i]], X2, tv_B)), 
+              c(S, M[i], T_, N)
+            ), 
+            1:3, mean)
         )
-      })
-    )
-  }
-  colnames(qs_B) <- paste0("q", 100 * probs)
-  ame_B <- cbind(
-    do.call(
-      rbind,
-      lapply(seq_len(C), function(i) {
-        data.frame(
-          time = rep(times, each = S * M[i]),
-          state = model$state_names,
-          channel = model$channel_names[i],
-          observation = rep(symbol_names[[i]], each = S),
-          estimate = c(
-            apply(
-              array(
-                unlist(get_B_all(model$gammas$B[[i]], X1, tv_B)) -
-                  unlist(get_B_all(model$gammas$B[[i]], X2, tv_B)), 
-                c(S, M[i], T_, N)
-              ), 
-              1:3, mean)
-          )
-        )
-      })
-    ),
-    qs_B
+      )
+    })
   )
+  if (return_quantiles) {
+    if (C == 1) {
+      qs_B <- get_B_ame(
+        model$boot$gamma_B, X1, X2, tv_B, probs
+      )
+    } else {
+      qs_B <- do.call(
+        rbind,
+        lapply(seq_len(C), function(i) {
+          get_B_ame(
+            lapply(model$boot$gamma_B, "[[", i), 
+            X1, X2, tv_B, probs
+          )
+        })
+      )
+    }
+    colnames(qs_B) <- paste0("q", 100 * probs)
+    ame_B <- cbind(ame_B, qs_B)
+  }
   colnames(ame_B)[1] <- model$time_variable
   
   out <- list(
@@ -210,7 +224,7 @@ ame_param.nhmm <- function(
 #' @rdname ame_param
 #' @export
 ame_param.mnhmm <- function(
-    model, variable, values, newdata = NULL, probs = c(0.05, 0.95),
+    model, variable, values, newdata = NULL, probs,
     ...) {
   
   x <- lapply(
@@ -241,18 +255,18 @@ ame_param.mnhmm <- function(
     X1 <- model1$X_omega
     X2 <- model2$X_omega
   }
-  qs_omega <- get_omega_ame(model$boot$gamma_omega, X1, X2, probs)
-  colnames(qs_omega) <- paste0("q", 100 * probs)
-  out$cluster <- cbind(
-    data.frame(
-      cluster = model$cluster_names,
-      estimate = rowMeans(
-        get_omega_all(model$gammas$omega, X1) - 
-          get_omega_all(model$gammas$omega, X2) 
-      )
-    ),
-    qs_omega
+  out$cluster <- data.frame(
+    cluster = model$cluster_names,
+    estimate = rowMeans(
+      get_omega_all(model$gammas$omega, X1) - 
+        get_omega_all(model$gammas$omega, X2) 
+    )
   )
+  if (!missing(probs) && !is.null(model$boot)) {
+    qs_omega <- get_omega_ame(model$boot$gamma_omega, X1, X2, probs)
+    colnames(qs_omega) <- paste0("q", 100 * probs)
+    out$cluster <- cbind(out$cluster, qs_omega)
+  }
   class(out) <- "ame_param"
   attr(out, "model") <- "mnhmm"
   out

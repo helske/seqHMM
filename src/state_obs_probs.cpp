@@ -128,7 +128,7 @@ void nhmm_sc::compute_state_obs_probs(
         obs_prob.slice(i).col(t).fill(arma::datum::nan); // could predict these as well
       }
     }
-    if (start < Ti(i)) {
+    if (start <= Ti(i)) {
       if (!icpt_only_pi || not_updated) {
         update_pi(i);
       }
@@ -176,7 +176,7 @@ void nhmm_mc::compute_state_obs_probs(
         }
       }
     }
-    if (start < Ti(i)) {
+    if (start <= Ti(i)) {
       if (!icpt_only_pi || not_updated) {
         update_pi(i);
       }
@@ -224,7 +224,7 @@ void mnhmm_sc::compute_state_obs_probs(
         obs_prob.slice(i).col(t).fill(arma::datum::nan); // could predict these as well
       }
     }
-    if (start < Ti(i)) {
+    if (start <= Ti(i)) {
       if (!icpt_only_omega || not_updated) {
         update_omega(i);
       }
@@ -291,7 +291,7 @@ void mnhmm_mc::compute_state_obs_probs(
       }
     }
     
-    if (start < Ti(i)) {
+    if (start <= Ti(i)) {
       if (!icpt_only_omega || not_updated) {
         update_omega(i);
       }
