@@ -46,7 +46,7 @@ hidden_paths.hmm <- function(model, respect_void = TRUE, ...) {
   model$initial_probs <- log(model$initial_probs)
   model$transition_probs <- log(model$transition_probs)
   obsArray <- create_obsArray(model)
-  emissionArray <- create_emissionArray(model)
+  emissionArray <- log(create_emissionArray(model))
   out <- viterbi(
     model$transition_probs, emissionArray,
     model$initial_probs, obsArray
@@ -60,7 +60,7 @@ hidden_paths.mhmm <- function(model, respect_void = TRUE, ...) {
   model$initial_probs <- log(model$initial_probs)
   model$transition_probs <- log(model$transition_probs)
   obsArray <- create_obsArray(model)
-  emissionArray <- create_emissionArray(model)
+  emissionArray <- log(create_emissionArray(model))
   out <- viterbix(
     model$transition_probs, emissionArray,
     model$initial_probs, obsArray, model$coefficients,
@@ -78,7 +78,7 @@ hidden_paths.nhmm <- function(model, respect_void = TRUE, ...) {
       model$etas$pi, model$X_pi,
       model$etas$A, model$X_A,
       model$etas$B, model$X_B,
-      obsArray[1, , ], model$sequence_lengths, 
+      array(obsArray[1, , ], dim(obsArray)[2:3]), model$sequence_lengths, 
       attr(model$X_pi, "icpt_only"), attr(model$X_A, "icpt_only"), 
       attr(model$X_B, "icpt_only"),
       attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
