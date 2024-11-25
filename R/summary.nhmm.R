@@ -10,6 +10,7 @@
 summary.nhmm <- function(object, ...) {
   ll <- logLik(object)
   out <- list(
+    model = object,
     logLik = ll, BIC = BIC(ll),
     coefficients = coef(object)
   )
@@ -38,6 +39,7 @@ summary.mnhmm <- function(object, ...) {
   }
   ll <- logLik(object)
   out <- list(
+    model = object,
     logLik = ll, BIC = BIC(ll),
     coefficients = cf,
     most_probable_cluster = mpc,
@@ -50,18 +52,18 @@ summary.mnhmm <- function(object, ...) {
 }
 #' @export
 print.summary.nhmm <- function(x, digits = 3, ...) {
-  print(x)
+  print(x$model)
   cat("\nCoefficients:\n")
-  print.listof(x$gammas, digits = digits, ...)
+  print.listof(x$coefficients, digits = digits, ...)
   
   cat("Log-likelihood:", x$logLik, "  BIC:", x$BIC, "\n\n")
   invisible(x)
 }
 #' @export
 print.summary.mnhmm <- function(x, digits = 3, ...) {
-  print(x)
+  print(x$model)
   cat("\nCoefficients:\n")
-  print.listof(x$gammas, digits = digits, ...)
+  print.listof(x$coefficients, digits = digits, ...)
   
   cat("Log-likelihood:", x$logLik, "  BIC:", x$BIC, "\n\n")
   
