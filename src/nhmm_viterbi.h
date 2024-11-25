@@ -20,8 +20,8 @@ double univariate_viterbi_nhmm(
   phi.col(0).zeros();
   for (arma::uword t = 1; t < T; t++) {
     for (arma::uword j = 0; j < S; j++) {
-      phi(j, t) = (delta.col(t - 1) + log_A.slice(t).col(j)).index_max();
-      delta(j, t) = delta(phi(j, t), t - 1) + log_A(phi(j, t), j, t) + log_py(j, t);
+      phi(j, t) = (delta.col(t - 1) + log_A.slice(t - 1).col(j)).index_max();
+      delta(j, t) = delta(phi(j, t), t - 1) + log_A(phi(j, t), j, t - 1) + log_py(j, t);
     }
   }
   q(T - 1) = delta.col(T - 1).index_max();
