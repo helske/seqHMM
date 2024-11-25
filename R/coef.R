@@ -56,9 +56,9 @@ coef.nhmm <- function(object, probs, ...) {
       lapply(
         seq_len(object$n_channels), function(i) {
           data.frame(
-            state = rep(object$state_names, each = M * K),
+            state = rep(object$state_names, each = M[i] * K),
             observation = object$symbol_names[[i]],
-            parameter = rep(coef_names, each = M),
+            parameter = rep(coef_names, each = M[i]),
             estimate = c(object$gammas$B[[i]]) / rep(sd_B_X, each = M[i])
           )
         }
