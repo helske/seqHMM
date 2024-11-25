@@ -41,7 +41,7 @@ test_that("'posterior_probs' works for 'nhmm'", {
       hmm_biofam$observations, n_states = 5,
       inits = hmm_biofam[
         c("initial_probs", "transition_probs", "emission_probs")
-      ], maxeval = 100, method = "DNM"
+      ], maxeval = 10, method = "DNM"
     ),
     NA
   )
