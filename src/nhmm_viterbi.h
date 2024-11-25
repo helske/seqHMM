@@ -43,6 +43,7 @@ void viterbi_nhmm(Model& model, arma::umat& q, arma::vec& logp) {
     if (model.iv_B || i == 0) {
       model.update_B(i);
     }
+    model.update_log_py(i);
     arma::subview_col<unsigned int> subcol = q.col(i);
     logp(i) = univariate_viterbi_nhmm(
       subcol,
