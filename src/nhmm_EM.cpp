@@ -645,7 +645,7 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     }
     ll = ll_new;
     pars = pars_new;
-    if (absolute_change < 1e-6) {
+    if (absolute_change < -1e-8) {
       Rcpp::warning("EM algorithm encountered decreasing log-likelihood.");
     }
   }
@@ -853,7 +853,7 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     }
     ll = ll_new;
     pars = pars_new;
-    if (absolute_change < 1e-6) {
+    if (absolute_change < -1e-8) {
       Rcpp::warning("EM algorithm encountered decreasing log-likelihood.");
     }
   }
