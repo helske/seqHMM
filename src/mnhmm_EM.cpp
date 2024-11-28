@@ -784,8 +784,9 @@ Rcpp::List EM_LBFGS_mnhmm_singlechannel(
     }
     ll = ll_new;
     pars = new_pars;
-    if (iter % 1000 == 0)
-      Rcpp::checkUserInterrupt();
+    if (absolute_change < 1e-6) {
+      Rcpp::warning("EM algorithm encountered decreasing log-likelihood.");
+    }
   }
   return Rcpp::List::create(
     Rcpp::Named("return_code") = 0,
@@ -1022,6 +1023,9 @@ Rcpp::List EM_LBFGS_mnhmm_multichannel(
     }
     ll = ll_new;
     pars = new_pars;
+    if (absolute_change < 1e-6) {
+      Rcpp::warning("EM algorithm encountered decreasing log-likelihood.");
+    }
   }
   
   return Rcpp::List::create(
