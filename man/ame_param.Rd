@@ -8,9 +8,9 @@
 \usage{
 ame_param(model, variable, values, ...)
 
-\method{ame_param}{nhmm}(model, variable, values, newdata = NULL, probs = c(0.05, 0.95), ...)
+\method{ame_param}{nhmm}(model, variable, values, newdata = NULL, probs, ...)
 
-\method{ame_param}{mnhmm}(model, variable, values, newdata = NULL, probs = c(0.05, 0.95), ...)
+\method{ame_param}{mnhmm}(model, variable, values, newdata = NULL, probs, ...)
 }
 \arguments{
 \item{model}{A Hidden Markov Model of class \code{nhmm} or \code{mnhmm}.}

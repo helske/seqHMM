@@ -91,10 +91,10 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, control,
       }
     }
   }
-  
-  start_time <- proc.time()
   if (restarts > 0L) {
     p <- progressr::progressor(along = seq_len(restarts))
+    original_options <- options(future.globals.maxSize = Inf)
+    on.exit(options(original_options))
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
       init <- unlist(create_initial_values(inits, model, init_sd))
       fit <- nloptr(
@@ -128,7 +128,6 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, control,
     x0 = init, eval_f = objectivef,
     opts = control
   )
-  end_time <- proc.time()
   if (out$status < 0) {
     warning_(
       paste("Optimization terminated due to error:", error_msg(out$status))
@@ -159,7 +158,6 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, control,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
     all_solutions = all_solutions,
-    time = end_time - start_time,
     lambda = lambda,
     pseudocount = 0,
     method = "DNM", 

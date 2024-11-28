@@ -7,8 +7,8 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
                              cluster_names = "") {
   
   stopifnot_(
-    !missing(n_states) && checkmate::test_int(x = n_states, lower = 1L), 
-    "Argument {.arg n_states} must be a single positive integer."
+    !missing(n_states) && checkmate::test_int(x = n_states, lower = 2L), 
+    "Argument {.arg n_states} must be a single integer larger than one."
   )
   stopifnot_(
     inherits(initial_formula, "formula"), 

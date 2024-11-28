@@ -23,7 +23,7 @@ estimate_mnhmm(
   restarts = 0L,
   lambda = 0,
   method = "EM-DNM",
-  pseudocount = 1e-04,
+  pseudocount = 0.001,
   store_data = TRUE,
   ...
 )
@@ -34,7 +34,7 @@ an \code{stslist} object (see \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}})
 sequences. In case of multichannel data, \code{observations} should be a vector
 of response variable names in \code{data}, or a list of \code{stslist} objects.}
 
-\item{n_states}{A positive integer defining the number of hidden states.}
+\item{n_states}{An integer > 1 defining the number of hidden states.}
 
 \item{n_clusters}{A positive integer defining the number of clusters
 (mixtures).}
@@ -97,7 +97,7 @@ direct maximization of the log-likelihood, by default using L-BFGS. Option
 then switches to L-BFGS (but other algorithms of NLopt can be used).}
 
 \item{pseudocount}{A positive scalar to be added for the expected counts of
-E-step. Only used in EM algorithm. Default is 1e-4. Larger values can be used
+E-step. Only used in EM algorithm. Default is 1e34. Larger values can be used
 to avoid zero probabilities in initial, transition, and emission
 probabilities, i.e. these have similar role as \code{lambda}.}
 

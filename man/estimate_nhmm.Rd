@@ -20,7 +20,7 @@ estimate_nhmm(
   restarts = 0L,
   lambda = 0,
   method = "EM-DNM",
-  pseudocount = 1e-04,
+  pseudocount = 0.001,
   store_data = TRUE,
   ...
 )
@@ -31,7 +31,7 @@ an \code{stslist} object (see \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}})
 sequences. In case of multichannel data, \code{observations} should be a vector
 of response variable names in \code{data}, or a list of \code{stslist} objects.}
 
-\item{n_states}{A positive integer defining the number of hidden states.}
+\item{n_states}{An integer > 1 defining the number of hidden states.}
 
 \item{initial_formula}{of class \code{\link[=formula]{formula()}} for the
 initial state probabilities.}
@@ -84,7 +84,7 @@ direct maximization of the log-likelihood, by default using L-BFGS. Option
 then switches to L-BFGS (but other algorithms of NLopt can be used).}
 
 \item{pseudocount}{A positive scalar to be added for the expected counts of
-E-step. Only used in EM algorithm. Default is 1e-4. Larger values can be used
+E-step. Only used in EM algorithm. Default is 1e34. Larger values can be used
 to avoid zero probabilities in initial, transition, and emission
 probabilities, i.e. these have similar role as \code{lambda}.}
 
@@ -109,7 +109,7 @@ By default, the model parameters are estimated using EM-DNM algorithm
 which first runs some iterations (100 by default) of EM algorithm, and then
 switches to L-BFGS. Other options include any numerical optimization
 algorithm of \code{\link[nloptr:nloptr]{nloptr::nloptr()}}, or plain EM algorithm where the
-M-step uses L-BFGS (provided by NLopt).
+M-step uses L-BFGS (provided by the NLopt library).
 
 With multiple runs of optimization (by using the \code{restarts} argument), it is
 possible to parallelize these runs using the \code{future} package, e.g., by
@@ -122,11 +122,11 @@ During the estimation, the log-likelihood is scaled by the number of
 non-missing observations (\code{nobs(model)}), and the the covariate data is
 standardardized before optimization.
 
-By default, the convergence is claimed when either the absolute or relative
+By default, the convergence is claimed when the absolute or relative
 change of the objective function is less than \code{1e-8}, or the absolute or
-relative change of the parameters is less than \code{1e-4}. These can be changed
+relative change of the parameters is less than \code{1e-6}. These can be changed
 by passing arguments \code{ftol_abs}, \code{ftol_rel}, \code{xtol_abs}, and \code{xtol_rel} via
-\code{...}.  These, as well as argument \code{maxeval} (maximum number of iterations,
+\code{...}. These, as well as argument \code{maxeval} (maximum number of iterations,
 1e4 by default), and \code{print_level} (default is \code{0}, no console output of
 optimization, larger values are more verbose), are used by the chosen
 main optimization method. The number of initial EM iterations in \code{EM-DNM}
@@ -153,4 +153,7 @@ fit <- estimate_nhmm("activity", n_states = 3,
   transition_formula = ~ male + gcse5eq, inits = "random"
   )
 }
+}
+\references{
+Steven G. Johnson, The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt
 }

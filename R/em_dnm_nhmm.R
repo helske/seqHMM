@@ -1,6 +1,6 @@
 em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount, 
-                          control, control_restart, control_mstep, 
-                          save_all_solutions) {
+                        control, control_restart, control_mstep, 
+                        save_all_solutions) {
   M <- model$n_symbols
   S <- model$n_states
   T_ <- model$length_of_sequences
@@ -92,10 +92,10 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
       }
     }
   }
-  
-  start_time <- proc.time()
   if (restarts > 0L) {
     p <- progressr::progressor(along = seq_len(restarts))
+    original_options <- options(future.globals.maxSize = Inf)
+    on.exit(options(original_options))
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
       init <- create_initial_values(inits, model, init_sd)
       if (C == 1) {
@@ -171,52 +171,50 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
     }
   } else {
     init <- create_initial_values(inits, model, init_sd)
-  }
-  if (C == 1) {
-    out <- EM_LBFGS_nhmm_singlechannel(
-      init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
-      Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
-      n_obs, control$maxeval_em_dnm,
-      control$ftol_abs, control$ftol_rel,
-      control$xtol_abs, control$xtol_rel, 
-      control$print_level, control_mstep$maxeval,
-      control_mstep$ftol_abs, control_mstep$ftol_rel,
-      control_mstep$xtol_abs, control_mstep$xtol_rel, 
-      control_mstep$print_level, lambda, pseudocount)
-  } else {
-    out <- EM_LBFGS_nhmm_multichannel(
-      init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
-      Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
-      n_obs, control$maxeval_em_dnm,
-      control$ftol_abs, control$ftol_rel,
-      control$xtol_abs, control$xtol_rel, 
-      control$print_level, control_mstep$maxeval,
-      control_mstep$ftol_abs, control_mstep$ftol_rel,
-      control_mstep$xtol_abs, control_mstep$xtol_rel, 
-      control_mstep$print_level, lambda, pseudocount)
-  }
-  if (out$return_code == 0) {
-    init <- unlist(
-      create_initial_values(
+    if (C == 1) {
+      out <- EM_LBFGS_nhmm_singlechannel(
+        init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
+        Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
+        n_obs, control$maxeval_em_dnm,
+        control$ftol_abs, control$ftol_rel,
+        control$xtol_abs, control$xtol_rel, 
+        control$print_level, control_mstep$maxeval,
+        control_mstep$ftol_abs, control_mstep$ftol_rel,
+        control_mstep$xtol_abs, control_mstep$xtol_rel, 
+        control_mstep$print_level, lambda, pseudocount)
+    } else {
+      out <- EM_LBFGS_nhmm_multichannel(
+        init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
+        Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
+        n_obs, control$maxeval_em_dnm,
+        control$ftol_abs, control$ftol_rel,
+        control$xtol_abs, control$xtol_rel, 
+        control$print_level, control_mstep$maxeval,
+        control_mstep$ftol_abs, control_mstep$ftol_rel,
+        control_mstep$xtol_abs, control_mstep$xtol_rel, 
+        control_mstep$print_level, lambda, pseudocount)
+    }
+    if (out$return_code == 0) {
+      init <- create_initial_values(
         stats::setNames(
           out[c("eta_pi", "eta_A", "eta_B")], c("pi", "A", "B")
         ), 
         model, 
         init_sd = 0
       )
-    )
-  } else {
-    warning_(
-      paste("EM-step terminated due to error:", error_msg(out$return_code),
-            "Running DNM using initial values for EM.")
-    )
-    init <- unlist(create_initial_values(inits, model, init_sd))
+    } else {
+      browser()
+      warning_(
+        paste("EM-step terminated due to error:", error_msg(out$return_code),
+              "Running DNM using initial values for EM.")
+      )
+      init <- create_initial_values(inits, model, init_sd)
+    }
   }
   out <- nloptr(
-    x0 = init, eval_f = objectivef,
+    x0 = unlist(init), eval_f = objectivef,
     opts = control
   )
-  end_time <- proc.time()
   if (out$status < 0) {
     warning_(
       paste("Optimization terminated due to error:", error_msg(out$status))
@@ -247,9 +245,8 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
     all_solutions = all_solutions,
-    time = end_time - start_time,
     lambda = lambda,
-    pseudocount = 0,
+    pseudocount = pseudocount,
     method = "EM-DNM",
     algorithm = control$algorithm
   )

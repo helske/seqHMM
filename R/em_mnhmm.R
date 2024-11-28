@@ -32,9 +32,10 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
     obs <- array(obs, dim(obs)[2:3])
   }
   all_solutions <- NULL
-  start_time <- proc.time()
   if (restarts > 0L) {
     p <- progressr::progressor(along = seq_len(restarts))
+    original_options <- options(future.globals.maxSize = Inf)
+    on.exit(options(original_options))
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
       init <- create_initial_values(inits, model, init_sd)
       if (C == 1) {
@@ -112,7 +113,6 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
       control_mstep$xtol_abs, control_mstep$xtol_rel, 
       control_mstep$print_level, lambda, pseudocount)
   }
-  end_time <- proc.time()
   if (out$return_code < 0) {
     warning_(
       paste("Optimization terminated due to error:", error_msg(out$return_code))
@@ -142,7 +142,6 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
     all_solutions = all_solutions,
-    time = end_time - start_time,
     f_rel_change = out$relative_f_change,
     f_abs_change = out$absolute_f_change,
     x_rel_change = out$relative_x_change,

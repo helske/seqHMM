@@ -8,15 +8,7 @@
 \usage{
 ame_obs(model, variable, values, start_time, ...)
 
-\method{ame_obs}{nhmm}(
-  model,
-  variable,
-  values,
-  start_time,
-  newdata = NULL,
-  probs = c(0.05, 0.95),
-  ...
-)
+\method{ame_obs}{nhmm}(model, variable, values, start_time, newdata = NULL, probs, ...)
 
 \method{ame_obs}{mnhmm}(
   model,

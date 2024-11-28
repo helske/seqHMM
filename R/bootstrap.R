@@ -75,12 +75,9 @@ permute_clusters <- function(model, pcp_mle) {
 #' nonparametric or parametric bootstrap should be used. The former samples 
 #' sequences with replacement, whereas the latter simulates new datasets based 
 #' on the model.
-#' @param method Estimation method used in bootstrapping. Defaults to 
-#' `"EM-DNM"`.
+#' @param method Estimation method used in bootstrapping. Defaults to `"DNM"`.
 #' @param ... Additional arguments to [estimate_nhmm()] or [estimate_mnhmm()].
-#' @return The original model with additional element `model$boot`, which 
-#' contains A n * B matrix where n is the number of coefficients. The order of 
-#' coefficients match `unlist(model$gammas)`. 
+#' @return The original model with additional element `model$boot`.
 #' @rdname bootstrap
 #' @export
 bootstrap_coefs <- function(model, ...) {
@@ -90,7 +87,7 @@ bootstrap_coefs <- function(model, ...) {
 #' @export
 bootstrap_coefs.nhmm <- function(model, B = 1000, 
                                  type = c("nonparametric", "parametric"),
-                                 method = "EM-DNM", ...) {
+                                 method = "DNM", ...) {
   type <- match.arg(type)
   stopifnot_(
     checkmate::test_int(x = B, lower = 0L), 
@@ -101,6 +98,8 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
   lambda <- model$estimation_results$lambda
   pseudocount <- model$estimation_results$pseudocount
   p <- progressr::progressor(along = seq_len(B))
+  original_options <- options(future.globals.maxSize = Inf)
+  on.exit(options(original_options))
   if (type == "nonparametric") {
     out <- future.apply::future_lapply(
       seq_len(B), function(i) {
@@ -147,7 +146,7 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
 #' @export
 bootstrap_coefs.mnhmm <- function(model, B = 1000, 
                                   type = c("nonparametric", "parametric"),
-                                  method = "EM-DNM", ...) {
+                                  method = "DNM", ...) {
   type <- match.arg(type)
   stopifnot_(
     checkmate::test_int(x = B, lower = 0L), 
@@ -160,6 +159,8 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
   pseudocount <- model$estimation_results$pseudocount
   D <- model$n_clusters
   p <- progressr::progressor(along = seq_len(B))
+  original_options <- options(future.globals.maxSize = Inf)
+  on.exit(options(original_options))
   if (type == "nonparametric") {
     out <- future.apply::future_lapply(
       seq_len(B), function(i) {

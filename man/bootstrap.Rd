@@ -12,7 +12,7 @@ bootstrap_coefs(model, ...)
   model,
   B = 1000,
   type = c("nonparametric", "parametric"),
-  method = "EM-DNM",
+  method = "DNM",
   ...
 )
 
@@ -20,7 +20,7 @@ bootstrap_coefs(model, ...)
   model,
   B = 1000,
   type = c("nonparametric", "parametric"),
-  method = "EM-DNM",
+  method = "DNM",
   ...
 )
 }
@@ -36,13 +36,10 @@ nonparametric or parametric bootstrap should be used. The former samples
 sequences with replacement, whereas the latter simulates new datasets based
 on the model.}
 
-\item{method}{Estimation method used in bootstrapping. Defaults to
-\code{"EM-DNM"}.}
+\item{method}{Estimation method used in bootstrapping. Defaults to \code{"DNM"}.}
 }
 \value{
-The original model with additional element \code{model$boot}, which
-contains A n * B matrix where n is the number of coefficients. The order of
-coefficients match \code{unlist(model$gammas)}.
+The original model with additional element \code{model$boot}.
 }
 \description{
 It is possible to parallelize the bootstrap runs using the \code{future} package,

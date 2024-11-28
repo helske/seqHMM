@@ -8,7 +8,7 @@
 #' which first runs some iterations (100 by default) of EM algorithm, and then 
 #' switches to L-BFGS. Other options include any numerical optimization 
 #' algorithm of [nloptr::nloptr()], or plain EM algorithm where the 
-#' M-step uses L-BFGS (provided by NLopt).
+#' M-step uses L-BFGS (provided by the NLopt library).
 #' 
 #' With multiple runs of optimization (by using the `restarts` argument), it is 
 #' possible to parallelize these runs using the `future` package, e.g., by 
@@ -21,11 +21,11 @@
 #' non-missing observations (`nobs(model)`), and the the covariate data is 
 #' standardardized before optimization.
 #'  
-#' By default, the convergence is claimed when either the absolute or relative 
+#' By default, the convergence is claimed when the absolute or relative 
 #' change of the objective function is less than `1e-8`, or the absolute or 
 #' relative change of the parameters is less than `1e-6`. These can be changed
 #' by passing arguments `ftol_abs`, `ftol_rel`, `xtol_abs`, and `xtol_rel` via
-#' `...`.  These, as well as argument `maxeval` (maximum number of iterations, 
+#' `...`. These, as well as argument `maxeval` (maximum number of iterations, 
 #' 1e4 by default), and `print_level` (default is `0`, no console output of 
 #' optimization, larger values are more verbose), are used by the chosen 
 #' main optimization method. The number of initial EM iterations in `EM-DNM` 
@@ -38,11 +38,12 @@
 #' options can be defined separately for the M-step of EM algorithm via list 
 #' `control_em`. 
 #' 
+#' @references Steven G. Johnson, The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt
 #' @param observations Either the name of the response variable in `data`, or 
 #' an `stslist` object (see [TraMineR::seqdef()]) containing the 
 #' sequences. In case of multichannel data, `observations` should be a vector 
 #' of response variable names in `data`, or a list of `stslist` objects.
-#' @param n_states A positive integer defining the number of hidden states.
+#' @param n_states An integer > 1 defining the number of hidden states.
 #' @param initial_formula of class [formula()] for the
 #' initial state probabilities.
 #' @param transition_formula of class [formula()] for the
@@ -81,7 +82,7 @@
 #' `"EM-DNM"` (the default) runs first a maximum of 100 iterations of EM and 
 #' then switches to L-BFGS (but other algorithms of NLopt can be used).
 #' @param pseudocount A positive scalar to be added for the expected counts of 
-#' E-step. Only used in EM algorithm. Default is 1e-4. Larger values can be used 
+#' E-step. Only used in EM algorithm. Default is 1e34. Larger values can be used 
 #' to avoid zero probabilities in initial, transition, and emission 
 #' probabilities, i.e. these have similar role as `lambda`.
 #' @param store_data If `TRUE` (default), original data frame passed as `data` 
@@ -111,7 +112,7 @@ estimate_nhmm <- function(
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, 
     channel_names = NULL, inits = "random", init_sd = 2, restarts = 0L, 
-    lambda = 0, method = "EM-DNM", pseudocount = 1e-4, store_data = TRUE, 
+    lambda = 0, method = "EM-DNM", pseudocount = 1e-3, store_data = TRUE, 
     ...) {
   
   call <- match.call()
@@ -127,8 +128,11 @@ estimate_nhmm <- function(
   if (store_data) {
     model$data <- data
   }
+  start_time <- proc.time()
   out <- fit_nhmm(model, inits, init_sd, restarts, lambda, method, pseudocount, 
                   ...)
+  end_time <- proc.time()
+  out$estimation_results$time <- end_time - start_time
   attr(out, "call") <- call
   out
 }
