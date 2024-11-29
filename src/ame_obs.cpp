@@ -48,10 +48,10 @@ Rcpp::List ame_obs_nhmm_singlechannel(
       point_estimate.col(t) = arma::mean(diff.cols(non_na(t)), 1);
     }
   }
-  arma::uword n_samples = boot_gamma_pi.n_elem;
-  if (n_samples > 1) {
-    arma::cube out(M, T, n_samples, arma::fill::value(arma::datum::nan));
-    for (arma::uword i = 0; i < n_samples; i++) {
+  arma::uword nsim = boot_gamma_pi.n_elem;
+  if (nsim > 1) {
+    arma::cube out(M, T, nsim, arma::fill::value(arma::datum::nan));
+    for (arma::uword i = 0; i < nsim; i++) {
       model1.gamma_pi = boot_gamma_pi(i);
       for (arma::uword s = 0; s < S; s++) {
         model1.gamma_A.slice(s) = boot_gamma_A(i).slice(s);
@@ -73,7 +73,7 @@ Rcpp::List ame_obs_nhmm_singlechannel(
     }
     
     arma::cube quantiles(M, T, probs.n_elem, arma::fill::value(arma::datum::nan));
-    arma::mat tmp(M, n_samples);
+    arma::mat tmp(M, nsim);
     for (arma::uword t = start - 1; t < T; t++) {
       tmp = out.col(t);
       quantiles.col(t) = arma::quantile(tmp, probs, 1);
@@ -133,9 +133,9 @@ Rcpp::List ame_obs_nhmm_singlechannel(
 //     }
 //   }
 //   
-//   arma::uword n_samples = boot_gamma_pi.n_elem;
-//   arma::cube out(M, T, n_samples, arma::fill::value(arma::datum::nan));
-//   for (arma::uword i = 0; i < n_samples; i++) {
+//   arma::uword nsim = boot_gamma_pi.n_elem;
+//   arma::cube out(M, T, nsim, arma::fill::value(arma::datum::nan));
+//   for (arma::uword i = 0; i < nsim; i++) {
 //     model1.gamma_pi = boot_gamma_pi(i);
 //     for (arma::uword s = 0; s < S; s++) {
 //       model1.gamma_A.slice(s) = boot_gamma_A(i).slice(s);
@@ -157,7 +157,7 @@ Rcpp::List ame_obs_nhmm_singlechannel(
 //   }
 //   
 //   arma::cube quantiles(M, T, probs.n_elem, arma::fill::value(arma::datum::nan));
-//   arma::mat tmp(M, n_samples);
+//   arma::mat tmp(M, nsim);
 //   for (arma::uword t = start - 1; t < T; t++) {
 //     tmp = out.col(t);
 //     quantiles.col(t) = arma::quantile(tmp, probs, 1);
