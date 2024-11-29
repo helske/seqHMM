@@ -73,7 +73,7 @@ test_that("estimate_mnhmm errors with missing 'n_clusters' argument", {
 test_that("estimate_mnhmm errors with missing 'n_states' argument", {
   expect_error(
     estimate_mnhmm(obs, n_clusters = 3),
-    "Argument `n\\_states` must be a single positive integer\\."
+    "Argument `n\\_states` must be a single integer larger than 1\\."
   )
 })
 test_that("estimate_mnhmm errors with incorrect formulas", {

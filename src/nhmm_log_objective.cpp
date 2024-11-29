@@ -31,10 +31,9 @@ Rcpp::List log_objective_nhmm_singlechannel(
   arma::mat grad_pi(model.S, model.K_pi, arma::fill::zeros);
   arma::cube grad_A(model.S, model.K_A, model.S, arma::fill::zeros);
   arma::cube grad_B(model.M, model.K_B, model.S, arma::fill::zeros);
-  double small = -std::numeric_limits<double>::max();
-  arma::mat grad_pi2(model.S - 1, model.K_pi, arma::fill::value(small));
-  arma::cube grad_A2(model.S - 1, model.K_A, model.S, arma::fill::value(small));
-  arma::cube grad_B2(model.M - 1, model.K_B, model.S, arma::fill::value(small));
+  arma::mat grad_pi2(model.S - 1, model.K_pi, arma::fill::value(-model.maxval));
+  arma::cube grad_A2(model.S - 1, model.K_A, model.S, arma::fill::value(-model.maxval));
+  arma::cube grad_B2(model.M - 1, model.K_B, model.S, arma::fill::value(-model.maxval));
   arma::mat tmpmat(model.S, model.S);
   arma::vec tmpvec(model.M);
   for (arma::uword i = 0; i < model.N; i++) {
@@ -58,7 +57,7 @@ Rcpp::List log_objective_nhmm_singlechannel(
     double ll = logSumExp(log_alpha.col(model.Ti(i) - 1));
     if (!std::isfinite(ll)) {
       return Rcpp::List::create(
-        Rcpp::Named("loglik") = small,
+        Rcpp::Named("loglik") = -model.n_obs * model.maxval,
         Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi2),
         Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A2),
         Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2)
@@ -123,12 +122,11 @@ Rcpp::List log_objective_nhmm_multichannel(
   for (arma::uword c = 0; c < model.C; c++) {
     grad_B(c) = arma::cube(model.M(c), model.K_B, model.S, arma::fill::zeros);
   }
-  double small = -std::numeric_limits<double>::max();
-  arma::mat grad_pi2(model.S - 1, model.K_pi, arma::fill::value(small));
-  arma::cube grad_A2(model.S - 1, model.K_A, model.S, arma::fill::value(small));
+  arma::mat grad_pi2(model.S - 1, model.K_pi, arma::fill::value(-model.maxval));
+  arma::cube grad_A2(model.S - 1, model.K_A, model.S, arma::fill::value(-model.maxval));
   arma::field<arma::cube> grad_B2(model.C);
   for (arma::uword c = 0; c < model.C; c++) {
-    grad_B2(c) = arma::cube(model.M(c) - 1, model.K_B, model.S, arma::fill::value(small));
+    grad_B2(c) = arma::cube(model.M(c) - 1, model.K_B, model.S, arma::fill::value(-model.maxval));
   }
   arma::mat tmpmat(model.S, model.S);
   arma::field<arma::vec> tmpvec(model.C);
@@ -156,7 +154,7 @@ Rcpp::List log_objective_nhmm_multichannel(
     double ll = logSumExp(log_alpha.col(model.Ti(i) - 1));
     if (!std::isfinite(ll)) {
       return Rcpp::List::create(
-        Rcpp::Named("loglik") = small,
+        Rcpp::Named("loglik") = -model.n_obs * model.maxval,
         Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi2),
         Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A2),
         Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2)
@@ -240,15 +238,14 @@ Rcpp::List log_objective_mnhmm_singlechannel(
     grad_A(d) = arma::cube(model.S, model.K_A, model.S, arma::fill::zeros);
     grad_B(d) = arma::cube(model.M, model.K_B, model.S, arma::fill::zeros);
   }
-  double small = -std::numeric_limits<double>::max();
-  arma::mat grad_omega2(model.D - 1, model.K_omega, arma::fill::value(small));
+  arma::mat grad_omega2(model.D - 1, model.K_omega, arma::fill::value(-model.maxval));
   arma::field<arma::mat> grad_pi2(model.D);
   arma::field<arma::cube> grad_A2(model.D);
   arma::field<arma::cube> grad_B2(model.D);
   for (arma::uword d = 0; d < model.D; d++) {
-    grad_pi2(d) = arma::mat(model.S - 1, model.K_pi, arma::fill::value(small));
-    grad_A2(d) = arma::cube(model.S - 1, model.K_A, model.S, arma::fill::value(small));
-    grad_B2(d) = arma::cube(model.M - 1, model.K_B, model.S, arma::fill::value(small));
+    grad_pi2(d) = arma::mat(model.S - 1, model.K_pi, arma::fill::value(-model.maxval));
+    grad_A2(d) = arma::cube(model.S - 1, model.K_A, model.S, arma::fill::value(-model.maxval));
+    grad_B2(d) = arma::cube(model.M - 1, model.K_B, model.S, arma::fill::value(-model.maxval));
   }
   arma::mat tmpmat(model.S, model.S);
   arma::mat tmpmatD(model.D, model.D);
@@ -280,7 +277,7 @@ Rcpp::List log_objective_mnhmm_singlechannel(
     loglik(i) = logSumExp(model.log_omega + loglik_i);
     if (!std::isfinite(loglik(i))) {
       return Rcpp::List::create(
-        Rcpp::Named("loglik") = small,
+        Rcpp::Named("loglik") = -model.n_obs * model.maxval,
         Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi2),
         Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A2),
         Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2),
@@ -371,16 +368,15 @@ Rcpp::List log_objective_mnhmm_multichannel(
       grad_B(c, d) = arma::cube(model.M(c), model.K_B, model.S, arma::fill::zeros);
     }
   }
-  double small = -std::numeric_limits<double>::max();
-  arma::mat grad_omega2(model.D - 1, model.K_omega, arma::fill::value(small));
+  arma::mat grad_omega2(model.D - 1, model.K_omega, arma::fill::value(-model.maxval));
   arma::field<arma::mat> grad_pi2(model.D);
   arma::field<arma::cube> grad_A2(model.D);
   arma::field<arma::cube> grad_B2(model.C, model.D);
   for (arma::uword d = 0; d < model.D; d++) {
-    grad_pi2(d) = arma::mat(model.S - 1, model.K_pi, arma::fill::value(small));
-    grad_A2(d) = arma::cube(model.S - 1, model.K_A, model.S, arma::fill::value(small));
+    grad_pi2(d) = arma::mat(model.S - 1, model.K_pi, arma::fill::value(-model.maxval));
+    grad_A2(d) = arma::cube(model.S - 1, model.K_A, model.S, arma::fill::value(-model.maxval));
     for (arma::uword c = 0; c < model.C; c++) {
-      grad_B2(c, d) = arma::cube(model.M(c) - 1, model.K_B, model.S, arma::fill::value(small));
+      grad_B2(c, d) = arma::cube(model.M(c) - 1, model.K_B, model.S, arma::fill::value(-model.maxval));
     }
   }
   arma::mat tmpmat(model.S, model.S);
@@ -416,7 +412,7 @@ Rcpp::List log_objective_mnhmm_multichannel(
     loglik(i) = logSumExp(model.log_omega + loglik_i);
     if (!std::isfinite(loglik(i))) {
       return Rcpp::List::create(
-        Rcpp::Named("loglik") = small,
+        Rcpp::Named("loglik") = -model.n_obs * model.maxval,
         Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
         Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
         Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B),

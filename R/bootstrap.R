@@ -70,7 +70,7 @@ permute_clusters <- function(model, pcp_mle) {
 #' bootstrapping.
 #' 
 #' @param model An `nhmm` or `mnhmm` object.
-#' @param B number of bootstrap samples.
+#' @param nsim number of bootstrap samples.
 #' @param type Either `"nonparametric"` or `"parametric"`, to define whether 
 #' nonparametric or parametric bootstrap should be used. The former samples 
 #' sequences with replacement, whereas the latter simulates new datasets based 
@@ -85,24 +85,24 @@ bootstrap_coefs <- function(model, ...) {
 }
 #' @rdname bootstrap
 #' @export
-bootstrap_coefs.nhmm <- function(model, B = 1000, 
+bootstrap_coefs.nhmm <- function(model, nsim = 1000, 
                                  type = c("nonparametric", "parametric"),
                                  method = "DNM", ...) {
   type <- match.arg(type)
   stopifnot_(
-    checkmate::test_int(x = B, lower = 0L), 
-    "Argument {.arg B} must be a single positive integer."
+    checkmate::test_int(x = nsim, lower = 0L), 
+    "Argument {.arg nsim} must be a single positive integer."
   )
   init <- model$etas
   gammas_mle <- model$gammas
   lambda <- model$estimation_results$lambda
   pseudocount <- model$estimation_results$pseudocount
-  p <- progressr::progressor(along = seq_len(B))
+  p <- progressr::progressor(along = seq_len(nsim))
   original_options <- options(future.globals.maxSize = Inf)
   on.exit(options(original_options))
   if (type == "nonparametric") {
     out <- future.apply::future_lapply(
-      seq_len(B), function(i) {
+      seq_len(nsim), function(i) {
         mod <- bootstrap_model(model)
         fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
                         method = method, pseudocount = pseudocount, ...)
@@ -123,7 +123,7 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
     time <- model$time_variable
     id <- model$id_variable
     out <- future.apply::future_lapply(
-      seq_len(B), function(i) {
+      seq_len(nsim), function(i) {
         mod <- simulate_nhmm(
           N, T_, M, S, formula_pi, formula_A, formula_B,
           d, time, id, init, 0)$model
@@ -144,13 +144,13 @@ bootstrap_coefs.nhmm <- function(model, B = 1000,
 }
 #' @rdname bootstrap
 #' @export
-bootstrap_coefs.mnhmm <- function(model, B = 1000, 
+bootstrap_coefs.mnhmm <- function(model, nsim = 1000, 
                                   type = c("nonparametric", "parametric"),
                                   method = "DNM", ...) {
   type <- match.arg(type)
   stopifnot_(
-    checkmate::test_int(x = B, lower = 0L), 
-    "Argument {.arg B} must be a single positive integer."
+    checkmate::test_int(x = nsim, lower = 0L), 
+    "Argument {.arg nsim} must be a single positive integer."
   )
   init <- model$etas
   gammas_mle <- model$gammas
@@ -158,12 +158,12 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
   lambda <- model$estimation_results$lambda
   pseudocount <- model$estimation_results$pseudocount
   D <- model$n_clusters
-  p <- progressr::progressor(along = seq_len(B))
+  p <- progressr::progressor(along = seq_len(nsim))
   original_options <- options(future.globals.maxSize = Inf)
   on.exit(options(original_options))
   if (type == "nonparametric") {
     out <- future.apply::future_lapply(
-      seq_len(B), function(i) {
+      seq_len(nsim), function(i) {
         mod <- bootstrap_model(model)
         fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
                          method = method, pseudocount = pseudocount, ...)
@@ -194,7 +194,7 @@ bootstrap_coefs.mnhmm <- function(model, B = 1000,
     time <- model$time_variable
     id <- model$id_variable
     out <- future.apply::future_lapply(
-      seq_len(B), function(i) {
+      seq_len(nsim), function(i) {
         mod <- simulate_mnhmm(
           N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
           d, time, id, init, 0)$model

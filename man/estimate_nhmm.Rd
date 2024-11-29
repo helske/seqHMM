@@ -20,7 +20,7 @@ estimate_nhmm(
   restarts = 0L,
   lambda = 0,
   method = "EM-DNM",
-  pseudocount = 0.001,
+  pseudocount = 0,
   store_data = TRUE,
   ...
 )
@@ -84,8 +84,8 @@ direct maximization of the log-likelihood, by default using L-BFGS. Option
 then switches to L-BFGS (but other algorithms of NLopt can be used).}
 
 \item{pseudocount}{A positive scalar to be added for the expected counts of
-E-step. Only used in EM algorithm. Default is 1e34. Larger values can be used
-to avoid zero probabilities in initial, transition, and emission
+E-step. Only used in EM and EM-DNM algorithms. Default is 0. Larger values
+can be used to avoid zero probabilities in initial, transition, and emission
 probabilities, i.e. these have similar role as \code{lambda}.}
 
 \item{store_data}{If \code{TRUE} (default), original data frame passed as \code{data}
@@ -122,17 +122,17 @@ During the estimation, the log-likelihood is scaled by the number of
 non-missing observations (\code{nobs(model)}), and the the covariate data is
 standardardized before optimization.
 
-By default, the convergence is claimed when the absolute or relative
-change of the objective function is less than \code{1e-8}, or the absolute or
+By default, the convergence is claimed when the relative
+change of the objective function is less than \code{1e-10}, or the
 relative change of the parameters is less than \code{1e-6}. These can be changed
-by passing arguments \code{ftol_abs}, \code{ftol_rel}, \code{xtol_abs}, and \code{xtol_rel} via
-\code{...}. These, as well as argument \code{maxeval} (maximum number of iterations,
-1e4 by default), and \code{print_level} (default is \code{0}, no console output of
-optimization, larger values are more verbose), are used by the chosen
-main optimization method. The number of initial EM iterations in \code{EM-DNM}
-can be set using argument \code{maxeval_em_dnm} (default is 100), and
-algorithm for direct numerical optimization can be defined using argument
-\code{algorithm} (see \code{\link[nloptr:nloptr]{nloptr::nloptr()}} for possible options). It is also
+by passing arguments \code{ftol_rel} and \code{xtol_rel} via \code{...}. These, as well as
+arguments \code{ftol_abs} and \code{xtol_abs}  for absolute changes, \code{maxeval}
+(maximum number of iterations, 1e4 by default), and \code{print_level} (default
+is \code{0}, no console output of  optimization, larger values are more verbose),
+are used by the chosen main optimization method. The number of initial EM
+iterations in \code{EM-DNM} can be set using argument \code{maxeval_em_dnm} (default
+is 10), and algorithm for direct numerical optimization can be defined using
+argument \code{algorithm} (see \code{\link[nloptr:nloptr]{nloptr::nloptr()}} for possible options). It is also
 possible to separately control these stopping criteria for the multistart
 phase by defining (some of) them via argument \code{control_restart} which takes
 a list such as \code{list(ftol_rel = 0.01, print_level = 1)}. Additionally, same

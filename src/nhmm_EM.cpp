@@ -27,17 +27,17 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
     double val = arma::dot(E_Pi.col(i), log_pi);
     if (!std::isfinite(val)) {
       if (!grad.is_empty()) {
-        grad.fill(std::numeric_limits<double>::max());
+        grad.fill(maxval);
       }
-      return std::numeric_limits<double>::max();
+      return n_obs * maxval;
     }
     value -= val;
     // Only update grad if it's non-empty (i.e., for gradient-based optimization)
     if (!grad.is_empty()) {
       tmpgrad -= sum_epi * (E_Pi.col(i) / sum_epi - pi) * X_pi.col(i).t();
       if (!tmpgrad.is_finite()) {
-        grad.fill(std::numeric_limits<double>::max());
-        return std::numeric_limits<double>::max();
+        grad.fill(maxval);
+        return n_obs * maxval;
       }
     }
   }
@@ -120,7 +120,7 @@ double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
     }
     for (arma::uword t = 0; t < (Ti(i) - 1); t++) {
       double sum_ea = arma::accu(E_A(current_s).slice(t).col(i));
-      if (sum_ea > arma::datum::eps) {
+      if (sum_ea >  std::sqrt(arma::datum::eps)) {
         if (tv_A) {
           A1 = softmax(gamma_Arow * X_A.slice(i).col(t));
           log_A1 = log(A1);
@@ -128,17 +128,17 @@ double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
         double val = arma::dot(E_A(current_s).slice(t).col(i), log_A1);
         if (!std::isfinite(val)) {
           if (!grad.is_empty()) {
-            grad.fill(std::numeric_limits<double>::max());
+            grad.fill(maxval);
           }
-          return std::numeric_limits<double>::max();
+          return n_obs * maxval;
         }
         value -= val;
         
         if (!grad.is_empty()) {
           tmpgrad -= sum_ea * (E_A(current_s).slice(t).col(i) / sum_ea - A1) * X_A.slice(i).col(t).t();
           if (!tmpgrad.is_finite()) {
-            grad.fill(std::numeric_limits<double>::max());
-            return std::numeric_limits<double>::max();
+            grad.fill(maxval);
+            return n_obs * maxval;
           }
         }
       }
@@ -239,26 +239,26 @@ double nhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
     for (arma::uword t = 0; t < Ti(i); t++) {
       if (obs(t, i) < M) {
         double e_b = E_B(t, i, current_s);
-        if (e_b > arma::datum::eps) {
+        if (e_b > std::sqrt(arma::datum::eps)) {
           if (tv_B) {
             B1 = softmax(gamma_Brow * X_B.slice(i).col(t));
             log_B1 = log(B1);
           }
-          
           double val = e_b * log_B1(obs(t, i));
           if (!std::isfinite(val)) {
             if (!grad.is_empty()) {
-              grad.fill(std::numeric_limits<double>::max());
+              grad.fill(maxval);
             }
-            return std::numeric_limits<double>::max();
+            return n_obs * maxval;
           }
           value -= val;
           if (!grad.is_empty()) {
-            tmpgrad -= 
-              e_b * (I.col(obs(t, i)) - B1) * X_B.slice(i).col(t).t();
+            tmpgrad -= e_b * (I.col(obs(t, i)) - B1) * X_B.slice(i).col(t).t();
             if (!tmpgrad.is_finite()) {
-              grad.fill(std::numeric_limits<double>::max());
-              return std::numeric_limits<double>::max();
+              
+              Rcpp::Rcout<<"nonfinite grad"<<std::endl;
+              grad.fill(maxval);
+              return n_obs * maxval;
             }
           }
         }
@@ -363,7 +363,7 @@ double nhmm_mc::objective_B(const arma::vec& x, arma::vec& grad) {
       
       if (obs(current_c, t, i) < Mc) {
         double e_b = E_B(current_c)(t, i, current_s);
-        if (e_b > arma::datum::eps) {
+        if (e_b > std::sqrt(arma::datum::eps)) {
           if (tv_B) {
             B1 = softmax(gamma_Brow * X_B.slice(i).col(t));
             log_B1 = log(B1);
@@ -371,17 +371,17 @@ double nhmm_mc::objective_B(const arma::vec& x, arma::vec& grad) {
           double val = e_b * log_B1(obs(current_c, t, i));
           if (!std::isfinite(val)) {
             if (!grad.is_empty()) {
-              grad.fill(std::numeric_limits<double>::max());
+              grad.fill(maxval);
             }
-            return std::numeric_limits<double>::max();
+            return n_obs * maxval;
           }
           value -= val;
           if (!grad.is_empty()) {
             tmpgrad -= e_b  * (I.col(obs(current_c, t, i)) - B1) * 
               X_B.slice(i).col(t).t();
             if (!tmpgrad.is_finite()) {
-              grad.fill(std::numeric_limits<double>::max());
-              return std::numeric_limits<double>::max();
+              grad.fill(maxval);
+              return n_obs * maxval;
             }
           }
         }

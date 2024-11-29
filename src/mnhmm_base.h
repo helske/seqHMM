@@ -52,9 +52,9 @@ struct mnhmm_base {
   arma::uword current_d;
   const arma::uword n_obs;
   double lambda;
-  
-  int mstep_iter;
-  int mstep_error_code;
+  const double maxval;
+  int mstep_iter = 0;
+  int mstep_error_code = 0;
   
   mnhmm_base(
     const arma::uword S_,
@@ -76,9 +76,8 @@ struct mnhmm_base {
     arma::field<arma::mat>& eta_pi_,
     arma::field<arma::cube>& eta_A_,
     const arma::uword n_obs_ = 0,
-    const double lambda = 0,
-    int mstep_iter = 0,
-    int mstep_error_code = 0)
+    const double lambda_ = 0,
+    const double maxval_ = 1e8)
     : S(S_),
       D(D_), 
       X_omega(X_d_),
@@ -121,7 +120,8 @@ struct mnhmm_base {
       current_s(0),
       current_d(0),
       n_obs(n_obs_),
-      lambda(lambda){
+      lambda(lambda_),
+      maxval(maxval_) {
     for (arma::uword d = 0; d < D; d++) {
       pi(d) = arma::vec(S);
       log_pi(d) = arma::vec(S);

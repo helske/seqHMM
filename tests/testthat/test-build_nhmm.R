@@ -46,7 +46,7 @@ test_that("estimate_nhmm returns object of class 'nhmm'", {
 test_that("estimate_nhmm errors with missing 'n_states' argument", {
   expect_error(
     estimate_nhmm(obs),
-    "Argument `n\\_states` must be a single positive integer\\."
+    "Argument `n\\_states` must be a single integer larger than 1\\."
   )
 })
 test_that("estimate_nhmm errors with incorrect formulas", {

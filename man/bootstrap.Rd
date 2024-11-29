@@ -10,7 +10,7 @@ bootstrap_coefs(model, ...)
 
 \method{bootstrap_coefs}{nhmm}(
   model,
-  B = 1000,
+  nsim = 1000,
   type = c("nonparametric", "parametric"),
   method = "DNM",
   ...
@@ -18,7 +18,7 @@ bootstrap_coefs(model, ...)
 
 \method{bootstrap_coefs}{mnhmm}(
   model,
-  B = 1000,
+  nsim = 1000,
   type = c("nonparametric", "parametric"),
   method = "DNM",
   ...
@@ -29,7 +29,7 @@ bootstrap_coefs(model, ...)
 
 \item{...}{Additional arguments to \code{\link[=estimate_nhmm]{estimate_nhmm()}} or \code{\link[=estimate_mnhmm]{estimate_mnhmm()}}.}
 
-\item{B}{number of bootstrap samples.}
+\item{nsim}{number of bootstrap samples.}
 
 \item{type}{Either \code{"nonparametric"} or \code{"parametric"}, to define whether
 nonparametric or parametric bootstrap should be used. The former samples

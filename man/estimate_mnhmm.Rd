@@ -23,7 +23,7 @@ estimate_mnhmm(
   restarts = 0L,
   lambda = 0,
   method = "EM-DNM",
-  pseudocount = 0.001,
+  pseudocount = 0,
   store_data = TRUE,
   ...
 )
@@ -97,8 +97,8 @@ direct maximization of the log-likelihood, by default using L-BFGS. Option
 then switches to L-BFGS (but other algorithms of NLopt can be used).}
 
 \item{pseudocount}{A positive scalar to be added for the expected counts of
-E-step. Only used in EM algorithm. Default is 1e34. Larger values can be used
-to avoid zero probabilities in initial, transition, and emission
+E-step. Only used in EM and EM-DNM algorithms. Default is 0. Larger values
+can be used to avoid zero probabilities in initial, transition, and emission
 probabilities, i.e. these have similar role as \code{lambda}.}
 
 \item{store_data}{If \code{TRUE} (default), original data frame passed as \code{data}
