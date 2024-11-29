@@ -4,20 +4,19 @@
 #include <RcppArmadillo.h>
 
 template<typename Model>
-Rcpp::List mstep_error_mnhmm(int error_code, const Model& model, 
+Rcpp::List mstep_error_mnhmm(int return_code, const Model& model, 
                              int iter, double relative_change, 
                              double absolute_change, double absolute_x_change, 
                              double relative_x_change) {
-  if (error_code != 0) {
+  if (return_code != 0) {
     return Rcpp::List::create(
-      Rcpp::Named("return_code") = error_code,
+      Rcpp::Named("return_code") = return_code,
       Rcpp::Named("eta_omega") = Rcpp::wrap(model.eta_omega),
       Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
       Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
       Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
-      Rcpp::Named("penalized_logLik") = arma::datum::nan,
-      Rcpp::Named("penalty_term") = arma::datum::nan,
       Rcpp::Named("logLik") = arma::datum::nan,
+      Rcpp::Named("penalty_term") = arma::datum::nan,
       Rcpp::Named("iterations") = iter,
       Rcpp::Named("relative_f_change") = relative_change,
       Rcpp::Named("absolute_f_change") = absolute_change,
@@ -29,19 +28,18 @@ Rcpp::List mstep_error_mnhmm(int error_code, const Model& model,
 }
 
 template<typename Model>
-Rcpp::List mstep_error_nhmm(int error_code, const Model& model, 
+Rcpp::List mstep_error_nhmm(int return_code, const Model& model, 
                              int iter, double relative_change, 
                              double absolute_change, double absolute_x_change, 
                              double relative_x_change) {
-  if (error_code != 0) {
+  if (return_code != 0) {
     return Rcpp::List::create(
-      Rcpp::Named("return_code") = error_code,
+      Rcpp::Named("return_code") = return_code,
       Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
       Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
       Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
-      Rcpp::Named("penalized_logLik") = arma::datum::nan,
-      Rcpp::Named("penalty_term") = arma::datum::nan,
       Rcpp::Named("logLik") = arma::datum::nan,
+      Rcpp::Named("penalty_term") = arma::datum::nan,
       Rcpp::Named("iterations") = iter,
       Rcpp::Named("relative_f_change") = relative_change,
       Rcpp::Named("absolute_f_change") = absolute_change,

@@ -5,6 +5,10 @@ ame_obs_nhmm_singlechannel <- function(eta_pi, eta_A, eta_B, obs, Ti, icpt_only_
     .Call(`_seqHMM_ame_obs_nhmm_singlechannel`, eta_pi, eta_A, eta_B, obs, Ti, icpt_only_pi1, icpt_only_A1, icpt_only_B1, iv_A1, iv_B1, tv_A1, tv_B1, X1_pi, X1_A, X1_B, icpt_only_pi2, icpt_only_A2, icpt_only_B2, iv_A2, iv_B2, tv_A2, tv_B2, X2_pi, X2_A, X2_B, boot_gamma_pi, boot_gamma_A, boot_gamma_B, start, probs)
 }
 
+ame_obs_nhmm_multichannel <- function(eta_pi, eta_A, eta_B, obs, Ti, icpt_only_pi1, icpt_only_A1, icpt_only_B1, iv_A1, iv_B1, tv_A1, tv_B1, X1_pi, X1_A, X1_B, icpt_only_pi2, icpt_only_A2, icpt_only_B2, iv_A2, iv_B2, tv_A2, tv_B2, X2_pi, X2_A, X2_B, boot_gamma_pi, boot_gamma_A, boot_gamma_B, start, probs) {
+    .Call(`_seqHMM_ame_obs_nhmm_multichannel`, eta_pi, eta_A, eta_B, obs, Ti, icpt_only_pi1, icpt_only_A1, icpt_only_B1, iv_A1, iv_B1, tv_A1, tv_B1, X1_pi, X1_A, X1_B, icpt_only_pi2, icpt_only_A2, icpt_only_B2, iv_A2, iv_B2, tv_A2, tv_B2, X2_pi, X2_A, X2_B, boot_gamma_pi, boot_gamma_A, boot_gamma_B, start, probs)
+}
+
 cost_matrix_singlechannel <- function(gamma_pi_est, gamma_pi_ref, gamma_A_est, gamma_A_ref, gamma_B_est, gamma_B_ref) {
     .Call(`_seqHMM_cost_matrix_singlechannel`, gamma_pi_est, gamma_pi_ref, gamma_A_est, gamma_A_ref, gamma_B_est, gamma_B_ref)
 }

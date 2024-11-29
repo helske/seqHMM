@@ -121,7 +121,7 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
           control_mstep$xtol_abs, control_mstep$xtol_rel, 
           control_mstep$print_level, lambda, pseudocount)
       }
-      if (fit$return_code == 0) {
+      if (fit$return_code >= 0) {
         init <- unlist(
           create_initial_values(
             stats::setNames(
@@ -153,6 +153,7 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
       )
     }
     optimum <- successful[which.max(logliks[successful])]
+    em_return_code <- out[[optimum]]$solution$return_code
     pars <- out[[optimum]]$solution
     init <- list()
     init$pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
@@ -194,7 +195,8 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
         control_mstep$xtol_abs, control_mstep$xtol_rel, 
         control_mstep$print_level, lambda, pseudocount)
     }
-    if (out$return_code == 0) {
+    em_return_code <- out$return_code
+    if (em_return_code >= 0) {
       init <- create_initial_values(
         stats::setNames(
           out[c("eta_pi", "eta_A", "eta_B")], c("pi", "A", "B")
@@ -203,9 +205,8 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
         init_sd = 0
       )
     } else {
-      browser()
       warning_(
-        paste("EM-step terminated due to error:", error_msg(out$return_code),
+        paste("EM-step terminated due to error:", error_msg(em_return_code),
               "Running DNM using initial values for EM.")
       )
       init <- create_initial_values(inits, model, init_sd)
@@ -240,6 +241,7 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
   model$estimation_results <- list(
     loglik = -out$objective * n_obs, 
     return_code = out$status,
+    return_code_of_EM = em_return_code,
     message = out$message,
     iterations = out$iterations,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 

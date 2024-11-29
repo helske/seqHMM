@@ -51,7 +51,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
     model$etas <- create_initial_values(inits, model, init_sd)
     model$gammas$pi <- c(eta_to_gamma_mat_field(model$etas$pi))
     model$gammas$A <- c(eta_to_gamma_cube_field(model$etas$A))
-    if (C == 1L) {
+    if (model$n_channels == 1L) {
       model$gammas$B <- c(eta_to_gamma_cube_field(model$etas$B))
     } else {
       l <- lengths(model$etas$B)

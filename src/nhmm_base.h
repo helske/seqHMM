@@ -44,7 +44,7 @@ struct nhmm_base {
   double lambda;
   const double maxval;
   int mstep_iter = 0;
-  int mstep_error_code = 0;
+  int mstep_return_code = 0;
   
   nhmm_base(
     const arma::uword S_,

@@ -75,7 +75,7 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
           "Error of first restart: ", error_msg(return_codes[1]))
       )
     }
-    logliks <- unlist(lapply(out, "[[", "penalized_logLik")) * n_obs
+    logliks <- unlist(lapply(out, "[[", "logLik"))
     optimum <- out[[which.max(logliks)]]
     init <- stats::setNames(
       optimum[c("eta_omega", "eta_pi", "eta_A", "eta_B")], 
@@ -135,7 +135,7 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
   model$gammas$omega <- eta_to_gamma_mat(model$etas$omega)
   
   model$estimation_results <- list(
-    loglik = out$penalized_logLik,
+    loglik = out$logLik,
     penalty = out$penalty_term,
     iterations = out$iterations,
     return_code = out$return_code,

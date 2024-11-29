@@ -75,7 +75,9 @@
 #' @param lambda Penalization factor `lambda` for penalized log-likelihood, where the 
 #' penalization is `0.5 * lambda * sum(parameters^2)`. Note that with 
 #' `method = "L-BFGS"` both objective function (log-likelihood) and 
-#' the penalization term is scaled with number of non-missing observations.
+#' the penalization term is scaled with number of non-missing observations. 
+#' Default is 1e-4 for ensuring numerical stability of L-BFGS by avoiding 
+#' extreme probabilities.
 #' @param method Optimization method used. Option `"EM"` uses EM
 #' algorithm with L-BFGS in the M-step. Option `"DNM"` uses 
 #' direct maximization of the log-likelihood, by default using L-BFGS. Option 
@@ -112,7 +114,7 @@ estimate_nhmm <- function(
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, 
     channel_names = NULL, inits = "random", init_sd = 2, restarts = 0L, 
-    lambda = 0, method = "EM-DNM", pseudocount = 0, store_data = TRUE, 
+    lambda = 1e-4, method = "EM-DNM", pseudocount = 0, store_data = TRUE, 
     ...) {
   
   call <- match.call()

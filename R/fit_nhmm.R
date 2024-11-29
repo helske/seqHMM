@@ -51,7 +51,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
     model$eta <- create_initial_values(inits, model, 0)
     model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
     model$gammas$A <- eta_to_gamma_cube(model$etas$A)
-    if (C == 1L) {
+    if (model$n_channels == 1L) {
       model$gammas$B <- eta_to_gamma_cube(model$etas$B)
     } else {
       model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)

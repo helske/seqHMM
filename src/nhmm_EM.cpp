@@ -51,12 +51,12 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
                          const double xtol_rel, const double ftol_rel, 
                          const arma::uword maxeval, 
                          const arma::uword print_level) {
-  mstep_error_code = 0;
+  mstep_return_code = 0;
   // Use closed form solution
   if (icpt_only_pi && lambda < 1e-12) {
     eta_pi = Qs.t() * log(arma::sum(E_Pi, 1));
     if (!eta_pi.is_finite()) {
-      mstep_error_code = 1;
+      mstep_return_code = -100;
       return;
     }
     return;
@@ -85,13 +85,13 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
   nlopt_set_maxeval(opt_pi, maxeval);
   double minf;
   mstep_iter = 0;
-  int status = nlopt_optimize(opt_pi, x_pi.memptr(), &minf);
-  if (print_level > 2 && status > 0) {
-    Rcpp::Rcout<<"M-step of initial probabilities ended with status "<<status<<
-      " after "<<mstep_iter<<" iterations."<<std::endl;
+  int return_code = nlopt_optimize(opt_pi, x_pi.memptr(), &minf);
+  if (print_level > 2 && return_code > 0) {
+    Rcpp::Rcout<<"M-step of initial probabilities ended with return code "<<
+      return_code<<" after "<<mstep_iter + 1<<" iterations."<<std::endl;
   }
-  if (status < 0) {
-    mstep_error_code = status - 100;
+  if (return_code < 0) {
+    mstep_return_code = return_code - 110;
     nlopt_destroy(opt_pi);
     return;
   }
@@ -155,7 +155,7 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
                         const double xtol_abs, const double xtol_rel, 
                         const arma::uword maxeval, 
                         const arma::uword print_level) {
-  mstep_error_code = 0;
+  mstep_return_code = 0;
   
   // Use closed form solution
   if (icpt_only_A && lambda < 1e-12) {
@@ -166,7 +166,7 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
       }
       eta_A.slice(s).col(0) = Qs.t() * log(tmp);
       if (!eta_A.slice(s).col(0).is_finite()) {
-        mstep_error_code = 2;
+        mstep_return_code = -200;
         return;
       }
     }
@@ -195,20 +195,20 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
   nlopt_set_ftol_rel(opt_A, ftol_rel);
   nlopt_set_maxeval(opt_A, maxeval);
   double minf;
-  int status;
+  int return_code;
   
   for (arma::uword s = 0; s < S; s++) {
     current_s = s;
     x_A = arma::vectorise(eta_A.slice(s));
     mstep_iter = 0;
-    status = nlopt_optimize(opt_A, x_A.memptr(), &minf);
-    if (print_level > 2 && status > 0) {
+    return_code = nlopt_optimize(opt_A, x_A.memptr(), &minf);
+    if (print_level > 2 && return_code > 0) {
       Rcpp::Rcout<<"M-step of transition probabilities of state "<<s + 1<<
-        " ended with status "<<status<<" after "<<mstep_iter<<
+        " ended with return code "<<return_code<<" after "<<mstep_iter + 1<<
           " iterations."<<std::endl;
     }
-    if (status < 0) {
-      mstep_error_code = status - 200;
+    if (return_code < 0) {
+      mstep_return_code = return_code - 210;
       nlopt_destroy(opt_A);
       return;
     }
@@ -255,8 +255,6 @@ double nhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
           if (!grad.is_empty()) {
             tmpgrad -= e_b * (I.col(obs(t, i)) - B1) * X_B.slice(i).col(t).t();
             if (!tmpgrad.is_finite()) {
-              
-              Rcpp::Rcout<<"nonfinite grad"<<std::endl;
               grad.fill(maxval);
               return n_obs * maxval;
             }
@@ -275,7 +273,7 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
                       const double xtol_abs, const double xtol_rel, 
                       const arma::uword maxeval, 
                       const arma::uword print_level) {
-  mstep_error_code = 0;
+  mstep_return_code = 0;
   // use closed form solution
   if (icpt_only_B && lambda < 1e-12) {
     arma::vec tmp(M);
@@ -290,7 +288,7 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
       }
       eta_B.slice(s).col(0) = Qm.t() * log(tmp);
       if (!eta_B.slice(s).col(0).is_finite()) {
-        mstep_error_code = 3;
+        mstep_return_code = -300;
         return;
       }
     }
@@ -317,19 +315,19 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
   nlopt_set_ftol_rel(opt_B, ftol_rel);
   nlopt_set_maxeval(opt_B, maxeval);
   double minf;
-  int status;
+  int return_code;
   for (arma::uword s = 0; s < S; s++) {
     current_s = s;
     x_B = arma::vectorise(eta_B.slice(s));
     mstep_iter = 0;
-    status = nlopt_optimize(opt_B, x_B.memptr(), &minf);
-    if (print_level > 2 && status > 0) {
+    return_code = nlopt_optimize(opt_B, x_B.memptr(), &minf);
+    if (print_level > 2 && return_code > 0) {
       Rcpp::Rcout<<"M-step of emission probabilities of state "<<s + 1<<
-        " ended with status "<<status<<" after "<<mstep_iter<<
+        " ended with return code "<<return_code<<" after "<<mstep_iter + 1<<
           " iterations."<<std::endl;
     }
-    if (status < 0) {
-      mstep_error_code = status - 300;
+    if (return_code < 0) {
+      mstep_return_code = return_code - 310;
       nlopt_destroy(opt_B);
       return;
     }
@@ -399,7 +397,7 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
                       const double xtol_abs, const double xtol_rel, 
                       const arma::uword maxeval, 
                       const arma::uword print_level) {
-  mstep_error_code = 0;
+  mstep_return_code = 0;
   // use closed form solution
   if (icpt_only_B && lambda < 1e-12) {
     for (arma::uword c = 0; c < C; c++) {
@@ -415,7 +413,7 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
         }
         eta_B(c).slice(s).col(0) = Qm(c).t() * log(tmp);
         if (!eta_B(c).slice(s).col(0).is_finite()) {
-          mstep_error_code = 3;
+          mstep_return_code = -300;
           return;
         }
       }
@@ -434,7 +432,7 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
     }
   };
   double minf;
-  int status;
+  int return_code;
   for (arma::uword c = 0; c < C; c++) {
     arma::vec x_B(eta_B(c).slice(0).n_elem);
     nlopt_opt opt_B = nlopt_create(NLOPT_LD_LBFGS, x_B.n_elem);
@@ -449,14 +447,14 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
       current_s = s;
       x_B = arma::vectorise(eta_B(c).slice(s));
       mstep_iter = 0;
-      status = nlopt_optimize(opt_B, x_B.memptr(), &minf);
-      if (print_level > 2 && status > 0) {
+      return_code = nlopt_optimize(opt_B, x_B.memptr(), &minf);
+      if (print_level > 2 && return_code > 0) {
         Rcpp::Rcout<<"M-step of emission probabilities of state "<<s + 1<<
-          " and channel "<<c<<" ended with status "<<status<<" after "<<mstep_iter<<
-            " iterations."<<std::endl;
+          " and channel "<<c<<" ended with return code "<<return_code<<
+            " after "<<mstep_iter + 1<<" iterations."<<std::endl;
       }
-      if (status < 0) {
-        mstep_error_code = status - 300;
+      if (return_code < 0) {
+        mstep_return_code = return_code - 310;
         nlopt_destroy(opt_B);
         return;
       }
@@ -569,25 +567,25 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     model.mstep_pi(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
-    if (model.mstep_error_code != 0) {
+    if (model.mstep_return_code != 0) {
       return mstep_error_nhmm(
-        model.mstep_error_code, model, iter, relative_change, 
+        model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
     model.mstep_A(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
-    if (model.mstep_error_code != 0) {
+    if (model.mstep_return_code != 0) {
       return mstep_error_nhmm(
-        model.mstep_error_code, model, iter, relative_change, 
+        model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
     model.mstep_B(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
-    if (model.mstep_error_code != 0) {
+    if (model.mstep_return_code != 0) {
       return mstep_error_nhmm(
-        model.mstep_error_code, model, iter, relative_change, 
+        model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
     // Update model
@@ -649,15 +647,21 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
       Rcpp::warning("EM algorithm encountered decreasing log-likelihood.");
     }
   }
-  
+  int return_code = 0;
+  if (iter >= maxeval) {
+    return_code = 5;
+  } else if (relative_change < ftol_rel || absolute_change < ftol_abs) {
+    return_code = 3;
+  } else if (relative_x_change < xtol_rel || absolute_x_change < xtol_abs) {
+    return_code = 4;
+  }
   return Rcpp::List::create(
-    Rcpp::Named("return_code") = 0,
+    Rcpp::Named("return_code") = return_code,
     Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
     Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
     Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
-    Rcpp::Named("penalized_logLik") = ll * model.n_obs,
-    Rcpp::Named("penalty_term") = penalty_term * model.n_obs,
-    Rcpp::Named("logLik") = (ll + penalty_term) * model.n_obs,
+    Rcpp::Named("logLik") = ll * model.n_obs,
+    Rcpp::Named("penalty_term") = penalty_term,
     Rcpp::Named("iterations") = iter,
     Rcpp::Named("relative_f_change") = relative_change,
     Rcpp::Named("absolute_f_change") = absolute_change,
@@ -773,25 +777,25 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     model.mstep_pi(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
-    if (model.mstep_error_code != 0) {
+    if (model.mstep_return_code != 0) {
       return mstep_error_nhmm(
-        model.mstep_error_code, model, iter, relative_change, 
+        model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
     model.mstep_A(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
-    if (model.mstep_error_code != 0) {
+    if (model.mstep_return_code != 0) {
       return mstep_error_nhmm(
-        model.mstep_error_code, model, iter, relative_change, 
+        model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
     model.mstep_B(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m
     );
-    if (model.mstep_error_code != 0) {
+    if (model.mstep_return_code != 0) {
       return mstep_error_nhmm(
-        model.mstep_error_code, model, iter, relative_change, 
+        model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
     // Update model
@@ -858,14 +862,21 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     }
   }
   
+  int return_code = 0;
+  if (iter >= maxeval) {
+    return_code = 5;
+  } else if (relative_change < ftol_rel || absolute_change < ftol_abs) {
+    return_code = 3;
+  } else if (relative_x_change < xtol_rel || absolute_x_change < xtol_abs) {
+    return_code = 4;
+  }
   return Rcpp::List::create(
-    Rcpp::Named("return_code") = 0,
+    Rcpp::Named("return_code") = return_code,
     Rcpp::Named("eta_pi") = Rcpp::wrap(model.eta_pi),
     Rcpp::Named("eta_A") = Rcpp::wrap(model.eta_A),
     Rcpp::Named("eta_B") = Rcpp::wrap(model.eta_B),
-    Rcpp::Named("penalized_logLik") = ll * model.n_obs,
-    Rcpp::Named("penalty_term") = penalty_term * model.n_obs,
-    Rcpp::Named("logLik") = (ll + penalty_term) * model.n_obs,
+    Rcpp::Named("logLik") = ll * model.n_obs,
+    Rcpp::Named("penalty_term") = penalty_term,
     Rcpp::Named("iterations") = iter,
     Rcpp::Named("relative_f_change") = relative_change,
     Rcpp::Named("absolute_f_change") = absolute_change,

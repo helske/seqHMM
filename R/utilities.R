@@ -145,41 +145,42 @@ create_emissionArray <- function(model) {
 #' @noRd
 error_msg <- function(error) {
   
-  if (error %in% c(1, -(101:104))) gamma <- "gamma_pi"
-  if (error %in% c(2, -(201:204))) gamma <- "gamma_A"
-  if (error %in% c(3, -(301:304))) gamma <- "gamma_B"
-  if (error %in% c(4, -(401:404))) gamma <- "gamma_omega"
+  gamma <- NULL
+  if (error %in% -c(100, 111:114)) gamma <- "gamma_pi"
+  if (error %in% -c(200, 211:214)) gamma <- "gamma_A"
+  if (error %in% -c(300, 311:314)) gamma <- "gamma_B"
+  if (error %in% -c(400, 411:414)) gamma <- "gamma_omega"
+  if (!is.null(gamma) && error %in% (-100 * (1:4))) {
+    return(paste0(
+      "Error: M-step of ", gamma, " encountered expected count of zero. ",
+      "Try increasing the pseudocounts or regularization via lambda to avoid ",
+      "extreme probabilities.")
+    )
+  }
   
-  nonfinite_msg <- paste0(
-    "Error: Some of the values in ", gamma, " are nonfinite, likely due to ",
-    "zero expected counts. Try increasing the penalty lambda or ",
-    "pseudocounts (in case of EM algorithm) to avoid extreme probabilities.")
   if (!(error %in% -(1:4))) {
     mstep <- paste0("Error in M-step of ", gamma, ". ")
   } else {
     mstep <- ""
   }
   
-  e <- seq(0, 400, by = 100)
-  if (error %in% 1:4) {
-    msg <- nonfinite_msg
-  }
-  if (error %in% (-1 - e)) {
+  e <- c(0, seq(110, 410, by = 100))
+  if (error %in% -(1 + e)) {
     msg <- paste0(mstep, "NLOPT_FAILURE: Generic failure code.")
   }
-  if (error %in% (-2 - e)) {
+  if (error %in% -(2 + e)) {
     msg <- paste0(
       mstep, 
       "NLOPT_INVALID_ARGS: Invalid arguments (e.g., lower bounds are ",
       "bigger than upper bounds, an unknown algorithm was specified)."
     )
   }
-  if (error %in% (-3 - e)) {
+  if (error %in% -(3 + e)) {
     msg <- paste0(
       mstep, "NLOPT_OUT_OF_MEMORY: Ran out of memory."
     )
   }
-  if (error %in% (-4 - e)) {
+  if (error %in% -(4 + e)) {
     msg <- paste0(
       mstep,
       "NLOPT_ROUNDOFF_LIMITED: Halted because roundoff errors limited progress."
