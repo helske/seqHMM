@@ -44,7 +44,7 @@ estimate_mnhmm <- function(
     transition_formula = ~1, emission_formula = ~1, cluster_formula = ~1,
     data = NULL, time = NULL, id = NULL, state_names = NULL, 
     channel_names = NULL, cluster_names = NULL, inits = "random", init_sd = 2, 
-    restarts = 0L, lambda = 0, method = "EM-DNM", pseudocount = 1e-3, 
+    restarts = 0L, lambda = 0, method = "EM-DNM", pseudocount = 0, 
     store_data = TRUE, ...) {
   
   call <- match.call()

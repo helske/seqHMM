@@ -16,14 +16,14 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
   )
   control <- utils::modifyList(
     list(
-      ftol_abs = 1e-8,
-      ftol_rel = 1e-8,
-      xtol_abs = 1e-6,
+      ftol_abs = 0,
+      xtol_abs = 0,
+      ftol_rel = 1e-10,
       xtol_rel = 1e-6,
       maxeval = 1e4,
       print_level = 0,
       algorithm = "NLOPT_LD_LBFGS",
-      maxeval_em_dnm = 100
+      maxeval_em_dnm = 10
     ),
     list(...)
   )

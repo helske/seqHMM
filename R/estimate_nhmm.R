@@ -21,17 +21,17 @@
 #' non-missing observations (`nobs(model)`), and the the covariate data is 
 #' standardardized before optimization.
 #'  
-#' By default, the convergence is claimed when the absolute or relative 
-#' change of the objective function is less than `1e-8`, or the absolute or 
+#' By default, the convergence is claimed when the relative 
+#' change of the objective function is less than `1e-10`, or the 
 #' relative change of the parameters is less than `1e-6`. These can be changed
-#' by passing arguments `ftol_abs`, `ftol_rel`, `xtol_abs`, and `xtol_rel` via
-#' `...`. These, as well as argument `maxeval` (maximum number of iterations, 
-#' 1e4 by default), and `print_level` (default is `0`, no console output of 
-#' optimization, larger values are more verbose), are used by the chosen 
-#' main optimization method. The number of initial EM iterations in `EM-DNM` 
-#' can be set using argument `maxeval_em_dnm` (default is 100), and 
-#' algorithm for direct numerical optimization can be defined using argument
-#' `algorithm` (see [nloptr::nloptr()] for possible options). It is also 
+#' by passing arguments `ftol_rel` and `xtol_rel` via `...`. These, as well as 
+#' arguments `ftol_abs` and `xtol_abs`  for absolute changes, `maxeval` 
+#' (maximum number of iterations, 1e4 by default), and `print_level` (default 
+#' is `0`, no console output of  optimization, larger values are more verbose), 
+#' are used by the chosen main optimization method. The number of initial EM 
+#' iterations in `EM-DNM` can be set using argument `maxeval_em_dnm` (default 
+#' is 10), and algorithm for direct numerical optimization can be defined using 
+#' argument `algorithm` (see [nloptr::nloptr()] for possible options). It is also 
 #' possible to separately control these stopping criteria for the multistart 
 #' phase by defining (some of) them via argument `control_restart` which takes 
 #' a list such as `list(ftol_rel = 0.01, print_level = 1)`. Additionally, same 
@@ -82,8 +82,8 @@
 #' `"EM-DNM"` (the default) runs first a maximum of 100 iterations of EM and 
 #' then switches to L-BFGS (but other algorithms of NLopt can be used).
 #' @param pseudocount A positive scalar to be added for the expected counts of 
-#' E-step. Only used in EM algorithm. Default is 1e34. Larger values can be used 
-#' to avoid zero probabilities in initial, transition, and emission 
+#' E-step. Only used in EM and EM-DNM algorithms. Default is 0. Larger values 
+#' can be used to avoid zero probabilities in initial, transition, and emission 
 #' probabilities, i.e. these have similar role as `lambda`.
 #' @param store_data If `TRUE` (default), original data frame passed as `data` 
 #' is stored to the model object. For large datasets, this can be set to 
@@ -112,7 +112,7 @@ estimate_nhmm <- function(
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, 
     channel_names = NULL, inits = "random", init_sd = 2, restarts = 0L, 
-    lambda = 0, method = "EM-DNM", pseudocount = 1e-3, store_data = TRUE, 
+    lambda = 0, method = "EM-DNM", pseudocount = 0, store_data = TRUE, 
     ...) {
   
   call <- match.call()
