@@ -83,10 +83,10 @@ coef.nhmm <- function(object, probs, ...) {
         "Run {.fn bootstrap_coefs} first."
       )
     )
-    B <- length(object$boot$gamma_pi)
-    q_pi <- fast_quantiles(matrix(unlist(object$boot$gamma_pi), ncol = B), probs)
-    q_A <- fast_quantiles(matrix(unlist(object$boot$gamma_A), ncol = B), probs)
-    q_B <- fast_quantiles(matrix(unlist(object$boot$gamma_B), ncol = B), probs)
+    nsim <- length(object$boot$gamma_pi)
+    q_pi <- fast_quantiles(matrix(unlist(object$boot$gamma_pi), ncol = nsim), probs)
+    q_A <- fast_quantiles(matrix(unlist(object$boot$gamma_A), ncol = nsim), probs)
+    q_B <- fast_quantiles(matrix(unlist(object$boot$gamma_B), ncol = nsim), probs)
     sd_B_X <- unlist(lapply(seq_along(M), function(i) rep(sd_B_X, each = M[i])))
     for(i in seq_along(probs)) {
       gamma_pi[paste0("q", 100 * probs[i])] <- q_pi[, i] / sd_pi_X
@@ -207,11 +207,11 @@ coef.mnhmm <- function(object, probs, ...) {
         "Run {.fn bootstrap_coefs} first."
       )
     )
-    B <- length(object$boot$gamma_pi)
-    q_pi <- fast_quantiles(matrix(unlist(object$boot$gamma_pi), ncol = B), probs)
-    q_A <- fast_quantiles(matrix(unlist(object$boot$gamma_A), ncol = B), probs)
-    q_B <- fast_quantiles(matrix(unlist(object$boot$gamma_B), ncol = B), probs)
-    q_omega <- fast_quantiles(matrix(unlist(object$boot$gamma_omega), ncol = B), 
+    nsim <- length(object$boot$gamma_pi)
+    q_pi <- fast_quantiles(matrix(unlist(object$boot$gamma_pi), ncol = nsim), probs)
+    q_A <- fast_quantiles(matrix(unlist(object$boot$gamma_A), ncol = nsim), probs)
+    q_B <- fast_quantiles(matrix(unlist(object$boot$gamma_B), ncol = nsim), probs)
+    q_omega <- fast_quantiles(matrix(unlist(object$boot$gamma_omega), ncol = nsim), 
                               probs)
     sd_B_X <- unlist(lapply(seq_along(M), function(i) rep(sd_B_X, each = M[i])))
   
