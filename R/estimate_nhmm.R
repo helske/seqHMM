@@ -85,7 +85,7 @@
 #' then switches to L-BFGS (but other algorithms of NLopt can be used).
 #' @param pseudocount A positive scalar to be added for the expected counts of 
 #' E-step. Only used in EM and EM-DNM algorithms. Default is 0. Larger values 
-#' can be used to avoid zero probabilities in initial, transition, and emission 
+#' can be used to avoid extreme initial, transition, and emission 
 #' probabilities, i.e. these have similar role as `lambda`.
 #' @param store_data If `TRUE` (default), original data frame passed as `data` 
 #' is stored to the model object. For large datasets, this can be set to 
