@@ -145,14 +145,20 @@ create_emissionArray <- function(model) {
 #' @noRd
 error_msg <- function(error) {
   
+  if (error < -1000) {
+    x <- "Initial EM step failed\n. "
+    error <- error + 1000
+  } else {
+    x <- ""
+  }
   gamma <- NULL
   if (error %in% -c(100, 111:114)) gamma <- "gamma_pi"
   if (error %in% -c(200, 211:214)) gamma <- "gamma_A"
   if (error %in% -c(300, 311:314)) gamma <- "gamma_B"
   if (error %in% -c(400, 411:414)) gamma <- "gamma_omega"
   if (!is.null(gamma) && error %in% (-100 * (1:4))) {
-    return(paste0(
-      "Error: M-step of ", gamma, " encountered expected count of zero. ",
+    return(paste0(x,
+      "Error in M-step of ", gamma, " encountered expected count of zero. ",
       "Try increasing the pseudocounts or regularization via lambda to avoid ",
       "extreme probabilities.")
     )
@@ -186,5 +192,5 @@ error_msg <- function(error) {
       "NLOPT_ROUNDOFF_LIMITED: Halted because roundoff errors limited progress."
     )
   }
-  msg
+  paste0(x, msg)
 }

@@ -17,8 +17,8 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
   
   eta_pi = arma::mat(x.memptr(), S - 1, K_pi);
   gamma_pi = sum_to_zero(eta_pi, Qs);
-  arma::mat tmpgrad(S, K_pi, arma::fill::zeros);
-  
+  arma::mat tQs = Qs.t();
+  grad.zeros();
   for (arma::uword i = 0; i < N; i++) {
     if (!icpt_only_pi || i == 0) {
       update_pi(i);
@@ -34,18 +34,17 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
     value -= val;
     // Only update grad if it's non-empty (i.e., for gradient-based optimization)
     if (!grad.is_empty()) {
-      tmpgrad -= sum_epi * (E_Pi.col(i) / sum_epi - pi) * X_pi.col(i).t();
-      if (!tmpgrad.is_finite()) {
+      grad -= arma::vectorise(tQs * (E_Pi.col(i) - sum_epi * pi) * X_pi.col(i).t());
+      if (!grad.is_finite()) {
         grad.fill(maxval);
         return n_obs * maxval;
       }
     }
   }
-  grad = arma::vectorise(Qs.t() * tmpgrad);
   if (!grad.is_empty()) {
     grad += lambda * x;
   }
-  return value + 0.5 * lambda * arma::dot(x, x);
+  return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs, 
                          const double xtol_rel, const double ftol_rel, 
@@ -107,12 +106,12 @@ double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
   arma::mat gamma_Arow = sum_to_zero(eta_Arow, Qs);
   arma::vec A1(S);
   arma::vec log_A1(S);
-  arma::mat tmpgrad(S, K_A, arma::fill::zeros);
+  grad.zeros();
   if (!iv_A && !tv_A) {
     A1 = softmax(gamma_Arow * X_A.slice(0).col(0));
     log_A1 = log(A1);
   }
-  
+  arma::mat tQs = Qs.t();
   for (arma::uword i = 0; i < N; i++) {
     if (iv_A && !tv_A) {
       A1 = softmax(gamma_Arow * X_A.slice(i).col(0));
@@ -120,7 +119,7 @@ double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
     }
     for (arma::uword t = 0; t < (Ti(i) - 1); t++) {
       double sum_ea = arma::accu(E_A(current_s).slice(t).col(i));
-      if (sum_ea >  std::sqrt(arma::datum::eps)) {
+      if (sum_ea > 100 * arma::datum::eps) {
         if (tv_A) {
           A1 = softmax(gamma_Arow * X_A.slice(i).col(t));
           log_A1 = log(A1);
@@ -135,8 +134,8 @@ double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
         value -= val;
         
         if (!grad.is_empty()) {
-          tmpgrad -= sum_ea * (E_A(current_s).slice(t).col(i) / sum_ea - A1) * X_A.slice(i).col(t).t();
-          if (!tmpgrad.is_finite()) {
+          grad -= arma::vectorise(tQs * (E_A(current_s).slice(t).col(i) - sum_ea * A1) * X_A.slice(i).col(t).t());
+          if (!grad.is_finite()) {
             grad.fill(maxval);
             return n_obs * maxval;
           }
@@ -144,12 +143,10 @@ double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
       }
     }
   }
-  
-  grad = arma::vectorise(Qs.t() * tmpgrad);
   if (!grad.is_empty()) {
     grad += lambda * x;
   }
-  return value + 0.5 * lambda * arma::dot(x, x);
+  return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel, 
                         const double xtol_abs, const double xtol_rel, 
@@ -224,13 +221,13 @@ double nhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
   arma::mat gamma_Brow = sum_to_zero(eta_Brow, Qm);
   arma::vec B1(M);
   arma::vec log_B1(M);
-  arma::mat tmpgrad(M, K_B, arma::fill::zeros);
+  grad.zeros();
   if (!iv_B && !tv_B) {
     B1 = softmax(gamma_Brow * X_B.slice(0).col(0));
     log_B1 = log(B1);
   }
-  
   arma::mat I(M, M, arma::fill::eye);
+  arma::mat tQm = Qm.t();
   for (arma::uword i = 0; i < N; i++) {
     if (iv_B && !tv_B) {
       B1 = softmax(gamma_Brow * X_B.slice(i).col(0));
@@ -239,7 +236,7 @@ double nhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
     for (arma::uword t = 0; t < Ti(i); t++) {
       if (obs(t, i) < M) {
         double e_b = E_B(t, i, current_s);
-        if (e_b > std::sqrt(arma::datum::eps)) {
+        if (e_b > 100 * arma::datum::eps) {
           if (tv_B) {
             B1 = softmax(gamma_Brow * X_B.slice(i).col(t));
             log_B1 = log(B1);
@@ -253,8 +250,8 @@ double nhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
           }
           value -= val;
           if (!grad.is_empty()) {
-            tmpgrad -= e_b * (I.col(obs(t, i)) - B1) * X_B.slice(i).col(t).t();
-            if (!tmpgrad.is_finite()) {
+            grad -= arma::vectorise(tQm * e_b * (I.col(obs(t, i)) - B1) * X_B.slice(i).col(t).t());
+            if (!grad.is_finite()) {
               grad.fill(maxval);
               return n_obs * maxval;
             }
@@ -263,11 +260,10 @@ double nhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
       }
     }
   }
-  grad = arma::vectorise(Qm.t() * tmpgrad);
   if (!grad.is_empty()) {
     grad += lambda * x;
   }
-  return value + 0.5 * lambda * arma::dot(x, x);
+  return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel, 
                       const double xtol_abs, const double xtol_rel, 
@@ -344,14 +340,13 @@ double nhmm_mc::objective_B(const arma::vec& x, arma::vec& grad) {
   arma::mat gamma_Brow = sum_to_zero(eta_Brow, Qm(current_c));
   arma::vec B1(Mc);
   arma::vec log_B1(Mc);
-  arma::mat tmpgrad(Mc, K_B, arma::fill::zeros);
-  
+  grad.zeros();
   if (!iv_B && !tv_B) {
     B1 = softmax(gamma_Brow * X_B.slice(0).col(0));
     log_B1 = log(B1);
   }
   arma::mat I(Mc, Mc, arma::fill::eye);
-  
+  arma::mat tQm = Qm(current_c).t();
   for (arma::uword i = 0; i < N; i++) {
     if (iv_B && !tv_B) {
       B1 = softmax(gamma_Brow * X_B.slice(i).col(0));
@@ -361,7 +356,7 @@ double nhmm_mc::objective_B(const arma::vec& x, arma::vec& grad) {
       
       if (obs(current_c, t, i) < Mc) {
         double e_b = E_B(current_c)(t, i, current_s);
-        if (e_b > std::sqrt(arma::datum::eps)) {
+        if (e_b > 100 * arma::datum::eps) {
           if (tv_B) {
             B1 = softmax(gamma_Brow * X_B.slice(i).col(t));
             log_B1 = log(B1);
@@ -375,9 +370,9 @@ double nhmm_mc::objective_B(const arma::vec& x, arma::vec& grad) {
           }
           value -= val;
           if (!grad.is_empty()) {
-            tmpgrad -= e_b  * (I.col(obs(current_c, t, i)) - B1) * 
-              X_B.slice(i).col(t).t();
-            if (!tmpgrad.is_finite()) {
+            grad -= arma::vectorise(tQm * e_b  * (I.col(obs(current_c, t, i)) - B1) * 
+              X_B.slice(i).col(t).t());
+            if (!grad.is_finite()) {
               grad.fill(maxval);
               return n_obs * maxval;
             }
@@ -386,11 +381,10 @@ double nhmm_mc::objective_B(const arma::vec& x, arma::vec& grad) {
       }
     }
   }
-  grad = arma::vectorise(Qm(current_c).t() * tmpgrad);
   if (!grad.is_empty()) {
     grad += lambda * x;
   }
-  return value + 0.5 * lambda * arma::dot(x, x);
+  return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 
 void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel, 
@@ -534,7 +528,7 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     model.estep_A(i, log_alpha, log_beta, ll_i, pseudocount);
     model.estep_B(i, log_alpha, log_beta, ll_i, pseudocount);
   }
-  double penalty_term = 0.5 * lambda  * arma::dot(pars, pars);
+  double penalty_term = 0.5 * lambda  * std::pow(arma::norm(pars, 2), 2);
   ll -= penalty_term;
   ll /= model.n_obs;
   
@@ -621,7 +615,7 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     pars_new.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
     pars_new.cols(n_pi + n_A, n_pi + n_A + n_B - 1) = arma::vectorise(model.eta_B).t();
     
-    penalty_term = 0.5 * lambda  * arma::dot(pars_new, pars_new);
+    penalty_term = 0.5 * lambda  * std::pow(arma::norm(pars_new, 2), 2);
     ll_new -= penalty_term;
     ll_new /= model.n_obs;
     
@@ -745,7 +739,7 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     model.estep_A(i, log_alpha, log_beta, ll_i, pseudocount);
     model.estep_B(i, log_alpha, log_beta, ll_i, pseudocount);
   }
-  double penalty_term = 0.5 * lambda  * arma::dot(pars, pars);
+  double penalty_term = 0.5 * lambda  * std::pow(arma::norm(pars, 2), 2);
   ll -= penalty_term;
   ll /= model.n_obs;
   
@@ -835,7 +829,7 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
       ii += n_Bc(c);
     }
     
-    penalty_term = 0.5 * lambda * arma::dot(pars_new, pars_new);
+    penalty_term = 0.5 * lambda * std::pow(arma::norm(pars_new, 2), 2);
     ll_new -= penalty_term;
     ll_new /= model.n_obs;
     

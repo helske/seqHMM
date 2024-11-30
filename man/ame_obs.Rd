@@ -50,23 +50,3 @@ and in a case \code{values} contains two values \eqn{x} and \eqn{w} a shift in
 interventional distributions, i.e.,
 \deqn{P(y_{t+k} | do(X_t = x)) - P(y_{t+k} | do(X_t = w))}.
 }
-\examples{
-data("mvad", package = "TraMineR")
-
-d <- reshape(mvad, direction = "long", varying = list(15:86), 
-  v.names = "activity")
-d <- d[d$id < 20, ] # smaller data to speed up example
-
-# Small number of iterations for faster CRAN check, not an MLE!
-set.seed(1)
-fit <- estimate_nhmm(
-  "activity", n_states = 3,
-  data = d, time = "time", id = "id", 
-  initial_formula = ~ 1, emission_formula =  ~ male + gcse5eq,
-  transition_formula = ~ male + gcse5eq, maxeval = 2 # NOTE maxeval
-)
-fit <- bootstrap_coefs(fit, B = 2, type = "nonparametric")
-out <- ame_obs(
-  fit, variable = "male", values = c("yes", "no"), start_time = 5
-)
-}

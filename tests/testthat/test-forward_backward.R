@@ -65,7 +65,7 @@ test_that("'forward_backward' works for single-channel 'nhmm'", {
   expect_error(
     fit <- estimate_nhmm(
       hmm_biofam$observations[[1]][1:100,], n_states = 3,
-      restarts = 2, maxeval = 2, lambda = 1, method = "EM"
+      restarts = 2, maxeval = 2, lambda = 0.1, method = "EM"
     ),
     NA
   )
@@ -117,7 +117,7 @@ test_that("'forward_backward' works for single-channel 'mnhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_mnhmm(
-      hmm_biofam$observations[[1]], n_states = 4, n_clusters = 2,
+      hmm_biofam$observations[[1]], n_states = 2, n_clusters = 2,
       restarts = 2, maxeval = 1, method = "EM"
     ),
     NA

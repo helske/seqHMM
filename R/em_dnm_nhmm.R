@@ -121,7 +121,8 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
           control_mstep$xtol_abs, control_mstep$xtol_rel, 
           control_mstep$print_level, lambda, pseudocount)
       }
-      if (fit$return_code >= 0) {
+      em_return_code <- fit$return_code
+      if (em_return_code >= 0) {
         init <- unlist(
           create_initial_values(
             stats::setNames(
@@ -131,14 +132,11 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
             init_sd = 0
           )
         )
-        fit <- nloptr(
-          x0 = init, eval_f = objectivef,
-          opts = control_restart
-        )
+        fit <- nloptr(x0 = init, eval_f = objectivef, opts = control_restart)
         p()
         fit
       } else {
-        list(status = fit$return_code, objective = Inf)
+        list(status = -1000 + em_return_code, objective = NaN)
       }
     },
     future.seed = TRUE)
@@ -149,23 +147,27 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
     if (length(successful) == 0) {
       warning_(
         c("All optimizations terminated due to error.",
-          "Error of first restart: ", error_msg(return_codes[1]))
+          "Error of first restart: ", error_msg(return_codes[1]),
+          "Running DNM using initial values for EM.")
       )
-    }
-    optimum <- successful[which.max(logliks[successful])]
-    em_return_code <- out[[optimum]]$solution$return_code
-    pars <- out[[optimum]]$solution
-    init <- list()
-    init$pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
-    init$A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
-    if (C == 1L) {
-      init$B <- create_eta_B_nhmm(
-        pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-      )
+      em_return_code <- return_codes[1] + 1000
+      init <- create_initial_values(inits, model, init_sd)
     } else {
-      init$B <- create_eta_multichannel_B_nhmm(
-        pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-      )
+      em_return_code <- 0 # generic success
+      optimum <- successful[which.max(logliks[successful])]
+      pars <- out[[optimum]]$solution
+      init <- list()
+      init$pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+      init$A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
+      if (C == 1L) {
+        init$B <- create_eta_B_nhmm(
+          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
+        )
+      } else {
+        init$B <- create_eta_multichannel_B_nhmm(
+          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
+        )
+      }
     }
     if (save_all_solutions) {
       all_solutions <- out
@@ -241,7 +243,6 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
   model$estimation_results <- list(
     loglik = -out$objective * n_obs, 
     return_code = out$status,
-    return_code_of_EM = em_return_code,
     message = out$message,
     iterations = out$iterations,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
@@ -250,7 +251,8 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
     lambda = lambda,
     pseudocount = pseudocount,
     method = "EM-DNM",
-    algorithm = control$algorithm
+    algorithm = control$algorithm,
+    EM_return_code = em_return_code
   )
   model
 }

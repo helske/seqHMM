@@ -1,5 +1,5 @@
 dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, control, 
-                       control_restart, save_all_solutions) {
+                     control_restart, save_all_solutions) {
   M <- model$n_symbols
   S <- model$n_states
   T_ <- model$length_of_sequences
@@ -112,11 +112,14 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, control,
     if (length(successful) == 0) {
       warning_(
         c("All optimizations terminated due to error.",
-          "Error of first restart: ", error_msg(return_codes[1]))
+          "Error of first restart: ", error_msg(return_codes[1]),
+          "Trying once more. ")
       )
+      init <- unlist(create_initial_values(inits, model, init_sd))
+    } else {
+      optimum <- successful[which.max(logliks[successful])]
+      init <- out[[optimum]]$solution
     }
-    optimum <- successful[which.max(logliks[successful])]
-    init <- out[[optimum]]$solution
     if (save_all_solutions) {
       all_solutions <- out
     }
@@ -124,14 +127,14 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, control,
     init <- unlist(create_initial_values(inits, model, init_sd))
   }
   
-  out <- nloptr(
-    x0 = init, eval_f = objectivef,
-    opts = control
-  )
+  out <- nloptr(x0 = init, eval_f = objectivef, opts = control)
   if (out$status < 0) {
     warning_(
       paste("Optimization terminated due to error:", error_msg(out$status))
     )
+    loglik <- NaN
+  } else {
+    loglik <- -out$objective * n_obs
   }
   
   pars <- out$solution
@@ -151,7 +154,7 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, control,
     model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
   }
   model$estimation_results <- list(
-    loglik = -out$objective * n_obs, 
+    loglik = loglik, 
     return_code = out$status,
     message = out$message,
     iterations = out$iterations,

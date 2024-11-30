@@ -18,7 +18,7 @@ estimate_nhmm(
   inits = "random",
   init_sd = 2,
   restarts = 0L,
-  lambda = 0,
+  lambda = 1e-04,
   method = "EM-DNM",
   pseudocount = 0,
   store_data = TRUE,
@@ -75,7 +75,9 @@ values (in addition to the final run). Default is 0.}
 \item{lambda}{Penalization factor \code{lambda} for penalized log-likelihood, where the
 penalization is \code{0.5 * lambda * sum(parameters^2)}. Note that with
 \code{method = "L-BFGS"} both objective function (log-likelihood) and
-the penalization term is scaled with number of non-missing observations.}
+the penalization term is scaled with number of non-missing observations.
+Default is 1e-4 for ensuring numerical stability of L-BFGS by avoiding
+extreme probabilities.}
 
 \item{method}{Optimization method used. Option \code{"EM"} uses EM
 algorithm with L-BFGS in the M-step. Option \code{"DNM"} uses
