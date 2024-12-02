@@ -48,7 +48,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
   }
   
   if (isTRUE(control$maxeval < 0)) {
-    model$eta <- create_initial_values(inits, model, 0)
+    model$etas <- create_initial_values(inits, model, init_sd)
     model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
     model$gammas$A <- eta_to_gamma_cube(model$etas$A)
     if (model$n_channels == 1L) {
