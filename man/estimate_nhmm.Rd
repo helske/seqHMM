@@ -76,18 +76,18 @@ values (in addition to the final run). Default is 0.}
 penalization is \code{0.5 * lambda * sum(parameters^2)}. Note that with
 \code{method = "L-BFGS"} both objective function (log-likelihood) and
 the penalization term is scaled with number of non-missing observations.
-Default is 1e-4 for ensuring numerical stability of L-BFGS by avoiding
+Default is \code{1e-4} for ensuring numerical stability of L-BFGS by avoiding
 extreme probabilities.}
 
 \item{method}{Optimization method used. Option \code{"EM"} uses EM
 algorithm with L-BFGS in the M-step. Option \code{"DNM"} uses
 direct maximization of the log-likelihood, by default using L-BFGS. Option
-\code{"EM-DNM"} (the default) runs first a maximum of 100 iterations of EM and
+\code{"EM-DNM"} (the default) runs first a maximum of 10 iterations of EM and
 then switches to L-BFGS (but other algorithms of NLopt can be used).}
 
 \item{pseudocount}{A positive scalar to be added for the expected counts of
 E-step. Only used in EM and EM-DNM algorithms. Default is 0. Larger values
-can be used to avoid zero probabilities in initial, transition, and emission
+can be used to avoid extreme initial, transition, and emission
 probabilities, i.e. these have similar role as \code{lambda}.}
 
 \item{store_data}{If \code{TRUE} (default), original data frame passed as \code{data}
@@ -139,7 +139,8 @@ possible to separately control these stopping criteria for the multistart
 phase by defining (some of) them via argument \code{control_restart} which takes
 a list such as \code{list(ftol_rel = 0.01, print_level = 1)}. Additionally, same
 options can be defined separately for the M-step of EM algorithm via list
-\code{control_em}.
+\code{control_mstep}. By default, \code{control_restart} and \code{control_mstep} match the
+the main options defined via \code{...}.
 }
 \examples{
 data("mvad", package = "TraMineR")

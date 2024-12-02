@@ -42,7 +42,7 @@ struct nhmm_base {
   arma::uword current_s;
   const arma::uword n_obs;
   double lambda;
-  const double maxval;
+  double maxval;
   int mstep_iter = 0;
   int mstep_return_code = 0;
   
@@ -63,7 +63,7 @@ struct nhmm_base {
     arma::cube& eta_A_,
     const arma::uword n_obs_ = 0,
     const double lambda_ = 0,
-    const double maxval_ = 1e8)
+    double maxval_ = 1e6)
     : S(S_), 
       X_pi(X_pi_),
       X_A(X_s_),

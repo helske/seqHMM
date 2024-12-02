@@ -39,10 +39,11 @@ struct nhmm_mc : public nhmm_base {
     arma::mat& eta_pi_,
     arma::cube& eta_A_,
     arma::field<arma::cube>& eta_B_,
-    const double lambda_ = 0,
-    const arma::uword n_obs_ = 0)
+    const arma::uword n_obs_ = 0,
+    const double lambda_ = 0)
     : nhmm_base(S_, X_pi_, X_s_, X_o_, Ti_, icpt_only_pi_, icpt_only_A_, 
-      icpt_only_B_, iv_A_, iv_B_, tv_A_, tv_B_, eta_pi_, eta_A_, lambda_, n_obs_),
+      icpt_only_B_, iv_A_, iv_B_, tv_A_, tv_B_, eta_pi_, eta_A_, n_obs_, 
+      lambda_),
       obs(obs_), 
       C(obs.n_rows), 
       eta_B(eta_B_),
@@ -136,8 +137,8 @@ struct nhmm_mc : public nhmm_base {
   double objective_B(const arma::vec& x, arma::vec& grad);
   
   void compute_state_obs_probs(
-    const arma::uword start, arma::field<arma::cube>& obs_prob, 
-    arma::cube& state_prob
+      const arma::uword start, arma::field<arma::cube>& obs_prob, 
+      arma::cube& state_prob
   );
 };
 #endif

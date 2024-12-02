@@ -71,11 +71,14 @@ permute_clusters <- function(model, pcp_mle) {
 #' 
 #' @param model An `nhmm` or `mnhmm` object.
 #' @param nsim number of bootstrap samples.
-#' @param type Either `"nonparametric"` or `"parametric"`, to define whether 
-#' nonparametric or parametric bootstrap should be used. The former samples 
+#' @param type Either `"nonparametric"` (default) or `"parametric"`, to define 
+#' whether nonparametric or parametric bootstrap should be used. The former samples 
 #' sequences with replacement, whereas the latter simulates new datasets based 
 #' on the model.
-#' @param method Estimation method used in bootstrapping. Defaults to `"DNM"`.
+#' @param method Estimation method used in bootstrapping. Defaults to `"EM-DNM"`.
+#' @param append If `TRUE` (default), in case the model already contains 
+#' bootstrap samples, new samples are appended to `model$boot`. If `FALSE`,
+#' old samples are discarded.
 #' @param ... Additional arguments to [estimate_nhmm()] or [estimate_mnhmm()].
 #' @return The original model with additional element `model$boot`.
 #' @rdname bootstrap
@@ -87,7 +90,7 @@ bootstrap_coefs <- function(model, ...) {
 #' @export
 bootstrap_coefs.nhmm <- function(model, nsim = 1000, 
                                  type = c("nonparametric", "parametric"),
-                                 method = "DNM", ...) {
+                                 method = "EM-DNM", append = TRUE, ...) {
   type <- match.arg(type)
   stopifnot_(
     checkmate::test_int(x = nsim, lower = 0L), 
@@ -106,7 +109,11 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
         mod <- bootstrap_model(model)
         fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
                         method = method, pseudocount = pseudocount, ...)
-        fit$gammas <- permute_states(fit$gammas, gammas_mle)
+        if (fit$estimation_results$return_code >= 0) {
+          fit$gammas <- permute_states(fit$gammas, gammas_mle)
+        } else {
+          fit$gammas <- NULL
+        }
         p()
         fit$gammas
       }, future.seed = TRUE
@@ -129,17 +136,36 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
           d, time, id, init, 0)$model
         fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
                         method = method, pseudocount = pseudocount, ...)
-        fit$gammas <- permute_states(fit$gammas, gammas_mle)
+        if (fit$estimation_results$return_code >= 0) {
+          fit$gammas <- permute_states(fit$gammas, gammas_mle)
+        } else {
+          fit$gammas <- NULL
+        }
         p()
         fit$gammas
       }, future.seed = TRUE
     )
   }
-  model$boot <- list(
+  boot <- list(
     gamma_pi = lapply(out, "[[", "pi"), 
     gamma_A = lapply(out, "[[", "A"), 
     gamma_B = lapply(out, "[[", "B")
   )
+  boot <- lapply(boot,  function(x) x[lengths(x) > 0])
+  if (length(boot) < nsim) {
+    warning_(
+      paste0(
+        "Estimation in some of the bootstrap samples failed.",
+        "Returning samples from {length(boot)} successes out of {nsim} ",
+        "bootstrap samples."
+      )
+    )
+  }
+  if (append & !is.null(model$boot)) {
+    model$boot <- c(model$boot, boot)
+  } else {
+    model$boot <- boot
+  }
   model
 }
 #' @rdname bootstrap
@@ -167,15 +193,19 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
         mod <- bootstrap_model(model)
         fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
                          method = method, pseudocount = pseudocount, ...)
-        fit <- permute_clusters(fit, pcp_mle)
-        for (j in seq_len(D)) {
-          out <- permute_states(
-            lapply(fit$gammas[c("pi", "A", "B")], "[[", j), 
-            lapply(gammas_mle[c("pi", "A", "B")], "[[", j)
-          )
-          fit$gammas$pi[[j]] <- out$pi
-          fit$gammas$A[[j]] <- out$A
-          fit$gammas$B[[j]] <- out$B
+        if (fit$estimation_results$return_code >= 0) {
+          fit <- permute_clusters(fit, pcp_mle)
+          for (j in seq_len(D)) {
+            out <- permute_states(
+              lapply(fit$gammas[c("pi", "A", "B")], "[[", j), 
+              lapply(gammas_mle[c("pi", "A", "B")], "[[", j)
+            )
+            fit$gammas$pi[[j]] <- out$pi
+            fit$gammas$A[[j]] <- out$A
+            fit$gammas$B[[j]] <- out$B
+          }
+        } else {
+          fit$gammas <- NULL
         }
         p()
         fit$gammas
@@ -200,26 +230,45 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
           d, time, id, init, 0)$model
         fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
                          method = method, pseudocount = pseudocount, ...)
-        fit <- permute_clusters(fit, pcp_mle)
-        for (j in seq_len(D)) {
-          out <- permute_states(
-            lapply(fit$gammas[c("pi", "A", "B")], "[[", j), 
-            lapply(gammas_mle[c("pi", "A", "B")], "[[", j)
-          )
-          fit$gammas$pi[[j]] <- out$pi
-          fit$gammas$A[[j]] <- out$A
-          fit$gammas$B[[j]] <- out$B
+        if (fit$estimation_results$return_code >= 0) {
+          fit <- permute_clusters(fit, pcp_mle)
+          for (j in seq_len(D)) {
+            out <- permute_states(
+              lapply(fit$gammas[c("pi", "A", "B")], "[[", j), 
+              lapply(gammas_mle[c("pi", "A", "B")], "[[", j)
+            )
+            fit$gammas$pi[[j]] <- out$pi
+            fit$gammas$A[[j]] <- out$A
+            fit$gammas$B[[j]] <- out$B
+          }
+        } else {
+          fit$gammas <- NULL
         }
         p()
         fit$gammas
       }, future.seed = TRUE
     )
   }
-  model$boot <- list(
+  boot <- list(
     gamma_pi = lapply(out, "[[", "pi"), 
     gamma_A = lapply(out, "[[", "A"), 
     gamma_B = lapply(out, "[[", "B"),
     gamma_omega = lapply(out, "[[", "omega")
   )
+  boot <- lapply(boot,  function(x) x[lengths(x) > 0])
+  if (length(boot) < nsim) {
+    warning_(
+      paste0(
+        "Estimation in some of the bootstrap samples failed.",
+        "Returning samples from {length(boot)} successes out of {nsim} ",
+        "bootstrap samples."
+      )
+    )
+  }
+  if (append & !is.null(model$boot)) {
+    model$boot <- c(model$boot, boot)
+  } else {
+    model$boot <- boot
+  }
   model
 }

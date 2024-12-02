@@ -36,7 +36,8 @@
 #' phase by defining (some of) them via argument `control_restart` which takes 
 #' a list such as `list(ftol_rel = 0.01, print_level = 1)`. Additionally, same 
 #' options can be defined separately for the M-step of EM algorithm via list 
-#' `control_em`. 
+#' `control_mstep`. By default, `control_restart` and `control_mstep` match the 
+#' the main options defined via `...`. 
 #' 
 #' @references Steven G. Johnson, The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt
 #' @param observations Either the name of the response variable in `data`, or 
@@ -76,12 +77,12 @@
 #' penalization is `0.5 * lambda * sum(parameters^2)`. Note that with 
 #' `method = "L-BFGS"` both objective function (log-likelihood) and 
 #' the penalization term is scaled with number of non-missing observations. 
-#' Default is 1e-4 for ensuring numerical stability of L-BFGS by avoiding 
+#' Default is `1e-4` for ensuring numerical stability of L-BFGS by avoiding 
 #' extreme probabilities.
 #' @param method Optimization method used. Option `"EM"` uses EM
 #' algorithm with L-BFGS in the M-step. Option `"DNM"` uses 
 #' direct maximization of the log-likelihood, by default using L-BFGS. Option 
-#' `"EM-DNM"` (the default) runs first a maximum of 100 iterations of EM and 
+#' `"EM-DNM"` (the default) runs first a maximum of 10 iterations of EM and 
 #' then switches to L-BFGS (but other algorithms of NLopt can be used).
 #' @param pseudocount A positive scalar to be added for the expected counts of 
 #' E-step. Only used in EM and EM-DNM algorithms. Default is 0. Larger values 

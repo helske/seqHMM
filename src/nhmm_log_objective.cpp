@@ -57,7 +57,7 @@ Rcpp::List log_objective_nhmm_singlechannel(
     double ll = logSumExp(log_alpha.col(model.Ti(i) - 1));
     if (!std::isfinite(ll)) {
       return Rcpp::List::create(
-        Rcpp::Named("loglik") = -model.n_obs * model.maxval,
+        Rcpp::Named("loglik") = -model.maxval,
         Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi2),
         Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A2),
         Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2)
@@ -154,7 +154,7 @@ Rcpp::List log_objective_nhmm_multichannel(
     double ll = logSumExp(log_alpha.col(model.Ti(i) - 1));
     if (!std::isfinite(ll)) {
       return Rcpp::List::create(
-        Rcpp::Named("loglik") = -model.n_obs * model.maxval,
+        Rcpp::Named("loglik") = -model.maxval,
         Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi2),
         Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A2),
         Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2)
@@ -277,7 +277,7 @@ Rcpp::List log_objective_mnhmm_singlechannel(
     loglik(i) = logSumExp(model.log_omega + loglik_i);
     if (!std::isfinite(loglik(i))) {
       return Rcpp::List::create(
-        Rcpp::Named("loglik") = -model.n_obs * model.maxval,
+        Rcpp::Named("loglik") = -model.maxval,
         Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi2),
         Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A2),
         Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2),
@@ -412,7 +412,7 @@ Rcpp::List log_objective_mnhmm_multichannel(
     loglik(i) = logSumExp(model.log_omega + loglik_i);
     if (!std::isfinite(loglik(i))) {
       return Rcpp::List::create(
-        Rcpp::Named("loglik") = -model.n_obs * model.maxval,
+        Rcpp::Named("loglik") = -model.maxval,
         Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi),
         Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A),
         Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B),

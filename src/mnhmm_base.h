@@ -52,7 +52,7 @@ struct mnhmm_base {
   arma::uword current_d;
   const arma::uword n_obs;
   double lambda;
-  const double maxval;
+  double maxval;
   int mstep_iter = 0;
   int mstep_return_code = 0;
   
@@ -77,7 +77,7 @@ struct mnhmm_base {
     arma::field<arma::cube>& eta_A_,
     const arma::uword n_obs_ = 0,
     const double lambda_ = 0,
-    const double maxval_ = 1e8)
+    double maxval_ = 1e6)
     : S(S_),
       D(D_), 
       X_omega(X_d_),

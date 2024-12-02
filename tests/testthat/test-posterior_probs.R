@@ -87,8 +87,8 @@ test_that("'posterior_probs' works for 'mnhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_mnhmm(
-      hmm_biofam$observations[[1]], n_states = 3, n_clusters = 2, maxeval = 2,
-      maxeval_em_dnm = 2
+      hmm_biofam$observations[[1]], n_states = 3, n_clusters = 2, 
+      maxeval = 2, maxeval_em_dnm = 2, lambda = 1e-2
     ),
     NA
   )
