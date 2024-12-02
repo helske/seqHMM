@@ -156,7 +156,7 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
     warning_(
       paste0(
         "Estimation in some of the bootstrap samples failed.",
-        "Returning samples from {length(boot)} successes out of {nsim} ",
+        "Returning samples from {length(boot[[1]]} successes out of {nsim} ",
         "bootstrap samples."
       )
     )
@@ -256,11 +256,11 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
     gamma_omega = lapply(out, "[[", "omega")
   )
   boot <- lapply(boot,  function(x) x[lengths(x) > 0])
-  if (length(boot) < nsim) {
+  if (length(boot[[1]]) < nsim) {
     warning_(
       paste0(
         "Estimation in some of the bootstrap samples failed.",
-        "Returning samples from {length(boot)} successes out of {nsim} ",
+        "Returning samples from {length(boot[[1]]} successes out of {nsim} ",
         "bootstrap samples."
       )
     )
