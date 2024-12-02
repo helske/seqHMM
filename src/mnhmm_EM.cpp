@@ -32,7 +32,7 @@ double mnhmm_base::objective_omega(const arma::vec& x, arma::vec& grad) {
       double val = arma::dot(counts.rows(idx), log_omega.rows(idx));
       if (!std::isfinite(val)) {
         if (!grad.is_empty()) {
-          grad.fill(maxval);
+          grad.zeros();
         }
         return maxval;
       }
@@ -43,7 +43,7 @@ double mnhmm_base::objective_omega(const arma::vec& x, arma::vec& grad) {
         diff.rows(idx) = counts(idx) - sum_eo * omega.rows(idx);
         grad -= arma::vectorise(tQd * diff * X_omega.col(i).t());
         if (!grad.is_finite()) {
-          grad.fill(maxval);
+          grad.zeros();
           return maxval;
         }
       }
@@ -127,7 +127,7 @@ double mnhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
       double val = arma::dot(counts.rows(idx), log_pi(current_d).rows(idx));
       if (!std::isfinite(val)) {
         if (!grad.is_empty()) {
-          grad.fill(maxval);
+          grad.zeros();
         }
         return maxval;
       }
@@ -135,10 +135,10 @@ double mnhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
       // Only update grad if it's non-empty (i.e., for gradient-based optimization)
       if (!grad.is_empty()) {
         diff.zeros();
-        diff = counts.rows(idx) - sum_epi * pi(current_d).rows(idx);
+        diff.rows(idx) = counts.rows(idx) - sum_epi * pi(current_d).rows(idx);
         grad -= arma::vectorise(tQs * diff * X_pi.col(i).t());
         if (!grad.is_finite()) {
-          grad.fill(maxval);
+          grad.zeros();
           return maxval;
         }
       }
@@ -241,7 +241,7 @@ double mnhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
         double val = arma::dot(counts.rows(idx), log_A1.rows(idx));
         if (!std::isfinite(val)) {
           if (!grad.is_empty()) {
-            grad.fill(maxval);
+            grad.zeros();
           }
           return maxval;
         }
@@ -251,7 +251,7 @@ double mnhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
           diff.rows(idx) = counts.rows(idx) - sum_ea * A1.rows(idx);
           grad -= arma::vectorise(tQs * diff * X_A.slice(i).col(t).t());
           if (!grad.is_finite()) {
-            grad.fill(maxval);
+            grad.zeros();
             return maxval;
           }
         }
@@ -365,7 +365,7 @@ double mnhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
           double val = e_b * log_B1(obs(t, i));
           if (!std::isfinite(val)) {
             if (!grad.is_empty()) {
-              grad.fill(maxval);
+              grad.zeros();
             }
             return maxval;
           }
@@ -374,7 +374,7 @@ double mnhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
             grad -= arma::vectorise(tQm * 
               e_b * (I.col(obs(t, i)) - B1) * X_B.slice(i).col(t).t());
             if (!grad.is_finite()) {
-              grad.fill(maxval);
+              grad.zeros();
               return maxval;
             }
           }
@@ -493,7 +493,7 @@ double mnhmm_mc::objective_B(const arma::vec& x, arma::vec& grad) {
           double val = e_b * log_B1(obs(current_c, t, i));
           if (!std::isfinite(val)) {
             if (!grad.is_empty()) {
-              grad.fill(maxval);
+              grad.zeros();
             }
             return maxval;
           }
@@ -502,7 +502,7 @@ double mnhmm_mc::objective_B(const arma::vec& x, arma::vec& grad) {
             grad -= arma::vectorise(tQm * e_b  * (I.col(obs(current_c, t, i)) - B1) * 
               X_B.slice(i).col(t).t());
             if (!grad.is_finite()) {
-              grad.fill(maxval);
+              grad.zeros();
               return maxval;
             }
           }

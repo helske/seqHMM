@@ -72,9 +72,9 @@ struct mnhmm_base {
     const bool iv_B_,
     const bool tv_A_, 
     const bool tv_B_,
-    arma::mat& eta_omega_,
-    arma::field<arma::mat>& eta_pi_,
-    arma::field<arma::cube>& eta_A_,
+    const arma::mat& eta_omega_,
+    const arma::field<arma::mat>& eta_pi_,
+    const arma::field<arma::cube>& eta_A_,
     const arma::uword n_obs_ = 0,
     const double lambda_ = 0,
     double maxval_ = 1e6)

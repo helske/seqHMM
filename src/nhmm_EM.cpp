@@ -14,7 +14,6 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
   
   mstep_iter++;
   double value = 0;
-  
   eta_pi = arma::mat(x.memptr(), S - 1, K_pi);
   gamma_pi = sum_to_zero(eta_pi, Qs);
   arma::mat tQs = Qs.t();
@@ -31,27 +30,18 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
       double sum_epi = arma::accu(counts.rows(idx)); // this is != 1 if pseudocounts are used
       double val = arma::dot(counts.rows(idx), log_pi.rows(idx));
       if (!std::isfinite(val)) {
-        if (!grad.is_empty()) {
-          grad.fill(maxval);
-        }
-        return maxval;
+        grad.zeros();
+        return arma::datum::inf;
       }
       value -= val;
-      // Only update grad if it's non-empty (i.e., for gradient-based optimization)
-      if (!grad.is_empty()) {
-        diff.zeros();
-        diff = counts.rows(idx) - sum_epi * pi.rows(idx);
-        grad -= arma::vectorise(tQs * diff * X_pi.col(i).t());
-        if (!grad.is_finite()) {
-          grad.fill(maxval);
-          return maxval;
-        }
-      }
+      
+      diff.zeros();
+      diff.rows(idx) = counts.rows(idx) - sum_epi * pi.rows(idx);
+      grad -= arma::vectorise(tQs * diff * X_pi.col(i).t());
+      
     }
   }
-  if (!grad.is_empty()) {
-    grad += lambda * x;
-  }
+  grad += lambda * x;
   return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs, 
@@ -72,18 +62,12 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
   auto objective_pi_wrapper = [](unsigned n, const double* x, double* grad, void* data) -> double {
     auto* self = static_cast<nhmm_base*>(data);
     arma::vec x_vec(const_cast<double*>(x), n, false, true);
-    if (grad) {
-      arma::vec grad_vec(grad, n, false, true);
-      return self->objective_pi(x_vec, grad_vec);
-    } else {
-      arma::vec grad_dummy;
-      return self->objective_pi(x_vec, grad_dummy);
-    }
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_pi(x_vec, grad_vec);
   };
   
-  arma::vec x_pi = arma::vectorise(eta_pi);
+  arma::vec x_pi(eta_pi.memptr(), eta_pi.n_elem, false, true);
   nlopt_opt opt_pi = nlopt_create(NLOPT_LD_LBFGS, x_pi.n_elem);
-  //nlopt_opt opt_pi = nlopt_create(NLOPT_LN_SBPLX, x_pi.n_elem);
   nlopt_set_min_objective(opt_pi, objective_pi_wrapper, this);
   nlopt_set_xtol_abs1(opt_pi, xtol_abs);
   nlopt_set_ftol_abs(opt_pi, ftol_abs);
@@ -102,7 +86,6 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
     nlopt_destroy(opt_pi);
     return;
   }
-  eta_pi = arma::mat(x_pi.memptr(), S - 1, K_pi);
   nlopt_destroy(opt_pi);
 }
 
@@ -138,27 +121,21 @@ double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
         }
         double val = arma::dot(counts.rows(idx), log_A1.rows(idx));
         if (!std::isfinite(val)) {
-          if (!grad.is_empty()) {
-            grad.fill(maxval);
-          }
-          return maxval;
+          Rcpp::Rcout<<"nonfinite val "<<val<<"i "<<i<<"t "<<t<<std::endl;
+          Rcpp::Rcout<<"current_s "<<current_s<<std::endl;
+          Rcpp::Rcout<<counts.rows(idx)<<std::endl;
+          Rcpp::Rcout<<log_A1.rows(idx)<<std::endl;
+          grad.zeros();
+          return arma::datum::inf;
         }
         value -= val;
-        if (!grad.is_empty()) {
-          diff.zeros();
-          diff.rows(idx) = counts.rows(idx) - sum_ea * A1.rows(idx);
-          grad -= arma::vectorise(tQs * diff * X_A.slice(i).col(t).t());
-          if (!grad.is_finite()) {
-            grad.fill(maxval);
-            return maxval;
-          }
-        }
+        diff.zeros();
+        diff.rows(idx) = counts.rows(idx) - sum_ea * A1.rows(idx);
+        grad -= arma::vectorise(tQs * diff * X_A.slice(i).col(t).t());
       }
     }
   }
-  if (!grad.is_empty()) {
-    grad += lambda * x;
-  }
+  grad += lambda * x;
   return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel, 
@@ -186,18 +163,11 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
   auto objective_A_wrapper = [](unsigned n, const double* x, double* grad, void* data) -> double {
     auto* self = static_cast<nhmm_base*>(data);
     arma::vec x_vec(const_cast<double*>(x), n, false, true);
-    if (grad) {
-      arma::vec grad_vec(grad, n, false, true);
-      return self->objective_A(x_vec, grad_vec);
-    } else {
-      arma::vec grad_dummy;
-      return self->objective_A(x_vec, grad_dummy);
-    }
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_A(x_vec, grad_vec);
   };
   
-  arma::vec x_A(eta_A.slice(0).n_elem);
-  nlopt_opt opt_A = nlopt_create(NLOPT_LD_LBFGS, x_A.n_elem);
-  //nlopt_opt opt_A = nlopt_create(NLOPT_LN_SBPLX, x_A.n_elem);
+  nlopt_opt opt_A = nlopt_create(NLOPT_LD_LBFGS, eta_A.slice(0).n_elem);
   nlopt_set_min_objective(opt_A, objective_A_wrapper, this);
   nlopt_set_xtol_abs1(opt_A, xtol_abs);
   nlopt_set_ftol_abs(opt_A, ftol_abs);
@@ -209,7 +179,7 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
   
   for (arma::uword s = 0; s < S; s++) {
     current_s = s;
-    x_A = arma::vectorise(eta_A.slice(s));
+    arma::vec x_A(eta_A.slice(s).memptr(), eta_A.slice(s).n_elem, false, true);
     mstep_iter = 0;
     return_code = nlopt_optimize(opt_A, x_A.memptr(), &minf);
     if (print_level > 2 && return_code > 0) {
@@ -222,7 +192,6 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
       nlopt_destroy(opt_A);
       return;
     }
-    eta_A.slice(s) = arma::mat(x_A.memptr(), S - 1, K_A);
   }
   nlopt_destroy(opt_A);
 }
@@ -256,26 +225,21 @@ double nhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
           }
           double val = e_b * log_B1(obs(t, i));
           if (!std::isfinite(val)) {
-            if (!grad.is_empty()) {
-              grad.fill(maxval);
-            }
-            return maxval;
+            grad.zeros();
+            return arma::datum::inf;
           }
           value -= val;
-          if (!grad.is_empty()) {
-            grad -= arma::vectorise(tQm * e_b * (I.col(obs(t, i)) - B1) * X_B.slice(i).col(t).t());
-            if (!grad.is_finite()) {
-              grad.fill(maxval);
-              return maxval;
-            }
+          grad -= arma::vectorise(tQm * e_b * (I.col(obs(t, i)) - B1) * X_B.slice(i).col(t).t());
+          if (!grad.is_finite()) {
+            grad.zeros();
+            return arma::datum::inf;
           }
         }
       }
     }
   }
-  if (!grad.is_empty()) {
-    grad += lambda * x;
-  }
+  grad += lambda * x;
+  
   return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel, 
@@ -306,17 +270,10 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
   auto objective_B_wrapper = [](unsigned n, const double* x, double* grad, void* data) -> double {
     auto* self = static_cast<nhmm_sc*>(data);
     arma::vec x_vec(const_cast<double*>(x), n, false, true);
-    if (grad) {
-      arma::vec grad_vec(grad, n, false, true);
-      return self->objective_B(x_vec, grad_vec);
-    } else {
-      arma::vec grad_dummy;
-      return self->objective_B(x_vec, grad_dummy);
-    }
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_B(x_vec, grad_vec);
   };
-  arma::vec x_B(eta_B.slice(0).n_elem);
-  nlopt_opt opt_B = nlopt_create(NLOPT_LD_LBFGS, x_B.n_elem);
-  //nlopt_opt opt_B = nlopt_create(NLOPT_LN_SBPLX, x_B.n_elem);
+  nlopt_opt opt_B = nlopt_create(NLOPT_LD_LBFGS, eta_B.slice(0).n_elem);
   nlopt_set_min_objective(opt_B, objective_B_wrapper, this);
   nlopt_set_xtol_abs1(opt_B, xtol_abs);
   nlopt_set_ftol_abs(opt_B, ftol_abs);
@@ -327,7 +284,7 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
   int return_code;
   for (arma::uword s = 0; s < S; s++) {
     current_s = s;
-    x_B = arma::vectorise(eta_B.slice(s));
+    arma::vec x_B(eta_B.slice(s).memptr(), eta_B.slice(s).n_elem, false, true);
     mstep_iter = 0;
     return_code = nlopt_optimize(opt_B, x_B.memptr(), &minf);
     if (print_level > 2 && return_code > 0) {
@@ -340,7 +297,6 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
       nlopt_destroy(opt_B);
       return;
     }
-    eta_B.slice(s) = arma::mat(x_B.memptr(), M - 1, K_B);
   }
   nlopt_destroy(opt_B);
 }
@@ -375,27 +331,21 @@ double nhmm_mc::objective_B(const arma::vec& x, arma::vec& grad) {
           }
           double val = e_b * log_B1(obs(current_c, t, i));
           if (!std::isfinite(val)) {
-            if (!grad.is_empty()) {
-              grad.fill(maxval);
-            }
-            return maxval;
+            grad.zeros();
+            return arma::datum::inf;
           }
           value -= val;
-          if (!grad.is_empty()) {
-            grad -= arma::vectorise(tQm * e_b  * (I.col(obs(current_c, t, i)) - B1) * 
-              X_B.slice(i).col(t).t());
-            if (!grad.is_finite()) {
-              grad.fill(maxval);
-              return maxval;
-            }
+          grad -= arma::vectorise(tQm * e_b  * (I.col(obs(current_c, t, i)) - B1) * 
+            X_B.slice(i).col(t).t());
+          if (!grad.is_finite()) {
+            grad.zeros();
+            return arma::datum::inf;
           }
         }
       }
     }
   }
-  if (!grad.is_empty()) {
-    grad += lambda * x;
-  }
+  grad += lambda * x;
   return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 
@@ -429,19 +379,13 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
   auto objective_B_wrapper = [](unsigned n, const double* x, double* grad, void* data) -> double {
     auto* self = static_cast<nhmm_mc*>(data);
     arma::vec x_vec(const_cast<double*>(x), n, false, true);
-    if (grad) {
-      arma::vec grad_vec(grad, n, false, true);
-      return self->objective_B(x_vec, grad_vec);
-    } else {
-      arma::vec grad_dummy;
-      return self->objective_B(x_vec, grad_dummy);
-    }
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_B(x_vec, grad_vec);
   };
   double minf;
   int return_code;
   for (arma::uword c = 0; c < C; c++) {
-    arma::vec x_B(eta_B(c).slice(0).n_elem);
-    nlopt_opt opt_B = nlopt_create(NLOPT_LD_LBFGS, x_B.n_elem);
+    nlopt_opt opt_B = nlopt_create(NLOPT_LD_LBFGS, eta_B(c).slice(0).n_elem);
     nlopt_set_min_objective(opt_B, objective_B_wrapper, this);
     nlopt_set_xtol_abs1(opt_B, xtol_abs);
     nlopt_set_ftol_abs(opt_B, ftol_abs);
@@ -451,7 +395,7 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
     current_c = c;
     for (arma::uword s = 0; s < S; s++) {
       current_s = s;
-      x_B = arma::vectorise(eta_B(c).slice(s));
+      arma::vec x_B(eta_B(c).slice(s).memptr(), eta_B(c).slice(s).n_elem, false, true);
       mstep_iter = 0;
       return_code = nlopt_optimize(opt_B, x_B.memptr(), &minf);
       if (print_level > 2 && return_code > 0) {
@@ -471,9 +415,9 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
 }
 // [[Rcpp::export]]
 Rcpp::List EM_LBFGS_nhmm_singlechannel(
-    arma::mat& eta_pi, const arma::mat& X_pi,
-    arma::cube& eta_A, const arma::cube& X_A,
-    arma::cube& eta_B, const arma::cube& X_B,
+    const arma::mat& eta_pi, const arma::mat& X_pi,
+    const arma::cube& eta_A, const arma::cube& X_A,
+    const arma::cube& eta_B, const arma::cube& X_B,
     const arma::umat& obs, const arma::uvec& Ti,
     const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, 
     const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B, 
@@ -678,9 +622,9 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
 
 // [[Rcpp::export]]
 Rcpp::List EM_LBFGS_nhmm_multichannel(
-    arma::mat& eta_pi, const arma::mat& X_pi,
-    arma::cube& eta_A, const arma::cube& X_A,
-    arma::field<arma::cube>& eta_B, const arma::cube& X_B,
+    const arma::mat& eta_pi, const arma::mat& X_pi,
+    const arma::cube& eta_A, const arma::cube& X_A,
+    const arma::field<arma::cube>& eta_B, const arma::cube& X_B,
     const arma::ucube& obs, const arma::uvec& Ti,   
     const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, 
     const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B, 
@@ -890,3 +834,4 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     Rcpp::Named("relative_x_change") = relative_x_change
   );
 }
+

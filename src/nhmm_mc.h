@@ -36,9 +36,9 @@ struct nhmm_mc : public nhmm_base {
     const bool tv_A_,
     const bool tv_B_,
     const arma::ucube& obs_,
-    arma::mat& eta_pi_,
-    arma::cube& eta_A_,
-    arma::field<arma::cube>& eta_B_,
+    const arma::mat& eta_pi_,
+    const arma::cube& eta_A_,
+    const arma::field<arma::cube>& eta_B_,
     const arma::uword n_obs_ = 0,
     const double lambda_ = 0)
     : nhmm_base(S_, X_pi_, X_s_, X_o_, Ti_, icpt_only_pi_, icpt_only_A_, 
