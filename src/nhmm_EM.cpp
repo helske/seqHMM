@@ -27,7 +27,6 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
     const arma::vec& counts = E_Pi.col(i);
     idx = arma::find(counts);
     if (idx.n_elem > 0) {
-      double sum_epi = arma::accu(counts.rows(idx)); // this is != 1 if pseudocounts are used
       double val = arma::dot(counts.rows(idx), log_pi.rows(idx));
       if (!std::isfinite(val)) {
         grad.zeros();
@@ -36,7 +35,7 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
       value -= val;
       
       diff.zeros();
-      diff.rows(idx) = counts.rows(idx) - sum_epi * pi.rows(idx);
+      diff.rows(idx) = counts.rows(idx) - pi.rows(idx);
       grad -= arma::vectorise(tQs * diff * X_pi.col(i).t());
       
     }
@@ -438,7 +437,7 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     const double xtol_abs, const double xtol_rel, const arma::uword print_level,
     const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, 
     const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m,
-    const double lambda, const double pseudocount, const double bound) {
+    const double lambda, const double bound) {
   
   nhmm_sc model(
       eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
@@ -488,9 +487,9 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
     );
     double ll_i = logSumExp(log_alpha.col(model.Ti(i) - 1));
     ll += ll_i;
-    model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i, pseudocount);
-    model.estep_A(i, log_alpha, log_beta, ll_i, pseudocount);
-    model.estep_B(i, log_alpha, log_beta, ll_i, pseudocount);
+    model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i);
+    model.estep_A(i, log_alpha, log_beta, ll_i);
+    model.estep_B(i, log_alpha, log_beta, ll_i);
   }
   double penalty_term = 0.5 * lambda  * std::pow(arma::norm(pars, 2), 2);
   ll -= penalty_term;
@@ -573,9 +572,9 @@ Rcpp::List EM_LBFGS_nhmm_singlechannel(
       );
       double ll_i = logSumExp(log_alpha.col(model.Ti(i) - 1));
       ll_new += ll_i;
-      model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i, pseudocount);
-      model.estep_A(i, log_alpha, log_beta, ll_i, pseudocount);
-      model.estep_B(i, log_alpha, log_beta, ll_i, pseudocount);
+      model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i);
+      model.estep_A(i, log_alpha, log_beta, ll_i);
+      model.estep_B(i, log_alpha, log_beta, ll_i);
     }
     
     pars_new.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
@@ -644,7 +643,7 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     const double xtol_abs, const double xtol_rel, const arma::uword print_level,
     const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, 
     const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m,
-    const double lambda, const double pseudocount, const double bound) {
+    const double lambda, const double bound) {
   
   nhmm_mc model(
       eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
@@ -702,9 +701,9 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
     );
     double ll_i = logSumExp(log_alpha.col(model.Ti(i) - 1));
     ll += ll_i;
-    model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i, pseudocount);
-    model.estep_A(i, log_alpha, log_beta, ll_i, pseudocount);
-    model.estep_B(i, log_alpha, log_beta, ll_i, pseudocount);
+    model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i);
+    model.estep_A(i, log_alpha, log_beta, ll_i);
+    model.estep_B(i, log_alpha, log_beta, ll_i);
   }
   double penalty_term = 0.5 * lambda  * std::pow(arma::norm(pars, 2), 2);
   ll -= penalty_term;
@@ -786,9 +785,9 @@ Rcpp::List EM_LBFGS_nhmm_multichannel(
       );
       double ll_i = logSumExp(log_alpha.col(model.Ti(i) - 1));
       ll_new += ll_i;
-      model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i, pseudocount);
-      model.estep_A(i, log_alpha, log_beta, ll_i, pseudocount);
-      model.estep_B(i, log_alpha, log_beta, ll_i, pseudocount);
+      model.estep_pi(i, log_alpha.col(0), log_beta.col(0), ll_i);
+      model.estep_A(i, log_alpha, log_beta, ll_i);
+      model.estep_B(i, log_alpha, log_beta, ll_i);
     }
     pars_new.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
     pars_new.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();

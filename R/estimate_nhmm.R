@@ -74,25 +74,22 @@
 #' @param restarts Number of times to run optimization using random starting 
 #' values (in addition to the final run). Default is 0.
 #' @param lambda Penalization factor `lambda` for penalized log-likelihood, where the 
-#' penalization is `0.5 * lambda * sum(parameters^2)`. Note that with 
+#' penalization is `0.5 * lambda * sum(eta^2)`. Note that with 
 #' `method = "L-BFGS"` both objective function (log-likelihood) and 
 #' the penalization term is scaled with number of non-missing observations. 
-#' Default is `1e-4` for ensuring numerical stability of L-BFGS by avoiding 
-#' extreme probabilities.
+#' Default is `0`, but small values such as `1e-4` can help to ensure numerical 
+#' stability of L-BFGS by avoiding extreme probabilities. See also argument 
+#' `bound` for hard constraints.
 #' @param method Optimization method used. Option `"EM"` uses EM
 #' algorithm with L-BFGS in the M-step. Option `"DNM"` uses 
 #' direct maximization of the log-likelihood, by default using L-BFGS. Option 
 #' `"EM-DNM"` (the default) runs first a maximum of 10 iterations of EM and 
 #' then switches to L-BFGS (but other algorithms of NLopt can be used).
-#' @param pseudocount A positive scalar to be added for the expected counts of 
-#' E-step. Only used in EM and EM-DNM algorithms. Default is 0. Larger values 
-#' can be used to avoid extreme initial, transition, and emission 
-#' probabilities, i.e. these have similar role as `lambda`.
 #' @param bound Positive value defining the hard bounds for the working 
 #' parameters \eqn{\eta}, which are used to avoid extreme probabilities and 
 #' corresponding numerical issues especially in the M-step of EM algorithm. 
 #' Default is 50, i.e., \eqn{-50<\eta<50}. Note that he bounds are not enforced 
-#' for M-step in intercept-only case with `lambda=0`.
+#' for M-step in intercept-only case with `lambda = 0`.
 #' @param store_data If `TRUE` (default), original data frame passed as `data` 
 #' is stored to the model object. For large datasets, this can be set to 
 #' `FALSE`, in which case you might need to pass the data separately to some 
@@ -120,7 +117,7 @@ estimate_nhmm <- function(
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, 
     channel_names = NULL, inits = "random", init_sd = 2, restarts = 0L, 
-    lambda = 1e-4, method = "EM-DNM", pseudocount = 0, bound = 50, 
+    lambda = 1e-4, method = "EM-DNM", bound = 50, 
     store_data = TRUE, 
     ...) {
   
@@ -138,8 +135,7 @@ estimate_nhmm <- function(
     model$data <- data
   }
   start_time <- proc.time()
-  out <- fit_nhmm(model, inits, init_sd, restarts, lambda, method, pseudocount, 
-                  bound, ...)
+  out <- fit_nhmm(model, inits, init_sd, restarts, lambda, method, bound, ...)
   end_time <- proc.time()
   out$estimation_results$time <- end_time - start_time
   attr(out, "call") <- call

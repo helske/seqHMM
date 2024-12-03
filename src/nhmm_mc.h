@@ -114,14 +114,13 @@ struct nhmm_mc : public nhmm_base {
     }
   }
   void estep_B(const arma::uword i, const arma::mat& log_alpha, 
-               const arma::mat& log_beta, const double ll, 
-               const double pseudocount = 0) {
+               const arma::mat& log_beta, const double ll) {
     for (arma::uword k = 0; k < S; k++) { // state
       for (arma::uword t = 0; t < Ti(i); t++) { // time
         double pp = exp(log_alpha(k, t) + log_beta(k, t) - ll);
         for (arma::uword c = 0; c < C; c++) { // channel
           if (obs(c, t, i) < M(c)) {
-            E_B(c)(t, i, k) = pp + pseudocount;
+            E_B(c)(t, i, k) = pp;
           } else {
             E_B(c)(t, i, k) = 0.0;
           }

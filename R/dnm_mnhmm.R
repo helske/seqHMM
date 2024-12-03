@@ -132,8 +132,8 @@ dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
       init <- unlist(create_initial_values(inits, model, init_sd))
       fit <- nloptr(
-        x0 = init, eval_f = objectivef, lb = -bound, ub = bound,
-        opts = control_restart
+        x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
+        ub = rep(bound, length(init)), opts = control_restart
       )
       p()
       fit
@@ -162,8 +162,8 @@ dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
   }
   
   out <- nloptr(
-    x0 = init, eval_f = objectivef, lb = -bound, ub = bound,
-    opts = control
+    x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
+    ub = rep(bound, length(init)), opts = control
   )
   if (out$status < 0) {
     warning_(
@@ -205,7 +205,6 @@ dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
     all_solutions = all_solutions,
     lambda = lambda,
-    pseudocount = 0,
     bound = bound,
     method = "DNM", 
     algorithm = control$algorithm

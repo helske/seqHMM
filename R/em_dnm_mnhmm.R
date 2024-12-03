@@ -1,4 +1,4 @@
-em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount, 
+em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, 
                          bound, control, control_restart, control_mstep, 
                          save_all_solutions) {
   M <- model$n_symbols
@@ -143,7 +143,7 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
           control_restart$print_level, control_mstep$maxeval,
           control_mstep$ftol_abs, control_mstep$ftol_rel,
           control_mstep$xtol_abs, control_mstep$xtol_rel, 
-          control_mstep$print_level, lambda, pseudocount, bound)
+          control_mstep$print_level, lambda, bound)
       } else {
         eta_B <- unlist(init$B, recursive = FALSE)
         fit <- EM_LBFGS_mnhmm_multichannel(
@@ -156,7 +156,7 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
           control_restart$print_level, control_mstep$maxeval,
           control_mstep$ftol_abs, control_mstep$ftol_rel,
           control_mstep$xtol_abs, control_mstep$xtol_rel, 
-          control_mstep$print_level, lambda, pseudocount, bound)
+          control_mstep$print_level, lambda, bound)
       }
       em_return_code <- fit$return_code
       if (em_return_code >= 0) {
@@ -171,8 +171,8 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
           )
         )
         fit <- nloptr(
-          x0 = init, eval_f = objectivef, 
-          lb = -bound, ub = bound, opts = control_restart
+          x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
+          ub = rep(bound, length(init)), opts = control_restart
         )
         p()
         fit
@@ -229,7 +229,7 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
         control$print_level, control_mstep$maxeval,
         control_mstep$ftol_abs, control_mstep$ftol_rel,
         control_mstep$xtol_abs, control_mstep$xtol_rel, 
-        control_mstep$print_level, lambda, pseudocount, bound)
+        control_mstep$print_level, lambda, bound)
     } else {
       eta_B <- unlist(init$B, recursive = FALSE)
       out <- EM_LBFGS_mnhmm_multichannel(
@@ -242,7 +242,7 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
         control$print_level, control_mstep$maxeval,
         control_mstep$ftol_abs, control_mstep$ftol_rel,
         control_mstep$xtol_abs, control_mstep$xtol_rel, 
-        control_mstep$print_level, lambda, pseudocount, bound)
+        control_mstep$print_level, lambda, bound)
     }
     em_return_code <- out$return_code
     if (em_return_code >= 0) {
@@ -263,8 +263,9 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
     }
   }
   out <- nloptr(
-    x0 = unlist(init), eval_f = objectivef, lb = -bound, ub = bound,
-    opts = control
+    x0 = unlist(init), eval_f = objectivef, 
+    lb = -rep(bound, length(unlist(init))), 
+    ub = rep(bound, length(unlist(init))), opts = control
   )
   if (out$status < 0) {
     warning_(
@@ -306,7 +307,6 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
     all_solutions = all_solutions,
     lambda = lambda,
-    pseudocount = pseudocount,
     bound = bound,
     method = "EM-DNM",
     algorithm = control$algorithm,

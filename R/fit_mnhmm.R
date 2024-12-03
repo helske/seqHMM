@@ -2,7 +2,7 @@
 #'
 #' @noRd
 fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method, 
-                      pseudocount, bound, save_all_solutions = FALSE, 
+                      bound, save_all_solutions = FALSE, 
                       control_restart = list(), control_mstep = list(), ...) {
   
   stopifnot_(
@@ -68,7 +68,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
   all_solutions <- NULL
   if (method == "EM-DNM") {
     out <- em_dnm_mnhmm(
-      model, inits, init_sd, restarts, lambda, pseudocount, bound, control, 
+      model, inits, init_sd, restarts, lambda, bound, control, 
       control_restart, control_mstep, save_all_solutions
     )
   }
@@ -80,7 +80,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
   }
   if (method == "EM") {
     out <- em_mnhmm(
-      model, inits, init_sd, restarts, lambda, pseudocount, bound, control, 
+      model, inits, init_sd, restarts, lambda, bound, control, 
       control_restart, control_mstep, save_all_solutions 
     )
   }

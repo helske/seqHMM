@@ -1,4 +1,4 @@
-em_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount, 
+em_mnhmm <- function(model, inits, init_sd, restarts, lambda, 
                      bound, control, control_restart, control_mstep, 
                      save_all_solutions) {
   M <- model$n_symbols
@@ -50,7 +50,7 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
           control_restart$print_level, control_mstep$maxeval,
           control_mstep$ftol_abs, control_mstep$ftol_rel,
           control_mstep$xtol_abs, control_mstep$xtol_rel, 
-          control_mstep$print_level, lambda, pseudocount, bound)
+          control_mstep$print_level, lambda, bound)
       } else {
         eta_B <- unlist(init$B, recursive = FALSE)
         fit <- EM_LBFGS_mnhmm_multichannel(
@@ -63,7 +63,7 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
           control_restart$print_level, control_mstep$maxeval,
           control_mstep$ftol_abs, control_mstep$ftol_rel,
           control_mstep$xtol_abs, control_mstep$xtol_rel, 
-          control_mstep$print_level, lambda, pseudocount, bound)
+          control_mstep$print_level, lambda, bound)
       }
       p()
       fit
@@ -99,7 +99,7 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
       control$print_level, control_mstep$maxeval,
       control_mstep$ftol_abs, control_mstep$ftol_rel,
       control_mstep$xtol_abs, control_mstep$xtol_rel, 
-      control_mstep$print_level, lambda, pseudocount, bound)
+      control_mstep$print_level, lambda, bound)
   } else {
     eta_B <- unlist(init$B, recursive = FALSE)
     out <- EM_LBFGS_mnhmm_multichannel(
@@ -112,7 +112,7 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
       control$print_level, control_mstep$maxeval,
       control_mstep$ftol_abs, control_mstep$ftol_rel,
       control_mstep$xtol_abs, control_mstep$xtol_rel, 
-      control_mstep$print_level, lambda, pseudocount, bound)
+      control_mstep$print_level, lambda, bound)
   }
   if (out$return_code < 0) {
     warning_(
@@ -148,7 +148,6 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
     x_rel_change = out$relative_x_change,
     x_abs_change = out$absolute_x_change,
     lambda = lambda,
-    pseudocount = pseudocount,
     bound = bound,
     method = "EM"
   )

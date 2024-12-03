@@ -1,7 +1,7 @@
 #' Estimate a Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocount,
+fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
                      bound, save_all_solutions = FALSE, control_restart = list(), 
                      control_mstep = list(), ...) {
   
@@ -64,7 +64,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
   }
   if (method == "EM-DNM") {
     out <- em_dnm_nhmm(
-      model, inits, init_sd, restarts, lambda, pseudocount, bound, control, 
+      model, inits, init_sd, restarts, lambda, bound, control, 
       control_restart, control_mstep, save_all_solutions
     )
   }
@@ -76,7 +76,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
   }
   if (method == "EM") {
     out <- em_nhmm(
-      model, inits, init_sd, restarts, lambda, pseudocount,  bound, control, 
+      model, inits, init_sd, restarts, lambda,  bound, control, 
       control_restart, control_mstep, save_all_solutions 
     )
   }

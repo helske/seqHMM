@@ -28,30 +28,20 @@ double mnhmm_base::objective_omega(const arma::vec& x, arma::vec& grad) {
     const arma::vec& counts = E_omega.col(i);
     idx = arma::find(counts);
     if (idx.n_elem > 0) {
-      double sum_eo = arma::accu(counts.rows(idx)); // this is != 1 if pseudocounts are used
       double val = arma::dot(counts.rows(idx), log_omega.rows(idx));
       if (!std::isfinite(val)) {
-        if (!grad.is_empty()) {
-          grad.zeros();
-        }
+        grad.zeros();
         return maxval;
       }
       value -= val;
       // Only update grad if it's non-empty (i.e., for gradient-based optimization)
-      if (!grad.is_empty()) {
-        diff.zeros();
-        diff.rows(idx) = counts(idx) - sum_eo * omega.rows(idx);
-        grad -= arma::vectorise(tQd * diff * X_omega.col(i).t());
-        if (!grad.is_finite()) {
-          grad.zeros();
-          return maxval;
-        }
-      }
+      diff.zeros();
+      diff.rows(idx) = counts(idx) - omega.rows(idx);
+      grad -= arma::vectorise(tQd * diff * X_omega.col(i).t());
     }
   }
-  if (!grad.is_empty()) {
-    grad += lambda * x;
-  }
+  grad += lambda * x;
+  
   return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 
@@ -73,13 +63,8 @@ void mnhmm_base::mstep_omega(const double xtol_abs, const double ftol_abs,
   auto objective_omega_wrapper = [](unsigned n, const double* x, double* grad, void* data) -> double {
     auto* self = static_cast<mnhmm_base*>(data);
     arma::vec x_vec(const_cast<double*>(x), n, false, true);
-    if (grad) {
-      arma::vec grad_vec(grad, n, false, true);
-      return self->objective_omega(x_vec, grad_vec);
-    } else {
-      arma::vec grad_dummy;
-      return self->objective_omega(x_vec, grad_dummy);
-    }
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_omega(x_vec, grad_vec);
   };
   
   arma::vec x_omega = arma::vectorise(eta_omega);
@@ -125,30 +110,19 @@ double mnhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
     const arma::vec& counts = E_Pi(current_d).col(i);
     idx = arma::find(counts);
     if (idx.n_elem > 0) {
-      double sum_epi = arma::accu(counts.rows(idx)); // this is != 1 if pseudocounts are used
       double val = arma::dot(counts.rows(idx), log_pi(current_d).rows(idx));
       if (!std::isfinite(val)) {
-        if (!grad.is_empty()) {
-          grad.zeros();
-        }
+        grad.zeros();
         return maxval;
       }
       value -= val;
-      // Only update grad if it's non-empty (i.e., for gradient-based optimization)
-      if (!grad.is_empty()) {
-        diff.zeros();
-        diff.rows(idx) = counts.rows(idx) - sum_epi * pi(current_d).rows(idx);
-        grad -= arma::vectorise(tQs * diff * X_pi.col(i).t());
-        if (!grad.is_finite()) {
-          grad.zeros();
-          return maxval;
-        }
-      }
+      diff.zeros();
+      diff.rows(idx) = counts.rows(idx) - pi(current_d).rows(idx);
+      grad -= arma::vectorise(tQs * diff * X_pi.col(i).t());
     }
   }
-  if (!grad.is_empty()) {
-    grad += lambda * x;
-  }
+  grad += lambda * x;
+  
   return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 
@@ -172,13 +146,8 @@ void mnhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
   auto objective_pi_wrapper = [](unsigned n, const double* x, double* grad, void* data) -> double {
     auto* self = static_cast<mnhmm_base*>(data);
     arma::vec x_vec(const_cast<double*>(x), n, false, true);
-    if (grad) {
-      arma::vec grad_vec(grad, n, false, true);
-      return self->objective_pi(x_vec, grad_vec);
-    } else {
-      arma::vec grad_dummy;
-      return self->objective_pi(x_vec, grad_dummy);
-    }
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_pi(x_vec, grad_vec);
   };
   
   arma::vec x_pi = arma::vectorise(eta_pi(0));
@@ -244,27 +213,19 @@ double mnhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
         }
         double val = arma::dot(counts.rows(idx), log_A1.rows(idx));
         if (!std::isfinite(val)) {
-          if (!grad.is_empty()) {
-            grad.zeros();
-          }
+          grad.zeros();
           return maxval;
         }
         value -= val;
-        if (!grad.is_empty()) {
-          diff.zeros();
-          diff.rows(idx) = counts.rows(idx) - sum_ea * A1.rows(idx);
-          grad -= arma::vectorise(tQs * diff * X_A.slice(i).col(t).t());
-          if (!grad.is_finite()) {
-            grad.zeros();
-            return maxval;
-          }
-        }
+        
+        diff.zeros();
+        diff.rows(idx) = counts.rows(idx) - sum_ea * A1.rows(idx);
+        grad -= arma::vectorise(tQs * diff * X_A.slice(i).col(t).t());
       }
     }
   }
-  if (!grad.is_empty()) {
-    grad += lambda * x;
-  }
+  grad += lambda * x;
+  
   return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 void mnhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
@@ -295,13 +256,8 @@ void mnhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
   auto objective_A_wrapper = [](unsigned n, const double* x, double* grad, void* data) -> double {
     auto* self = static_cast<mnhmm_base*>(data);
     arma::vec x_vec(const_cast<double*>(x), n, false, true);
-    if (grad) {
-      arma::vec grad_vec(grad, n, false, true);
-      return self->objective_A(x_vec, grad_vec);
-    } else {
-      arma::vec grad_dummy;
-      return self->objective_A(x_vec, grad_dummy);
-    }
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_A(x_vec, grad_vec);
   };
   
   arma::vec x_A(eta_A(0).slice(0).n_elem);
@@ -370,27 +326,18 @@ double mnhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
           
           double val = e_b * log_B1(obs(t, i));
           if (!std::isfinite(val)) {
-            if (!grad.is_empty()) {
-              grad.zeros();
-            }
+            grad.zeros();
             return maxval;
           }
           value -= val;
-          if (!grad.is_empty()) {
-            grad -= arma::vectorise(tQm * 
-              e_b * (I.col(obs(t, i)) - B1) * X_B.slice(i).col(t).t());
-            if (!grad.is_finite()) {
-              grad.zeros();
-              return maxval;
-            }
-          }
+          grad -= arma::vectorise(tQm * 
+            e_b * (I.col(obs(t, i)) - B1) * X_B.slice(i).col(t).t());
         }
       }
     }
   }
-  if (!grad.is_empty()) {
-    grad += lambda * x;
-  }
+  grad += lambda * x;
+  
   return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 void mnhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
@@ -424,13 +371,8 @@ void mnhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
   auto objective_B_wrapper = [](unsigned n, const double* x, double* grad, void* data) -> double {
     auto* self = static_cast<mnhmm_sc*>(data);
     arma::vec x_vec(const_cast<double*>(x), n, false, true);
-    if (grad) {
-      arma::vec grad_vec(grad, n, false, true);
-      return self->objective_B(x_vec, grad_vec);
-    } else {
-      arma::vec grad_dummy;
-      return self->objective_B(x_vec, grad_dummy);
-    }
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_B(x_vec, grad_vec);
   };
   arma::vec x_B(eta_B(0).slice(0).n_elem);
   nlopt_opt opt_B = nlopt_create(NLOPT_LD_LBFGS, x_B.n_elem);
@@ -500,27 +442,18 @@ double mnhmm_mc::objective_B(const arma::vec& x, arma::vec& grad) {
           }
           double val = e_b * log_B1(obs(current_c, t, i));
           if (!std::isfinite(val)) {
-            if (!grad.is_empty()) {
-              grad.zeros();
-            }
+            grad.zeros();
             return maxval;
           }
           value -= val;
-          if (!grad.is_empty()) {
-            grad -= arma::vectorise(tQm * e_b  * (I.col(obs(current_c, t, i)) - B1) * 
-              X_B.slice(i).col(t).t());
-            if (!grad.is_finite()) {
-              grad.zeros();
-              return maxval;
-            }
-          }
+          grad -= arma::vectorise(tQm * e_b  * (I.col(obs(current_c, t, i)) - B1) * 
+            X_B.slice(i).col(t).t());
         }
       }
     }
   }
-  if (!grad.is_empty()) {
-    grad += lambda * x;
-  }
+  grad += lambda * x;
+  
   return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 void mnhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
@@ -556,13 +489,8 @@ void mnhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
   auto objective_B_wrapper = [](unsigned n, const double* x, double* grad, void* data) -> double {
     auto* self = static_cast<mnhmm_mc*>(data);
     arma::vec x_vec(const_cast<double*>(x), n, false, true);
-    if (grad) {
-      arma::vec grad_vec(grad, n, false, true);
-      return self->objective_B(x_vec, grad_vec);
-    } else {
-      arma::vec grad_dummy;
-      return self->objective_B(x_vec, grad_dummy);
-    }
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_B(x_vec, grad_vec);
   };
   double minf;
   int return_code;
@@ -617,7 +545,7 @@ Rcpp::List EM_LBFGS_mnhmm_singlechannel(
     const double xtol_abs, const double xtol_rel, const arma::uword print_level,
     const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, 
     const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m,
-    const double lambda, const double pseudocount, const double bound) {
+    const double lambda, const double bound) {
   
   mnhmm_sc model(
       eta_A(0).n_slices, eta_A.n_rows, X_omega, X_pi, X_A, X_B, Ti,
@@ -857,7 +785,7 @@ Rcpp::List EM_LBFGS_mnhmm_multichannel(
     const double xtol_abs, const double xtol_rel, const arma::uword print_level,
     const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, 
     const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m,
-    const double lambda, const double pseudocount, const double bound) {
+    const double lambda, const double bound) {
   
   mnhmm_mc model(
       eta_A(0).n_slices, eta_A.n_rows, X_omega, X_pi, X_A, X_B, Ti,

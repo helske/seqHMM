@@ -159,8 +159,8 @@ error_msg <- function(error) {
   if (!is.null(gamma) && error %in% (-100 * (1:4))) {
     return(paste0(x,
       "Error in M-step of ", gamma, " encountered expected count of zero. ",
-      "Try increasing the pseudocounts or regularization via lambda to avoid ",
-      "extreme probabilities.")
+      "Try increasing the regularization via lambda or adjust parameter bounds ",
+      "to avoid extreme probabilities.")
     )
   }
   

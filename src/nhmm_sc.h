@@ -90,12 +90,11 @@ struct nhmm_sc : public nhmm_base {
     }
   }
   void estep_B(const arma::uword i, const arma::mat& log_alpha, 
-               const arma::mat& log_beta, const double ll, 
-               const double pseudocount = 0) {
+               const arma::mat& log_beta, const double ll) {
     for (arma::uword k = 0; k < S; k++) { // state
       for (arma::uword t = 0; t < Ti(i); t++) { // time
         if (obs(t, i) < M) {
-          E_B(t, i, k) = exp(log_alpha(k, t) + log_beta(k, t) - ll) + pseudocount;
+          E_B(t, i, k) = exp(log_alpha(k, t) + log_beta(k, t) - ll);
         } else {
           E_B(t, i, k) = 0.0;
         }

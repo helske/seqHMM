@@ -141,19 +141,17 @@ struct nhmm_base {
   }
   
   void estep_pi(const arma::uword i, const arma::vec& log_alpha, 
-                const arma::vec& log_beta, const double ll, 
-                const double pseudocount = 0) {
-    E_Pi.col(i) = arma::exp(log_alpha + log_beta - ll) + pseudocount;
+                const arma::vec& log_beta, const double ll) {
+    E_Pi.col(i) = arma::exp(log_alpha + log_beta - ll);
   }
   
   void estep_A(const arma::uword i, const arma::mat& log_alpha, 
-               const arma::mat& log_beta, const double ll, 
-               const double pseudocount = 0) {
+               const arma::mat& log_beta, const double ll) {
     for (arma::uword k = 0; k < S; k++) { // from
       for (arma::uword j = 0; j < S; j++) { // to
         for (arma::uword t = 0; t < (Ti(i) - 1); t++) { // time
           E_A(k)(j, i, t) = exp(log_alpha(k, t) + log_A(k, j, t) + 
-            log_beta(j, t + 1) + log_py(j, t + 1) - ll) + pseudocount;
+            log_beta(j, t + 1) + log_py(j, t + 1) - ll);
         }
       }
     }

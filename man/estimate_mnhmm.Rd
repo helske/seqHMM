@@ -23,7 +23,6 @@ estimate_mnhmm(
   restarts = 0L,
   lambda = 1e-04,
   method = "EM-DNM",
-  pseudocount = 0,
   bound = 50,
   store_data = TRUE,
   ...
@@ -87,11 +86,12 @@ of the regression coefficients to zero, use \code{init_sd = 0}.}
 values (in addition to the final run). Default is 0.}
 
 \item{lambda}{Penalization factor \code{lambda} for penalized log-likelihood, where the
-penalization is \code{0.5 * lambda * sum(parameters^2)}. Note that with
+penalization is \code{0.5 * lambda * sum(eta^2)}. Note that with
 \code{method = "L-BFGS"} both objective function (log-likelihood) and
 the penalization term is scaled with number of non-missing observations.
-Default is \code{1e-4} for ensuring numerical stability of L-BFGS by avoiding
-extreme probabilities.}
+Default is \code{0}, but small values such as \code{1e-4} can help to ensure numerical
+stability of L-BFGS by avoiding extreme probabilities. See also argument
+\code{bound} for hard constraints.}
 
 \item{method}{Optimization method used. Option \code{"EM"} uses EM
 algorithm with L-BFGS in the M-step. Option \code{"DNM"} uses
@@ -99,16 +99,11 @@ direct maximization of the log-likelihood, by default using L-BFGS. Option
 \code{"EM-DNM"} (the default) runs first a maximum of 10 iterations of EM and
 then switches to L-BFGS (but other algorithms of NLopt can be used).}
 
-\item{pseudocount}{A positive scalar to be added for the expected counts of
-E-step. Only used in EM and EM-DNM algorithms. Default is 0. Larger values
-can be used to avoid extreme initial, transition, and emission
-probabilities, i.e. these have similar role as \code{lambda}.}
-
 \item{bound}{Positive value defining the hard bounds for the working
 parameters \eqn{\eta}, which are used to avoid extreme probabilities and
 corresponding numerical issues especially in the M-step of EM algorithm.
 Default is 50, i.e., \eqn{-50<\eta<50}. Note that he bounds are not enforced
-for M-step in intercept-only case with \code{lambda=0}.}
+for M-step in intercept-only case with \code{lambda = 0}.}
 
 \item{store_data}{If \code{TRUE} (default), original data frame passed as \code{data}
 is stored to the model object. For large datasets, this can be set to
