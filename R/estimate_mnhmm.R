@@ -45,7 +45,7 @@ estimate_mnhmm <- function(
     data = NULL, time = NULL, id = NULL, state_names = NULL, 
     channel_names = NULL, cluster_names = NULL, inits = "random", init_sd = 2, 
     restarts = 0L, lambda = 1e-4, method = "EM-DNM", pseudocount = 0, 
-    store_data = TRUE, ...) {
+    bound = 50, store_data = TRUE, ...) {
   
   call <- match.call()
   model <- build_mnhmm(
@@ -62,7 +62,7 @@ estimate_mnhmm <- function(
   }
   start_time <- proc.time()
   out <- fit_mnhmm(model, inits, init_sd, restarts, lambda, method, 
-                   pseudocount, ...)
+                   pseudocount, bound, ...)
   end_time <- proc.time()
   out$estimation_results$time <- end_time - start_time
   attr(out, "call") <- call

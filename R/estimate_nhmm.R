@@ -88,6 +88,11 @@
 #' E-step. Only used in EM and EM-DNM algorithms. Default is 0. Larger values 
 #' can be used to avoid extreme initial, transition, and emission 
 #' probabilities, i.e. these have similar role as `lambda`.
+#' @param bound Positive value defining the hard bounds for the working 
+#' parameters \eqn{\eta}, which are used to avoid extreme probabilities and 
+#' corresponding numerical issues especially in the M-step of EM algorithm. 
+#' Default is 50, i.e., \eqn{-50<\eta<50}. Note that he bounds are not enforced 
+#' for M-step in intercept-only case with `lambda=0`.
 #' @param store_data If `TRUE` (default), original data frame passed as `data` 
 #' is stored to the model object. For large datasets, this can be set to 
 #' `FALSE`, in which case you might need to pass the data separately to some 
@@ -115,7 +120,8 @@ estimate_nhmm <- function(
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, 
     channel_names = NULL, inits = "random", init_sd = 2, restarts = 0L, 
-    lambda = 1e-4, method = "EM-DNM", pseudocount = 0, store_data = TRUE, 
+    lambda = 1e-4, method = "EM-DNM", pseudocount = 0, bound = 50, 
+    store_data = TRUE, 
     ...) {
   
   call <- match.call()
@@ -133,7 +139,7 @@ estimate_nhmm <- function(
   }
   start_time <- proc.time()
   out <- fit_nhmm(model, inits, init_sd, restarts, lambda, method, pseudocount, 
-                  ...)
+                  bound, ...)
   end_time <- proc.time()
   out$estimation_results$time <- end_time - start_time
   attr(out, "call") <- call

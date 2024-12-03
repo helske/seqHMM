@@ -2,7 +2,7 @@
 #'
 #' @noRd
 fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocount,
-                     save_all_solutions = FALSE, control_restart = list(), 
+                     bound, save_all_solutions = FALSE, control_restart = list(), 
                      control_mstep = list(), ...) {
   
   stopifnot_(
@@ -13,6 +13,10 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
   stopifnot_(
     checkmate::check_number(lambda, lower = 0), 
     "Argument {.arg lambda} must be a single non-negative {.cls numeric} value."
+  )
+  stopifnot_(
+    checkmate::check_number(bound, lower = 0), 
+    "Argument {.arg bound} must be a single non-negative {.cls numeric} value."
   )
   control <- utils::modifyList(
     list(
@@ -60,19 +64,19 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method, pseudocoun
   }
   if (method == "EM-DNM") {
     out <- em_dnm_nhmm(
-      model, inits, init_sd, restarts, lambda, pseudocount, control, 
+      model, inits, init_sd, restarts, lambda, pseudocount, bound, control, 
       control_restart, control_mstep, save_all_solutions
     )
   }
   if (method == "DNM") {
     out <- dnm_nhmm(
-      model, inits, init_sd, restarts, lambda, control, control_restart, 
+      model, inits, init_sd, restarts, lambda,  bound, control, control_restart, 
       save_all_solutions 
     )
   }
   if (method == "EM") {
     out <- em_nhmm(
-      model, inits, init_sd, restarts, lambda, pseudocount, control, 
+      model, inits, init_sd, restarts, lambda, pseudocount,  bound, control, 
       control_restart, control_mstep, save_all_solutions 
     )
   }

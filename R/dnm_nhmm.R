@@ -1,4 +1,4 @@
-dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, control, 
+dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, bound, control, 
                      control_restart, save_all_solutions) {
   M <- model$n_symbols
   S <- model$n_states
@@ -98,7 +98,7 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, control,
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
       init <- unlist(create_initial_values(inits, model, init_sd))
       fit <- nloptr(
-        x0 = init, eval_f = objectivef,
+        x0 = init, eval_f = objectivef, lb = -bound, ub = bound,
         opts = control_restart
       )
       p()
@@ -127,7 +127,10 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, control,
     init <- unlist(create_initial_values(inits, model, init_sd))
   }
   
-  out <- nloptr(x0 = init, eval_f = objectivef, opts = control)
+  out <- nloptr(
+    x0 = init, eval_f = objectivef, lb = -bound, ub = bound, 
+    opts = control
+  )
   if (out$status < 0) {
     warning_(
       paste("Optimization terminated due to error:", error_msg(out$status))
@@ -163,6 +166,7 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, control,
     all_solutions = all_solutions,
     lambda = lambda,
     pseudocount = 0,
+    bound = bound,
     method = "DNM", 
     algorithm = control$algorithm
   )

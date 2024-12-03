@@ -161,10 +161,12 @@ struct nhmm_base {
   
   void mstep_pi(const double ftol_abs, const double ftol_rel, 
                 const double xtol_abs, const double xtol_rel, 
-                const arma::uword maxeval, const arma::uword print_level);
+                const arma::uword maxeval, const double bound, 
+                const arma::uword print_level);
   void mstep_A(const double ftol_abs, const double ftol_rel, 
                const double xtol_abs, const double xtol_rel, 
-               const arma::uword maxeval, const arma::uword print_level);
+               const arma::uword maxeval, const double bound, 
+               const arma::uword print_level);
   double objective_pi(const arma::vec& x, arma::vec& grad);
   double objective_A(const arma::vec& x, arma::vec& grad);
   

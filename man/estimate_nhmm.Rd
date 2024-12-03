@@ -21,6 +21,7 @@ estimate_nhmm(
   lambda = 1e-04,
   method = "EM-DNM",
   pseudocount = 0,
+  bound = 50,
   store_data = TRUE,
   ...
 )
@@ -89,6 +90,12 @@ then switches to L-BFGS (but other algorithms of NLopt can be used).}
 E-step. Only used in EM and EM-DNM algorithms. Default is 0. Larger values
 can be used to avoid extreme initial, transition, and emission
 probabilities, i.e. these have similar role as \code{lambda}.}
+
+\item{bound}{Positive value defining the hard bounds for the working
+parameters \eqn{\eta}, which are used to avoid extreme probabilities and
+corresponding numerical issues especially in the M-step of EM algorithm.
+Default is 50, i.e., \eqn{-50<\eta<50}. Note that he bounds are not enforced
+for M-step in intercept-only case with \code{lambda=0}.}
 
 \item{store_data}{If \code{TRUE} (default), original data frame passed as \code{data}
 is stored to the model object. For large datasets, this can be set to

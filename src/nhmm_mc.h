@@ -132,7 +132,8 @@ struct nhmm_mc : public nhmm_base {
   
   void mstep_B(const double ftol_abs, const double ftol_rel, 
                const double xtol_abs, const double xtol_rel, 
-               const arma::uword maxeval, const arma::uword print_level);
+               const arma::uword maxeval, const double bound, 
+               const arma::uword print_level);
   
   double objective_B(const arma::vec& x, arma::vec& grad);
   

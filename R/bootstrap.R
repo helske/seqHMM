@@ -100,6 +100,7 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
   gammas_mle <- model$gammas
   lambda <- model$estimation_results$lambda
   pseudocount <- model$estimation_results$pseudocount
+  bound <- model$estimation_results$bound
   p <- progressr::progressor(along = seq_len(nsim))
   original_options <- options(future.globals.maxSize = Inf)
   on.exit(options(original_options))
@@ -108,7 +109,8 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
       seq_len(nsim), function(i) {
         mod <- bootstrap_model(model)
         fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
-                        method = method, pseudocount = pseudocount, ...)
+                        method = method, pseudocount = pseudocount, 
+                        bound = bound, ...)
         if (fit$estimation_results$return_code >= 0) {
           fit$gammas <- permute_states(fit$gammas, gammas_mle)
         } else {
@@ -135,7 +137,8 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
           N, T_, M, S, formula_pi, formula_A, formula_B,
           d, time, id, init, 0)$model
         fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
-                        method = method, pseudocount = pseudocount, ...)
+                        method = method, pseudocount = pseudocount, 
+                        bound = bound, ...)
         if (fit$estimation_results$return_code >= 0) {
           fit$gammas <- permute_states(fit$gammas, gammas_mle)
         } else {
@@ -183,6 +186,7 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
   pcp_mle <- posterior_cluster_probabilities(model)
   lambda <- model$estimation_results$lambda
   pseudocount <- model$estimation_results$pseudocount
+  bound <- model$estimation_results$bound
   D <- model$n_clusters
   p <- progressr::progressor(along = seq_len(nsim))
   original_options <- options(future.globals.maxSize = Inf)
@@ -192,7 +196,8 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
       seq_len(nsim), function(i) {
         mod <- bootstrap_model(model)
         fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
-                         method = method, pseudocount = pseudocount, ...)
+                         method = method, pseudocount = pseudocount, 
+                         bound = bound, ...)
         if (fit$estimation_results$return_code >= 0) {
           fit <- permute_clusters(fit, pcp_mle)
           for (j in seq_len(D)) {
@@ -229,7 +234,8 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
           N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
           d, time, id, init, 0)$model
         fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
-                         method = method, pseudocount = pseudocount, ...)
+                         method = method, pseudocount = pseudocount, 
+                         bound = bound, ...)
         if (fit$estimation_results$return_code >= 0) {
           fit <- permute_clusters(fit, pcp_mle)
           for (j in seq_len(D)) {

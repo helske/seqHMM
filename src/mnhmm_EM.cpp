@@ -57,7 +57,7 @@ double mnhmm_base::objective_omega(const arma::vec& x, arma::vec& grad) {
 
 void mnhmm_base::mstep_omega(const double xtol_abs, const double ftol_abs,
                              const double xtol_rel, const double ftol_rel,
-                             const arma::uword maxeval, 
+                             const arma::uword maxeval, const double bound,
                              const arma::uword print_level) {
   mstep_return_code = 0;
   // Use closed form solution
@@ -90,6 +90,8 @@ void mnhmm_base::mstep_omega(const double xtol_abs, const double ftol_abs,
   nlopt_set_xtol_rel(opt_omega, xtol_rel);
   nlopt_set_ftol_rel(opt_omega, ftol_rel);
   nlopt_set_maxeval(opt_omega, maxeval);
+  nlopt_set_lower_bounds1(opt_omega, -bound);
+  nlopt_set_upper_bounds1(opt_omega, bound);
   double minf;
   mstep_iter = 0;
   int return_code = nlopt_optimize(opt_omega, x_omega.memptr(), &minf);
@@ -152,7 +154,7 @@ double mnhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
 
 void mnhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
                           const double xtol_rel, const double ftol_rel,
-                          const arma::uword maxeval, 
+                          const arma::uword maxeval, const double bound, 
                           const arma::uword print_level) {
   mstep_return_code = 0;
   // Use closed form solution
@@ -187,6 +189,8 @@ void mnhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
   nlopt_set_xtol_rel(opt_pi, xtol_rel);
   nlopt_set_ftol_rel(opt_pi, ftol_rel);
   nlopt_set_maxeval(opt_pi, maxeval);
+  nlopt_set_lower_bounds1(opt_pi, -bound);
+  nlopt_set_upper_bounds1(opt_pi, bound);
   double minf;
   int return_code;
   int mstep_iter;
@@ -265,7 +269,7 @@ double mnhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
 }
 void mnhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
                          const double xtol_abs, const double xtol_rel,
-                         const arma::uword maxeval, 
+                         const arma::uword maxeval, const double bound, 
                          const arma::uword print_level) {
   
   mstep_return_code = 0;
@@ -308,6 +312,8 @@ void mnhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
   nlopt_set_xtol_rel(opt_A, xtol_rel);
   nlopt_set_ftol_rel(opt_A, ftol_rel);
   nlopt_set_maxeval(opt_A, maxeval);
+  nlopt_set_lower_bounds1(opt_A, -bound);
+  nlopt_set_upper_bounds1(opt_A, bound);
   double minf;
   int return_code;
   int mstep_iter;
@@ -389,7 +395,7 @@ double mnhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
 }
 void mnhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
                        const double xtol_abs, const double xtol_rel,
-                       const arma::uword maxeval, 
+                       const arma::uword maxeval, const double bound, 
                        const arma::uword print_level) {
   mstep_return_code = 0;
   // use closed form solution
@@ -434,6 +440,8 @@ void mnhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
   nlopt_set_xtol_rel(opt_B, xtol_rel);
   nlopt_set_ftol_rel(opt_B, ftol_rel);
   nlopt_set_maxeval(opt_B, maxeval);
+  nlopt_set_lower_bounds1(opt_B, -bound);
+  nlopt_set_upper_bounds1(opt_B, bound);
   double minf;
   int return_code;
   int mstep_iter;
@@ -517,7 +525,7 @@ double mnhmm_mc::objective_B(const arma::vec& x, arma::vec& grad) {
 }
 void mnhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
                        const double xtol_abs, const double xtol_rel,
-                       const arma::uword maxeval, 
+                       const arma::uword maxeval, const double bound, 
                        const arma::uword print_level) {
   mstep_return_code = 0;
   // use closed form solution
@@ -568,6 +576,8 @@ void mnhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
     nlopt_set_xtol_rel(opt_B, xtol_rel);
     nlopt_set_ftol_rel(opt_B, ftol_rel);
     nlopt_set_maxeval(opt_B, maxeval);
+    nlopt_set_lower_bounds1(opt_B, -bound);
+    nlopt_set_upper_bounds1(opt_B, bound);
     current_c = c;
     for (arma::uword d = 0; d < D; d++) {
       current_d = d;
@@ -607,7 +617,7 @@ Rcpp::List EM_LBFGS_mnhmm_singlechannel(
     const double xtol_abs, const double xtol_rel, const arma::uword print_level,
     const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, 
     const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m,
-    const double lambda, const double pseudocount) {
+    const double lambda, const double pseudocount, const double bound) {
   
   mnhmm_sc model(
       eta_A(0).n_slices, eta_A.n_rows, X_omega, X_pi, X_A, X_B, Ti,
@@ -706,25 +716,29 @@ Rcpp::List EM_LBFGS_mnhmm_singlechannel(
     
     iter++;
     ll_new = 0;
-    model.mstep_omega(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m);
+    model.mstep_omega(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, 
+                      bound, print_level_m);
     if (model.mstep_return_code != 0) {
       return mstep_error_mnhmm(
         model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
-    model.mstep_pi(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m);
+    model.mstep_pi(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, 
+                   bound, print_level_m);
     if (model.mstep_return_code != 0) {
       return mstep_error_mnhmm(
         model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
-    model.mstep_A(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m);
+    model.mstep_A(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, 
+                  bound, print_level_m);
     if (model.mstep_return_code != 0) {
       return mstep_error_mnhmm(
         model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
-    model.mstep_B(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m);
+    model.mstep_B(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, 
+                  bound, print_level_m);
     if (model.mstep_return_code != 0) {
       return mstep_error_mnhmm(
         model.mstep_return_code, model, iter, relative_change, 
@@ -843,7 +857,7 @@ Rcpp::List EM_LBFGS_mnhmm_multichannel(
     const double xtol_abs, const double xtol_rel, const arma::uword print_level,
     const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, 
     const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m,
-    const double lambda, const double pseudocount) {
+    const double lambda, const double pseudocount, const double bound) {
   
   mnhmm_mc model(
       eta_A(0).n_slices, eta_A.n_rows, X_omega, X_pi, X_A, X_B, Ti,
@@ -950,25 +964,29 @@ Rcpp::List EM_LBFGS_mnhmm_multichannel(
     iter++;
     ll_new = 0;
     
-    model.mstep_omega(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m);
+    model.mstep_omega(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, 
+                      maxeval_m, bound, print_level_m);
     if (model.mstep_return_code != 0) {
       return mstep_error_mnhmm(
         model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
-    model.mstep_pi(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m);
+    model.mstep_pi(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, 
+                   bound, print_level_m);
     if (model.mstep_return_code != 0) {
       return mstep_error_mnhmm(
         model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
-    model.mstep_A(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m);
+    model.mstep_A(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, 
+                  bound, print_level_m);
     if (model.mstep_return_code != 0) {
       return mstep_error_mnhmm(
         model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
-    model.mstep_B(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, print_level_m);
+    model.mstep_B(ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, 
+                  bound, print_level_m);
     if (model.mstep_return_code != 0) {
       return mstep_error_mnhmm(
         model.mstep_return_code, model, iter, relative_change, 

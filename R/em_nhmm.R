@@ -1,5 +1,6 @@
 em_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount, 
-                    control, control_restart, control_mstep, save_all_solutions) {
+                    bound, control, control_restart, control_mstep, 
+                    save_all_solutions) {
   M <- model$n_symbols
   S <- model$n_states
   T_ <- model$length_of_sequences
@@ -43,7 +44,7 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
           control_restart$print_level, control_mstep$maxeval,
           control_mstep$ftol_abs, control_mstep$ftol_rel,
           control_mstep$xtol_abs, control_mstep$xtol_rel, 
-          control_mstep$print_level, lambda, pseudocount)
+          control_mstep$print_level, lambda, pseudocount, bound)
       } else {
         fit <- EM_LBFGS_nhmm_multichannel(
           init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
@@ -54,7 +55,7 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
           control_restart$print_level, control_mstep$maxeval,
           control_mstep$ftol_abs, control_mstep$ftol_rel,
           control_mstep$xtol_abs, control_mstep$xtol_rel, 
-          control_mstep$print_level, lambda, pseudocount)
+          control_mstep$print_level, lambda, pseudocount, bound)
       }
       p()
       fit
@@ -88,7 +89,7 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
       control$print_level, control_mstep$maxeval,
       control_mstep$ftol_abs, control_mstep$ftol_rel,
       control_mstep$xtol_abs, control_mstep$xtol_rel, 
-      control_mstep$print_level, lambda, pseudocount)
+      control_mstep$print_level, lambda, pseudocount, bound)
   } else {
     out <- EM_LBFGS_nhmm_multichannel(
       init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
@@ -99,7 +100,7 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
       control$print_level, control_mstep$maxeval,
       control_mstep$ftol_abs, control_mstep$ftol_rel,
       control_mstep$xtol_abs, control_mstep$xtol_rel, 
-      control_mstep$print_level, lambda, pseudocount)
+      control_mstep$print_level, lambda, pseudocount, bound)
   }
   if (out$return_code < 0) {
     warning_(
@@ -132,6 +133,7 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda, pseudocount,
     x_abs_change = out$absolute_x_change,
     lambda = lambda,
     pseudocount = pseudocount,
+    bound = bound,
     method = "EM"
   )
   model
