@@ -103,12 +103,19 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
   p <- progressr::progressor(along = seq_len(nsim))
   original_options <- options(future.globals.maxSize = Inf)
   on.exit(options(original_options))
+  control <- model$controls$control
+  control$print_level <- 0
+  control_mstep <- model$controls$mstep
+  control_mstep$print_level <- 0
   if (type == "nonparametric") {
     out <- future.apply::future_lapply(
       seq_len(nsim), function(i) {
         mod <- bootstrap_model(model)
-        fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
-                        method = method, bound = bound, ...)
+        fit <- fit_nhmm(
+          mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
+          method = method, bound = bound, control = control,
+          control_restart = list(), control_mstep = control_mstep
+        )
         if (fit$estimation_results$return_code >= 0) {
           fit$gammas <- permute_states(fit$gammas, gammas_mle)
         } else {
@@ -134,8 +141,11 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
         mod <- simulate_nhmm(
           N, T_, M, S, formula_pi, formula_A, formula_B,
           d, time, id, init, 0)$model
-        fit <- fit_nhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
-                        method = method, bound = bound, ...)
+        fit <- fit_nhmm(
+          mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
+          method = method, bound = bound, control = control,
+          control_restart = list(), control_mstep = control_mstep
+        )
         if (fit$estimation_results$return_code >= 0) {
           fit$gammas <- permute_states(fit$gammas, gammas_mle)
         } else {
@@ -155,14 +165,16 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
   if (length(boot) < nsim) {
     warning_(
       paste0(
-        "Estimation in some of the bootstrap samples failed.",
-        "Returning samples from {length(boot[[1]]} successes out of {nsim} ",
+        "Estimation in some of the bootstrap samples failed. ",
+        "Returning samples from {length(boot[[1]])} successes out of {nsim} ",
         "bootstrap samples."
       )
     )
   }
-  if (append & !is.null(model$boot)) {
-    model$boot <- c(model$boot, boot)
+  if (append && !is.null(model$boot)) {
+    model$boot$gamma_pi <- c(model$boot$gamma_pi, boot$gamma_pi)
+    model$boot$gamma_A <- c(model$boot$gamma_A, boot$gamma_A)
+    model$boot$gamma_B <- c(model$boot$gamma_B, boot$gamma_B)
   } else {
     model$boot <- boot
   }
@@ -187,12 +199,20 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
   p <- progressr::progressor(along = seq_len(nsim))
   original_options <- options(future.globals.maxSize = Inf)
   on.exit(options(original_options))
+  control <- model$controls$control
+  control$ftol_rel <- min(control$ftol_rel, 1e-8)
+  control$print_level <- 0
+  control_mstep <- model$controls$mstep
+  control_mstep$print_level <- 0
   if (type == "nonparametric") {
     out <- future.apply::future_lapply(
       seq_len(nsim), function(i) {
         mod <- bootstrap_model(model)
-        fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
-                         method = method, bound = bound, ...)
+        fit <- fit_mnhmm(
+          mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
+          method = method, bound = bound, control = control,
+          control_restart = list(), control_mstep = control_mstep
+        )
         if (fit$estimation_results$return_code >= 0) {
           fit <- permute_clusters(fit, pcp_mle)
           for (j in seq_len(D)) {
@@ -228,8 +248,11 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
         mod <- simulate_mnhmm(
           N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
           d, time, id, init, 0)$model
-        fit <- fit_mnhmm(mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
-                         method = method, bound = bound, ...)
+        fit <- fit_mnhmm(
+          mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
+          method = method, bound = bound, control = control,
+          control_restart = list(), control_mstep = control_mstep
+        )
         if (fit$estimation_results$return_code >= 0) {
           fit <- permute_clusters(fit, pcp_mle)
           for (j in seq_len(D)) {
@@ -259,14 +282,17 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
   if (length(boot[[1]]) < nsim) {
     warning_(
       paste0(
-        "Estimation in some of the bootstrap samples failed.",
-        "Returning samples from {length(boot[[1]]} successes out of {nsim} ",
+        "Estimation in some of the bootstrap samples failed. ",
+        "Returning samples from {length(boot[[1]])} successes out of {nsim} ",
         "bootstrap samples."
       )
     )
   }
-  if (append & !is.null(model$boot)) {
-    model$boot <- c(model$boot, boot)
+  if (append && !is.null(model$boot)) {
+    model$boot$gamma_pi <- c(model$boot$gamma_pi, boot$gamma_pi)
+    model$boot$gamma_A <- c(model$boot$gamma_A, boot$gamma_A)
+    model$boot$gamma_B <- c(model$boot$gamma_B, boot$gamma_B)
+    model$boot$gamma_omega <- c(model$boot$gamma_omega, boot$gamma_omega)
   } else {
     model$boot <- boot
   }
