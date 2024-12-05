@@ -2,8 +2,8 @@
 #'
 #' @noRd
 fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
-                     bound, save_all_solutions = FALSE, control_restart = list(), 
-                     control_mstep = list(), ...) {
+                     bound, control, control_restart, control_mstep, 
+                     save_all_solutions = FALSE) {
   
   stopifnot_(
     checkmate::test_int(x = restarts, lower = 0L), 
@@ -22,24 +22,45 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
     list(
       ftol_abs = 0,
       xtol_abs = 0,
-      ftol_rel = 1e-10,
+      ftol_rel = 1e-8,
       xtol_rel = 1e-6,
       maxeval = 1e4,
       print_level = 0,
       algorithm = "NLOPT_LD_LBFGS",
-      maxeval_em_dnm = 10
+      maxeval_em_dnm = 100
     ),
-    list(...)
+    control
   )
-  control_restart <- utils::modifyList(control, control_restart)
+  control_restart <- utils::modifyList(
+    list(
+      ftol_abs = 0,
+      xtol_abs = 0,
+      ftol_rel = 1e-6,
+      xtol_rel = 1e-4,
+      maxeval = 1e4,
+      print_level = 0,
+      algorithm = "NLOPT_LD_LBFGS",
+      maxeval_em_dnm = 100
+    ),
+    control_restart
+  )
   stopifnot_(
     identical(control$algorithm, control_restart$algorithm),
     c("Cannot mix different algorithms for multistart and final optimization.",
       "Found algorithm {.val {control$algorithm}} for final optimization and 
       {.val {control_restart$algorithm}} for multistart.")
   )
-  control_mstep <- utils::modifyList(control, control_mstep)
-  
+  control_mstep <- utils::modifyList(
+    list(
+      ftol_abs = 0,
+      xtol_abs = 0,
+      ftol_rel = 1e-6,
+      xtol_rel = 1e-4,
+      maxeval = 100,
+      print_level = 0
+    ),
+    control_mstep
+  )
   if (identical(inits, "random")) {
     inits <- list(
       initial_probs = NULL, 
@@ -79,6 +100,12 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
       model, inits, init_sd, restarts, lambda,  bound, control, 
       control_restart, control_mstep, save_all_solutions 
     )
+  }
+  out$controls$control <- control
+  out$controls$restart <- control_restart
+  out$controls$mstep <- control_mstep
+  if (control$print_level > 0) {
+    return_msg(out$estimation_results$return_code)
   }
   out
 }

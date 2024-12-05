@@ -64,8 +64,8 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
     return_codes <- unlist(lapply(out, "[[", "return_code"))
     if (all(return_codes < 0)) {
       warning_(
-        c("All optimizations terminated due to error.",
-          "Error of first restart: ", error_msg(return_codes[1]))
+        c("All restarts terminated due to error.",
+          "Error of first restart: ", return_msg(return_codes[1]))
       )
     }
     logliks <- unlist(lapply(out, "[[", "logLik"))
@@ -104,7 +104,7 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
   }
   if (out$return_code < 0) {
     warning_(
-      paste("Optimization terminated due to error:", error_msg(out$return_code))
+      paste("Optimization terminated due to error:", return_msg(out$return_code))
     )
   }
   model$etas$pi[] <- out$eta_pi

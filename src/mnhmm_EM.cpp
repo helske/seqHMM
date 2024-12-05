@@ -34,7 +34,6 @@ double mnhmm_base::objective_omega(const arma::vec& x, arma::vec& grad) {
         return maxval;
       }
       value -= val;
-      // Only update grad if it's non-empty (i.e., for gradient-based optimization)
       diff.zeros();
       diff.rows(idx) = counts(idx) - omega.rows(idx);
       grad -= arma::vectorise(tQd * diff * X_omega.col(i).t());
@@ -52,7 +51,7 @@ void mnhmm_base::mstep_omega(const double xtol_abs, const double ftol_abs,
   mstep_return_code = 0;
   // Use closed form solution
   if (icpt_only_omega && lambda < 1e-12) {
-    eta_omega = Qd.t() * log(arma::sum(E_omega, 1));
+    eta_omega = Qd.t() * log(arma::sum(E_omega, 1) + arma::datum::eps);
     if (!eta_omega.is_finite()) {
       mstep_return_code = -400;
       return;
@@ -66,31 +65,34 @@ void mnhmm_base::mstep_omega(const double xtol_abs, const double ftol_abs,
     arma::vec grad_vec(grad, n, false, true);
     return self->objective_omega(x_vec, grad_vec);
   };
-  
-  arma::vec x_omega = arma::vectorise(eta_omega);
-  nlopt_opt opt_omega = nlopt_create(NLOPT_LD_LBFGS, x_omega.n_elem);
-  nlopt_set_min_objective(opt_omega, objective_omega_wrapper, this);
-  nlopt_set_xtol_abs1(opt_omega, xtol_abs);
-  nlopt_set_ftol_abs(opt_omega, ftol_abs);
-  nlopt_set_xtol_rel(opt_omega, xtol_rel);
-  nlopt_set_ftol_rel(opt_omega, ftol_rel);
-  nlopt_set_maxeval(opt_omega, maxeval);
-  nlopt_set_lower_bounds1(opt_omega, -bound);
-  nlopt_set_upper_bounds1(opt_omega, bound);
+  arma::vec x(eta_omega.memptr(), eta_omega.n_elem, false, true);
+  nlopt_opt opt = nlopt_create(NLOPT_LD_LBFGS, x.n_elem);
+  nlopt_set_min_objective(opt, objective_omega_wrapper, this);
+  nlopt_set_xtol_abs1(opt, xtol_abs);
+  nlopt_set_ftol_abs(opt, ftol_abs);
+  nlopt_set_xtol_rel(opt, xtol_rel);
+  nlopt_set_ftol_rel(opt, ftol_rel);
+  nlopt_set_maxeval(opt, maxeval);
+  nlopt_set_lower_bounds1(opt, -bound);
+  nlopt_set_upper_bounds1(opt, bound);
   double minf;
   mstep_iter = 0;
-  int return_code = nlopt_optimize(opt_omega, x_omega.memptr(), &minf);
+  int return_code = nlopt_optimize(opt, x.memptr(), &minf);
+  if (return_code == -1) {
+    arma::vec grad(x.n_elem);
+    objective_omega(x, grad);
+    if (arma::norm(grad) < 1e-6) {
+      return_code = 7;
+    }
+  }
   if (print_level > 2 && return_code > 0) {
     Rcpp::Rcout<<"M-step of cluster probabilities ended with return code "<<
       return_code<<" after "<<mstep_iter + 1<<" iterations."<<std::endl;
   }
   if (return_code < 0) {
     mstep_return_code = return_code - 410;
-    nlopt_destroy(opt_omega);
-    return;
   }
-  eta_omega = arma::mat(x_omega.memptr(), D - 1, K_omega);
-  nlopt_destroy(opt_omega);
+  nlopt_destroy(opt);
 }
 
 double mnhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
@@ -134,7 +136,7 @@ void mnhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
   // Use closed form solution
   if (icpt_only_pi && lambda < 1e-12) {
     for (arma::uword d = 0; d < D; d++) {
-      eta_pi(d) = Qs.t() * log(arma::sum(E_Pi(d), 1));
+      eta_pi(d) = Qs.t() * log(arma::sum(E_Pi(d), 1) + arma::datum::eps);
       if (!eta_pi(d).is_finite()) {
         mstep_return_code = -100;
         return;
@@ -150,36 +152,42 @@ void mnhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
     return self->objective_pi(x_vec, grad_vec);
   };
   
-  arma::vec x_pi = arma::vectorise(eta_pi(0));
-  nlopt_opt opt_pi = nlopt_create(NLOPT_LD_LBFGS, x_pi.n_elem);
-  nlopt_set_min_objective(opt_pi, objective_pi_wrapper, this);
-  nlopt_set_xtol_abs1(opt_pi, xtol_abs);
-  nlopt_set_ftol_abs(opt_pi, ftol_abs);
-  nlopt_set_xtol_rel(opt_pi, xtol_rel);
-  nlopt_set_ftol_rel(opt_pi, ftol_rel);
-  nlopt_set_maxeval(opt_pi, maxeval);
-  nlopt_set_lower_bounds1(opt_pi, -bound);
-  nlopt_set_upper_bounds1(opt_pi, bound);
+  arma::vec x = arma::vectorise(eta_pi(0));
+  nlopt_opt opt = nlopt_create(NLOPT_LD_LBFGS, x.n_elem);
+  nlopt_set_min_objective(opt, objective_pi_wrapper, this);
+  nlopt_set_xtol_abs1(opt, xtol_abs);
+  nlopt_set_ftol_abs(opt, ftol_abs);
+  nlopt_set_xtol_rel(opt, xtol_rel);
+  nlopt_set_ftol_rel(opt, ftol_rel);
+  nlopt_set_maxeval(opt, maxeval);
+  nlopt_set_lower_bounds1(opt, -bound);
+  nlopt_set_upper_bounds1(opt, bound);
   double minf;
   int return_code;
   int mstep_iter;
   for (arma::uword d = 0; d < D; d++) {
     current_d = d;
-    x_pi = arma::vectorise(eta_pi(d));
+    arma::vec x(eta_pi(d).memptr(), eta_pi.n_elem, false, true);
     mstep_iter = 0;
-    return_code = nlopt_optimize(opt_pi, x_pi.memptr(), &minf);
+    return_code = nlopt_optimize(opt, x.memptr(), &minf);
+    if (return_code == -1) {
+      arma::vec grad(x.n_elem);
+      objective_pi(x, grad);
+      if (arma::norm(grad) < 1e-6) {
+        return_code = 7;
+      }
+    }
     if (print_level > 2 && return_code > 0) {
       Rcpp::Rcout<<"M-step of initial probabilities ended with return code "<<
         return_code<<" after "<<mstep_iter + 1<<" iterations."<<std::endl;
     }
     if (return_code < 0) {
       mstep_return_code = return_code - 110;
-      nlopt_destroy(opt_pi);
+      nlopt_destroy(opt);
       return;
     }
-    eta_pi(d) = arma::mat(x_pi.memptr(), S - 1, K_pi);
   }
-  nlopt_destroy(opt_pi);
+  nlopt_destroy(opt);
 }
 
 double mnhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
@@ -242,7 +250,7 @@ void mnhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
         for (arma::uword k = 0; k < S; k++) { //to
           tmp(k) = arma::accu(E_A(s, d).row(k));
         }
-        eta_A(d).slice(s).col(0) = Qs.t() * log(tmp);
+        eta_A(d).slice(s).col(0) = Qs.t() * log(tmp + arma::datum::eps);
         if (!eta_A(d).slice(s).col(0).is_finite()) {
           mstep_return_code = -200;
           return;
@@ -260,16 +268,16 @@ void mnhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
     return self->objective_A(x_vec, grad_vec);
   };
   
-  arma::vec x_A(eta_A(0).slice(0).n_elem);
-  nlopt_opt opt_A = nlopt_create(NLOPT_LD_LBFGS, x_A.n_elem);
-  nlopt_set_min_objective(opt_A, objective_A_wrapper, this);
-  nlopt_set_xtol_abs1(opt_A, xtol_abs);
-  nlopt_set_ftol_abs(opt_A, ftol_abs);
-  nlopt_set_xtol_rel(opt_A, xtol_rel);
-  nlopt_set_ftol_rel(opt_A, ftol_rel);
-  nlopt_set_maxeval(opt_A, maxeval);
-  nlopt_set_lower_bounds1(opt_A, -bound);
-  nlopt_set_upper_bounds1(opt_A, bound);
+  arma::vec x(eta_A(0).slice(0).n_elem);
+  nlopt_opt opt = nlopt_create(NLOPT_LD_LBFGS, x.n_elem);
+  nlopt_set_min_objective(opt, objective_A_wrapper, this);
+  nlopt_set_xtol_abs1(opt, xtol_abs);
+  nlopt_set_ftol_abs(opt, ftol_abs);
+  nlopt_set_xtol_rel(opt, xtol_rel);
+  nlopt_set_ftol_rel(opt, ftol_rel);
+  nlopt_set_maxeval(opt, maxeval);
+  nlopt_set_lower_bounds1(opt, -bound);
+  nlopt_set_upper_bounds1(opt, bound);
   double minf;
   int return_code;
   int mstep_iter;
@@ -277,9 +285,16 @@ void mnhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
     current_d = d;
     for (arma::uword s = 0; s < S; s++) {
       current_s = s;
-      x_A = arma::vectorise(eta_A(d).slice(s));
+      arma::vec x(eta_A(d).slice(s).memptr(), eta_A(d).slice(s).n_elem, false, true);
       mstep_iter = 0;
-      return_code = nlopt_optimize(opt_A, x_A.memptr(), &minf);
+      return_code = nlopt_optimize(opt, x.memptr(), &minf);
+      if (return_code == -1) {
+        arma::vec grad(x.n_elem);
+        objective_A(x, grad);
+        if (arma::norm(grad) < 1e-6) {
+          return_code = 7;
+        }
+      }
       if (print_level > 2 && return_code > 0) {
         Rcpp::Rcout<<"M-step of transition probabilities of state "<<s + 1<<
           " ended with return code "<<return_code<<" after "<<mstep_iter + 1<<
@@ -287,13 +302,12 @@ void mnhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
       }
       if (return_code < 0) {
         mstep_return_code = return_code - 210;
-        nlopt_destroy(opt_A);
+        nlopt_destroy(opt);
         return;
       }
-      eta_A(d).slice(s) = arma::mat(x_A.memptr(), S - 1, K_A);
     }
   }
-  nlopt_destroy(opt_A);
+  nlopt_destroy(opt);
 }
 
 double mnhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
@@ -358,7 +372,7 @@ void mnhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
             }
           }
         }
-        eta_B(d).slice(s).col(0) = Qm.t() * log(tmp);
+        eta_B(d).slice(s).col(0) = Qm.t() * log(tmp + arma::datum::eps);
         if (!eta_B(d).slice(s).col(0).is_finite()) {
           mstep_return_code = -300;
           return;
@@ -374,16 +388,16 @@ void mnhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
     arma::vec grad_vec(grad, n, false, true);
     return self->objective_B(x_vec, grad_vec);
   };
-  arma::vec x_B(eta_B(0).slice(0).n_elem);
-  nlopt_opt opt_B = nlopt_create(NLOPT_LD_LBFGS, x_B.n_elem);
-  nlopt_set_min_objective(opt_B, objective_B_wrapper, this);
-  nlopt_set_xtol_abs1(opt_B, xtol_abs);
-  nlopt_set_ftol_abs(opt_B, ftol_abs);
-  nlopt_set_xtol_rel(opt_B, xtol_rel);
-  nlopt_set_ftol_rel(opt_B, ftol_rel);
-  nlopt_set_maxeval(opt_B, maxeval);
-  nlopt_set_lower_bounds1(opt_B, -bound);
-  nlopt_set_upper_bounds1(opt_B, bound);
+  arma::vec x(eta_B(0).slice(0).n_elem);
+  nlopt_opt opt = nlopt_create(NLOPT_LD_LBFGS, x.n_elem);
+  nlopt_set_min_objective(opt, objective_B_wrapper, this);
+  nlopt_set_xtol_abs1(opt, xtol_abs);
+  nlopt_set_ftol_abs(opt, ftol_abs);
+  nlopt_set_xtol_rel(opt, xtol_rel);
+  nlopt_set_ftol_rel(opt, ftol_rel);
+  nlopt_set_maxeval(opt, maxeval);
+  nlopt_set_lower_bounds1(opt, -bound);
+  nlopt_set_upper_bounds1(opt, bound);
   double minf;
   int return_code;
   int mstep_iter;
@@ -391,9 +405,16 @@ void mnhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
     current_d = d;
     for (arma::uword s = 0; s < S; s++) {
       current_s = s;
-      x_B = arma::vectorise(eta_B(d).slice(s));
+      arma::vec x(eta_B(d).slice(s).memptr(), eta_B(d).slice(s).n_elem, false, true);
       mstep_iter = 0;
-      return_code = nlopt_optimize(opt_B, x_B.memptr(), &minf);
+      return_code = nlopt_optimize(opt, x.memptr(), &minf);
+      if (return_code == -1) {
+        arma::vec grad(x.n_elem);
+        objective_B(x, grad);
+        if (arma::norm(grad) < 1e-6) {
+          return_code = 7;
+        }
+      }
       if (print_level > 2 && return_code > 0) {
         Rcpp::Rcout<<"M-step of emission probabilities of state "<<s + 1<<
           " ended with return code "<<return_code<<" after "<<mstep_iter + 1<<
@@ -401,13 +422,12 @@ void mnhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
       }
       if (return_code < 0) {
         mstep_return_code = return_code - 310;
-        nlopt_destroy(opt_B);
+        nlopt_destroy(opt);
         return;
       }
-      eta_B(d).slice(s) = arma::mat(x_B.memptr(), M - 1, K_B);
     }
   }
-  nlopt_destroy(opt_B);
+  nlopt_destroy(opt);
 }
 
 double mnhmm_mc::objective_B(const arma::vec& x, arma::vec& grad) {
@@ -475,7 +495,7 @@ void mnhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
               }
             }
           }
-          eta_B(c, d).slice(s).col(0) = Qm(c).t() * log(tmp);
+          eta_B(c, d).slice(s).col(0) = Qm(c).t() * log(tmp + arma::datum::eps);
           if (!eta_B(c, d).slice(s).col(0).is_finite()) {
             mstep_return_code = -300;
             return;
@@ -496,24 +516,31 @@ void mnhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
   int return_code;
   int mstep_iter;
   for (arma::uword c = 0; c < C; c++) {
-    arma::vec x_B(eta_B(c, 0).slice(0).n_elem);
-    nlopt_opt opt_B = nlopt_create(NLOPT_LD_LBFGS, x_B.n_elem);
-    nlopt_set_min_objective(opt_B, objective_B_wrapper, this);
-    nlopt_set_xtol_abs1(opt_B, xtol_abs);
-    nlopt_set_ftol_abs(opt_B, ftol_abs);
-    nlopt_set_xtol_rel(opt_B, xtol_rel);
-    nlopt_set_ftol_rel(opt_B, ftol_rel);
-    nlopt_set_maxeval(opt_B, maxeval);
-    nlopt_set_lower_bounds1(opt_B, -bound);
-    nlopt_set_upper_bounds1(opt_B, bound);
+    arma::vec x(eta_B(c, 0).slice(0).n_elem);
+    nlopt_opt opt = nlopt_create(NLOPT_LD_LBFGS, x.n_elem);
+    nlopt_set_min_objective(opt, objective_B_wrapper, this);
+    nlopt_set_xtol_abs1(opt, xtol_abs);
+    nlopt_set_ftol_abs(opt, ftol_abs);
+    nlopt_set_xtol_rel(opt, xtol_rel);
+    nlopt_set_ftol_rel(opt, ftol_rel);
+    nlopt_set_maxeval(opt, maxeval);
+    nlopt_set_lower_bounds1(opt, -bound);
+    nlopt_set_upper_bounds1(opt, bound);
     current_c = c;
     for (arma::uword d = 0; d < D; d++) {
       current_d = d;
       for (arma::uword s = 0; s < S; s++) {
         current_s = s;
-        x_B = arma::vectorise(eta_B(c, d).slice(s));
+        arma::vec x(eta_B(c, d).slice(s).memptr(), eta_B(c, d).slice(s).n_elem, false, true);
         mstep_iter = 0;
-        return_code = nlopt_optimize(opt_B, x_B.memptr(), &minf);
+        return_code = nlopt_optimize(opt, x.memptr(), &minf);
+        if (return_code == -1) {
+          arma::vec grad(x.n_elem);
+          objective_B(x, grad);
+          if (arma::norm(grad) < 1e-6) {
+            return_code = 7;
+          }
+        }
         if (print_level > 2 && return_code > 0) {
           Rcpp::Rcout<<"M-step of emission probabilities of state "<<s + 1<<
             " and channel "<<c<<" ended with return code "<<
@@ -522,13 +549,12 @@ void mnhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
         }
         if (return_code < 0) {
           mstep_return_code = return_code - 310;
-          nlopt_destroy(opt_B);
+          nlopt_destroy(opt);
           return;
         }
-        eta_B(c, d).slice(s) = arma::mat(x_B.memptr(), M(c) - 1, K_B);
       }
     }
-    nlopt_destroy(opt_B);
+    nlopt_destroy(opt);
   }
 }
 // [[Rcpp::export]]

@@ -101,6 +101,10 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
         x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
         ub = rep(bound, length(init)), opts = control_restart
       )
+      if (fit$status == -1 && need_grad) {
+        grad_norm <- sqrt(sum(objectivef(fit$solution)$gradient^2))
+        if (grad_norm < 1e-6) fit$status <- 6
+      }
       p()
       fit
     },
@@ -111,8 +115,8 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
     successful <- which(return_codes > 0)
     if (length(successful) == 0) {
       warning_(
-        c("All optimizations terminated due to error.",
-          "Error of first restart: ", error_msg(return_codes[1]),
+        c("All restarts terminated due to error.",
+          "Error of first restart: ", return_msg(return_codes[1]),
           "Trying once more. ")
       )
       init <- unlist(create_initial_values(inits, model, init_sd))
@@ -131,9 +135,13 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
     x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
     ub = rep(bound, length(init)), opts = control
   )
+  if (out$status == -1 && need_grad) {
+    grad_norm <- sqrt(sum(objectivef(out$solution)$gradient^2))
+    if (grad_norm < 1e-6) out$status <- 6
+  }
   if (out$status < 0) {
     warning_(
-      paste("Optimization terminated due to error:", error_msg(out$status))
+      paste("Optimization terminated due to error:", return_msg(out$status))
     )
     loglik <- NaN
   } else {

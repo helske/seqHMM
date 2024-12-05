@@ -1,3 +1,88 @@
+#' Convert return code from estimate_nhmm and estimate_mnhmm to text
+#' 
+#' @param code Integer return code from `model$estimation_results$return_code`.
+#' @return Code translated to informative message.
+return_msg <- function(code) {
+  
+  msg <- paste0("Code ", code, "is not possible.")
+  if (code < -1000) {
+    x <- "Initial EM step failed\n. "
+    code <- code + 1000
+  } else {
+    x <- ""
+  }
+  gamma <- NULL
+  if (code %in% -c(100, 111:114)) gamma <- "gamma_pi"
+  if (code %in% -c(200, 211:214)) gamma <- "gamma_A"
+  if (code %in% -c(300, 311:314)) gamma <- "gamma_B"
+  if (code %in% -c(400, 411:414)) gamma <- "gamma_omega"
+  if (!is.null(gamma) && code %in% (-100 * (1:4))) {
+    return(paste0(x,
+                  "Error in M-step of ", gamma, " encountered expected count of zero. ",
+                  "Try increasing the regularization via lambda or adjust parameter bounds ",
+                  "to avoid extreme probabilities.")
+    )
+  }
+  
+  if (!(code %in% -(1:4))) {
+    mstep <- paste0("Error in M-step of ", gamma, ". ")
+  } else {
+    mstep <- ""
+  }
+  
+  e <- c(0, seq(110, 410, by = 100))
+  if (code %in% -(1 + e)) {
+    msg <- paste0(mstep, "NLOPT_FAILURE: Generic failure code.")
+  }
+  if (code %in% -(2 + e)) {
+    msg <- paste0(
+      mstep, 
+      "NLOPT_INVALID_ARGS: Invalid arguments (e.g., lower bounds are ",
+      "bigger than upper bounds, an unknown algorithm was specified)."
+    )
+  }
+  if (code %in% -(3 + e)) {
+    msg <- paste0(
+      mstep, "NLOPT_OUT_OF_MEMORY: Ran out of memory."
+    )
+  }
+  if (code %in% -(4 + e)) {
+    msg <- paste0(
+      mstep,
+      "NLOPT_ROUNDOFF_LIMITED: Halted because roundoff errors limited progress."
+    )
+  }
+  if (code == 0) {
+    msg <- "Generic success."
+  }
+  if (code == 1) {
+    msg <- "Generic success."
+  }
+  if (code == 2) {
+    msg <- "Optimization stopped because stopval was reached."
+  }
+  if (code == 3) {
+    msg <- "Optimization stopped because ftol_rel or ftol_abs was reached."
+  }
+  if (code == 4) {
+    msg <- "Optimization stopped because xtol_rel or xtol_abs was reached."
+  }
+  if (code == 5) {
+    msg <- "Optimization stopped because maxeval was reached."
+  }
+  if (code == 6) {
+    msg <- " Optimization stopped because maxtime was reached."  
+  }
+  if (code == 7) {
+    msg <- paste0(
+      "NLopt terminated with generic error code -1. ", 
+      "Gradient norm was less than 1e-6 likely converged successfully."
+    )
+  }
+  paste0(x, msg)
+}
+
+
 no_itcp_idx <- function(x) {
   which(arrayInd(seq_along(x), dim(x))[ , 2] != 1)
 }
@@ -140,57 +225,4 @@ create_emissionArray <- function(model) {
     emissionArray[, 1:model$n_symbols[i], i] <- model$emission_probs[[i]]
   }
   emissionArray
-}
-#' Convert error message to text
-#' @noRd
-error_msg <- function(error) {
-  
-  if (error < -1000) {
-    x <- "Initial EM step failed\n. "
-    error <- error + 1000
-  } else {
-    x <- ""
-  }
-  gamma <- NULL
-  if (error %in% -c(100, 111:114)) gamma <- "gamma_pi"
-  if (error %in% -c(200, 211:214)) gamma <- "gamma_A"
-  if (error %in% -c(300, 311:314)) gamma <- "gamma_B"
-  if (error %in% -c(400, 411:414)) gamma <- "gamma_omega"
-  if (!is.null(gamma) && error %in% (-100 * (1:4))) {
-    return(paste0(x,
-      "Error in M-step of ", gamma, " encountered expected count of zero. ",
-      "Try increasing the regularization via lambda or adjust parameter bounds ",
-      "to avoid extreme probabilities.")
-    )
-  }
-  
-  if (!(error %in% -(1:4))) {
-    mstep <- paste0("Error in M-step of ", gamma, ". ")
-  } else {
-    mstep <- ""
-  }
-  
-  e <- c(0, seq(110, 410, by = 100))
-  if (error %in% -(1 + e)) {
-    msg <- paste0(mstep, "NLOPT_FAILURE: Generic failure code.")
-  }
-  if (error %in% -(2 + e)) {
-    msg <- paste0(
-      mstep, 
-      "NLOPT_INVALID_ARGS: Invalid arguments (e.g., lower bounds are ",
-      "bigger than upper bounds, an unknown algorithm was specified)."
-    )
-  }
-  if (error %in% -(3 + e)) {
-    msg <- paste0(
-      mstep, "NLOPT_OUT_OF_MEMORY: Ran out of memory."
-    )
-  }
-  if (error %in% -(4 + e)) {
-    msg <- paste0(
-      mstep,
-      "NLOPT_ROUNDOFF_LIMITED: Halted because roundoff errors limited progress."
-    )
-  }
-  paste0(x, msg)
 }

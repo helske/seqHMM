@@ -21,9 +21,11 @@ estimate_mnhmm(
   inits = "random",
   init_sd = 2,
   restarts = 0L,
-  lambda = 1e-04,
+  lambda = 0,
   method = "EM-DNM",
   bound = 50,
+  control_restart = list(),
+  control_mstep = list(),
   store_data = TRUE,
   ...
 )

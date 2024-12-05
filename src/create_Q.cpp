@@ -40,6 +40,10 @@ arma::mat compute_cs(const arma::uword n) {
   }
   return cs;
 }
+// same as
+// arma::mat Q(n, n, arma::fill::eye);
+// Q.row(n - 1).fill(-1);
+// and QR of Q
 // [[Rcpp::export]]
 arma::mat create_Q(const arma::uword n) {
   arma::mat cs = compute_cs(n - 1);

@@ -22,22 +22,26 @@
 #' standardardized before optimization.
 #'  
 #' By default, the convergence is claimed when the relative 
-#' change of the objective function is less than `1e-10`, or the 
+#' change of the objective function is less than `1e-8`, or the 
 #' relative change of the parameters is less than `1e-6`. These can be changed
 #' by passing arguments `ftol_rel` and `xtol_rel` via `...`. These, as well as 
-#' arguments `ftol_abs` and `xtol_abs`  for absolute changes, `maxeval` 
-#' (maximum number of iterations, 1e4 by default), and `print_level` (default 
-#' is `0`, no console output of  optimization, larger values are more verbose), 
-#' are used by the chosen main optimization method. The number of initial EM 
-#' iterations in `EM-DNM` can be set using argument `maxeval_em_dnm` (default 
-#' is 10), and algorithm for direct numerical optimization can be defined using 
-#' argument `algorithm` (see [nloptr::nloptr()] for possible options). It is also 
-#' possible to separately control these stopping criteria for the multistart 
-#' phase by defining (some of) them via argument `control_restart` which takes 
-#' a list such as `list(ftol_rel = 0.01, print_level = 1)`. Additionally, same 
-#' options can be defined separately for the M-step of EM algorithm via list 
-#' `control_mstep`. By default, `control_restart` and `control_mstep` match the 
-#' the main options defined via `...`. 
+#' arguments `ftol_abs` and `xtol_abs` for absolute changes 
+#' (`0` by default), `maxeval` (maximum number of iterations, 1e4 by default), 
+#' and `print_level` (default is `0`, no console output of  optimization, 
+#' larger values are more verbose), are used by the chosen main optimization 
+#' method. The number of initial EM iterations in `EM-DNM` can be set using 
+#' argument `maxeval_em_dnm` (default is 100), and algorithm for direct
+#' numerical optimization can be defined using argument `algorithm` 
+#' (see [nloptr::nloptr()] for possible options).
+#' 
+#' For controlling these stopping criteria for the multistart phase, argument 
+#' `control_restart` takes a list such as `list(ftol_rel = 0.01, print_level = 1)`. 
+#' Default are as in the case of main optimization (which is always run once a
+#' fter the restarts, using best solution from restarts as initial value),
+#' except that `ftol_rel = 1e-6` and that `xtol_rel = 1e-4`.
+#' Additionally, same options can be defined separately for the M-step of EM 
+#' algorithm via list `control_mstep`. For `control_mstep`, the 
+#' default value are `ftol_rel = 1e-6`, `xtol_rel = 1e-4`, and `maxeval = 100`.
 #' 
 #' @references Steven G. Johnson, The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt
 #' @param observations Either the name of the response variable in `data`, or 
@@ -117,9 +121,8 @@ estimate_nhmm <- function(
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, 
     channel_names = NULL, inits = "random", init_sd = 2, restarts = 0L, 
-    lambda = 1e-4, method = "EM-DNM", bound = 50, 
-    store_data = TRUE, 
-    ...) {
+    lambda = 0, method = "EM-DNM", bound = 50, control_restart = list(), 
+    control_mstep = list(), store_data = TRUE, ...) {
   
   call <- match.call()
   model <- build_nhmm(
@@ -134,8 +137,10 @@ estimate_nhmm <- function(
   if (store_data) {
     model$data <- data
   }
+  control <- list(...)
   start_time <- proc.time()
-  out <- fit_nhmm(model, inits, init_sd, restarts, lambda, method, bound, ...)
+  out <- fit_nhmm(model, inits, init_sd, restarts, lambda, method, bound, 
+                  control, control_restart, control_mstep)
   end_time <- proc.time()
   out$estimation_results$time <- end_time - start_time
   attr(out, "call") <- call

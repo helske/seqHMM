@@ -18,9 +18,11 @@ estimate_nhmm(
   inits = "random",
   init_sd = 2,
   restarts = 0L,
-  lambda = 1e-04,
+  lambda = 0,
   method = "EM-DNM",
   bound = 50,
+  control_restart = list(),
+  control_mstep = list(),
   store_data = TRUE,
   ...
 )
@@ -127,22 +129,26 @@ non-missing observations (\code{nobs(model)}), and the the covariate data is
 standardardized before optimization.
 
 By default, the convergence is claimed when the relative
-change of the objective function is less than \code{1e-10}, or the
+change of the objective function is less than \code{1e-8}, or the
 relative change of the parameters is less than \code{1e-6}. These can be changed
 by passing arguments \code{ftol_rel} and \code{xtol_rel} via \code{...}. These, as well as
-arguments \code{ftol_abs} and \code{xtol_abs}  for absolute changes, \code{maxeval}
-(maximum number of iterations, 1e4 by default), and \code{print_level} (default
-is \code{0}, no console output of  optimization, larger values are more verbose),
-are used by the chosen main optimization method. The number of initial EM
-iterations in \code{EM-DNM} can be set using argument \code{maxeval_em_dnm} (default
-is 10), and algorithm for direct numerical optimization can be defined using
-argument \code{algorithm} (see \code{\link[nloptr:nloptr]{nloptr::nloptr()}} for possible options). It is also
-possible to separately control these stopping criteria for the multistart
-phase by defining (some of) them via argument \code{control_restart} which takes
-a list such as \code{list(ftol_rel = 0.01, print_level = 1)}. Additionally, same
-options can be defined separately for the M-step of EM algorithm via list
-\code{control_mstep}. By default, \code{control_restart} and \code{control_mstep} match the
-the main options defined via \code{...}.
+arguments \code{ftol_abs} and \code{xtol_abs} for absolute changes
+(\code{0} by default), \code{maxeval} (maximum number of iterations, 1e4 by default),
+and \code{print_level} (default is \code{0}, no console output of  optimization,
+larger values are more verbose), are used by the chosen main optimization
+method. The number of initial EM iterations in \code{EM-DNM} can be set using
+argument \code{maxeval_em_dnm} (default is 100), and algorithm for direct
+numerical optimization can be defined using argument \code{algorithm}
+(see \code{\link[nloptr:nloptr]{nloptr::nloptr()}} for possible options).
+
+For controlling these stopping criteria for the multistart phase, argument
+\code{control_restart} takes a list such as \code{list(ftol_rel = 0.01, print_level = 1)}.
+Default are as in the case of main optimization (which is always run once a
+fter the restarts, using best solution from restarts as initial value),
+except that \code{ftol_rel = 1e-6} and that \code{xtol_rel = 1e-4}.
+Additionally, same options can be defined separately for the M-step of EM
+algorithm via list \code{control_mstep}. For \code{control_mstep}, the
+default value are \code{ftol_rel = 1e-6}, \code{xtol_rel = 1e-4}, and \code{maxeval = 100}.
 }
 \examples{
 data("mvad", package = "TraMineR")
