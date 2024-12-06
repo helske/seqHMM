@@ -162,7 +162,7 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
     gamma_B = lapply(out, "[[", "B")
   )
   boot <- lapply(boot,  function(x) x[lengths(x) > 0])
-  if (length(boot) < nsim) {
+  if (length(boot[[1]]) < nsim) {
     warning_(
       paste0(
         "Estimation in some of the bootstrap samples failed. ",

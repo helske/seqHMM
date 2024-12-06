@@ -126,9 +126,6 @@ double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
         }
         double val = arma::dot(counts.rows(idx), log_A1.rows(idx));
         if (!std::isfinite(val)) {
-          Rcpp::Rcout<<"nonfinite val "<<val<<std::endl;
-          Rcpp::Rcout<<A1<<val<<std::endl;
-          Rcpp::Rcout<<log_A1<<val<<std::endl;
           grad.zeros();
           return arma::datum::inf;
         }
@@ -136,11 +133,6 @@ double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
         diff.zeros();
         diff.rows(idx) = counts.rows(idx) - sum_ea * A1.rows(idx);
         grad -= arma::vectorise(tQs * diff * X_A.slice(i).col(t).t());
-        if(!grad.is_finite()) {
-          Rcpp::Rcout<<"nonfinite grad "<<val<<std::endl;
-          Rcpp::Rcout<<A1<<val<<std::endl;
-          Rcpp::Rcout<<log_A1<<val<<std::endl;
-        }
       }
     }
   }
