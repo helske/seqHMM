@@ -17,7 +17,7 @@ Rcpp::List ame_obs_nhmm_singlechannel(
     const arma::field<arma::mat>& boot_gamma_pi,
     const arma::field<arma::cube>& boot_gamma_A,
     const arma::field<arma::cube>& boot_gamma_B,
-    const arma::uword start, const arma::vec& probs) {
+    const arma::uword start, const arma::vec& probs, const arma::umat& idx) {
   
   arma::uword S = eta_A.n_slices;
   arma::uword M = eta_B.n_rows + 1;
@@ -40,12 +40,11 @@ Rcpp::List ame_obs_nhmm_singlechannel(
   model2.compute_state_obs_probs(start, obs_prob2, state_prob2);
   arma::mat point_estimate(M, T, arma::fill::value(arma::datum::nan));
   arma::mat diff(M, N);
-  arma::field<arma::uvec> non_na(T);
   for (arma::uword t = start - 1; t < T; t++) {
     diff = obs_prob1.col(t) - obs_prob2.col(t);
-    non_na(t) = arma::find_finite(diff.row(0));
-    if (!non_na(t).is_empty()) {
-      point_estimate.col(t) = arma::mean(diff.cols(non_na(t)), 1);
+    arma::uvec non_na = arma::find_finite(diff.row(0));
+    if (!non_na.is_empty()) {
+      point_estimate.col(t) = arma::mean(diff.cols(non_na), 1);
     }
   }
   arma::uword nsim = boot_gamma_pi.n_elem;
@@ -62,10 +61,13 @@ Rcpp::List ame_obs_nhmm_singlechannel(
       model2.gamma_A = model1.gamma_A;
       model2.gamma_B = model1.gamma_B;
       model2.compute_state_obs_probs(start, obs_prob2, state_prob2);
+      
       for (arma::uword t = start - 1; t < T; t++) {
         diff = obs_prob1.col(t) - obs_prob2.col(t);
-        if (!non_na(t).is_empty()) {
-          out.slice(i).col(t) = arma::mean(diff.cols(non_na(t)), 1);
+        diff = diff.cols(idx.col(i));
+        arma::uvec non_na = arma::find_finite(diff.row(0));
+        if (!non_na.is_empty()) {
+          out.slice(i).col(t) = arma::mean(diff.cols(non_na), 1);
         }
       }
     }
@@ -92,14 +94,14 @@ Rcpp::List ame_obs_nhmm_multichannel(
     const arma::ucube& obs, const arma::uvec Ti,
     const bool icpt_only_pi1, const bool icpt_only_A1, const bool icpt_only_B1,
     const bool iv_A1, const bool iv_B1, const bool tv_A1, const bool tv_B1,
-    const arma::mat& X1_pi, const arma::cube& X1_A,const arma::cube& X1_B,
+    const arma::mat& X1_pi, const arma::cube& X1_A, const arma::cube& X1_B,
     const bool icpt_only_pi2, const bool icpt_only_A2, const bool icpt_only_B2,
     const bool iv_A2, const bool iv_B2, const bool tv_A2, const bool tv_B2,
     const arma::mat& X2_pi, const arma::cube& X2_A,const arma::cube& X2_B,
     const arma::field<arma::mat>& boot_gamma_pi,
     const arma::field<arma::cube>& boot_gamma_A,
     const arma::field<arma::cube>& boot_gamma_B,
-    const arma::uword start, const arma::vec& probs) {
+    const arma::uword start, const arma::vec& probs, const arma::umat& idx) {
   
   arma::uword S = eta_A.n_slices;
   arma::uword C = obs.n_rows;
@@ -130,7 +132,6 @@ Rcpp::List ame_obs_nhmm_multichannel(
   model2.compute_state_obs_probs(start, obs_prob2, state_prob2);
   
   arma::field<arma::mat> point_estimate(C);
-  arma::field<arma::uvec> non_na(C, T);
   arma::field<arma::mat> diff(C);
   for (arma::uword c = 0; c < C; c++) {
     point_estimate(c) = arma::mat(M(c), T, arma::fill::value(arma::datum::nan));
@@ -138,9 +139,9 @@ Rcpp::List ame_obs_nhmm_multichannel(
     
     for (arma::uword t = start - 1; t < T; t++) {
       diff(c) = obs_prob1(c).col(t) - obs_prob2(c).col(t);
-      non_na(c, t) = arma::find_finite(diff(c).row(0));
-      if (!non_na(t).is_empty()) {
-        point_estimate(c).col(t) = arma::mean(diff(c).cols(non_na(c, t)), 1);
+      arma::uvec non_na = arma::find_finite(diff(c).row(0));
+      if (!non_na.is_empty()) {
+        point_estimate(c).col(t) = arma::mean(diff(c).cols(non_na), 1);
       }
     }
   }
@@ -168,8 +169,10 @@ Rcpp::List ame_obs_nhmm_multichannel(
     for (arma::uword c = 0; c < C; c++) {
       for (arma::uword t = start - 1; t < T; t++) {
         diff(c) = obs_prob1(c).col(t) - obs_prob2(c).col(t);
-        if (!non_na(t).is_empty()) {
-          out(c).slice(i).col(t) = arma::mean(diff(c).cols(non_na(t)), 1);
+        diff(c) = diff(c).cols(idx.col(i));
+        arma::uvec non_na = arma::find_finite(diff(c).row(0));
+        if (!non_na.is_empty()) {
+          out(c).slice(i).col(t) = arma::mean(diff(c).cols(non_na), 1);
         }
       }
     }

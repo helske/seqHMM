@@ -67,6 +67,7 @@ ame_obs.nhmm <- function(
       gamma_B = list(model$gammas$B)
     )
     probs <- 0.5
+    model$boot$idx <- matrix(seq_len(model$n_sequences), model$n_sequences, 1)
   }
   
   time <- model$time_variable
@@ -117,7 +118,7 @@ ame_obs.nhmm <- function(
       attr(X2$X_B, "iv"), attr(X2$X_A, "tv"), attr(X2$X_B, "tv"), 
       X2$X_pi, X2$X_A, X2$X_B,
       model$boot$gamma_pi, model$boot$gamma_A, model$boot$gamma_B, start_time, 
-      probs
+      probs, model$boot$idx - 1L
     )
     d <- data.frame(
       observation = model$symbol_names,
@@ -145,7 +146,7 @@ ame_obs.nhmm <- function(
       attr(X2$X_B, "iv"), attr(X2$X_A, "tv"), attr(X2$X_B, "tv"), 
       X2$X_pi, X2$X_A, X2$X_B,
       model$boot$gamma_pi, model$boot$gamma_A, model$boot$gamma_B, start_time, 
-      probs
+      probs, model$boot$idx - 1L
     )
     d <- data.frame(
       observation = model$symbol_names,

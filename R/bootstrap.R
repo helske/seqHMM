@@ -16,7 +16,7 @@ bootstrap_model <- function(model) {
     model$X_omega[] <- model$X_omega[, idx]
   }
   model$sequence_lengths <- model$sequence_lengths[idx]
-  model
+  list(model = model, idx = idx)
 }
 #' Permute states of bootstrap sample to match MLE
 #' @noRd
@@ -76,9 +76,9 @@ permute_clusters <- function(model, pcp_mle) {
 #' sequences with replacement, whereas the latter simulates new datasets based 
 #' on the model.
 #' @param method Estimation method used in bootstrapping. Defaults to `"EM-DNM"`.
-#' @param append If `TRUE` (default), in case the model already contains 
-#' bootstrap samples, new samples are appended to `model$boot`. If `FALSE`,
-#' old samples are discarded.
+#' @param append If `TRUE`, in case the model already contains 
+#' bootstrap samples, new samples are appended to `model$boot`. If `FALSE` 
+#' (default), old samples are discarded.
 #' @param ... Additional arguments to [estimate_nhmm()] or [estimate_mnhmm()].
 #' @return The original model with additional element `model$boot`.
 #' @rdname bootstrap
@@ -90,7 +90,7 @@ bootstrap_coefs <- function(model, ...) {
 #' @export
 bootstrap_coefs.nhmm <- function(model, nsim = 1000, 
                                  type = c("nonparametric", "parametric"),
-                                 method = "EM-DNM", append = TRUE, ...) {
+                                 method = "EM-DNM", append = FALSE, ...) {
   type <- match.arg(type)
   stopifnot_(
     checkmate::test_int(x = nsim, lower = 0L), 
@@ -110,9 +110,9 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
   if (type == "nonparametric") {
     out <- future.apply::future_lapply(
       seq_len(nsim), function(i) {
-        mod <- bootstrap_model(model)
+        boot_mod <- bootstrap_model(model)
         fit <- fit_nhmm(
-          mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
+          boot_mod$model, init, init_sd = 0, restarts = 0, lambda = lambda, 
           method = method, bound = bound, control = control,
           control_restart = list(), control_mstep = control_mstep
         )
@@ -122,9 +122,11 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
           fit$gammas <- NULL
         }
         p()
-        fit$gammas
+        list(gammas = fit$gammas, idx = boot_mod$idx)
       }, future.seed = TRUE
     )
+    idx <- do.call(cbind, lapply(out, "[[", "idx"))
+    out <- lapply(out, "[[", "gammas")
   } else {
     N <- model$n_sequences
     T_ <- model$sequence_lengths
@@ -171,20 +173,27 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
       )
     )
   }
+  if (type == "nonparametric") {
+    boot$idx <- idx
+  } else {
+    boot$idx <- matrix(seq_len(model$n_sequences), model$n_sequences, nsim)
+  }
   if (append && !is.null(model$boot)) {
     model$boot$gamma_pi <- c(model$boot$gamma_pi, boot$gamma_pi)
     model$boot$gamma_A <- c(model$boot$gamma_A, boot$gamma_A)
     model$boot$gamma_B <- c(model$boot$gamma_B, boot$gamma_B)
+    model$boot$idx <- cbind(model$boot$idx, idx)
   } else {
     model$boot <- boot
   }
+  
   model
 }
 #' @rdname bootstrap
 #' @export
 bootstrap_coefs.mnhmm <- function(model, nsim = 1000, 
                                   type = c("nonparametric", "parametric"),
-                                  method = "DNM", ...) {
+                                  method = "DNM", append = FALSE, ...) {
   type <- match.arg(type)
   stopifnot_(
     checkmate::test_int(x = nsim, lower = 0L), 
@@ -207,9 +216,9 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
   if (type == "nonparametric") {
     out <- future.apply::future_lapply(
       seq_len(nsim), function(i) {
-        mod <- bootstrap_model(model)
+        boot_mod <- bootstrap_model(model)
         fit <- fit_mnhmm(
-          mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
+          boot_mod$model, init, init_sd = 0, restarts = 0, lambda = lambda, 
           method = method, bound = bound, control = control,
           control_restart = list(), control_mstep = control_mstep
         )
@@ -228,9 +237,11 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
           fit$gammas <- NULL
         }
         p()
-        fit$gammas
+        list(gammas = fit$gammas, idx = boot_mod$idx)
       }, future.seed = TRUE
     )
+    idx <- do.call(cbind, lapply(out, "[[", "idx"))
+    out <- lapply(out, "[[", "gammas")
   } else {
     N <- model$n_sequences
     T_ <- model$sequence_lengths
@@ -271,6 +282,7 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
         fit$gammas
       }, future.seed = TRUE
     )
+    
   }
   boot <- list(
     gamma_pi = lapply(out, "[[", "pi"), 
@@ -288,11 +300,17 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
       )
     )
   }
+  if (type == "nonparametric") {
+    boot$idx <- idx
+  } else {
+    boot$idx <- matrix(seq_len(model$n_sequences), model$n_sequences, nsim)
+  }
   if (append && !is.null(model$boot)) {
     model$boot$gamma_pi <- c(model$boot$gamma_pi, boot$gamma_pi)
     model$boot$gamma_A <- c(model$boot$gamma_A, boot$gamma_A)
     model$boot$gamma_B <- c(model$boot$gamma_B, boot$gamma_B)
     model$boot$gamma_omega <- c(model$boot$gamma_omega, boot$gamma_omega)
+    model$boot$idx <- cbind(model$boot$idx, idx)
   } else {
     model$boot <- boot
   }

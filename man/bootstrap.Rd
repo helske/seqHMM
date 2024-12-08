@@ -13,7 +13,7 @@ bootstrap_coefs(model, ...)
   nsim = 1000,
   type = c("nonparametric", "parametric"),
   method = "EM-DNM",
-  append = TRUE,
+  append = FALSE,
   ...
 )
 
@@ -22,6 +22,7 @@ bootstrap_coefs(model, ...)
   nsim = 1000,
   type = c("nonparametric", "parametric"),
   method = "DNM",
+  append = FALSE,
   ...
 )
 }
@@ -39,9 +40,9 @@ on the model.}
 
 \item{method}{Estimation method used in bootstrapping. Defaults to \code{"EM-DNM"}.}
 
-\item{append}{If \code{TRUE} (default), in case the model already contains
-bootstrap samples, new samples are appended to \code{model$boot}. If \code{FALSE},
-old samples are discarded.}
+\item{append}{If \code{TRUE}, in case the model already contains
+bootstrap samples, new samples are appended to \code{model$boot}. If \code{FALSE}
+(default), old samples are discarded.}
 }
 \value{
 The original model with additional element \code{model$boot}.
