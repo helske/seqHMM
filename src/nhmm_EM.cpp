@@ -19,24 +19,19 @@ double nhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
   arma::mat tQs = Qs.t();
   grad.zeros();
   arma::uvec idx(S);
-  arma::vec diff(S);
   for (arma::uword i = 0; i < N; i++) {
     if (!icpt_only_pi || i == 0) {
       update_pi(i);
     }
-    const arma::vec& counts = E_Pi.col(i);
+    const arma::vec& counts = E_pi.col(i);
     idx = arma::find(counts);
-    if (idx.n_elem > 0) {
-      double val = arma::dot(counts.rows(idx), log_pi.rows(idx));
-      if (!std::isfinite(val)) {
-        grad.zeros();
-        return arma::datum::inf;
-      }
-      value -= val;
-      diff.zeros();
-      diff.rows(idx) = counts.rows(idx) - pi.rows(idx);
-      grad -= arma::vectorise(tQs * diff * X_pi.col(i).t());
+    double val = arma::dot(counts.rows(idx), log_pi.rows(idx));
+    if (!std::isfinite(val)) {
+      grad.zeros();
+      return maxval;
     }
+    value -= val;
+    grad -= arma::vectorise(tQs * (counts - pi) * X_pi.col(i).t());
   }
   grad += lambda * x;
   return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
@@ -48,7 +43,7 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
   mstep_return_code = 0;
   // Use closed form solution
   if (icpt_only_pi && lambda < 1e-12) {
-    eta_pi = Qs.t() * log(arma::sum(E_Pi, 1) + arma::datum::eps);
+    eta_pi = Qs.t() * log(arma::sum(E_pi, 1) + arma::datum::eps);
     if (!eta_pi.is_finite()) {
       mstep_return_code = -100;
       return;
@@ -109,7 +104,6 @@ double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
   }
   arma::mat tQs = Qs.t();
   arma::uvec idx(S);
-  arma::vec diff(S);
   for (arma::uword i = 0; i < N; i++) {
     if (iv_A && !tv_A) {
       A1 = softmax(gamma_Arow * X_A.slice(i).col(0));
@@ -118,22 +112,18 @@ double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
     for (arma::uword t = 0; t < (Ti(i) - 1); t++) {
       const arma::vec& counts = E_A(current_s).slice(t).col(i);
       idx = arma::find(counts);
-      if (idx.n_elem > 0) {
-        double sum_ea = arma::accu(counts.rows(idx));
-        if (tv_A) {
-          A1 = softmax(gamma_Arow * X_A.slice(i).col(t));
-          log_A1 = log(A1);
-        }
-        double val = arma::dot(counts.rows(idx), log_A1.rows(idx));
-        if (!std::isfinite(val)) {
-          grad.zeros();
-          return arma::datum::inf;
-        }
-        value -= val;
-        diff.zeros();
-        diff.rows(idx) = counts.rows(idx) - sum_ea * A1.rows(idx);
-        grad -= arma::vectorise(tQs * diff * X_A.slice(i).col(t).t());
+      double sum_ea = arma::accu(counts.rows(idx));
+      if (tv_A) {
+        A1 = softmax(gamma_Arow * X_A.slice(i).col(t));
+        log_A1 = log(A1);
       }
+      double val = arma::dot(counts.rows(idx), log_A1.rows(idx));
+      if (!std::isfinite(val)) {
+        grad.zeros();
+        return maxval;
+      }
+      value -= val;
+      grad -= arma::vectorise(tQs * (counts - sum_ea * A1) * X_A.slice(i).col(t).t());
     }
   }
   grad += lambda * x;
@@ -237,14 +227,10 @@ double nhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
           double val = e_b * log_B1(obs(t, i));
           if (!std::isfinite(val)) {
             grad.zeros();
-            return arma::datum::inf;
+            return maxval;
           }
           value -= val;
           grad -= arma::vectorise(tQm * e_b * (I.col(obs(t, i)) - B1) * X_B.slice(i).col(t).t());
-          if (!grad.is_finite()) {
-            grad.zeros();
-            return arma::datum::inf;
-          }
         }
       }
     }
@@ -353,15 +339,11 @@ double nhmm_mc::objective_B(const arma::vec& x, arma::vec& grad) {
           double val = e_b * log_B1(obs(current_c, t, i));
           if (!std::isfinite(val)) {
             grad.zeros();
-            return arma::datum::inf;
+            return maxval;
           }
           value -= val;
           grad -= arma::vectorise(tQm * e_b  * (I.col(obs(current_c, t, i)) - B1) * 
             X_B.slice(i).col(t).t());
-          if (!grad.is_finite()) {
-            grad.zeros();
-            return arma::datum::inf;
-          }
         }
       }
     }

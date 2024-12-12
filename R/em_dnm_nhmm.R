@@ -138,7 +138,7 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
         )
         if (fit$status == -1 && need_grad) {
           grad_norm <- sqrt(sum(objectivef(fit$solution)$gradient^2))
-          if (grad_norm < 1e-6) fit$status <- 6
+          if (grad_norm < 1e-6) fit$status <- 7
         }
         p()
         fit

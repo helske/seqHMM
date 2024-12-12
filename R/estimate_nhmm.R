@@ -89,10 +89,10 @@
 #' direct maximization of the log-likelihood, by default using L-BFGS. Option 
 #' `"EM-DNM"` (the default) runs first a maximum of 10 iterations of EM and 
 #' then switches to L-BFGS (but other algorithms of NLopt can be used).
-#' @param bound Positive value defining the hard bounds for the working 
-#' parameters \eqn{\eta}, which are used to avoid extreme probabilities and 
+#' @param bound Positive value defining the hard lower and upper bounds for the 
+#' working parameters \eqn{\eta}, which are used to avoid extreme probabilities and 
 #' corresponding numerical issues especially in the M-step of EM algorithm. 
-#' Default is 50, i.e., \eqn{-50<\eta<50}. Note that he bounds are not enforced 
+#' Default is `Inf´, i.e., no bounds. Note that he bounds are not enforced 
 #' for M-step in intercept-only case with `lambda = 0`.
 #' @param store_data If `TRUE` (default), original data frame passed as `data` 
 #' is stored to the model object. For large datasets, this can be set to 
@@ -121,7 +121,7 @@ estimate_nhmm <- function(
     transition_formula = ~1, emission_formula = ~1, 
     data = NULL, time = NULL, id = NULL, state_names = NULL, 
     channel_names = NULL, inits = "random", init_sd = 2, restarts = 0L, 
-    lambda = 0, method = "EM-DNM", bound = 50, control_restart = list(), 
+    lambda = 0, method = "EM-DNM", bound = Inf, control_restart = list(), 
     control_mstep = list(), store_data = TRUE, ...) {
   
   call <- match.call()

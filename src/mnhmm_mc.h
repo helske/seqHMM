@@ -141,7 +141,7 @@ struct mnhmm_mc : public mnhmm_base {
       for (arma::uword t = 0; t < Ti(i); t++) { // time
         double pp = exp(log_alpha(k, t) + log_beta(k, t) - ll);
         for (arma::uword c = 0; c < C; c++) { // channel
-          if (obs(c, t, i) < M(c)) {
+          if (obs(c, t, i) < M(c) && pp > std::numeric_limits<double>::min()) {
             E_B(c, d)(t, i, k) = pp;
           } else {
             E_B(c, d)(t, i, k) = 0.0;

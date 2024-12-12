@@ -121,6 +121,7 @@ struct mnhmm_sc : public mnhmm_base {
         }
       }
     }
+    E_B(d).clean(std::numeric_limits<double>::min());
   }
   void mstep_B(const double ftol_abs, const double ftol_rel, 
                const double xtol_abs, const double xtol_rel, 

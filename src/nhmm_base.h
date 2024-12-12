@@ -37,7 +37,7 @@ struct nhmm_base {
   arma::cube log_A;
   arma::mat log_py;
   // excepted counts for EM algorithm
-  arma::mat E_Pi;
+  arma::mat E_pi;
   arma::field<arma::cube> E_A;
   arma::uword current_s;
   const arma::uword n_obs;
@@ -63,7 +63,7 @@ struct nhmm_base {
     const arma::cube& eta_A_,
     const arma::uword n_obs_ = 0,
     const double lambda_ = 0,
-    double maxval_ = 1e6)
+    double maxval_ = arma::datum::inf)
     : S(S_), 
       X_pi(X_pi_),
       X_A(X_s_),
@@ -91,7 +91,7 @@ struct nhmm_base {
       A(S, S, T),
       log_A(S, S, T),
       log_py(S, T), 
-      E_Pi(S, N), 
+      E_pi(S, N), 
       E_A(S), 
       current_s(0),
       n_obs(n_obs_),
@@ -142,7 +142,9 @@ struct nhmm_base {
   
   void estep_pi(const arma::uword i, const arma::vec& log_alpha, 
                 const arma::vec& log_beta, const double ll) {
-    E_Pi.col(i) = arma::exp(log_alpha + log_beta - ll);
+    E_pi.col(i) = arma::exp(log_alpha + log_beta - ll);
+    // set minuscule values to zero in order to avoid numerical issues
+    E_pi.col(i).clean(std::numeric_limits<double>::min());
   }
   
   void estep_A(const arma::uword i, const arma::mat& log_alpha, 
@@ -154,6 +156,8 @@ struct nhmm_base {
             log_beta(j, t + 1) + log_py(j, t + 1) - ll);
         }
       }
+      // set minuscule values to zero in order to avoid numerical issues
+      E_A(k).col(i).clean(std::numeric_limits<double>::min());
     }
   }
   

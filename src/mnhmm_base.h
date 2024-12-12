@@ -46,7 +46,7 @@ struct mnhmm_base {
   arma::cube log_py;
   // excepted counts for EM algorithm
   arma::mat E_omega;
-  arma::field<arma::mat> E_Pi;
+  arma::field<arma::mat> E_pi;
   arma::field<arma::cube> E_A;
   arma::uword current_s;
   arma::uword current_d;
@@ -77,7 +77,7 @@ struct mnhmm_base {
     const arma::field<arma::cube>& eta_A_,
     const arma::uword n_obs_ = 0,
     const double lambda_ = 0,
-    double maxval_ = 1e6)
+    double maxval_ = arma::datum::inf)
     : S(S_),
       D(D_), 
       X_omega(X_d_),
@@ -115,7 +115,7 @@ struct mnhmm_base {
       log_A(D),
       log_py(S, T, D), 
       E_omega(D, N),
-      E_Pi(D),
+      E_pi(D),
       E_A(S, D),
       current_s(0),
       current_d(0),
@@ -127,7 +127,7 @@ struct mnhmm_base {
       log_pi(d) = arma::vec(S);
       A(d) = arma::cube(S, S, T);
       log_A(d) = arma::cube(S, S, T);
-      E_Pi(d) = arma::mat(S, N);
+      E_pi(d) = arma::mat(S, N);
       for (arma::uword s = 0; s < S; s++) {
         E_A(s, d) = arma::cube(S, N, T);
       }
@@ -234,12 +234,16 @@ struct mnhmm_base {
   void estep_omega(const arma::uword i, const arma::vec ll_i, 
                    const double ll) {
     E_omega.col(i) = arma::exp(ll_i - ll);
+    // set minuscule values to zero in order to avoid numerical issues
+    E_omega.col(i).clean(std::numeric_limits<double>::min());
   }
   
   void estep_pi(const arma::uword i, const arma::uword d, 
                 const arma::vec& log_alpha, 
                 const arma::vec& log_beta, const double ll) {
-    E_Pi(d).col(i) = arma::exp(log_alpha + log_beta - ll);
+    E_pi(d).col(i) = arma::exp(log_alpha + log_beta - ll);
+    // set minuscule values to zero in order to avoid numerical issues
+    E_pi(d).col(i).clean(std::numeric_limits<double>::min());
   }
   
   void estep_A(const arma::uword i, const arma::uword d, 
@@ -252,6 +256,8 @@ struct mnhmm_base {
             log_beta(j, t + 1) + log_py(j, t + 1, d) - ll);
         }
       }
+      // set minuscule values to zero in order to avoid numerical issues
+      E_A(k, d).col(i).clean(std::numeric_limits<double>::min());
     }
   }
   void mstep_omega(const double ftol_abs, const double ftol_rel, 

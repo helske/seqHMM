@@ -72,7 +72,7 @@ test_that("'get_probs' and 'coef' works for single-channel 'mnhmm'", {
       initial_formula = ~ z, cluster_formula = ~ z, 
       transition_formula = ~w, emission_formula = ~ w, 
       data = d, time = "time", id = "group", maxeval = 1,
-      maxeval_em_dnm = 1
+      method = "DNM"
     ),
     NA
   )

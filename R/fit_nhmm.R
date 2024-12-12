@@ -45,7 +45,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
     control_restart
   )
   stopifnot_(
-    identical(control$algorithm, control_restart$algorithm),
+    restarts == 0 || identical(control$algorithm, control_restart$algorithm),
     c("Cannot mix different algorithms for multistart and final optimization.",
       "Found algorithm {.val {control$algorithm}} for final optimization and 
       {.val {control_restart$algorithm}} for multistart.")

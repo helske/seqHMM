@@ -31,9 +31,9 @@ Rcpp::List log_objective_nhmm_singlechannel(
   arma::mat grad_pi(model.S, model.K_pi, arma::fill::zeros);
   arma::cube grad_A(model.S, model.K_A, model.S, arma::fill::zeros);
   arma::cube grad_B(model.M, model.K_B, model.S, arma::fill::zeros);
-  arma::mat grad_pi2(model.S - 1, model.K_pi, arma::fill::value(-model.maxval));
-  arma::cube grad_A2(model.S - 1, model.K_A, model.S, arma::fill::value(-model.maxval));
-  arma::cube grad_B2(model.M - 1, model.K_B, model.S, arma::fill::value(-model.maxval));
+  arma::mat grad_pi2(model.S - 1, model.K_pi, arma::fill::zeros);
+  arma::cube grad_A2(model.S - 1, model.K_A, model.S, arma::fill::zeros);
+  arma::cube grad_B2(model.M - 1, model.K_B, model.S, arma::fill::zeros);
   arma::mat tmpmat(model.S, model.S);
   arma::vec tmpvec(model.M);
   for (arma::uword i = 0; i < model.N; i++) {
@@ -122,11 +122,11 @@ Rcpp::List log_objective_nhmm_multichannel(
   for (arma::uword c = 0; c < model.C; c++) {
     grad_B(c) = arma::cube(model.M(c), model.K_B, model.S, arma::fill::zeros);
   }
-  arma::mat grad_pi2(model.S - 1, model.K_pi, arma::fill::value(-model.maxval));
-  arma::cube grad_A2(model.S - 1, model.K_A, model.S, arma::fill::value(-model.maxval));
+  arma::mat grad_pi2(model.S - 1, model.K_pi, arma::fill::zeros);
+  arma::cube grad_A2(model.S - 1, model.K_A, model.S, arma::fill::zeros);
   arma::field<arma::cube> grad_B2(model.C);
   for (arma::uword c = 0; c < model.C; c++) {
-    grad_B2(c) = arma::cube(model.M(c) - 1, model.K_B, model.S, arma::fill::value(-model.maxval));
+    grad_B2(c) = arma::cube(model.M(c) - 1, model.K_B, model.S, arma::fill::zeros);
   }
   arma::mat tmpmat(model.S, model.S);
   arma::field<arma::vec> tmpvec(model.C);
@@ -238,14 +238,14 @@ Rcpp::List log_objective_mnhmm_singlechannel(
     grad_A(d) = arma::cube(model.S, model.K_A, model.S, arma::fill::zeros);
     grad_B(d) = arma::cube(model.M, model.K_B, model.S, arma::fill::zeros);
   }
-  arma::mat grad_omega2(model.D - 1, model.K_omega, arma::fill::value(-model.maxval));
+  arma::mat grad_omega2(model.D - 1, model.K_omega, arma::fill::zeros);
   arma::field<arma::mat> grad_pi2(model.D);
   arma::field<arma::cube> grad_A2(model.D);
   arma::field<arma::cube> grad_B2(model.D);
   for (arma::uword d = 0; d < model.D; d++) {
-    grad_pi2(d) = arma::mat(model.S - 1, model.K_pi, arma::fill::value(-model.maxval));
-    grad_A2(d) = arma::cube(model.S - 1, model.K_A, model.S, arma::fill::value(-model.maxval));
-    grad_B2(d) = arma::cube(model.M - 1, model.K_B, model.S, arma::fill::value(-model.maxval));
+    grad_pi2(d) = arma::mat(model.S - 1, model.K_pi, arma::fill::zeros);
+    grad_A2(d) = arma::cube(model.S - 1, model.K_A, model.S, arma::fill::zeros);
+    grad_B2(d) = arma::cube(model.M - 1, model.K_B, model.S, arma::fill::zeros);
   }
   arma::mat tmpmat(model.S, model.S);
   arma::mat tmpmatD(model.D, model.D);
@@ -368,15 +368,15 @@ Rcpp::List log_objective_mnhmm_multichannel(
       grad_B(c, d) = arma::cube(model.M(c), model.K_B, model.S, arma::fill::zeros);
     }
   }
-  arma::mat grad_omega2(model.D - 1, model.K_omega, arma::fill::value(-model.maxval));
+  arma::mat grad_omega2(model.D - 1, model.K_omega, arma::fill::zeros);
   arma::field<arma::mat> grad_pi2(model.D);
   arma::field<arma::cube> grad_A2(model.D);
   arma::field<arma::cube> grad_B2(model.C, model.D);
   for (arma::uword d = 0; d < model.D; d++) {
-    grad_pi2(d) = arma::mat(model.S - 1, model.K_pi, arma::fill::value(-model.maxval));
-    grad_A2(d) = arma::cube(model.S - 1, model.K_A, model.S, arma::fill::value(-model.maxval));
+    grad_pi2(d) = arma::mat(model.S - 1, model.K_pi, arma::fill::zeros);
+    grad_A2(d) = arma::cube(model.S - 1, model.K_A, model.S, arma::fill::zeros);
     for (arma::uword c = 0; c < model.C; c++) {
-      grad_B2(c, d) = arma::cube(model.M(c) - 1, model.K_B, model.S, arma::fill::value(-model.maxval));
+      grad_B2(c, d) = arma::cube(model.M(c) - 1, model.K_B, model.S, arma::fill::zeros);
     }
   }
   arma::mat tmpmat(model.S, model.S);

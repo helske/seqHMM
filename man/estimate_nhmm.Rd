@@ -20,7 +20,7 @@ estimate_nhmm(
   restarts = 0L,
   lambda = 0,
   method = "EM-DNM",
-  bound = 50,
+  bound = Inf,
   control_restart = list(),
   control_mstep = list(),
   store_data = TRUE,
@@ -88,11 +88,10 @@ direct maximization of the log-likelihood, by default using L-BFGS. Option
 \code{"EM-DNM"} (the default) runs first a maximum of 10 iterations of EM and
 then switches to L-BFGS (but other algorithms of NLopt can be used).}
 
-\item{bound}{Positive value defining the hard bounds for the working
-parameters \eqn{\eta}, which are used to avoid extreme probabilities and
+\item{bound}{Positive value defining the hard lower and upper bounds for the
+working parameters \eqn{\eta}, which are used to avoid extreme probabilities and
 corresponding numerical issues especially in the M-step of EM algorithm.
-Default is 50, i.e., \eqn{-50<\eta<50}. Note that he bounds are not enforced
-for M-step in intercept-only case with \code{lambda = 0}.}
+Default is \verb{Inf´, i.e., no bounds. Note that he bounds are not enforced  for M-step in intercept-only case with }lambda = 0`.}
 
 \item{store_data}{If \code{TRUE} (default), original data frame passed as \code{data}
 is stored to the model object. For large datasets, this can be set to

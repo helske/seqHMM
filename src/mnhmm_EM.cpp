@@ -20,24 +20,19 @@ double mnhmm_base::objective_omega(const arma::vec& x, arma::vec& grad) {
   grad.zeros();
   arma::mat tQd = Qd.t();
   arma::uvec idx(D);
-  arma::vec diff(D);
   for (arma::uword i = 0; i < N; i++) {
     if (!icpt_only_omega || i == 0) {
       update_omega(i);
     }
     const arma::vec& counts = E_omega.col(i);
     idx = arma::find(counts);
-    if (idx.n_elem > 0) {
-      double val = arma::dot(counts.rows(idx), log_omega.rows(idx));
-      if (!std::isfinite(val)) {
-        grad.zeros();
-        return maxval;
-      }
-      value -= val;
-      diff.zeros();
-      diff.rows(idx) = counts(idx) - omega.rows(idx);
-      grad -= arma::vectorise(tQd * diff * X_omega.col(i).t());
+    double val = arma::dot(counts.rows(idx), log_omega.rows(idx));
+    if (!std::isfinite(val)) {
+      grad.zeros();
+      return maxval;
     }
+    value -= val;
+    grad -= arma::vectorise(tQd * (counts - omega) * X_omega.col(i).t());
   }
   grad += lambda * x;
   
@@ -104,24 +99,19 @@ double mnhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
   grad.zeros();
   arma::mat tQs = Qs.t();
   arma::uvec idx(S);
-  arma::vec diff(S);
   for (arma::uword i = 0; i < N; i++) {
     if (!icpt_only_pi || i == 0) {
       update_pi(i, current_d);
     }
-    const arma::vec& counts = E_Pi(current_d).col(i);
+    const arma::vec& counts = E_pi(current_d).col(i);
     idx = arma::find(counts);
-    if (idx.n_elem > 0) {
-      double val = arma::dot(counts.rows(idx), log_pi(current_d).rows(idx));
-      if (!std::isfinite(val)) {
-        grad.zeros();
-        return maxval;
-      }
-      value -= val;
-      diff.zeros();
-      diff.rows(idx) = counts.rows(idx) - pi(current_d).rows(idx);
-      grad -= arma::vectorise(tQs * diff * X_pi.col(i).t());
+    double val = arma::dot(counts.rows(idx), log_pi(current_d).rows(idx));
+    if (!std::isfinite(val)) {
+      grad.zeros();
+      return maxval;
     }
+    value -= val;
+    grad -= arma::vectorise(tQs * (counts - pi(current_d)) * X_pi.col(i).t());
   }
   grad += lambda * x;
   
@@ -136,7 +126,7 @@ void mnhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
   // Use closed form solution
   if (icpt_only_pi && lambda < 1e-12) {
     for (arma::uword d = 0; d < D; d++) {
-      eta_pi(d) = Qs.t() * log(arma::sum(E_Pi(d), 1) + arma::datum::eps);
+      eta_pi(d) = Qs.t() * log(arma::sum(E_pi(d), 1) + arma::datum::eps);
       if (!eta_pi(d).is_finite()) {
         mstep_return_code = -100;
         return;
@@ -199,7 +189,6 @@ double mnhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
   arma::vec log_A1(S);
   grad.zeros();
   arma::uvec idx(S);
-  arma::vec diff(S);
   if (!iv_A && !tv_A) {
     A1 = softmax(gamma_Arow * X_A.slice(0).col(0));
     log_A1 = log(A1);
@@ -213,23 +202,18 @@ double mnhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
     for (arma::uword t = 0; t < (Ti(i) - 1); t++) {
       const arma::vec& counts = E_A(current_s, current_d).slice(t).col(i);
       idx = arma::find(counts);
-      if (idx.n_elem > 0) {
-        double sum_ea = arma::accu(counts.rows(idx));
-        if (tv_A) {
-          A1 = softmax(gamma_Arow * X_A.slice(i).col(t));
-          log_A1 = log(A1);
-        }
-        double val = arma::dot(counts.rows(idx), log_A1.rows(idx));
-        if (!std::isfinite(val)) {
-          grad.zeros();
-          return maxval;
-        }
-        value -= val;
-        
-        diff.zeros();
-        diff.rows(idx) = counts.rows(idx) - sum_ea * A1.rows(idx);
-        grad -= arma::vectorise(tQs * diff * X_A.slice(i).col(t).t());
+      double sum_ea = arma::accu(counts.rows(idx));
+      if (tv_A) {
+        A1 = softmax(gamma_Arow * X_A.slice(i).col(t));
+        log_A1 = log(A1);
       }
+      double val = arma::dot(counts.rows(idx), log_A1.rows(idx));
+      if (!std::isfinite(val)) {
+        grad.zeros();
+        return maxval;
+      }
+      value -= val;
+      grad -= arma::vectorise(tQs * (counts - sum_ea * A1) * X_A.slice(i).col(t).t());
     }
   }
   grad += lambda * x;

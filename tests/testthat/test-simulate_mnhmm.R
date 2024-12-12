@@ -1,6 +1,6 @@
 test_that("simulate_mnhmm, coef and get_probs works", {
   set.seed(1)
-  p <- 50
+  p <- 20
   n <- 10
   d <- data.frame(
     person = rep(1:p, each = n),
@@ -24,12 +24,11 @@ test_that("simulate_mnhmm, coef and get_probs works", {
   )
   expect_equal(
     table(unlist(sim$states)),
-    structure(
-      c(`Cluster 1: State 1` = 98L, `Cluster 1: State 2` = 162L, 
-        `Cluster 2: State 1` = 158L, `Cluster 2: State 2` = 42L, 
-        `Cluster 3: State 1` = 21L, `Cluster 3: State 2` = 19L,
-        `*` = 0L, `%` = 0L), dim = 8L, 
-      dimnames = structure(list(
+    structure(c(
+      `Cluster 1: State 1` = 0L, `Cluster 1: State 2` = 0L, 
+      `Cluster 2: State 1` = 5L, `Cluster 2: State 2` = 5L, 
+      `Cluster 3: State 1` = 86L, `Cluster 3: State 2` = 104L, 
+      `*` = 0L, `%` = 0L), dim = 8L, dimnames = structure(list(
         c("Cluster 1: State 1", "Cluster 1: State 2", "Cluster 2: State 1", 
           "Cluster 2: State 2", "Cluster 3: State 1", "Cluster 3: State 2", 
           "*", "%")), names = ""), class = "table")

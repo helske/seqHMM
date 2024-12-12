@@ -137,7 +137,7 @@ dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
       )
       if (fit$status == -1 && need_grad) {
         grad_norm <- sqrt(sum(objectivef(fit$solution)$gradient^2))
-        if (grad_norm < 1e-6) fit$status <- 6
+        if (grad_norm < 1e-6) fit$status <- 7
       }
       p()
       fit
@@ -169,9 +169,9 @@ dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
     x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
     ub = rep(bound, length(init)), opts = control
   )
-  if (ou$status == -1 && need_grad) {
+  if (out$status == -1 && need_grad) {
     grad_norm <- sqrt(sum(objectivef(out$solution)$gradient^2))
-    if (grad_norm < 1e-6) out$status <- 6
+    if (grad_norm < 1e-6) out$status <- 7
   }
   if (out$status < 0) {
     warning_(

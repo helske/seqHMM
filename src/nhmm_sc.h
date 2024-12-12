@@ -100,6 +100,7 @@ struct nhmm_sc : public nhmm_base {
         }
       }
     }
+    E_B.col(i).clean(std::numeric_limits<double>::min());
   }
   
   void mstep_B(const double ftol_abs, const double ftol_rel, 

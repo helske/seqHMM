@@ -40,7 +40,8 @@ test_that("'hidden_paths' works for 'nhmm'", {
   expect_error(
     fit <- estimate_nhmm(
       hmm_biofam$observations[[1]], n_states = 3,
-      restarts = 2, maxeval = 1, method = "DNM"
+      restarts = 2, maxeval = 1, method = "DNM",
+      control_restart = list(maxeval = 1)
     ),
     NA
   )
@@ -73,7 +74,8 @@ test_that("'hidden_paths' works for 'mnhmm'", {
   expect_error(
     fit <- estimate_mnhmm(
       hmm_biofam$observations[[1]], n_states = 3, n_clusters = 2,
-      restarts = 2, maxeval = 1, method = "EM"
+      restarts = 2, maxeval = 1, method = "DNM",
+      control_restart = list(maxeval = 1)
     ),
     NA
   )
