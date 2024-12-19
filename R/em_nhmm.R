@@ -5,9 +5,6 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
   S <- model$n_states
   T_ <- model$length_of_sequences
   C <- model$n_channels
-  n_i <- attr(model, "np_pi")
-  n_s <- attr(model, "np_A")
-  n_o <- attr(model, "np_B")
   icpt_only_pi <- attr(model$X_pi, "icpt_only")
   icpt_only_A <- attr(model$X_A, "icpt_only")
   icpt_only_B <- attr(model$X_B, "icpt_only")
@@ -36,7 +33,7 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
       init <- create_initial_values(inits, model, init_sd)
       if (C == 1) {
         fit <- EM_LBFGS_nhmm_singlechannel(
-          init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
+          init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, obs,
           Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
           n_obs, control_restart$maxeval,
           control_restart$ftol_abs, control_restart$ftol_rel,
@@ -47,7 +44,7 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
           control_mstep$print_level, lambda, bound)
       } else {
         fit <- EM_LBFGS_nhmm_multichannel(
-          init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
+          init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, obs,
           Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
           n_obs, control_restart$maxeval,
           control_restart$ftol_abs, control_restart$ftol_rel,
@@ -70,9 +67,7 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
     }
     logliks <- unlist(lapply(out, "[[", "logLik"))
     optimum <- out[[which.max(logliks)]]
-    init <- stats::setNames(
-      optimum[c("eta_pi", "eta_A", "eta_B")], c("pi", "A", "B")
-    )
+    init <- optimum[c("eta_pi", "eta_A", "eta_B")]
     if (save_all_solutions) {
       all_solutions <- out
     }
@@ -81,7 +76,7 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
   }
   if (C == 1) {
     out <- EM_LBFGS_nhmm_singlechannel(
-      init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
+      init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, obs,
       Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
       n_obs, control$maxeval,
       control$ftol_abs, control$ftol_rel,
@@ -92,7 +87,7 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
       control_mstep$print_level, lambda, bound)
   } else {
     out <- EM_LBFGS_nhmm_multichannel(
-      init$pi, model$X_pi, init$A, model$X_A, init$B, model$X_B, obs,
+      init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, obs,
       Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
       n_obs, control$maxeval,
       control$ftol_abs, control$ftol_rel,

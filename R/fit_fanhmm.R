@@ -1,9 +1,9 @@
-#' Estimate a Mixture Non-homogeneous Hidden Markov Model
+#' Estimate a Non-homogeneous Hidden Markov Model
 #'
 #' @noRd
-fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method, 
-                      bound, control, control_restart, control_mstep, 
-                      save_all_solutions = FALSE) {
+fit_fanhmm <- function(model, inits, init_sd, restarts, lambda, method,
+                       bound, control, control_restart, control_mstep, 
+                       save_all_solutions = FALSE) {
   
   stopifnot_(
     checkmate::test_int(x = restarts, lower = 0L), 
@@ -74,36 +74,38 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
   
   if (isTRUE(control$maxeval < 0)) {
     model$etas <- setNames(
-      create_initial_values(inits, model, init_sd), c("pi", "A", "B", "omega")
+      create_initial_values(inits, model, init_sd), c("pi", "A", "B")
     )
-    model$gammas$pi <- c(eta_to_gamma_mat_field(model$etas$pi))
-    model$gammas$A <- c(eta_to_gamma_cube_field(model$etas$A))
+    model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
+    model$gammas$A <- eta_to_gamma_cube(model$etas$A)
     if (model$n_channels == 1L) {
-      model$gammas$B <- c(eta_to_gamma_cube_field(model$etas$B))
+      model$gammas$B <- eta_to_gamma_cube(model$etas$B)
     } else {
-      l <- lengths(model$etas$B)
-      gamma_B <- c(eta_to_gamma_cube_field(unlist(model$etas$B, recursive = FALSE)))
-      model$gammas$B <- unname(split(gamma_B, rep(seq_along(l), l)))
+      model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
     }
-    model$gammas$omega <- eta_to_gamma_mat(model$etas$omega)
+    model$rhos$A <- create_rho_A_inits(
+      inits, model$n_states, model$n_symbols, nrow(model$W_A), init_sd
+    )
+    model$rhos$B <- create_rho_B_inits(
+      inits, model$n_states, model$n_symbols, nrow(model$W_B), init_sd
+    )
     return(model)
   }
-  all_solutions <- NULL
   if (method == "EM-DNM") {
-    out <- em_dnm_mnhmm(
+    out <- em_dnm_fanhmm(
       model, inits, init_sd, restarts, lambda, bound, control, 
       control_restart, control_mstep, save_all_solutions
     )
   }
   if (method == "DNM") {
-    out <- dnm_mnhmm(
-      model, inits, init_sd, restarts, lambda, bound, control, control_restart, 
+    out <- dnm_fanhmm(
+      model, inits, init_sd, restarts, lambda,  bound, control, control_restart, 
       save_all_solutions 
     )
   }
   if (method == "EM") {
-    out <- em_mnhmm(
-      model, inits, init_sd, restarts, lambda, bound, control, 
+    out <- em_fanhmm(
+      model, inits, init_sd, restarts, lambda,  bound, control, 
       control_restart, control_mstep, save_all_solutions 
     )
   }

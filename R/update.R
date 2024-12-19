@@ -25,7 +25,7 @@ update.nhmm <- function(object, newdata, ...) {
   object$X_B <- model_matrix_emission_formula(
     object$emission_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$n_symbols, 
-    object$n_channels, object$time_variable, object$id_variable, 
+    object$time_variable, object$id_variable, 
     object$sequence_lengths,
     attr(object$X_B, "X_mean"), attr(object$X_B, "X_sd"), FALSE
   )$X
@@ -51,7 +51,7 @@ update.mnhmm <- function(object, newdata, ...) {
   object$X_B <- model_matrix_emission_formula(
     object$emission_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$n_symbols, 
-    object$n_channels, object$time_variable, object$id_variable, 
+    object$time_variable, object$id_variable, 
     object$sequence_lengths,
     attr(object$X_B, "X_mean"), attr(object$X_B, "X_sd"), FALSE
   )$X

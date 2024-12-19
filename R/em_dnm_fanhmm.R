@@ -1,0 +1,241 @@
+em_dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda,
+                          bound, control, control_restart, control_mstep, 
+                          save_all_solutions) {
+  M <- model$n_symbols
+  S <- model$n_states
+  T_ <- model$length_of_sequences
+  #C <- model$n_channels always 1
+  n_i <- attr(model, "np_pi")
+  n_s <- attr(model, "np_A")
+  n_o <- attr(model, "np_B")
+  n_f <- attr(model, "np_rho_A")
+  n_a <- attr(model, "np_rho_B")
+  icpt_only_pi <- attr(model$X_pi, "icpt_only")
+  icpt_only_A <- attr(model$X_A, "icpt_only")
+  iv_A <- attr(model$X_A, "iv")
+  iv_B <- attr(model$X_B, "iv")
+  tv_A <- attr(model$X_A, "tv")
+  tv_B <- attr(model$X_B, "tv")
+  if (!is.na(model$feedback_formula)) {
+    icpt_only_A <- FALSE
+    iv_A <- TRUE
+    tv_A <- TRUE
+  }
+  icpt_only_B <- attr(model$X_B, "icpt_only")
+  if (!is.na(model$autoregression_formula)) {
+    icpt_only_B <- FALSE
+    iv_B <- TRUE
+    tv_B <- TRUE
+  }
+  X_pi <- model$X_pi
+  X_A <- model$X_A
+  X_B <- model$X_B
+  K_pi <- nrow(X_pi)
+  K_A <- nrow(X_A)
+  K_B <- nrow(X_B)
+  W_A <- model$W_A
+  W_B <- model$W_B
+  L_A <- nrow(W_A)
+  L_B <- nrow(W_B)
+  Ti <- model$sequence_lengths
+  n_obs <- nobs(model)
+  need_grad <- grepl("NLOPT_LD_", control$algorithm)
+  obs <- create_obsArray(model)
+  obs <- array(obs, dim(obs)[2:3])
+  all_solutions <- NULL
+  
+  if (need_grad) {
+    objectivef <- function(pars) {
+      eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+      eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
+      eta_B <- create_eta_B_nhmm(
+        pars[n_i + n_s + seq_len(n_o)], S, M, K_B
+      )
+      rho_A <- create_rho_A(
+        pars[n_i + n_s + n_o + seq_len(n_f)], S, M, L_A
+      )
+      rho_B <- create_rho_B(
+        pars[n_i + n_s + n_o + n_f + seq_len(n_a)], S, M, L_B
+      )
+      out <- log_objective_fanhmm_singlechannel(
+        eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs, Ti,
+        icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
+      )
+      list(
+        objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
+        gradient = - (unlist(out[-1]) - lambda * pars) / n_obs
+      )
+    }
+  } else {
+    objectivef <- function(pars) {
+      eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+      eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
+      eta_B <- create_eta_B_nhmm(
+        pars[n_i + n_s + seq_len(n_o)], S, M, K_B
+      )
+      rho_A <- create_rho_A(
+        pars[n_i + n_s + n_o + seq_len(n_f)], S, M, L_A
+      )
+      rho_B <- create_rho_B(
+        pars[n_i + n_s + n_o + n_f + seq_len(n_a)], S, M, L_B
+      )
+      out <- log_objective_fanhmm_singlechannel(
+        eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs, Ti,
+        icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
+      )
+      - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
+    }
+  }
+  
+  if (restarts > 0L) {
+    p <- progressr::progressor(along = seq_len(restarts))
+    original_options <- options(future.globals.maxSize = Inf)
+    on.exit(options(original_options))
+    out <- future.apply::future_lapply(seq_len(restarts), function(i) {
+      init <- c(
+        create_initial_values(inits, model, init_sd),
+        create_rho_A_inits(inits, S, M, L_A, init_sd), 
+        create_rho_B_inits(inits, S, M, L_B, init_sd)
+      )
+      fit <- EM_LBFGS_fanhmm_singlechannel(
+        init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, 
+        init$rho_A, model$W_A, init$rho_B, model$W_B,
+        obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, 
+        tv_B, n_obs, control$maxeval_em_dnm,
+        control_restart$ftol_abs, control_restart$ftol_rel,
+        control_restart$xtol_abs, control_restart$xtol_rel, 
+        control_restart$print_level, control_mstep$maxeval,
+        control_mstep$ftol_abs, control_mstep$ftol_rel,
+        control_mstep$xtol_abs, control_mstep$xtol_rel, 
+        control_mstep$print_level, lambda, bound)
+      em_return_code <- fit$return_code
+      if (em_return_code >= 0) {
+        init <- unlist(fit[c("eta_pi", "eta_A", "eta_B", "rho_A", "rho_B")])
+        fit <- nloptr(
+          x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
+          ub = rep(bound, length(init)), opts = control_restart
+        )
+        if (fit$status == -1 && need_grad) {
+          grad_norm <- sqrt(sum(objectivef(fit$solution)$gradient^2))
+          if (grad_norm < 1e-6) fit$status <- 7
+        }
+        p()
+        fit
+      } else {
+        list(status = -1000 + em_return_code, objective = NaN)
+      }
+    },
+    future.seed = TRUE)
+    
+    logliks <- -unlist(lapply(out, "[[", "objective")) * n_obs
+    return_codes <- unlist(lapply(out, "[[", "status"))
+    successful <- which(return_codes > 0)
+    if (length(successful) == 0) {
+      warning_(
+        c("All restarts terminated due to error.",
+          "Error of first restart: ", return_msg(return_codes[1]),
+          "Running DNM using initial values for EM.")
+      )
+      em_return_code <- return_codes[1] + 1000
+      init <- c(
+        create_initial_values(inits, model, init_sd),
+        create_rho_A_inits(inits, S, M, L_A, init_sd), 
+        create_rho_B_inits(inits, S, M, L_B, init_sd)
+      )
+    } else {
+      em_return_code <- 0 # generic success
+      optimum <- successful[which.max(logliks[successful])]
+      pars <- out[[optimum]]$solution
+      init <- list()
+      init$eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+      init$eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
+      init$eta_B <- create_eta_B_nhmm(
+        pars[n_i + n_s + seq_len(n_o)], S, M, K_B
+      )
+      init$rho_A <- create_rho_A(
+        pars[n_i + n_s + n_o + seq_len(n_f)], S, M, L_A
+      )
+      init$rho_B <- create_rho_B(
+        pars[n_i + n_s + n_o + n_f + seq_len(n_a)], S, M, L_B
+      )
+    }
+    if (save_all_solutions) {
+      all_solutions <- out
+    }
+  } else {
+    init <- c(
+      create_initial_values(inits, model, init_sd),
+      create_rho_A_inits(inits, S, M, L_A, init_sd), 
+      create_rho_B_inits(inits, S, M, L_B, init_sd)
+    )
+    
+    out <- EM_LBFGS_fanhmm_singlechannel(
+      init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, 
+      init$rho_A, model$W_A, init$rho_B, model$W_B, obs,
+      Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
+      n_obs, control$maxeval_em_dnm,
+      control$ftol_abs, control$ftol_rel,
+      control$xtol_abs, control$xtol_rel, 
+      control$print_level, control_mstep$maxeval,
+      control_mstep$ftol_abs, control_mstep$ftol_rel,
+      control_mstep$xtol_abs, control_mstep$xtol_rel, 
+      control_mstep$print_level, lambda, bound)
+    
+    em_return_code <- out$return_code
+    if (em_return_code >= 0) {
+      init <- fit[c("eta_pi", "eta_A", "eta_B", "rho_A", "rho_B")]
+    } else {
+      warning_(
+        paste("EM-step terminated due to error:", return_msg(em_return_code),
+              "Running DNM using initial values for EM.")
+      )
+    }
+  }
+  out <- nloptr(
+    x0 = unlist(init), eval_f = objectivef, 
+    lb = -rep(bound, length(unlist(init))), 
+    ub = rep(bound, length(unlist(init))), opts = control
+  )
+  if (out$status == -1 && need_grad) {
+    grad_norm <- sqrt(sum(objectivef(out$solution)$gradient^2))
+    if (grad_norm < 1e-6) out$status <- 6
+  }
+  if (out$status < 0) {
+    warning_(
+      paste("Optimization terminated due to error:", return_msg(out$status))
+    )
+  }
+  
+  pars <- out$solution
+  model$etas$pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+  model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
+  model$etas$A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
+  model$gammas$A <- eta_to_gamma_cube(model$etas$A)
+  model$etas$B <- create_eta_B_nhmm(
+    pars[n_i + n_s + seq_len(n_o)], S, M, K_B
+  )
+  model$gammas$B <- eta_to_gamma_cube(model$etas$B)
+  model$rhos$A <- create_rho_A(
+    pars[n_i + n_s + n_o + seq_len(n_f)], S, M, L_A
+  )
+  model$phis$A <- rho_to_phi(model$rhos$A)
+  model$rhos$B <- create_rho_B(
+    pars[n_i + n_s + n_o + n_f + seq_len(n_a)], S, M, L_B
+  )
+  model$phis$B <- rho_to_phi(model$rhos$B)
+  model$estimation_results <- list(
+    loglik = -out$objective * n_obs, 
+    return_code = out$status,
+    message = out$message,
+    iterations = out$iterations,
+    logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
+    return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
+    all_solutions = all_solutions,
+    lambda = lambda,
+    bound = bound,
+    method = "EM-DNM",
+    algorithm = control$algorithm,
+    EM_return_code = em_return_code
+  )
+  model
+}

@@ -134,8 +134,8 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda,
       init <- create_initial_values(inits, model, init_sd)
       if (C == 1) {
         fit <- EM_LBFGS_mnhmm_singlechannel(
-          init$omega, model$X_omega, init$pi, model$X_pi, init$A, model$X_A, 
-          init$B, model$X_B, obs, Ti, icpt_only_omega, icpt_only_pi, 
+          init$eta_omega, model$X_omega, init$eta_pi, model$X_pi, init$eta_A, model$X_A, 
+          init$eta_B, model$X_B, obs, Ti, icpt_only_omega, icpt_only_pi, 
           icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
           n_obs, control_restart$maxeval,
           control_restart$ftol_abs, control_restart$ftol_rel,
@@ -145,9 +145,9 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda,
           control_mstep$xtol_abs, control_mstep$xtol_rel, 
           control_mstep$print_level, lambda, bound)
       } else {
-        eta_B <- unlist(init$B, recursive = FALSE)
+        eta_B <- unlist(init$eta_B, recursive = FALSE)
         fit <- EM_LBFGS_mnhmm_multichannel(
-          init$omega, model$X_omega, init$pi, model$X_pi, init$A, model$X_A, 
+          init$eta_omega, model$X_omega, init$eta_pi, model$X_pi, init$eta_A, model$X_A, 
           eta_B, model$X_B, obs, Ti, icpt_only_omega, icpt_only_pi, 
           icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
           n_obs, control_restart$maxeval,
@@ -160,16 +160,7 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda,
       }
       em_return_code <- fit$return_code
       if (em_return_code >= 0) {
-        init <- unlist(
-          create_initial_values(
-            stats::setNames(
-              fit[c("eta_omega", "eta_pi", "eta_A", "eta_B")], 
-              c("omega", "pi", "A", "B")
-            ), 
-            model, 
-            init_sd = 0
-          )
-        )
+        init <- unlist(fit[c("eta_omega", "eta_pi", "eta_A", "eta_B")])
         fit <- nloptr(
           x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
           ub = rep(bound, length(init)), opts = control_restart
@@ -202,18 +193,18 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda,
       optimum <- successful[which.max(logliks[successful])]
       pars <- out[[optimum]]$solution
       init <- list()
-      init$pi <- create_eta_pi_mnhmm(pars[seq_len(n_i)], S, K_pi, D)
-      init$A <- create_eta_A_mnhmm(pars[n_i + seq_len(n_s)], S, K_A, D)
+      init$eta_pi <- create_eta_pi_mnhmm(pars[seq_len(n_i)], S, K_pi, D)
+      init$eta_A <- create_eta_A_mnhmm(pars[n_i + seq_len(n_s)], S, K_A, D)
       if (C == 1L) {
-        init$B <- create_eta_B_mnhmm(
+        init$eta_B <- create_eta_B_mnhmm(
           pars[n_i + n_s + seq_len(n_o)], S, M, K_B, D
         )
       } else {
-        init$B <- create_eta_multichannel_B_mnhmm(
+        init$eta_B <- create_eta_multichannel_B_mnhmm(
           pars[n_i + n_s + seq_len(n_o)], S, M, K_B, D
         )
       }
-      init$omega <- create_eta_omega_mnhmm(
+      init$eta_omega <- create_eta_omega_mnhmm(
         pars[n_i + n_s + n_o + seq_len(n_d)], D, K_omega
       )
     }
@@ -224,8 +215,8 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda,
     init <- create_initial_values(inits, model, init_sd)
     if (C == 1) {
       out <- EM_LBFGS_mnhmm_singlechannel(
-        init$omega, model$X_omega, init$pi, model$X_pi, init$A, model$X_A, 
-        init$B, model$X_B, obs, Ti, icpt_only_omega, icpt_only_pi, 
+        init$eta_omega, model$X_omega, init$eta_pi, model$X_pi, init$eta_A, model$X_A, 
+        init$eta_B, model$X_B, obs, Ti, icpt_only_omega, icpt_only_pi, 
         icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
         n_obs, control$maxeval,
         control$ftol_abs, control$ftol_rel,
@@ -235,9 +226,9 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda,
         control_mstep$xtol_abs, control_mstep$xtol_rel, 
         control_mstep$print_level, lambda, bound)
     } else {
-      eta_B <- unlist(init$B, recursive = FALSE)
+      eta_B <- unlist(init$eta_B, recursive = FALSE)
       out <- EM_LBFGS_mnhmm_multichannel(
-        init$omega, model$X_omega, init$pi, model$X_pi, init$A, model$X_A, 
+        init$eta_omega, model$X_omega, init$eta_pi, model$X_pi, init$eta_A, model$X_A, 
         eta_B, model$X_B, obs, Ti, icpt_only_omega, icpt_only_pi, 
         icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
         n_obs, control$maxeval,
@@ -250,14 +241,7 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda,
     }
     em_return_code <- out$return_code
     if (em_return_code >= 0) {
-      init <- create_initial_values(
-        stats::setNames(
-          out[c("eta_omega", "eta_pi", "eta_A", "eta_B")], 
-          c("omega", "pi", "A", "B")
-        ), 
-        model, 
-        init_sd = 0
-      )
+      init <- out[c("eta_omega", "eta_pi", "eta_A", "eta_B")]
     } else {
       warning_(
         paste("EM-step terminated due to error:", return_msg(em_return_code),

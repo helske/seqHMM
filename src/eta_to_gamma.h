@@ -10,4 +10,6 @@ arma::mat eta_to_gamma(const arma::mat& eta, const arma::mat& Q);
 arma::cube eta_to_gamma(const arma::cube& eta, const arma::mat& Q);
 arma::field<arma::mat> eta_to_gamma(const arma::field<arma::mat>& eta, const arma::mat& Q);
 arma::field<arma::cube> eta_to_gamma(const arma::field<arma::cube>& eta, const arma::mat& Q);
+arma::cube rho_to_phi(const arma::cube& rho, const arma::mat& Q);
+arma::field<arma::cube> rho_to_phi(const arma::field<arma::cube>& rho, const arma::mat& Q);
 #endif

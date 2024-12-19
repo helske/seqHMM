@@ -6,10 +6,6 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda,
   T_ <- model$length_of_sequences
   C <- model$n_channels
   D <- model$n_clusters
-  n_i <- attr(model, "np_pi")
-  n_s <- attr(model, "np_A")
-  n_o <- attr(model, "np_B")
-  n_d <- attr(model, "np_omega")
   icpt_only_omega <- attr(model$X_omega, "icpt_only")
   icpt_only_pi <- attr(model$X_pi, "icpt_only")
   icpt_only_A <- attr(model$X_A, "icpt_only")
@@ -41,8 +37,8 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda,
       init <- create_initial_values(inits, model, init_sd)
       if (C == 1) {
         fit <- EM_LBFGS_mnhmm_singlechannel(
-          init$omega, model$X_omega, init$pi, model$X_pi, init$A, model$X_A, 
-          init$B, model$X_B, obs, Ti, icpt_only_omega, icpt_only_pi, 
+          init$eta_omega, model$X_omega, init$eta_pi, model$X_pi, init$eta_A, model$X_A, 
+          init$eta_B, model$X_B, obs, Ti, icpt_only_omega, icpt_only_pi, 
           icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
           n_obs, control_restart$maxeval,
           control_restart$ftol_abs, control_restart$ftol_rel,
@@ -52,9 +48,9 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda,
           control_mstep$xtol_abs, control_mstep$xtol_rel, 
           control_mstep$print_level, lambda, bound)
       } else {
-        eta_B <- unlist(init$B, recursive = FALSE)
+        eta_B <- unlist(init$eta_B, recursive = FALSE)
         fit <- EM_LBFGS_mnhmm_multichannel(
-          init$omega, model$X_omega, init$pi, model$X_pi, init$A, model$X_A, 
+          init$eta_omega, model$X_omega, init$eta_pi, model$X_pi, init$eta_A, model$X_A, 
           eta_B, model$X_B, obs, Ti, icpt_only_omega, icpt_only_pi, 
           icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
           n_obs, control_restart$maxeval,
@@ -78,10 +74,7 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda,
     }
     logliks <- unlist(lapply(out, "[[", "logLik"))
     optimum <- out[[which.max(logliks)]]
-    init <- stats::setNames(
-      optimum[c("eta_omega", "eta_pi", "eta_A", "eta_B")], 
-      c("omega", "pi", "A", "B")
-    )
+    init <- optimum[c("eta_omega", "eta_pi", "eta_A", "eta_B")]
     if (save_all_solutions) {
       all_solutions <- out
     }
@@ -90,8 +83,8 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda,
   }
   if (C == 1) {
     out <- EM_LBFGS_mnhmm_singlechannel(
-      init$omega, model$X_omega, init$pi, model$X_pi, init$A, model$X_A, 
-      init$B, model$X_B, obs, Ti, icpt_only_omega, icpt_only_pi, 
+      init$eta_omega, model$X_omega, init$eta_pi, model$X_pi, init$eta_A, model$X_A, 
+      init$eta_B, model$X_B, obs, Ti, icpt_only_omega, icpt_only_pi, 
       icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
       n_obs, control$maxeval,
       control$ftol_abs, control$ftol_rel,
@@ -101,9 +94,9 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda,
       control_mstep$xtol_abs, control_mstep$xtol_rel, 
       control_mstep$print_level, lambda, bound)
   } else {
-    eta_B <- unlist(init$B, recursive = FALSE)
+    eta_B <- unlist(init$eta_B, recursive = FALSE)
     out <- EM_LBFGS_mnhmm_multichannel(
-      init$omega, model$X_omega, init$pi, model$X_pi, init$A, model$X_A, 
+      init$eta_omega, model$X_omega, init$eta_pi, model$X_pi, init$eta_A, model$X_A, 
       eta_B, model$X_B, obs, Ti, icpt_only_omega, icpt_only_pi, 
       icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
       n_obs, control$maxeval,

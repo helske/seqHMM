@@ -10,7 +10,9 @@ build_nhmm <- function(
     observations, data, time, id, n_states, state_names, channel_names,
     initial_formula, transition_formula, emission_formula) 
   out[c("cluster_names", "n_clusters", "X_omega")] <- NULL
-  out$model$etas <- create_initial_values(list(), out$model, 0)
+  out$model$etas <- setNames(
+    create_initial_values(list(), out$model, 0), c("pi", "A", "B")
+  )
   structure(
     out$model,
     class = "nhmm",

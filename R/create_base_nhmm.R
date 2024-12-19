@@ -121,7 +121,7 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
   )
   B <- model_matrix_emission_formula(
     emission_formula, data, n_sequences, length_of_sequences, n_states, 
-    n_symbols, n_channels, time, id, sequence_lengths
+    n_symbols, time, id, sequence_lengths
   )
   if (mixture) {
     omega <- model_matrix_cluster_formula(

@@ -41,6 +41,10 @@ eta_to_gamma_cube_field <- function(eta) {
     .Call(`_seqHMM_eta_to_gamma_cube_field`, eta)
 }
 
+EM_LBFGS_fanhmm_singlechannel <- function(eta_pi, x, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, n_obs, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, lambda, bound, obs_0) {
+    .Call(`_seqHMM_EM_LBFGS_fanhmm_singlechannel`, eta_pi, x, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, n_obs, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, lambda, bound, obs_0)
+}
+
 fast_quantiles <- function(X, probs) {
     .Call(`_seqHMM_fast_quantiles`, X, probs)
 }

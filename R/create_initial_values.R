@@ -23,40 +23,40 @@ create_initial_values_ <- function(inits, init_sd, S, M, K_pi, K_A, K_B, D = 1,
                                    K_omega = 0) {
   if(!is.null(inits$initial_probs)) {
     if (D > 1) {
-      pi <- lapply(
+      eta_pi <- lapply(
         seq_len(D), function(i) {
           create_inits_vector(inits$initial_probs[[i]], S, K_pi, init_sd)
         }
       )
     } else {
-      pi <- create_inits_vector(inits$initial_probs, S, K_pi, init_sd)
+      eta_pi <- create_inits_vector(inits$initial_probs, S, K_pi, init_sd)
     }
   } else {
-    pi <- create_eta_pi_inits(
-      inits$pi, S, K_pi, init_sd, D
+    eta_pi <- create_eta_pi_inits(
+      inits$eta_pi, S, K_pi, init_sd, D
     )
   }
   
   if(!is.null(inits$transition_probs)) {
     if (D > 1) {
-      A <- lapply(
+      eta_A <- lapply(
         seq_len(D), function(i) {
           create_inits_matrix(inits$transition_probs[[i]], S, S, K_A, init_sd)
         }
       )
     } else {
-      A <- create_inits_matrix(
+      eta_A <- create_inits_matrix(
         inits$transition_probs, S, S, K_A, init_sd
       )
     }
   } else {
-    A <- create_eta_A_inits(inits$A, S, K_A, init_sd, D)
+    eta_A <- create_eta_A_inits(inits$eta_A, S, K_A, init_sd, D)
   }
   
   if(!is.null(inits$emission_probs)) {
     if (D > 1) {
       if (length(M) > 1) {
-        B <- lapply(
+        eta_B <- lapply(
           seq_len(D), function(i) {
             lapply(seq_len(length(M)), function(j) {
               create_inits_matrix(
@@ -64,7 +64,7 @@ create_initial_values_ <- function(inits, init_sd, S, M, K_pi, K_A, K_B, D = 1,
             })
           })
       } else {
-        B <- lapply(
+        eta_B <- lapply(
           seq_len(D), function(i) {
             create_inits_matrix(inits$emission_probs[[i]], S, M, K_B, init_sd)
           }
@@ -72,35 +72,35 @@ create_initial_values_ <- function(inits, init_sd, S, M, K_pi, K_A, K_B, D = 1,
       }
     } else {
       if (length(M) > 1) {
-        B <- lapply(seq_len(length(M)), function(j) {
+        eta_B <- lapply(seq_len(length(M)), function(j) {
           create_inits_matrix(
             inits$emission_probs[[j]], S, M[j], K_B, init_sd)
         })
       } else {
-        B <- create_inits_matrix(
+        eta_B <- create_inits_matrix(
           inits$emission_probs, S, M, K_B, init_sd
         )
       }
     }
   } else {
-    B <- create_eta_B_inits(inits$B, S, M, K_B, init_sd, D)
+    eta_B <- create_eta_B_inits(inits$eta_B, S, M, K_B, init_sd, D)
   }
   out <- list(
-    pi = pi,
-    A = A,
-    B = B
+    eta_pi = eta_pi,
+    eta_A = eta_A,
+    eta_B = eta_B
   )
   if (D > 1) {
     if(!is.null(inits$cluster_probs)) {
-      omega <- create_inits_vector(
+      eta_omega <- create_inits_vector(
         inits$cluster_probs, D, K_omega, init_sd
       )
     } else {
-      omega <- create_eta_omega_inits(
-        inits$omega, D, K_omega, init_sd
+      eta_omega <- create_eta_omega_inits(
+        inits$eta_omega, D, K_omega, init_sd
       )
     }
-    out$omega <- omega
+    out$eta_omega <- eta_omega
   }
   out
 }
@@ -302,4 +302,47 @@ create_inits_matrix <- function(x, n, m, K, sd = 0) {
   z
 }
 
+create_rho_A_inits <- function(x, S, M, L, init_sd = 0) {
+  if (is.null(x$rho_A)) {
+    create_rho_A(numeric((S - 1) * L * (M - 1) * S), S, M, L, init_sd)
+  } else {
+    stopifnot_(
+      length(x$rho_A) == (S - 1) * L * (M - 1) * S,
+      paste0(
+        "Number of initial values for {.val rho_A} is not equal to ",
+        "(S - 1) * L * (M - 1) * S = {(S - 1) * L * (M - 1) * S}."
+      )
+    )
+    create_rho_A(x$rho_A, S, M, L, init_sd)
+  }
+}
+
+create_rho_A <- function(x, S, M, L, init_sd = 0) {
+  n <- (S - 1) * L * (M - 1)
+  lapply(seq_len(S), function(i) {
+    array(rnorm(n, x[(i - 1) * n + 1:n], init_sd), c(S - 1, L, M - 1))
+  })
+}
+
+create_rho_B_inits <- function(x, S, M, L, init_sd = 0) {
+  if (is.null(x$rho_B)) {
+    create_rho_B(numeric((M - 1) * L * (M - 1) * S), S, M, L, init_sd)
+  } else {
+    stopifnot_(
+      length(x$rho_B) == (M - 1) * L * (M - 1) * S,
+      paste0(
+        "Number of initial values for {.val rho_B} is not equal to ",
+        "(M - 1) * L * (M - 1) * S = {(M - 1) * L * (M - 1) * S}."
+      )
+    )
+    create_rho_B(x$rho_B, S, M, L, init_sd)
+  }
+}
+
+create_rho_B <- function(x, S, M, L, init_sd = 0) {
+  n <- (M - 1) * L * (M - 1)
+  lapply(seq_len(S), function(i) {
+    array(rnorm(n, x[(i - 1) * n + 1:n], init_sd), c(M - 1, L, M - 1))
+  })
+}
 

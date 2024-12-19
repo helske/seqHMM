@@ -102,6 +102,7 @@ ame_obs.nhmm <- function(
   newdata[[variable]][newdata[[time]] >= start_time] <- values[2]
   X2 <- update(model, newdata)[c("X_pi", "X_A", "X_B")]
   C <- model$n_channels
+  start <- which(sort(unique(newdata[[time]])) == start_time)
   if (C == 1L) {
     times <- as.numeric(colnames(model$observations))
     symbol_names <- list(model$symbol_names)
@@ -117,7 +118,7 @@ ame_obs.nhmm <- function(
       attr(X2$X_B, "icpt_only"), attr(X2$X_A, "iv"), 
       attr(X2$X_B, "iv"), attr(X2$X_A, "tv"), attr(X2$X_B, "tv"), 
       X2$X_pi, X2$X_A, X2$X_B,
-      model$boot$gamma_pi, model$boot$gamma_A, model$boot$gamma_B, start_time, 
+      model$boot$gamma_pi, model$boot$gamma_A, model$boot$gamma_B, start, 
       probs, model$boot$idx - 1L
     )
     d <- data.frame(
@@ -145,7 +146,7 @@ ame_obs.nhmm <- function(
       attr(X2$X_B, "icpt_only"), attr(X2$X_A, "iv"), 
       attr(X2$X_B, "iv"), attr(X2$X_A, "tv"), attr(X2$X_B, "tv"), 
       X2$X_pi, X2$X_A, X2$X_B,
-      model$boot$gamma_pi, model$boot$gamma_A, model$boot$gamma_B, start_time, 
+      model$boot$gamma_pi, model$boot$gamma_A, model$boot$gamma_B, start, 
       probs, model$boot$idx - 1L
     )
     d <- data.frame(
@@ -159,6 +160,7 @@ ame_obs.nhmm <- function(
       }
     }
   }
+  colnames(d)[2] <- time
   d[d[[time]] >= start_time, ]
 }
 
