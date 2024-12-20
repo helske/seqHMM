@@ -15,13 +15,13 @@ dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
   iv_B <- attr(model$X_B, "iv")
   tv_A <- attr(model$X_A, "tv")
   tv_B <- attr(model$X_B, "tv")
-  if (!is.na(model$feedback_formula)) {
+  if (!is.null(model$feedback_formula)) {
     icpt_only_A <- FALSE
     iv_A <- TRUE
     tv_A <- TRUE
   }
   icpt_only_B <- attr(model$X_B, "icpt_only")
-  if (!is.na(model$autoregression_formula)) {
+  if (!is.null(model$autoregression_formula)) {
     icpt_only_B <- FALSE
     iv_B <- TRUE
     tv_B <- TRUE
@@ -41,6 +41,7 @@ dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
   need_grad <- grepl("NLOPT_LD_", control$algorithm)
   obs <- create_obsArray(model)
   obs <- array(obs, dim(obs)[2:3])
+  obs_0 <- model$obs_0
   all_solutions <- NULL
   
   if (need_grad) {
@@ -57,8 +58,8 @@ dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
         pars[n_i + n_s + n_o + n_f + seq_len(n_a)], S, M, L_B
       )
       out <- log_objective_fanhmm_singlechannel(
-        eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs, Ti,
-        icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
+        eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs_0, 
+        obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
       )
       list(
         objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
@@ -79,8 +80,8 @@ dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
         pars[n_i + n_s + n_o + n_f + seq_len(n_a)], S, M, L_B
       )
       out <- forward_fanhmm_singlechannel(
-        eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs, Ti,
-        icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
+        eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs_0, 
+        obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
       )
       - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
     }
@@ -91,10 +92,12 @@ dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
     original_options <- options(future.globals.maxSize = Inf)
     on.exit(options(original_options))
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
-      init <- c(
-        unlist(create_initial_values(inits, model, init_sd)),
-        unlist(create_rho_A_inits(inits, S, M, L_A, init_sd)), 
-        unlist(create_rho_B_inits(inits, S, M, L_B, init_sd))
+      init <- unlist(
+        c(
+          create_initial_values(inits, model, init_sd),
+          create_rho_A_inits(inits, S, M, L_A, init_sd), 
+          create_rho_B_inits(inits, S, M, L_B, init_sd)
+        )
       )
       fit <- nloptr(
         x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
@@ -118,10 +121,12 @@ dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
           "Error of first restart: ", return_msg(return_codes[1]),
           "Trying once more. ")
       )
-      init <- c(
-        unlist(create_initial_values(inits, model, init_sd)),
-        unlist(create_rho_A_inits(inits, S, M, L_A, init_sd)), 
-        unlist(create_rho_B_inits(inits, S, M, L_B, init_sd))
+      init <- unlist(
+        c(
+          create_initial_values(inits, model, init_sd),
+          create_rho_A_inits(inits, S, M, L_A, init_sd), 
+          create_rho_B_inits(inits, S, M, L_B, init_sd)
+        )
       )
     } else {
       optimum <- successful[which.max(logliks[successful])]
@@ -131,10 +136,12 @@ dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
       all_solutions <- out
     }
   } else {
-    init <- c(
-      unlist(create_initial_values(inits, model, init_sd)),
-      unlist(create_rho_A_inits(inits, S, M, L_A, init_sd)), 
-      unlist(create_rho_B_inits(inits, S, M, L_B, init_sd))
+    init <- unlist(
+      c(
+        create_initial_values(inits, model, init_sd),
+        create_rho_A_inits(inits, S, M, L_A, init_sd), 
+        create_rho_B_inits(inits, S, M, L_B, init_sd)
+      )
     )
   }
   
@@ -167,11 +174,11 @@ dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
   model$rhos$A <- create_rho_A(
     pars[n_i + n_s + n_o + seq_len(n_f)], S, M, L_A
   )
-  model$phis$A <- rho_to_phi(model$rhos$A)
+  model$phis$A <- rho_to_phi_field(model$rhos$A)
   model$rhos$B <- create_rho_B(
     pars[n_i + n_s + n_o + n_f + seq_len(n_a)], S, M, L_B
   )
-  model$phis$B <- rho_to_phi(model$rhos$B)
+  model$phis$B <- rho_to_phi_field(model$rhos$B)
   model$estimation_results <- list(
     loglik = loglik, 
     return_code = out$status,

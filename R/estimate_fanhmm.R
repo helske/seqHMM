@@ -48,7 +48,7 @@ estimate_fanhmm <- function(
   
   call <- match.call()
   model <- build_fanhmm(
-    observations, n_states, n_clusters, initial_formula, 
+    observations, n_states, initial_formula, 
     transition_formula, emission_formula, autoregression_formula, 
     feedback_formula, data, time, id, state_names
   )

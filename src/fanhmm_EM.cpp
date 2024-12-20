@@ -18,6 +18,7 @@ double fanhmm_sc::objective_A(const arma::vec& x, arma::vec& grad) {
   arma::mat eta_Arow = arma::mat(x.memptr(), S - 1, K_A);
   arma::mat gamma_Arow = sum_to_zero(eta_Arow, Qs);
   arma::cube rho_As = arma::cube(x.memptr() + (S - 1) * K_A, S - 1, L_A, M - 1);
+  arma::uword n = (S - 1) * L_A;
   arma::cube phi_As = rho_to_phi(rho_As, Qs);
   arma::vec A1(S);
   arma::vec log_A1(S);
@@ -45,8 +46,10 @@ double fanhmm_sc::objective_A(const arma::vec& x, arma::vec& grad) {
       tmp = tQs * (counts - sum_ea * A1);
       grad.subvec(0, (K_A * (S - 1)) - 1) -= 
         arma::vectorise(tmp * X_A.slice(i).col(t).t());
-      grad.subvec(K_A * (S - 1), grad.n_elem - 1) -= 
-        arma::vectorise(tmp * W_A.slice(i).col(t).t());
+      if (obs(t, i) > 0) {
+        grad.subvec(K_A * (S - 1) + (obs(t, i) - 1) * n, K_A * (S - 1) + obs(t, i) * n - 1) -= 
+          arma::vectorise(tmp * W_A.slice(i).col(t).t());
+      }
     }
   }
   grad += lambda * x;
@@ -122,8 +125,8 @@ void fanhmm_sc::mstep_A(const double ftol_abs, const double ftol_rel,
         " ended with return code "<<return_code<<" after "<<mstep_iter + 1<<
           " iterations."<<std::endl;
     }
-    eta_A.slice(s) = arma::mat(x.memptr(), S - 1, K_A, false, true);
-    rho_A(s) = arma::cube(x.memptr(), S - 1, L_A, M - 1, false, true);
+    eta_A.slice(s) = arma::mat(x.memptr(), S - 1, K_A);
+    rho_A(s) = arma::cube(x.memptr() + (S - 1) * K_A, S - 1, L_A, M - 1);
     if (return_code < 0) {
       mstep_return_code = return_code - 210;
       nlopt_destroy(opt);
@@ -140,7 +143,7 @@ double fanhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
   arma::mat gamma_Brow = sum_to_zero(eta_Brow, Qm);
   arma::cube rho_Bs = arma::cube(x.memptr() + (M - 1) * K_B, M - 1, L_B, M - 1);
   arma::cube phi_Bs = rho_to_phi(rho_Bs, Qm);
-  
+  arma::uword n = (M - 1) * L_B;
   arma::vec B1(M);
   arma::vec log_B1(M);
   grad.zeros();
@@ -164,15 +167,17 @@ double fanhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
       tmp = tQm * e_b * (I.col(obs(0, i)) - B1);
       grad.subvec(0, (K_B * (M - 1)) - 1) -= 
         arma::vectorise(tmp * X_B.slice(i).col(0).t());
-      grad.subvec(K_B * (M - 1), grad.n_elem - 1) -= 
-        arma::vectorise(tmp * W_B.slice(i).col(0).t());
+      if (obs_0(i) > 0) {
+        grad.subvec(K_B * (M - 1) + (obs_0(i) - 1) * n, K_B * (M - 1) + obs_0(i) * n - 1) -= 
+          arma::vectorise(tmp * W_B.slice(i).col(0).t());
+      }
     }
     for (arma::uword t = 1; t < Ti(i); t++) {
       double e_b = E_B(t, i, current_s);
       if (e_b > 0) {
         B1 = softmax(
           gamma_Brow * X_B.slice(i).col(t) +
-            phi_Bs.slice(obs(t, i)) * W_B.slice(i).col(t)
+            phi_Bs.slice(obs(t - 1, i)) * W_B.slice(i).col(t)
         );
         log_B1 = log(B1);
         double val = e_b * log_B1(obs(t, i));
@@ -184,19 +189,20 @@ double fanhmm_sc::objective_B(const arma::vec& x, arma::vec& grad) {
         tmp = tQm * e_b * (I.col(obs(t, i)) - B1);
         grad.subvec(0, (K_B * (M - 1)) - 1) -= 
           arma::vectorise(tmp * X_B.slice(i).col(t).t());
-        grad.subvec(K_B * (M - 1), grad.n_elem - 1) -= 
-          arma::vectorise(tmp * W_B.slice(i).col(t).t());
+        if (obs(t - 1, i) > 0) {
+          grad.subvec(K_B * (M - 1) + (obs(t - 1, i) - 1) * n, K_B * (M - 1) + obs(t - 1, i) * n - 1) -= 
+            arma::vectorise(tmp * W_B.slice(i).col(t).t());
+        }
       }
     }
   }
   grad += lambda * x;
-  
   return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 void fanhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel, 
-                      const double xtol_abs, const double xtol_rel, 
-                      const arma::uword maxeval, const double bound,
-                      const arma::uword print_level) {
+                        const double xtol_abs, const double xtol_rel, 
+                        const arma::uword maxeval, const double bound,
+                        const arma::uword print_level) {
   mstep_return_code = 0;
   // use closed form solution
   if (icpt_only_B && lambda < 1e-12) {
@@ -264,8 +270,8 @@ void fanhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
         " ended with return code "<<return_code<<" after "<<mstep_iter + 1<<
           " iterations."<<std::endl;
     }
-    eta_B.slice(s) = arma::mat(x.memptr(), M - 1, K_B, false, true);
-    rho_B(s) = arma::cube(x.memptr(), M - 1, L_B, M - 1, false, true);
+    eta_B.slice(s) = arma::mat(x.memptr(), M - 1, K_B);
+    rho_B(s) = arma::cube(x.memptr() + (M - 1) * K_B, M - 1, L_B, M - 1);
     if (return_code < 0) {
       mstep_return_code = return_code - 310;
       nlopt_destroy(opt);
@@ -277,24 +283,23 @@ void fanhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
 
 // [[Rcpp::export]]
 Rcpp::List EM_LBFGS_fanhmm_singlechannel(
-    const arma::mat& eta_pi, const arma::mat& x,
+    const arma::mat& eta_pi, const arma::mat& X_pi,
     const arma::cube& eta_A, const arma::cube& X_A,
     const arma::cube& eta_B, const arma::cube& X_B,
     const arma::field<arma::cube>& rho_A, const arma::cube& W_A,
     const arma::field<arma::cube>& rho_B, const arma::cube& W_B,
-    const arma::umat& obs, const arma::uvec& Ti,
+    const arma::uvec obs_0, const arma::umat& obs, const arma::uvec& Ti,
     const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, 
     const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B, 
     const arma::uword n_obs,
     const arma::uword maxeval, const double ftol_abs, const double ftol_rel, 
     const double xtol_abs, const double xtol_rel, const arma::uword print_level,
     const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, 
-    const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m,
-    const double lambda, const double bound,
-    const arma::uvec obs_0) {
+    const double xtol_abs_m, const double xtol_rel_m, 
+    const arma::uword print_level_m, const double lambda, const double bound) {
   
   fanhmm_sc model(
-      eta_A.n_slices, x, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
+      eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
       icpt_only_B, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B, 
       obs_0, W_A, W_B, rho_A, rho_B, n_obs, lambda
   );
@@ -308,7 +313,6 @@ Rcpp::List EM_LBFGS_fanhmm_singlechannel(
   arma::uword n_Br = model.rho_B(0).n_elem;
   arma::rowvec pars_new(n_pi + n_A + n_B + S * (n_Ar + n_Br));
   arma::rowvec pars(n_pi + n_A + n_B + S * (n_Ar + n_Br));
-  
   pars.cols(0, n_pi - 1) = arma::vectorise(model.eta_pi).t();
   pars.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
   pars.cols(n_pi + n_A, n_pi + n_A + n_B - 1) = arma::vectorise(model.eta_B).t();
@@ -341,7 +345,7 @@ Rcpp::List EM_LBFGS_fanhmm_singlechannel(
     }
     if (model.iv_B || i == 0) {
       model.update_B(i);
-    }
+    } 
     model.update_log_py(i);
     univariate_forward_nhmm(
       log_alpha, model.log_pi, model.log_A,
@@ -383,7 +387,6 @@ Rcpp::List EM_LBFGS_fanhmm_singlechannel(
     
     iter++;
     ll_new = 0;
-    
     // Minimize obj(E_pi, E_A, E_B, eta_pi, eta_A, eta_B, x, X_A, X_B)
     // with respect to eta_pi, eta_A, eta_B
     model.mstep_pi(
@@ -400,7 +403,7 @@ Rcpp::List EM_LBFGS_fanhmm_singlechannel(
       print_level_m
     );
     if (model.mstep_return_code != 0) {
-      return mstep_error_nhmm(
+      return mstep_error_fanhmm(
         model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
@@ -409,11 +412,12 @@ Rcpp::List EM_LBFGS_fanhmm_singlechannel(
       print_level_m
     );
     if (model.mstep_return_code != 0) {
-      return mstep_error_nhmm(
+      return mstep_error_fanhmm(
         model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
     // Update model
+    
     model.update_gamma_pi();
     model.update_gamma_A();
     model.update_gamma_B();

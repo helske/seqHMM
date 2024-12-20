@@ -16,13 +16,13 @@ em_dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda,
   iv_B <- attr(model$X_B, "iv")
   tv_A <- attr(model$X_A, "tv")
   tv_B <- attr(model$X_B, "tv")
-  if (!is.na(model$feedback_formula)) {
+  if (!is.null(model$feedback_formula)) {
     icpt_only_A <- FALSE
     iv_A <- TRUE
     tv_A <- TRUE
   }
   icpt_only_B <- attr(model$X_B, "icpt_only")
-  if (!is.na(model$autoregression_formula)) {
+  if (!is.null(model$autoregression_formula)) {
     icpt_only_B <- FALSE
     iv_B <- TRUE
     tv_B <- TRUE
@@ -42,6 +42,7 @@ em_dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda,
   need_grad <- grepl("NLOPT_LD_", control$algorithm)
   obs <- create_obsArray(model)
   obs <- array(obs, dim(obs)[2:3])
+  obs_0 <- model$obs_0
   all_solutions <- NULL
   
   if (need_grad) {
@@ -58,8 +59,8 @@ em_dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda,
         pars[n_i + n_s + n_o + n_f + seq_len(n_a)], S, M, L_B
       )
       out <- log_objective_fanhmm_singlechannel(
-        eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs, Ti,
-        icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
+        eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs_0, 
+        obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
       )
       list(
         objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
@@ -80,8 +81,8 @@ em_dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda,
         pars[n_i + n_s + n_o + n_f + seq_len(n_a)], S, M, L_B
       )
       out <- log_objective_fanhmm_singlechannel(
-        eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs, Ti,
-        icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
+        eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs_0, 
+        obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
       )
       - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
     }
@@ -94,13 +95,13 @@ em_dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda,
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
       init <- c(
         create_initial_values(inits, model, init_sd),
-        create_rho_A_inits(inits, S, M, L_A, init_sd), 
-        create_rho_B_inits(inits, S, M, L_B, init_sd)
+        rho_A = list(create_rho_A_inits(inits, S, M, L_A, init_sd)), 
+        rho_B = list(create_rho_B_inits(inits, S, M, L_B, init_sd))
       )
       fit <- EM_LBFGS_fanhmm_singlechannel(
         init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, 
         init$rho_A, model$W_A, init$rho_B, model$W_B,
-        obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, 
+        obs_0, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, 
         tv_B, n_obs, control$maxeval_em_dnm,
         control_restart$ftol_abs, control_restart$ftol_rel,
         control_restart$xtol_abs, control_restart$xtol_rel, 
@@ -139,8 +140,8 @@ em_dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda,
       em_return_code <- return_codes[1] + 1000
       init <- c(
         create_initial_values(inits, model, init_sd),
-        create_rho_A_inits(inits, S, M, L_A, init_sd), 
-        create_rho_B_inits(inits, S, M, L_B, init_sd)
+        rho_A = list(create_rho_A_inits(inits, S, M, L_A, init_sd)), 
+        rho_B = list(create_rho_B_inits(inits, S, M, L_B, init_sd))
       )
     } else {
       em_return_code <- 0 # generic success
@@ -165,13 +166,13 @@ em_dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda,
   } else {
     init <- c(
       create_initial_values(inits, model, init_sd),
-      create_rho_A_inits(inits, S, M, L_A, init_sd), 
-      create_rho_B_inits(inits, S, M, L_B, init_sd)
+      rho_A = list(create_rho_A_inits(inits, S, M, L_A, init_sd)), 
+      rho_B = list(create_rho_B_inits(inits, S, M, L_B, init_sd))
     )
     
     out <- EM_LBFGS_fanhmm_singlechannel(
       init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, 
-      init$rho_A, model$W_A, init$rho_B, model$W_B, obs,
+      init$rho_A, model$W_A, init$rho_B, model$W_B, obs_0, obs,
       Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
       n_obs, control$maxeval_em_dnm,
       control$ftol_abs, control$ftol_rel,
@@ -183,7 +184,7 @@ em_dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda,
     
     em_return_code <- out$return_code
     if (em_return_code >= 0) {
-      init <- fit[c("eta_pi", "eta_A", "eta_B", "rho_A", "rho_B")]
+      init <- out[c("eta_pi", "eta_A", "eta_B", "rho_A", "rho_B")]
     } else {
       warning_(
         paste("EM-step terminated due to error:", return_msg(em_return_code),
@@ -218,11 +219,11 @@ em_dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda,
   model$rhos$A <- create_rho_A(
     pars[n_i + n_s + n_o + seq_len(n_f)], S, M, L_A
   )
-  model$phis$A <- rho_to_phi(model$rhos$A)
+  model$phis$A <- rho_to_phi_field(model$rhos$A)
   model$rhos$B <- create_rho_B(
     pars[n_i + n_s + n_o + n_f + seq_len(n_a)], S, M, L_B
   )
-  model$phis$B <- rho_to_phi(model$rhos$B)
+  model$phis$B <- rho_to_phi_field(model$rhos$B)
   model$estimation_results <- list(
     loglik = -out$objective * n_obs, 
     return_code = out$status,

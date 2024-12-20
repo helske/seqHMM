@@ -99,14 +99,24 @@ arma::cube rho_to_phi(const arma::cube& rho, const arma::mat& Q) {
   if (rho.n_cols > 0) {
     phi.slice(0).zeros(); // first category of y as reference
     for (arma::uword i = 1; i < (rho.n_slices + 1); i++) {
-      phi.slice(i) = sum_to_zero(rho.slice(i), Q);
+      phi.slice(i) = sum_to_zero(rho.slice(i - 1), Q);
     }
   }
   return phi;
 }
-
 arma::field<arma::cube> rho_to_phi(
     const arma::field<arma::cube>& rho, const arma::mat& Q) {
+  arma::uword S = rho.n_elem;
+  arma::field<arma::cube> phi(S);
+  for (arma::uword s = 0; s < S; s++) {
+    phi(s) = rho_to_phi(rho(s), Q);
+  }
+  return phi;
+}
+// [[Rcpp::export]]
+arma::field<arma::cube> rho_to_phi_field(
+    const arma::field<arma::cube>& rho) {
+  arma::mat Q = create_Q(rho(0).n_rows + 1);
   arma::uword S = rho.n_elem;
   arma::field<arma::cube> phi(S);
   for (arma::uword s = 0; s < S; s++) {

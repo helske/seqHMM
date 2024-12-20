@@ -11,13 +11,13 @@ em_fanhmm <- function(model, inits, init_sd, restarts, lambda,
   iv_B <- attr(model$X_B, "iv")
   tv_A <- attr(model$X_A, "tv")
   tv_B <- attr(model$X_B, "tv")
-  if (!is.na(model$feedback_formula)) {
+  if (!is.null(model$feedback_formula)) {
     icpt_only_A <- FALSE
     iv_A <- TRUE
     tv_A <- TRUE
   }
   icpt_only_B <- attr(model$X_B, "icpt_only")
-  if (!is.na(model$autoregression_formula)) {
+  if (!is.null(model$autoregression_formula)) {
     icpt_only_B <- FALSE
     iv_B <- TRUE
     tv_B <- TRUE
@@ -44,12 +44,12 @@ em_fanhmm <- function(model, inits, init_sd, restarts, lambda,
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
       init <- c(
         create_initial_values(inits, model, init_sd),
-        create_rho_A_inits(inits, S, M, L_A, init_sd), 
-        create_rho_B_inits(inits, S, M, L_B, init_sd)
+        rho_A = list(create_rho_A_inits(inits, S, M, L_A, init_sd)), 
+        rho_B = list(create_rho_B_inits(inits, S, M, L_B, init_sd))
       )
       fit <- EM_LBFGS_fanhmm_singlechannel(
         init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, 
-        init$rho_A, model$W_A, init$rho_B, model$W_B, obs,
+        init$rho_A, model$W_A, init$rho_B, model$W_B, model$obs_0, obs,
         Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
         n_obs, control_restart$maxeval,
         control_restart$ftol_abs, control_restart$ftol_rel,
@@ -78,13 +78,13 @@ em_fanhmm <- function(model, inits, init_sd, restarts, lambda,
   } else {
     init <- c(
       create_initial_values(inits, model, init_sd),
-      create_rho_A_inits(inits, S, M, L_A, init_sd), 
-      create_rho_B_inits(inits, S, M, L_B, init_sd)
+      rho_A = list(create_rho_A_inits(inits, S, M, L_A, init_sd)), 
+      rho_B = list(create_rho_B_inits(inits, S, M, L_B, init_sd))
     )
   }
   out <- EM_LBFGS_fanhmm_singlechannel(
     init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, 
-    init$rho_A, model$W_A, init$rho_B, model$W_B, obs,
+    init$rho_A, model$W_A, init$rho_B, model$W_B, model$obs_0, obs,
     Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
     n_obs, control$maxeval,
     control$ftol_abs, control$ftol_rel,
@@ -105,9 +105,9 @@ em_fanhmm <- function(model, inits, init_sd, restarts, lambda,
   model$etas$B[] <- out$eta_B
   model$gammas$B <- eta_to_gamma_cube(model$etas$B)
   model$rhos$A <- out$rho_A
-  model$phis$A <- rho_to_phi(model$rhos$A)
+  model$phis$A <- rho_to_phi_field(model$rhos$A)
   model$rhos$B <- out$rho_B
-  model$phis$B <- rho_to_phi(model$rhos$B)
+  model$phis$B <- rho_to_phi_field(model$rhos$B)
   model$estimation_results <- list(
     loglik = out$logLik,
     penalty = out$penalty_term,

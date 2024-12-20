@@ -3,6 +3,7 @@
 #include "nhmm_mc.h"
 #include "mnhmm_sc.h"
 #include "mnhmm_mc.h"
+#include "fanhmm_sc.h"
 
 #include "nhmm_forward.h"
 #include "nhmm_backward.h"
@@ -481,5 +482,101 @@ Rcpp::List log_objective_mnhmm_multichannel(
     Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A2),
     Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2),
     Rcpp::Named("gradient_omega") = Rcpp::wrap(grad_omega2)
+  );
+}
+
+// [[Rcpp::export]]
+Rcpp::List log_objective_fanhmm_singlechannel(
+    arma::mat& eta_pi, const arma::mat& X_pi,
+    arma::cube& eta_A, const arma::cube& X_A,
+    arma::cube& eta_B, const arma::cube& X_B,
+    const arma::field<arma::cube>& rho_A, const arma::cube& W_A,
+    const arma::field<arma::cube>& rho_B, const arma::cube& W_B,
+    const arma::uvec obs_0, const arma::umat& obs, const arma::uvec& Ti,
+    const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, 
+    const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B) {
+  
+  fanhmm_sc model(
+      eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
+      icpt_only_B, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B, 
+      obs_0, W_A, W_B, rho_A, rho_B
+  );
+  arma::vec loglik(model.N);
+  arma::mat log_alpha(model.S, model.T);
+  arma::mat log_beta(model.S, model.T);
+  
+  arma::mat grad_pi(model.S, model.K_pi, arma::fill::zeros);
+  arma::cube grad_A(model.S, model.K_A + (model.M - 1) * model.L_A, model.S, arma::fill::zeros);
+  arma::cube grad_B(model.M, model.K_B + (model.M - 1) * model.L_B, model.S, arma::fill::zeros);
+  arma::mat grad_pi2(model.S - 1, model.K_pi, arma::fill::zeros);
+  arma::cube grad_A2(model.S - 1, model.K_A + (model.M - 1) * model.L_A, model.S, arma::fill::zeros);
+  arma::cube grad_B2(model.M - 1, model.K_B + (model.M - 1) * model.L_B, model.S, arma::fill::zeros);
+  arma::mat tmpmat(model.S, model.S);
+  arma::vec tmpvec(model.M);
+  for (arma::uword i = 0; i < model.N; i++) {
+    if (!model.icpt_only_pi || i == 0) {
+      model.update_pi(i);
+    }
+    if (model.iv_A || i == 0) {
+      model.update_A(i);
+    }
+    if (model.iv_B || i == 0) {
+      model.update_B(i);
+    }
+    model.update_log_py(i);
+    univariate_forward_nhmm(
+      log_alpha, model.log_pi, model.log_A, 
+      model.log_py.cols(0, model.Ti(i) - 1)
+    );
+    univariate_backward_nhmm(
+      log_beta, model.log_A, model.log_py.cols(0, model.Ti(i) - 1)
+    );
+    double ll = logSumExp(log_alpha.col(model.Ti(i) - 1));
+    if (!std::isfinite(ll)) {
+      return Rcpp::List::create(
+        Rcpp::Named("loglik") = -model.maxval,
+        Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi2),
+        Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A2),
+        Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2)
+      );
+    }
+    loglik(i) = ll;
+    // gradient wrt gamma_pi
+    gradient_wrt_pi(grad_pi, tmpmat, model.log_py, log_beta, ll, model.pi, model.X_pi, i);
+    // gradient wrt gamma_A
+    for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
+      for (arma::uword s = 0; s < model.S; s++) {
+        gradient_wrt_A(
+          grad_A.slice(s), tmpmat, model.obs, model.log_py, log_alpha, 
+          log_beta, ll, model.A, model.X_A, model.W_A, i, t, s
+        );
+      }
+    }
+    // gradient wrt gamma_B
+    for (arma::uword s = 0; s < model.S; s++) {
+      gradient_wrt_B_t0(
+        grad_B.slice(s), tmpvec, model.obs, model.obs_0, model.log_pi, 
+        log_beta, ll, model.B, model.X_B, model.W_B, i, s
+      );
+      for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
+        gradient_wrt_B(
+          grad_B.slice(s), tmpvec, model.obs, log_alpha, 
+          log_beta, ll, model.log_A, model.B, model.X_B, model.W_B, i, s, t
+        );
+      }
+    }
+  }
+  grad_pi2 = model.Qs.t() * grad_pi;
+  for (arma::uword s = 0; s < model.S; s++) {
+    grad_A2.slice(s) = model.Qs.t() * grad_A.slice(s);
+    grad_B2.slice(s) = model.Qm.t() * grad_B.slice(s);
+  }
+  return Rcpp::List::create(
+    Rcpp::Named("loglik") = sum(loglik),
+    Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi2),
+    Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A2.cols(0, model.K_A - 1)),
+    Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2.cols(0, model.K_B - 1)),
+    Rcpp::Named("gradient_rho_A") = Rcpp::wrap(grad_A2.cols(model.K_A, grad_A2.n_cols - 1)),
+    Rcpp::Named("gradient_rho_B") = Rcpp::wrap(grad_B2.cols(model.K_A, grad_B2.n_cols - 1))
   );
 }

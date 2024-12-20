@@ -98,16 +98,16 @@ struct fanhmm_sc : public nhmm_sc {
     log_A = arma::log(A);
   }
   void update_B(const arma::uword i) {
-    arma::mat Btmp(M, S);
+    arma::mat Btmp(M + 1, S, arma::fill::ones);
     if (icpt_only_B) {
       for (arma::uword s = 0; s < S; s++) { // from states
-        Btmp.col(s) = softmax(gamma_B.slice(s).col(0));
+        Btmp.col(s).rows(0, M - 1) = softmax(gamma_B.slice(s).col(0));
       }
       B.each_slice() = Btmp.t();
     } else {
       if (tv_B) {
         for (arma::uword s = 0; s < S; s++) { // from states
-          Btmp.col(s) = 
+          Btmp.col(s).rows(0, M - 1) = 
             softmax(
               gamma_B.slice(s) * X_B.slice(i).col(0) +
                 phi_B(s).slice(obs_0(i)) * W_B.slice(i).col(0)
@@ -116,7 +116,7 @@ struct fanhmm_sc : public nhmm_sc {
         B.slice(0) = Btmp.t();
         for (arma::uword t = 1; t < Ti(i); t++) { // time
           for (arma::uword s = 0; s < S; s++) { // from states
-            Btmp.col(s) = 
+            Btmp.col(s).rows(0, M - 1) = 
               softmax(
                 gamma_B.slice(s) * X_B.slice(i).col(t) +
                   phi_B(s).slice(obs(t - 1, i)) * W_B.slice(i).col(t)
@@ -127,7 +127,7 @@ struct fanhmm_sc : public nhmm_sc {
       } else {
         // does not depend on time => does not depend on y_t
         for (arma::uword s = 0; s < S; s++) { // from states
-          Btmp.col(s) = softmax(
+          Btmp.col(s).rows(0, M - 1) = softmax(
             gamma_B.slice(s) * X_B.slice(i).col(0)
           );
         }
