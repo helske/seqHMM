@@ -30,7 +30,7 @@ build_fanhmm <- function(
   stopifnot_(
     out$model$n_channels == 1L,
     "Currently only single-channel responses are supported for FAN-HMM.")
-  if(is.null(autoregression_formula)) {
+  if(is.null(feedback_formula)) {
     out$model$W_A <- array(
       0, c(0L, out$model$length_of_sequences - 1, out$model$n_sequences)
     )
@@ -39,21 +39,24 @@ build_fanhmm <- function(
     )
     np_rho_A <- 0
   } else {
-    W_A <- model_matrix_autoregression_formula(
-      autoregression_formula, data, 
+    W_A <- model_matrix_feedback_formula(
+      feedback_formula, data, 
       out$model$n_sequences, 
       out$model$length_of_sequences, n_states,
       out$model$n_symbols, time, id, 
       out$model$sequence_lengths
     )
+    x_attr <- attributes(W_A$X)
     out$model$W_A <- W_A$X[, -1, , drop = FALSE]
+    x_attr$dim[2] <- x_attr$dim[2] - 1L
+    attributes(out$model$W_A) <- x_attr
     out$model$rhos$A <- create_rho_A_inits(
       NULL, n_states, out$model$n_symbols, nrow(out$model$W_A), 0
     )
     out$extras$intercept_only <- FALSE
     np_rho_A <- W_A$n_pars
   }
-  if(is.null(feedback_formula)) {
+  if(is.null(autoregression_formula)) {
     out$model$W_B <- array(
       0, c(0L, out$model$length_of_sequences - 1, out$model$n_sequences)
     )
@@ -62,14 +65,17 @@ build_fanhmm <- function(
     )
     np_rho_B <- 0
   } else {
-    W_B <- model_matrix_feedback_formula(
-      feedback_formula, data, 
+    W_B <- model_matrix_autoregression_formula(
+      autoregression_formula, data, 
       out$model$n_sequences, 
       out$model$length_of_sequences, n_states,
       out$model$n_symbols, time, id, 
       out$model$sequence_lengths
     )
+    x_attr <- attributes(W_B$X)
     out$model$W_B <- W_B$X[, -1, , drop = FALSE]
+    x_attr$dim[2] <- x_attr$dim[2] - 1L
+    attributes(out$model$W_B) <- x_attr
     out$model$rhos$B <- create_rho_B_inits(
       NULL, n_states, out$model$n_symbols, nrow(out$model$W_B), 0
     )
@@ -80,8 +86,14 @@ build_fanhmm <- function(
   out$model$observations <- out$model$observations[, -1]
   out$model$length_of_sequences <- out$model$length_of_sequences - 1
   out$model$sequence_lengths <- out$model$sequence_lengths - 1
+  x_attr <- attributes(out$model$X_A)
   out$model$X_A <- out$model$X_A[, -1, , drop = FALSE]
+  x_attr$dim[2] <- x_attr$dim[2] - 1L
+  attributes(out$model$X_A) <- x_attr
+  x_attr <- attributes(out$model$X_B)
   out$model$X_B <- out$model$X_B[, -1, , drop = FALSE]
+  x_attr$dim[2] <- x_attr$dim[2] - 1L
+  attributes(out$model$X_B) <- x_attr
   structure(
     c(
       out$model,

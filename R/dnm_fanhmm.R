@@ -11,6 +11,7 @@ dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
   n_a <- attr(model, "np_rho_B")
   icpt_only_pi <- attr(model$X_pi, "icpt_only")
   icpt_only_A <- attr(model$X_A, "icpt_only")
+  icpt_only_B <- attr(model$X_B, "icpt_only")
   iv_A <- attr(model$X_A, "iv")
   iv_B <- attr(model$X_B, "iv")
   tv_A <- attr(model$X_A, "tv")
@@ -20,7 +21,6 @@ dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
     iv_A <- TRUE
     tv_A <- TRUE
   }
-  icpt_only_B <- attr(model$X_B, "icpt_only")
   if (!is.null(model$autoregression_formula)) {
     icpt_only_B <- FALSE
     iv_B <- TRUE

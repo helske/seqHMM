@@ -1119,6 +1119,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// simulate_fanhmm_singlechannel
+Rcpp::List simulate_fanhmm_singlechannel(const arma::mat& eta_pi, const arma::mat& X_pi, const arma::cube& eta_A, const arma::cube& X_A, const arma::cube& eta_B, const arma::cube& X_B, const arma::field<arma::cube>& rho_A, const arma::cube& W_A, const arma::field<arma::cube>& rho_B, const arma::cube& W_B, const arma::uvec& obs_0);
+RcppExport SEXP _seqHMM_simulate_fanhmm_singlechannel(SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP rho_ASEXP, SEXP W_ASEXP, SEXP rho_BSEXP, SEXP W_BSEXP, SEXP obs_0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type eta_pi(eta_piSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_pi(X_piSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type eta_A(eta_ASEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_A(X_ASEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type eta_B(eta_BSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type X_B(X_BSEXP);
+    Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type rho_A(rho_ASEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type W_A(W_ASEXP);
+    Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type rho_B(rho_BSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type W_B(W_BSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type obs_0(obs_0SEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_fanhmm_singlechannel(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs_0));
+    return rcpp_result_gen;
+END_RCPP
+}
 // viterbi_nhmm_singlechannel
 Rcpp::List viterbi_nhmm_singlechannel(arma::mat& eta_pi, const arma::mat& X_pi, arma::cube& eta_A, const arma::cube& X_A, arma::cube& eta_B, const arma::cube& X_B, const arma::umat& obs, const arma::uvec Ti, const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B);
 RcppExport SEXP _seqHMM_viterbi_nhmm_singlechannel(SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP obsSEXP, SEXP TiSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP) {
@@ -1746,6 +1767,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_simulate_nhmm_multichannel", (DL_FUNC) &_seqHMM_simulate_nhmm_multichannel, 7},
     {"_seqHMM_simulate_mnhmm_singlechannel", (DL_FUNC) &_seqHMM_simulate_mnhmm_singlechannel, 8},
     {"_seqHMM_simulate_mnhmm_multichannel", (DL_FUNC) &_seqHMM_simulate_mnhmm_multichannel, 9},
+    {"_seqHMM_simulate_fanhmm_singlechannel", (DL_FUNC) &_seqHMM_simulate_fanhmm_singlechannel, 11},
     {"_seqHMM_viterbi_nhmm_singlechannel", (DL_FUNC) &_seqHMM_viterbi_nhmm_singlechannel, 15},
     {"_seqHMM_viterbi_nhmm_multichannel", (DL_FUNC) &_seqHMM_viterbi_nhmm_multichannel, 15},
     {"_seqHMM_viterbi_mnhmm_singlechannel", (DL_FUNC) &_seqHMM_viterbi_mnhmm_singlechannel, 18},
