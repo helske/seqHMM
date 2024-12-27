@@ -79,7 +79,7 @@ void nhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
       return_code = 7;
     }
   }
-  if (print_level > 2 && return_code > 0) {
+  if (print_level > 2) {
     Rcpp::Rcout<<"M-step of initial probabilities ended with return code "<<
       return_code<<" after "<<mstep_iter + 1<<" iterations."<<std::endl;
   }
@@ -183,7 +183,7 @@ void nhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
         return_code = 7;
       }
     }
-    if (print_level > 2 && return_code > 0) {
+    if (print_level > 2) {
       Rcpp::Rcout<<"M-step of transition probabilities of state "<<s + 1<<
         " ended with return code "<<return_code<<" after "<<mstep_iter + 1<<
           " iterations."<<std::endl;
@@ -294,7 +294,7 @@ void nhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
         return_code = 7;
       }
     }
-    if (print_level > 2 && return_code > 0) {
+    if (print_level > 2) {
       Rcpp::Rcout<<"M-step of emission probabilities of state "<<s + 1<<
         " ended with return code "<<return_code<<" after "<<mstep_iter + 1<<
           " iterations."<<std::endl;
@@ -411,7 +411,7 @@ void nhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
           return_code = 7;
         }
       }
-      if (print_level > 2 && return_code > 0) {
+      if (print_level > 2) {
         Rcpp::Rcout<<"M-step of emission probabilities of state "<<s + 1<<
           " and channel "<<c<<" ended with return code "<<return_code<<
             " after "<<mstep_iter + 1<<" iterations."<<std::endl;
