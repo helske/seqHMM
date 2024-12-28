@@ -76,7 +76,9 @@ return_msg <- function(code) {
   if (code == 7) {
     msg <- paste0(
       "NLopt terminated with generic error code -1. ", 
-      "Gradient norm was less than 1e-6, so likely converged successfully."
+      "Maximum absolute value of gradient was less than 1e-6 or relative ",
+      "change of log-likelihood less than ftol_rel so likely converged ",
+      "successfully."
     )
   }
   paste0(x, msg)

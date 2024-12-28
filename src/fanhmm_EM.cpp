@@ -103,21 +103,27 @@ void fanhmm_sc::mstep_A(const double ftol_abs, const double ftol_rel,
   nlopt_set_upper_bounds1(opt, bound);
   double minf;
   int return_code;
-  
+  double ll;
+  arma::vec grad(n);
   for (arma::uword s = 0; s < S; s++) {
     current_s = s;
     x = arma::join_cols(
       arma::vectorise(eta_A.slice(s)), 
       arma::vectorise(rho_A(s))
     );
+    ll = objective_A(x, grad);
     mstep_iter = 0;
-    return_code = nlopt_optimize(opt, x.memptr(), &minf);
-    // nlopt_optimize can return generic failure code due to small gradients
-    if (return_code == -1) {
-      arma::vec grad(x.n_elem);
-      objective_A(x, grad);
-      if (arma::norm(grad) < 1e-6) {
-        return_code = 7;
+    if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
+      return_code = 1; // already converged (L-BFGS gradient tolerance)
+    } else {
+      return_code = nlopt_optimize(opt, x.memptr(), &minf);
+      // nlopt_optimize can return generic failure code due to small gradients
+      if (return_code == -1) {
+        double ll_new = objective_A(x, grad);
+        double relative_change = abs(ll_new - ll) / (std::abs(ll) + 1e-12);
+        if ((arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll_new)) || relative_change < ftol_rel) {
+          return_code = 7;
+        }
       }
     }
     if (print_level > 2) {
@@ -249,20 +255,27 @@ void fanhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
   nlopt_set_upper_bounds1(opt, bound);
   double minf;
   int return_code;
+  double ll;
+  arma::vec grad(n);
   for (arma::uword s = 0; s < S; s++) {
     current_s = s;
     x = arma::join_cols(
       arma::vectorise(eta_B.slice(s)), 
       arma::vectorise(rho_B(s))
     );
+    ll = objective_B(x, grad);
     mstep_iter = 0;
-    return_code = nlopt_optimize(opt, x.memptr(), &minf);
-    // nlopt_optimize can return generic failure code due to small gradients
-    if (return_code == -1) {
-      arma::vec grad(x.n_elem);
-      objective_B(x, grad);
-      if (arma::norm(grad) < 1e-6) {
-        return_code = 7;
+    if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
+      return_code = 1; // already converged (L-BFGS gradient tolerance)
+    } else {
+      return_code = nlopt_optimize(opt, x.memptr(), &minf);
+      // nlopt_optimize can return generic failure code due to small gradients
+      if (return_code == -1) {
+        double ll_new = objective_B(x, grad);
+        double relative_change = abs(ll_new - ll) / (std::abs(ll) + 1e-12);
+        if ((arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll_new)) || relative_change < ftol_rel) {
+          return_code = 7;
+        }
       }
     }
     if (print_level > 2) {
@@ -390,7 +403,7 @@ Rcpp::List EM_LBFGS_fanhmm_singlechannel(
     // Minimize obj(E_pi, E_A, E_B, eta_pi, eta_A, eta_B, x, X_A, X_B)
     // with respect to eta_pi, eta_A, eta_B
     model.mstep_pi(
-      ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, bound, 
+      ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, maxeval_m, bound, 
       print_level_m
     );
     if (model.mstep_return_code != 0) {
@@ -399,7 +412,7 @@ Rcpp::List EM_LBFGS_fanhmm_singlechannel(
         absolute_change, absolute_x_change, relative_x_change);
     }
     model.mstep_A(
-      ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, bound, 
+      ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, maxeval_m, bound, 
       print_level_m
     );
     if (model.mstep_return_code != 0) {
@@ -408,7 +421,7 @@ Rcpp::List EM_LBFGS_fanhmm_singlechannel(
         absolute_change, absolute_x_change, relative_x_change);
     }
     model.mstep_B(
-      ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_abs_m, maxeval_m, bound, 
+      ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, maxeval_m, bound, 
       print_level_m
     );
     if (model.mstep_return_code != 0) {

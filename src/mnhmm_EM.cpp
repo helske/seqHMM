@@ -71,13 +71,22 @@ void mnhmm_base::mstep_omega(const double xtol_abs, const double ftol_abs,
   nlopt_set_lower_bounds1(opt, -bound);
   nlopt_set_upper_bounds1(opt, bound);
   double minf;
+  int return_code;
+  double ll;
+  arma::vec grad(eta_omega.n_elem);
+  ll = objective_omega(x, grad);
   mstep_iter = 0;
-  int return_code = nlopt_optimize(opt, x.memptr(), &minf);
-  if (return_code == -1) {
-    arma::vec grad(x.n_elem);
-    objective_omega(x, grad);
-    if (arma::norm(grad) < 1e-6) {
-      return_code = 7;
+  if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
+    return_code = 1; // already converged (L-BFGS gradient tolerance)
+  } else {
+    return_code = nlopt_optimize(opt, x.memptr(), &minf);
+    // nlopt_optimize can return generic failure code due to small gradients
+    if (return_code == -1) {
+      double ll_new = objective_omega(x, grad);
+      double relative_change = abs(ll_new - ll) / (std::abs(ll) + 1e-12);
+      if ((arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll_new)) || relative_change < ftol_rel) {
+        return_code = 7;
+      }
     }
   }
   if (print_level > 2) {
@@ -118,8 +127,8 @@ double mnhmm_base::objective_pi(const arma::vec& x, arma::vec& grad) {
   return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
 }
 
-void mnhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
-                          const double xtol_rel, const double ftol_rel,
+void mnhmm_base::mstep_pi(const double ftol_abs, const double ftol_rel, 
+                          const double xtol_abs, const double xtol_rel, 
                           const arma::uword maxeval, const double bound, 
                           const arma::uword print_level) {
   mstep_return_code = 0;
@@ -155,16 +164,24 @@ void mnhmm_base::mstep_pi(const double xtol_abs, const double ftol_abs,
   double minf;
   int return_code;
   int mstep_iter;
+  double ll;
+  arma::vec grad(eta_pi(0).n_elem);
   for (arma::uword d = 0; d < D; d++) {
     current_d = d;
-    arma::vec x(eta_pi(d).memptr(), eta_pi.n_elem, false, true);
+    arma::vec x(eta_pi(d).memptr(), eta_pi(d).n_elem, false, true);
+    ll = objective_pi(x, grad);
     mstep_iter = 0;
-    return_code = nlopt_optimize(opt, x.memptr(), &minf);
-    if (return_code == -1) {
-      arma::vec grad(x.n_elem);
-      objective_pi(x, grad);
-      if (arma::norm(grad) < 1e-6) {
-        return_code = 7;
+    if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
+      return_code = 1; // already converged (L-BFGS gradient tolerance)
+    } else {
+      return_code = nlopt_optimize(opt, x.memptr(), &minf);
+      // nlopt_optimize can return generic failure code due to small gradients
+      if (return_code == -1) {
+        double ll_new = objective_pi(x, grad);
+        double relative_change = abs(ll_new - ll) / (std::abs(ll) + 1e-12);
+        if ((arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll_new)) || relative_change < ftol_rel) {
+          return_code = 7;
+        }
       }
     }
     if (print_level > 2) {
@@ -265,18 +282,26 @@ void mnhmm_base::mstep_A(const double ftol_abs, const double ftol_rel,
   double minf;
   int return_code;
   int mstep_iter;
+  double ll;
+  arma::vec grad(eta_A(0).slice(0).n_elem);
   for (arma::uword d = 0; d < D; d++) {
     current_d = d;
     for (arma::uword s = 0; s < S; s++) {
       current_s = s;
       arma::vec x(eta_A(d).slice(s).memptr(), eta_A(d).slice(s).n_elem, false, true);
+      ll = objective_A(x, grad);
       mstep_iter = 0;
-      return_code = nlopt_optimize(opt, x.memptr(), &minf);
-      if (return_code == -1) {
-        arma::vec grad(x.n_elem);
-        objective_A(x, grad);
-        if (arma::norm(grad) < 1e-6) {
-          return_code = 7;
+      if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
+        return_code = 1; // already converged (L-BFGS gradient tolerance)
+      } else {
+        return_code = nlopt_optimize(opt, x.memptr(), &minf);
+        // nlopt_optimize can return generic failure code due to small gradients
+        if (return_code == -1) {
+          double ll_new = objective_A(x, grad);
+          double relative_change = abs(ll_new - ll) / (std::abs(ll) + 1e-12);
+          if ((arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll_new)) || relative_change < ftol_rel) {
+            return_code = 7;
+          }
         }
       }
       if (print_level > 2) {
@@ -385,18 +410,26 @@ void mnhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
   double minf;
   int return_code;
   int mstep_iter;
+  double ll;
+  arma::vec grad(eta_B(0).slice(0).n_elem);
   for (arma::uword d = 0; d < D; d++) {
     current_d = d;
     for (arma::uword s = 0; s < S; s++) {
       current_s = s;
       arma::vec x(eta_B(d).slice(s).memptr(), eta_B(d).slice(s).n_elem, false, true);
+      ll = objective_B(x, grad);
       mstep_iter = 0;
-      return_code = nlopt_optimize(opt, x.memptr(), &minf);
-      if (return_code == -1) {
-        arma::vec grad(x.n_elem);
-        objective_B(x, grad);
-        if (arma::norm(grad) < 1e-6) {
-          return_code = 7;
+      if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
+        return_code = 1; // already converged (L-BFGS gradient tolerance)
+      } else {
+        return_code = nlopt_optimize(opt, x.memptr(), &minf);
+        // nlopt_optimize can return generic failure code due to small gradients
+        if (return_code == -1) {
+          double ll_new = objective_B(x, grad);
+          double relative_change = abs(ll_new - ll) / (std::abs(ll) + 1e-12);
+          if ((arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll_new)) || relative_change < ftol_rel) {
+            return_code = 7;
+          }
         }
       }
       if (print_level > 2) {
@@ -499,6 +532,7 @@ void mnhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
   double minf;
   int return_code;
   int mstep_iter;
+  double ll;
   for (arma::uword c = 0; c < C; c++) {
     arma::vec x(eta_B(c, 0).slice(0).n_elem);
     nlopt_opt opt = nlopt_create(NLOPT_LD_LBFGS, x.n_elem);
@@ -511,18 +545,25 @@ void mnhmm_mc::mstep_B(const double ftol_abs, const double ftol_rel,
     nlopt_set_lower_bounds1(opt, -bound);
     nlopt_set_upper_bounds1(opt, bound);
     current_c = c;
+    arma::vec grad(eta_B(c, 0).slice(0).n_elem);
     for (arma::uword d = 0; d < D; d++) {
       current_d = d;
       for (arma::uword s = 0; s < S; s++) {
         current_s = s;
         arma::vec x(eta_B(c, d).slice(s).memptr(), eta_B(c, d).slice(s).n_elem, false, true);
+        ll = objective_B(x, grad);
         mstep_iter = 0;
-        return_code = nlopt_optimize(opt, x.memptr(), &minf);
-        if (return_code == -1) {
-          arma::vec grad(x.n_elem);
-          objective_B(x, grad);
-          if (arma::norm(grad) < 1e-6) {
-            return_code = 7;
+        if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
+          return_code = 1; // already converged (L-BFGS gradient tolerance)
+        } else {
+          return_code = nlopt_optimize(opt, x.memptr(), &minf);
+          // nlopt_optimize can return generic failure code due to small gradients
+          if (return_code == -1) {
+            double ll_new = objective_B(x, grad);
+            double relative_change = abs(ll_new - ll) / (std::abs(ll) + 1e-12);
+            if ((arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll_new)) || relative_change < ftol_rel) {
+              return_code = 7;
+            }
           }
         }
         if (print_level > 2) {
@@ -735,7 +776,7 @@ Rcpp::List EM_LBFGS_mnhmm_singlechannel(
     penalty_term = 0.5 * lambda * std::pow(arma::norm(new_pars, 2), 2);
     ll_new -= penalty_term;
     ll_new /= model.n_obs;
-    relative_change = (ll_new - ll) / (std::abs(ll) + 1e-8);
+    relative_change = (ll_new - ll) / (std::abs(ll) + 1e-12);
     absolute_change = ll_new - ll;
     absolute_x_change = arma::max(arma::abs(new_pars - pars));
     relative_x_change = arma::norm(new_pars - pars, 1) / arma::norm(pars, 1);
@@ -985,7 +1026,7 @@ Rcpp::List EM_LBFGS_mnhmm_multichannel(
     penalty_term = 0.5 * lambda * std::pow(arma::norm(new_pars, 2), 2);
     ll_new -= penalty_term;
     ll_new /= model.n_obs;
-    relative_change = (ll_new - ll) / (std::abs(ll) + 1e-8);
+    relative_change = (ll_new - ll) / (std::abs(ll) + 1e-12);
     absolute_change = ll_new - ll;
     absolute_x_change = arma::max(arma::abs(new_pars - pars));
     relative_x_change = arma::norm(new_pars - pars, 1) / arma::norm(pars, 1);

@@ -101,9 +101,18 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
         x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
         ub = rep(bound, length(init)), opts = control_restart
       )
-      if (fit$status == -1 && need_grad) {
-        grad_norm <- sqrt(sum(objectivef(fit$solution)$gradient^2))
-        if (grad_norm < 1e-6) fit$status <- 7
+      if (fit$status == -1) {
+        grad_norm <- if (need_grad) {
+          max(abs(objectivef(fit$solution)$gradient))
+        } else {
+          1
+        }
+        relative_change <- abs(fit$objective - objectivef(init)$objective) / 
+          (abs(fit$objective) + 1e-12)
+        if ((grad_norm < 1e-8 && is.finite(fit$objective)) || 
+            relative_change < control_restart$ftol_rel) {
+          fit$status <- 7
+        }
       }
       p()
       fit
@@ -135,9 +144,18 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
     x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
     ub = rep(bound, length(init)), opts = control
   )
-  if (out$status == -1 && need_grad) {
-    grad_norm <- sqrt(sum(objectivef(out$solution)$gradient^2))
-    if (grad_norm < 1e-6) out$status <- 6
+  if (out$status == -1) {
+    grad_norm <- if (need_grad) {
+      max(abs(objectivef(out$solution)$gradient))
+    } else {
+      1
+    }
+    relative_change <- abs(out$objective - objectivef(init)$objective) / 
+      (abs(out$objective) + 1e-12)
+    if ((grad_norm < 1e-8 && is.finite(out$objective)) || 
+        relative_change < control$ftol_rel) {
+      out$status <- 7
+    }
   }
   if (out$status < 0) {
     warning_(
