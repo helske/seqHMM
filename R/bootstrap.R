@@ -330,8 +330,11 @@ bootstrap_coefs.fanhmm <- function(model, nsim = 1000,
     checkmate::test_int(x = nsim, lower = 0L), 
     "Argument {.arg nsim} must be a single positive integer."
   )
-  init <- setNames(model$etas, c("eta_pi", "eta_A", "eta_B", "rho_A", "rho_B"))
-  gammas_mle <- model$gammas
+  init <- c(
+    setNames(model$etas, c("eta_pi", "eta_A", "eta_B")),
+    setNames(model$rhos, c("rho_A", "rho_B"))
+  )
+  mle <- c(model$gammas, model$rhos)
   lambda <- model$estimation_results$lambda
   bound <- model$estimation_results$bound
   p <- progressr::progressor(along = seq_len(nsim))
@@ -351,9 +354,12 @@ bootstrap_coefs.fanhmm <- function(model, nsim = 1000,
           control_restart = list(), control_mstep = control_mstep
         )
         if (fit$estimation_results$return_code >= 0) {
-          fit$gammas <- permute_states(fit$gammas, gammas_mle)
+          est <- permute_states(fit$gammas, fit$rhos, mle)
+          fit$gammas <- est$gammas
+          fit$phis <- est$phis
         } else {
           fit$gammas <- NULL
+          fit$phis <- NULL
         }
         p()
         list(gammas = fit$gammas, idx = boot_mod$idx)
