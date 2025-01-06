@@ -12,8 +12,12 @@ bootstrap_model <- function(model) {
   model$X_pi[] <- model$X_pi[, idx]
   model$X_A[] <- model$X_A[, , idx]
   model$X_B[] <- model$X_B[, , idx]
-  if (!is.null(model$X_omega)) {
+  if (inherits(model, "mnhmm")) {
     model$X_omega[] <- model$X_omega[, idx]
+  }
+  if (inherits(model, "fanhmm")) {
+    model$W_A[] <- model$W_A[, idx]
+    model$W_B[] <- model$W_B[, idx]
   }
   model$sequence_lengths <- model$sequence_lengths[idx]
   list(model = model, idx = idx)
@@ -314,5 +318,115 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
   } else {
     model$boot <- boot
   }
+  model
+}
+#' @rdname bootstrap
+#' @export
+bootstrap_coefs.fanhmm <- function(model, nsim = 1000, 
+                                 type = c("nonparametric", "parametric"),
+                                 method = "EM-DNM", append = FALSE, ...) {
+  type <- match.arg(type)
+  stopifnot_(
+    checkmate::test_int(x = nsim, lower = 0L), 
+    "Argument {.arg nsim} must be a single positive integer."
+  )
+  init <- setNames(model$etas, c("eta_pi", "eta_A", "eta_B", "rho_A", "rho_B"))
+  gammas_mle <- model$gammas
+  lambda <- model$estimation_results$lambda
+  bound <- model$estimation_results$bound
+  p <- progressr::progressor(along = seq_len(nsim))
+  original_options <- options(future.globals.maxSize = Inf)
+  on.exit(options(original_options))
+  control <- model$controls$control
+  control$print_level <- 0
+  control_mstep <- model$controls$mstep
+  control_mstep$print_level <- 0
+  if (type == "nonparametric") {
+    out <- future.apply::future_lapply(
+      seq_len(nsim), function(i) {
+        boot_mod <- bootstrap_model(model)
+        fit <- fit_fanhmm(
+          boot_mod$model, init, init_sd = 0, restarts = 0, lambda = lambda, 
+          method = method, bound = bound, control = control,
+          control_restart = list(), control_mstep = control_mstep
+        )
+        if (fit$estimation_results$return_code >= 0) {
+          fit$gammas <- permute_states(fit$gammas, gammas_mle)
+        } else {
+          fit$gammas <- NULL
+        }
+        p()
+        list(gammas = fit$gammas, idx = boot_mod$idx)
+      }, future.seed = TRUE
+    )
+    idx <- do.call(cbind, lapply(out, "[[", "idx"))
+    out <- lapply(out, "[[", "gammas")
+  } else {
+    N <- model$n_sequences
+    T_ <- model$sequence_lengths
+    M <- model$n_symbols
+    S <- model$n_states
+    formula_pi <- model$initial_formula
+    formula_A <- model$transition_formula
+    formula_B <- model$emission_formula
+    formula_rho_A <- model$feedback_formula
+    formula_rho_B <- model$autoregression_formula
+    d <- model$data
+    time <- model$time_variable
+    id <- model$id_variable
+    out <- future.apply::future_lapply(
+      seq_len(nsim), function(i) {
+        mod <- simulate_fanhmm(
+          N, T_, M, S, formula_pi, formula_A, formula_B,
+          formula_rho_B, formula_rho_A,
+          d, time, id, init, 0)$model
+        fit <- fit_fanhmm(
+          mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
+          method = method, bound = bound, control = control,
+          control_restart = list(), control_mstep = control_mstep
+        )
+        if (fit$estimation_results$return_code >= 0) {
+          fit$gammas <- permute_states(fit$gammas, gammas_mle)
+        } else {
+          fit$gammas <- NULL
+        }
+        p()
+        fit$gammas
+      }, future.seed = TRUE
+    )
+  }
+  boot <- list(
+    gamma_pi = lapply(out, "[[", "pi"), 
+    gamma_A = lapply(out, "[[", "A"), 
+    gamma_B = lapply(out, "[[", "B"), 
+    phi_A = lapply(out, "[[", "phi_A"), 
+    phi_B = lapply(out, "[[", "phi_B")
+  )
+  boot <- lapply(boot,  function(x) x[lengths(x) > 0])
+  if (length(boot[[1]]) < nsim) {
+    warning_(
+      paste0(
+        "Estimation in some of the bootstrap samples failed. ",
+        "Returning samples from {length(boot[[1]])} successes out of {nsim} ",
+        "bootstrap samples."
+      )
+    )
+  }
+  if (type == "nonparametric") {
+    boot$idx <- idx
+  } else {
+    boot$idx <- matrix(seq_len(model$n_sequences), model$n_sequences, nsim)
+  }
+  if (append && !is.null(model$boot)) {
+    model$boot$gamma_pi <- c(model$boot$gamma_pi, boot$gamma_pi)
+    model$boot$gamma_A <- c(model$boot$gamma_A, boot$gamma_A)
+    model$boot$gamma_B <- c(model$boot$gamma_B, boot$gamma_B)
+    model$boot$phi_A <- c(model$boot$phi_A, boot$phi_A)
+    model$boot$phi_B <- c(model$boot$phi_B, boot$phi_B)
+    model$boot$idx <- cbind(model$boot$idx, idx)
+  } else {
+    model$boot <- boot
+  }
+  
   model
 }

@@ -175,3 +175,112 @@ ame_obs.mnhmm <- function(
   attr(out, "model") <- "mnhmm"
   out
 }
+
+#' @rdname ame_obs
+#' @export
+ame_obs.fanhmm <- function(
+    model, variable, values, start_time, newdata = NULL, probs, ...) {
+  stopifnot_(
+    attr(model, "intercept_only") == FALSE,
+    "Model does not contain any covariates."
+  )
+  stopifnot_(
+    checkmate::test_string(x = variable), 
+    "Argument {.arg variable} must be a single character string."
+  )
+  stopifnot_(
+    length(values) == 2, 
+    "Argument {.arg values} should contain two values for 
+    variable {.var variable}.")
+  if (!missing(probs)) {
+    return_quantiles <- TRUE
+    stopifnot_(
+      checkmate::test_numeric(
+        x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
+      ),
+      "Argument {.arg probs} must be a {.cls numeric} vector with values
+      between 0 and 1."
+    )
+    stopifnot_(
+      !is.null(model$boot),
+      paste0(
+        "Model does not contain bootstrap samples of coefficients. ",
+        "Run {.fn bootstrap_coefs} first in order to compute quantiles."
+      )
+    )
+  } else {
+    return_quantiles <- FALSE
+    # dummy stuff for C++
+    model$boot <- list(
+      gamma_pi = list(model$gammas$pi),
+      gamma_A = list(model$gammas$A),
+      gamma_B = list(model$gammas$B)
+    )
+    probs <- 0.5
+    model$boot$idx <- matrix(seq_len(model$n_sequences), model$n_sequences, 1)
+  }
+  
+  time <- model$time_variable
+  id <- model$id_variable
+  if (!is.null(newdata)) {
+    stopifnot_(
+      is.data.frame(newdata), 
+      "Argument {.arg newdata} must be a {.cls data.frame} object."
+    )
+    stopifnot_(
+      !is.null(newdata[[id]]), 
+      "Can't find grouping variable {.var {id}} in {.arg newdata}."
+    )
+    stopifnot_(
+      !is.null(newdata[[time]]), 
+      "Can't find time index variable {.var {time}} in {.arg newdata}."
+    )
+    stopifnot_(
+      !is.null(newdata[[variable]]), 
+      "Can't find time variable {.var {variable}} in {.arg newdata}."
+    )
+  } else {
+    stopifnot_(
+      !is.null(model$data),
+      "Model does not contain original data and argument {.arg newdata} is 
+      {.var NULL}."
+    )
+    newdata <- model$data
+  }
+  newdata[[variable]][newdata[[time]] >= start_time] <- values[1]
+  X1 <- update(model, newdata)[c("X_pi", "X_A", "X_B", "W_A", "W_B")]
+  newdata[[variable]][newdata[[time]] >= start_time] <- values[2]
+  X2 <- update(model, newdata)[c("X_pi", "X_A", "X_B", "W_A", "W_B")]
+  C <- model$n_channels
+  start <- which(sort(unique(newdata[[time]])) == start_time)
+  times <- as.numeric(colnames(model$observations))
+  symbol_names <- list(model$symbol_names)
+  obs <- create_obsArray(model)[1L, , ]
+  out <- ame_obs_fanhmm_singlechannel( 
+    model$etas$pi, model$etas$A, model$etas$B, model$rho_A, model$rho_B,
+    obs, model$sequence_lengths, 
+    attr(X1$X_pi, "icpt_only"), attr(X1$X_A, "icpt_only"), 
+    attr(X1$X_B, "icpt_only"), attr(X1$X_A, "iv"), 
+    attr(X1$X_B, "iv"), attr(X1$X_A, "tv"), attr(X1$X_B, "tv"),
+    X1$X_pi, X1$X_A, X1$X_B, X1$W_A, X1$W_B,
+    attr(X2$X_pi, "icpt_only"), attr(X2$X_A, "icpt_only"), 
+    attr(X2$X_B, "icpt_only"), attr(X2$X_A, "iv"), 
+    attr(X2$X_B, "iv"), attr(X2$X_A, "tv"), attr(X2$X_B, "tv"), 
+    X2$X_pi, X2$X_A, X2$X_B, X2$W_A, X2$W_B,
+    model$boot$gamma_pi, model$boot$gamma_A, model$boot$gamma_B, 
+    model$boot$rho_A, model$boot_rho_B,
+    start, probs, model$boot$idx - 1L
+  )
+  d <- data.frame(
+    observation = model$symbol_names,
+    time = rep(as.numeric(colnames(model$observations)), each = model$n_symbols),
+    estimate = c(out$point_estimate)
+  )
+  if (return_quantiles) {
+    for(i in seq_along(probs)) {
+      d[paste0("q", 100 * probs[i])] <- c(out$quantiles[, , i])
+    }
+  }
+  colnames(d)[2] <- time
+  d[d[[time]] >= start_time, ]
+}
