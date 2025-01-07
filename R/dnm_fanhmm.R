@@ -95,8 +95,8 @@ dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
       init <- unlist(
         c(
           create_initial_values(inits, model, init_sd),
-          create_rho_A_inits(inits, S, M, L_A, init_sd), 
-          create_rho_B_inits(inits, S, M, L_B, init_sd)
+          create_rho_A_inits(inits$rho_A, S, M, L_A, init_sd), 
+          create_rho_B_inits(inits$rho_B, S, M, L_B, init_sd)
         )
       )
       fit <- nloptr(
@@ -133,8 +133,8 @@ dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
       init <- unlist(
         c(
           create_initial_values(inits, model, init_sd),
-          create_rho_A_inits(inits, S, M, L_A, init_sd), 
-          create_rho_B_inits(inits, S, M, L_B, init_sd)
+          create_rho_A_inits(inits$rho_A, S, M, L_A, init_sd), 
+          create_rho_B_inits(inits$rho_B, S, M, L_B, init_sd)
         )
       )
     } else {
@@ -148,8 +148,8 @@ dnm_fanhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
     init <- unlist(
       c(
         create_initial_values(inits, model, init_sd),
-        create_rho_A_inits(inits, S, M, L_A, init_sd), 
-        create_rho_B_inits(inits, S, M, L_B, init_sd)
+        create_rho_A_inits(inits$rho_A, S, M, L_A, init_sd), 
+        create_rho_B_inits(inits$rho_B, S, M, L_B, init_sd)
       )
     )
   }

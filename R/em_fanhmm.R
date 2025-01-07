@@ -44,8 +44,8 @@ em_fanhmm <- function(model, inits, init_sd, restarts, lambda,
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
       init <- c(
         create_initial_values(inits, model, init_sd),
-        rho_A = list(create_rho_A_inits(inits, S, M, L_A, init_sd)), 
-        rho_B = list(create_rho_B_inits(inits, S, M, L_B, init_sd))
+        rho_A = list(create_rho_A_inits(inits$rho_A, S, M, L_A, init_sd)), 
+        rho_B = list(create_rho_B_inits(inits$rho_B, S, M, L_B, init_sd))
       )
       fit <- EM_LBFGS_fanhmm_singlechannel(
         init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, 
@@ -78,8 +78,8 @@ em_fanhmm <- function(model, inits, init_sd, restarts, lambda,
   } else {
     init <- c(
       create_initial_values(inits, model, init_sd),
-      rho_A = list(create_rho_A_inits(inits, S, M, L_A, init_sd)), 
-      rho_B = list(create_rho_B_inits(inits, S, M, L_B, init_sd))
+      rho_A = list(create_rho_A_inits(inits$rho_A, S, M, L_A, init_sd)), 
+      rho_B = list(create_rho_B_inits(inits$rho_B, S, M, L_B, init_sd))
     )
   }
   out <- EM_LBFGS_fanhmm_singlechannel(

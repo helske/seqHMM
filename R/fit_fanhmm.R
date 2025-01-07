@@ -84,13 +84,13 @@ fit_fanhmm <- function(model, inits, init_sd, restarts, lambda, method,
       model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
     }
     model$rhos$A <- create_rho_A_inits(
-      inits, model$n_states, model$n_symbols, nrow(model$W_A), init_sd
+      inits$rho_A, model$n_states, model$n_symbols, nrow(model$W_A), init_sd
     )
-    model$phis$A <- rho_to_phi(model$rhos$A)
+    model$phis$A <- rho_to_phi_field(model$rhos$A)
     model$rhos$B <- create_rho_B_inits(
-      inits, model$n_states, model$n_symbols, nrow(model$W_B), init_sd
+      inits$rho_B, model$n_states, model$n_symbols, nrow(model$W_B), init_sd
     )
-    model$phis$B <- rho_to_phi(model$rhos$B)
+    model$phis$B <- rho_to_phi_field(model$rhos$B)
     return(model)
   }
   if (method == "EM-DNM") {

@@ -303,17 +303,17 @@ create_inits_matrix <- function(x, n, m, K, sd = 0) {
 }
 
 create_rho_A_inits <- function(x, S, M, L, init_sd = 0) {
-  if (is.null(x$rho_A)) {
+  if (is.null(x)) {
     create_rho_A(numeric((S - 1) * L * (M - 1) * S), S, M, L, init_sd)
   } else {
     stopifnot_(
-      length(unlist(x$rho_A)) == (S - 1) * L * (M - 1) * S,
+      length(unlist(x)) == (S - 1) * L * (M - 1) * S,
       paste0(
         "Number of initial values for {.val rho_A} is not equal to ",
         "(S - 1) * L * (M - 1) * S = {(S - 1) * L * (M - 1) * S}."
       )
     )
-    create_rho_A(unlist(x$rho_A), S, M, L, init_sd)
+    create_rho_A(unlist(x), S, M, L, init_sd)
   }
 }
 
@@ -325,17 +325,17 @@ create_rho_A <- function(x, S, M, L, init_sd = 0) {
 }
 
 create_rho_B_inits <- function(x, S, M, L, init_sd = 0) {
-  if (is.null(x$rho_B)) {
+  if (is.null(x)) {
     create_rho_B(numeric((M - 1) * L * (M - 1) * S), S, M, L, init_sd)
   } else {
     stopifnot_(
-      length(unlist(x$rho_B)) == (M - 1) * L * (M - 1) * S,
+      length(unlist(x)) == (M - 1) * L * (M - 1) * S,
       paste0(
         "Number of initial values for {.val rho_B} is not equal to ",
         "(M - 1) * L * (M - 1) * S = {(M - 1) * L * (M - 1) * S}."
       )
     )
-    create_rho_B(unlist(x$rho_B), S, M, L, init_sd)
+    create_rho_B(unlist(x), S, M, L, init_sd)
   }
 }
 

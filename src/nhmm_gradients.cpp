@@ -236,14 +236,13 @@ void gradient_wrt_A(
     const arma::mat& log_beta, const double ll, const arma::cube& A, 
     const arma::cube& X, const arma::cube& W, const arma::uword i, 
     const arma::uword t, const arma::uword s) {
-  
   arma::uword n = W.n_rows; 
   tmpmat = -A.slice(t).row(s).t() * A.slice(t).row(s);
   tmpmat.diag() += A.slice(t).row(s);
   arma::vec tmpvec = tmpmat * exp(log_alpha(s, t) + log_py.col(t + 1) + 
     log_beta.col(t + 1) - ll);
   grad.cols(0, X.n_rows - 1) += tmpvec * X.slice(i).col(t).t();
-  if (obs(t, i) > 0) {
+  if (obs(t, i) > 0 && n > 0) {
     grad.cols(X.n_rows + (obs(t, i) - 1) * n, X.n_rows + obs(t, i) * n - 1) += 
       tmpvec * W.slice(i).col(t).t();
   }
@@ -264,7 +263,7 @@ void gradient_wrt_B_t0(
   tmpvec(idx) += brow;
   tmpvec = exp(log_pi(s) + log_beta(s, 0) - ll) * tmpvec;
   grad.cols(0, X.n_rows - 1) += tmpvec * X.slice(i).col(0).t();
-  if (obs_0(i) > 0) {
+  if (obs_0(i) > 0 && n > 0) {
     grad.cols(X.n_rows + (obs_0(i) - 1) * n, X.n_rows + obs_0(i) * n - 1) += 
       tmpvec * W.slice(i).col(0).t();
   }
@@ -285,7 +284,7 @@ void gradient_wrt_B(
   tmpvec = arma::accu(exp(log_alpha.col(t) + log_A.slice(t).col(s) + 
     log_beta(s, t + 1) - ll)) * tmpvec;
   grad.cols(0, X.n_rows - 1) += tmpvec * X.slice(i).col(t + 1).t();
-  if (obs(t, i) > 0) {
+  if (obs(t, i) > 0 && n > 0) {
     grad.cols(X.n_rows + (obs(t, i) - 1) * n, X.n_rows + obs(t, i) * n - 1) += 
       tmpvec * W.slice(i).col(t + 1).t();
   }

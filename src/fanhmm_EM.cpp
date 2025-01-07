@@ -81,11 +81,7 @@ void fanhmm_sc::mstep_A(const double ftol_abs, const double ftol_rel,
     auto* self = static_cast<fanhmm_sc*>(data);
     arma::vec x_vec(const_cast<double*>(x), n, false, true);
     arma::vec grad_vec(grad, n, false, true);
-    if (self->L_A > 0) {
-      return self->objective_A(x_vec, grad_vec);
-    } else {
-      return self->nhmm_base::objective_A(x_vec, grad_vec);
-    }
+    return self->objective_A(x_vec, grad_vec);
   };
   
   arma::uword n_eta = eta_A.slice(0).n_elem;
@@ -234,11 +230,7 @@ void fanhmm_sc::mstep_B(const double ftol_abs, const double ftol_rel,
     auto* self = static_cast<fanhmm_sc*>(data);
     arma::vec x_vec(const_cast<double*>(x), n, false, true);
     arma::vec grad_vec(grad, n, false, true);
-    if (self->L_B > 0) {
-      return self->objective_B(x_vec, grad_vec);
-    } else {
-      return self->nhmm_sc::objective_B(x_vec, grad_vec);
-    }
+    return self->objective_B(x_vec, grad_vec);
   };
   arma::uword n_eta = eta_B.slice(0).n_elem;
   arma::uword n_rho = rho_B(0).n_elem;
@@ -330,13 +322,17 @@ Rcpp::List EM_LBFGS_fanhmm_singlechannel(
   pars.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
   pars.cols(n_pi + n_A, n_pi + n_A + n_B - 1) = arma::vectorise(model.eta_B).t();
   arma::uword ii = n_pi + n_A + n_B;
-  for (arma::uword s = 0; s < S; s++) {
-    pars.cols(ii, ii + n_Ar - 1) = arma::vectorise(model.rho_A(s)).t();
-    ii += n_Ar;
+  if (n_Ar > 0) {
+    for (arma::uword s = 0; s < S; s++) {
+      pars.cols(ii, ii + n_Ar - 1) = arma::vectorise(model.rho_A(s)).t();
+      ii += n_Ar;
+    }
   }
-  for (arma::uword s = 0; s < S; s++) {
-    pars.cols(ii, ii + n_Br - 1) = arma::vectorise(model.rho_B(s)).t();
-    ii += n_Br;
+  if (n_Br > 0) {
+    for (arma::uword s = 0; s < S; s++) {
+      pars.cols(ii, ii + n_Br - 1) = arma::vectorise(model.rho_B(s)).t();
+      ii += n_Br;
+    }
   }
   double relative_change = ftol_rel + 1.0;
   double absolute_change = ftol_abs + 1.0;
@@ -411,19 +407,33 @@ Rcpp::List EM_LBFGS_fanhmm_singlechannel(
         model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
-    model.mstep_A(
-      ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, maxeval_m, bound, 
-      print_level_m
-    );
+    if (model.L_A > 0) {
+      model.mstep_A(
+        ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, maxeval_m, bound, 
+        print_level_m
+      );
+    } else {
+      model.nhmm_base::mstep_A(
+        ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, maxeval_m, bound, 
+        print_level_m
+      );
+    }
     if (model.mstep_return_code != 0) {
       return mstep_error_fanhmm(
         model.mstep_return_code, model, iter, relative_change, 
         absolute_change, absolute_x_change, relative_x_change);
     }
+    if (model.L_B > 0) {
     model.mstep_B(
       ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, maxeval_m, bound, 
       print_level_m
     );
+    } else {
+      model.nhmm_sc::mstep_B(
+        ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, maxeval_m, bound, 
+        print_level_m
+      );
+    }
     if (model.mstep_return_code != 0) {
       return mstep_error_fanhmm(
         model.mstep_return_code, model, iter, relative_change, 
@@ -465,13 +475,17 @@ Rcpp::List EM_LBFGS_fanhmm_singlechannel(
     pars_new.cols(n_pi, n_pi + n_A - 1) = arma::vectorise(model.eta_A).t();
     pars_new.cols(n_pi + n_A, n_pi + n_A + n_B - 1) = arma::vectorise(model.eta_B).t();
     ii = n_pi + n_A + n_B;
-    for (arma::uword s = 0; s < S; s++) {
-      pars_new.cols(ii, ii + n_Ar - 1) = arma::vectorise(model.rho_A(s)).t();
-      ii += n_Ar;
+    if (n_Ar > 0) {
+      for (arma::uword s = 0; s < S; s++) {
+        pars_new.cols(ii, ii + n_Ar - 1) = arma::vectorise(model.rho_A(s)).t();
+        ii += n_Ar;
+      }
     }
-    for (arma::uword s = 0; s < S; s++) {
-      pars_new.cols(ii, ii + n_Br - 1) = arma::vectorise(model.rho_B(s)).t();
-      ii += n_Br;
+    if (n_Br > 0) {
+      for (arma::uword s = 0; s < S; s++) {
+        pars_new.cols(ii, ii + n_Br - 1) = arma::vectorise(model.rho_B(s)).t();
+        ii += n_Br;
+      }
     }
     
     penalty_term = 0.5 * lambda  * std::pow(arma::norm(pars_new, 2), 2);

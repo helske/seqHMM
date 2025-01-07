@@ -552,6 +552,7 @@ Rcpp::List log_objective_fanhmm_singlechannel(
         );
       }
     }
+    
     // gradient wrt gamma_B
     for (arma::uword s = 0; s < model.S; s++) {
       gradient_wrt_B_t0(
@@ -571,12 +572,20 @@ Rcpp::List log_objective_fanhmm_singlechannel(
     grad_A2.slice(s) = model.Qs.t() * grad_A.slice(s);
     grad_B2.slice(s) = model.Qm.t() * grad_B.slice(s);
   }
+  arma::cube grad_rho_A(model.S - 1, (model.M - 1) * model.L_A, model.S);
+  if (model.L_A > 0) {
+    grad_rho_A = grad_A2.cols(model.K_A, grad_A2.n_cols - 1);
+  }
+  arma::cube grad_rho_B(model.M - 1, (model.M - 1) * model.L_B, model.S);
+  if (model.L_B > 0) {
+    grad_rho_B = grad_B2.cols(model.K_B, grad_B2.n_cols - 1);
+  }
   return Rcpp::List::create(
     Rcpp::Named("loglik") = sum(loglik),
     Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi2),
     Rcpp::Named("gradient_A") = Rcpp::wrap(grad_A2.cols(0, model.K_A - 1)),
     Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2.cols(0, model.K_B - 1)),
-    Rcpp::Named("gradient_rho_A") = Rcpp::wrap(grad_A2.cols(model.K_A, grad_A2.n_cols - 1)),
-    Rcpp::Named("gradient_rho_B") = Rcpp::wrap(grad_B2.cols(model.K_A, grad_B2.n_cols - 1))
+    Rcpp::Named("gradient_rho_A") = Rcpp::wrap(grad_rho_A),
+    Rcpp::Named("gradient_rho_B") = Rcpp::wrap(grad_rho_B)
   );
 }

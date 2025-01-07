@@ -78,6 +78,7 @@ struct fanhmm_sc : public nhmm_sc {
       A.each_slice() = Atmp.t();
     } else {
       if (tv_A) {
+        // A_t = P(z_t+1 | z_t, y_t), pi = P(z_1)
         for (arma::uword t = 0; t < Ti(i); t++) { // time
           for (arma::uword s = 0; s < S; s ++) { // from states
             Atmp.col(s) = softmax(

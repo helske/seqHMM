@@ -10,12 +10,6 @@ build_fanhmm <- function(
     !is.null(autoregression_formula) || !is.null(feedback_formula),
     "Provide {.arg autoregression_formula} and/or {.arg feedback_formula} for FAN-HMM."
   )
-  stopifnot_(
-    inherits(autoregression_formula, "formula"), 
-    "Argument {.arg autoregression_formula} must be a {.cls formula} object.")
-  stopifnot_(
-    inherits(feedback_formula, "formula"), 
-    "Argument {.arg feedback_formula} must be a {.cls formula} object.")
   out <- create_base_nhmm(
     observations, data, time, id, n_states, state_names, channel_names = NULL,
     initial_formula, transition_formula, emission_formula)
@@ -39,6 +33,9 @@ build_fanhmm <- function(
     )
     np_rho_A <- 0
   } else {
+   stopifnot_(
+      inherits(feedback_formula, "formula"), 
+      "Argument {.arg feedback_formula} must be a {.cls formula} object.")
     W_A <- model_matrix_feedback_formula(
       feedback_formula, data, 
       out$model$n_sequences, 
@@ -65,6 +62,9 @@ build_fanhmm <- function(
     )
     np_rho_B <- 0
   } else {
+    stopifnot_(
+      inherits(autoregression_formula, "formula"), 
+      "Argument {.arg autoregression_formula} must be a {.cls formula} object.")
     W_B <- model_matrix_autoregression_formula(
       autoregression_formula, data, 
       out$model$n_sequences, 
