@@ -62,7 +62,7 @@ simulate_nhmm <- function(
   names(obs) <- paste0("Channel ", seq_len(n_channels))
   model <- build_nhmm(
     obs, n_states, initial_formula, transition_formula, emission_formula, 
-    data, time, id
+    data, time, id, scale = TRUE
   )
   if (identical(coefs, "random")) {
     coefs <- list(
@@ -106,7 +106,6 @@ simulate_nhmm <- function(
     }
   }
   state_names <- model$state_names
-  symbol_names <- model$symbol_names
   out$states[] <- state_names[c(out$states) + 1]
   states <- suppressWarnings(suppressMessages(
     seqdef(
@@ -120,9 +119,9 @@ simulate_nhmm <- function(
   
   if (n_channels == 1) {
     dim(out$observations) <- dim(out$observations)[2:3]
-    out$observations[] <- symbol_names[c(out$observations) + 1]
+    out$observations[] <- symbol_names[[1]][c(out$observations) + 1]
     model$observations <- suppressWarnings(suppressMessages(
-      seqdef(t(out$observations), alphabet = symbol_names, cnames = seq_len(T_))
+      seqdef(t(out$observations), alphabet = symbol_names[[1]], cnames = seq_len(T_))
     ))
   } else {
     model$observations <- lapply(seq_len(n_channels), function(i) {

@@ -1,3 +1,12 @@
+#' Base R version of group_by(id) |> mutate(lag = lag(x)) |> pull(lag)
+#' Instead of NA, missing values are set to d[[response]][1] as in order to 
+#' pass NA checks. These values are later removed in build_fanhmm
+#' @noRd
+group_lag <- function(d, id, response) {
+  lagged_response <- c(d[[response]][1], d[[response]][-nrow(d)])
+  #lagged_response[which(!duplicated(d[[id]]))] <- d[[response]][1]
+  lagged_response
+}
 #' Convert return code from estimate_nhmm and estimate_mnhmm to text
 #' 
 #' @param code Integer return code from `model$estimation_results$return_code`.

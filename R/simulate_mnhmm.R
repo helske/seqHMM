@@ -67,8 +67,8 @@ simulate_mnhmm <- function(
   })
   names(obs) <- paste0("Channel ", seq_len(n_channels))
   model <- build_mnhmm(
-    obs, n_states, n_clusters, initial_formula, 
-    transition_formula, emission_formula, cluster_formula, data, time, id
+    obs, n_states, n_clusters, initial_formula, transition_formula, 
+    emission_formula, cluster_formula, data, time, id, scale = TRUE
   )
   if (identical(coefs, "random")) {
     coefs <- list(
@@ -134,7 +134,6 @@ simulate_mnhmm <- function(
     rep(model$cluster_names, each = model$n_states), 
     ": ", unlist(model$state_names)
   )
-  symbol_names <- model$symbol_names
   out$states[] <- state_names[c(out$states) + 1]
   states <- suppressWarnings(suppressMessages(
     seqdef(
@@ -148,10 +147,10 @@ simulate_mnhmm <- function(
   
   if (n_channels == 1) {
     dim(out$observations) <- dim(out$observations)[2:3]
-    out$observations[] <- symbol_names[c(out$observations) + 1]
+    out$observations[] <- symbol_names[[1]][c(out$observations) + 1]
     colnames(out$observations) <- seq_len(T_)
     model$observations <- suppressWarnings(suppressMessages(
-      seqdef(t(out$observations), alphabet = symbol_names, cnames = seq_len(T_))
+      seqdef(t(out$observations), alphabet = symbol_names[[1]], cnames = seq_len(T_))
     ))
   } else {
     model$observations <- lapply(seq_len(n_channels), function(i) {

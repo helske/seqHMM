@@ -5,8 +5,15 @@
 #' responses.
 #' 
 #' @inheritParams estimate_nhmm
-#' @param autoregression_formula Formula for autoregression \eqn{y_t \to y_{t+1}}.
+#' @param autoregression_formula Formula for autoregression 
+#' \eqn{y_t \to y_{t+1}}.
+#' Default intercept means is shorthand for \eqn{y_{t+1} ~ y_{t}}, while 
+#' additional terms in formula are interacted with the lagged responses. 
+#' If `NULL`, no autoregression is used.
 #' @param feedback_formula Formula for feedback \eqn{y_t \to z_{t+1}}.
+#' Default intercept means is shorthand for \eqn{z_{t+1} ~ y_{t}}, while 
+#' additional terms in formula are interacted with the lagged responses. 
+#' If `NULL`, no feedback is used.
 #' @param inits If `inits = "random"` (default), random initial values are 
 #' used. Otherwise `inits` should be list of initial values. If coefficients 
 #' are given using list components `eta_pi`, `eta_A`, `eta_B`, 
@@ -17,26 +24,9 @@
 #' can give only `initial_probs` and `eta_A`.
 #' @param cluster_names A vector of optional labels for the clusters. If this
 #' is `NULL` (the default), numbered clusters are used.
-#' @return Object of class `mnhmm`.
+#' @return Object of class `fanhmm`.
 #' @seealso [estimate_nhmm()] for further details.
 #' @export
-#' @examples
-#' data("mvad", package = "TraMineR")
-#' 
-#' d <- reshape(mvad, direction = "long", varying = list(15:86), 
-#'   v.names = "activity")
-#' 
-#' \dontrun{
-#' set.seed(1)
-#' fit <- estimate_mnhmm("activity", n_states = 3, n_clusters = 2,
-#'   data = d, time = "time", id = "id", 
-#'   cluster_formula = ~ male + catholic + gcse5eq + Grammar + 
-#'     funemp + fmpr + livboth + Belfast +
-#'   N.Eastern + Southern + S.Eastern + Western,
-#'   initial_formula = ~ 1, emission_formula =  ~ male + catholic + gcse5eq,
-#'   transition_formula = ~ male + gcse5eq, inits = "random"
-#'   )
-#' }
 estimate_fanhmm <- function(
     observations, n_states, initial_formula = ~1, 
     transition_formula = ~1, emission_formula = ~1, autoregression_formula = ~1,
@@ -61,7 +51,7 @@ estimate_fanhmm <- function(
   }
   control <- list(...)
   start_time <- proc.time()
-  out <- fit_fanhmm(model, inits, init_sd, restarts, lambda, method, bound, 
+  out <- fit_nhmm(model, inits, init_sd, restarts, lambda, method, bound, 
                    control, control_restart, control_mstep)
   end_time <- proc.time()
   out$estimation_results$time <- end_time - start_time

@@ -45,10 +45,6 @@ rho_to_phi_field <- function(rho) {
     .Call(`_seqHMM_rho_to_phi_field`, rho)
 }
 
-EM_LBFGS_fanhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs_0, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, n_obs, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, lambda, bound) {
-    .Call(`_seqHMM_EM_LBFGS_fanhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs_0, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, n_obs, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, lambda, bound)
-}
-
 fast_quantiles <- function(X, probs) {
     .Call(`_seqHMM_fast_quantiles`, X, probs)
 }
@@ -201,10 +197,6 @@ log_objective_mnhmm_multichannel <- function(eta_omega, X_omega, eta_pi, X_pi, e
     .Call(`_seqHMM_log_objective_mnhmm_multichannel`, eta_omega, X_omega, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, icpt_only_omega, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B)
 }
 
-log_objective_fanhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs_0, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B) {
-    .Call(`_seqHMM_log_objective_fanhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs_0, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B)
-}
-
 simulate_nhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B) {
     .Call(`_seqHMM_simulate_nhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B)
 }
@@ -221,8 +213,8 @@ simulate_mnhmm_multichannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, et
     .Call(`_seqHMM_simulate_mnhmm_multichannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, eta_omega, X_omega, M)
 }
 
-simulate_fanhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs_0) {
-    .Call(`_seqHMM_simulate_fanhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, rho_A, W_A, rho_B, W_B, obs_0)
+simulate_fanhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs_0) {
+    .Call(`_seqHMM_simulate_fanhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs_0)
 }
 
 viterbi_nhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B) {

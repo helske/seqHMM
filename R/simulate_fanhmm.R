@@ -23,7 +23,8 @@ simulate_fanhmm <- function(
     n_sequences, sequence_lengths, n_symbols, n_states, 
     initial_formula = ~1, transition_formula = ~1, 
     emission_formula = ~1, autoregression_formula = ~1, 
-    feedback_formula = ~1, obs_0, data, time, id, coefs = "random", init_sd = 2) {
+    feedback_formula = ~1, obs_0, data, time, id, coefs = "random", 
+    response_name = "y", init_sd = 2) {
   
   stopifnot_(
     !missing(n_sequences) && checkmate::test_int(x = n_sequences, lower = 1L), 
@@ -36,7 +37,7 @@ simulate_fanhmm <- function(
   )
   stopifnot_(
     !missing(n_symbols) && checkmate::test_integerish(x = n_symbols, lower = 2L), 
-    "Argument {.arg n_symbols} must contain positive integer(s) larger than 1."
+    "Argument {.arg n_symbols} must contain positive integer larger than 1."
   )
   stopifnot_(
     !missing(n_states) && checkmate::test_int(x = n_states, lower = 2L), 
@@ -57,22 +58,31 @@ simulate_fanhmm <- function(
       checkmate::test_integerish(x = obs_0, lower = 1L, upper = n_symbols),
     "Argument {.arg obs_0} should be an integer vector of length {.val n_sequences}."
   )
-  symbol_names <-  as.character(seq_len(n_symbols))
+  symbol_names <- as.character(seq_len(n_symbols))
   T_ <- max(sequence_lengths)
-  obs <- suppressWarnings(suppressMessages(
-    seqdef(matrix(symbol_names[1], n_sequences, T_ + 1),
-           alphabet = symbol_names
-    )))
+  data[[response_name]] <- factor(rep(symbol_names, length = nrow(data)), 
+                                  levels = symbol_names)
   data0 <- data[data[[time]] == min(data[[time]]), ]
   data0[[time]] <- min(data[[time]]) - min(diff(sort(unique(data[[time]]))))
-  data <- rbind(
+  data0[[response_name]] <- obs_0
+  data0 <- rbind(
     data0,
     data
   )
+ 
   model <- build_fanhmm(
-    obs, n_states, initial_formula, transition_formula, emission_formula, 
-    autoregression_formula, feedback_formula, data, time, id
+    response_name, n_states, initial_formula, transition_formula, emission_formula, 
+    autoregression_formula, feedback_formula, data0, time, id, scale = FALSE
   )
+  
+  X_A <- X_B <- vector("list", n_symbols)
+  for (i in seq_len(n_symbols)) {
+    data[[response_name]] <- factor(symbol_names[i], levels = symbol_names)
+    data[[paste0("lag_", response_name)]] <- data[[response_name]]
+    mod <- update(model, data)
+    X_A[[i]] <- mod$X_A
+    X_B[[i]] <- mod$X_B
+  }
   if (identical(coefs, "random")) {
     coefs <- list(
       initial_probs = NULL, 
@@ -89,18 +99,10 @@ simulate_fanhmm <- function(
   model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
   model$gammas$A <- eta_to_gamma_cube(model$etas$A)
   model$gammas$B <- eta_to_gamma_cube(model$etas$B)
-  model$rhos$A <- create_rho_A_inits(
-    coefs$rho_A, n_states, n_symbols, nrow(model$W_A), init_sd
-  )
-  model$rhos$B <- create_rho_B_inits(
-    coefs$rho_B, n_states, n_symbols, nrow(model$W_B), init_sd
-  )
   out <- simulate_fanhmm_singlechannel(
     model$etas$pi, model$X_pi, 
-    model$etas$A, model$X_A, 
-    model$etas$B, model$X_B,
-    model$rhos$A, model$W_A, 
-    model$rhos$B, model$W_B,
+    model$etas$A, X_A, 
+    model$etas$B, X_B,
     as.integer(obs_0) - 1
   )
   for (i in seq_len(model$n_sequences)) {
@@ -111,7 +113,6 @@ simulate_fanhmm <- function(
     }
   }
   state_names <- model$state_names
-  symbol_names <- model$symbol_names
   out$states[] <- state_names[c(out$states) + 1]
   states <- suppressWarnings(suppressMessages(
     seqdef(
@@ -122,11 +123,9 @@ simulate_fanhmm <- function(
       alphabet = state_names, cnames = seq_len(T_)
     )
   ))
-  
   out$observations[] <- symbol_names[c(out$observations) + 1]
   model$observations <- suppressWarnings(suppressMessages(
     seqdef(t(out$observations), alphabet = symbol_names, cnames = seq_len(T_))
   ))
-  
   list(model = model, states = states)
 }

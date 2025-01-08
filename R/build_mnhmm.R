@@ -4,7 +4,7 @@ build_mnhmm <- function(
     observations, n_states, n_clusters, initial_formula, 
     transition_formula, emission_formula, cluster_formula,
     data, time, id, state_names = NULL, channel_names = NULL, 
-    cluster_names = NULL) {
+    cluster_names = NULL, scale = TRUE) {
   
   stopifnot_(
     !missing(n_clusters) && checkmate::test_int(x = n_clusters, lower = 2L), 
@@ -22,7 +22,7 @@ build_mnhmm <- function(
   out <- create_base_nhmm(
     observations, data, time, id, n_states, state_names, channel_names, 
     initial_formula, transition_formula, emission_formula, cluster_formula, 
-    cluster_names)
+    cluster_names, scale = scale)
   out$model$etas <- setNames(
     create_initial_values(list(), out$model, 0), c("pi", "A", "B", "omega")
   )

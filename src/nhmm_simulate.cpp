@@ -187,13 +187,11 @@ Rcpp::List simulate_mnhmm_multichannel(
 // [[Rcpp::export]]
 Rcpp::List simulate_fanhmm_singlechannel(
     const arma::mat& eta_pi, const arma::mat& X_pi,
-    const arma::cube& eta_A, const arma::cube& X_A,
-    const arma::cube& eta_B, const arma::cube& X_B,
-    const arma::field<arma::cube>& rho_A, const arma::cube& W_A,
-    const arma::field<arma::cube>& rho_B, const arma::cube& W_B,
+    const arma::cube& eta_A, const arma::field<arma::cube>& X_A,
+    const arma::cube& eta_B, const arma::field<arma::cube>& X_B,
     const arma::uvec& obs_0) {
-  arma::uword N = X_A.n_slices;
-  arma::uword T = X_A.n_cols;
+  arma::uword N = obs_0.n_elem;
+  arma::uword T = X_A(0).n_cols;
   arma::uword S = eta_A.n_slices;
   arma::uword M = eta_B.n_rows + 1;
   arma::umat y(T, N);
@@ -203,8 +201,6 @@ Rcpp::List simulate_fanhmm_singlechannel(
   arma::mat gamma_pi = eta_to_gamma(eta_pi, Qs);
   arma::cube gamma_A = eta_to_gamma(eta_A, Qs);
   arma::cube gamma_B = eta_to_gamma(eta_B, Qm);
-  arma::field<arma::cube> phi_A = rho_to_phi(rho_A, Qs);
-  arma::field<arma::cube> phi_B = rho_to_phi(rho_B, Qm);
   arma::vec pi(S);
   arma::vec A(S);
   arma::vec B(S);
@@ -214,19 +210,16 @@ Rcpp::List simulate_fanhmm_singlechannel(
     pi = get_pi(gamma_pi, X_pi.col(i));
     z(0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, pi));
     B = softmax(
-      gamma_B.slice(z(0, i)) * X_B.slice(i).col(0) +
-        phi_B(z(0, i)).slice(obs_0(i)) * W_B.slice(i).col(0)
+      gamma_B.slice(z(0, i)) * X_B(obs_0(i)).slice(i).col(0)
     );
     y(0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B));
     for (arma::uword t = 1; t < T; t++) {
       A = softmax(
-        gamma_A.slice(z(t - 1, i)) * X_A.slice(i).col(t - 1) +
-          phi_A(z(t - 1, i)).slice(y(t - 1, i)) * W_A.slice(i).col(t - 1)
+        gamma_A.slice(z(t - 1, i)) * X_A(y(t - 1, i)).slice(i).col(t - 1)
       );
       z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A));
       B = softmax(
-        gamma_B.slice(z(t, i)) * X_B.slice(i).col(t) +
-          phi_B(z(t, i)).slice(y(t - 1, i)) * W_B.slice(i).col(t)
+        gamma_B.slice(z(t, i)) * X_B(y(t - 1, i)).slice(i).col(t)
       );
       y(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B));
     }

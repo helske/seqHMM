@@ -4,27 +4,30 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
                              state_names, channel_names,
                              initial_formula, transition_formula, 
                              emission_formula, cluster_formula = NA, 
-                             cluster_names = "") {
+                             cluster_names = "", scale = TRUE, 
+                             check_formulas = TRUE) {
   
   stopifnot_(
     !missing(n_states) && checkmate::test_int(x = n_states, lower = 2L), 
     "Argument {.arg n_states} must be a single integer larger than 1."
   )
-  stopifnot_(
-    inherits(initial_formula, "formula"), 
-    "Argument {.arg initial_formula} must be a {.cls formula} object.")
-  stopifnot_(
-    inherits(transition_formula, "formula"), 
-    "Argument {.arg transition_formula} must be a {.cls formula} object.")
-  stopifnot_(
-    inherits(emission_formula, "formula"), 
-    "Argument {.arg emission_formula} must be a {.cls formula} object.")
   n_clusters <- length(cluster_names)
   mixture <- n_clusters > 1L
-  stopifnot_(
-    !mixture || inherits(cluster_formula, "formula"), 
-    "Argument {.arg cluster_formula} must be a {.cls formula} object.")
   
+  if (check_formulas) {
+    stopifnot_(
+      inherits(initial_formula, "formula"), 
+      "Argument {.arg initial_formula} must be a {.cls formula} object.")
+    stopifnot_(
+      inherits(transition_formula, "formula"), 
+      "Argument {.arg transition_formula} must be a {.cls formula} object.")
+    stopifnot_(
+      inherits(emission_formula, "formula"), 
+      "Argument {.arg emission_formula} must be a {.cls formula} object.")
+    stopifnot_(
+      !mixture || inherits(cluster_formula, "formula"), 
+      "Argument {.arg cluster_formula} must be a {.cls formula} object.")
+  }
   n_states <- as.integer(n_states)
   if (is.null(state_names)) {
     state_names <- paste("State", seq_len(n_states))
@@ -113,19 +116,19 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
   sequence_lengths <- attr(observations, "sequence_lengths")
   pi <- model_matrix_initial_formula(
     initial_formula, data, n_sequences, length_of_sequences, n_states, 
-    time, id
+    time, id, scale = scale
   )
   A <- model_matrix_transition_formula(
     transition_formula, data, n_sequences, length_of_sequences, n_states, 
-    time, id, sequence_lengths
+    time, id, sequence_lengths, scale = scale
   )
   B <- model_matrix_emission_formula(
     emission_formula, data, n_sequences, length_of_sequences, n_states, 
-    n_symbols, time, id, sequence_lengths
+    n_symbols, time, id, sequence_lengths, scale = scale
   )
   if (mixture) {
     omega <- model_matrix_cluster_formula(
-      cluster_formula, data, n_sequences, n_clusters, time, id
+      cluster_formula, data, n_sequences, n_clusters, time, id, scale = scale
     )
   } else {
     omega <- list(n_pars = 0, iv = FALSE, X_mean = NULL, X_sd = NULL)
