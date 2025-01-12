@@ -57,8 +57,8 @@ estimate_mnhmm <- function(
     checkmate::test_flag(x = store_data), 
     "Argument {.arg store_data} must be a single {.cls logical} value."
   )
-  if (store_data) {
-    model$data <- data
+  if (!store_data) {
+    model$data <- NULL
   }
   control <- list(...)
   start_time <- proc.time()

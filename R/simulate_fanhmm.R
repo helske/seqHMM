@@ -76,10 +76,11 @@ simulate_fanhmm <- function(
   )
   
   X_A <- X_B <- vector("list", n_symbols)
+  d <- data
   for (i in seq_len(n_symbols)) {
-    data[[response_name]] <- factor(symbol_names[i], levels = symbol_names)
-    data[[paste0("lag_", response_name)]] <- data[[response_name]]
-    mod <- update(model, data)
+    d[[response_name]] <- factor(symbol_names[i], levels = symbol_names)
+    d[[paste0("lag_", response_name)]] <- d[[response_name]]
+    mod <- update(model, d)
     X_A[[i]] <- mod$X_A
     X_B[[i]] <- mod$X_B
   }
@@ -127,5 +128,49 @@ simulate_fanhmm <- function(
   model$observations <- suppressWarnings(suppressMessages(
     seqdef(t(out$observations), alphabet = symbol_names, cnames = seq_len(T_))
   ))
+  model$data[[response_name]] <- c(t(model$observations))
+  if (!is.null(autoregression_formula)) {
+    model$data[[paste0("lag_", response_name)]] <- group_lag(model$data, id, response_name)
+  }
+  attr(model$X_pi, "X_mean") <- TRUE
+  attr(model$X_pi, "X_sd") <- TRUE
+  attr(model$X_A, "X_mean") <- TRUE
+  attr(model$X_A, "X_sd") <- TRUE
+  attr(model$X_B, "X_mean") <- TRUE
+  attr(model$X_B, "X_sd") <- TRUE
+  model <- update(model, model$data)
+  coef_names <- attr(model$X_pi, "coef_names")
+  sd_pi_X <- rep(
+    c(
+      if(coef_names[1] == "(Intercept)") 1 else NULL, 
+      attr(model$X_pi, "X_sd")
+    ), each = S
+  )
+  model$gammas$pi[] <- model$gammas$pi * sd_pi_X
+  coef_names <- attr(model$X_A, "coef_names")
+  K <- length(coef_names)
+  sd_A_X <- rep(
+    c(
+      if(coef_names[1] == "(Intercept)") 1 else NULL, 
+      attr(model$X_A, "X_sd")
+    ), each = S
+  )
+  coef_names <- attr(model$X_B, "coef_names")
+  K <- length(coef_names)
+  model$gammas$A[] <- model$gammas$A * sd_A_X
+  sd_B_X <- rep(
+    c(
+      if(coef_names[1] == "(Intercept)") 1 else NULL, 
+      attr(model$X_B, "X_sd")
+    ), each = S
+  )
+  model$gammas$B[] <- model$gammas$B * sd_B_X
+  tQs <- t(create_Q(S))
+  tQm <- t(create_Q(M))
+  model$etas$pi[] <- tQs %*% model$gammas$pi
+  for (s in seq_len(S)) {
+    model$etas$A[, , s] <- tQs %*% model$gammas$A[, , s]
+    model$etas$B[, , s] <- tQm %*% model$gammas$B[, , s]
+  }
   list(model = model, states = states)
 }

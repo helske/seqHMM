@@ -15,10 +15,6 @@ bootstrap_model <- function(model) {
   if (inherits(model, "mnhmm")) {
     model$X_omega[] <- model$X_omega[, idx]
   }
-  if (inherits(model, "fanhmm")) {
-    model$W_A[] <- model$W_A[, idx]
-    model$W_B[] <- model$W_B[, idx]
-  }
   model$sequence_lengths <- model$sequence_lengths[idx]
   list(model = model, idx = idx)
 }

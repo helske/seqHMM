@@ -143,7 +143,7 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
 #' @noRd
 create_mpp_seq <- function(out, model, respect_void) {
   if (model$n_sequences == 1) {
-    mpp <- model$state_names[out$q + 1]
+    mpp <- t(model$state_names[out$q + 1])
   } else {
     mpp <- t(apply(out$q + 1, 2, function(x) model$state_names[x]))
   }

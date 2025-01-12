@@ -53,6 +53,7 @@ struct mnhmm_base {
   const arma::uword n_obs;
   double lambda;
   double maxval;
+  double minval;
   int mstep_iter = 0;
   int mstep_return_code = 0;
   
@@ -77,7 +78,8 @@ struct mnhmm_base {
     const arma::field<arma::cube>& eta_A_,
     const arma::uword n_obs_ = 0,
     const double lambda_ = 0,
-    double maxval_ = arma::datum::inf)
+    double maxval_ = arma::datum::inf,
+    double minval_ = std::pow(arma::datum::eps, 2.0/3.0))
     : S(S_),
       D(D_), 
       X_omega(X_d_),
@@ -121,7 +123,8 @@ struct mnhmm_base {
       current_d(0),
       n_obs(n_obs_),
       lambda(lambda_),
-      maxval(maxval_) {
+      maxval(maxval_),
+      minval(minval_) {
     for (arma::uword d = 0; d < D; d++) {
       pi(d) = arma::vec(S);
       log_pi(d) = arma::vec(S);
@@ -235,7 +238,7 @@ struct mnhmm_base {
                    const double ll) {
     E_omega.col(i) = arma::exp(ll_i - ll);
     // set minuscule values to zero in order to avoid numerical issues
-    E_omega.col(i).clean(std::numeric_limits<double>::min());
+    E_omega.col(i).clean(minval);
   }
   
   void estep_pi(const arma::uword i, const arma::uword d, 
@@ -243,7 +246,7 @@ struct mnhmm_base {
                 const arma::vec& log_beta, const double ll) {
     E_pi(d).col(i) = arma::exp(log_alpha + log_beta - ll);
     // set minuscule values to zero in order to avoid numerical issues
-    E_pi(d).col(i).clean(std::numeric_limits<double>::min());
+    E_pi(d).col(i).clean(minval);
   }
   
   void estep_A(const arma::uword i, const arma::uword d, 
@@ -257,7 +260,7 @@ struct mnhmm_base {
         }
       }
       // set minuscule values to zero in order to avoid numerical issues
-      E_A(k, d).col(i).clean(std::numeric_limits<double>::min());
+      E_A(k, d).col(i).clean(minval);
     }
   }
   void mstep_omega(const double ftol_abs, const double ftol_rel, 

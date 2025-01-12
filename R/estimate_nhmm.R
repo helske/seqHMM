@@ -94,10 +94,10 @@
 #' corresponding numerical issues especially in the M-step of EM algorithm. 
 #' Default is `Inf´, i.e., no bounds. Note that he bounds are not enforced 
 #' for M-step in intercept-only case with `lambda = 0`.
-#' @param store_data If `TRUE` (default), original data frame passed as `data` 
-#' is stored to the model object. For large datasets, this can be set to 
-#' `FALSE`, in which case you might need to pass the data separately to some 
-#' post-prosessing functions.
+#' @param store_data If `TRUE` (default), The data frame used to construct the 
+#' covariate arrays is stored to the model object. For large datasets, 
+#' this can be set to `FALSE`, in which case you might need to pass the data 
+#' separately to some post-prosessing functions.
 #' @param ... Additional arguments to [nloptr::nloptr()] and EM algorithm. 
 #' See details.
 #' @return Object of class `nhmm`.
@@ -134,8 +134,8 @@ estimate_nhmm <- function(
     checkmate::test_flag(x = store_data), 
     "Argument {.arg store_data} must be a single {.cls logical} value."
   )
-  if (store_data) {
-    model$data <- data
+  if (!store_data) {
+    model$data <- NULL
   }
   control <- list(...)
   start_time <- proc.time()

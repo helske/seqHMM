@@ -156,7 +156,8 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
       n_states = n_states,
       n_symbols = attr(observations, "n_symbols"),
       n_channels = attr(observations, "n_channels"),
-      n_clusters = n_clusters
+      n_clusters = n_clusters,
+      data = data
     ),
     extras = list(
       np_pi = pi$n_pars,

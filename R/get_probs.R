@@ -192,7 +192,7 @@ get_emission_probs.nhmm <- function(model, probs, remove_voids = TRUE, ...) {
     times <- as.numeric(colnames(model$observations[[1]]))
     symbol_names <- model$symbol_names
   }
-  if (!attr(model$X_B, "iv") && !isTRUE(attr(model$W_B, "iv"))) {
+  if (!attr(model$X_B, "iv")) {
     X <- model$X_B[, , 1L, drop = FALSE]
     ids <- "all"
   } else {
@@ -208,7 +208,7 @@ get_emission_probs.nhmm <- function(model, probs, remove_voids = TRUE, ...) {
         channel = model$channel_names[i],
         observation = rep(symbol_names[[i]], each = S),
         estimate = unlist(get_B_all(
-          model$gammas$B[[i]], X, attr(model$X_B, "tv") || isTRUE(attr(model$W_B, "tv"))
+          model$gammas$B[[i]], X, attr(model$X_B, "tv")
         ))
       )
     })
@@ -229,7 +229,7 @@ get_emission_probs.nhmm <- function(model, probs, remove_voids = TRUE, ...) {
     if (C == 1) {
       qs <- get_B_qs(
         model$boot$gamma_B, 
-        X, attr(model$X_B, "tv") || isTRUE(attr(model$W_B, "tv")), probs
+        X, attr(model$X_B, "tv"), probs
       )
     } else {
       qs <- do.call(
@@ -237,7 +237,7 @@ get_emission_probs.nhmm <- function(model, probs, remove_voids = TRUE, ...) {
         lapply(seq_len(C), function(i) {
           get_B_qs(
             lapply(model$boot$gamma_B, "[[", i), 
-            X, attr(model$X_B, "tv") || isTRUE(attr(model$W_B, "tv")), probs
+            X, attr(model$X_B, "tv"), probs
           )
         })
       )

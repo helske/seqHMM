@@ -1,4 +1,5 @@
 test_that("'iv_X' and 'tv_X' works", {
+  # dim(X) = c(ncol(X), length_of_sequences, n_sequences)
   x1 <- array(
     c(rbind(1:4, 1:4, 1:4), rbind(1:4, 1:4, 1:4)), c(3, 4, 2)
   )

@@ -39,9 +39,10 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
     )
     coef_names <- colnames(X)
     cols <- which(coef_names != "(Intercept)")
-    if (missing(X_mean) && scale) {
+    if (missing(X_mean)) {
       X_mean <- X_sd <- TRUE
-    } else {
+    }
+    if (!scale) {
       X_mean <- rep(0, length(cols))
       X_sd <- rep(1, length(cols))
     }
@@ -96,9 +97,10 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
     )
     coef_names <- colnames(X)
     cols <- which(coef_names != "(Intercept)")
-    if (missing(X_mean) && scale) {
+    if (missing(X_mean)) {
       X_mean <- X_sd <- TRUE
-    } else {
+    }
+    if (!scale) {
       X_mean <- rep(0, length(cols))
       X_sd <- rep(1, length(cols))
     }
@@ -154,9 +156,10 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     )
     coef_names <- colnames(X)
     cols <- which(coef_names != "(Intercept)")
-    if (missing(X_mean) && scale) {
+    if (missing(X_mean)) {
       X_mean <- X_sd <- TRUE
-    } else {
+    }
+    if (!scale) {
       X_mean <- rep(0, length(cols))
       X_sd <- rep(1, length(cols))
     }
@@ -189,9 +192,9 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     if (check) .check_identifiability(X[complete, ], "transition")
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
     n_pars <- n_states * (n_states - 1L) * dim(X)[3]
+    X <- aperm(X, c(3, 1, 2))
     iv <- iv_X(X)
     tv <- tv_X(X)
-    X <- aperm(X, c(3, 1, 2))
     missing_values <- which(is.na(X))
     # Replace NAs in void cases with zero
     X[is.na(X)] <- 0
@@ -231,9 +234,10 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     )
     coef_names <- colnames(X)
     cols <- which(coef_names != "(Intercept)")
-    if (missing(X_mean) && scale) {
+    if (missing(X_mean)) {
       X_mean <- X_sd <- TRUE
-    } else {
+    }
+    if (!scale) {
       X_mean <- rep(0, length(cols))
       X_sd <- rep(1, length(cols))
     }
@@ -268,9 +272,9 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     if (check) .check_identifiability(X[complete, ], "emission")
     dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
     n_pars <- sum(n_states * (n_symbols - 1L) * dim(X)[3])
+    X <- aperm(X, c(3, 1, 2))
     iv <- iv_X(X)
     tv <- tv_X(X)
-    X <- aperm(X, c(3, 1, 2))
     missing_values <- which(is.na(X))
     # Replace NAs in void cases with zero
     X[is.na(X)] <- 0
