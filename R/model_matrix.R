@@ -1,12 +1,22 @@
 #' Does covariate values vary per ID?
 #' @noRd
 iv_X <- function(X) {
-  dim(unique(X, MARGIN = 3))[3] > 1L
+  all_same <- TRUE
+  for (i in seq_len(dim(X)[3])) {
+    all_same <- all_same && all(X[, , i] == X[, , 1])
+    if (!all_same) break
+  }
+  !all_same #dim(unique(X, MARGIN = 3))[3] > 1L
 }
 #' Does covariate values vary in time?
 #' @noRd
 tv_X <- function(X) {
-  dim(unique(X, MARGIN = 2))[2] > 1L
+  all_same <- TRUE
+  for (i in seq_len(dim(X)[2])) {
+    all_same <- all_same && all(X[, i, ] == X[, 1, ])
+    if (!all_same) break
+  }
+  !all_same #dim(unique(X, MARGIN = 2))[2] > 1L
 }
 
 # Function to check uniqueness along the N dimension
@@ -190,9 +200,9 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     }
     
     if (check) .check_identifiability(X[complete, ], "transition")
-    dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
-    n_pars <- n_states * (n_states - 1L) * dim(X)[3]
-    X <- aperm(X, c(3, 1, 2))
+    X <- t(X)
+    dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
+    n_pars <- n_states * (n_states - 1L) * nrow(X)
     iv <- iv_X(X)
     tv <- tv_X(X)
     missing_values <- which(is.na(X))
@@ -270,9 +280,9 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
       )
     }
     if (check) .check_identifiability(X[complete, ], "emission")
-    dim(X) <- c(length_of_sequences, n_sequences, ncol(X))
-    n_pars <- sum(n_states * (n_symbols - 1L) * dim(X)[3])
-    X <- aperm(X, c(3, 1, 2))
+    X <- t(X)
+    dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
+    n_pars <- sum(n_states * (n_symbols - 1L) * nrow(X))
     iv <- iv_X(X)
     tv <- tv_X(X)
     missing_values <- which(is.na(X))

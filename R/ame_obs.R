@@ -248,28 +248,43 @@ ame_obs.fanhmm <- function(
     newdata <- model$data
   }
   newdata[[variable]][newdata[[time]] >= start_time] <- values[1]
-  X1 <- update(model, newdata)[c("X_pi", "X_A", "X_B", "W_A", "W_B")]
+  X1 <- update(model, newdata)[c("X_pi", "X_A", "X_B")]
+  W1_A <- W1_B <- vector("list", model$n_symbols)
+  # Memory usage could be improved by not computing and storing the full matrices
+  for (i in seq_len(model$n_symbols)) {
+    newdata[[model$channel_names]] <- model$symbol_names[[i]]
+    mod <- update(model, newdata)
+    W1_A[[i]] <- mod$X_A[, start_time:ncol(mod$X_A), , drop = FALSE]
+    W1_B[[i]] <- mod$X_B[, start_time:ncol(mod$X_B), , drop = FALSE]
+  }
   newdata[[variable]][newdata[[time]] >= start_time] <- values[2]
-  X2 <- update(model, newdata)[c("X_pi", "X_A", "X_B", "W_A", "W_B")]
+  W2_A <- W2_B <- vector("list", model$n_symbols)
+  X2 <- update(model, newdata)[c("X_pi", "X_A", "X_B")]
+  for (i in seq_len(model$n_symbols)) {
+    newdata[[model$channel_names]] <- model$symbol_names[[i]]
+    mod <- update(model, newdata)
+    W2_A[[i]] <- mod$X_A[, start_time:ncol(mod$X_A), , drop = FALSE]
+    W2_B[[i]] <- mod$X_B[, start_time:ncol(mod$X_B), , drop = FALSE]
+  }
   C <- model$n_channels
   start <- which(sort(unique(newdata[[time]])) == start_time)
   times <- as.numeric(colnames(model$observations))
   symbol_names <- list(model$symbol_names)
   obs <- create_obsArray(model)[1L, , ]
   out <- ame_obs_fanhmm_singlechannel( 
-    model$etas$pi, model$etas$A, model$etas$B, model$rho_A, model$rho_B,
+    model$etas$pi, model$etas$A, model$etas$B, 
     obs, model$sequence_lengths, 
     attr(X1$X_pi, "icpt_only"), attr(X1$X_A, "icpt_only"), 
     attr(X1$X_B, "icpt_only"), attr(X1$X_A, "iv"), 
     attr(X1$X_B, "iv"), attr(X1$X_A, "tv"), attr(X1$X_B, "tv"),
-    X1$X_pi, X1$X_A, X1$X_B, X1$W_A, X1$W_B,
+    X1$X_pi, X1$X_A, X1$X_B, 
     attr(X2$X_pi, "icpt_only"), attr(X2$X_A, "icpt_only"), 
     attr(X2$X_B, "icpt_only"), attr(X2$X_A, "iv"), 
     attr(X2$X_B, "iv"), attr(X2$X_A, "tv"), attr(X2$X_B, "tv"), 
-    X2$X_pi, X2$X_A, X2$X_B, X2$W_A, X2$W_B,
+    X2$X_pi, X2$X_A, X2$X_B,
     model$boot$gamma_pi, model$boot$gamma_A, model$boot$gamma_B, 
     model$boot$rho_A, model$boot_rho_B,
-    start, probs, model$boot$idx - 1L
+    start, probs, model$boot$idx - 1L, W1_A, W1_B, W2_A, W2_B
   )
   d <- data.frame(
     observation = model$symbol_names,

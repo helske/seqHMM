@@ -79,7 +79,7 @@ struct mnhmm_base {
     const arma::uword n_obs_ = 0,
     const double lambda_ = 0,
     double maxval_ = arma::datum::inf,
-    double minval_ = std::pow(arma::datum::eps, 2.0/3.0))
+    double minval_ = -1.0)
     : S(S_),
       D(D_), 
       X_omega(X_d_),
@@ -125,6 +125,9 @@ struct mnhmm_base {
       lambda(lambda_),
       maxval(maxval_),
       minval(minval_) {
+    if (minval < 0) {
+      minval = std::pow(arma::datum::eps, 2.0/3.0);
+    }
     for (arma::uword d = 0; d < D; d++) {
       pi(d) = arma::vec(S);
       log_pi(d) = arma::vec(S);
