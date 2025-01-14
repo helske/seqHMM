@@ -19,6 +19,7 @@ simulate_fanhmm(
   time,
   id,
   coefs = "random",
+  response_name = "y",
   init_sd = 2
 )
 }

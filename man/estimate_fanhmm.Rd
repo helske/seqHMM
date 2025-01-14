@@ -45,9 +45,16 @@ state transition probabilities.}
 \item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
 state emission probabilities.}
 
-\item{autoregression_formula}{Formula for autoregression \eqn{y_t \to y_{t+1}}.}
+\item{autoregression_formula}{Formula for autoregression
+\eqn{y_t \to y_{t+1}}.
+Default intercept means is shorthand for \eqn{y_{t+1} ~ y_{t}}, while
+additional terms in formula are interacted with the lagged responses.
+If \code{NULL}, no autoregression is used.}
 
-\item{feedback_formula}{Formula for feedback \eqn{y_t \to z_{t+1}}.}
+\item{feedback_formula}{Formula for feedback \eqn{y_t \to z_{t+1}}.
+Default intercept means is shorthand for \eqn{z_{t+1} ~ y_{t}}, while
+additional terms in formula are interacted with the lagged responses.
+If \code{NULL}, no feedback is used.}
 
 \item{data}{A data frame containing the variables used in the model
 formulas. Can be omitted in case of model with no covariates and observations
@@ -96,10 +103,10 @@ working parameters \eqn{\eta}, which are used to avoid extreme probabilities and
 corresponding numerical issues especially in the M-step of EM algorithm.
 Default is \verb{Inf´, i.e., no bounds. Note that he bounds are not enforced  for M-step in intercept-only case with }lambda = 0`.}
 
-\item{store_data}{If \code{TRUE} (default), original data frame passed as \code{data}
-is stored to the model object. For large datasets, this can be set to
-\code{FALSE}, in which case you might need to pass the data separately to some
-post-prosessing functions.}
+\item{store_data}{If \code{TRUE} (default), The data frame used to construct the
+covariate arrays is stored to the model object. For large datasets,
+this can be set to \code{FALSE}, in which case you might need to pass the data
+separately to some post-prosessing functions.}
 
 \item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}} and EM algorithm.
 See details.}
@@ -108,30 +115,12 @@ See details.}
 is \code{NULL} (the default), numbered clusters are used.}
 }
 \value{
-Object of class \code{mnhmm}.
+Object of class \code{fanhmm}.
 }
 \description{
 Function \code{estimate_fanhmm} estimates a hidden Markov model object of class
 \code{fanhmm} where transition and/or emission probabilities depend on past
 responses.
-}
-\examples{
-data("mvad", package = "TraMineR")
-
-d <- reshape(mvad, direction = "long", varying = list(15:86), 
-  v.names = "activity")
-
-\dontrun{
-set.seed(1)
-fit <- estimate_mnhmm("activity", n_states = 3, n_clusters = 2,
-  data = d, time = "time", id = "id", 
-  cluster_formula = ~ male + catholic + gcse5eq + Grammar + 
-    funemp + fmpr + livboth + Belfast +
-  N.Eastern + Southern + S.Eastern + Western,
-  initial_formula = ~ 1, emission_formula =  ~ male + catholic + gcse5eq,
-  transition_formula = ~ male + gcse5eq, inits = "random"
-  )
-}
 }
 \seealso{
 \code{\link[=estimate_nhmm]{estimate_nhmm()}} for further details.

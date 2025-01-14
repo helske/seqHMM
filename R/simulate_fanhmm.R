@@ -155,14 +155,14 @@ simulate_fanhmm <- function(
       attr(model$X_A, "X_sd")
     ), each = S
   )
+  model$gammas$A[] <- model$gammas$A * sd_A_X
   coef_names <- attr(model$X_B, "coef_names")
   K <- length(coef_names)
-  model$gammas$A[] <- model$gammas$A * sd_A_X
   sd_B_X <- rep(
     c(
       if(coef_names[1] == "(Intercept)") 1 else NULL, 
       attr(model$X_B, "X_sd")
-    ), each = S
+    ), each = M
   )
   model$gammas$B[] <- model$gammas$B * sd_B_X
   tQs <- t(create_Q(S))

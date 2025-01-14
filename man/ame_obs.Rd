@@ -4,6 +4,7 @@
 \alias{ame_obs}
 \alias{ame_obs.nhmm}
 \alias{ame_obs.mnhmm}
+\alias{ame_obs.fanhmm}
 \title{Average Marginal Effects for NHMM Responses}
 \usage{
 ame_obs(model, variable, values, start_time, ...)
@@ -19,6 +20,8 @@ ame_obs(model, variable, values, start_time, ...)
   probs = c(0.05, 0.95),
   ...
 )
+
+\method{ame_obs}{fanhmm}(model, variable, values, start_time, newdata = NULL, probs, ...)
 }
 \arguments{
 \item{model}{A Hidden Markov Model of class \code{nhmm} or \code{mnhmm}.}
