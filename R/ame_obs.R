@@ -283,7 +283,6 @@ ame_obs.fanhmm <- function(
     attr(X2$X_B, "iv"), attr(X2$X_A, "tv"), attr(X2$X_B, "tv"), 
     X2$X_pi, X2$X_A, X2$X_B,
     model$boot$gamma_pi, model$boot$gamma_A, model$boot$gamma_B, 
-    model$boot$rho_A, model$boot_rho_B,
     start, probs, model$boot$idx - 1L, W1_A, W1_B, W2_A, W2_B
   )
   d <- data.frame(

@@ -237,17 +237,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rho_to_phi_field
-arma::field<arma::cube> rho_to_phi_field(const arma::field<arma::cube>& rho);
-RcppExport SEXP _seqHMM_rho_to_phi_field(SEXP rhoSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type rho(rhoSEXP);
-    rcpp_result_gen = Rcpp::wrap(rho_to_phi_field(rho));
-    return rcpp_result_gen;
-END_RCPP
-}
 // fast_quantiles
 arma::mat fast_quantiles(const arma::mat& X, const arma::vec& probs);
 RcppExport SEXP _seqHMM_fast_quantiles(SEXP XSEXP, SEXP probsSEXP) {
@@ -1717,7 +1706,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_eta_to_gamma_cube", (DL_FUNC) &_seqHMM_eta_to_gamma_cube, 1},
     {"_seqHMM_eta_to_gamma_mat_field", (DL_FUNC) &_seqHMM_eta_to_gamma_mat_field, 1},
     {"_seqHMM_eta_to_gamma_cube_field", (DL_FUNC) &_seqHMM_eta_to_gamma_cube_field, 1},
-    {"_seqHMM_rho_to_phi_field", (DL_FUNC) &_seqHMM_rho_to_phi_field, 1},
     {"_seqHMM_fast_quantiles", (DL_FUNC) &_seqHMM_fast_quantiles, 2},
     {"_seqHMM_get_omega", (DL_FUNC) &_seqHMM_get_omega, 2},
     {"_seqHMM_get_log_omega", (DL_FUNC) &_seqHMM_get_log_omega, 2},

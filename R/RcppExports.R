@@ -45,10 +45,6 @@ eta_to_gamma_cube_field <- function(eta) {
     .Call(`_seqHMM_eta_to_gamma_cube_field`, eta)
 }
 
-rho_to_phi_field <- function(rho) {
-    .Call(`_seqHMM_rho_to_phi_field`, rho)
-}
-
 fast_quantiles <- function(X, probs) {
     .Call(`_seqHMM_fast_quantiles`, X, probs)
 }
