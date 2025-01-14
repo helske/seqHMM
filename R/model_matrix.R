@@ -203,11 +203,11 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     X <- t(X)
     dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
     n_pars <- n_states * (n_states - 1L) * nrow(X)
-    iv <- iv_X(X)
-    tv <- tv_X(X)
     missing_values <- which(is.na(X))
     # Replace NAs in void cases with zero
     X[is.na(X)] <- 0
+    iv <- iv_X(X)
+    tv <- tv_X(X)
   }
   attr(X, "X_mean") <- X_mean
   attr(X, "X_sd") <- X_sd
@@ -283,11 +283,11 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     X <- t(X)
     dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
     n_pars <- sum(n_states * (n_symbols - 1L) * nrow(X))
-    iv <- iv_X(X)
-    tv <- tv_X(X)
     missing_values <- which(is.na(X))
     # Replace NAs in void cases with zero
     X[is.na(X)] <- 0
+    iv <- iv_X(X)
+    tv <- tv_X(X)
   }
   attr(X, "X_mean") <- X_mean
   attr(X, "X_sd") <- X_sd
