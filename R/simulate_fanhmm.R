@@ -69,7 +69,7 @@ simulate_fanhmm <- function(
     data0,
     data
   )
- 
+  
   model <- build_fanhmm(
     response_name, n_states, initial_formula, transition_formula, emission_formula, 
     autoregression_formula, feedback_formula, data0, time, id, scale = FALSE
@@ -104,7 +104,7 @@ simulate_fanhmm <- function(
     model$etas$pi, model$X_pi, 
     model$etas$A, X_A, 
     model$etas$B, X_B,
-    as.integer(obs_0) - 1
+    as.integer(model$obs_0) - 1
   )
   for (i in seq_len(model$n_sequences)) {
     Ti <- sequence_lengths[i]
@@ -139,38 +139,61 @@ simulate_fanhmm <- function(
   attr(model$X_B, "X_mean") <- TRUE
   attr(model$X_B, "X_sd") <- TRUE
   model <- update(model, model$data)
-  coef_names <- attr(model$X_pi, "coef_names")
-  sd_pi_X <- rep(
-    c(
-      if(coef_names[1] == "(Intercept)") 1 else NULL, 
-      attr(model$X_pi, "X_sd")
-    ), each = S
-  )
-  model$gammas$pi[] <- model$gammas$pi * sd_pi_X
-  coef_names <- attr(model$X_A, "coef_names")
-  K <- length(coef_names)
-  sd_A_X <- rep(
-    c(
-      if(coef_names[1] == "(Intercept)") 1 else NULL, 
-      attr(model$X_A, "X_sd")
-    ), each = S
-  )
-  model$gammas$A[] <- model$gammas$A * sd_A_X
-  coef_names <- attr(model$X_B, "coef_names")
-  K <- length(coef_names)
-  sd_B_X <- rep(
-    c(
-      if(coef_names[1] == "(Intercept)") 1 else NULL, 
-      attr(model$X_B, "X_sd")
-    ), each = M
-  )
-  model$gammas$B[] <- model$gammas$B * sd_B_X
-  tQs <- t(create_Q(S))
-  tQm <- t(create_Q(M))
-  model$etas$pi[] <- tQs %*% model$gammas$pi
-  for (s in seq_len(S)) {
-    model$etas$A[, , s] <- tQs %*% model$gammas$A[, , s]
-    model$etas$B[, , s] <- tQm %*% model$gammas$B[, , s]
+  tQs <- t(create_Q(n_states))
+  
+  if (!attr(model$X_pi, "icpt_only")) {
+    coef_names <- attr(model$X_pi, "coef_names")
+    if(coef_names[1] == "(Intercept)") {
+      model$gammas$pi[, 1] <- model$gammas$pi[, 1] + 
+        model$gammas$pi %*% c(0, attr(model$X_pi, "X_mean"))
+    }
+    sd_X <- rep(
+      c(
+        if(coef_names[1] == "(Intercept)") 1 else NULL, 
+        attr(model$X_pi, "X_sd")
+      ), each = n_states
+    )
+    model$gammas$pi[] <- model$gammas$pi * sd_X
+    model$etas$pi[] <- tQs %*% model$gammas$pi
+  }
+  if (!attr(model$X_A, "icpt_only")) {
+    coef_names <- attr(model$X_A, "coef_names")
+    if (coef_names[1] == "(Intercept)") {
+      for (s in seq_len(n_states)) {
+        model$gammas$A[, 1, s] <- model$gammas$A[, 1, s] + 
+          model$gammas$A[, , s] %*% c(0, attr(model$X_A, "X_mean"))
+      }
+    }
+    sd_X <- rep(
+      c(
+        if(coef_names[1] == "(Intercept)") 1 else NULL, 
+        attr(model$X_A, "X_sd")
+      ), each = n_states
+    )
+    model$gammas$A[] <- model$gammas$A * sd_X
+    for (s in seq_len(n_states)) {
+      model$etas$A[, , s] <- tQs %*% model$gammas$A[, , s]
+    }
+  }
+  if (!attr(model$X_B, "icpt_only")) {
+    tQm <- t(create_Q(M))
+    coef_names <- attr(model$X_B, "coef_names")
+    if (coef_names[1] == "(Intercept)") {
+      for (s in seq_len(n_states)) {
+        model$gammas$B[, 1, s] <- model$gammas$B[, 1, s] + 
+          model$gammas$B[, , s] %*% c(0, attr(model$X_B, "X_mean"))
+      }
+    }
+    sd_X <- rep(
+      c(
+        if(coef_names[1] == "(Intercept)") 1 else NULL, 
+        attr(model$X_B, "X_sd")
+      ), each = M
+    )
+    model$gammas$B[] <- model$gammas$B * sd_X
+    for (s in seq_len(n_states)) {
+      model$etas$B[, , s] <- tQm %*% model$gammas$B[, , s]
+    }
   }
   list(model = model, states = states)
 }
