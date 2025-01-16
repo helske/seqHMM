@@ -99,23 +99,4 @@ void gradient_wrt_B(
     const arma::cube& X, const arma::uvec& M, const arma::uword i, 
     const arma::uword s, const arma::uword t, const arma::uword c,
     const arma::uword d);
-// FAN-HMM
-void gradient_wrt_A(
-    arma::mat& grad, arma::mat& tmpmat, const arma::umat& obs, 
-    const arma::mat& log_py, const arma::mat& log_alpha, 
-    const arma::mat& log_beta, const double ll, const arma::cube& A, 
-    const arma::cube& X, const arma::cube& W, const arma::uword i, 
-    const arma::uword t, const arma::uword s);
-void gradient_wrt_B_t0(
-    arma::mat& grad, arma::vec& tmpvec, const arma::umat& obs, 
-    const arma::uvec& obs_0, const arma::vec& log_pi, const arma::mat& log_beta, 
-    const double ll, const arma::cube& B, const arma::cube& X, 
-    const arma::cube& W, const arma::uword i, const arma::uword s);
-void gradient_wrt_B(
-    arma::mat& grad, arma::vec& tmpvec, const arma::umat& obs, 
-    const arma::mat& log_alpha, 
-    const arma::mat& log_beta, const double ll, 
-    const arma::cube& log_A, const arma::cube& B, const arma::cube& X, 
-    const arma::cube& W, const arma::uword i, const arma::uword s, 
-    const arma::uword t);
 #endif

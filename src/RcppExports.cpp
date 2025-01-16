@@ -1079,8 +1079,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // simulate_fanhmm_singlechannel
-Rcpp::List simulate_fanhmm_singlechannel(const arma::mat& eta_pi, const arma::mat& X_pi, const arma::cube& eta_A, const arma::field<arma::cube>& X_A, const arma::cube& eta_B, const arma::field<arma::cube>& X_B, const arma::uvec& obs_0);
-RcppExport SEXP _seqHMM_simulate_fanhmm_singlechannel(SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP obs_0SEXP) {
+Rcpp::List simulate_fanhmm_singlechannel(const arma::mat& eta_pi, const arma::mat& X_pi, const arma::cube& eta_A, const arma::field<arma::cube>& X_A, const arma::cube& eta_B, const arma::field<arma::cube>& X_B, const arma::uvec& obs_1);
+RcppExport SEXP _seqHMM_simulate_fanhmm_singlechannel(SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP obs_1SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -1090,8 +1090,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type X_A(X_ASEXP);
     Rcpp::traits::input_parameter< const arma::cube& >::type eta_B(eta_BSEXP);
     Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type X_B(X_BSEXP);
-    Rcpp::traits::input_parameter< const arma::uvec& >::type obs_0(obs_0SEXP);
-    rcpp_result_gen = Rcpp::wrap(simulate_fanhmm_singlechannel(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs_0));
+    Rcpp::traits::input_parameter< const arma::uvec& >::type obs_1(obs_1SEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_fanhmm_singlechannel(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs_1));
     return rcpp_result_gen;
 END_RCPP
 }

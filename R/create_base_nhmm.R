@@ -5,7 +5,7 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
                              initial_formula, transition_formula, 
                              emission_formula, cluster_formula = NA, 
                              cluster_names = "", scale = TRUE, 
-                             check_formulas = TRUE) {
+                             check_formulas = TRUE, fanhmm = FALSE) {
   
   stopifnot_(
     !missing(n_states) && checkmate::test_int(x = n_states, lower = 2L), 
@@ -124,7 +124,7 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
   )
   B <- model_matrix_emission_formula(
     emission_formula, data, n_sequences, length_of_sequences, n_states, 
-    n_symbols, time, id, sequence_lengths, scale = scale
+    n_symbols, time, id, sequence_lengths, scale = scale, fanhmm = fanhmm
   )
   if (mixture) {
     omega <- model_matrix_cluster_formula(

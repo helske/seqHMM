@@ -78,12 +78,10 @@ build_fanhmm <- function(
       paste("~ . + ", terms_feedback)
     )
   }
-  obs_0 <- data[[observations]][data[[time]] == min(data[[time]])]
-  data <- data[data[[time]] > min(data[[time]]), ]
   out <- create_base_nhmm(
     observations, data, time, id, n_states, state_names, channel_names = NULL,
     initial_formula, transition_formula, emission_formula, scale = scale, 
-    check_formulas = FALSE)
+    check_formulas = FALSE, fanhmm = TRUE)
   stopifnot_(
     !any(out$model$observations == attr(out$model$observations, "nr")),
     "FAN-HMM does not support missing values in the observations."
@@ -92,8 +90,6 @@ build_fanhmm <- function(
   out$model$etas <- setNames(
     create_initial_values(list(), out$model, 0), c("pi", "A", "B")
   )
- 
-  out$model$obs_0 <- obs_0
   structure(
     c(
       out$model,
@@ -103,7 +99,7 @@ build_fanhmm <- function(
       )
     ),
     class = c("fanhmm", "nhmm"),
-    nobs = attr(out$model$observations, "nobs"),
+    nobs = attr(out$model$observations, "nobs") - out$model$n_sequences,
     df = out$extras$np_pi + out$extras$np_A + out$extras$np_B,
     type = paste0(out$extras$multichannel, "fanhmm"),
     intercept_only = out$extras$intercept_only,

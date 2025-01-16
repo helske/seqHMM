@@ -226,7 +226,7 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
                                           n_symbols,
                                           time, id, sequence_lengths, 
                                           X_mean, X_sd, check = TRUE, 
-                                          scale = TRUE) {
+                                          scale = TRUE, fanhmm = FALSE) {
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
     n_pars <-  sum(n_states * (n_symbols - 1L))
@@ -255,9 +255,13 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     X[, cols] <- X_scaled
     X_mean <- attr(X_scaled, "scaled:center")
     X_sd <- attr(X_scaled, "scaled:scale")
-    
     complete <- complete.cases(X)
     missing_values <- which(!complete)
+    if (fanhmm) {
+      # first observation is fixed so missing (lagged) values do not matter
+      missing_values <- setdiff(missing_values, which(data[[time]] == min(data[[time]])))
+      #complete[which(data[[time]] == min(data[[time]]))] <- TRUE
+    } 
     if (length(missing_values) > 0) {
       ends <- sequence_lengths[match(data[[id]], unique(data[[id]]))]
       stopifnot_(

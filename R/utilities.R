@@ -4,7 +4,7 @@
 #' @noRd
 group_lag <- function(d, id, response) {
   lagged_response <- c(d[[response]][1], d[[response]][-nrow(d)])
-  #lagged_response[which(!duplicated(d[[id]]))] <- d[[response]][1]
+  lagged_response[which(!duplicated(d[[id]]))] <- NA
   lagged_response
 }
 #' Convert return code from estimate_nhmm and estimate_mnhmm to text
@@ -221,7 +221,11 @@ create_obsArray <- function(model) {
       sum(obsArray[, , i] < model$n_symbols[i]) > 0,
       "One channel contains only missing values, model is degenerate."
     )
+    if (inherits(model, "fanhmm")) {
+      obsArray[, 1, i] <- model$n_symbols[i]
+    }
   }
+  
   aperm(obsArray)
 }
 #' Create emissionArray for Various C++ functions

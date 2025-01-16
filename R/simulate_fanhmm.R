@@ -23,7 +23,7 @@ simulate_fanhmm <- function(
     n_sequences, sequence_lengths, n_symbols, n_states, 
     initial_formula = ~1, transition_formula = ~1, 
     emission_formula = ~1, autoregression_formula = ~1, 
-    feedback_formula = ~1, obs_0, data, time, id, coefs = "random", 
+    feedback_formula = ~1, obs_1, data, time, id, coefs = "random", 
     response_name = "y", init_sd = 2) {
   
   stopifnot_(
@@ -54,25 +54,18 @@ simulate_fanhmm <- function(
     "Currently only single-channel responses are supported for FAN-HMM."
   )
   stopifnot_(
-    !missing(obs_0) && 
-      checkmate::test_integerish(x = obs_0, lower = 1L, upper = n_symbols),
-    "Argument {.arg obs_0} should be an integer vector of length {.val n_sequences}."
+    !missing(obs_1) && 
+      checkmate::test_integerish(x = obs_1, lower = 1L, upper = n_symbols),
+    "Argument {.arg obs_1} should be an integer vector of length {.val n_sequences}."
   )
   symbol_names <- as.character(seq_len(n_symbols))
   T_ <- max(sequence_lengths)
   data[[response_name]] <- factor(rep(symbol_names, length = nrow(data)), 
                                   levels = symbol_names)
-  data0 <- data[data[[time]] == min(data[[time]]), ]
-  data0[[time]] <- min(data[[time]]) - min(diff(sort(unique(data[[time]]))))
-  data0[[response_name]] <- obs_0
-  data0 <- rbind(
-    data0,
-    data
-  )
-  
+
   model <- build_fanhmm(
     response_name, n_states, initial_formula, transition_formula, emission_formula, 
-    autoregression_formula, feedback_formula, data0, time, id, scale = FALSE
+    autoregression_formula, feedback_formula, data, time, id, scale = FALSE
   )
   
   X_A <- X_B <- vector("list", n_symbols)
@@ -104,7 +97,7 @@ simulate_fanhmm <- function(
     model$etas$pi, model$X_pi, 
     model$etas$A, X_A, 
     model$etas$B, X_B,
-    as.integer(model$obs_0) - 1
+    as.integer(obs_1) - 1
   )
   for (i in seq_len(model$n_sequences)) {
     Ti <- sequence_lengths[i]

@@ -27,7 +27,8 @@ update.nhmm <- function(object, newdata, ...) {
     object$length_of_sequences, object$n_states, object$n_symbols, 
     object$time_variable, object$id_variable, 
     object$sequence_lengths,
-    attr(object$X_B, "X_mean"), attr(object$X_B, "X_sd"), FALSE
+    attr(object$X_B, "X_mean"), attr(object$X_B, "X_sd"), FALSE,
+    fanhmm = inherits(object, "fanhmm")
   )$X
   object
 }
