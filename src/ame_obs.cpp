@@ -207,6 +207,7 @@ Rcpp::List ame_obs_fanhmm_singlechannel(
     const arma::field<arma::cube>& boot_gamma_A,
     const arma::field<arma::cube>& boot_gamma_B,
     const arma::uword start, const arma::vec& probs, const arma::umat& idx,
+    const arma::uvec& obs_1,
     const arma::field<arma::cube>& W1_A, const arma::field<arma::cube>& W1_B,
     const arma::field<arma::cube>& W2_A, const arma::field<arma::cube>& W2_B) {
   
@@ -227,15 +228,13 @@ Rcpp::List ame_obs_fanhmm_singlechannel(
   arma::cube obs_prob1(M, T, N, arma::fill::value(arma::datum::nan));
   arma::cube state_prob1(S, T, N, arma::fill::value(arma::datum::nan));
   model1.compute_state_obs_probs_fanhmm(
-    start, obs_prob1, state_prob1, W1_A, W1_B
+    start, obs_prob1, state_prob1, obs_1, W1_A, W1_B
   );
-  
   arma::cube obs_prob2(M, T, N, arma::fill::value(arma::datum::nan));
   arma::cube state_prob2(S, T, N, arma::fill::value(arma::datum::nan));
   model2.compute_state_obs_probs_fanhmm(
-    start, obs_prob2, state_prob2, W2_A, W2_B
+    start, obs_prob2, state_prob2, obs_1, W2_A, W2_B
   );
-  
   arma::mat point_estimate(M, T, arma::fill::value(arma::datum::nan));
   arma::mat diff(M, N);
   for (arma::uword t = start - 1; t < T; t++) {
@@ -255,13 +254,13 @@ Rcpp::List ame_obs_fanhmm_singlechannel(
         model1.gamma_B.slice(s) = boot_gamma_B(i).slice(s);
       }
       model1.compute_state_obs_probs_fanhmm(
-        start, obs_prob1, state_prob1, W1_A, W1_B
+        start, obs_prob1, state_prob1, obs_1, W1_A, W1_B
       );
       model2.gamma_pi = model1.gamma_pi;
       model2.gamma_A = model1.gamma_A;
       model2.gamma_B = model1.gamma_B;
       model2.compute_state_obs_probs_fanhmm(
-        start, obs_prob2, state_prob2, W2_A, W2_B
+        start, obs_prob2, state_prob2, obs_1, W2_A, W2_B
       );
       
       for (arma::uword t = start - 1; t < T; t++) {

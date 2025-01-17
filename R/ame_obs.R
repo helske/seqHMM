@@ -252,8 +252,10 @@ ame_obs.fanhmm <- function(
   W1_A <- W1_B <- vector("list", model$n_symbols)
   # Memory usage could be improved by not computing and storing the full matrices
   for (i in seq_len(model$n_symbols)) {
-    newdata[[model$channel_names]] <- model$symbol_names[[i]]
-    mod <- update(model, newdata)
+    d <- newdata
+    d[[model$channel_names]] <- factor(model$symbol_names[i], levels = model$symbol_names)
+    d[[paste0("lag_", model$channel_names)]] <- group_lag(d, id, model$channel_names)
+    mod <- update(model, d)
     W1_A[[i]] <- mod$X_A[, start_time:ncol(mod$X_A), , drop = FALSE]
     W1_B[[i]] <- mod$X_B[, start_time:ncol(mod$X_B), , drop = FALSE]
   }
@@ -261,8 +263,10 @@ ame_obs.fanhmm <- function(
   W2_A <- W2_B <- vector("list", model$n_symbols)
   X2 <- update(model, newdata)[c("X_pi", "X_A", "X_B")]
   for (i in seq_len(model$n_symbols)) {
-    newdata[[model$channel_names]] <- model$symbol_names[[i]]
-    mod <- update(model, newdata)
+    d <- newdata
+    d[[model$channel_names]] <- factor(model$symbol_names[i], levels = model$symbol_names)
+    d[[paste0("lag_", model$channel_names)]] <- group_lag(d, id, model$channel_names)
+    mod <- update(model, d)
     W2_A[[i]] <- mod$X_A[, start_time:ncol(mod$X_A), , drop = FALSE]
     W2_B[[i]] <- mod$X_B[, start_time:ncol(mod$X_B), , drop = FALSE]
   }
@@ -271,6 +275,7 @@ ame_obs.fanhmm <- function(
   times <- as.numeric(colnames(model$observations))
   symbol_names <- list(model$symbol_names)
   obs <- create_obsArray(model)[1L, , ]
+  obs_1 <- as.integer(model$observations[, 1]) - 1L
   out <- ame_obs_fanhmm_singlechannel( 
     model$etas$pi, model$etas$A, model$etas$B, 
     obs, model$sequence_lengths, 
@@ -283,7 +288,7 @@ ame_obs.fanhmm <- function(
     attr(X2$X_B, "iv"), attr(X2$X_A, "tv"), attr(X2$X_B, "tv"), 
     X2$X_pi, X2$X_A, X2$X_B,
     model$boot$gamma_pi, model$boot$gamma_A, model$boot$gamma_B, 
-    start, probs, model$boot$idx - 1L, W1_A, W1_B, W2_A, W2_B
+    start, probs, model$boot$idx - 1L, obs_1, W1_A, W1_B, W2_A, W2_B
   )
   d <- data.frame(
     observation = model$symbol_names,

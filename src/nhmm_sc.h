@@ -115,6 +115,7 @@ struct nhmm_sc : public nhmm_base {
   );
   void compute_state_obs_probs_fanhmm(
       const arma::uword start, arma::cube& obs_prob, arma::cube& state_prob,
+      const arma::uvec& obs_1,
       const arma::field<arma::cube>& W_A, const arma::field<arma::cube>& W_B); 
 };
 
