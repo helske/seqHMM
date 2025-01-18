@@ -374,7 +374,7 @@ get_probs.nhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ..
       !is.null(newdata[[time]]),
       "Can't find time index variable {.var {time}} in {.arg newdata}."
     )
-    object <- update(object, newdata = newdata)
+    object <- update(model, newdata = newdata)
   }
   S <- model$n_states
   M <- model$n_symbols
