@@ -87,7 +87,7 @@ simulate_fanhmm <- function(
     if (is.null(coefs$transition_probs)) coefs$transition_probs <- NULL
     if (is.null(coefs$emission_probs)) coefs$emission_probs <- NULL
   }
-  model$etas <- setNames(
+  model$etas <- stats::setNames(
     create_initial_values(coefs, model, init_sd), c("pi", "A", "B")
   )
   model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)

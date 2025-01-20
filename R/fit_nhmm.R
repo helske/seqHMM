@@ -73,7 +73,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
   }
   
   if (isTRUE(control$maxeval < 0)) {
-    model$etas <- setNames(
+    model$etas <- stats::setNames(
       create_initial_values(inits, model, init_sd), 
       c("pi","A", "B")
     )

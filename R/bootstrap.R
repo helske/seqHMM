@@ -96,7 +96,7 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
     checkmate::test_int(x = nsim, lower = 0L), 
     "Argument {.arg nsim} must be a single positive integer."
   )
-  init <- setNames(model$etas, c("eta_pi", "eta_A", "eta_B"))
+  init <- stats::setNames(model$etas, c("eta_pi", "eta_A", "eta_B"))
   gammas_mle <- model$gammas
   lambda <- model$estimation_results$lambda
   bound <- model$estimation_results$bound
@@ -199,7 +199,7 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
     checkmate::test_int(x = nsim, lower = 0L), 
     "Argument {.arg nsim} must be a single positive integer."
   )
-  init <- setNames(model$etas, c("eta_pi", "eta_A", "eta_B", "eta_omega"))
+  init <- stats::setNames(model$etas, c("eta_pi", "eta_A", "eta_B", "eta_omega"))
   gammas_mle <- model$gammas
   pcp_mle <- posterior_cluster_probabilities(model)
   lambda <- model$estimation_results$lambda

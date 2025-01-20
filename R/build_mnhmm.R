@@ -23,7 +23,7 @@ build_mnhmm <- function(
     observations, data, time, id, n_states, state_names, channel_names, 
     initial_formula, transition_formula, emission_formula, cluster_formula, 
     cluster_names, scale = scale)
-  out$model$etas <- setNames(
+  out$model$etas <- stats::setNames(
     create_initial_values(list(), out$model, 0), c("pi", "A", "B", "omega")
   )
   structure(

@@ -40,17 +40,20 @@ build_fanhmm <- function(
   data <- .check_data(data, time, id)
   
   if (!is.null(autoregression_formula)) {
-    terms_autoregression <- attr(terms(autoregression_formula), "term.labels")
+    terms_autoregression <- attr(
+      stats::terms(autoregression_formula), "term.labels"
+    )
     if (length(terms_autoregression) == 0) {
       terms_autoregression <- paste0("lag_", observations)
     } else {
       terms_autoregression <- paste(
-        paste0("lag_", observations), "+", 
-        paste(
-          paste0("lag_", observations), 
-          terms_autoregression, 
-          sep = ":"
-        )
+        c(paste0("lag_", observations),
+          paste(
+            paste0("lag_", observations), 
+            terms_autoregression, 
+            sep = ":"
+          )
+        ), collapse = "+"
       )
     }
     emission_formula <- update(
@@ -60,17 +63,18 @@ build_fanhmm <- function(
     data[[paste0("lag_", observations)]] <- group_lag(data, id, observations)
   }
   if (!is.null(feedback_formula)) {
-    terms_feedback <- attr(terms(feedback_formula), "term.labels")
+    terms_feedback <- attr(stats::terms(feedback_formula), "term.labels")
     if (length(terms_feedback) == 0) {
       terms_feedback <- observations
     } else {
       terms_feedback <- paste(
-        observations, "+",      
-        paste(
-          observations, 
-          terms_feedback, 
-          sep = ":"
-        )
+        c(observations, 
+          paste(
+            observations, 
+            terms_feedback, 
+            sep = ":"
+          )),
+        collapse = "+"
       )
     }
     transition_formula <- update(
@@ -87,7 +91,7 @@ build_fanhmm <- function(
     "FAN-HMM does not support missing values in the observations."
   )
   out[c("cluster_names", "n_clusters", "X_omega")] <- NULL
-  out$model$etas <- setNames(
+  out$model$etas <- stats::setNames(
     create_initial_values(list(), out$model, 0), c("pi", "A", "B")
   )
   structure(
