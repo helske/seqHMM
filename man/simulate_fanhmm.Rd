@@ -14,7 +14,7 @@ simulate_fanhmm(
   emission_formula = ~1,
   autoregression_formula = ~1,
   feedback_formula = ~1,
-  obs_0,
+  obs_1,
   data,
   time,
   id,

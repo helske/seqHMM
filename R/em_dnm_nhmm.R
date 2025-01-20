@@ -233,7 +233,7 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
     } else {
       1
     }
-    relative_change <- abs(out$objective - objectivef(init)$objective) / 
+    relative_change <- abs(out$objective - objectivef(unlist(init))$objective) / 
       (abs(out$objective) + 1e-12)
     if ((grad_norm < 1e-8 && is.finite(out$objective)) || 
         relative_change < control$ftol_rel) {

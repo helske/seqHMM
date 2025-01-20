@@ -169,7 +169,7 @@ simulate_fanhmm <- function(
     }
   }
   if (!attr(model$X_B, "icpt_only")) {
-    tQm <- t(create_Q(M))
+    tQm <- t(create_Q(model$n_symbols))
     coef_names <- attr(model$X_B, "coef_names")
     if (coef_names[1] == "(Intercept)") {
       for (s in seq_len(n_states)) {
@@ -181,7 +181,7 @@ simulate_fanhmm <- function(
       c(
         if(coef_names[1] == "(Intercept)") 1 else NULL, 
         attr(model$X_B, "X_sd")
-      ), each = M
+      ), each = model$n_symbols
     )
     model$gammas$B[] <- model$gammas$B * sd_X
     for (s in seq_len(n_states)) {
