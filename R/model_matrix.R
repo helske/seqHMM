@@ -105,20 +105,7 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
       data = data, 
       na.action = stats::na.pass
     )
-    coef_names <- colnames(X)
-    cols <- which(coef_names != "(Intercept)")
-    if (missing(X_mean)) {
-      X_mean <- X_sd <- TRUE
-    }
-    if (!scale) {
-      X_mean <- rep(0, length(cols))
-      X_sd <- rep(1, length(cols))
-    }
-    X_scaled <- scale(X[, cols], X_mean, X_sd)
-    X[, cols] <- X_scaled
-    X_mean <- attr(X_scaled, "scaled:center")
-    X_sd <- attr(X_scaled, "scaled:scale")
-    
+   
     missing_values <- which(!complete.cases(X))
     stopifnot_(
       length(missing_values) == 0L,
@@ -133,6 +120,19 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
     )
     n_pars <- (n_states - 1L) * ncol(X)
     if (check) .check_identifiability(X, "initial")
+    coef_names <- colnames(X)
+    cols <- which(coef_names != "(Intercept)")
+    if (missing(X_mean)) {
+      X_mean <- X_sd <- TRUE
+    }
+    if (!scale) {
+      X_mean <- rep(0, length(cols))
+      X_sd <- rep(1, length(cols))
+    }
+    X_scaled <- scale(X[, cols], X_mean, X_sd)
+    X[, cols] <- X_scaled
+    X_mean <- attr(X_scaled, "scaled:center")
+    X_sd <- attr(X_scaled, "scaled:scale")
   }
   X <- t(X)
   attr(X, "X_mean") <- X_mean
@@ -164,23 +164,11 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
       data = data, 
       na.action = stats::na.pass
     )
-    coef_names <- colnames(X)
-    cols <- which(coef_names != "(Intercept)")
-    if (missing(X_mean)) {
-      X_mean <- X_sd <- TRUE
-    }
-    if (!scale) {
-      X_mean <- rep(0, length(cols))
-      X_sd <- rep(1, length(cols))
-    }
-    X_scaled <- scale(X[, cols], X_mean, X_sd)
-    X[, cols] <- X_scaled
-    X_mean <- attr(X_scaled, "scaled:center")
-    X_sd <- attr(X_scaled, "scaled:scale")
+    
     complete <- complete.cases(X)
     missing_values <- which(!complete)
     if (length(missing_values) > 0) {
-      ends <- sequence_lengths[match(data[[id]], unique(data[[id]]))]
+      ends <- data[sequence_lengths[match(data[[id]], unique(data[[id]]))], time]
       stopifnot_(
         all(z <- data[missing_values, time] > ends[missing_values]),
         c(
@@ -200,6 +188,19 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     }
     
     if (check) .check_identifiability(X[complete, ], "transition")
+    coef_names <- colnames(X)
+    cols <- which(coef_names != "(Intercept)")
+    if (missing(X_mean)) {
+      X_mean <- X_sd <- TRUE
+    }
+    if (!scale) {
+      X_mean <- rep(0, length(cols))
+      X_sd <- rep(1, length(cols))
+    }
+    X_scaled <- scale(X[, cols], X_mean, X_sd)
+    X[, cols] <- X_scaled
+    X_mean <- attr(X_scaled, "scaled:center")
+    X_sd <- attr(X_scaled, "scaled:scale")
     X <- t(X)
     dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
     n_pars <- n_states * (n_states - 1L) * nrow(X)
@@ -242,19 +243,7 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
       data = data, 
       na.action = stats::na.pass
     )
-    coef_names <- colnames(X)
-    cols <- which(coef_names != "(Intercept)")
-    if (missing(X_mean)) {
-      X_mean <- X_sd <- TRUE
-    }
-    if (!scale) {
-      X_mean <- rep(0, length(cols))
-      X_sd <- rep(1, length(cols))
-    }
-    X_scaled <- scale(X[, cols], X_mean, X_sd)
-    X[, cols] <- X_scaled
-    X_mean <- attr(X_scaled, "scaled:center")
-    X_sd <- attr(X_scaled, "scaled:scale")
+    
     complete <- complete.cases(X)
     missing_values <- which(!complete)
     if (fanhmm) {
@@ -263,7 +252,7 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
       #complete[which(data[[time]] == min(data[[time]]))] <- TRUE
     } 
     if (length(missing_values) > 0) {
-      ends <- sequence_lengths[match(data[[id]], unique(data[[id]]))]
+      ends <- data[sequence_lengths[match(data[[id]], unique(data[[id]]))], time]
       stopifnot_(
         all(z <- data[missing_values, time] > ends[missing_values]),
         c(paste0(
@@ -284,6 +273,20 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
       )
     }
     if (check) .check_identifiability(X[complete, ], "emission")
+    coef_names <- colnames(X)
+    cols <- which(coef_names != "(Intercept)")
+    if (missing(X_mean)) {
+      X_mean <- X_sd <- TRUE
+    }
+    if (!scale) {
+      X_mean <- rep(0, length(cols))
+      X_sd <- rep(1, length(cols))
+    }
+    X_scaled <- scale(X[, cols], X_mean, X_sd)
+    X[, cols] <- X_scaled
+    X_mean <- attr(X_scaled, "scaled:center")
+    X_sd <- attr(X_scaled, "scaled:scale")
+    
     X <- t(X)
     dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
     n_pars <- sum(n_states * (n_symbols - 1L) * nrow(X))

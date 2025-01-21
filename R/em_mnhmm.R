@@ -71,9 +71,11 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda,
         c("All restarts terminated due to error.",
           "Error of first restart: ", return_msg(return_codes[1]))
       )
+      optimum <- out[[1]]
+    } else {
+      logliks <- unlist(lapply(out, "[[", "logLik"))
+      optimum <- out[[which.max(logliks)]]
     }
-    logliks <- unlist(lapply(out, "[[", "logLik"))
-    optimum <- out[[which.max(logliks)]]
     init <- optimum[c("eta_omega", "eta_pi", "eta_A", "eta_B")]
     if (save_all_solutions) {
       all_solutions <- out
