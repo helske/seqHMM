@@ -236,7 +236,6 @@ struct mnhmm_base {
     }
     log_A(d) = arma::log(A(d));
   }
-  
   void estep_omega(const arma::uword i, const arma::vec ll_i, 
                    const double ll) {
     E_omega.col(i) = arma::exp(ll_i - ll);

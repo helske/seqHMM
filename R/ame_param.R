@@ -149,7 +149,7 @@ ame_param.nhmm <- function(
             unlist(get_A_all(model$gammas$A, X2, tv_A)), 
           c(S, S, T_, N)
         ), 
-        1:3, mean)
+        1:3, mean, na.rm = TRUE)
     )
   )
   if (return_quantiles) {

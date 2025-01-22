@@ -30,7 +30,7 @@ void univariate_state_prob(
         );
       }
     }
-    // predict one step ahead
+    // predict one step ahead (start)
     for (arma::uword s = 0; s < S; s++) {
       log_state_prob(s, start - 1) = logSumExp(
         log_state_prob.col(start - 2) + log_A.slice(start - 2).col(s)
@@ -41,7 +41,7 @@ void univariate_state_prob(
       log_state_prob.col(t) -= logSumExp(log_state_prob.col(t));
     }
   }
-  // predict start and forward
+  // predict start + 1 and forward
   for (arma::uword t = start; t < end; t++) {
     for (arma::uword s = 0; s < S; s++) {
       log_state_prob(s, t) = logSumExp(

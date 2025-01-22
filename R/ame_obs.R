@@ -97,6 +97,11 @@ ame_obs.nhmm <- function(
     )
     newdata <- model$data
   }
+  stopifnot_(
+    !missing(start_time) && checkmate::test_choice(start_time, newdata[[time]]), 
+    "Argument {.arg start_time} must be a single value matching the 
+    time point in {.arg newdata}."
+  )
   newdata[[variable]][newdata[[time]] >= start_time] <- values[1]
   X1 <- update(model, newdata)[c("X_pi", "X_A", "X_B")]
   newdata[[variable]][newdata[[time]] >= start_time] <- values[2]
@@ -247,6 +252,13 @@ ame_obs.fanhmm <- function(
     )
     newdata <- model$data
   }
+  stopifnot_(
+    !missing(start_time) && 
+      checkmate::test_choice(start_time, newdata[[time]]) && 
+      start_time != min(newdata[[time]]), 
+    "Argument {.arg start_time} must be a single value matching the 
+    time point in {.arg newdata}, excluding the first time point."
+  )
   newdata[[variable]][newdata[[time]] >= start_time] <- values[1]
   X1 <- update(model, newdata)[c("X_pi", "X_A", "X_B")]
   W1_A <- W1_B <- vector("list", model$n_symbols)

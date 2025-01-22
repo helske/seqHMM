@@ -1,14 +1,8 @@
 #include "get_parameters.h"
 
-// gamma_omega is D x K (start from, covariates)
-// X a vector of length K
-// [[Rcpp::export]]
 arma::vec get_omega(const arma::mat& gamma, const arma::vec& X) {
   return softmax(gamma * X);
 }
-// eta_omega is D x K (start from, covariates)
-// X a vector of length K
-// [[Rcpp::export]]
 arma::vec get_log_omega(const arma::mat& gamma, const arma::vec& X) {
   return arma::log(softmax(gamma * X));
 }
@@ -21,21 +15,12 @@ arma::mat get_omega_all(const arma::mat& gamma, const arma::mat& X) {
   return omega;
 }
 
-// gamma is S x K (start from, covariates)
-// X a vector of length K
-// [[Rcpp::export]]
 arma::vec get_pi(const arma::mat& gamma, const arma::vec& X) {
   return softmax(gamma * X);
 }
-// gamma is S x K (start from, covariates)
-// X a vector of length K
-// [[Rcpp::export]]
 arma::vec get_log_pi(const arma::mat& gamma, const arma::vec& X) {
   return arma::log(softmax(gamma * X));
 }
-// gamma is S x K x S (transition to, covariates, transition from)
-// X is K x T matrix (covariates, time points)
-// [[Rcpp::export]]
 arma::cube get_A(const arma::cube& gamma, const arma::mat& X, 
                  const bool tv) {
   arma::uword S = gamma.n_slices;
@@ -57,9 +42,6 @@ arma::cube get_A(const arma::cube& gamma, const arma::mat& X,
   }
   return A;
 }
-// gamma is S x K x S (transition to, covariates, transition from)
-// X is K x T matrix (covariates, time points)
-// [[Rcpp::export]]
 arma::cube get_log_A(const arma::cube& gamma, const arma::mat& X, 
                      const bool tv) {
   arma::uword S = gamma.n_slices;
@@ -81,9 +63,6 @@ arma::cube get_log_A(const arma::cube& gamma, const arma::mat& X,
   }
   return arma::log(A);
 }
-// gamma is M x K x S (symbols, covariates, transition from)
-// X is K x T (covariates, time points)
-// [[Rcpp::export]]
 arma::cube get_B(const arma::cube& gamma, const arma::mat& X, 
                  const bool tv, const bool add_missing) {
   arma::uword S = gamma.n_slices;
@@ -111,8 +90,6 @@ arma::cube get_B(const arma::cube& gamma, const arma::mat& X,
   }
   return B;
 }
-// gamma is a a field of M_c x K x S cubes
-// X is K x T (covariates, time point)
 arma::field<arma::cube> get_B(
     const arma::field<arma::cube>& gamma, const arma::mat& X, 
     const arma::uvec& M, const bool tv, const bool add_missing) {
@@ -123,9 +100,6 @@ arma::field<arma::cube> get_B(
   }
   return B;
 }
-// gamma is M x K x S (symbols, covariates, transition from)
-// X is K x T (covariates, time points)
-// [[Rcpp::export]]
 arma::cube get_log_B(const arma::cube& gamma, const arma::mat& X, 
                      const bool tv, const bool add_missing) {
   arma::uword S = gamma.n_slices;
@@ -153,8 +127,6 @@ arma::cube get_log_B(const arma::cube& gamma, const arma::mat& X,
   }
   return arma::log(B);
 }
-// gamma is a a field of M_c x K x S cubes
-// X is K x T (covariates, time point)
 arma::field<arma::cube> get_log_B(
     const arma::field<arma::cube>& gamma, const arma::mat& X, 
     const arma::uvec& M, const bool tv, const bool add_missing) {
@@ -165,6 +137,7 @@ arma::field<arma::cube> get_log_B(
   }
   return log_B;
 }
+
 
 // gamma is S x K (start from, covariates)
 // X a K x N matrix

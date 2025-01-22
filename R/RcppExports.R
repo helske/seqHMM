@@ -49,40 +49,8 @@ fast_quantiles <- function(X, probs) {
     .Call(`_seqHMM_fast_quantiles`, X, probs)
 }
 
-get_omega <- function(gamma, X) {
-    .Call(`_seqHMM_get_omega`, gamma, X)
-}
-
-get_log_omega <- function(gamma, X) {
-    .Call(`_seqHMM_get_log_omega`, gamma, X)
-}
-
 get_omega_all <- function(gamma, X) {
     .Call(`_seqHMM_get_omega_all`, gamma, X)
-}
-
-get_pi <- function(gamma, X) {
-    .Call(`_seqHMM_get_pi`, gamma, X)
-}
-
-get_log_pi <- function(gamma, X) {
-    .Call(`_seqHMM_get_log_pi`, gamma, X)
-}
-
-get_A <- function(gamma, X, tv) {
-    .Call(`_seqHMM_get_A`, gamma, X, tv)
-}
-
-get_log_A <- function(gamma, X, tv) {
-    .Call(`_seqHMM_get_log_A`, gamma, X, tv)
-}
-
-get_B <- function(gamma, X, tv, add_missing) {
-    .Call(`_seqHMM_get_B`, gamma, X, tv, add_missing)
-}
-
-get_log_B <- function(gamma, X, tv, add_missing) {
-    .Call(`_seqHMM_get_log_B`, gamma, X, tv, add_missing)
 }
 
 get_pi_all <- function(gamma, X) {
