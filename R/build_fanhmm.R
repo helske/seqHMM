@@ -85,7 +85,7 @@ build_fanhmm <- function(
   out <- create_base_nhmm(
     observations, data, time, id, n_states, state_names, channel_names = NULL,
     initial_formula, transition_formula, emission_formula, scale = scale, 
-    check_formulas = FALSE, fanhmm = TRUE)
+    check_formulas = FALSE, fanhmm = !is.null(autoregression_formula))
   stopifnot_(
     !any(out$model$observations == attr(out$model$observations, "nr")),
     "FAN-HMM does not support missing values in the observations."

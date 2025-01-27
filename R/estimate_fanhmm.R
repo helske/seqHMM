@@ -22,8 +22,6 @@
 #' probabilities using list components `initial_probs`, `emission_probs`, 
 #' `transition_probs`, and `cluster_probs`. These can also be mixed, i.e. you 
 #' can give only `initial_probs` and `eta_A`.
-#' @param cluster_names A vector of optional labels for the clusters. If this
-#' is `NULL` (the default), numbered clusters are used.
 #' @return Object of class `fanhmm`.
 #' @seealso [estimate_nhmm()] for further details.
 #' @export

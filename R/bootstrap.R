@@ -90,7 +90,7 @@ bootstrap_coefs <- function(model, ...) {
 #' @export
 bootstrap_coefs.nhmm <- function(model, nsim = 1000, 
                                  type = c("nonparametric", "parametric"),
-                                 method = "EM-DNM", append = FALSE, ...) {
+                                 append = FALSE, ...) {
   type <- match.arg(type)
   stopifnot_(
     checkmate::test_int(x = nsim, lower = 0L), 
@@ -100,6 +100,7 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
   gammas_mle <- model$gammas
   lambda <- model$estimation_results$lambda
   bound <- model$estimation_results$bound
+  method <- model$estimation_results$method
   p <- progressr::progressor(along = seq_len(nsim))
   original_options <- options(future.globals.maxSize = Inf)
   on.exit(options(original_options))
@@ -193,7 +194,7 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
 #' @export
 bootstrap_coefs.mnhmm <- function(model, nsim = 1000, 
                                   type = c("nonparametric", "parametric"),
-                                  method = "DNM", append = FALSE, ...) {
+                                  append = FALSE, ...) {
   type <- match.arg(type)
   stopifnot_(
     checkmate::test_int(x = nsim, lower = 0L), 
@@ -204,12 +205,12 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
   pcp_mle <- posterior_cluster_probabilities(model)
   lambda <- model$estimation_results$lambda
   bound <- model$estimation_results$bound
+  method <- model$estimation_results$method
   D <- model$n_clusters
   p <- progressr::progressor(along = seq_len(nsim))
   original_options <- options(future.globals.maxSize = Inf)
   on.exit(options(original_options))
   control <- model$controls$control
-  control$ftol_rel <- min(control$ftol_rel, 1e-8)
   control$print_level <- 0
   control_mstep <- model$controls$mstep
   control_mstep$print_level <- 0

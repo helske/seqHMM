@@ -221,7 +221,8 @@ create_obsArray <- function(model) {
       sum(obsArray[, , i] < model$n_symbols[i]) > 0,
       "One channel contains only missing values, model is degenerate."
     )
-    if (inherits(model, "fanhmm")) {
+    # if y_t depends on y_t-1, treat y_1 as fixed (technically missing)
+    if (inherits(model, "fanhmm") & !is.null(model$autoregression_formula)) {
       obsArray[, 1, i] <- model$n_symbols[i]
     }
   }

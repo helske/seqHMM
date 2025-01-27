@@ -94,6 +94,8 @@
 #' corresponding numerical issues especially in the M-step of EM algorithm. 
 #' Default is `Inf´, i.e., no bounds. Note that he bounds are not enforced 
 #' for M-step in intercept-only case with `lambda = 0`.
+#' @param control_restart Controls for restart steps, see details.
+#' @param control_mstep Controls for M-step of EM algorithm, see details.
 #' @param store_data If `TRUE` (default), The data frame used to construct the 
 #' covariate arrays is stored to the model object. For large datasets, 
 #' this can be set to `FALSE`, in which case you might need to pass the data 

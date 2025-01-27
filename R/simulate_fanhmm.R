@@ -3,19 +3,23 @@
 #' Simulate sequences of observed and hidden states given the parameters of a 
 #' non-homogeneous hidden Markov model.
 #'
-#' @param n_sequences The number of sequences to simulate.
-#' @param sequence_lengths The lengths of the simulated sequences. 
-#' Either a scalar or vector of length `n_sequences`.  
-#' @param n_symbols A scalar or vector of length `n_channels` giving the number 
-#' of observed symbols per channel.
+#' @param n_symbols A scalar giving the number of observed symbols.
 #' @param n_states The number of hidden states.
 #' @param coefs If `coefs = "random"` (default), random coefficient values are 
 #' used. Otherwise `coefs` should be named list of `eta_pi`, `eta_A`, 
 #' and `eta_B`.
-#' @param init_sd Standard deviation of the normal distribution used to generate
-#' random coefficient values. Default is `2`.
-#' @inheritParams estimate_mnhmm
-#'
+#' @param autoregression_formula Formula for autoregression 
+#' \eqn{y_t \to y_{t+1}}.
+#' Default intercept means is shorthand for \eqn{y_{t+1} ~ y_{t}}, while 
+#' additional terms in formula are interacted with the lagged responses. 
+#' If `NULL`, no autoregression is used.
+#' @param feedback_formula Formula for feedback \eqn{y_t \to z_{t+1}}.
+#' Default intercept means is shorthand for \eqn{z_{t+1} ~ y_{t}}, while 
+#' additional terms in formula are interacted with the lagged responses. 
+#' If `NULL`, no feedback is used.
+#' @param obs_1 Vector defining the observations at first time points in case 
+#' of `autoregression_formula` is not `NULL`.
+#' @inheritParams estimate_nhmm
 #' @return A list with the model used in simulation as well as the simulated 
 #' hidden state sequences.
 #' @export
@@ -24,7 +28,7 @@ simulate_fanhmm <- function(
     initial_formula = ~1, transition_formula = ~1, 
     emission_formula = ~1, autoregression_formula = ~1, 
     feedback_formula = ~1, obs_1, data, time, id, coefs = "random", 
-    response_name = "y", init_sd = 2) {
+    init_sd = 2) {
   
   stopifnot_(
     !missing(n_sequences) && checkmate::test_int(x = n_sequences, lower = 1L), 
@@ -53,16 +57,19 @@ simulate_fanhmm <- function(
     n_channels == 1,
     "Currently only single-channel responses are supported for FAN-HMM."
   )
-  stopifnot_(
-    !missing(obs_1) && 
-      checkmate::test_integerish(x = obs_1, lower = 1L, upper = n_symbols),
-    "Argument {.arg obs_1} should be an integer vector of length {.val n_sequences}."
-  )
+  if (!is.null(autoregression_formula)) {
+    stopifnot_(
+      !missing(obs_1) &&
+        checkmate::test_integerish(x = obs_1, lower = 1L, upper = n_symbols),
+      "Argument {.arg obs_1} should be an integer vector of length {.val n_sequences}."
+    )
+  }
   symbol_names <- as.character(seq_len(n_symbols))
   T_ <- max(sequence_lengths)
+  response_name <- "observations"
   data[[response_name]] <- factor(rep(symbol_names, length = nrow(data)), 
                                   levels = symbol_names)
-
+  
   model <- build_fanhmm(
     response_name, n_states, initial_formula, transition_formula, emission_formula, 
     autoregression_formula, feedback_formula, data, time, id, scale = FALSE
@@ -94,10 +101,8 @@ simulate_fanhmm <- function(
   model$gammas$A <- eta_to_gamma_cube(model$etas$A)
   model$gammas$B <- eta_to_gamma_cube(model$etas$B)
   out <- simulate_fanhmm_singlechannel(
-    model$etas$pi, model$X_pi, 
-    model$etas$A, X_A, 
-    model$etas$B, X_B,
-    as.integer(obs_1) - 1
+    model$etas$pi, model$X_pi, model$etas$A, X_A, model$etas$B, X_B,
+    as.integer(obs_1) - 1, !is.null(autoregression_formula)
   )
   for (i in seq_len(model$n_sequences)) {
     Ti <- sequence_lengths[i]

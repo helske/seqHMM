@@ -189,7 +189,7 @@ Rcpp::List simulate_fanhmm_singlechannel(
     const arma::mat& eta_pi, const arma::mat& X_pi,
     const arma::cube& eta_A, const arma::field<arma::cube>& X_A,
     const arma::cube& eta_B, const arma::field<arma::cube>& X_B,
-    const arma::uvec& obs_1) {
+    const arma::uvec& obs_1, const bool autoregression) {
   arma::uword N = obs_1.n_elem;
   arma::uword T = X_A(0).n_cols;
   arma::uword S = eta_A.n_slices;
@@ -206,13 +206,19 @@ Rcpp::List simulate_fanhmm_singlechannel(
   arma::vec B(S);
   arma::uvec seqS = arma::linspace<arma::uvec>(0, S - 1, S);
   arma::uvec seqM = arma::linspace<arma::uvec>(0, M - 1, M);
+  
   for (arma::uword i = 0; i < N; i++) {
     pi = get_pi(gamma_pi, X_pi.col(i));
     z(0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, pi));
-    // B = softmax(
-    //   gamma_B.slice(z(0, i)) * X_B(obs_0(i)).slice(i).col(0)
-    // );
-    y(0, i) = obs_1(i);
+   
+    if (autoregression) {
+      y(0, i) = obs_1(i);
+    } else {
+      B = softmax(
+        gamma_B.slice(z(0, i)) * X_B(0).slice(i).col(0)
+      );
+      y(0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B));
+    }
     for (arma::uword t = 1; t < T; t++) {
       A = softmax(
         gamma_A.slice(z(t - 1, i)) * X_A(y(t - 1, i)).slice(i).col(t - 1)
