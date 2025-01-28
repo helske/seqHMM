@@ -368,8 +368,9 @@ void nhmm_sc::compute_state_obs_probs_fanhmm(
     const arma::uvec& obs_1,
     const arma::field<arma::cube>& W_A, const arma::field<arma::cube>& W_B) {
   
-  // start is always > 1 as y_1 is fixed
-  obs_prob.cols(0, start - 2).fill(-arma::datum::inf);
+  if (start > 1) {
+    obs_prob.cols(0, start - 2).fill(-arma::datum::inf);
+  }
   bool not_updated = true;
   arma::cube log_A_tm1(S, S, M);
   arma::cube log_B_t(S, M, M);
@@ -395,32 +396,32 @@ void nhmm_sc::compute_state_obs_probs_fanhmm(
       state_prob.slice(i).col(0) = log_pi;
       
       // forward algorithm until start - 1
-      // if (start > 1) {
-      state_prob.slice(i).col(0) += log_py.col(0);
-      for (arma::uword t = 1; t < start - 1; t++) {
+      if (start > 1) {
+        state_prob.slice(i).col(0) += log_py.col(0);
+        for (arma::uword t = 1; t < start - 1; t++) {
+          for (arma::uword s = 0; s < S; s++) {
+            state_prob(s, t, i) = logSumExp(
+              state_prob.slice(i).col(t - 1) + log_A.slice(t - 1).col(s) + log_py(s, t)
+            );
+          }
+        }
+        
+        // predict one step ahead (start)
         for (arma::uword s = 0; s < S; s++) {
-          state_prob(s, t, i) = logSumExp(
-            state_prob.slice(i).col(t - 1) + log_A.slice(t - 1).col(s) + log_py(s, t)
+          state_prob(s, start - 1, i) = logSumExp(
+            state_prob.slice(i).col(start - 2) + log_A.slice(start - 2).col(s)
           );
         }
+        // normalize all
+        for (arma::uword t = 0; t < start; t++) {
+          state_prob.slice(i).col(t) -= logSumExp(state_prob.slice(i).col(t));
+        }
+        // y_start, no need to marginalize over missing as y_start-1 is still observed
+        for (arma::uword m = 0; m < M; m++) {
+          obs_prob(m, start - 1, i) = logSumExp(state_prob.slice(i).col(start - 1) +
+            log_B.slice(start - 1).col(m));
+        }
       }
-      
-      // predict one step ahead (start)
-      for (arma::uword s = 0; s < S; s++) {
-        state_prob(s, start - 1, i) = logSumExp(
-          state_prob.slice(i).col(start - 2) + log_A.slice(start - 2).col(s)
-        );
-      }
-      // normalize all
-      for (arma::uword t = 0; t < start; t++) {
-        state_prob.slice(i).col(t) -= logSumExp(state_prob.slice(i).col(t));
-      }
-      // y_start, no need to marginalize over missing as y_start-1 is still observed
-      for (arma::uword m = 0; m < M; m++) {
-        obs_prob(m, start - 1, i) = logSumExp(state_prob.slice(i).col(start - 1) +
-          log_B.slice(start - 1).col(m));
-      }
-      // }
       // // predict t = start, start-1 is the last observation (used in A_t-1 and B_t)
       // for (arma::uword s = 0; s < S; s++) {
       //   state_prob(s, start, i) = logSumExp(

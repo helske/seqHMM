@@ -978,8 +978,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // simulate_fanhmm_singlechannel
-Rcpp::List simulate_fanhmm_singlechannel(const arma::mat& eta_pi, const arma::mat& X_pi, const arma::cube& eta_A, const arma::field<arma::cube>& X_A, const arma::cube& eta_B, const arma::field<arma::cube>& X_B, const arma::uvec& obs_1);
-RcppExport SEXP _seqHMM_simulate_fanhmm_singlechannel(SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP obs_1SEXP) {
+Rcpp::List simulate_fanhmm_singlechannel(const arma::mat& eta_pi, const arma::mat& X_pi, const arma::cube& eta_A, const arma::field<arma::cube>& X_A, const arma::cube& eta_B, const arma::field<arma::cube>& X_B, const arma::uvec& obs_1, const bool autoregression);
+RcppExport SEXP _seqHMM_simulate_fanhmm_singlechannel(SEXP eta_piSEXP, SEXP X_piSEXP, SEXP eta_ASEXP, SEXP X_ASEXP, SEXP eta_BSEXP, SEXP X_BSEXP, SEXP obs_1SEXP, SEXP autoregressionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -990,7 +990,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::cube& >::type eta_B(eta_BSEXP);
     Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type X_B(X_BSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type obs_1(obs_1SEXP);
-    rcpp_result_gen = Rcpp::wrap(simulate_fanhmm_singlechannel(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs_1));
+    Rcpp::traits::input_parameter< const bool >::type autoregression(autoregressionSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_fanhmm_singlechannel(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs_1, autoregression));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -1640,7 +1641,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_simulate_nhmm_multichannel", (DL_FUNC) &_seqHMM_simulate_nhmm_multichannel, 7},
     {"_seqHMM_simulate_mnhmm_singlechannel", (DL_FUNC) &_seqHMM_simulate_mnhmm_singlechannel, 8},
     {"_seqHMM_simulate_mnhmm_multichannel", (DL_FUNC) &_seqHMM_simulate_mnhmm_multichannel, 9},
-    {"_seqHMM_simulate_fanhmm_singlechannel", (DL_FUNC) &_seqHMM_simulate_fanhmm_singlechannel, 7},
+    {"_seqHMM_simulate_fanhmm_singlechannel", (DL_FUNC) &_seqHMM_simulate_fanhmm_singlechannel, 8},
     {"_seqHMM_viterbi_nhmm_singlechannel", (DL_FUNC) &_seqHMM_viterbi_nhmm_singlechannel, 15},
     {"_seqHMM_viterbi_nhmm_multichannel", (DL_FUNC) &_seqHMM_viterbi_nhmm_multichannel, 15},
     {"_seqHMM_viterbi_mnhmm_singlechannel", (DL_FUNC) &_seqHMM_viterbi_mnhmm_singlechannel, 18},

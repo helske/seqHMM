@@ -13,7 +13,6 @@ double univariate_viterbi_nhmm(
   
   arma::uword S = log_py.n_rows;
   arma::uword T = log_py.n_cols;
-  
   arma::mat delta(S, T);
   arma::umat phi(S, T);
   delta.col(0) = log_pi + log_py.col(0);

@@ -95,7 +95,8 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
               data[[y]], 
               n_sequences, 
               length_of_sequences, byrow = TRUE),
-              id = ids
+              id = ids,
+              alphabet = levels(droplevels(data[[y]]))
             )
           )
           colnames(x) <- sort(times)
