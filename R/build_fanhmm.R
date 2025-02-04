@@ -88,7 +88,7 @@ build_fanhmm <- function(
     check_formulas = FALSE, fanhmm = !is.null(autoregression_formula))
   stopifnot_(
     !any(out$model$observations == attr(out$model$observations, "nr")),
-    "FAN-HMM does not support missing values in the observations."
+    "FAN-HMM does not yet support missing values in the observations."
   )
   out[c("cluster_names", "n_clusters", "X_omega")] <- NULL
   out$model$etas <- stats::setNames(

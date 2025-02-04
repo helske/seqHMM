@@ -19,18 +19,11 @@ simulate_fanhmm(
   time,
   id,
   coefs = "random",
-  response_name = "y",
   init_sd = 2
 )
 }
 \arguments{
-\item{n_sequences}{The number of sequences to simulate.}
-
-\item{sequence_lengths}{The lengths of the simulated sequences.
-Either a scalar or vector of length \code{n_sequences}.}
-
-\item{n_symbols}{A scalar or vector of length \code{n_channels} giving the number
-of observed symbols per channel.}
+\item{n_symbols}{A scalar giving the number of observed symbols.}
 
 \item{n_states}{The number of hidden states.}
 
@@ -42,6 +35,20 @@ state transition probabilities.}
 
 \item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
 state emission probabilities.}
+
+\item{autoregression_formula}{Formula for autoregression
+\eqn{y_t \to y_{t+1}}.
+Default intercept means is shorthand for \eqn{y_{t+1} ~ y_{t}}, while
+additional terms in formula are interacted with the lagged responses.
+If \code{NULL}, no autoregression is used.}
+
+\item{feedback_formula}{Formula for feedback \eqn{y_t \to z_{t+1}}.
+Default intercept means is shorthand for \eqn{z_{t+1} ~ y_{t}}, while
+additional terms in formula are interacted with the lagged responses.
+If \code{NULL}, no feedback is used.}
+
+\item{obs_1}{Vector defining the observations at first time points in case
+of \code{autoregression_formula} is not \code{NULL}.}
 
 \item{data}{A data frame containing the variables used in the model
 formulas. Can be omitted in case of model with no covariates and observations
@@ -57,7 +64,8 @@ used. Otherwise \code{coefs} should be named list of \code{eta_pi}, \code{eta_A}
 and \code{eta_B}.}
 
 \item{init_sd}{Standard deviation of the normal distribution used to generate
-random coefficient values. Default is \code{2}.}
+random initial values. Default is \code{2}. If you want to fix the initial values
+of the regression coefficients to zero, use \code{init_sd = 0}.}
 }
 \value{
 A list with the model used in simulation as well as the simulated

@@ -90,6 +90,10 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
             !is.null(data[[y]]), 
             "Can't find response variable {.var {y}} in {.arg data}."
           )
+          stopifnot_(
+            is.factor(data[[y]]), 
+            "Response {.var {y}} in {.arg data} should be a factor."
+          )
           x <- suppressMessages(
             seqdef(matrix(
               data[[y]], 
@@ -132,7 +136,7 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
       cluster_formula, data, n_sequences, n_clusters, time, id, scale = scale
     )
   } else {
-    omega <- list(n_pars = 0, iv = FALSE, X_mean = NULL, X_sd = NULL)
+    omega <- list(n_pars = 0, iv = FALSE, X_mean = NULL)
   }
   list(
     model = list(

@@ -120,7 +120,7 @@ Rcpp::List state_obs_probs_fanhmm_singlechannel(
     const arma::umat& obs, const arma::uvec Ti, 
     const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, 
     const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B,
-    const arma::uword start, const arma::uvec& obs_1, 
+    const arma::uword start,
     const arma::field<arma::cube>& W_A, const arma::field<arma::cube>& W_B) {
   
   nhmm_sc model(
@@ -129,7 +129,7 @@ Rcpp::List state_obs_probs_fanhmm_singlechannel(
   );
   arma::cube obs_prob(model.M, model.T, model.N, arma::fill::value(arma::datum::nan));
   arma::cube state_prob(model.S, model.T, model.N, arma::fill::value(arma::datum::nan));
-  model.compute_state_obs_probs_fanhmm(start, obs_prob, state_prob, obs_1, W_A, W_B);
+  model.compute_state_obs_probs_fanhmm(start, obs_prob, state_prob, W_A, W_B);
   
   return Rcpp::List::create(
     Rcpp::Named("obs_prob") = Rcpp::wrap(obs_prob), 
@@ -365,7 +365,6 @@ void mnhmm_mc::compute_state_obs_probs(
 
 void nhmm_sc::compute_state_obs_probs_fanhmm(
     const arma::uword start, arma::cube& obs_prob, arma::cube& state_prob,
-    const arma::uvec& obs_1,
     const arma::field<arma::cube>& W_A, const arma::field<arma::cube>& W_B) {
   
   if (start > 1) {
@@ -376,9 +375,8 @@ void nhmm_sc::compute_state_obs_probs_fanhmm(
   arma::cube log_B_t(S, M, M);
   for (arma::uword i = 0; i < N; i++) {
     arma::uword upper_bound = std::min(start, Ti(i)) - 1;
-    obs_prob(obs_1(i), 0, i) = 0; // fixed
-    for (arma::uword t = 1; t < upper_bound; t++) {
-      obs_prob(obs(t, i), t, i) = 0; // no missing values allowed
+    for (arma::uword t = 0; t < upper_bound; t++) {
+      obs_prob(obs(t, i), t, i) = 0;
     }
     if (start <= Ti(i)) {
       if (!icpt_only_pi || not_updated) {
@@ -393,8 +391,8 @@ void nhmm_sc::compute_state_obs_probs_fanhmm(
       
       not_updated = false;
       update_log_py(i);
+     
       state_prob.slice(i).col(0) = log_pi;
-      
       // forward algorithm until start - 1
       if (start > 1) {
         state_prob.slice(i).col(0) += log_py.col(0);
@@ -412,10 +410,13 @@ void nhmm_sc::compute_state_obs_probs_fanhmm(
             state_prob.slice(i).col(start - 2) + log_A.slice(start - 2).col(s)
           );
         }
+      
         // normalize all
         for (arma::uword t = 0; t < start; t++) {
           state_prob.slice(i).col(t) -= logSumExp(state_prob.slice(i).col(t));
         }
+        
+       
         // y_start, no need to marginalize over missing as y_start-1 is still observed
         for (arma::uword m = 0; m < M; m++) {
           obs_prob(m, start - 1, i) = logSumExp(state_prob.slice(i).col(start - 1) +

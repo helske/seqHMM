@@ -11,44 +11,43 @@
 coef.nhmm <- function(object, probs, ...) {
   S <- object$n_states
   M <- object$n_symbols
-  coef_names <- attr(object$X_pi, "coef_names")
-  sd_pi_X <- rep(
-    c(
-      if(coef_names[1] == "(Intercept)") 1 else NULL, 
-      attr(object$X_pi, "X_sd")
-    ), each = S
+  coef_names_pi <- attr(object$X_pi, "coef_names")
+  R_inv_pi <- attr(object$X_pi, "R_inv")
+  X_mean_pi <- attr(object$X_pi, "X_mean")
+  gamma_pi <- gamma_std_to_gamma(
+    object$gammas$pi, R_inv_pi, coef_names_pi, X_mean_pi
   )
   gamma_pi <- data.frame(
     state = object$state_names,
-    parameter = rep(coef_names, each = S),
-    estimate = c(object$gammas$pi) / sd_pi_X
+    parameter = rep(coef_names_pi, each = S),
+    estimate = c(gamma_pi)
   )
-  coef_names <- attr(object$X_A, "coef_names")
+  coef_names_A <- attr(object$X_A, "coef_names")
+  R_inv_A <- attr(object$X_A, "R_inv")
+  X_mean_A <- attr(object$X_A, "X_mean")
   K <- length(coef_names)
-  sd_A_X <- rep(
-    c(
-      if(coef_names[1] == "(Intercept)") 1 else NULL, 
-      attr(object$X_A, "X_sd")
-    ), each = S
+  gamma_A <- gamma_std_to_gamma(
+    object$gammas$A, R_inv_A, coef_names_A, X_mean_A
   )
   gamma_A <- data.frame(
     state_from = rep(object$state_names, each = S * K),
     state_to = object$state_names,
-    parameter = rep(coef_names, each = S),
-    estimate = c(object$gammas$A) / sd_A_X
+    parameter = rep(coef_names_A, each = S),
+    estimate = c(gamma_A)
   )
-  coef_names <- attr(object$X_B, "coef_names")
+  coef_names_B <- attr(object$X_B, "coef_names")
+  R_inv_A <- attr(object$X_A, "R_inv")
+  X_mean_A <- attr(object$X_A, "X_mean")
   K <- length(coef_names)
-  sd_B_X <- c(
-    if(coef_names[1] == "(Intercept)") 1 else NULL, 
-    attr(object$X_B, "X_sd")
+  gamma_B <- gamma_std_to_gamma(
+    object$gammas$B, R_inv_B, coef_names_B, X_mean_B
   )
   if (object$n_channels == 1) {
     gamma_B <- data.frame(
       state = rep(object$state_names, each = M * K),
       observation = object$symbol_names,
-      parameter = rep(coef_names, each = M),
-      estimate = c(object$gammas$B) / rep(sd_B_X, each = M)
+      parameter = rep(coef_names_B, each = M),
+      estimate = c(gamma_B)
     )
   } else {
     gamma_B <- do.call(
@@ -58,8 +57,8 @@ coef.nhmm <- function(object, probs, ...) {
           data.frame(
             state = rep(object$state_names, each = M[i] * K),
             observation = object$symbol_names[[i]],
-            parameter = rep(coef_names, each = M[i]),
-            estimate = c(object$gammas$B[[i]]) / rep(sd_B_X, each = M[i])
+            parameter = rep(coef_names_B, each = M[i]),
+            estimate = c(gamma_B[[i]])
           )
         }
       )
@@ -84,14 +83,28 @@ coef.nhmm <- function(object, probs, ...) {
       )
     )
     nsim <- length(object$boot$gamma_pi)
-    q_pi <- fast_quantiles(matrix(unlist(object$boot$gamma_pi), ncol = nsim), probs)
-    q_A <- fast_quantiles(matrix(unlist(object$boot$gamma_A), ncol = nsim), probs)
-    q_B <- fast_quantiles(matrix(unlist(object$boot$gamma_B), ncol = nsim), probs)
-    sd_B_X <- unlist(lapply(seq_along(M), function(i) rep(sd_B_X, each = M[i])))
+    boot_gamma_pi <- lapply(
+      object$boot$gamma_pi, 
+      gamma_std_to_gamma, R_inv = R_inv_pi,
+      coef_names = coef_names_pi, X_mean = X_mean_pi
+    )
+    boot_gamma_A <- lapply(
+      object$boot$gamma_A, 
+      gamma_std_to_gamma, R_inv = R_inv_A,
+      coef_names = coef_names_A, X_mean = X_mean_A
+    )
+    boot_gamma_B <- lapply(
+      object$boot$gamma_B, 
+      gamma_std_to_gamma, R_inv = R_inv_B,
+      coef_names = coef_names_B, X_mean = X_mean_B
+    )
+    q_pi <- fast_quantiles(matrix(unlist(boot_gamma_pi), ncol = nsim), probs)
+    q_A <- fast_quantiles(matrix(unlist(boot_gamma_A), ncol = nsim), probs)
+    q_B <- fast_quantiles(matrix(unlist(boot_gamma_B), ncol = nsim), probs)
     for(i in seq_along(probs)) {
-      gamma_pi[paste0("q", 100 * probs[i])] <- q_pi[, i] / sd_pi_X
-      gamma_A[paste0("q", 100 * probs[i])] <- q_A[, i] / sd_A_X
-      gamma_B[paste0("q", 100 * probs[i])] <- q_B[, i] / sd_B_X
+      gamma_pi[paste0("q", 100 * probs[i])] <- q_pi[, i]
+      gamma_A[paste0("q", 100 * probs[i])] <- q_A[, i]
+      gamma_B[paste0("q", 100 * probs[i])] <- q_B[, i]
     }
   }
   list(
@@ -108,48 +121,48 @@ coef.mnhmm <- function(object, probs, ...) {
   M <- object$n_symbols
   D <- object$n_clusters
   object$state_names <- unname(object$state_names)
-  coef_names <- attr(object$X_pi, "coef_names")
-  sd_pi_X <- rep(
-    c(
-      if(coef_names[1] == "(Intercept)") 1 else NULL, 
-      attr(object$X_pi, "X_sd")
-    ), each = S
+  coef_names_pi <- attr(object$X_pi, "coef_names")
+  K <- length(coef_names_pi)
+  R_inv_pi <- attr(object$X_pi, "R_inv")
+  X_mean_pi <- attr(object$X_pi, "X_mean")
+  gamma_pi <- gamma_std_to_gamma(
+    object$gammas$pi, R_inv_pi, coef_names_pi, X_mean_pi
   )
-  K <- length(coef_names)
   gamma_pi <- data.frame(
     cluster = rep(object$cluster_names, each = S * K),
     state = unlist(object$state_names),
-    parameter = rep(coef_names, each = S),
-    estimate = unlist(object$gammas$pi) / sd_pi_X
+    parameter = rep(coef_names_pi, each = S),
+    estimate = unlist(gamma_pi)
   )
-  coef_names <- attr(object$X_A, "coef_names")
-  sd_A_X <- rep(
-    c(
-      if(coef_names[1] == "(Intercept)") 1 else NULL, 
-      attr(object$X_A, "X_sd")
-    ), each = S
-  )
+  coef_names_A <- attr(object$X_A, "coef_names")
+  R_inv_A <- attr(object$X_A, "R_inv")
+  X_mean_A <- attr(object$X_A, "X_mean")
   K <- length(coef_names)
+  gamma_A <- gamma_std_to_gamma(
+    object$gammas$A, R_inv_A, coef_names_A, X_mean_A
+  )
   gamma_A <- data.frame(
     cluster = rep(object$cluster_names, each = S * S * K),
     state_from = rep(unlist(object$state_names), each = S * K),
     state_to = unlist(object$state_names),
-    parameter = rep(coef_names, each = S),
-    estimate = unlist(object$gammas$A) / sd_A_X
+    parameter = rep(coef_names_A, each = S),
+    estimate = unlist(gamma_A)
   )
-  coef_names <- attr(object$X_B, "coef_names")
-  sd_B_X <- c(
-    if(coef_names[1] == "(Intercept)") 1 else NULL, 
-    attr(object$X_B, "X_sd")
-  )
+  
+  coef_names_B <- attr(object$X_B, "coef_names")
+  R_inv_A <- attr(object$X_A, "R_inv")
+  X_mean_A <- attr(object$X_A, "X_mean")
   K <- length(coef_names)
+  gamma_B <- gamma_std_to_gamma(
+    object$gammas$B, R_inv_B, coef_names_B, X_mean_B
+  )
   if (object$n_channels == 1) {
     gamma_B <- data.frame(
       cluster =  rep(object$cluster_names, each = S * M * K),
       state = rep(unlist(object$state_names), each = M * K),
       observation = object$symbol_names,
-      parameter = rep(coef_names, each = M),
-      estimate = unlist(object$gammas$B) / rep(sd_B_X, each = M)
+      parameter = rep(coef_names_B, each = M),
+      estimate = unlist(gamma_B)
     )
   } else {
     gamma_B <- do.call(
@@ -164,9 +177,8 @@ coef.mnhmm <- function(object, probs, ...) {
                   cluster = rep(object$cluster_names[d], each = S * M[i] * K),
                   state = rep(object$state_names[[d]], each = M[i] * K),
                   observation = object$symbol_names[[i]],
-                  parameter = rep(coef_names, each = M[i]),
-                  estimate = c(object$gammas$B[[d]][[i]]) / 
-                    rep(sd_B_X, each = M[i])
+                  parameter = rep(coef_names_B, each = M[i]),
+                  estimate = c(gamma_B[[d]][[i]])
                 )
               }
             )
@@ -175,19 +187,18 @@ coef.mnhmm <- function(object, probs, ...) {
       )
     )
   }
-  coef_names <- attr(object$X_omega, "coef_names")
-  sd_omega_X <- rep(
-    c(
-      if(coef_names[1] == "(Intercept)") 1 else NULL, 
-      attr(object$X_omega, "X_sd")
-    ), each = D
+  coef_names_omega <- attr(object$X_omega, "coef_names")
+  R_inv_omega <- attr(object$X_omega, "R_inv")
+  X_mean_omega <- attr(object$X_omega, "X_mean")
+  gamma_omega <- gamma_std_to_gamma(
+    object$gammas$omega, R_inv_omega, coef_names_omega, X_mean_omega
   )
   gamma_omega <- data.frame(
     cluster = object$cluster_names,
-    parameter = rep(coef_names, each = D),
-    estimate = c(object$gammas$omega) / sd_omega_X
+    parameter = rep(coef_names_omega, each = D),
+    estimate = c(gamma_omega)
   )
-  if(!missing(probs)) {
+  if (!missing(probs)) {
     stopifnot_(
       checkmate::test_numeric(
         x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
@@ -208,18 +219,36 @@ coef.mnhmm <- function(object, probs, ...) {
       )
     )
     nsim <- length(object$boot$gamma_pi)
-    q_pi <- fast_quantiles(matrix(unlist(object$boot$gamma_pi), ncol = nsim), probs)
-    q_A <- fast_quantiles(matrix(unlist(object$boot$gamma_A), ncol = nsim), probs)
-    q_B <- fast_quantiles(matrix(unlist(object$boot$gamma_B), ncol = nsim), probs)
-    q_omega <- fast_quantiles(matrix(unlist(object$boot$gamma_omega), ncol = nsim), 
-                              probs)
-    sd_B_X <- unlist(lapply(seq_along(M), function(i) rep(sd_B_X, each = M[i])))
-  
+    boot_gamma_pi <- lapply(
+      object$boot$gamma_pi, 
+      gamma_std_to_gamma, R_inv = R_inv_pi,
+      coef_names = coef_names_pi, X_mean = X_mean_pi
+    )
+    boot_gamma_A <- lapply(
+      object$boot$gamma_A, 
+      gamma_std_to_gamma, R_inv = R_inv_A,
+      coef_names = coef_names_A, X_mean = X_mean_A
+    )
+    boot_gamma_B <- lapply(
+      object$boot$gamma_B, 
+      gamma_std_to_gamma, R_inv = R_inv_B,
+      coef_names = coef_names_B, X_mean = X_mean_B
+    )
+    boot_gamma_omega <- lapply(
+      object$boot$gamma_omega, 
+      gamma_std_to_gamma, R_inv = R_inv_omega,
+      coef_names = coef_names_omega, X_mean = X_mean_omega
+    )
+    q_pi <- fast_quantiles(matrix(unlist(boot_gamma_pi), ncol = nsim), probs)
+    q_A <- fast_quantiles(matrix(unlist(boot_gamma_A), ncol = nsim), probs)
+    q_B <- fast_quantiles(matrix(unlist(boot_gamma_B), ncol = nsim), probs)
+    q_omega <- fast_quantiles(matrix(unlist(boot_gamma_omega), ncol = nsim), probs)
+    
     for(i in seq_along(probs)) {
-      gamma_pi[paste0("q", 100 * probs[i])] <- q_pi[, i] / sd_pi_X
-      gamma_A[paste0("q", 100 * probs[i])] <- q_A[, i] / sd_A_X
-      gamma_B[paste0("q", 100 * probs[i])] <- q_B[, i] / sd_B_X
-      gamma_omega[paste0("q", 100 * probs[i])] <- q_omega[, i] / sd_omega_X
+      gamma_pi[paste0("q", 100 * probs[i])] <- q_pi[, i]
+      gamma_A[paste0("q", 100 * probs[i])] <- q_A[, i]
+      gamma_B[paste0("q", 100 * probs[i])] <- q_B[, i]
+      gamma_omega[paste0("q", 100 * probs[i])] <- q_omega[, i]
     }
   }
   list(

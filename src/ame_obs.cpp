@@ -7,7 +7,7 @@
 // [[Rcpp::export]]
 Rcpp::List ame_obs_nhmm_singlechannel(
     arma::mat& eta_pi, arma::cube& eta_A, arma::cube& eta_B,
-    const arma::umat& obs, const arma::uvec Ti,
+    const arma::umat& obs1, const arma::umat& obs2, const arma::uvec Ti,
     const bool icpt_only_pi1, const bool icpt_only_A1, const bool icpt_only_B1,
     const bool iv_A1, const bool iv_B1, const bool tv_A1, const bool tv_B1,
     const arma::mat& X1_pi, const arma::cube& X1_A, const arma::cube& X1_B,
@@ -21,16 +21,16 @@ Rcpp::List ame_obs_nhmm_singlechannel(
   
   arma::uword S = eta_A.n_slices;
   arma::uword M = eta_B.n_rows + 1;
-  arma::uword T = obs.n_rows;
-  arma::uword N = obs.n_cols;
+  arma::uword T = obs1.n_rows;
+  arma::uword N = obs1.n_cols;
   nhmm_sc model1(
       S, X1_pi, X1_A, X1_B, Ti, icpt_only_pi1, icpt_only_A1,
-      icpt_only_B1, iv_A1, iv_B1, tv_A1, tv_B1, obs, eta_pi, eta_A, eta_B
+      icpt_only_B1, iv_A1, iv_B1, tv_A1, tv_B1, obs1, eta_pi, eta_A, eta_B
   );
   
   nhmm_sc model2(
       S, X2_pi, X2_A, X2_B, Ti, icpt_only_pi2, icpt_only_A2,
-      icpt_only_B2, iv_A2, iv_B2, tv_A2, tv_B2, obs, eta_pi, eta_A, eta_B
+      icpt_only_B2, iv_A2, iv_B2, tv_A2, tv_B2, obs2, eta_pi, eta_A, eta_B
   );
   arma::cube obs_prob1(M, T, N, arma::fill::value(arma::datum::nan));
   arma::cube state_prob1(S, T, N, arma::fill::value(arma::datum::nan));
@@ -91,7 +91,7 @@ Rcpp::List ame_obs_nhmm_singlechannel(
 // [[Rcpp::export]]
 Rcpp::List ame_obs_nhmm_multichannel(
     arma::mat& eta_pi, arma::cube& eta_A, arma::field<arma::cube>& eta_B,
-    const arma::ucube& obs, const arma::uvec Ti,
+    const arma::ucube& obs1, const arma::ucube& obs2, const arma::uvec Ti,
     const bool icpt_only_pi1, const bool icpt_only_A1, const bool icpt_only_B1,
     const bool iv_A1, const bool iv_B1, const bool tv_A1, const bool tv_B1,
     const arma::mat& X1_pi, const arma::cube& X1_A, const arma::cube& X1_B,
@@ -104,17 +104,17 @@ Rcpp::List ame_obs_nhmm_multichannel(
     const arma::uword start, const arma::vec& probs, const arma::umat& idx) {
   
   arma::uword S = eta_A.n_slices;
-  arma::uword C = obs.n_rows;
-  arma::uword T = obs.n_cols;
-  arma::uword N = obs.n_slices;
+  arma::uword C = obs1.n_rows;
+  arma::uword T = obs1.n_cols;
+  arma::uword N = obs1.n_slices;
   nhmm_mc model1(
       S, X1_pi, X1_A, X1_B, Ti, icpt_only_pi1, icpt_only_A1,
-      icpt_only_B1, iv_A1, iv_B1, tv_A1, tv_B1, obs, eta_pi, eta_A, eta_B
+      icpt_only_B1, iv_A1, iv_B1, tv_A1, tv_B1, obs1, eta_pi, eta_A, eta_B
   );
   
   nhmm_mc model2(
       S, X2_pi, X2_A, X2_B, Ti, icpt_only_pi2, icpt_only_A2,
-      icpt_only_B2, iv_A2, iv_B2, tv_A2, tv_B2, obs, eta_pi, eta_A, eta_B
+      icpt_only_B2, iv_A2, iv_B2, tv_A2, tv_B2, obs2, eta_pi, eta_A, eta_B
   );
   arma::uvec M = model1.M;
   
@@ -196,7 +196,7 @@ Rcpp::List ame_obs_nhmm_multichannel(
 // [[Rcpp::export]]
 Rcpp::List ame_obs_fanhmm_singlechannel(
     arma::mat& eta_pi, arma::cube& eta_A, arma::cube& eta_B,
-    const arma::umat& obs, const arma::uvec Ti,
+    const arma::umat& obs1, const arma::umat& obs2, const arma::uvec Ti,
     const bool icpt_only_pi1, const bool icpt_only_A1, const bool icpt_only_B1,
     const bool iv_A1, const bool iv_B1, const bool tv_A1, const bool tv_B1,
     const arma::mat& X1_pi, const arma::cube& X1_A, const arma::cube& X1_B,
@@ -207,33 +207,32 @@ Rcpp::List ame_obs_fanhmm_singlechannel(
     const arma::field<arma::cube>& boot_gamma_A,
     const arma::field<arma::cube>& boot_gamma_B,
     const arma::uword start, const arma::vec& probs, const arma::umat& idx,
-    const arma::uvec& obs_1,
     const arma::field<arma::cube>& W1_A, const arma::field<arma::cube>& W1_B,
     const arma::field<arma::cube>& W2_A, const arma::field<arma::cube>& W2_B) {
   
   arma::uword S = eta_A.n_slices;
   arma::uword M = eta_B.n_rows + 1;
-  arma::uword T = obs.n_rows;
-  arma::uword N = obs.n_cols;
+  arma::uword T = obs1.n_rows;
+  arma::uword N = obs1.n_cols;
   nhmm_sc model1(
       S, X1_pi, X1_A, X1_B, Ti, icpt_only_pi1, icpt_only_A1,
-      icpt_only_B1, iv_A1, iv_B1, tv_A1, tv_B1, obs, eta_pi, eta_A, eta_B
+      icpt_only_B1, iv_A1, iv_B1, tv_A1, tv_B1, obs1, eta_pi, eta_A, eta_B
   );
   
   nhmm_sc model2(
       S, X2_pi, X2_A, X2_B, Ti, icpt_only_pi2, icpt_only_A2,
-      icpt_only_B2, iv_A2, iv_B2, tv_A2, tv_B2, obs, eta_pi, eta_A, eta_B
+      icpt_only_B2, iv_A2, iv_B2, tv_A2, tv_B2, obs2, eta_pi, eta_A, eta_B
   );
   
   arma::cube obs_prob1(M, T, N, arma::fill::value(arma::datum::nan));
   arma::cube state_prob1(S, T, N, arma::fill::value(arma::datum::nan));
   model1.compute_state_obs_probs_fanhmm(
-    start, obs_prob1, state_prob1, obs_1, W1_A, W1_B
+    start, obs_prob1, state_prob1, W1_A, W1_B
   );
   arma::cube obs_prob2(M, T, N, arma::fill::value(arma::datum::nan));
   arma::cube state_prob2(S, T, N, arma::fill::value(arma::datum::nan));
   model2.compute_state_obs_probs_fanhmm(
-    start, obs_prob2, state_prob2, obs_1, W2_A, W2_B
+    start, obs_prob2, state_prob2, W2_A, W2_B
   );
   arma::mat point_estimate(M, T, arma::fill::value(arma::datum::nan));
   arma::mat diff(M, N);
@@ -254,13 +253,13 @@ Rcpp::List ame_obs_fanhmm_singlechannel(
         model1.gamma_B.slice(s) = boot_gamma_B(i).slice(s);
       }
       model1.compute_state_obs_probs_fanhmm(
-        start, obs_prob1, state_prob1, obs_1, W1_A, W1_B
+        start, obs_prob1, state_prob1, W1_A, W1_B
       );
       model2.gamma_pi = model1.gamma_pi;
       model2.gamma_A = model1.gamma_A;
       model2.gamma_B = model1.gamma_B;
       model2.compute_state_obs_probs_fanhmm(
-        start, obs_prob2, state_prob2, obs_1, W2_A, W2_B
+        start, obs_prob2, state_prob2, W2_A, W2_B
       );
       
       for (arma::uword t = start - 1; t < T; t++) {

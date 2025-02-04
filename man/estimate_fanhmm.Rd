@@ -103,6 +103,10 @@ working parameters \eqn{\eta}, which are used to avoid extreme probabilities and
 corresponding numerical issues especially in the M-step of EM algorithm.
 Default is \verb{Inf´, i.e., no bounds. Note that he bounds are not enforced  for M-step in intercept-only case with }lambda = 0`.}
 
+\item{control_restart}{Controls for restart steps, see details.}
+
+\item{control_mstep}{Controls for M-step of EM algorithm, see details.}
+
 \item{store_data}{If \code{TRUE} (default), The data frame used to construct the
 covariate arrays is stored to the model object. For large datasets,
 this can be set to \code{FALSE}, in which case you might need to pass the data
@@ -110,9 +114,6 @@ separately to some post-prosessing functions.}
 
 \item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}} and EM algorithm.
 See details.}
-
-\item{cluster_names}{A vector of optional labels for the clusters. If this
-is \code{NULL} (the default), numbered clusters are used.}
 }
 \value{
 Object of class \code{fanhmm}.

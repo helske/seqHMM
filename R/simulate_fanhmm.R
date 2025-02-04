@@ -126,49 +126,33 @@ simulate_fanhmm <- function(
   model$observations <- suppressWarnings(suppressMessages(
     seqdef(t(out$observations), alphabet = symbol_names, cnames = seq_len(T_))
   ))
-  model$data[[response_name]] <- c(t(model$observations))
+  model$data[[response_name]] <- factor(
+    c(t(model$observations)), 
+    levels = TraMineR::alphabet(model$observations)
+  )
   if (!is.null(autoregression_formula)) {
     model$data[[paste0("lag_", response_name)]] <- group_lag(model$data, id, response_name)
   }
   attr(model$X_pi, "X_mean") <- TRUE
-  attr(model$X_pi, "X_sd") <- TRUE
   attr(model$X_A, "X_mean") <- TRUE
-  attr(model$X_A, "X_sd") <- TRUE
   attr(model$X_B, "X_mean") <- TRUE
-  attr(model$X_B, "X_sd") <- TRUE
   model <- update(model, model$data)
   tQs <- t(create_Q(n_states))
   
   if (!attr(model$X_pi, "icpt_only")) {
     coef_names <- attr(model$X_pi, "coef_names")
-    if(coef_names[1] == "(Intercept)") {
-      model$gammas$pi[, 1] <- model$gammas$pi[, 1] + 
-        model$gammas$pi %*% c(0, attr(model$X_pi, "X_mean"))
-    }
-    sd_X <- rep(
-      c(
-        if(coef_names[1] == "(Intercept)") 1 else NULL, 
-        attr(model$X_pi, "X_sd")
-      ), each = n_states
+    model$gammas$pi <- gamma_std_to_gamma(
+      model$gammas$pi, attr(model$X_pi, "R_inv"), 
+      coef_names, attr(model$X_pi, "X_mean")
     )
-    model$gammas$pi[] <- model$gammas$pi * sd_X
     model$etas$pi[] <- tQs %*% model$gammas$pi
   }
   if (!attr(model$X_A, "icpt_only")) {
     coef_names <- attr(model$X_A, "coef_names")
-    if (coef_names[1] == "(Intercept)") {
-      for (s in seq_len(n_states)) {
-        model$gammas$A[, 1, s] <- model$gammas$A[, 1, s] + 
-          model$gammas$A[, , s] %*% c(0, attr(model$X_A, "X_mean"))
-      }
-    }
-    sd_X <- rep(
-      c(
-        if(coef_names[1] == "(Intercept)") 1 else NULL, 
-        attr(model$X_A, "X_sd")
-      ), each = n_states
+    model$gammas$A <- gamma_std_to_gamma(
+      model$gammas$A, attr(model$X_A, "R_inv"), 
+      coef_names, attr(model$X_A, "X_mean")
     )
-    model$gammas$A[] <- model$gammas$A * sd_X
     for (s in seq_len(n_states)) {
       model$etas$A[, , s] <- tQs %*% model$gammas$A[, , s]
     }
@@ -176,19 +160,10 @@ simulate_fanhmm <- function(
   if (!attr(model$X_B, "icpt_only")) {
     tQm <- t(create_Q(model$n_symbols))
     coef_names <- attr(model$X_B, "coef_names")
-    if (coef_names[1] == "(Intercept)") {
-      for (s in seq_len(n_states)) {
-        model$gammas$B[, 1, s] <- model$gammas$B[, 1, s] + 
-          model$gammas$B[, , s] %*% c(0, attr(model$X_B, "X_mean"))
-      }
-    }
-    sd_X <- rep(
-      c(
-        if(coef_names[1] == "(Intercept)") 1 else NULL, 
-        attr(model$X_B, "X_sd")
-      ), each = model$n_symbols
+    model$gammas$B <- gamma_std_to_gamma(
+      model$gammas$B, attr(model$X_B, "R_inv"), 
+      coef_names, attr(model$X_B, "X_mean")
     )
-    model$gammas$B[] <- model$gammas$B * sd_X
     for (s in seq_len(n_states)) {
       model$etas$B[, , s] <- tQm %*% model$gammas$B[, , s]
     }

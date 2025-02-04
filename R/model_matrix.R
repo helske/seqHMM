@@ -30,8 +30,8 @@ check_unique_N <- function(arr) {
 #'
 #' @noRd
 model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters, 
-                                         time, id, X_mean, X_sd, check = TRUE, 
-                                         scale = TRUE) {
+                                         time, id, scale = TRUE, X_mean = TRUE, 
+                                         R_inv = NULL, check = TRUE) {
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
     n_pars <- n_clusters - 1L
@@ -39,7 +39,7 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
     coef_names <- "(Intercept)"
     iv <- FALSE
     X_mean <- NULL
-    X_sd <- NULL
+    R_inv <- NULL
   } else {
     first_time_point <- min(data[[time]])
     X <- stats::model.matrix.lm(
@@ -47,20 +47,6 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
       data = data[data[[time]] == first_time_point, ], 
       na.action = stats::na.pass
     )
-    coef_names <- colnames(X)
-    cols <- which(coef_names != "(Intercept)")
-    if (missing(X_mean)) {
-      X_mean <- X_sd <- TRUE
-    }
-    if (!scale) {
-      X_mean <- rep(0, length(cols))
-      X_sd <- rep(1, length(cols))
-    }
-    X_scaled <- scale(X[, cols], X_mean, X_sd)
-    X[, cols] <- X_scaled
-    X_mean <- attr(X_scaled, "scaled:center")
-    X_sd <- attr(X_scaled, "scaled:scale")
-    
     missing_values <- which(!complete.cases(X))
     stopifnot_(
       length(missing_values) == 0L,
@@ -75,12 +61,32 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
     )
     n_pars <- (n_clusters - 1L) * ncol(X)
     if (check) .check_identifiability(X, "cluster")
+    
+    coef_names <- colnames(X)
+    cols <- which(coef_names != "(Intercept)")
+    
+    if (scale) {
+      X_scaled <- scale(X[, cols], X_mean, FALSE)
+      X_mean <- attr(X_scaled, "scaled:center")
+      if (is.null(R_inv)) {
+        qr_out <- qr(X_scaled)
+        scale_n <- sqrt(nrow(X_scaled) - 1)
+        R_inv <- solve(qr.R(qr_out)[, qr_out$pivot] / scale_n)
+        X[, cols] <- qr.Q(qr_out) * scale_n
+      } else {
+        X[, cols] <- X_scaled %*% R_inv #t(solve(t(R), t(X_scaled)))
+      }
+    } else {
+      X_mean <- rep(0, length(cols))
+      R_inv <- diag(length(cols))
+    }
   }
   X <- t(X)
+  attr(X, "R_inv") <- R_inv
   attr(X, "X_mean") <- X_mean
-  attr(X, "X_sd") <- X_sd
   attr(X, "coef_names") <- coef_names
   attr(X, "icpt_only") <- icpt_only
+  attr(formula, "xlevels") <- stats::.getXlevels(terms(formula), data)
   list(formula = formula, n_pars = n_pars, X = X)
 }
 #' Create the Model Matrix based on NHMM Formulas
@@ -88,8 +94,8 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
 #' @noRd
 model_matrix_initial_formula <- function(formula, data, n_sequences, 
                                          length_of_sequences, n_states, 
-                                         time, id, X_mean, X_sd, check = TRUE, 
-                                         scale = TRUE) {
+                                         time, id, scale = TRUE, X_mean = TRUE, 
+                                         R_inv = NULL, check = TRUE) {
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
     n_pars <- n_states - 1L
@@ -97,6 +103,7 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
     coef_names <- "(Intercept)"
     X_mean <- NULL
     X_sd <- NULL
+    R_inv <- NULL
   } else {
     first_time_point <- min(data[[time]])
     data <- data[data[[time]] == first_time_point, ]
@@ -105,7 +112,6 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
       data = data, 
       na.action = stats::na.pass
     )
-   
     missing_values <- which(!complete.cases(X))
     stopifnot_(
       length(missing_values) == 0L,
@@ -122,23 +128,28 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
     if (check) .check_identifiability(X, "initial")
     coef_names <- colnames(X)
     cols <- which(coef_names != "(Intercept)")
-    if (missing(X_mean)) {
-      X_mean <- X_sd <- TRUE
-    }
-    if (!scale) {
+    if (scale) {
+      X_scaled <- scale(X[, cols], X_mean, FALSE)
+      X_mean <- attr(X_scaled, "scaled:center")
+      if (is.null(R_inv)) {
+        qr_out <- qr(X_scaled)
+        scale_n <- sqrt(nrow(X_scaled) - 1)
+        R_inv <- solve(qr.R(qr_out)[, qr_out$pivot] / scale_n)
+        X[, cols] <- qr.Q(qr_out) * scale_n
+      } else {
+        X[, cols] <- X_scaled %*% R_inv #t(solve(t(R), t(X_scaled)))
+      }
+    } else {
       X_mean <- rep(0, length(cols))
-      X_sd <- rep(1, length(cols))
+      R_inv <- diag(length(cols))
     }
-    X_scaled <- scale(X[, cols], X_mean, X_sd)
-    X[, cols] <- X_scaled
-    X_mean <- attr(X_scaled, "scaled:center")
-    X_sd <- attr(X_scaled, "scaled:scale")
   }
   X <- t(X)
+  attr(X, "R_inv") <- R_inv
   attr(X, "X_mean") <- X_mean
-  attr(X, "X_sd") <- X_sd
   attr(X, "coef_names") <- coef_names
   attr(X, "icpt_only") <- icpt_only
+  attr(formula, "xlevels") <- stats::.getXlevels(terms(formula), data)
   list(formula = formula, n_pars = n_pars, X = X)
 }
 #' Create the Model Matrix based on NHMM Formulas
@@ -147,8 +158,8 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
 model_matrix_transition_formula <- function(formula, data, n_sequences,
                                             length_of_sequences, n_states,
                                             time, id, sequence_lengths, 
-                                            X_mean, X_sd, check = TRUE, 
-                                            scale = TRUE) {
+                                            scale = TRUE, X_mean = TRUE, 
+                                            R_inv = NULL, check = TRUE) {
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
     n_pars <-  n_states * (n_states - 1L)
@@ -157,7 +168,7 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     iv <- tv <- FALSE
     missing_values <- integer(0)
     X_mean <- NULL
-    X_sd <- NULL
+    R_inv <- NULL
   } else {
     X <- stats::model.matrix.lm(
       formula, 
@@ -167,7 +178,7 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     
     complete <- complete.cases(X)
     missing_values <- which(!complete)
-    if (length(missing_values) > 0) {
+    if (length(missing_values) > 0 && check) {
       ends <- data[sequence_lengths[match(data[[id]], unique(data[[id]]))], time]
       stopifnot_(
         all(z <- data[missing_values, time] > ends[missing_values]),
@@ -186,21 +197,24 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
         )
       )
     }
-    
     if (check) .check_identifiability(X[complete, ], "transition")
     coef_names <- colnames(X)
     cols <- which(coef_names != "(Intercept)")
-    if (missing(X_mean)) {
-      X_mean <- X_sd <- TRUE
-    }
-    if (!scale) {
+    if (scale) {
+      X_scaled <- scale(X[complete, cols], X_mean, FALSE)
+      X_mean <- attr(X_scaled, "scaled:center")
+      if (is.null(R_inv)) {
+        qr_out <- qr(X_scaled)
+        scale_n <- sqrt(nrow(X_scaled) - 1)
+        R_inv <- solve(qr.R(qr_out)[, qr_out$pivot] / scale_n)
+        X[complete, cols] <- qr.Q(qr_out) * scale_n
+      } else {
+        X[complete, cols] <- X_scaled %*% R_inv #t(solve(t(R), t(X_scaled)))
+      }
+    } else {
       X_mean <- rep(0, length(cols))
-      X_sd <- rep(1, length(cols))
+      R_inv <- diag(length(cols))
     }
-    X_scaled <- scale(X[, cols], X_mean, X_sd)
-    X[, cols] <- X_scaled
-    X_mean <- attr(X_scaled, "scaled:center")
-    X_sd <- attr(X_scaled, "scaled:scale")
     X <- t(X)
     dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
     n_pars <- n_states * (n_states - 1L) * nrow(X)
@@ -210,13 +224,14 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     iv <- iv_X(X)
     tv <- tv_X(X)
   }
+  attr(X, "R_inv") <- R_inv
   attr(X, "X_mean") <- X_mean
-  attr(X, "X_sd") <- X_sd
   attr(X, "coef_names") <- coef_names
   attr(X, "iv") <- iv
   attr(X, "tv") <- tv
   attr(X, "icpt_only") <- icpt_only
   attr(X, "missing") <- missing_values
+  attr(formula, "xlevels") <- stats::.getXlevels(terms(formula), data)
   list(formula = formula, n_pars = n_pars, X = X)
 }
 #' Create the Model Matrix based on NHMM Formulas
@@ -226,8 +241,9 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
                                           length_of_sequences, n_states,
                                           n_symbols,
                                           time, id, sequence_lengths, 
-                                          X_mean, X_sd, check = TRUE, 
-                                          scale = TRUE, fanhmm = FALSE) {
+                                          scale = TRUE, X_mean = TRUE, 
+                                          R_inv = NULL, check = TRUE,
+                                          fanhmm = FALSE) {
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
     n_pars <-  sum(n_states * (n_symbols - 1L))
@@ -236,7 +252,7 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     iv <- tv <- FALSE
     missing_values <- integer(0)
     X_mean <- NULL
-    X_sd <- NULL
+    R_inv <- NULL
   } else {
     X <- stats::model.matrix.lm(
       formula, 
@@ -251,7 +267,7 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
       missing_values <- setdiff(missing_values, which(data[[time]] == min(data[[time]])))
       #complete[which(data[[time]] == min(data[[time]]))] <- TRUE
     } 
-    if (length(missing_values) > 0) {
+    if (length(missing_values) > 0 && check) {
       ends <- data[sequence_lengths[match(data[[id]], unique(data[[id]]))], time]
       stopifnot_(
         all(z <- data[missing_values, time] > ends[missing_values]),
@@ -275,18 +291,21 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     if (check) .check_identifiability(X[complete, ], "emission")
     coef_names <- colnames(X)
     cols <- which(coef_names != "(Intercept)")
-    if (missing(X_mean)) {
-      X_mean <- X_sd <- TRUE
-    }
-    if (!scale) {
+    if (scale) {
+      X_scaled <- scale(X[complete, cols], X_mean, FALSE)
+      X_mean <- attr(X_scaled, "scaled:center")
+      if (is.null(R_inv)) {
+        qr_out <- qr(X_scaled)
+        scale_n <- sqrt(nrow(X_scaled) - 1)
+        R_inv <- solve(qr.R(qr_out)[, qr_out$pivot] / scale_n)
+        X[complete, cols] <- qr.Q(qr_out) * scale_n
+      } else {
+        X[complete, cols] <- X_scaled %*% R_inv #t(solve(t(R), t(X_scaled)))
+      }
+    } else {
       X_mean <- rep(0, length(cols))
-      X_sd <- rep(1, length(cols))
+      R_inv <- diag(length(cols))
     }
-    X_scaled <- scale(X[, cols], X_mean, X_sd)
-    X[, cols] <- X_scaled
-    X_mean <- attr(X_scaled, "scaled:center")
-    X_sd <- attr(X_scaled, "scaled:scale")
-    
     X <- t(X)
     dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
     n_pars <- sum(n_states * (n_symbols - 1L) * nrow(X))
@@ -296,12 +315,13 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     iv <- iv_X(X)
     tv <- tv_X(X)
   }
+  attr(X, "R_inv") <- R_inv
   attr(X, "X_mean") <- X_mean
-  attr(X, "X_sd") <- X_sd
   attr(X, "coef_names") <- coef_names
   attr(X, "iv") <- iv
   attr(X, "tv") <- tv
   attr(X, "icpt_only") <- icpt_only
   attr(X, "missing") <- missing_values
+  attr(formula, "xlevels") <- stats::.getXlevels(terms(formula), data)
   list(formula = formula, n_pars = n_pars, X = X)
 }

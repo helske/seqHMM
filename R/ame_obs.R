@@ -102,18 +102,23 @@ ame_obs.nhmm <- function(
     "Argument {.arg start_time} must be a single value matching the 
     time point in {.arg newdata}."
   )
-  newdata[[variable]][newdata[[time]] >= start_time] <- values[1]
-  X1 <- update(model, newdata)[c("X_pi", "X_A", "X_B")]
+  newdata[[variable]][newdata[[time]] %in% start_time] <- values[1]
+  mod <-update(model, newdata)
+  obs1 <- create_obsArray(mod)
+  X1 <-mod[c("X_pi", "X_A", "X_B")]
+  
   newdata[[variable]][newdata[[time]] >= start_time] <- values[2]
-  X2 <- update(model, newdata)[c("X_pi", "X_A", "X_B")]
+  mod <-update(model, newdata)
+  obs2 <- create_obsArray(mod)
+  X2 <-mod[c("X_pi", "X_A", "X_B")]
   C <- model$n_channels
   start <- which(sort(unique(newdata[[time]])) == start_time)
   if (C == 1L) {
     times <- as.numeric(colnames(model$observations))
     symbol_names <- list(model$symbol_names)
-    obs <- create_obsArray(model)[1L, , ]
     out <- ame_obs_nhmm_singlechannel( 
-      model$etas$pi, model$etas$A, model$etas$B, obs, 
+      model$etas$pi, model$etas$A, model$etas$B, 
+      array(obs1[1, , ], dim(obs1)[2:3]), array(obs2[1, , ], dim(obs2)[2:3]), 
       model$sequence_lengths, 
       attr(X1$X_pi, "icpt_only"), attr(X1$X_A, "icpt_only"), 
       attr(X1$X_B, "icpt_only"), attr(X1$X_A, "iv"), 
@@ -139,9 +144,8 @@ ame_obs.nhmm <- function(
   } else {
     times <- as.numeric(colnames(model$observations[[1]]))
     symbol_names <- model$symbol_names
-    obs <- create_obsArray(model)
     out <- ame_obs_nhmm_multichannel( 
-      model$etas$pi, model$etas$A, model$etas$B, obs, 
+      model$etas$pi, model$etas$A, model$etas$B, obs1, obs2,
       model$sequence_lengths, 
       attr(X1$X_pi, "icpt_only"), attr(X1$X_A, "icpt_only"), 
       attr(X1$X_B, "icpt_only"), attr(X1$X_A, "iv"), 
@@ -184,7 +188,8 @@ ame_obs.mnhmm <- function(
 #' @rdname ame_obs
 #' @export
 ame_obs.fanhmm <- function(
-    model, variable, values, start_time, newdata = NULL, probs, ...) {
+    model, variable, values, start_time, newdata = NULL, probs, 
+    intervention_times, ...) {
   stopifnot_(
     attr(model, "intercept_only") == FALSE,
     "Model does not contain any covariates."
@@ -268,8 +273,21 @@ ame_obs.fanhmm <- function(
     time point in {.arg newdata}, excluding the first time point."
     )
   }
-  newdata[[variable]][newdata[[time]] >= start_time] <- values[1]
-  X1 <- update(model, newdata)[c("X_pi", "X_A", "X_B")]
+  if (missing(intervention_times)) {
+    intervention_times <- unique(newdata[[time]])
+    intervention_times <- intervention_times[intervention_times >= start_time]
+  } else {
+    stopifnot_(
+      checkmate::test_subset(intervention_times, newdata[[time]]), 
+      "Argument {.arg intervention_times} must contain values matching the 
+    time points in {.arg newdata}."
+    )
+  }
+
+  newdata[[variable]][newdata[[time]] %in% intervention_times] <- values[1]
+  mod <-update(model, newdata)
+  obs1 <- create_obsArray(mod)
+  X1 <-mod[c("X_pi", "X_A", "X_B")]
   W1_A <- W1_B <- vector("list", model$n_symbols)
   # Memory usage could be improved by not computing and storing the full matrices
   for (i in seq_len(model$n_symbols)) {
@@ -280,9 +298,11 @@ ame_obs.fanhmm <- function(
     W1_A[[i]] <- mod$X_A[, start_time:ncol(mod$X_A), , drop = FALSE]
     W1_B[[i]] <- mod$X_B[, start_time:ncol(mod$X_B), , drop = FALSE]
   }
-  newdata[[variable]][newdata[[time]] >= start_time] <- values[2]
+  newdata[[variable]][newdata[[time]] %in% intervention_times] <- values[2]
   W2_A <- W2_B <- vector("list", model$n_symbols)
-  X2 <- update(model, newdata)[c("X_pi", "X_A", "X_B")]
+  mod <- update(model, newdata)
+  obs2 <- create_obsArray(mod)
+  X2 <- mod[c("X_pi", "X_A", "X_B")]
   for (i in seq_len(model$n_symbols)) {
     d <- newdata
     d[[model$channel_names]] <- factor(model$symbol_names[i], levels = model$symbol_names)
@@ -295,11 +315,11 @@ ame_obs.fanhmm <- function(
   start <- which(sort(unique(newdata[[time]])) == start_time)
   times <- as.numeric(colnames(model$observations))
   symbol_names <- list(model$symbol_names)
-  obs <- create_obsArray(model)[1L, , ]
-  obs_1 <- as.integer(model$observations[, 1]) - 1L
+ 
   out <- ame_obs_fanhmm_singlechannel( 
     model$etas$pi, model$etas$A, model$etas$B, 
-    obs, model$sequence_lengths, 
+    array(obs1[1, , ], dim(obs1)[2:3]), array(obs2[1, , ], dim(obs2)[2:3]),
+    model$sequence_lengths, 
     attr(X1$X_pi, "icpt_only"), attr(X1$X_A, "icpt_only"), 
     attr(X1$X_B, "icpt_only"), attr(X1$X_A, "iv"), 
     attr(X1$X_B, "iv"), attr(X1$X_A, "tv"), attr(X1$X_B, "tv"),
@@ -309,7 +329,7 @@ ame_obs.fanhmm <- function(
     attr(X2$X_B, "iv"), attr(X2$X_A, "tv"), attr(X2$X_B, "tv"), 
     X2$X_pi, X2$X_A, X2$X_B,
     model$boot$gamma_pi, model$boot$gamma_A, model$boot$gamma_B, 
-    start, probs, model$boot$idx - 1L, obs_1, W1_A, W1_B, W2_A, W2_B
+    start, probs, model$boot$idx - 1L, W1_A, W1_B, W2_A, W2_B
   )
   d <- data.frame(
     observation = model$symbol_names,

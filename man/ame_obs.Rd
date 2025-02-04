@@ -21,7 +21,16 @@ ame_obs(model, variable, values, start_time, ...)
   ...
 )
 
-\method{ame_obs}{fanhmm}(model, variable, values, start_time, newdata = NULL, probs, ...)
+\method{ame_obs}{fanhmm}(
+  model,
+  variable,
+  values,
+  start_time,
+  newdata = NULL,
+  probs,
+  intervention_times,
+  ...
+)
 }
 \arguments{
 \item{model}{A Hidden Markov Model of class \code{nhmm} or \code{mnhmm}.}
