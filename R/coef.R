@@ -25,7 +25,7 @@ coef.nhmm <- function(object, probs, ...) {
   coef_names_A <- attr(object$X_A, "coef_names")
   R_inv_A <- attr(object$X_A, "R_inv")
   X_mean_A <- attr(object$X_A, "X_mean")
-  K <- length(coef_names)
+  K <- length(coef_names_A)
   gamma_A <- gamma_std_to_gamma(
     object$gammas$A, R_inv_A, coef_names_A, X_mean_A
   )
@@ -36,9 +36,9 @@ coef.nhmm <- function(object, probs, ...) {
     estimate = c(gamma_A)
   )
   coef_names_B <- attr(object$X_B, "coef_names")
-  R_inv_A <- attr(object$X_A, "R_inv")
-  X_mean_A <- attr(object$X_A, "X_mean")
-  K <- length(coef_names)
+  R_inv_B <- attr(object$X_B, "R_inv")
+  X_mean_B <- attr(object$X_B, "X_mean")
+  K <- length(coef_names_B)
   gamma_B <- gamma_std_to_gamma(
     object$gammas$B, R_inv_B, coef_names_B, X_mean_B
   )
@@ -137,7 +137,7 @@ coef.mnhmm <- function(object, probs, ...) {
   coef_names_A <- attr(object$X_A, "coef_names")
   R_inv_A <- attr(object$X_A, "R_inv")
   X_mean_A <- attr(object$X_A, "X_mean")
-  K <- length(coef_names)
+  K <- length(coef_names_A)
   gamma_A <- gamma_std_to_gamma(
     object$gammas$A, R_inv_A, coef_names_A, X_mean_A
   )
@@ -150,9 +150,9 @@ coef.mnhmm <- function(object, probs, ...) {
   )
   
   coef_names_B <- attr(object$X_B, "coef_names")
-  R_inv_A <- attr(object$X_A, "R_inv")
-  X_mean_A <- attr(object$X_A, "X_mean")
-  K <- length(coef_names)
+  R_inv_B <- attr(object$X_B, "R_inv")
+  X_mean_B <- attr(object$X_B, "X_mean")
+  K <- length(coef_names_B)
   gamma_B <- gamma_std_to_gamma(
     object$gammas$B, R_inv_B, coef_names_B, X_mean_B
   )

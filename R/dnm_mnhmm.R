@@ -129,8 +129,10 @@ dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
     p <- progressr::progressor(along = seq_len(restarts))
     original_options <- options(future.globals.maxSize = Inf)
     on.exit(options(original_options))
+    base_init <- unlist(create_initial_values(inits, model, init_sd = 0))
+    u <- t(stats::qnorm(lhs::maximinLHS(restarts, length(base_init)), sd = init_sd))
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
-      init <- unlist(create_initial_values(inits, model, init_sd))
+      init <- base_init + u[, i]
       fit <- nloptr(
         x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
         ub = rep(bound, length(init)), opts = control_restart

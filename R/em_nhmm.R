@@ -5,6 +5,10 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
   S <- model$n_states
   T_ <- model$length_of_sequences
   C <- model$n_channels
+  n_i <- attr(model, "np_pi")
+  n_s <- attr(model, "np_A")
+  n_o <- attr(model, "np_B")
+  n_d <- attr(model, "np_omega")
   icpt_only_pi <- attr(model$X_pi, "icpt_only")
   icpt_only_A <- attr(model$X_A, "icpt_only")
   icpt_only_B <- attr(model$X_B, "icpt_only")
@@ -29,8 +33,15 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
     p <- progressr::progressor(along = seq_len(restarts))
     original_options <- options(future.globals.maxSize = Inf)
     on.exit(options(original_options))
+    base_init <- create_initial_values(inits, model, init_sd = 0)
+    u <- t(stats::qnorm(
+      lhs::maximinLHS(restarts, length(unlist(base_init))), 
+      sd = init_sd))
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
-      init <- create_initial_values(inits, model, init_sd)
+      init <- base_init
+      init$eta_pi[] <- init$eta_pi[] + u[seq_len(n_i), i]
+      init$eta_A[] <- init$eta_A[] + u[n_i + seq_len(n_s), i]
+      init$eta_B[] <- init$eta_B[] + u[n_i + n_s + seq_len(n_o), i]
       if (C == 1) {
         fit <- EM_LBFGS_nhmm_singlechannel(
           init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, obs,

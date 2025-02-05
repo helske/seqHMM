@@ -4,11 +4,6 @@
 #' @export
 predict.nhmm <- function(object, newdata = NULL, ...) {
   
-  stopifnot_(
-    attr(object, "intercept_only") == FALSE,
-    "Model does not contain any covariates."
-  )
-  
   time <- object$time_variable
   id <- object$id_variable
   if (!is.null(newdata)) {
@@ -68,11 +63,6 @@ predict.nhmm <- function(object, newdata = NULL, ...) {
 #' @rdname predict
 #' @export
 predict.fanhmm <- function(object, newdata = NULL, ...) {
-  
-  stopifnot_(
-    attr(object, "intercept_only") == FALSE,
-    "Model does not contain any covariates."
-  )
   
   time <- object$time_variable
   id <- object$id_variable

@@ -130,8 +130,16 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda,
     p <- progressr::progressor(along = seq_len(restarts))
     original_options <- options(future.globals.maxSize = Inf)
     on.exit(options(original_options))
+    base_init <- create_initial_values(inits, model, init_sd = 0)
+    u <- t(stats::qnorm(
+      lhs::maximinLHS(restarts, length(unlist(base_init))), 
+      sd = init_sd))
     out <- future.apply::future_lapply(seq_len(restarts), function(i) {
-      init <- create_initial_values(inits, model, init_sd)
+      init <- base_init
+      init$eta_pi[] <- init$eta_pi[] + u[seq_len(n_i), i]
+      init$eta_A[] <- init$eta_A[] + u[n_i + seq_len(n_s), i]
+      init$eta_B[] <- init$eta_B[] + u[n_i + n_s + seq_len(n_o), i]
+      init$eta_omega[] <- init$eta_omega[] + u[n_i + n_s + n_o + seq_len(n_d), i]
       if (C == 1) {
         fit <- EM_LBFGS_mnhmm_singlechannel(
           init$eta_omega, model$X_omega, init$eta_pi, model$X_pi, init$eta_A, model$X_A, 
