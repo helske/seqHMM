@@ -51,12 +51,43 @@ predict.nhmm <- function(object, newdata = NULL, ...) {
         rownames(object$observations), 
         each = object$n_symbols * object$length_of_sequences
       ),
-      estimate = c(out$obs_prob)
-    )
+      estimate = c(out)
+    ) |> 
+      stats::na.omit()
+    colnames(d)[2] <- time
+    if (!is.null(object$boot)) {
+      out <- boot_predict_nhmm_singlechannel( 
+        object$etas$pi, object$X_pi,
+        object$etas$A, object$X_A, 
+        object$etas$B, object$X_B, 
+        array(obs[1, , ], dim(obs)[2:3]),
+        object$sequence_lengths, 
+        attr(object$X_pi, "icpt_only"), attr(object$X_A, "icpt_only"), 
+        attr(object$X_B, "icpt_only"), attr(object$X_A, "iv"), 
+        attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv"),
+        object$boot$gamma_pi, object$boot$gamma_A, object$boot$gamma_B
+      )
+      d_boot <- data.frame(
+        observation = object$symbol_names,
+        time = rep(
+          as.numeric(colnames(object$observations)), 
+          each = object$n_symbols
+        ),
+        id = rep(
+          rownames(object$observations), 
+          each = object$n_symbols * object$length_of_sequences
+        ),
+        estimate = unlist(out$obs_prob)
+      ) |> 
+        stats::na.omit()
+      colnames(d_boot)[2] <- time
+      d$type <- "MLE"
+      d_boot$type <- "Bootstrap"
+      d <- rbind(d, d_boot)
+    }
   } else {
     stop("Not yet implemented")
   }
-  colnames(d)[2] <- time
   d
 }
 
@@ -124,9 +155,41 @@ predict.fanhmm <- function(object, newdata = NULL, ...) {
       rownames(object$observations), 
       each = object$n_symbols * object$length_of_sequences
     ),
-    estimate = c(out$obs_prob)
-  )
-  
+    estimate = c(out)
+  ) |> 
+    stats::na.omit()
   colnames(d)[2] <- time
+  
+  if (!is.null(object$boot)) {
+    out <- boot_predict_fanhmm_singlechannel( 
+      object$etas$pi, object$X_pi,
+      object$etas$A, object$X_A, 
+      object$etas$B, object$X_B, 
+      array(obs[1, , ], dim(obs)[2:3]),
+      object$sequence_lengths, 
+      attr(object$X_pi, "icpt_only"), attr(object$X_A, "icpt_only"), 
+      attr(object$X_B, "icpt_only"), attr(object$X_A, "iv"), 
+      attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv"),
+      W_A, W_B, 
+      object$boot$gamma_pi, object$boot$gamma_A, object$boot$gamma_B
+    )
+    d_boot <- data.frame(
+      observation = object$symbol_names,
+      time = rep(
+        as.numeric(colnames(object$observations)), 
+        each = object$n_symbols
+      ),
+      id = rep(
+        rownames(object$observations), 
+        each = object$n_symbols * object$length_of_sequences
+      ),
+      estimate = unlist(out$obs_prob)
+    ) |> 
+      stats::na.omit()
+    colnames(d_boot)[2] <- time
+    d$type <- "MLE"
+    d_boot$type <- "Bootstrap"
+    d <- rbind(d, d_boot)
+  }
   d
 }

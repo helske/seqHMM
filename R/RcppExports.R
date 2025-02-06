@@ -173,6 +173,14 @@ predict_fanhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, o
     .Call(`_seqHMM_predict_fanhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, W_A, W_B)
 }
 
+boot_predict_nhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B) {
+    .Call(`_seqHMM_boot_predict_nhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B)
+}
+
+boot_predict_fanhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, W_A, W_B, gamma_pi, gamma_A, gamma_B) {
+    .Call(`_seqHMM_boot_predict_fanhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, W_A, W_B, gamma_pi, gamma_A, gamma_B)
+}
+
 simulate_nhmm_singlechannel <- function(eta_pi, X_pi, eta_A, X_A, eta_B, X_B) {
     .Call(`_seqHMM_simulate_nhmm_singlechannel`, eta_pi, X_pi, eta_A, X_A, eta_B, X_B)
 }
