@@ -20,10 +20,10 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
   )
   control <- utils::modifyList(
     list(
-      ftol_abs = 1e-6,
-      xtol_abs = 1e-6,
-      ftol_rel = 1e-10,
+      ftol_rel = 1e-12,
+      ftol_abs = 1e-8,
       xtol_rel = 1e-6,
+      xtol_abs = 1e-6,
       maxeval = 1e4,
       print_level = 0,
       algorithm = "NLOPT_LD_LBFGS",
@@ -31,17 +31,9 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
     ),
     control
   )
+  # By default, use the same values for restart as for the final optimization
   control_restart <- utils::modifyList(
-    list(
-      ftol_abs = 1e-4,
-      xtol_abs = 1e-4,
-      ftol_rel = 1e-8,
-      xtol_rel = 1e-4,
-      maxeval = 1e4,
-      print_level = 0,
-      algorithm = "NLOPT_LD_LBFGS",
-      maxeval_em_dnm = 100
-    ),
+    control,
     control_restart
   )
   stopifnot_(
@@ -52,11 +44,11 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
   )
   control_mstep <- utils::modifyList(
     list(
-      ftol_abs = 1e-6,
-      xtol_abs = 1e-6,
-      ftol_rel = 1e-10,
+      ftol_rel = 1e-12,
+      ftol_abs = 1e-8,
       xtol_rel = 1e-6,
-      maxeval = 100,
+      xtol_abs = 1e-6,
+      maxeval = 1000,
       print_level = 0
     ),
     control_mstep

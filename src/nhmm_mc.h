@@ -9,6 +9,7 @@
 
 struct nhmm_mc : public nhmm_base {
   
+  
   const arma::ucube& obs;
   const arma::uword C;
   arma::field<arma::cube> eta_B;
@@ -21,6 +22,7 @@ struct nhmm_mc : public nhmm_base {
   // excepted counts for EM algorithm
   arma::uword current_c; // for EM
   arma::field<arma::cube> E_B;
+  std::vector<nlopt_opt> opt_B;
   
   nhmm_mc(
     const arma::uword S_,
@@ -53,7 +55,8 @@ struct nhmm_mc : public nhmm_base {
       B(C),
       log_B(C),
       current_c(0),
-      E_B(C) {
+      E_B(C),
+      opt_B(C, nullptr){
     for (arma::uword c = 0; c < C; c++) {
       M(c) = eta_B(c).n_rows + 1;
       Qm(c) = create_Q(M(c));
@@ -64,6 +67,15 @@ struct nhmm_mc : public nhmm_base {
     }
   }
   
+  virtual ~nhmm_mc() {  // Virtual destructor for proper inheritance cleanup
+    for (auto& opt : opt_B) {
+      if (opt) {
+        nlopt_destroy(opt);  // Clean up the optimizer
+        opt = nullptr;  // Prevent dangling pointer
+      }
+    }
+  }
+    
   void update_gamma_B() {
     for (arma::uword c = 0; c < C; c++) {
       gamma_B(c) = eta_to_gamma(eta_B(c), Qm(c));
@@ -129,13 +141,15 @@ struct nhmm_mc : public nhmm_base {
     }
   }
   
-  void mstep_B(const double ftol_abs, const double ftol_rel, 
-               const double xtol_abs, const double xtol_rel, 
-               const arma::uword maxeval, const double bound, 
-               const arma::uword print_level);
+  void mstep_B(const arma::uword print_level);
   
   double objective_B(const arma::vec& x, arma::vec& grad);
-  
+  static double objective_B_wrapper(unsigned n, const double* x, double* grad, void* data) {
+    auto* self = static_cast<nhmm_mc*>(data);
+    arma::vec x_vec(const_cast<double*>(x), n, false, true);
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_B(x_vec, grad_vec);
+  }
   void compute_state_obs_probs(
       const arma::uword start, arma::field<arma::cube>& obs_prob, 
       arma::cube& state_prob

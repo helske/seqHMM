@@ -8,6 +8,7 @@
 #include "nhmm_base.h"
 
 struct nhmm_sc : public nhmm_base {
+  
   const arma::umat& obs;
   arma::cube eta_B;
   const arma::uword M;
@@ -18,6 +19,7 @@ struct nhmm_sc : public nhmm_base {
   arma::cube log_B;
   // excepted counts for EM algorithm
   arma::cube E_B;
+  nlopt_opt opt_B = nullptr;
   
   nhmm_sc(
     const arma::uword S_,
@@ -50,7 +52,11 @@ struct nhmm_sc : public nhmm_base {
       log_B(S, M + 1, T), 
       E_B(T, N, S) {
   }
-  
+  ~nhmm_sc() {
+    if (opt_B) {
+      nlopt_destroy(opt_B);
+    }
+  }
   void update_gamma_B() {
     gamma_B = eta_to_gamma(eta_B, Qm);
   }
@@ -103,13 +109,14 @@ struct nhmm_sc : public nhmm_base {
     E_B.col(i).clean(minval);
   }
   
-  void mstep_B(const double ftol_abs, const double ftol_rel, 
-               const double xtol_abs, const double xtol_rel, 
-               const arma::uword maxeval, const double bound, 
-               const arma::uword print_level);
-  
+  void mstep_B(const arma::uword print_level);
   double objective_B(const arma::vec& x, arma::vec& grad);
-  
+  static double objective_B_wrapper(unsigned n, const double* x, double* grad, void* data) {
+    auto* self = static_cast<nhmm_sc*>(data);
+    arma::vec x_vec(const_cast<double*>(x), n, false, true);
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_B(x_vec, grad_vec);
+  }
   void compute_state_obs_probs(
       const arma::uword start, arma::cube& obs_prob, arma::cube& state_prob
   );
@@ -118,8 +125,10 @@ struct nhmm_sc : public nhmm_base {
       const arma::field<arma::cube>& W_A, const arma::field<arma::cube>& W_B
   );
   void predict(arma::cube& obs_prob);
-  void predict_fanhmm(arma::cube& obs_prob, 
-    const arma::field<arma::cube>& W_A, const arma::field<arma::cube>& W_B);
+  void predict_fanhmm(
+      arma::cube& obs_prob, 
+      const arma::field<arma::cube>& W_A, const arma::field<arma::cube>& W_B
+  );
 };
 
 #endif

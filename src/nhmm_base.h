@@ -2,6 +2,7 @@
 #define NHMMBASE_H
 
 #include <RcppArmadillo.h>
+#include <nloptrAPI.h>
 #include "create_Q.h"
 #include "eta_to_gamma.h"
 #include "softmax.h"
@@ -46,6 +47,8 @@ struct nhmm_base {
   double minval;
   int mstep_iter = 0;
   int mstep_return_code = 0;
+  nlopt_opt opt_pi = nullptr;
+  nlopt_opt opt_A = nullptr;
   
   nhmm_base(
     const arma::uword S_,
@@ -107,6 +110,15 @@ struct nhmm_base {
       E_A(s) = arma::cube(S, N, T);
     }
   }
+  ~nhmm_base() {
+    if (opt_pi) {
+      nlopt_destroy(opt_pi);
+    }
+    if (opt_A) {
+      nlopt_destroy(opt_A);
+    }
+  }
+  
   void update_gamma_pi() {
     gamma_pi = eta_to_gamma(eta_pi, Qs);
   }
@@ -167,17 +179,22 @@ struct nhmm_base {
     }
   }
   
-  void mstep_pi(const double ftol_abs, const double ftol_rel, 
-                const double xtol_abs, const double xtol_rel, 
-                const arma::uword maxeval, const double bound, 
-                const arma::uword print_level);
-  void mstep_A(const double ftol_abs, const double ftol_rel, 
-               const double xtol_abs, const double xtol_rel, 
-               const arma::uword maxeval, const double bound, 
-               const arma::uword print_level);
+  void mstep_pi(const arma::uword print_level);
+  void mstep_A(const arma::uword print_level);
   double objective_pi(const arma::vec& x, arma::vec& grad);
   double objective_A(const arma::vec& x, arma::vec& grad);
-  
+  static double objective_pi_wrapper(unsigned n, const double* x, double* grad, void* data) {
+    auto* self = static_cast<nhmm_base*>(data);
+    arma::vec x_vec(const_cast<double*>(x), n, false, true);
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_pi(x_vec, grad_vec);
+  }
+  static double objective_A_wrapper(unsigned n, const double* x, double* grad, void* data) {
+    auto* self = static_cast<nhmm_base*>(data);
+    arma::vec x_vec(const_cast<double*>(x), n, false, true);
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_A(x_vec, grad_vec);
+  }
 };
 
 #endif
