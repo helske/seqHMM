@@ -5,9 +5,23 @@
 \alias{predict.fanhmm}
 \title{Predictions from Non-homogeneous Hidden Markov Models}
 \usage{
-\method{predict}{nhmm}(object, newdata = NULL, ...)
+\method{predict}{nhmm}(
+  object,
+  newdata,
+  newdata2 = NULL,
+  condition = NULL,
+  probs = c(0.025, 0.975),
+  ...
+)
 
-\method{predict}{fanhmm}(object, newdata = NULL, ...)
+\method{predict}{fanhmm}(
+  object,
+  newdata,
+  newdata2 = NULL,
+  condition = NULL,
+  probs = c(0.025, 0.975),
+  ...
+)
 }
 \description{
 Predictions from Non-homogeneous Hidden Markov Models

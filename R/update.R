@@ -66,7 +66,11 @@ update.nhmm <- function(object, newdata, ...) {
     }
   )
   object$observations <- .check_observations(observations, object$channel_names)
-  object$sequence_lengths <- attr(object$observations, "sequence_lengths")
+  #TODO, how to update sequence_lengths allowing NA values in predict?
+  # object$sequence_lengths <- pmax(
+  #   object$sequence_lengths,
+  #   attr(object$observations, "sequence_lengths")
+  # )
   object
 }
 #' @rdname update_nhmm

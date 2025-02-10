@@ -44,35 +44,30 @@ arma::cube predict_fanhmm_singlechannel(
 }
 
 // [[Rcpp::export]]
-arma::field<arma::cube> boot_predict_nhmm_singlechannel(
+arma::cube boot_predict_nhmm_singlechannel(
     arma::mat& eta_pi, const arma::mat& X_pi,
     arma::cube& eta_A, const arma::cube& X_A,
     arma::cube& eta_B, const arma::cube& X_B,
     const arma::umat& obs, const arma::uvec Ti, 
     const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, 
     const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B,
-    const arma::field<arma::mat>& gamma_pi, 
-    const arma::field<arma::cube>& gamma_A,
-    const arma::field<arma::cube>& gamma_B) {
+    const arma::mat& gamma_pi, 
+    const arma::cube& gamma_A,
+    const arma::cube& gamma_B) {
   
   nhmm_sc model(
       eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
       icpt_only_B, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B
   );
-  arma::uword nsim = gamma_pi.n_elem;
-  arma::field<arma::cube> obs_prob(nsim);
-  for (arma::uword j = 0; j < nsim; j++) {
-    model.gamma_pi = gamma_pi(j);
-    model.gamma_A = gamma_A(j);
-    model.gamma_B = gamma_B(j);
-    obs_prob(j) = arma::cube(model.M, model.T, model.N, arma::fill::value(arma::datum::nan));
-    model.predict(obs_prob(j));
-    
-  }
+  model.gamma_pi = gamma_pi;
+  model.gamma_A = gamma_A;
+  model.gamma_B = gamma_B;
+  arma::cube obs_prob(model.M, model.T, model.N, arma::fill::value(arma::datum::nan));
+  model.predict(obs_prob);
   return obs_prob;
 }
 // [[Rcpp::export]]
-arma::field<arma::cube> boot_predict_fanhmm_singlechannel(
+arma::cube boot_predict_fanhmm_singlechannel(
     arma::mat& eta_pi, const arma::mat& X_pi,
     arma::cube& eta_A, const arma::cube& X_A,
     arma::cube& eta_B, const arma::cube& X_B,
@@ -80,24 +75,20 @@ arma::field<arma::cube> boot_predict_fanhmm_singlechannel(
     const bool icpt_only_pi, const bool icpt_only_A, const bool icpt_only_B, 
     const bool iv_A, const bool iv_B, const bool tv_A, const bool tv_B,
     const arma::field<arma::cube>& W_A, const arma::field<arma::cube>& W_B,
-    const arma::field<arma::mat>& gamma_pi, 
-    const arma::field<arma::cube>& gamma_A,
-    const arma::field<arma::cube>& gamma_B) {
+    const arma::mat& gamma_pi, 
+    const arma::cube& gamma_A,
+    const arma::cube& gamma_B) {
   
   nhmm_sc model(
       eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
       icpt_only_B, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B
   );
-  arma::uword nsim = gamma_pi.n_elem;
-  arma::field<arma::cube> obs_prob(nsim);
-  for (arma::uword j = 0; j < nsim; j++) {
-    model.gamma_pi = gamma_pi(j);
-    model.gamma_A = gamma_A(j);
-    model.gamma_B = gamma_B(j);
-    obs_prob(j) = arma::cube(model.M, model.T, model.N, arma::fill::value(arma::datum::nan));
-    model.predict_fanhmm(obs_prob(j), W_A, W_B);
-    
-  }
+  
+  model.gamma_pi = gamma_pi;
+  model.gamma_A = gamma_A;
+  model.gamma_B = gamma_B;
+  arma::cube obs_prob(model.M, model.T, model.N, arma::fill::value(arma::datum::nan));
+  model.predict_fanhmm(obs_prob, W_A, W_B);
   return obs_prob;
 }
 void nhmm_sc::predict(arma::cube& obs_prob) {
@@ -134,7 +125,7 @@ void nhmm_sc::predict_fanhmm(
   arma::cube B_t(S, M + 1, M);
   B_t.col(M).ones(); // missing y_t
   arma::mat alpha_new(S, M); // P(alpha_t = s, y_t = m)
-  arma::vec alpha;
+  arma::vec alpha(S);
   for (arma::uword i = 0; i < N; i++) {
     if (!icpt_only_pi || i == 0) {
       update_pi(i);
