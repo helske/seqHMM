@@ -10,9 +10,9 @@
 \usage{
 get_emission_probs(model, ...)
 
-\method{get_emission_probs}{nhmm}(model, probs, remove_voids = TRUE, ...)
+\method{get_emission_probs}{nhmm}(model, probs, newdata = NULL, remove_voids = TRUE, ...)
 
-\method{get_emission_probs}{mnhmm}(model, probs, remove_voids = TRUE, ...)
+\method{get_emission_probs}{mnhmm}(model, probs, newdata = NULL, remove_voids = TRUE, ...)
 
 \method{get_emission_probs}{hmm}(model, ...)
 

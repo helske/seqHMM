@@ -28,7 +28,7 @@ simulate_fanhmm <- function(
     initial_formula = ~1, transition_formula = ~1, 
     emission_formula = ~1, autoregression_formula = ~1, 
     feedback_formula = ~1, obs_1, data, time, id, coefs = "random", 
-    init_sd = 2) {
+    init_sd = 2, response_name = "y") {
   
   stopifnot_(
     !missing(n_sequences) && checkmate::test_int(x = n_sequences, lower = 1L), 
@@ -51,6 +51,15 @@ simulate_fanhmm <- function(
     !missing(data),
     "{.arg data}  is missing, use {.fn simulate_mhmm} instead."
   )
+  stopifnot_(
+    checkmate::test_string(response_name),
+    "Argument {.arg response_name} must be a scalar of type character."
+  )
+  stopifnot_(
+    !(response_name %in% names(data)),
+    "Variable with name {.arg response_name} found in {.arg data}.
+    Use other name for the response variable."
+  )
   sequence_lengths <- rep(sequence_lengths, length.out = n_sequences)
   n_channels <- length(n_symbols)
   stopifnot_(
@@ -66,7 +75,6 @@ simulate_fanhmm <- function(
   }
   symbol_names <- as.character(seq_len(n_symbols))
   T_ <- max(sequence_lengths)
-  response_name <- "observations"
   data[[response_name]] <- factor(rep(symbol_names, length = nrow(data)), 
                                   levels = symbol_names)
   
@@ -75,15 +83,7 @@ simulate_fanhmm <- function(
     autoregression_formula, feedback_formula, data, time, id, scale = FALSE
   )
   
-  X_A <- X_B <- vector("list", n_symbols)
-  d <- data
-  for (i in seq_len(n_symbols)) {
-    d[[response_name]] <- factor(symbol_names[i], levels = symbol_names)
-    d[[paste0("lag_", response_name)]] <- d[[response_name]]
-    mod <- update(model, d)
-    X_A[[i]] <- mod$X_A
-    X_B[[i]] <- mod$X_B
-  }
+  W <- update_W_for_fanhmm(model, data)
   if (identical(coefs, "random")) {
     coefs <- list(
       initial_probs = NULL, 
@@ -101,7 +101,7 @@ simulate_fanhmm <- function(
   model$gammas$A <- eta_to_gamma_cube(model$etas$A)
   model$gammas$B <- eta_to_gamma_cube(model$etas$B)
   out <- simulate_fanhmm_singlechannel(
-    model$etas$pi, model$X_pi, model$etas$A, X_A, model$etas$B, X_B,
+    model$etas$pi, model$X_pi, model$etas$A, W$W_A, model$etas$B, W$W_B,
     as.integer(obs_1) - 1, !is.null(autoregression_formula)
   )
   for (i in seq_len(model$n_sequences)) {
@@ -136,21 +136,24 @@ simulate_fanhmm <- function(
   attr(model$X_pi, "X_mean") <- TRUE
   attr(model$X_A, "X_mean") <- TRUE
   attr(model$X_B, "X_mean") <- TRUE
+  attr(model$X_pi, "R_inv") <- NULL
+  attr(model$X_A, "R_inv") <- NULL
+  attr(model$X_B, "R_inv") <- NULL
   model <- update(model, model$data)
   tQs <- t(create_Q(n_states))
   
   if (!attr(model$X_pi, "icpt_only")) {
     coef_names <- attr(model$X_pi, "coef_names")
-    model$gammas$pi <- gamma_std_to_gamma(
-      model$gammas$pi, attr(model$X_pi, "R_inv"), 
+    model$gammas$pi <- gamma_to_gamma_std(
+      model$gammas$pi, solve(attr(model$X_pi, "R_inv")), 
       coef_names, attr(model$X_pi, "X_mean")
     )
     model$etas$pi[] <- tQs %*% model$gammas$pi
   }
   if (!attr(model$X_A, "icpt_only")) {
     coef_names <- attr(model$X_A, "coef_names")
-    model$gammas$A <- gamma_std_to_gamma(
-      model$gammas$A, attr(model$X_A, "R_inv"), 
+    model$gammas$A <- gamma_to_gamma_std(
+      model$gammas$A, solve(attr(model$X_A, "R_inv")), 
       coef_names, attr(model$X_A, "X_mean")
     )
     for (s in seq_len(n_states)) {
@@ -160,8 +163,8 @@ simulate_fanhmm <- function(
   if (!attr(model$X_B, "icpt_only")) {
     tQm <- t(create_Q(model$n_symbols))
     coef_names <- attr(model$X_B, "coef_names")
-    model$gammas$B <- gamma_std_to_gamma(
-      model$gammas$B, attr(model$X_B, "R_inv"), 
+    model$gammas$B <- gamma_to_gamma_std(
+      model$gammas$B, solve(attr(model$X_B, "R_inv")), 
       coef_names, attr(model$X_B, "X_mean")
     )
     for (s in seq_len(n_states)) {

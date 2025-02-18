@@ -19,7 +19,8 @@ simulate_fanhmm(
   time,
   id,
   coefs = "random",
-  init_sd = 2
+  init_sd = 2,
+  response_name = "y"
 )
 }
 \arguments{

@@ -87,13 +87,15 @@ logLik.mhmm <- function(object, partials = FALSE, threads = 1,
 logLik.nhmm <- function(object, partials = FALSE, ...) {
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")
-  if (partials || is.null(object$estimation_results)) {
+  if (partials || is.null(object$estimation_results$loglik)) {
     out <- forward_backward(object, forward_only = TRUE, as_data_frame = FALSE)
     ll <- numeric(object$n_sequences)
     for (i in seq_len(object$n_sequences)) {
       ll[i] <- logSumExp(out$forward_probs[, object$sequence_lengths[i], i])
     }
-    ll <- ll - 0.5 * object$estimation_results$lambda * sum(unlist(object$etas)^2) / object$n_sequences
+    if (!is.null(object$estimation_results$lambda)) {
+      ll <- ll - 0.5 * object$estimation_results$lambda * sum(unlist(object$etas)^2) / object$n_sequences
+    }
   } else {
     ll <- object$estimation_results$loglik
   }
@@ -108,13 +110,15 @@ logLik.nhmm <- function(object, partials = FALSE, ...) {
 logLik.mnhmm <- function(object, partials = FALSE, ...) {
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")
-  if (partials || is.null(object$estimation_results)) {
+  if (partials || is.null(object$estimation_results$loglik)) {
     out <- forward_backward(object, forward_only = TRUE, as_data_frame = FALSE)
     ll <- numeric(object$n_sequences)
     for (i in seq_len(object$n_sequences)) {
       ll[i] <- logSumExp(out$forward_probs[, object$sequence_lengths[i], i])
     }
-    ll <- ll - 0.5 * object$estimation_results$lambda * sum(unlist(object$etas)^2) / object$n_sequences
+    if (!is.null(object$estimation_results$lambda)) {
+      ll <- ll - 0.5 * object$estimation_results$lambda * sum(unlist(object$etas)^2) / object$n_sequences
+    }
   } else {
     ll <- object$estimation_results$loglik
   }

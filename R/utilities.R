@@ -32,6 +32,42 @@ gamma_std_to_gamma <- function(gamma, R_inv, coef_names, X_mean) {
   }
   gamma
 }
+#' Transform orignal gammas based to centered QR scale
+#' @noRd
+gamma_to_gamma_std <- function(gamma, R, coef_names, X_mean) {
+  non_icpt <- which(coef_names != "(Intercept)")
+  icpt <- which(coef_names == "(Intercept)")
+  # multichannel or bootstrap samples
+  if (is.list(gamma)) {
+    gamma <- lapply(
+      gamma, gamma_to_gamma_std, 
+      R = R, coef_names = coef_names, X_mean = X_mean
+    )
+  } else {
+    if (length(non_icpt) > 0) {
+      # pi
+      if (is.na(dim(gamma)[3])) {
+        for (s in seq_len(nrow(gamma))) {
+          if (length(icpt) > 0) {
+            gamma[s, 1] <- gamma[s, 1] + gamma[s, non_icpt] %*% X_mean
+          }
+          gamma[s, non_icpt] <- R %*% gamma[s, non_icpt]
+        }
+      } else {
+        # A and B
+        for (r in seq_len(dim(gamma)[3])) {
+          for (s in seq_len(nrow(gamma))) {
+            if (length(icpt) > 0) {
+              gamma[s, 1, r] <- gamma[s, 1, r] + gamma[s, non_icpt, r] %*% X_mean
+            }
+            gamma[s, non_icpt, r] <- R %*% gamma[s, non_icpt, r]
+          }
+        }
+      }
+    }
+  }
+  gamma
+}
 #' Base R version of group_by(id) |> mutate(lag = lag(x)) |> pull(lag)
 #' Instead of NA, missing values are set to d[[response]][1] as in order to 
 #' pass NA checks. These values are later removed in build_fanhmm
@@ -241,7 +277,10 @@ intercept_only <- function(f) {
 #' Create obsArray for Various C++ functions
 #' 
 #' @noRd
-create_obsArray <- function(model) {
+create_obsArray <- function(model, autoregression = NULL) {
+  if (is.null(autoregression)) {
+    autoregression <- inherits(model, "fanhmm") && !is.null(model$autoregression_formula)
+  }
   obsArray <- array(
     0L, 
     c(model$n_sequences, model$length_of_sequences, model$n_channels))
@@ -255,12 +294,12 @@ create_obsArray <- function(model) {
       sum(obsArray[, , i] < model$n_symbols[i]) > 0,
       "One channel contains only missing values, model is degenerate."
     )
-    # if y_t depends on y_t-1, treat y_1 as fixed (technically missing)
-    if (inherits(model, "fanhmm") & !is.null(model$autoregression_formula)) {
+    # if y_t depends on y_t-1, treat y_1 as fixed
+    # technically same as treating it as missing except in predictions
+    if (autoregression) {
       obsArray[, 1, i] <- model$n_symbols[i]
     }
   }
-  
   aperm(obsArray)
 }
 #' Create emissionArray for Various C++ functions

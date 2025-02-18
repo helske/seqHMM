@@ -10,7 +10,9 @@
   newdata,
   newdata2 = NULL,
   condition = NULL,
+  type = c("observations", "state", "conditionals"),
   probs = c(0.025, 0.975),
+  boot_idx = TRUE,
   ...
 )
 
@@ -19,7 +21,9 @@
   newdata,
   newdata2 = NULL,
   condition = NULL,
+  type = c("observations", "states", "conditionals"),
   probs = c(0.025, 0.975),
+  boot_idx = TRUE,
   ...
 )
 }

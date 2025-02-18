@@ -28,7 +28,6 @@
 #' @importFrom graphics par plot.new
 #' @importFrom methods hasArg
 #' @importFrom ggplot2 ggplot aes geom_pointrange geom_ribbon geom_line facet_wrap
-#' @importFrom rlang :=
 #' @references Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
 #' Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
 "_PACKAGE"

@@ -92,7 +92,10 @@ get_initial_probs.mhmm <- function(model, ...) {
 #' @param ... Ignored.
 #' @rdname transition_probs
 #' @export
-get_transition_probs.nhmm <- function(model, probs, remove_voids = TRUE, ...) {
+get_transition_probs.nhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ...) {
+  if (!is.null(newdata)) {
+    model <- update(model, newdata)
+  }
   S <- model$n_states
   T_ <- model$length_of_sequences
   model$X_A[attr(model$X_A, "missing")] <- NA
@@ -149,9 +152,9 @@ get_transition_probs.nhmm <- function(model, probs, remove_voids = TRUE, ...) {
 }
 #' @rdname transition_probs
 #' @export
-get_transition_probs.mnhmm <- function(model, probs, remove_voids = TRUE, ...) {
+get_transition_probs.mnhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ...) {
   x <- lapply(split_mnhmm(model), 
-              get_transition_probs, probs = probs, remove_voids = remove_voids)
+              get_transition_probs, probs = probs, newdata = newdata, remove_voids = remove_voids)
   do.call(rbind, lapply(seq_along(x), function(i) {
     cbind(cluster = names(x)[i], x[[i]])
   }))
@@ -176,7 +179,10 @@ get_transition_probs.mhmm <- function(model, ...) {
 #' @param ... Ignored.
 #' @rdname emission_probs
 #' @export
-get_emission_probs.nhmm <- function(model, probs, remove_voids = TRUE, ...) {
+get_emission_probs.nhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ...) {
+  if (!is.null(newdata)) {
+    model <- update(model, newdata)
+  }
   S <- model$n_states
   C <- model$n_channels
   T_ <- model$length_of_sequences
@@ -254,9 +260,9 @@ get_emission_probs.nhmm <- function(model, probs, remove_voids = TRUE, ...) {
 }
 #' @rdname emission_probs
 #' @export
-get_emission_probs.mnhmm <- function(model, probs, remove_voids = TRUE, ...) {
+get_emission_probs.mnhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ...) {
   x <- lapply(split_mnhmm(model), 
-              get_emission_probs, probs = probs, remove_voids = remove_voids)
+              get_emission_probs, probs = probs, newdata = newdata, remove_voids = remove_voids)
   do.call(rbind, lapply(seq_along(x), function(i) {
     cbind(cluster = names(x)[i], x[[i]])
   }))

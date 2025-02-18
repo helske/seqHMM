@@ -102,7 +102,6 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
     X <- matrix(1, n_sequences, 1)
     coef_names <- "(Intercept)"
     X_mean <- NULL
-    X_sd <- NULL
     R_inv <- NULL
   } else {
     first_time_point <- min(data[[time]])

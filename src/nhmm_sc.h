@@ -125,9 +125,14 @@ struct nhmm_sc : public nhmm_base {
       const arma::field<arma::cube>& W_A, const arma::field<arma::cube>& W_B
   );
   void predict(arma::cube& obs_prob);
+  void predict(arma::field<arma::cube>& obs_prob);
   void predict_fanhmm(
-      arma::cube& obs_prob, 
-      const arma::field<arma::cube>& W_A, const arma::field<arma::cube>& W_B
+      arma::cube& obs_prob, const arma::field<arma::cube>& W_A, 
+      const arma::field<arma::cube>& W_B, const bool autoregression
+  );
+  void predict_fanhmm(
+      arma::field<arma::cube>& obs_prob, const arma::field<arma::cube>& W_A, 
+      const arma::field<arma::cube>& W_B, const bool autoregression
   );
 };
 

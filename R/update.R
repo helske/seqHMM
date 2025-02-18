@@ -24,14 +24,14 @@ update.nhmm <- function(object, newdata, ...) {
     object$length_of_sequences, object$n_states, object$time_variable, 
     object$id_variable, 
     X_mean = attr(object$X_pi, "X_mean"), check = FALSE, 
-    scale = TRUE, R = attr(object$X_pi, "R")
+    scale = TRUE, R_inv = attr(object$X_pi, "R_inv")
   )$X
   object$X_A <- model_matrix_transition_formula(
     object$transition_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, object$time_variable, 
     object$id_variable, object$sequence_lengths,
     X_mean = attr(object$X_A, "X_mean"), check = FALSE, 
-    scale = TRUE, R = attr(object$X_A, "R")
+    scale = TRUE, R_inv = attr(object$X_A, "R_inv")
   )$X
   object$X_B <- model_matrix_emission_formula(
     object$emission_formula, newdata, object$n_sequences, 
@@ -39,7 +39,8 @@ update.nhmm <- function(object, newdata, ...) {
     object$time_variable, object$id_variable, 
     object$sequence_lengths,
     X_mean = attr(object$X_B, "X_mean"), check = FALSE, 
-    scale = TRUE, R = attr(object$X_B, "R"), fanhmm = inherits(object, "fanhmm")
+    scale = TRUE, R_inv = attr(object$X_B, "R_inv"), 
+    fanhmm = inherits(object, "fanhmm")
   )$X
   observations <- lapply(
     object$channel_names,
@@ -138,4 +139,35 @@ update.mnhmm <- function(object, newdata, ...) {
   )
   object$observations <- .check_observations(observations, object$channel_names)
   object
+}
+
+update_W_for_fanhmm <- function(object, newdata, ...) {
+  
+  newdata <- newdata[order(newdata[[object$id_variable]], newdata[[object$time_variable]]), ]
+  newdata <- fill_time(newdata, object$id_variable, object$time_variable)
+  W_A <- W_B <- vector("list", object$n_symbols)
+  newdata[[object$channel_names]] <- factor(object$symbol_names[1], levels = object$symbol_names)
+  newdata[[paste0("lag_", object$channel_names)]] <- newdata[[object$channel_names]]
+  for (i in seq_len(object$n_symbols)) {
+    newdata[[object$channel_names]][] <- object$symbol_names[i]
+    newdata[[paste0("lag_", object$channel_names)]][] <- object$symbol_names[i]
+    
+    W_A[[i]] <- model_matrix_transition_formula(
+      object$transition_formula, newdata, object$n_sequences, 
+      object$length_of_sequences, object$n_states, object$time_variable, 
+      object$id_variable, object$sequence_lengths,
+      X_mean = attr(object$X_A, "X_mean"), check = FALSE, 
+      scale = TRUE, R_inv = attr(object$X_A, "R_inv")
+    )$X
+    W_B[[i]] <- model_matrix_emission_formula(
+      object$emission_formula, newdata, object$n_sequences, 
+      object$length_of_sequences, object$n_states, object$n_symbols, 
+      object$time_variable, object$id_variable, 
+      object$sequence_lengths,
+      X_mean = attr(object$X_B, "X_mean"), check = FALSE, 
+      scale = TRUE, R_inv = attr(object$X_B, "R_inv"), 
+      fanhmm = inherits(object, "fanhmm")
+    )$X
+  }
+  list(W_A = W_A, W_B = W_B)
 }
