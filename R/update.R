@@ -148,7 +148,7 @@ update.mnhmm <- function(object, newdata, ...) {
 update_W_for_fanhmm <- function(object, newdata, ...) {
   
   newdata <- newdata[order(newdata[[object$id_variable]], newdata[[object$time_variable]]), ]
-  newdata <- fill_time(newdata, object$id_variable, object$time_variable)
+  newdata <- fill_time(newdata, object$time_variable, object$id_variable)
   W_A <- W_B <- vector("list", object$n_symbols)
   newdata[[object$channel_names]] <- factor(object$symbol_names[1], levels = object$symbol_names)
   newdata[[paste0("lag_", object$channel_names)]] <- newdata[[object$channel_names]]
