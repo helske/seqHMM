@@ -108,7 +108,7 @@ simulate_fanhmm <- function(
     Ti <- sequence_lengths[i]
     if (Ti < T_) {
       out$states[(Ti + 1):T_, i] <- NA
-      out$observations[, (Ti + 1):T_, i] <- NA
+      out$observations[(Ti + 1):T_, i] <- NA
     }
   }
   state_names <- model$state_names

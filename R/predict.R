@@ -1,6 +1,6 @@
 #' Compute marginal and conditional probabilities from joint distributions obtained from predict
 #' @noRd 
-#' @importFrom data.table set setDT := copy
+#' @importFrom data.table set setDT := copy setorderv
 compute_joint <- function(x, newdata, type, cond, state_names, symbol_names, response_names) {
   S <- length(state_names)
   M <- length(symbol_names)
@@ -23,14 +23,17 @@ compute_joint <- function(x, newdata, type, cond, state_names, symbol_names, res
   # P(Y)
   if ("observations" %in% type) {
     d_obs <- d[, .(probability = sum(probability)), by = cond_obs]
+    setorderv(d_obs, cond_obs)
   }
   # P(Z)
   if ("states" %in% type) {
     d_state <- d[, .(probability = sum(probability)), by = cond_state]
+    setorderv(d_state, cond_state)
   }
   # P(Y | Z)
   if ("conditionals" %in% type) {
     d_cond <- d[, "probability" := .(probability / sum(probability)), by = cond_state]
+    setorderv(d_cond, cond_state)
   }
   list(observations = d_obs, states = d_state, conditionals = d_cond)
 }
@@ -41,7 +44,8 @@ compute_joint <- function(x, newdata, type, cond, state_names, symbol_names, res
 predict.nhmm <- function(
     object, newdata, newdata2 = NULL, condition = NULL, 
     type = c("observations", "state", "conditionals"),
-    probs = c(0.025, 0.975), boot_idx = TRUE, ...) {
+    probs = c(0.025, 0.975), 
+    marginalization = c("original", "old bootstrap", "new bootstrap"), ...) {
   
   type <- match.arg(type, several.ok = TRUE)
   
@@ -174,7 +178,8 @@ predict.nhmm <- function(
 predict.fanhmm <- function(
     object, newdata, newdata2 = NULL, condition = NULL, 
     type = c("observations", "states", "conditionals"),
-    probs = c(0.025, 0.975), boot_idx = TRUE, ...) {
+    probs = c(0.025, 0.975), 
+    marginalization = c("original", "old bootstrap", "new bootstrap"), ...) {
   
   type <- match.arg(type, several.ok = TRUE)
   
@@ -235,7 +240,7 @@ predict.fanhmm <- function(
     state = c("state", condition),
     both = c("state", response_names, condition)
   )
-  
+  if (is.null(conditions$base)) conditions$base <- id
   object <- update(object, newdata)
   obs <- create_obsArray(object, FALSE) # don't set first obs to missing
   stopifnot_(
@@ -284,9 +289,11 @@ predict.fanhmm <- function(
   }
   
   nsim <- length(object$boot$gamma_pi)
-  if (nsim > 0) {
+  if (nsim > 0 && length(probs) > 0) {
     d_boot <- vector("list", nsim)
-    boot_idx <- boot_idx & !is.null(object$boot$idx)
+    if (boot) {
+      
+    }
     for (i in seq_len(nsim)) {
       out <- simplify2array(boot_predict_bystate_fanhmm_singlechannel( 
         object$etas$pi, object$X_pi,
@@ -299,7 +306,7 @@ predict.fanhmm <- function(
         attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv"),
         W$W_A, W$W_B,
         object$boot$gamma_pi[[i]], object$boot$gamma_A[[i]], object$boot$gamma_B[[i]],
-        !is.null(object2$autoregression_formula)
+        !is.null(object$autoregression_formula)
       ))
       if (boot_idx) {
         d_boot[[i]] <- compute_joint(

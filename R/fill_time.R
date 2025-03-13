@@ -6,7 +6,7 @@
 #' @references Tikka S, Helske J (2024). “dynamite: An R Package for Dynamic 
 #' Multivariate Panel Models.” doi:10.48550/arXiv.2302.01607.
 #'@noRd 
-fill_time <- function(data, id_var, time_var) {
+fill_time <- function(data, time_var, id_var) {
   time <- sort(unique(data[[time_var]]))
   stopifnot_(
     length(time) > 1L, 

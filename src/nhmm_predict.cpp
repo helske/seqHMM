@@ -301,7 +301,7 @@ void nhmm_sc::predict_fanhmm(
       // no autoregressive component
       obs_prob(i).slice(0) = B.slice(0).cols(0, M - 1);
       obs_prob(i).slice(0).each_col() %= alpha;
-      alpha %= B.slice(0).col(obs(0, i));
+      alpha = obs_prob(i).slice(0).col(obs(0, i));
       alpha /= arma::accu(alpha);
     }
     for (arma::uword t = 1; t < Ti(i); t++) {
@@ -310,8 +310,8 @@ void nhmm_sc::predict_fanhmm(
         alpha = A.slice(t - 1).t() * alpha;
         obs_prob(i).slice(t) = B.slice(t).cols(0, M - 1);
         obs_prob(i).slice(t).each_col() %= alpha;
-        alpha %= B.slice(t).col(obs(t, i));
-        alpha /= arma::accu(alpha);
+        alpha = obs_prob(i).slice(t).col(obs(t, i));
+        
       } else {
         // previous observation is missing, need to marginalize over it
         for (arma::uword m = 0; m < M; m++) {
@@ -332,9 +332,9 @@ void nhmm_sc::predict_fanhmm(
         }
         // P(alpha_t, y_t | y_t-2,..., y_1)
         alpha = arma::sum(alpha_new, 1);
-        // P(alpha_t | y_t, y_t-2, ..., y_1)
-        alpha /= arma::accu(alpha);
       }
+      // P(alpha_t | y_t, y_t-2, ..., y_1)
+      alpha /= arma::accu(alpha);
     }
   }
 }

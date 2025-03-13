@@ -284,7 +284,6 @@
     )
   )
   data <- data[order(data[[id]], data[[time]]), ]
-  fill_time(data, id, time)
 }
 #' Checks that the design matrix is of full rank
 #' @noRd

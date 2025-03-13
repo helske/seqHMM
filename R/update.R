@@ -8,13 +8,16 @@
 #' @rdname update_nhmm
 #' @export
 update.nhmm <- function(object, newdata, ...) {
-  newdata <- .check_data(newdata, object$time_variable, object$id_variable)
-  if (!is.null(object$data)) object$data <- newdata
   
+  if (!is.null(object$data)) object$data <- newdata
+  newdata <- .check_data(newdata, object$time_variable, object$id_variable)
   ids <- unique(newdata[[object$id_variable]])
   object$n_sequences <- length(ids)
   times <- unique(newdata[[object$time_variable]])
   object$length_of_sequences <- length(times)
+  object$sequence_lengths <- as.integer(table(newdata[[object$id_variable]]))
+  newdata <- fill_time(newdata, object$time_variable, object$id_variable)
+  
   if (inherits(object, "fanhmm") & !is.null(object$autoregression_formula)) {
     newdata[[paste0("lag_", object$channel_names)]] <- 
       group_lag(newdata, object$id_variable, object$channel_names)
@@ -77,13 +80,14 @@ update.nhmm <- function(object, newdata, ...) {
 #' @rdname update_nhmm
 #' @export
 update.mnhmm <- function(object, newdata, ...) {
-  newdata <- .check_data(newdata, object$time_variable, object$id_variable)
   if (!is.null(object$data)) object$data <- newdata
-  
+  newdata <- .check_data(newdata, object$time_variable, object$id_variable)
   ids <- unique(newdata[[object$id_variable]])
   object$n_sequences <- length(ids)
   times <- unique(newdata[[object$time_variable]])
   object$length_of_sequences <- length(times)
+  object$sequence_lengths <- as.integer(table(newdata[[object$id_variable]]))
+  newdata <- fill_time(newdata, object$time_variable, object$id_variable)
   
   object$X_pi <- model_matrix_initial_formula(
     object$initial_formula, newdata, object$n_sequences,

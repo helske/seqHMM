@@ -141,7 +141,7 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
     id <- model$id_variable
     out <- future.apply::future_lapply(
       seq_len(nsim), function(i) {
-        mod <- simulate_nhmm(
+        mod <- simulate_nhmm( #TODO proper forward trajectory simulation
           N, T_, M, S, formula_pi, formula_A, formula_B,
           d, time, id, init, 0)$model
         fit <- fit_nhmm(

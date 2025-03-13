@@ -77,6 +77,7 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
   y_in_data <- checkmate::test_character(observations)
   if (!icpt_only_i || !icpt_only_s || !icpt_only_o || !icpt_only_d || y_in_data) {
     data <- .check_data(data, time, id)
+    data <- fill_time(data, time, id)
     ids <- unique(data[[id]])
     times <- unique(data[[time]])
     n_sequences <- length(ids)

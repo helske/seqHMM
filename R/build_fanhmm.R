@@ -38,7 +38,7 @@ build_fanhmm <- function(
     "Argument {.arg emission_formula} must be a {.cls formula} object.")
   
   data <- .check_data(data, time, id)
-  
+  data <- fill_time(data, time, id)
   if (!is.null(autoregression_formula)) {
     terms_autoregression <- attr(
       stats::terms(autoregression_formula), "term.labels"
