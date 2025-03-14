@@ -45,7 +45,7 @@ predict.nhmm <- function(
     object, newdata, newdata2 = NULL, condition = NULL, 
     type = c("observations", "state", "conditionals"),
     probs = c(0.025, 0.975), 
-    marginalization = c("original", "old bootstrap", "new bootstrap"), ...) {
+    boot_idx = FALSE, ...) {
   
   type <- match.arg(type, several.ok = TRUE)
   
@@ -179,7 +179,7 @@ predict.fanhmm <- function(
     object, newdata, newdata2 = NULL, condition = NULL, 
     type = c("observations", "states", "conditionals"),
     probs = c(0.025, 0.975), 
-    marginalization = c("original", "old bootstrap", "new bootstrap"), ...) {
+    boot_idx = FALSE, ...) {
   
   type <- match.arg(type, several.ok = TRUE)
   
@@ -291,9 +291,7 @@ predict.fanhmm <- function(
   nsim <- length(object$boot$gamma_pi)
   if (nsim > 0 && length(probs) > 0) {
     d_boot <- vector("list", nsim)
-    if (boot) {
-      
-    }
+    boot_idx <- boot_idx & !is.null(object$boot$idx)
     for (i in seq_len(nsim)) {
       out <- simplify2array(boot_predict_bystate_fanhmm_singlechannel( 
         object$etas$pi, object$X_pi,
@@ -363,239 +361,3 @@ predict.fanhmm <- function(
   }
   lapply(d_mean[lengths(d_mean) > 0], as.data.frame)
 }
-#' #' @rdname predict
-#' #' @export
-#' predict.fanhmm <- function(
-    #'     object, newdata, newdata2 = NULL, condition = NULL, 
-#'     type = c("observations", "states", "conditionals"),
-#'     probs = c(0.025, 0.975), boot_idx = TRUE, ...) {
-#'   
-#'   type <- match.arg(type, c("observations", "state", "conditionals"), TRUE)
-#'   
-#'   time <- object$time_variable
-#'   id <- object$id_variable
-#'   stopifnot_(
-#'     !missing(newdata) & is.data.frame(newdata), 
-#'     "Argument {.arg newdata} must be a {.cls data.frame} object."
-#'   )
-#'   stopifnot_(
-#'     !is.null(newdata[[id]]), 
-#'     "Can't find grouping variable {.var {id}} in {.arg newdata}."
-#'   )
-#'   stopifnot_(
-#'     !is.null(newdata[[time]]), 
-#'     "Can't find time index variable {.var {time}} in {.arg newdata}."
-#'   )
-#'   if (!is.null(newdata2)) {
-#'     stopifnot_(
-#'       is.data.frame(newdata2), 
-#'       "Argument {.arg newdata2} must be a {.cls data.frame} object."
-#'     )
-#'     stopifnot_(
-#'       identical(dim(newdata), dim(newdata2)), 
-#'       "Data frames {.arg newdata} and {.arg newdata2} must have the same dimensions."
-#'     )
-#'     stopifnot_(
-#'       identical(names(newdata), names(newdata2)), 
-#'       "Data frames {.arg newdata} and {.arg newdata2} must have the same column names."
-#'     )
-#'     stopifnot_(
-#'       identical(newdata[[id]], newdata2[[id]]),
-#'       "Grouping variable {.var {id}} must be the same in both data frames."
-#'     )
-#'     stopifnot_(
-#'       identical(newdata[[time]], newdata2[[time]]),
-#'       "Time index variable {.var {time}} must be the same in both data frames."
-#'     )
-#'   }
-#'   if (is.null(condition)) {
-#'     cond_obs <- data.frame(
-#'       y = rep(factor(object$symbol_names), nrow(newdata))
-#'     )
-#'     names(cond_obs) <- object$channel_names
-#'     cond_state <- data.frame(
-#'       state = rep(factor(object$state_names), nrow(newdata))
-#'     )
-#'     cond_cond <- cbind(
-#'       state = seq_len(object$n_states), 
-#'       cond_obs[rep(seq_len(nrow(cond_obs)), each = object$n_states), ]
-#'     )
-#'   } else {
-#'     stopifnot_(
-#'       all(condition %in% colnames(newdata)), 
-#'       "Not all variables defined in {.arg condition} are present in {.arg newdata} ."
-#'     )
-#'     cond_obs <- data.frame(
-#'       rep(factor(object$symbol_names, levels = object$symbol_names), nrow(newdata)),
-#'       newdata[rep(seq_len(nrow(newdata)), each = object$n_symbols), condition]
-#'     )
-#'     colnames(cond_obs) <- c(object$channel_names, condition)
-#'     cond_state <- data.frame(
-#'       rep(factor(object$state_names, levels = object$state_names), nrow(newdata)),
-#'       newdata[rep(seq_len(nrow(newdata)), each = object$n_n_states), condition]
-#'     )
-#'     colnames(cond_state) <- c("state", condition)
-#'     cond_cond <- cbind(
-#'       state = seq_len(object$n_states), 
-#'       cond_obs[rep(seq_len(nrow(cond_obs)), each = object$n_states), ]
-#'     )
-#'   }
-#'   object <- update(object, newdata)
-#'   obs <- create_obsArray(object, FALSE) # don't set first obs to missing
-#'   stopifnot_(
-#'     object$n_channels == 1L,
-#'     "Multichannel FAN-HMM is not yet supported."
-#'   )
-#'   
-#'   if (identical(type, "observations")) {
-#'     f <- predict_fanhmm_singlechannel
-#'     f_boot <- boot_predict_fanhmm_singlechannel
-#'   } else {
-#'     f <- predict_bystate_fanhmm_singlechannel
-#'     f_boot <- boot_predict_bystate_fanhmm_singlechannel
-#'   }
-#'   
-#'   W_A <- W_B <- vector("list", object$n_symbols)
-#'   for (i in seq_len(object$n_symbols)) {
-#'     d <- newdata
-#'     d[[object$channel_names]] <- factor(object$symbol_names[i], levels = object$symbol_names)
-#'     mod <- update(object, d)
-#'     W_A[[i]] <- mod$X_A
-#'     W_B[[i]] <- mod$X_B
-#'   }
-#'   
-#'   out <- unlist(f( 
-#'     object$etas$pi, object$X_pi,
-#'     object$etas$A, object$X_A, 
-#'     object$etas$B, object$X_B, 
-#'     array(obs[1, , ], dim(obs)[2:3]),
-#'     object$sequence_lengths, 
-#'     attr(object$X_pi, "icpt_only"), attr(object$X_A, "icpt_only"), 
-#'     attr(object$X_B, "icpt_only"), attr(object$X_A, "iv"), 
-#'     attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv"),
-#'     W_A, W_B, !is.null(object$autoregression_formula)
-#'   ))
-#'   if (!is.null(newdata2)) {
-#'     object2 <- update(object, newdata2)
-#'     obs2 <- create_obsArray(object2, FALSE) # don't set first obs to missing
-#'     W_A2 <- W_B2 <- vector("list", object2$n_symbols)
-#'     for (i in seq_len(object2$n_symbols)) {
-#'       d <- newdata2
-#'       d[[object2$channel_names]] <- factor(object2$symbol_names[i], levels = object2$symbol_names)
-#'       mod <- update(object2, d)
-#'       W_A2[[i]] <- mod$X_A
-#'       W_B2[[i]] <- mod$X_B
-#'     }
-#'     out2 <- unlist(f( 
-#'       object2$etas$pi, object2$X_pi,
-#'       object2$etas$A, object2$X_A, 
-#'       object2$etas$B, object2$X_B, 
-#'       array(obs2[1, , ], dim(obs2)[2:3]),
-#'       object2$sequence_lengths, 
-#'       attr(object2$X_pi, "icpt_only"), attr(object2$X_A, "icpt_only"), 
-#'       attr(object2$X_B, "icpt_only"), attr(object2$X_A, "iv"), 
-#'       attr(object2$X_B, "iv"), attr(object2$X_A, "tv"), attr(object2$X_B, "tv"),
-#'       W_A2, W_B2, !is.null(object2$autoregression_formula)
-#'     ))
-#'   } else {
-#'     out2 <- 0
-#'   }
-#'   
-#'   if ("observations" %in% type) {
-#'     prob_obs <- tapply(stats::na.omit(c(out - out2)), cond_obs, mean)
-#'     d_obs <- data.frame(
-#'       expand.grid(attr(prob_obs, "dimnames")),
-#'       mean = c(prob_obs)
-#'     )
-#'   } else {
-#'     d_obs <- NULL
-#'   }
-#'   if ("states" %in% type) {
-#'     prob_state <- tapply(stats::na.omit(c(out - out2)), cond_state, mean)
-#'     d_state <- data.frame(
-#'       expand.grid(attr(prob_state, "dimnames")),
-#'       mean = c(prob_state)
-#'     )
-#'   }
-#'   if ("conditionals" %in% type) {
-#'     prob_cond <- tapply(stats::na.omit(c(out - out2)), cond_cond, mean)
-#'     d_cond <- data.frame(
-#'       expand.grid(attr(prob_cond, "dimnames")),
-#'       mean = c(prob_cond)
-#'     )
-#'   }
-#'   
-#'   nsim <- length(object$boot$gamma_pi)
-#'   if (nsim > 0) {
-#'     if ("observations" %in% type) {
-#'       sims_obs <- matrix(NA, nrow(d), nsim)
-#'     }
-#'     if ("states" %in% type) {
-#'       sims_state <- matrix(NA, nrow(d), nsim)
-#'     }
-#'     if ("conditionals" %in% type) {
-#'       sims_cond <- matrix(NA, nrow(d), nsim)
-#'     }
-#'     
-#'     for (i in seq_len(nsim)) {
-#'       out <- f_boot( 
-#'         object$etas$pi, object$X_pi,
-#'         object$etas$A, object$X_A, 
-#'         object$etas$B, object$X_B, 
-#'         array(obs[1, , ], dim(obs)[2:3]),
-#'         object$sequence_lengths, 
-#'         attr(object$X_pi, "icpt_only"), attr(object$X_A, "icpt_only"), 
-#'         attr(object$X_B, "icpt_only"), attr(object$X_A, "iv"), 
-#'         attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv"),
-#'         W_A, W_B,
-#'         object$boot$gamma_pi[[i]], object$boot$gamma_A[[i]], object$boot$gamma_B[[i]],
-#'         !is.null(object2$autoregression_formula)
-#'       )
-#'       if (!is.null(newdata2)) {
-#'         out2 <- f_boot( 
-#'           object2$etas$pi, object2$X_pi,
-#'           object2$etas$A, object2$X_A, 
-#'           object2$etas$B, object2$X_B, 
-#'           array(obs2[1, , ], dim(obs2)[2:3]),
-#'           object2$sequence_lengths, 
-#'           attr(object2$X_pi, "icpt_only"), attr(object2$X_A, "icpt_only"), 
-#'           attr(object2$X_B, "icpt_only"), attr(object2$X_A, "iv"), 
-#'           attr(object2$X_B, "iv"), attr(object2$X_A, "tv"), attr(object2$X_B, "tv"),
-#'           W_A2, W_B2,
-#'           object2$boot$gamma_pi[[i]], object2$boot$gamma_A[[i]], object2$boot$gamma_B[[i]],
-#'           !is.null(object2$autoregression_formula)
-#'         )
-#'       }
-#'       if (boot_idx & !is.null(object$boot$idx)) {
-#'         x <- na.omit(c((out - out2)[, , object$boot$idx[, i], drop = FALSE]))
-#'       } else {
-#'         x <- na.omit(c(out - out2))
-#'       }
-#'       if ("observations" %in% type) {
-#'         sims_obs[, i] <- c(tapply(x, cond_obs, mean))
-#'       }
-#'       if ("states" %in% type) {
-#'         sims_state[, i] <- c(tapply(x, cond_state, mean))
-#'       }
-#'       if ("conditionals" %in% type) {
-#'         sims_cond[, i] <- c(tapply(x, cond_cond, mean))
-#'       }
-#'     }
-#'     if ("observations" %in% type) {
-#'       for(i in seq_along(probs)) {
-#'         d_obs[paste0("q", 100 * probs[i])] <- apply(sims_obs, 1, quantile, probs[i])
-#'       }
-#'     }
-#'     if ("states" %in% type) {
-#'       for(i in seq_along(probs)) {
-#'         d_state[paste0("q", 100 * probs[i])] <- apply(sims_state, 1, quantile, probs[i])
-#'       }
-#'     }
-#'     if ("conditionals" %in% type) {
-#'       for(i in seq_along(probs)) {
-#'         d_cond[paste0("q", 100 * probs[i])] <- apply(sims_cond, 1, quantile, probs[i])
-#'       }
-#'     }
-#'   }
-#'   d
-#' }
