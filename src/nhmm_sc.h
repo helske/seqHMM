@@ -117,19 +117,7 @@ struct nhmm_sc : public nhmm_base {
     arma::vec grad_vec(grad, n, false, true);
     return self->objective_B(x_vec, grad_vec);
   }
-  void compute_state_obs_probs(
-      const arma::uword start, arma::cube& obs_prob, arma::cube& state_prob
-  );
-  void compute_state_obs_probs_fanhmm(
-      const arma::uword start, arma::cube& obs_prob, arma::cube& state_prob,
-      const arma::field<arma::cube>& W_A, const arma::field<arma::cube>& W_B
-  );
-  void predict(arma::cube& obs_prob);
   void predict(arma::field<arma::cube>& obs_prob);
-  void predict_fanhmm(
-      arma::cube& obs_prob, const arma::field<arma::cube>& W_A, 
-      const arma::field<arma::cube>& W_B, const bool autoregression
-  );
   void predict_fanhmm(
       arma::field<arma::cube>& obs_prob, const arma::field<arma::cube>& W_A, 
       const arma::field<arma::cube>& W_B, const bool autoregression

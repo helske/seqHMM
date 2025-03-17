@@ -43,7 +43,7 @@ compute_joint <- function(x, newdata, type, cond, state_names, symbol_names, res
 #' @export
 predict.nhmm <- function(
     object, newdata, newdata2 = NULL, condition = NULL, 
-    type = c("observations", "state", "conditionals"),
+    type = c("observations", "states", "conditionals"),
     probs = c(0.025, 0.975), 
     boot_idx = FALSE, ...) {
   
@@ -63,6 +63,7 @@ predict.nhmm <- function(
     !is.null(newdata[[time]]), 
     "Can't find time index variable {.var {time}} in {.arg newdata}."
   )
+  newdata <- copy(newdata)
   if (!is.null(newdata2)) {
     stopifnot_(
       is.data.frame(newdata2), 
@@ -84,94 +85,139 @@ predict.nhmm <- function(
       identical(newdata[[time]], newdata2[[time]]),
       "Time index variable {.var {time}} must be the same in both data frames."
     )
+    newdata2 <- copy(newdata2)
   }
-  if (is.null(condition)) {
-    cond <- rep(factor(object$symbol_names), nrow(newdata))
-  } else {
+  
+  state_names <- object$state_names
+  symbol_names <- object$symbol_names
+  response_names <- object$channel_names
+  S <- object$n_states
+  M <- object$n_symbols
+  
+  if (!is.null(condition)) {
     stopifnot_(
       all(condition %in% colnames(newdata)), 
       "Not all variables defined in {.arg condition} are present in {.arg newdata} ."
     )
-    cond <- data.frame(
-      rep(factor(object$symbol_names, levels = object$symbol_names), nrow(newdata)),
-      newdata[rep(seq_len(nrow(newdata)), each = object$n_symbols), condition]
-    )
-    colnames(cond) <- c(object$channel_names, condition)
   }
+  conditions <- list(
+    base = condition,
+    obs = c(response_names, condition),
+    state = c("state", condition),
+    both = c("state", response_names, condition)
+  )
+  if (is.null(conditions$base)) conditions$base <- id
   object <- update(object, newdata)
   obs <- create_obsArray(object)
-  C <- object$n_channels
-  if (C == 1L) {
-    out <- predict_nhmm_singlechannel( 
-      object$etas$pi, object$X_pi,
-      object$etas$A, object$X_A, 
-      object$etas$B, object$X_B, 
-      array(obs[1, , ], dim(obs)[2:3]),
-      object$sequence_lengths, 
-      attr(object$X_pi, "icpt_only"), attr(object$X_A, "icpt_only"), 
-      attr(object$X_B, "icpt_only"), attr(object$X_A, "iv"), 
-      attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv")
+  stopifnot_(
+    object$n_channels == 1L,
+    "Predictions for multichannel NHMMs are not yet supported."
+  )
+  
+  out <- unlist(predict_nhmm_singlechannel( 
+    object$etas$pi, object$X_pi,
+    object$etas$A, object$X_A, 
+    object$etas$B, object$X_B, 
+    array(obs[1, , ], dim(obs)[2:3]),
+    object$sequence_lengths, 
+    attr(object$X_pi, "icpt_only"), attr(object$X_A, "icpt_only"), 
+    attr(object$X_B, "icpt_only"), attr(object$X_A, "iv"), 
+    attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv")
+  ))
+  d_mean <- compute_joint(out, newdata, type, conditions, state_names, symbol_names, response_names)
+  
+  if (!is.null(newdata2)) {
+    object2 <- update(object, newdata2)
+    obs2 <- create_obsArray(object2)
+    out2 <- unlist(predict_nhmm_singlechannel( 
+      object2$etas$pi, object2$X_pi,
+      object2$etas$A, object2$X_A, 
+      object2$etas$B, object2$X_B, 
+      array(obs2[1, , ], dim(obs2)[2:3]),
+      object2$sequence_lengths, 
+      attr(object2$X_pi, "icpt_only"), attr(object2$X_A, "icpt_only"), 
+      attr(object2$X_B, "icpt_only"), attr(object2$X_A, "iv"), 
+      attr(object2$X_B, "iv"), attr(object2$X_A, "tv"), attr(object2$X_B, "tv")
+    ))
+    d <- compute_joint(
+      out2, newdata2, type, conditions, state_names, symbol_names, 
+      response_names
     )
-    if (!is.null(newdata2)) {
-      object2 <- update(object, newdata2)
-      obs2 <- create_obsArray(object2)
-      out2 <- predict_nhmm_singlechannel( 
-        object2$etas$pi, object2$X_pi,
-        object2$etas$A, object2$X_A, 
-        object2$etas$B, object2$X_B, 
-        array(obs2[1, , ], dim(obs2)[2:3]),
-        object2$sequence_lengths, 
-        attr(object2$X_pi, "icpt_only"), attr(object2$X_A, "icpt_only"), 
-        attr(object2$X_B, "icpt_only"), attr(object2$X_A, "iv"), 
-        attr(object2$X_B, "iv"), attr(object2$X_A, "tv"), attr(object2$X_B, "tv")
-      )
-    } else {
-      out2 <- 0
+    for(i in names(d_mean)) {
+      if(!is.null(d_mean[[i]])) {
+        d_mean[[i]]$probability <- d_mean[[i]]$probability - d[[i]]$probability
+      }
     }
-    mean_estimate <- tapply(stats::na.omit(c(out) - c(out2)), cond, mean)
-    
-    d <- data.frame(
-      expand.grid(attr(mean_estimate, "dimnames")),
-      mean = c(mean_estimate)
-    )
-    if (!is.null(object$boot)) {
-      sims <- matrix(NA, nrow(d), length(object$boot_gamma_pi))
-      for (i in seq_along(object$boot$gamma_pi)) {
-        out <- boot_predict_nhmm_singlechannel( 
-          object$etas$pi, object$X_pi,
-          object$etas$A, object$X_A, 
-          object$etas$B, object$X_B, 
-          array(obs[1, , ], dim(obs)[2:3]),
-          object$sequence_lengths, 
-          attr(object$X_pi, "icpt_only"), attr(object$X_A, "icpt_only"), 
-          attr(object$X_B, "icpt_only"), attr(object$X_A, "iv"), 
-          attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv"),
-          object$boot$gamma_pi[[i]], object$boot$gamma_A[[i]], object$boot$gamma_B[[i]]
+  }
+  
+  nsim <- length(object$boot$gamma_pi)
+  if (nsim > 0 && length(probs) > 0) {
+    d_boot <- vector("list", nsim)
+    boot_idx <- boot_idx & !is.null(object$boot$idx)
+    for (i in seq_len(nsim)) {
+      out <- simplify2array(boot_predict_nhmm_singlechannel( 
+        object$etas$pi, object$X_pi,
+        object$etas$A, object$X_A, 
+        object$etas$B, object$X_B, 
+        array(obs[1, , ], dim(obs)[2:3]),
+        object$sequence_lengths, 
+        attr(object$X_pi, "icpt_only"), attr(object$X_A, "icpt_only"), 
+        attr(object$X_B, "icpt_only"), attr(object$X_A, "iv"), 
+        attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv"),
+        object$boot$gamma_pi[[i]], object$boot$gamma_A[[i]], object$boot$gamma_B[[i]]
+      ))
+      if (boot_idx) {
+        d_boot[[i]] <- compute_joint(
+          out[, , , object$boot$idx[, i], drop = FALSE], 
+          newdata, type, conditions, state_names, symbol_names, response_names
         )
-        if (!is.null(newdata2)) {
-          out2 <- boot_predict_nhmm_singlechannel( 
-            object2$etas$pi, object2$X_pi,
-            object2$etas$A, object2$X_A, 
-            object2$etas$B, object2$X_B, 
-            array(obs2[1, , ], dim(obs2)[2:3]),
-            object2$sequence_lengths, 
-            attr(object2$X_pi, "icpt_only"), attr(object2$X_A, "icpt_only"), 
-            attr(object2$X_B, "icpt_only"), attr(object2$X_A, "iv"), 
-            attr(object2$X_B, "iv"), attr(object2$X_A, "tv"), attr(object2$X_B, "tv"),
-            object2$boot$gamma_pi[[i]], object2$boot$gamma_A[[i]], object2$boot$gamma_B[[i]]
+      } else {
+        d_boot[[i]] <- compute_joint(
+          out, newdata, type, conditions, state_names, symbol_names, 
+          response_names
+        )
+      }
+      if (!is.null(newdata2)) {
+        out2 <- simplify2array(boot_predict_nhmm_singlechannel( 
+          object2$etas$pi, object2$X_pi,
+          object2$etas$A, object2$X_A, 
+          object2$etas$B, object2$X_B, 
+          array(obs2[1, , ], dim(obs2)[2:3]),
+          object2$sequence_lengths, 
+          attr(object2$X_pi, "icpt_only"), attr(object2$X_A, "icpt_only"), 
+          attr(object2$X_B, "icpt_only"), attr(object2$X_A, "iv"), 
+          attr(object2$X_B, "iv"), attr(object2$X_A, "tv"), attr(object2$X_B, "tv"),
+          object2$boot$gamma_pi[[i]], object2$boot$gamma_A[[i]], object2$boot$gamma_B[[i]]
+        ))
+        if (boot_idx) {
+          d <- compute_joint(
+            out2[, , , object$boot$idx[, i], drop = FALSE], 
+            newdata2, type, conditions, state_names, symbol_names,
+            response_names
+          )
+        } else {
+          d <- compute_joint(
+            out2, newdata2, type, conditions, state_names, symbol_names,
+            response_names
           )
         }
-        sims[, i] <- c(tapply(na.omit(c(out) - c(out2)), cond, mean))
-      }
-      
-      for(i in seq_along(probs)) {
-        d[paste0("q", 100 * probs[i])] <- apply(sims, 1, quantile, probs[i])
+        for(j in names(d_mean)) {
+          if(!is.null(d_mean[[j]])) {
+            d_boot[[i]][[j]]$probability <- d_boot[[i]][[j]]$probability - d[[j]]$probability
+          }
+        }
       }
     }
-  } else {
-    stop("Not yet implemented")
+    for(i in names(d_mean)) {
+      if(!is.null(d_mean[[i]])) {
+        di <- do.call(rbind, lapply(d_boot, function(x) x[[i]]$probability))
+        qs <- t(apply(di, 2, quantile, probs = probs))
+        colnames(qs) <- paste0("q", 100 * probs)
+        d_mean[[i]] <- cbind(d_mean[[i]], qs)
+      }
+    }
   }
-  d
+  lapply(d_mean[lengths(d_mean) > 0], as.data.frame)
 }
 #' @rdname predict
 #' @export
@@ -249,7 +295,7 @@ predict.fanhmm <- function(
   )
   W <- update_W_for_fanhmm(object, newdata)
   
-  out <- unlist(predict_bystate_fanhmm_singlechannel( 
+  out <- unlist(predict_fanhmm_singlechannel( 
     object$etas$pi, object$X_pi,
     object$etas$A, object$X_A, 
     object$etas$B, object$X_B, 
@@ -266,7 +312,7 @@ predict.fanhmm <- function(
     object2 <- update(object, newdata2)
     obs2 <- create_obsArray(object2, FALSE) # don't set first obs to missing
     W2 <- update_W_for_fanhmm(object2, newdata2)
-    out2 <- unlist(predict_bystate_fanhmm_singlechannel( 
+    out2 <- unlist(predict_fanhmm_singlechannel( 
       object2$etas$pi, object2$X_pi,
       object2$etas$A, object2$X_A, 
       object2$etas$B, object2$X_B, 
@@ -293,7 +339,7 @@ predict.fanhmm <- function(
     d_boot <- vector("list", nsim)
     boot_idx <- boot_idx & !is.null(object$boot$idx)
     for (i in seq_len(nsim)) {
-      out <- simplify2array(boot_predict_bystate_fanhmm_singlechannel( 
+      out <- simplify2array(boot_predict_fanhmm_singlechannel( 
         object$etas$pi, object$X_pi,
         object$etas$A, object$X_A, 
         object$etas$B, object$X_B, 
@@ -318,7 +364,7 @@ predict.fanhmm <- function(
         )
       }
       if (!is.null(newdata2)) {
-        out2 <- simplify2array(boot_predict_bystate_fanhmm_singlechannel( 
+        out2 <- simplify2array(boot_predict_fanhmm_singlechannel( 
           object2$etas$pi, object2$X_pi,
           object2$etas$A, object2$X_A, 
           object2$etas$B, object2$X_B, 

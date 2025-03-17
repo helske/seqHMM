@@ -135,7 +135,7 @@ struct mnhmm_base {
       log_A(d) = arma::cube(S, S, T);
       E_pi(d) = arma::mat(S, N);
       for (arma::uword s = 0; s < S; s++) {
-        E_A(s, d) = arma::cube(S, N, T);
+        E_A(s, d) = arma::cube(S, N, T, arma::fill::zeros);
       }
     }
   }
@@ -257,7 +257,7 @@ struct mnhmm_base {
     for (arma::uword k = 0; k < S; k++) { // from
       for (arma::uword j = 0; j < S; j++) { // to
         for (arma::uword t = 0; t < (Ti(i) - 1); t++) { // time
-          E_A(k, d)(j, i, t) = exp(log_alpha(k, t) + log_A(d)(k, j, t) + 
+          E_A(k, d)(j, i, t + 1) = exp(log_alpha(k, t) + log_A(d)(k, j, t + 1) + 
             log_beta(j, t + 1) + log_py(j, t + 1, d) - ll);
         }
       }

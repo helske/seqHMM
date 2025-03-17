@@ -101,7 +101,7 @@ double nhmm_base::objective_A(const arma::vec& x, arma::vec& grad) {
       A1 = softmax(gamma_Arow * X_A.slice(i).col(0));
       log_A1 = log(A1);
     }
-    for (arma::uword t = 0; t < (Ti(i) - 1); t++) {
+    for (arma::uword t = 1; t < Ti(i); t++) {
       const arma::vec& counts = E_A(current_s).slice(t).col(i);
       idx = arma::find(counts);
       double sum_ea = arma::accu(counts.rows(idx));

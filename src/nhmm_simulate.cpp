@@ -31,7 +31,7 @@ Rcpp::List simulate_nhmm_singlechannel(
     z(0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, pi));
     y(0, 0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(0).row(z(0, i)).t()));
     for (arma::uword t = 1; t < T; t++) {
-      z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A.slice(t - 1).row(z(t - 1, i)).t()));
+      z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A.slice(t).row(z(t - 1, i)).t()));
       y(0, t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(t).row(z(t, i)).t()));
     }
   }
@@ -74,7 +74,7 @@ Rcpp::List simulate_nhmm_multichannel(
       y(c, 0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM(c), 1, false, B(c).slice(0).row(z(0, i)).t()));
     }
     for (arma::uword t = 1; t < T; t++) {
-      z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A.slice(t - 1).row(z(t - 1, i)).t()));
+      z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A.slice(t).row(z(t - 1, i)).t()));
       for (arma::uword c = 0; c < C; c++) {
         y(c, t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM(c), 1, false, B(c).slice(t).row(z(t, i)).t()));
       }
@@ -120,7 +120,7 @@ Rcpp::List simulate_mnhmm_singlechannel(
     z(0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, pi));
     y(0, 0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(0).row(z(0, i)).t()));
     for (arma::uword t = 1; t < T; t++) {
-      z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A.slice(t - 1).row(z(t - 1, i)).t()));
+      z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A.slice(t).row(z(t - 1, i)).t()));
       y(0, t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM, 1, false, B.slice(t).row(z(t, i)).t()));
     }
     z.col(i) += cluster * S;
@@ -171,7 +171,7 @@ Rcpp::List simulate_mnhmm_multichannel(
       y(c, 0, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM(c), 1, false, B(c).slice(0).row(z(0, i)).t()));
     }
     for (arma::uword t = 1; t < T; t++) {
-      z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A.slice(t - 1).row(z(t - 1, i)).t()));
+      z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A.slice(t).row(z(t - 1, i)).t()));
       for (arma::uword c = 0; c < C; c++) {
         y(c, t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqM(c), 1, false, B(c).slice(t).row(z(t, i)).t()));
       }
@@ -221,7 +221,7 @@ Rcpp::List simulate_fanhmm_singlechannel(
     }
     for (arma::uword t = 1; t < T; t++) {
       A = softmax(
-        gamma_A.slice(z(t - 1, i)) * X_A(y(t - 1, i)).slice(i).col(t - 1)
+        gamma_A.slice(z(t - 1, i)) * X_A(y(t - 1, i)).slice(i).col(t)
       );
       z(t, i) = arma::as_scalar(Rcpp::RcppArmadillo::sample(seqS, 1, false, A));
       B = softmax(

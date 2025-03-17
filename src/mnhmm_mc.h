@@ -156,10 +156,5 @@ struct mnhmm_mc : public mnhmm_base {
                const arma::uword print_level);
   
   double objective_B(const arma::vec& x, arma::vec& grad);
-  
-  void compute_state_obs_probs(
-      const arma::uword start, arma::field<arma::cube>& obs_prob, 
-      arma::cube& state_prob
-  );
 };
 #endif

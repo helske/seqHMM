@@ -9,9 +9,9 @@ Probabilities for NHMM or MNHMM}
 \usage{
 get_probs(model, ...)
 
-\method{get_probs}{nhmm}(model, probs, newdata = NULL, remove_voids = TRUE, ...)
+\method{get_probs}{nhmm}(model, probs = NULL, newdata = NULL, remove_voids = TRUE, ...)
 
-\method{get_probs}{mnhmm}(model, probs, newdata = NULL, remove_voids = TRUE, ...)
+\method{get_probs}{mnhmm}(model, probs = NULL, newdata = NULL, remove_voids = TRUE, ...)
 }
 \arguments{
 \item{model}{An object of class \code{nhmm} or \code{mnhmm}.}

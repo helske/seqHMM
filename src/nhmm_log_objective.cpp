@@ -67,7 +67,7 @@ Rcpp::List log_objective_nhmm_singlechannel(
     // gradient wrt gamma_pi
     gradient_wrt_pi(grad_pi, tmpmat, model.log_py, log_beta, ll, model.pi, model.X_pi, i);
     // gradient wrt gamma_A
-    for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
+    for (arma::uword t = 1; t < model.Ti(i); t++) {
       for (arma::uword s = 0; s < model.S; s++) {
         gradient_wrt_A(grad_A.slice(s), tmpmat, model.log_py, log_alpha, log_beta, ll, model.A, model.X_A, i, t, s);
       }
@@ -77,8 +77,8 @@ Rcpp::List log_objective_nhmm_singlechannel(
       if (model.obs(0, i) < model.M) {
         gradient_wrt_B_t0(grad_B.slice(s), tmpvec, model.obs, model.log_pi, log_beta, ll, model.B, model.X_B, i, s);
       }
-      for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
-        if (obs(t + 1, i) < model.M) {
+      for (arma::uword t = 1; t < model.Ti(i); t++) {
+        if (obs(t, i) < model.M) {
           gradient_wrt_B(grad_B.slice(s), tmpvec, model.obs, log_alpha, log_beta, ll, model.log_A, model.B, model.X_B, i, s, t);
         }
       }
@@ -164,7 +164,7 @@ Rcpp::List log_objective_nhmm_multichannel(
     // gradient wrt gamma_pi
     gradient_wrt_pi(grad_pi, tmpmat, model.log_py, log_beta, ll, model.pi, model.X_pi, i);
     // gradient wrt gamma_A
-    for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
+    for (arma::uword t = 1; t < model.Ti(i); t++) {
       for (arma::uword s = 0; s < model.S; s++) {
         gradient_wrt_A(
           grad_A.slice(s), tmpmat, model.log_py, log_alpha, log_beta, ll, model.A,
@@ -180,8 +180,8 @@ Rcpp::List log_objective_nhmm_multichannel(
             model.log_B, model.B, model.X_B, model.M, i, s, c
           );
         }
-        for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
-          if (model.obs(c, t + 1, i) < model.M(c)) {
+        for (arma::uword t = 1; t < model.Ti(i); t++) {
+          if (model.obs(c, t, i) < model.M(c)) {
             gradient_wrt_B(
               grad_B(c).slice(s), tmpvec(c), model.obs, log_alpha, log_beta,
               ll, model.log_A, model.log_B, model.B, model.X_B, model.M, i, s, t, c
@@ -293,7 +293,7 @@ Rcpp::List log_objective_mnhmm_singlechannel(
         i, d
       );
       // gradient wrt gamma_A
-      for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
+      for (arma::uword t = 1; t < model.Ti(i); t++) {
         for (arma::uword s = 0; s < model.S; s++) {
           gradient_wrt_A(
             grad_A(d).slice(s), tmpmat, model.log_omega, model.log_py, log_alpha,
@@ -308,8 +308,8 @@ Rcpp::List log_objective_mnhmm_singlechannel(
             loglik, model.B, model.X_B, i, s, d
           );
         }
-        for (arma::uword t = 0; t < (model.T - 1); t++) {
-          if (model.obs(t + 1, i) < model.M) {
+        for (arma::uword t = 1; t < model.Ti(i); t++) {
+          if (model.obs(t, i) < model.M) {
             gradient_wrt_B(
               grad_B(d).slice(s), tmpvec, model.log_omega, model.obs, log_alpha,
               log_beta, loglik, model.log_A, model.B, model.X_B, i, s, t, d
@@ -428,7 +428,7 @@ Rcpp::List log_objective_mnhmm_multichannel(
         i, d
       );
       // gradient wrt gamma_A
-      for (arma::uword t = 0; t < (model.Ti(i) - 1); t++) {
+      for (arma::uword t = 1; t < model.Ti(i); t++) {
         for (arma::uword s = 0; s < model.S; s++) {
           gradient_wrt_A(
             grad_A(d).slice(s), tmpmat,model.log_omega, model.log_py, log_alpha,
@@ -445,8 +445,8 @@ Rcpp::List log_objective_mnhmm_multichannel(
               log_beta, loglik, model.log_B, model.B, model.X_B, model.M, i, s, c, d
             );
           }
-          for (arma::uword t = 0; t < (model.T - 1); t++) {
-            if (model.obs(c, t + 1, i) < model.M(c)) {
+          for (arma::uword t = 1; t < model.Ti(i); t++) {
+            if (model.obs(c, t, i) < model.M(c)) {
               gradient_wrt_B(
                 grad_B(c, d).slice(s), tmpvec(c),model.log_omega, model.obs,
                 log_alpha, log_beta, loglik, model.log_A, model.log_B, model.B, model.X_B, model.M, i, s, t,

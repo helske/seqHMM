@@ -15,7 +15,7 @@ fill_time <- function(data, time_var, id_var) {
   time_ivals <- diff(time)
   time_resolution <- min(time_ivals)
   stopifnot_(
-    all(time_ivals[!is.na(time_ivals)]%%time_resolution == 0), 
+    all(time_ivals %% time_resolution == 0), 
     "Observations must occur at regular time intervals."
   )
   timetable <- table(data[[id_var]], data[[time_var]])
@@ -27,7 +27,8 @@ fill_time <- function(data, time_var, id_var) {
     {cli::qty(length(d))}{?has/have} duplicate time points.")
   )
   full_time <- seq(time[1L], time[length(time)], by = time_resolution)
-  if (sum(timetable) != prod(dim(timetable))) {
+  
+  if (sum(timetable) != prod(dim(timetable)) || length(time) != length(full_time)) {
     all_times <- expand.grid(
       time = full_time,
       group = unique(data[[id_var]])

@@ -39,6 +39,7 @@ build_fanhmm <- function(
   
   data <- .check_data(data, time, id)
   data <- fill_time(data, time, id)
+  data[[paste0("lag_", observations)]] <- group_lag(data, id, observations)
   if (!is.null(autoregression_formula)) {
     terms_autoregression <- attr(
       stats::terms(autoregression_formula), "term.labels"
@@ -60,17 +61,16 @@ build_fanhmm <- function(
       emission_formula, 
       paste("~ . + ", terms_autoregression)
     )
-    data[[paste0("lag_", observations)]] <- group_lag(data, id, observations)
   }
   if (!is.null(feedback_formula)) {
     terms_feedback <- attr(stats::terms(feedback_formula), "term.labels")
     if (length(terms_feedback) == 0) {
-      terms_feedback <- observations
+      terms_feedback <-  paste0("lag_", observations)
     } else {
       terms_feedback <- paste(
         c(observations, 
           paste(
-            observations, 
+            paste0("lag_", observations), 
             terms_feedback, 
             sep = ":"
           )),
@@ -85,7 +85,7 @@ build_fanhmm <- function(
   out <- create_base_nhmm(
     observations, data, time, id, n_states, state_names, channel_names = NULL,
     initial_formula, transition_formula, emission_formula, scale = scale, 
-    check_formulas = FALSE, fanhmm = !is.null(autoregression_formula))
+    check_formulas = FALSE, fanhmm = TRUE)
   stopifnot_(
     !any(out$model$observations == attr(out$model$observations, "nr")),
     "FAN-HMM does not yet support missing values in the observations."

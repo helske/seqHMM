@@ -8,7 +8,7 @@
 \usage{
 get_cluster_probs(model, ...)
 
-\method{get_cluster_probs}{mnhmm}(model, probs, ...)
+\method{get_cluster_probs}{mnhmm}(model, probs = NULL, newdata = NULL, ...)
 
 \method{get_cluster_probs}{mhmm}(model, ...)
 }

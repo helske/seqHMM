@@ -18,7 +18,7 @@ void univariate_forward_nhmm(
   for (arma::uword t = 1; t < T; t++) {
     for (arma::uword i = 0; i < S; i++) {
       log_alpha(i, t) = logSumExp(
-        log_alpha.col(t - 1) + log_A.slice(t - 1).col(i) + log_py(i, t)
+        log_alpha.col(t - 1) + log_A.slice(t).col(i) + log_py(i, t)
       );
     }
   }

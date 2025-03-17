@@ -150,9 +150,5 @@ struct nhmm_mc : public nhmm_base {
     arma::vec grad_vec(grad, n, false, true);
     return self->objective_B(x_vec, grad_vec);
   }
-  void compute_state_obs_probs(
-      const arma::uword start, arma::field<arma::cube>& obs_prob, 
-      arma::cube& state_prob
-  );
 };
 #endif

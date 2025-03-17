@@ -10,9 +10,21 @@
 \usage{
 get_transition_probs(model, ...)
 
-\method{get_transition_probs}{nhmm}(model, probs, newdata = NULL, remove_voids = TRUE, ...)
+\method{get_transition_probs}{nhmm}(
+  model,
+  probs = NULL,
+  newdata = NULL,
+  remove_voids = TRUE,
+  ...
+)
 
-\method{get_transition_probs}{mnhmm}(model, probs, newdata = NULL, remove_voids = TRUE, ...)
+\method{get_transition_probs}{mnhmm}(
+  model,
+  probs = NULL,
+  newdata = NULL,
+  remove_voids = TRUE,
+  ...
+)
 
 \method{get_transition_probs}{hmm}(model, ...)
 

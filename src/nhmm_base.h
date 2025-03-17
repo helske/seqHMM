@@ -107,7 +107,7 @@ struct nhmm_base {
       minval = std::pow(arma::datum::eps, 2.0/3.0);
     }
     for (arma::uword s = 0; s < S; s++) {
-      E_A(s) = arma::cube(S, N, T);
+      E_A(s) = arma::cube(S, N, T, arma::fill::zeros);
     }
   }
   ~nhmm_base() {
@@ -170,7 +170,7 @@ struct nhmm_base {
     for (arma::uword k = 0; k < S; k++) { // from
       for (arma::uword j = 0; j < S; j++) { // to
         for (arma::uword t = 0; t < (Ti(i) - 1); t++) { // time
-          E_A(k)(j, i, t) = exp(log_alpha(k, t) + log_A(k, j, t) + 
+          E_A(k)(j, i, t + 1) = exp(log_alpha(k, t) + log_A(k, j, t + 1) + 
             log_beta(j, t + 1) + log_py(j, t + 1) - ll);
         }
       }

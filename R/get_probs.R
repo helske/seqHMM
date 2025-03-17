@@ -21,12 +21,16 @@ get_cluster_probs <- function(model, ...) {
 #' Extract the Initial State Probabilities of Hidden Markov Model
 #' @param model A hidden Markov model.
 #' @param probs Vector defining the quantiles of interest. Default is 
-#' `c(0.025, 0.5, 0.975)`. The quantiles are based on bootstrap samples of 
+#' `c(0.025, 0.975)`. The quantiles are based on bootstrap samples of 
 #' coefficients, stored in `object$boot`.
 #' @param ... Ignored.
 #' @rdname initial_probs
 #' @export
-get_initial_probs.nhmm <- function(model, probs, ...) {
+get_initial_probs.nhmm <- function(model, probs = NULL, 
+                                   newdata = NULL, ...) {
+  if (!is.null(newdata)) {
+    model <- update(model, newdata)
+  }
   if (model$n_channels == 1L) {
     ids <- rownames(model$observations)
   } else {
@@ -46,7 +50,7 @@ get_initial_probs.nhmm <- function(model, probs, ...) {
     )
   )
   d <- stats::setNames(d, c(model$id_variable, "state", "estimate"))
-  if (!missing(probs)) {
+  if (!is.null(probs)) {
     stopifnot_(
       !is.null(model$boot),
       paste0(
@@ -66,7 +70,10 @@ get_initial_probs.nhmm <- function(model, probs, ...) {
 }
 #' @rdname initial_probs
 #' @export
-get_initial_probs.mnhmm <- function(model, probs, ...) {
+get_initial_probs.mnhmm <- function(model, probs = NULL, newdata = NULL, ...) {
+  if (!is.null(newdata)) {
+    model <- update(model, newdata)
+  }
   x <- lapply(split_mnhmm(model), get_initial_probs, probs = probs)
   do.call(rbind, lapply(seq_along(x), function(i) {
     cbind(cluster = names(x)[i], x[[i]])
@@ -92,7 +99,12 @@ get_initial_probs.mhmm <- function(model, ...) {
 #' @param ... Ignored.
 #' @rdname transition_probs
 #' @export
-get_transition_probs.nhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ...) {
+get_transition_probs.nhmm <- function(model, probs = NULL, newdata = NULL, 
+                                      remove_voids = TRUE, ...) {
+  stopifnot_(
+    checkmate::test_flag(x = remove_voids), 
+    "Argument {.arg remove_voids} must be a single {.cls logical} value."
+  )
   if (!is.null(newdata)) {
     model <- update(model, newdata)
   }
@@ -128,7 +140,7 @@ get_transition_probs.nhmm <- function(model, probs, newdata = NULL, remove_voids
       "state_from", "state_to", "estimate"
     )
   )
-  if (!missing(probs)) {
+  if (!is.null(probs)) {
     stopifnot_(
       !is.null(model$boot),
       paste0(
@@ -152,7 +164,7 @@ get_transition_probs.nhmm <- function(model, probs, newdata = NULL, remove_voids
 }
 #' @rdname transition_probs
 #' @export
-get_transition_probs.mnhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ...) {
+get_transition_probs.mnhmm <- function(model, probs = NULL, newdata = NULL, remove_voids = TRUE, ...) {
   x <- lapply(split_mnhmm(model), 
               get_transition_probs, probs = probs, newdata = newdata, remove_voids = remove_voids)
   do.call(rbind, lapply(seq_along(x), function(i) {
@@ -179,7 +191,11 @@ get_transition_probs.mhmm <- function(model, ...) {
 #' @param ... Ignored.
 #' @rdname emission_probs
 #' @export
-get_emission_probs.nhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ...) {
+get_emission_probs.nhmm <- function(model, probs = NULL, newdata = NULL, remove_voids = TRUE, ...) {
+  stopifnot_(
+    checkmate::test_flag(x = remove_voids), 
+    "Argument {.arg remove_voids} must be a single {.cls logical} value."
+  )
   if (!is.null(newdata)) {
     model <- update(model, newdata)
   }
@@ -224,7 +240,7 @@ get_emission_probs.nhmm <- function(model, probs, newdata = NULL, remove_voids =
     c(model$id_variable, model$time_variable, "state", "channel", 
       "observation", "estimate")
   )
-  if (!missing(probs)) {
+  if (!is.null(probs)) {
     stopifnot_(
       !is.null(model$boot),
       paste0(
@@ -260,7 +276,7 @@ get_emission_probs.nhmm <- function(model, probs, newdata = NULL, remove_voids =
 }
 #' @rdname emission_probs
 #' @export
-get_emission_probs.mnhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ...) {
+get_emission_probs.mnhmm <- function(model, probs = NULL, newdata = NULL, remove_voids = TRUE, ...) {
   x <- lapply(split_mnhmm(model), 
               get_emission_probs, probs = probs, newdata = newdata, remove_voids = remove_voids)
   do.call(rbind, lapply(seq_along(x), function(i) {
@@ -287,7 +303,10 @@ get_emission_probs.mhmm <- function(model, ...) {
 #' @rdname cluster_probs
 #' @export
 #' @seealso [posterior_cluster_probabilities()].
-get_cluster_probs.mnhmm <- function(model, probs, ...) {
+get_cluster_probs.mnhmm <- function(model, probs = NULL, newdata = NULL, ...) {
+  if (!is.null(newdata)) {
+    model <- update(model, newdata)
+  }
   if (model$n_channels == 1L) {
     ids <- rownames(model$observations)
   } else {
@@ -307,7 +326,7 @@ get_cluster_probs.mnhmm <- function(model, probs, ...) {
     ))
   )
   d <- stats::setNames(d, c("cluster", model$id_variable, "estimate"))
-  if (!missing(probs)) {
+  if (!is.null(probs)) {
     stopifnot_(
       !is.null(model$boot),
       paste0(
@@ -360,37 +379,14 @@ get_probs <- function(model, ...) {
 }
 #' @rdname get_probs
 #' @export
-get_probs.nhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ...) {
-  stopifnot_(
-    checkmate::test_flag(x = remove_voids), 
-    "Argument {.arg remove_voids} must be a single {.cls logical} value."
-  )
+get_probs.nhmm <- function(model, probs = NULL, newdata = NULL, remove_voids = TRUE, ...) {
   if (!is.null(newdata)) {
-    time <- model$time_variable
-    id <- model$id_variable
-    stopifnot_(
-      is.data.frame(newdata),
-      "Argument {.arg newdata} must be a {.cls data.frame} object."
-    )
-    stopifnot_(
-      !is.null(newdata[[id]]),
-      "Can't find grouping variable {.var {id}} in {.arg newdata}."
-    )
-    stopifnot_(
-      !is.null(newdata[[time]]),
-      "Can't find time index variable {.var {time}} in {.arg newdata}."
-    )
-    object <- update(model, newdata = newdata)
+    model <- update(model, newdata)
   }
-  S <- model$n_states
-  M <- model$n_symbols
-  C <- model$n_channels
-  N <- model$n_sequences
-  T_ <- model$length_of_sequences
   out <- list(
     initial_probs = get_initial_probs(model, probs),
-    transition_probs = get_transition_probs(model, probs, remove_voids),
-    emission_probs = get_emission_probs(model, probs, remove_voids)
+    transition_probs = get_transition_probs(model, probs, remove_voids = remove_voids),
+    emission_probs = get_emission_probs(model, probs, remove_voids = remove_voids)
   )
   rownames(out$initial_probs) <- NULL
   rownames(out$transition_probs) <- NULL
@@ -399,38 +395,14 @@ get_probs.nhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ..
 }
 #' @rdname get_probs
 #' @export
-get_probs.mnhmm <- function(model, probs, newdata = NULL, remove_voids = TRUE, ...) {
-  
-  stopifnot_(
-    checkmate::test_flag(x = remove_voids), 
-    "Argument {.arg remove_voids} must be a single {.cls logical} value."
-  )
+get_probs.mnhmm <- function(model, probs = NULL, newdata = NULL, remove_voids = TRUE, ...) {
   if (!is.null(newdata)) {
-    time <- model$time_variable
-    id <- model$id_variable
-    stopifnot_(
-      is.data.frame(newdata),
-      "Argument {.arg newdata} must be a {.cls data.frame} object."
-    )
-    stopifnot_(
-      !is.null(newdata[[id]]),
-      "Can't find grouping variable {.var {id}} in {.arg newdata}."
-    )
-    stopifnot_(
-      !is.null(newdata[[time]]),
-      "Can't find time index variable {.var {time}} in {.arg newdata}."
-    )
-    object <- update(object, newdata = newdata)
+    model <- update(model, newdata)
   }
-  S <- model$n_states
-  M <- model$n_symbols
-  C <- model$n_channels
-  N <- model$n_sequences
-  T_ <- model$length_of_sequences
   out <- list(
     initial_probs = get_initial_probs(model, probs),
-    transition_probs = get_transition_probs(model, probs, remove_voids),
-    emission_probs = get_emission_probs(model, probs, remove_voids),
+    transition_probs = get_transition_probs(model, probs, remove_voids = remove_voids),
+    emission_probs = get_emission_probs(model, probs, remove_voids = remove_voids),
     cluster_probs = get_cluster_probs(model, probs)
   )
   rownames(out$initial_probs) <- NULL

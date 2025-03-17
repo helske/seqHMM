@@ -25,9 +25,9 @@ test_that("simulate_mnhmm, coef and get_probs works", {
   expect_equal(
     table(unlist(sim$states)),
     structure(c(
-      `Cluster 1: State 1` = 3L, `Cluster 1: State 2` = 7L, 
-      `Cluster 2: State 1` = 6L, `Cluster 2: State 2` = 4L, 
-      `Cluster 3: State 1` = 83L, `Cluster 3: State 2` = 97L, 
+      `Cluster 1: State 1` = 2L, `Cluster 1: State 2` = 8L, 
+      `Cluster 2: State 1` = 5L, `Cluster 2: State 2` = 5L, 
+      `Cluster 3: State 1` = 92L, `Cluster 3: State 2` = 88L, 
       `*` = 0L, `%` = 0L), dim = 8L, dimnames = structure(list(
         c("Cluster 1: State 1", "Cluster 1: State 2", "Cluster 2: State 1", 
           "Cluster 2: State 2", "Cluster 3: State 1", "Cluster 3: State 2", 

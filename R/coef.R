@@ -2,13 +2,13 @@
 #' Models
 #' 
 #' @param object An object of class `nhmm` or `mnhmm`.
-#' @param probs Vector defining the quantiles of interest. When missing (default), 
+#' @param probs Vector defining the quantiles of interest. When `NULL` (default), 
 #' no quantiles are computed. The quantiles are based on bootstrap samples of 
 #' coefficients, stored in `object$boot`.
 #' @param ... Ignored.
 #' @rdname coef
 #' @export
-coef.nhmm <- function(object, probs, ...) {
+coef.nhmm <- function(object, probs = NULL, ...) {
   S <- object$n_states
   M <- object$n_symbols
   coef_names_pi <- attr(object$X_pi, "coef_names")
@@ -64,7 +64,7 @@ coef.nhmm <- function(object, probs, ...) {
       )
     )
   }
-  if (!missing(probs)) {
+  if (!is.null(probs)) {
     stopifnot_(
       checkmate::test_numeric(
         x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L
@@ -115,7 +115,7 @@ coef.nhmm <- function(object, probs, ...) {
 }
 #' @rdname coef
 #' @export
-coef.mnhmm <- function(object, probs, ...) {
+coef.mnhmm <- function(object, probs = NULL, ...) {
   
   S <- object$n_states
   M <- object$n_symbols
@@ -198,7 +198,7 @@ coef.mnhmm <- function(object, probs, ...) {
     parameter = rep(coef_names_omega, each = D),
     estimate = c(gamma_omega)
   )
-  if (!missing(probs)) {
+  if (!is.null(probs)) {
     stopifnot_(
       checkmate::test_numeric(
         x = probs, lower = 0, upper = 1, any.missing = FALSE, min.len = 1L

@@ -10,9 +10,9 @@
 \usage{
 get_initial_probs(model, ...)
 
-\method{get_initial_probs}{nhmm}(model, probs, ...)
+\method{get_initial_probs}{nhmm}(model, probs = NULL, newdata = NULL, ...)
 
-\method{get_initial_probs}{mnhmm}(model, probs, ...)
+\method{get_initial_probs}{mnhmm}(model, probs = NULL, newdata = NULL, ...)
 
 \method{get_initial_probs}{hmm}(model, ...)
 
@@ -24,7 +24,7 @@ get_initial_probs(model, ...)
 \item{...}{Ignored.}
 
 \item{probs}{Vector defining the quantiles of interest. Default is
-\code{c(0.025, 0.5, 0.975)}. The quantiles are based on bootstrap samples of
+\code{c(0.025, 0.975)}. The quantiles are based on bootstrap samples of
 coefficients, stored in \code{object$boot}.}
 }
 \description{

@@ -18,8 +18,7 @@ void univariate_backward_nhmm(
   for (int t = (T - 2); t >= 0; t--) {
     for (arma::uword i = 0; i < S; i++) {
       log_beta(i, t) = logSumExp(
-        log_beta.col(t + 1) + log_A.slice(t).row(i).t() + 
-          log_py.col(t + 1)
+        log_beta.col(t + 1) + log_A.slice(t + 1).row(i).t() + log_py.col(t + 1)
       );
     }
   }

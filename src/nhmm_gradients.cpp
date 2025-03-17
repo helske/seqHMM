@@ -43,8 +43,8 @@ void gradient_wrt_A(
   
   tmpmat = -A.slice(t).row(s).t() * A.slice(t).row(s);
   tmpmat.diag() += A.slice(t).row(s);
-  grad += tmpmat * exp(log_alpha(s, t) + log_py.col(t + 1) + 
-    log_beta.col(t + 1) - ll) * X.slice(i).col(t).t();
+  grad += tmpmat * exp(log_alpha(s, t - 1) + log_py.col(t) + 
+    log_beta.col(t) - ll) * X.slice(i).col(t).t();
 }
 void gradient_wrt_A(
     arma::mat& grad, arma::mat& tmpmat, 
@@ -56,8 +56,8 @@ void gradient_wrt_A(
   
   tmpmat = -A(d).slice(t).row(s).t() * A(d).slice(t).row(s);
   tmpmat.diag() += A(d).slice(t).row(s);
-  grad += tmpmat * exp(log_omega(d) + log_alpha(s, t, d) + 
-    log_py.slice(d).col(t + 1) + log_beta.slice(d).col(t + 1) - 
+  grad += tmpmat * exp(log_omega(d) + log_alpha(s, t - 1, d) + 
+    log_py.slice(d).col(t) + log_beta.slice(d).col(t) - 
     loglik(i)) * X.slice(i).col(t).t();
 }
 // NHMM singlechannel
@@ -81,13 +81,13 @@ void gradient_wrt_B(
     const arma::cube& log_A, const arma::cube& B, const arma::cube& X, 
     const arma::uword i, const arma::uword s, const arma::uword t) {
   
-  arma::rowvec Brow = B.slice(t + 1).row(s).cols(0, B.n_cols - 2);
-  arma::uword idx = obs(t + 1, i);
+  arma::rowvec Brow = B.slice(t).row(s).cols(0, B.n_cols - 2);
+  arma::uword idx = obs(t, i);
   double brow = Brow(idx);
   tmpvec = -Brow.t() * brow;
   tmpvec(idx) += brow;
-  grad += arma::accu(exp(log_alpha.col(t) + log_A.slice(t).col(s) + 
-    log_beta(s, t + 1) - ll)) * tmpvec * X.slice(i).col(t + 1).t();
+  grad += arma::accu(exp(log_alpha.col(t - 1) + log_A.slice(t).col(s) + 
+    log_beta(s, t) - ll)) * tmpvec * X.slice(i).col(t).t();
 }
 // NHMM multichannel
 void gradient_wrt_B_t0(
@@ -122,19 +122,19 @@ void gradient_wrt_B(
     const arma::uword s, const arma::uword t, const arma::uword c) {
   
   arma::uword C = M.n_elem;
-  arma::rowvec Brow = B(c).slice(t + 1).row(s).cols(0, M(c) - 1);
-  arma::uword idx = obs(c, t + 1, i);
+  arma::rowvec Brow = B(c).slice(t).row(s).cols(0, M(c) - 1);
+  arma::uword idx = obs(c, t, i);
   double brow = Brow(idx);
   tmpvec = -Brow.t() * brow;
   tmpvec(idx) += brow;
   double logpy = 0;
   for (arma::uword cc = 0; cc < C; cc++) {
     if (cc != c) {
-      logpy += log_B(cc)(s, obs(cc, t + 1, i), t + 1);
+      logpy += log_B(cc)(s, obs(cc, t, i), t);
     }
   }
-  grad += arma::accu(exp(log_alpha.col(t) + log_A.slice(t).col(s) + 
-    logpy + log_beta(s, t + 1) - ll)) * tmpvec * X.slice(i).col(t + 1).t();
+  grad += arma::accu(exp(log_alpha.col(t - 1) + log_A.slice(t).col(s) + 
+    logpy + log_beta(s, t) - ll)) * tmpvec * X.slice(i).col(t).t();
 }
 // MNHMM singlechannel
 void gradient_wrt_B_t0(
@@ -164,14 +164,14 @@ void gradient_wrt_B(
     const arma::uword t, const arma::uword d) {
   
   arma::uword M = B(0).n_cols - 1;
-  arma::rowvec Brow = B(d).slice(t + 1).row(s).cols(0, M - 1);
-  arma::uword idx = obs(t + 1, i);
+  arma::rowvec Brow = B(d).slice(t).row(s).cols(0, M - 1);
+  arma::uword idx = obs(t, i);
   double brow = Brow(idx);
   tmpvec = -Brow.t() * brow;
   tmpvec(idx) += brow;
-  grad += arma::accu(exp(log_omega(d) + log_alpha.slice(d).col(t) + 
-    log_A(d).slice(t).col(s) + log_beta(s, t + 1, d) - loglik(i))) * 
-    tmpvec * X.slice(i).col(t + 1).t();
+  grad += arma::accu(exp(log_omega(d) + log_alpha.slice(d).col(t - 1) + 
+    log_A(d).slice(t).col(s) + log_beta(s, t, d) - loglik(i))) * 
+    tmpvec * X.slice(i).col(t).t();
 }
 // MNHMM MC
 void gradient_wrt_B_t0(
@@ -213,18 +213,18 @@ void gradient_wrt_B(
     const arma::uword d) {
   
   arma::uword C = M.n_elem;
-  arma::rowvec Brow = B(d * C + c).slice(t + 1).row(s).cols(0, M(c) - 1);
-  arma::uword idx = obs(c, t + 1, i);
+  arma::rowvec Brow = B(d * C + c).slice(t).row(s).cols(0, M(c) - 1);
+  arma::uword idx = obs(c, t, i);
   double brow = Brow(idx);
   tmpvec = -Brow.t() * brow;
   tmpvec(idx) += brow;
   double logpy = 0;
   for (arma::uword cc = 0; cc < C; cc++) {
     if (cc != c) {
-      logpy += log_B(d * C + cc)(s, obs(cc, t + 1, i), t + 1);
+      logpy += log_B(d * C + cc)(s, obs(cc, t, i), t);
     }
   }
-  grad += arma::accu(exp(log_omega(d) + log_alpha.slice(d).col(t) + 
-    log_A(d).slice(t).col(s) + logpy + log_beta(s, t + 1, d) - loglik(i))) * 
-    tmpvec * X.slice(i).col(t + 1).t();
+  grad += arma::accu(exp(log_omega(d) + log_alpha.slice(d).col(t - 1) + 
+    log_A(d).slice(t).col(s) + logpy + log_beta(s, t, d) - loglik(i))) * 
+    tmpvec * X.slice(i).col(t).t();
 }

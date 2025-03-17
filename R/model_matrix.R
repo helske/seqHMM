@@ -177,6 +177,8 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     
     complete <- complete.cases(X)
     missing_values <- which(!complete)
+    # A_1 is not used anywhere, so we can allow missing values in the first time point
+    missing_values <- setdiff(missing_values, which(data[[time]] == min(data[[time]])))
     if (length(missing_values) > 0 && check) {
       ends <- data[sequence_lengths[match(data[[id]], unique(data[[id]]))], time]
       stopifnot_(
@@ -218,10 +220,10 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
     n_pars <- n_states * (n_states - 1L) * nrow(X)
     missing_values <- which(is.na(X))
-    # Replace NAs in void cases with zero
+    # Replace NAs in void cases and t = 1 with zero
     X[is.na(X)] <- 0
-    iv <- iv_X(X)
-    tv <- tv_X(X)
+    iv <- iv_X(X[, -1L, , drop = FALSE])
+    tv <- tv_X(X[, -1L, , drop = FALSE])
   }
   attr(X, "R_inv") <- R_inv
   attr(X, "X_mean") <- X_mean
