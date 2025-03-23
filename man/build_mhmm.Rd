@@ -75,6 +75,7 @@ Object of class \code{mhmm} with following elements:
 \item \code{symbol_names}\cr Names for observed states.
 \item \code{channel_names}\cr Names for channels of sequence data
 \item \code{length_of_sequences}\cr (Maximum) length of sequences.
+\item \code{sequence_lengths}\cr A vector of sequence lengths.
 \item \code{n_sequences}\cr Number of sequences.
 \item \code{n_symbols}\cr Number of observed states (in each channel).
 \item \code{n_states}\cr Number of hidden states.

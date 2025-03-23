@@ -3,9 +3,6 @@
 #'
 #' Function `ssp` defines the arguments for plotting with
 #' [plot.ssp()] or [gridplot()].
-#'
-#'
-#'
 #' @export
 #' @param x Either a hidden Markov model object of class `hmm` or a state
 #'   sequence object of class `stslist` (created with the [TraMineR::seqdef()])

@@ -5,12 +5,9 @@
 #'
 #' @export
 #' @param model A hidden Markov model.
-#' @param respect_void If `TRUE` (default), states at the time points
-#' corresponding to `TraMineR`'s void in the observed sequences are set to void
-#' in the hidden state sequences as well.
 #' @param ... Ignored.
-#' @return The most probable paths of hidden states as an `stslist` object
-#' (see [seqdef()]). The log-probability is included as an attribute 
+#' @return The most probable paths of hidden states as an `data.table`. 
+#' The log-probability is included as an attribute 
 #' `log_prop`.
 #'
 #' @examples
@@ -19,9 +16,10 @@
 #'
 #' # Compute the most probable hidden state paths given the data and the model
 #' mpp <- hidden_paths(hmm_biofam)
-#'
+#' head(mpp)
 #' # Plot hidden paths for the first 100 individuals
-#' stacked_sequence_plot(mpp, type = "i", ids = 1:100)
+#' seqs <- data_to_stslist(mpp, "id", "time", "state")
+#' stacked_sequence_plot(seqs, type = "i", ids = 1:100)
 #'
 #' # Because the model structure is so sparse that the posterior probabilities are
 #' # mostly peaked to single state at each time point, the joint probability of
@@ -42,7 +40,7 @@ hidden_paths <- function(model, ...) {
 }
 #' @rdname hidden_paths
 #' @export
-hidden_paths.hmm <- function(model, respect_void = TRUE, ...) {
+hidden_paths.hmm <- function(model, as_stslist = FALSE, ...) {
   model$initial_probs <- log(model$initial_probs)
   model$transition_probs <- log(model$transition_probs)
   obsArray <- create_obsArray(model)
@@ -51,11 +49,11 @@ hidden_paths.hmm <- function(model, respect_void = TRUE, ...) {
     model$transition_probs, emissionArray,
     model$initial_probs, obsArray
   )
-  create_mpp_seq(out, model, respect_void)
+  create_mpp_data(out, model, as_stslist)
 }
 #' @rdname hidden_paths
 #' @export
-hidden_paths.mhmm <- function(model, respect_void = TRUE, ...) {
+hidden_paths.mhmm <- function(model, as_stslist = FALSE, ...) {
   model <- .combine_models(model)
   model$initial_probs <- log(model$initial_probs)
   model$transition_probs <- log(model$transition_probs)
@@ -66,11 +64,11 @@ hidden_paths.mhmm <- function(model, respect_void = TRUE, ...) {
     model$initial_probs, obsArray, model$coefficients,
     model$X, model$n_states_in_clusters
   )
-  create_mpp_seq(out, model, respect_void)
+  create_mpp_data(out, model, as_stslist)
 }
 #' @rdname hidden_paths
 #' @export
-hidden_paths.nhmm <- function(model, respect_void = TRUE, ...) {
+hidden_paths.nhmm <- function(model, as_stslist = FALSE, ...) {
   
   obsArray <- create_obsArray(model)
   if (model$n_channels == 1) {
@@ -78,7 +76,7 @@ hidden_paths.nhmm <- function(model, respect_void = TRUE, ...) {
       model$etas$pi, model$X_pi,
       model$etas$A, model$X_A,
       model$etas$B, model$X_B,
-      array(obsArray[1, , ], dim(obsArray)[2:3]), model$sequence_lengths, 
+      obsArray, model$sequence_lengths, 
       attr(model$X_pi, "icpt_only"), attr(model$X_A, "icpt_only"), 
       attr(model$X_B, "icpt_only"),
       attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
@@ -94,11 +92,11 @@ hidden_paths.nhmm <- function(model, respect_void = TRUE, ...) {
       attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
       attr(model$X_B, "tv"))
   }
-  create_mpp_seq(out, model, respect_void)
+  create_mpp_data(out, model, as_stslist)
 }
 #' @rdname hidden_paths
 #' @export
-hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
+hidden_paths.mnhmm <- function(model, as_stslist = FALSE, ...) {
   
   obsArray <- create_obsArray(model)
   if (model$n_channels == 1) {
@@ -107,7 +105,7 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
       model$etas$pi, model$X_pi,
       model$etas$A, model$X_A,
       model$etas$B, model$X_B,
-      array(obsArray, dim(obsArray)[2:3]), model$sequence_lengths, 
+      obsArray, model$sequence_lengths, 
       attr(model$X_omega, "icpt_only"), attr(model$X_pi, "icpt_only"), 
       attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
       attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
@@ -128,58 +126,68 @@ hidden_paths.mnhmm <- function(model, respect_void = TRUE, ...) {
       attr(model$X_B, "tv")
     )
   }
-  if (identical(model$state_names[[1]], model$state_names[[2]])) {
-    model$state_names <- paste0(
-      rep(model$cluster_names, each = model$n_states), ": ",
-      unlist(model$state_names)
-    )
-  } else {
-    model$state_names <- unlist(model$state_names)
-  }
-  model$n_states <- length(model$state_names)
-  create_mpp_seq(out, model, respect_void)
-}
-#' Create a seqdef Object from the Viterbi Algorithm Output
-#' @noRd
-create_mpp_seq <- function(out, model, respect_void) {
-  if (model$n_sequences == 1) {
-    mpp <- t(model$state_names[out$q + 1])
-  } else {
-    mpp <- t(apply(out$q + 1, 2, function(x) model$state_names[x]))
-  }
-  if (model$n_channels == 1) model$observations <- list(model$observations)
-  if (respect_void) {
-    void_symbol <- attr(model$observations[[1]], "void")
-    voids <- vector("list", model$n_channels)
-    for (i in 1:model$n_channels) {
-      voids[[i]] <- which(model$observations[[i]] == void_symbol)
-    }
-    mpp[unique(unlist(voids))] <- NA
-  }
-  mpp <- suppressWarnings(
-    suppressMessages(
-      seqdef(
-        mpp,
-        alphabet = model$state_names, id = rownames(model$observations[[1]]),
-        start = attr(model$observations[[1]], "start"),
-        xtstep = attr(model$observations[[1]], "xtstep"),
-        void = void_symbol
-      )
-    )
+  model$state_names <- paste0(
+    rep(model$cluster_names, each = model$n_states), ": ",
+    unlist(model$state_names)
   )
-  if (sum(model$n_states) <= 200) {
-    TraMineR::cpal(mpp) <- seqHMM::colorpalette[[sum(model$n_states)]]
+  create_mpp_data(out, model, as_stslist)
+}
+#' Create a data.table from the Viterbi Algorithm Output
+#' @noRd
+create_mpp_data <- function(out, model, as_stslist = FALSE) {
+  # avoid CRAN check warnings due to NSE
+  time <- id <- state <- state <- NULL
+  if (model$n_sequences == 1) {
+    mpp <- model$state_names[out$q + 1]
   } else {
-    cp <- NULL
-    k <- 200
-    p <- 0
-    while (sum(model$n_states) - p > 0) {
-      cp <- c(cp, seqHMM::colorpalette[[k]])
-      p <- p + k
-      k <- k - 1
-    }
-    TraMineR::cpal(mpp) <- cp[1:sum(model$n_states)]
+    mpp <- apply(out$q + 1, 2, function(x) model$state_names[x])
   }
-  attr(mpp, "log_prob") <- c(out$logp)
-  mpp
+  if (inherits(model, "nhmm") || inherits(model, "mnhmm")) {
+    ids <- unique(model$data[[model$id_variable]])
+    times <- unique(model$data[[model$time_variable]])
+    names(model$sequence_lengths) <- ids
+    d <- data.table(
+      expand.grid(
+        time = times,
+        id = ids,
+        stringsAsFactors = FALSE
+      )[, 2:1],
+      state = c(mpp)
+    )[time <= times[model$sequence_lengths[id]], ]
+  } else {
+    if (is.null(times <- as.numeric(colnames(model$observations[[1]])))) {
+      times <- seq_len(model$length_of_sequences)
+    }
+    if (is.null(ids <- rownames(model$observations[[1]]))) {
+      ids <- seq_len(model$n_sequences)
+    }
+    names(model$sequence_lengths) <- ids
+    d <- data.table(
+      expand.grid(
+        time = times,
+        id = ids,
+        stringsAsFactors = FALSE
+      )[, 2:1],
+      state = c(mpp)
+    )[time <= times[model$sequence_lengths[id]], ]
+  }
+  
+  if (as_stslist) {
+    d <- suppressMessages(
+      data_to_stslist(d, "id", "time", "state")
+    )
+  } else {
+    if (inherits(model, "combined_mhmm") || inherits(model, "mnhmm")) {
+      d[, c("cluster", "state") := tstrsplit(state, " *: *", fixed = FALSE)]
+      setcolorder(
+        d, 
+        c(setdiff(names(d), c("state", "cluster")), c("state", "cluster"))
+      )
+    }
+    if (inherits(model, c("nhmm", "mnhmm"))) {
+      colnames(d)[1:2] <- c(model$id_variable, model$time_variable)
+    }
+  }
+  attr(d, "log_prob") <- c(out$logp)
+  d
 }

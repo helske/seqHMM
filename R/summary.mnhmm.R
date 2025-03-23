@@ -1,26 +1,8 @@
-#' Summary of Non-homogeneous Hidden Markov Models
-#'
-#' Returns basic information about the model as well as 
-#' the estimated regression coefficients.
+#' Summary method for mixture non-homogenous hidden Markov models
 #'
 #' @export
-#' @inheritParams get_probs
-#' @rdname summary_nhmm
-#' @param object Non-homogeneous hidden Markov model of class `nhmm`.
-summary.nhmm <- function(object, ...) {
-  ll <- logLik(object)
-  out <- list(
-    model = object,
-    logLik = ll, BIC = BIC(ll),
-    coefficients = coef(object)
-  )
-  class(out) <- "summary.nhmm"
-  out
-}
-#'
-#' @export
-#' @rdname summary_nhmm
 #' @param object Non-homogeneous hidden Markov model of class `mnhmm`.
+#' @param ... Ignored
 summary.mnhmm <- function(object, ...) {
   cf <- coef(object)
   pr <- exp(object$X_omega %*% object$gammas$omega)
@@ -40,35 +22,28 @@ summary.mnhmm <- function(object, ...) {
   ll <- logLik(object)
   out <- list(
     model = object,
-    logLik = ll, BIC = BIC(ll),
+    logLik = ll, BIC = stats::BIC(ll),
     coefficients = cf,
     most_probable_cluster = mpc,
     prior_cluster_probabilities = prior_cluster_probabilities,
     posterior_cluster_probabilities = pcp,
     classification_table = clProbs
   )
-  class(out) <- "summary.mnhmm"
+  class(out) <- "summary_mnhmm"
   out
 }
 #' @export
-print.summary.nhmm <- function(x, digits = 3, ...) {
+print.summary_mnhmm <- function(x, digits = 3, ...) {
+  # to avoid NSE warnings
+  probability <- cluster <- NULL
   print(x$model)
-  cat("\nCoefficients:\n")
-  print.listof(x$coefficients, digits = digits, ...)
-  
-  cat("Log-likelihood:", x$logLik, "  BIC:", x$BIC, "\n\n")
-  invisible(x)
-}
-#' @export
-print.summary.mnhmm <- function(x, digits = 3, ...) {
-  print(x$model)
-  cat("\nCoefficients:\n")
-  print.listof(x$coefficients, digits = digits, ...)
   
   cat("Log-likelihood:", x$logLik, "  BIC:", x$BIC, "\n\n")
   
   cat("Means of prior cluster probabilities :\n")
-  print(colMeans(x$prior_cluster_probabilities), digits = digits, ...)
+  p <- x$prior_cluster_probabilities[, list(mean = mean(probability)), by = cluster]
+  p <- stats::setNames(p$mean, p$cluster)
+  print(p, digits = digits, ...)
   cat("\n")
   
   tbl <- table(x$most_probable_cluster)

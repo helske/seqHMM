@@ -2,19 +2,20 @@
 #'
 #' @noRd
 build_fanhmm <- function(
-    observations, n_states, initial_formula, 
+    responses, n_states, initial_formula, 
     transition_formula, emission_formula, autoregression_formula, 
-    feedback_formula, data, time, id, state_names = NULL, scale = TRUE) {
+    feedback_formula, data, id_var, time_var, state_names = NULL, scale = TRUE) {
   
-  y_in_data <- checkmate::test_character(observations)
+ 
   stopifnot_(
-    y_in_data && !is.null(data[[observations]]),
-    "For FAN-HMM, the response variable {.arg observations} must be in the {.arg data}."
+    !missing(responses) && checkmate::test_character(x = responses), 
+    "Argument {.arg responses} must be a character vector defining the response 
+    variable(s) in the {.arg data}."
   )
   stopifnot_(
-    length(observations) == 1L,
-    "Currently only single-channel responses are supported for FAN-HMM.")
-  
+    length(responses) == 1L, 
+    "Currently only single-channel responses are supported for FAN-HMM."
+  )
   stopifnot_(
     is.null(autoregression_formula) || inherits(autoregression_formula, "formula"), 
     "Argument {.arg autoregression_formula} must be {.val NULL} or a {.cls formula} object."
@@ -27,30 +28,19 @@ build_fanhmm <- function(
     !is.null(autoregression_formula) || !is.null(feedback_formula),
     "Provide {.arg autoregression_formula} and/or {.arg feedback_formula} for FAN-HMM."
   )
-  stopifnot_(
-    inherits(initial_formula, "formula"), 
-    "Argument {.arg initial_formula} must be a {.cls formula} object.")
-  stopifnot_(
-    inherits(transition_formula, "formula"), 
-    "Argument {.arg transition_formula} must be a {.cls formula} object.")
-  stopifnot_(
-    inherits(emission_formula, "formula"), 
-    "Argument {.arg emission_formula} must be a {.cls formula} object.")
   
-  data <- .check_data(data, time, id)
-  data <- fill_time(data, time, id)
-  data[[paste0("lag_", observations)]] <- group_lag(data, id, observations)
+  lag_obs <- paste0("lag_", responses)
   if (!is.null(autoregression_formula)) {
     terms_autoregression <- attr(
       stats::terms(autoregression_formula), "term.labels"
     )
     if (length(terms_autoregression) == 0) {
-      terms_autoregression <- paste0("lag_", observations)
+      terms_autoregression <- lag_obs
     } else {
       terms_autoregression <- paste(
-        c(paste0("lag_", observations),
+        c(lag_obs,
           paste(
-            paste0("lag_", observations), 
+            lag_obs, 
             terms_autoregression, 
             sep = ":"
           )
@@ -65,12 +55,12 @@ build_fanhmm <- function(
   if (!is.null(feedback_formula)) {
     terms_feedback <- attr(stats::terms(feedback_formula), "term.labels")
     if (length(terms_feedback) == 0) {
-      terms_feedback <-  paste0("lag_", observations)
+      terms_feedback <- lag_obs
     } else {
       terms_feedback <- paste(
-        c(observations, 
+        c(lag_obs, 
           paste(
-            paste0("lag_", observations), 
+            lag_obs, 
             terms_feedback, 
             sep = ":"
           )),
@@ -83,13 +73,10 @@ build_fanhmm <- function(
     )
   }
   out <- create_base_nhmm(
-    observations, data, time, id, n_states, state_names, channel_names = NULL,
+    responses, data, id_var, time_var, n_states, state_names, 
     initial_formula, transition_formula, emission_formula, scale = scale, 
-    check_formulas = FALSE, fanhmm = TRUE)
-  stopifnot_(
-    !any(out$model$observations == attr(out$model$observations, "nr")),
-    "FAN-HMM does not yet support missing values in the observations."
-  )
+    fanhmm = TRUE)
+  
   out[c("cluster_names", "n_clusters", "X_omega")] <- NULL
   out$model$etas <- stats::setNames(
     create_initial_values(list(), out$model, 0), c("pi", "A", "B")
@@ -103,7 +90,7 @@ build_fanhmm <- function(
       )
     ),
     class = c("fanhmm", "nhmm"),
-    nobs = attr(out$model$observations, "nobs") - out$model$n_sequences,
+    nobs = out$extras$n_obs,
     df = out$extras$np_pi + out$extras$np_A + out$extras$np_B,
     type = paste0(out$extras$multichannel, "fanhmm"),
     intercept_only = out$extras$intercept_only,

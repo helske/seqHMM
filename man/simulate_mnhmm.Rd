@@ -15,9 +15,10 @@ simulate_mnhmm(
   emission_formula = ~1,
   cluster_formula = ~1,
   data,
-  time,
   id,
-  coefs = "random",
+  time,
+  responses,
+  coefs = NULL,
   init_sd = 2
 )
 }
@@ -50,14 +51,20 @@ mixture probabilities.}
 formulas. Can be omitted in case of model with no covariates and observations
 given as \code{stslist} objects.}
 
-\item{time}{Name of the time index variable in \code{data}.}
-
 \item{id}{Name of the id variable in \code{data} identifying different
 sequences.}
 
-\item{coefs}{If \code{coefs = "random"} (default), random coefficient values are
-used. Otherwise \code{coefs} should be named list of \code{eta_pi}, \code{eta_A},
-\code{eta_B}, and \code{eta_omega}.}
+\item{time}{Name of the time index variable in \code{data}.}
+
+\item{responses}{Name(s) of the response variable(s) in \code{data}.}
+
+\item{coefs}{If \code{NULL} (default), model parameters \code{eta_pi}, \code{eta_A},
+\code{eta_B}, and \code{eta_omega} are generated randomly. You can also specify the coefficients by
+providing a named list with elements \code{eta_pi}, \code{eta_A}, \code{eta_B}, \code{eta_omega}.
+Alternatively, values \code{initial_probs}, \code{transition_probs},
+\code{emission_probs}, and \code{cluster_probs} can be used, which define the values of
+the \eqn{\eta} coefficients corresponding to the intercept terms, while rest
+of the values are generated randomly.}
 
 \item{init_sd}{Standard deviation of the normal distribution used to generate
 random coefficient values. Default is \code{2}.}

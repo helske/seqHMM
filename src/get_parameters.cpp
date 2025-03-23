@@ -6,14 +6,7 @@ arma::vec get_omega(const arma::mat& gamma, const arma::vec& X) {
 arma::vec get_log_omega(const arma::mat& gamma, const arma::vec& X) {
   return arma::log(softmax(gamma * X));
 }
-// [[Rcpp::export]]
-arma::mat get_omega_all(const arma::mat& gamma, const arma::mat& X) {
-  arma::mat omega(gamma.n_rows, X.n_cols);
-  for (arma::uword i = 0; i < X.n_cols; i++) {
-    omega.col(i) = softmax(gamma * X.col(i));
-  }
-  return omega;
-}
+
 
 arma::vec get_pi(const arma::mat& gamma, const arma::vec& X) {
   return softmax(gamma * X);
@@ -138,7 +131,14 @@ arma::field<arma::cube> get_log_B(
   return log_B;
 }
 
-
+// [[Rcpp::export]]
+arma::mat get_omega_all(const arma::mat& gamma, const arma::mat& X) {
+  arma::mat omega(gamma.n_rows, X.n_cols);
+  for (arma::uword i = 0; i < X.n_cols; i++) {
+    omega.col(i) = softmax(gamma * X.col(i));
+  }
+  return omega;
+}
 // gamma is S x K (start from, covariates)
 // X a K x N matrix
 // [[Rcpp::export]]
@@ -198,11 +198,11 @@ arma::mat get_pi_qs(const arma::field<arma::mat>& gamma, const arma::mat& X,
 // gamma is L field of S x K x S cubes
 // X is K x T x N cube (covariates, time points, sequences)
 // probs is a vector of length P
-// output is P x N field of (S x S x T) cubes
+// output is SST * N x P matrix
 // [[Rcpp::export]]
 arma::mat get_A_qs(const arma::field<arma::cube>& gamma, 
                    const arma::cube& X, const bool tv,
-                   const arma::vec& probs) {
+                   const arma::vec& probs, const arma::uvec& Ti) {
   
   arma::uword S = gamma(0).n_rows;
   arma::uword L = gamma.n_elem;
@@ -210,13 +210,14 @@ arma::mat get_A_qs(const arma::field<arma::cube>& gamma,
   arma::uword T = X.n_cols;
   arma::uword P = probs.n_elem;
   arma::uword SST = S * S * T;
-  arma::mat A(SST, L);
+  arma::mat A(SST, L, arma::fill::zeros);
   arma::mat qs(SST * N, P);
   for (arma::uword i = 0; i < N; i++) {
     for (arma::uword l = 0; l < L; l++) {
       A.col(l) = arma::vectorise(get_A(gamma(l), X.slice(i), tv));
     }
-    qs.rows(i * SST, (i + 1) * SST - 1) = arma::quantile(A, probs, 1);
+    //qs.rows(i * SST, (i + 1) * SST - 1) = arma::quantile(A, probs, 1);
+    qs.rows(i * SST, i * SST + S * S * Ti(i) - 1) = arma::quantile(A.rows(0, S * S * Ti(i) - 1), probs, 1);
   }
   return qs;
 }
@@ -227,7 +228,7 @@ arma::mat get_A_qs(const arma::field<arma::cube>& gamma,
 // [[Rcpp::export]]
 arma::mat get_B_qs(const arma::field<arma::cube>& gamma, 
                    const arma::cube& X, const bool tv,
-                   const arma::vec& probs) {
+                   const arma::vec& probs, const arma::uvec& Ti) {
   arma::uword M = gamma(0).n_rows;
   arma::uword S = gamma(0).n_slices;
   arma::uword L = gamma.n_elem;
@@ -236,12 +237,13 @@ arma::mat get_B_qs(const arma::field<arma::cube>& gamma,
   arma::uword P = probs.n_elem;
   arma::uword SMT = S * M * T;
   arma::mat B(SMT, L);
-  arma::mat qs(SMT * N, P);
+  arma::mat qs(SMT * N, P, arma::fill::zeros);
   for (arma::uword i = 0; i < N; i++) {
     for (arma::uword l = 0; l < L; l++) {
       B.col(l) = arma::vectorise(get_B(gamma(l), X.slice(i), tv));
     }
-    qs.rows(i * SMT, (i + 1) * SMT - 1) = arma::quantile(B, probs, 1);
+    //qs.rows(i * SMT, (i + 1) * SMT - 1) = arma::quantile(B, probs, 1);
+    qs.rows(i * SMT, i * SMT + S * M * Ti(i) - 1) = arma::quantile(B.rows(0, S * M * Ti(i) - 1), probs, 1);
   }
   return qs;
 }
@@ -265,122 +267,3 @@ arma::mat get_omega_qs(const arma::field<arma::mat>& gamma, const arma::mat& X,
   }
   return qs;
 }
-
-
-// gamma is S x K x L (start from, covariates, sample)
-// X a K x N matrix
-// probs is a vector of length P
-// [[Rcpp::export]]
-arma::mat get_pi_ame(const arma::field<arma::mat>& gamma, 
-                     const arma::mat& X1, const arma::mat& X2, 
-                     const arma::vec& probs) {
-  arma::uword S = gamma(0).n_rows;
-  arma::uword L = gamma.n_elem;
-  arma::uword N = X1.n_cols;
-  double invN = 1.0 / N;
-  arma::mat pi(S, L, arma::fill::zeros);
-  for (arma::uword l = 0; l < L; l++) {
-    for (arma::uword i = 0; i < N; i++) {
-      pi.col(l) += invN * (
-        get_pi(gamma(l), X1.col(i)) - get_pi(gamma(l), X2.col(i))
-      );
-    }
-  }
-  return arma::quantile(pi, probs, 1);;
-}
-// gamma is L field of S x K x S cubes
-// X is K x T x N cube (covariates, time points, sequences)
-// probs is a vector of length P
-// [[Rcpp::export]]
-arma::mat get_A_ame(const arma::field<arma::cube>& gamma, 
-                    const arma::cube& X1, const arma::cube& X2, const bool tv,
-                    const arma::vec& probs) {
-  
-  arma::uword S = gamma(0).n_rows;
-  arma::uword L = gamma.n_elem;
-  arma::uword N = X1.n_slices;
-  arma::uword T = X1.n_cols;
-  double invN = 1.0 / N;
-  arma::uword SST = S * S * T;
-  arma::mat A(SST, L, arma::fill::zeros);
-  for (arma::uword l = 0; l < L; l++) {
-    for (arma::uword i = 0; i < N; i++) {
-      A.col(l) += invN * (
-        arma::vectorise(get_A(gamma(l), X1.slice(i), tv)) - 
-          arma::vectorise(get_A(gamma(l), X2.slice(i), tv))
-      );
-    }
-  }
-  return arma::quantile(A, probs, 1);
-}
-
-// gamma is L field of M x K x S cubes
-// X is K x T x N cube (covariates, time points, sequences)
-// [[Rcpp::export]]
-arma::mat get_B_ame(const arma::field<arma::cube>& gamma, 
-                    const arma::cube& X1, const arma::cube& X2, const bool tv,
-                    const arma::vec& probs) {
-  arma::uword M = gamma(0).n_rows;
-  arma::uword S = gamma(0).n_slices;
-  arma::uword L = gamma.n_elem;
-  arma::uword N = X1.n_slices;
-  arma::uword T = X1.n_cols;
-  arma::uword SMT = S * M * T;
-  double invN = 1.0 / N;
-  arma::mat B(SMT, L, arma::fill::zeros);
-  for (arma::uword l = 0; l < L; l++) {
-    for (arma::uword i = 0; i < N; i++) {
-      B.col(l) += invN * (
-        arma::vectorise(get_B(gamma(l), X1.slice(i), tv)) - 
-          arma::vectorise(get_B(gamma(l), X2.slice(i), tv))
-      );
-    }
-  }
-  return arma::quantile(B, probs, 1);
-}
-// gamma is D x K x L (cluster, covariates, sample)
-// X a K x N matrix
-// [[Rcpp::export]]
-arma::mat get_omega_ame(const arma::field<arma::mat>& gamma, 
-                     const arma::mat& X1, const arma::mat& X2, 
-                     const arma::vec& probs) {
-  arma::uword D = gamma(0).n_rows;
-  arma::uword L = gamma.n_elem;
-  arma::uword N = X1.n_cols;
-  double invN = 1.0 / N;
-  arma::mat omega(D, L, arma::fill::zeros);
-  for (arma::uword l = 0; l < L; l++) {
-    for (arma::uword i = 0; i < N; i++) {
-      omega.col(l) += invN * (
-        get_omega(gamma(l), X1.col(i)) - get_omega(gamma(l), X2.col(i))
-      );
-    }
-  }
-  return arma::quantile(omega, probs, 1);
-}
-// 
-// // Compute row of A for EM algorithm
-// // gamma is S x K (transition to, covariates)
-// // X is K x T matrix (covariates, time points)
-// // [[Rcpp::export]]
-// arma::mat get_A_em(const arma::mat& gamma, const arma::mat& X, 
-//                  const bool tv) {
-//   arma::uword S = gamma.rows;
-//   arma::uword T = X.n_cols;
-//   arma::mat A(S, T);
-//   arma::mat Atmp(S, S);
-//   if (tv) {
-//     for (arma::uword t = 0; t < T; t++) { // time
-//       for (arma::uword j = 0; j < S; j ++) { // from states
-//         Atmp.col(j) = softmax(gamma.slice(j) * X.col(t));
-//       }
-//       A.slice(t) = Atmp.t();
-//     }
-//   } else {
-//     for (arma::uword j = 0; j < S; j ++) { // from states
-//       Atmp.col(j) = softmax(gamma.slice(j) * X.col(0));
-//     }
-//     A.each_slice() = Atmp.t();
-//   }
-//   return A;
-// }

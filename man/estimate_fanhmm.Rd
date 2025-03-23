@@ -5,16 +5,16 @@
 \title{Build and Estimate a Feedback-Augmented Non-homogeneous Hidden Markov Model}
 \usage{
 estimate_fanhmm(
-  observations,
+  responses,
   n_states,
   initial_formula = ~1,
   transition_formula = ~1,
   emission_formula = ~1,
   autoregression_formula = ~1,
   feedback_formula = ~1,
-  data = NULL,
-  time = NULL,
-  id = NULL,
+  data,
+  time,
+  id,
   state_names = NULL,
   inits = "random",
   init_sd = 2,
@@ -24,15 +24,11 @@ estimate_fanhmm(
   bound = Inf,
   control_restart = list(),
   control_mstep = list(),
-  store_data = TRUE,
   ...
 )
 }
 \arguments{
-\item{observations}{Either the name of the response variable in \code{data}, or
-an \code{stslist} object (see \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}}) containing the
-sequences. In case of multichannel data, \code{observations} should be a vector
-of response variable names in \code{data}, or a list of \code{stslist} objects.}
+\item{responses}{Name(s) of the response variable(s) in \code{data}.}
 
 \item{n_states}{An integer > 1 defining the number of hidden states.}
 
@@ -106,11 +102,6 @@ Default is \verb{Inf´, i.e., no bounds. Note that he bounds are not enforced  f
 \item{control_restart}{Controls for restart steps, see details.}
 
 \item{control_mstep}{Controls for M-step of EM algorithm, see details.}
-
-\item{store_data}{If \code{TRUE} (default), The data frame used to construct the
-covariate arrays is stored to the model object. For large datasets,
-this can be set to \code{FALSE}, in which case you might need to pass the data
-separately to some post-prosessing functions.}
 
 \item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}} and EM algorithm.
 See details.}

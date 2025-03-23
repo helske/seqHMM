@@ -6,15 +6,21 @@
 #' @param n_sequences The number of sequences to simulate.
 #' @param sequence_lengths The lengths of the simulated sequences. 
 #' Either a scalar or vector of length `n_sequences`.  
-#' @param n_symbols A scalar or vector of length `n_channels` giving the number 
-#' of observed symbols per channel.
+#' @param n_symbols A scalar or a vector giving the number of observed symbols 
+#' per response variable.
 #' @param n_states The number of hidden states.
-#' @param coefs If `coefs = "random"` (default), random coefficient values are 
-#' used. Otherwise `coefs` should be named list of `eta_pi`, `eta_A`, 
-#' and `eta_B`.
+#' @param responses A scalar or a vector giving the names of the response variables.
+#' @param coefs If `NULL` (default), model parameters `eta_pi`, `eta_A`, and 
+#' `eta_B` are generated randomly. You can also specify the coefficients by 
+#' providing a named list with elements `eta_pi`, `eta_A`, and `eta_B`. 
+#' Alternatively, values `initial_probs`, `transition_probs`, and
+#' `emission_probs` can be used, which define the values of the \eqn{\eta} 
+#' coefficients corresponding to the intercept terms, while rest of the values 
+#' are generated randomly.
 #' @param init_sd Standard deviation of the normal distribution used to generate
-#' random coefficient values. Default is `2`.
-#' @inheritParams estimate_mnhmm
+#' random coefficient values. Default is `2`. Setting this to zero allows you 
+#' to use the coefficients fixed in `coefs`.
+#' @inheritParams estimate_nhmm
 #'
 #' @return A list with the model used in simulation as well as the simulated 
 #' hidden state sequences.
@@ -22,7 +28,7 @@
 simulate_nhmm <- function(
     n_sequences, sequence_lengths, n_symbols, n_states, 
     initial_formula = ~1, transition_formula = ~1, 
-    emission_formula = ~1, data, time, id, coefs = "random", init_sd = 2) {
+    emission_formula = ~1, data, id, time, responses, coefs = NULL, init_sd = 2) {
   
   stopifnot_(
     !missing(n_sequences) && checkmate::test_int(x = n_sequences, lower = 1L), 
@@ -43,28 +49,33 @@ simulate_nhmm <- function(
   )
   stopifnot_(
     !missing(data),
-    "{.arg data}  is missing, use {.fn simulate_mhmm} instead."
+    "{.arg data}  is missing, use {.fn simulate_hmm} instead."
+  )
+  stopifnot_(
+    checkmate::test_character(responses),
+    "Argument {.arg responses} must be a scalar or a vector of type character."
+  )
+  stopifnot_(
+    all(idx <- !(responses %in% names(data))),
+    "Variable{?s} with name{?s} {responses[!idx]} found in {.arg data}.
+    Use other name{?s} for the response variable{?s}."
+  )
+  stopifnot_(
+    length(n_symbols) == length(responses),
+    "`length(symbols) should match `length(responses)`."
   )
   sequence_lengths <- rep(sequence_lengths, length.out = n_sequences)
   n_channels <- length(n_symbols)
-  symbol_names <- lapply(
-    seq_len(n_channels), function(i) {
-      as.character(seq_len(n_symbols[i]))
-    }
-  )
   T_ <- max(sequence_lengths)
-  obs <- lapply(seq_len(n_channels), function(i) {
-    suppressWarnings(suppressMessages(
-      seqdef(matrix(symbol_names[[i]][1], n_sequences, T_),
-             alphabet = symbol_names[[i]]
-      )))
-  })
-  names(obs) <- paste0("Channel ", seq_len(n_channels))
+  
+  for (i in seq_len(n_channels)) {
+    data[[responses[i]]] <- factor(1, levels = seq_len(n_symbols[i]))
+  }
   model <- build_nhmm(
-    obs, n_states, initial_formula, transition_formula, emission_formula, 
-    data, time, id, scale = TRUE
+    responses, n_states, initial_formula, transition_formula, emission_formula, 
+    data, id, time, scale = TRUE
   )
-  if (identical(coefs, "random")) {
+  if (is.null(coefs)) {
     coefs <- list(
       initial_probs = NULL, 
       transition_probs = NULL, 
@@ -105,33 +116,12 @@ simulate_nhmm <- function(
       out$observations[, (Ti + 1):T_, i] <- NA
     }
   }
-  state_names <- model$state_names
-  out$states[] <- state_names[c(out$states) + 1]
-  states <- suppressWarnings(suppressMessages(
-    seqdef(
-      matrix(
-        t(out$states),
-        n_sequences, max(sequence_lengths)
-      ), 
-      alphabet = state_names, cnames = seq_len(T_)
-    )
-  ))
-  
-  if (n_channels == 1) {
-    dim(out$observations) <- dim(out$observations)[2:3]
-    out$observations[] <- symbol_names[[1]][c(out$observations) + 1]
-    model$observations <- suppressWarnings(suppressMessages(
-      seqdef(t(out$observations), alphabet = symbol_names[[1]], cnames = seq_len(T_))
-    ))
-  } else {
-    model$observations <- lapply(seq_len(n_channels), function(i) {
-      out$observations[i, , ] <- symbol_names[[i]][c(out$observations[i, , ]) + 1]
-      suppressWarnings(suppressMessages(
-        seqdef(t(out$observations[i, , ]), alphabet = symbol_names[[i]], 
-               cnames = seq_len(T_))
-      ))
-    })
-    names(model$observations) <- model$channel_names
+  for (i in seq_len(n_channels)) {
+    model$data[[responses[i]]] <- factor(c(out$observations[i, , ]) + 1L)
   }
+  states <- cbind(
+    model$data[, list(id, time), env = list(id = id, time = time)], 
+    state = state_names[c(out$states) + 1]
+  )
   list(model = model, states = states)
 }

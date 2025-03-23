@@ -1,10 +1,9 @@
 #' Build a Mixture Non-homogeneous Hidden Markov Model
 #' @noRd
 build_mnhmm <- function(
-    observations, n_states, n_clusters, initial_formula, 
+    responses, n_states, n_clusters, initial_formula, 
     transition_formula, emission_formula, cluster_formula,
-    data, time, id, state_names = NULL, channel_names = NULL, 
-    cluster_names = NULL, scale = TRUE) {
+    data, id_var, time_var, state_names = NULL, cluster_names = NULL, scale = TRUE) {
   
   stopifnot_(
     !missing(n_clusters) && checkmate::test_int(x = n_clusters, lower = 2L), 
@@ -20,7 +19,7 @@ build_mnhmm <- function(
     )
   }
   out <- create_base_nhmm(
-    observations, data, time, id, n_states, state_names, channel_names, 
+    responses, data, id_var, time_var, n_states, state_names, 
     initial_formula, transition_formula, emission_formula, cluster_formula, 
     cluster_names, scale = scale)
   out$model$etas <- stats::setNames(
@@ -29,7 +28,7 @@ build_mnhmm <- function(
   structure(
     out$model,
     class = "mnhmm",
-    nobs = attr(out$model$observations, "nobs"),
+    nobs = out$extras$n_obs,
     df = out$extras$np_omega + 
       n_clusters * (out$extras$np_pi + out$extras$np_A + out$extras$np_B),
     type = paste0(out$extras$multichannel, "mnhmm"),

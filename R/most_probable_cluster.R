@@ -11,6 +11,8 @@
 #' @return A vector containing the most probable cluster for each sequence.
 #' @export
 most_probable_cluster <- function(x, type = "viterbi", hp = NULL) {
+  # avoid CRAN check warnings due to NSE
+  probability <- NULL
   stopifnot_(
     inherits(x, "mhmm") || inherits(x, "mnhmm"),
     "Argument {.arg x} must be a {.cls mhmm} or {.cls mnhmm} object."
@@ -18,18 +20,13 @@ most_probable_cluster <- function(x, type = "viterbi", hp = NULL) {
   type <- match.arg(type, c("viterbi", "posterior"))
   if (type == "viterbi") {
     if (is.null(hp)) hp <- hidden_paths(x)
-    mm <- NULL
-    state_names <- unlist(x$state_names)
-    clusters <- numeric(x$n_sequences)
-    for (i in seq_len(x$n_clusters)) {
-      # Find matching cluster names from the first hidden state of each individual
-      idx <- which(grepl(paste0(x$cluster_names[i], ": "), hp[, 1]))
-      clusters[idx] <- i
-    }
+    if (inherits(x, "mnhmm")) id <- x$id_variable else id <- "id"
+    clusters <- hp[, .SD[1], by = id]$cluster
   } else {
-    clusters <- apply(posterior_cluster_probabilities(x), 1, which.max)
+    d <- posterior_cluster_probabilities(x)
+    clusters <- d[, .SD[which.max(probability)], by = id]$cluster
   }
-  factor(clusters, levels = seq_len(x$n_clusters), labels = x$cluster_names)
+  clusters
 }
 #' Extract Posterior Cluster Probabilities
 #' 
@@ -38,24 +35,16 @@ most_probable_cluster <- function(x, type = "viterbi", hp = NULL) {
 #' cluster.
 #' @export
 posterior_cluster_probabilities <- function(x) {
+  # avoid CRAN check warnings due to NSE
+  probability <- id <- time <- cluster <- NULL
   stopifnot_(
-    inherits(x, "mhmm") || inherits(x, "mnhmm"),
+    mhmm <- inherits(x, "mhmm") || inherits(x, "mnhmm"),
     "Argument {.arg x} must be a {.cls mhmm} or {.cls mnhmm} object."
   )
-  pp <- posterior_probs(x, as_data_frame = FALSE)
-  posterior_cluster_probabilities <- matrix(0, x$n_sequences, x$n_clusters)
-  n_states <- rep(x$n_states, length.out = x$n_clusters)
-  p <- 0
-  for (i in seq_len(x$n_clusters)) {
-    posterior_cluster_probabilities[, i] <- 
-      colSums(array(
-        pp[(p + 1):(p + n_states[i]), 1, ], 
-        dim = c(n_states[i], x$n_sequences)
-      ))
-    p <- p + n_states[i]
+  pp <- posterior_probs(x)[time == min(time), ]
+  if (mhmm) {
+    pp[, list(probability = sum(probability)), by = list(id, cluster)]
+  } else {
+    pp[, list(probability = sum(probability)), by = c(x$id_variable, "cluster")]
   }
-  dimnames(posterior_cluster_probabilities) <- list(
-    sequence = rownames(x$observations), cluster = x$cluster_names
-  )
-  posterior_cluster_probabilities
 }

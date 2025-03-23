@@ -104,7 +104,7 @@ hmm <- build_mhmm(sim$observations,
 fit <- fit_model(hmm)
 fit$model
 
-paths <- hidden_paths(fit$model)
+paths <- hidden_paths(fit$model, as_stslist = TRUE)
 
 stacked_sequence_plot(
   list(
@@ -119,8 +119,5 @@ stacked_sequence_plot(
 }
 \seealso{
 \code{\link[=build_mhmm]{build_mhmm()}} and \code{\link[=fit_model]{fit_model()}} for building
-and fitting mixture hidden Markov models; \code{\link[=ssplot]{ssplot()}} for plotting
-multiple sequence data sets; \code{\link[=seqdef]{seqdef()}} for more
-information on state sequence objects; and \code{\link[=simulate_hmm]{simulate_hmm()}}
-for simulating hidden Markov models.
+and fitting mixture hidden Markov models.
 }

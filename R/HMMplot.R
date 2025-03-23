@@ -204,12 +204,12 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
   # Defining rescale, xlim, ylim if not given
   if (!is.matrix(layout) && !is.function(layout)) {
     if (layout == "horizontal") {
-      if (hasArg(rescale)) {
+      if (methods::hasArg(rescale)) {
         rescale <- dots$rescale
       } else {
         rescale <- FALSE
       }
-      if (hasArg(xlim)) {
+      if (methods::hasArg(xlim)) {
         xlim <- dots$xlim
       } else {
         if (rescale == TRUE) {
@@ -218,7 +218,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
           xlim <- c(-0.1, ncol(transM) - 1 + 0.1)
         }
       }
-      if (hasArg(ylim)) {
+      if (methods::hasArg(ylim)) {
         ylim <- dots$ylim
       } else {
         if (rescale == TRUE) {
@@ -231,12 +231,12 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
       dots[["ylim"]] <- NULL
       dots[["rescale"]] <- NULL
     } else if (layout == "vertical") {
-      if (hasArg(rescale)) {
+      if (methods::hasArg(rescale)) {
         rescale <- dots$rescale
       } else {
         rescale <- FALSE
       }
-      if (hasArg(xlim)) {
+      if (methods::hasArg(xlim)) {
         xlim <- dots$xlim
       } else {
         if (rescale == TRUE) {
@@ -245,7 +245,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
           xlim <- c(-0.5, 0.5)
         }
       }
-      if (hasArg(ylim)) {
+      if (methods::hasArg(ylim)) {
         ylim <- dots$ylim
       } else {
         if (rescale == TRUE) {
@@ -426,8 +426,6 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
       }
     }
   }
-  
-  
   # Plotting legend
   if (with.legend != FALSE && pie == TRUE) {
     legendcall <- call(
@@ -439,9 +437,5 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
   } else {
     legendcall <- NULL
   }
-  
-  
   return(list(plotcall = plotcall, legendcall = legendcall))
-  
-  # graphics::layout(1)
 }

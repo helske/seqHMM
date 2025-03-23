@@ -99,7 +99,7 @@ return_msg <- function(code) {
 no_itcp_idx <- function(x) {
   which(arrayInd(seq_along(x), dim(x))[ , 2] != 1)
 }
-#' Split mnhmm for multiple nhmms for get_probs
+#' Split mnhmm for multiple nhmms for get_transitions etc
 #' 
 #' @noRd
 split_mnhmm <- function(x) {
@@ -210,29 +210,45 @@ intercept_only <- function(f) {
 #' 
 #' @noRd
 create_obsArray <- function(model, autoregression = NULL) {
-  if (is.null(autoregression)) {
-    autoregression <- inherits(model, "fanhmm") && !is.null(model$autoregression_formula)
-  }
-  obsArray <- array(
-    0L, 
-    c(model$n_sequences, model$length_of_sequences, model$n_channels))
-  if (model$n_channels == 1) {
-    model$observations <- list(model$observations)
-  }
-  for (i in 1:model$n_channels) {
-    obsArray[, , i] <- unlist(lapply(model$observations[[i]], as.integer)) - 1L
-    obsArray[, , i][obsArray[, , i] > model$n_symbols[i]] <- model$n_symbols[i]
-    stopifnot_(
-      sum(obsArray[, , i] < model$n_symbols[i]) > 0,
-      "One channel contains only missing values, model is degenerate."
-    )
-    # if y_t depends on y_t-1, treat y_1 as fixed
-    # technically same as treating it as missing except in predictions
-    if (autoregression) {
-      obsArray[, 1, i] <- model$n_symbols[i]
+  
+  if (inherits(model, c("nhmm", "mnhmm"))) {
+    if (is.null(autoregression)) {
+      autoregression <- inherits(model, "fanhmm") && !is.null(model$autoregression_formula)
     }
+    
+    obsArray <- array(
+      0L, 
+      c(model$length_of_sequences, model$n_sequences, model$n_channels)
+    )
+    for (i in seq_along(model$responses)) {
+      obs <- as.integer(model$data[[model$responses[i]]]) - 1L
+      obs[is.na(obs)] <- model$n_symbols[i]
+      obsArray[, , i] <- obs
+      if (autoregression) {
+        # if y_t depends on y_t-1, treat y_1 as fixed
+        # technically same as treating it as missing except in predictions
+        obsArray[1, , i] <- model$n_symbols[i]
+      }
+    }
+    obsArray <- aperm(obsArray, c(3, 1, 2))
+    if (model$n_channels == 1) {
+      obsArray <- array(obsArray[1, , ], dim = dim(obsArray)[2:3])
+    }
+  } else {
+    obsArray <- array(
+      0L, 
+      c(model$n_sequences, model$length_of_sequences, model$n_channels)
+    )
+    if (model$n_channels == 1) {
+      model$observations <- list(model$observations)
+    }
+    for (i in seq_len(model$n_channels)) {
+      obsArray[, , i] <- unlist(lapply(model$observations[[i]], as.integer)) - 1L
+      obsArray[, , i][obsArray[, , i] > model$n_symbols[i]] <- model$n_symbols[i]
+    }
+    obsArray <- aperm(obsArray)
   }
-  aperm(obsArray)
+  obsArray
 }
 #' Create emissionArray for Various C++ functions
 #' 

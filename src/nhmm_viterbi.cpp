@@ -18,7 +18,7 @@ Rcpp::List viterbi_nhmm_singlechannel(
       eta_A.n_slices, X_pi, X_A, X_B, Ti, icpt_only_pi, icpt_only_A, 
       icpt_only_B, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B
   );
-  arma::umat q(model.T, model.N, arma::fill::value(arma::datum::nan));
+  arma::umat q(model.T, model.N, arma::fill::zeros);
   arma::vec logp(model.N);
   viterbi_nhmm(model, q, logp);
   return Rcpp::List::create(
@@ -39,7 +39,7 @@ Rcpp::List viterbi_nhmm_multichannel(
       eta_A.n_slices, X_pi, X_A, X_B, Ti,
       icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, obs, eta_pi, eta_A, eta_B
   );
-  arma::umat q(model.T, model.N, arma::fill::value(arma::datum::nan));
+  arma::umat q(model.T, model.N, arma::fill::zeros);
   arma::vec logp(model.N);
   viterbi_nhmm(model, q, logp);
   return Rcpp::List::create(
@@ -62,7 +62,7 @@ Rcpp::List viterbi_mnhmm_singlechannel(
       icpt_only_omega, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, 
       tv_A, tv_B, obs, eta_omega, eta_pi, eta_A, eta_B
   );
-  arma::umat q(model.T, model.N, arma::fill::value(arma::datum::nan));
+  arma::umat q(model.T, model.N, arma::fill::zeros);
   arma::vec logp(model.N);
   viterbi_mnhmm(model, q, logp);
   return Rcpp::List::create(
@@ -85,7 +85,7 @@ Rcpp::List viterbi_mnhmm_multichannel(
       icpt_only_omega, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, 
       tv_A, tv_B, obs, eta_omega, eta_pi, eta_A, eta_B
   );
-  arma::umat q(model.T, model.N, arma::fill::value(arma::datum::nan));
+  arma::umat q(model.T, model.N, arma::fill::zeros);
   arma::vec logp(model.N);
   viterbi_mnhmm(model, q, logp);
   return Rcpp::List::create(

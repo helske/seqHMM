@@ -57,32 +57,16 @@ get_pi_qs <- function(gamma, X, probs) {
     .Call(`_seqHMM_get_pi_qs`, gamma, X, probs)
 }
 
-get_A_qs <- function(gamma, X, tv, probs) {
-    .Call(`_seqHMM_get_A_qs`, gamma, X, tv, probs)
+get_A_qs <- function(gamma, X, tv, probs, Ti) {
+    .Call(`_seqHMM_get_A_qs`, gamma, X, tv, probs, Ti)
 }
 
-get_B_qs <- function(gamma, X, tv, probs) {
-    .Call(`_seqHMM_get_B_qs`, gamma, X, tv, probs)
+get_B_qs <- function(gamma, X, tv, probs, Ti) {
+    .Call(`_seqHMM_get_B_qs`, gamma, X, tv, probs, Ti)
 }
 
 get_omega_qs <- function(gamma, X, probs) {
     .Call(`_seqHMM_get_omega_qs`, gamma, X, probs)
-}
-
-get_pi_ame <- function(gamma, X1, X2, probs) {
-    .Call(`_seqHMM_get_pi_ame`, gamma, X1, X2, probs)
-}
-
-get_A_ame <- function(gamma, X1, X2, tv, probs) {
-    .Call(`_seqHMM_get_A_ame`, gamma, X1, X2, tv, probs)
-}
-
-get_B_ame <- function(gamma, X1, X2, tv, probs) {
-    .Call(`_seqHMM_get_B_ame`, gamma, X1, X2, tv, probs)
-}
-
-get_omega_ame <- function(gamma, X1, X2, probs) {
-    .Call(`_seqHMM_get_omega_ame`, gamma, X1, X2, probs)
 }
 
 logSumExp <- function(x) {
@@ -211,14 +195,6 @@ EM <- function(transition_, emission_, init_, obs, nSymbols, itermax, tol, trace
 
 EMx <- function(transition_, emission_, init_, obs, nSymbols, coef_, X, numberOfStates, itermax, tol, trace, threads) {
     .Call(`_seqHMM_EMx`, transition_, emission_, init_, obs, nSymbols, coef_, X, numberOfStates, itermax, tol, trace, threads)
-}
-
-forwardbackward <- function(transition, emission, init, obs, forwardonly, threads) {
-    .Call(`_seqHMM_forwardbackward`, transition, emission, init, obs, forwardonly, threads)
-}
-
-forwardbackwardx <- function(transition, emission, init, obs, coef, X, numberOfStates, forwardonly, threads) {
-    .Call(`_seqHMM_forwardbackwardx`, transition, emission, init, obs, coef, X, numberOfStates, forwardonly, threads)
 }
 
 log_EM <- function(transition_, emission_, init_, obs, nSymbols, itermax, tol, trace, threads) {

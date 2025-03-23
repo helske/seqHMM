@@ -53,6 +53,7 @@
 #' * `symbol_names`\cr Names for observed states.
 #' * `channel_names`\cr Names for channels of sequence data
 #' * `length_of_sequences`\cr (Maximum) length of sequences.
+#' * `sequence_lengths`\cr A vector of sequence lengths.
 #' * `n_sequences`\cr Number of sequences.
 #' * `n_symbols`\cr Number of observed states (in each channel).
 #' * `n_states`\cr Number of hidden states.
@@ -385,8 +386,8 @@ build_mhmm <- function(observations,
   }
   
   if (is.null(formula)) {
-    formula <- stats::formula(~ 1)
-    X <- model.matrix(formula, data = data.frame(y = rep(1, n_sequences)))
+    formula <- formula(~ 1)
+    X <- stats::model.matrix(formula, data = data.frame(y = rep(1, n_sequences)))
     n_covariates <- 1L
   } else {
     stopifnot_(
@@ -399,14 +400,14 @@ build_mhmm <- function(observations,
         "{.cls data.frame} object."
       )
     )
-    X <- model.matrix(formula, data)
+    X <- stats::model.matrix(formula, data)
     if (nrow(X) != n_sequences) {
       if (length(all.vars(formula)) > 0 && 
-          sum(!complete.cases(data[all.vars(formula)])) > 0) {
+          sum(!stats::complete.cases(data[all.vars(formula)])) > 0) {
         stop_(
           paste0(
             "Missing cases are not allowed in covariates. Use e.g. the ",
-            "{.fn complete.cases} to detect them, then fix, impute, or ",
+            "{.fn stats::complete.cases} to detect them, then fix, impute, or ",
             "remove."
           )
         )
@@ -434,7 +435,9 @@ build_mhmm <- function(observations,
   colnames(coefficients) <- cluster_names
   names(transition_probs) <- names(emission_probs) <- 
     names(initial_probs) <- cluster_names
-  
+  if (attr(observations, "nobs") == 0) {
+    warning_("Sequences contain only missing values.")
+  }
   model <- structure(
     list(
       observations = observations, transition_probs = transition_probs,
@@ -443,6 +446,7 @@ build_mhmm <- function(observations,
       state_names = state_names,
       symbol_names = symbol_names, channel_names = channel_names,
       length_of_sequences = attr(observations, "length_of_sequences"),
+      sequence_lengths = attr(observations, "sequence_lengths"),
       n_sequences = n_sequences, n_clusters = n_clusters,
       n_symbols = n_symbols, n_states = n_states,
       n_channels = n_channels,

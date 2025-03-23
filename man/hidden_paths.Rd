@@ -10,26 +10,22 @@
 \usage{
 hidden_paths(model, ...)
 
-\method{hidden_paths}{hmm}(model, respect_void = TRUE, ...)
+\method{hidden_paths}{hmm}(model, as_stslist = FALSE, ...)
 
-\method{hidden_paths}{mhmm}(model, respect_void = TRUE, ...)
+\method{hidden_paths}{mhmm}(model, as_stslist = FALSE, ...)
 
-\method{hidden_paths}{nhmm}(model, respect_void = TRUE, ...)
+\method{hidden_paths}{nhmm}(model, as_stslist = FALSE, ...)
 
-\method{hidden_paths}{mnhmm}(model, respect_void = TRUE, ...)
+\method{hidden_paths}{mnhmm}(model, as_stslist = FALSE, ...)
 }
 \arguments{
 \item{model}{A hidden Markov model.}
 
 \item{...}{Ignored.}
-
-\item{respect_void}{If \code{TRUE} (default), states at the time points
-corresponding to \code{TraMineR}'s void in the observed sequences are set to void
-in the hidden state sequences as well.}
 }
 \value{
-The most probable paths of hidden states as an \code{stslist} object
-(see \code{\link[=seqdef]{seqdef()}}). The log-probability is included as an attribute
+The most probable paths of hidden states as an \code{data.table}.
+The log-probability is included as an attribute
 \code{log_prop}.
 }
 \description{
@@ -42,9 +38,10 @@ data("hmm_biofam")
 
 # Compute the most probable hidden state paths given the data and the model
 mpp <- hidden_paths(hmm_biofam)
-
+head(mpp)
 # Plot hidden paths for the first 100 individuals
-stacked_sequence_plot(mpp, type = "i", ids = 1:100)
+seqs <- data_to_stslist(mpp, "id", "time", "state")
+stacked_sequence_plot(seqs, type = "i", ids = 1:100)
 
 # Because the model structure is so sparse that the posterior probabilities are
 # mostly peaked to single state at each time point, the joint probability of

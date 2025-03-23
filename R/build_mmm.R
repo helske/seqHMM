@@ -35,6 +35,7 @@
 #' * `symbol_names`\cr Names for observed states.
 #' * `channel_names`\cr Names for channels of sequence data
 #' * `length_of_sequences`\cr (Maximum) length of sequences.
+#' * `sequence_lengths`\cr A vector of sequence lengths.
 #' * `n_sequences`\cr Number of sequences.
 #' * `n_symbols`\cr Number of observed states (in each channel).
 #' * `n_states`\cr Number of hidden states.

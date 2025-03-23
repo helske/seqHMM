@@ -1,18 +1,18 @@
 #' Expand the data.frame with missing time points
 #'
-#' Base R version of internal `data.table` based `fill_time` function of the 
+#' Slightly modified version of the internal `fill_time` function of the 
 #' `dynamite` package.
 #' 
 #' @references Tikka S, Helske J (2024). “dynamite: An R Package for Dynamic 
 #' Multivariate Panel Models.” doi:10.48550/arXiv.2302.01607.
 #'@noRd 
-fill_time <- function(data, time_var, id_var) {
-  time <- sort(unique(data[[time_var]]))
+fill_time <- function(data, id_var, time_var) {
+  times <- sort(unique(data[[time_var]]))
   stopifnot_(
-    length(time) > 1L, 
+    length(times) > 1L, 
     "There must be at least two time points in the data."
   )
-  time_ivals <- diff(time)
+  time_ivals <- diff(times)
   time_resolution <- min(time_ivals)
   stopifnot_(
     all(time_ivals %% time_resolution == 0), 
@@ -26,25 +26,21 @@ fill_time <- function(data, time_var, id_var) {
       x = "{cli::qty(length(d))}ID{?s} {.var {d}} of {.var {id_var}}\n 
     {cli::qty(length(d))}{?has/have} duplicate time points.")
   )
-  full_time <- seq(time[1L], time[length(time)], by = time_resolution)
+  full_time <- seq(times[1L], times[length(times)], by = time_resolution)
   
-  if (sum(timetable) != prod(dim(timetable)) || length(time) != length(full_time)) {
-    all_times <- expand.grid(
-      time = full_time,
-      group = unique(data[[id_var]])
+  if (sum(timetable) != prod(dim(timetable)) || length(times) != length(full_time)) {
+    data_names <- names(data)
+    full_data_template <- as.data.table(
+      expand.grid(
+        group = unique(data[[id_var]]), 
+        time = full_time,
+        stringsAsFactors = FALSE)
     )
-    names(all_times) <- c(time_var, id_var)
-    cols <- names(data)
-    col_ids <- which(cols %in% c(id_var, time_var))
-    idx <- match(
-      paste(all_times[[id_var]], all_times[[time_var]]), 
-      paste(data[[id_var]], data[[time_var]])
+    names(full_data_template) <- c(id_var, time_var)
+    data <- merge.data.table(
+      full_data_template, data, by = c(id_var, time_var), all.x = TRUE
     )
-    data <- cbind(
-      all_times, 
-      data[, -col_ids, drop = FALSE][idx, , drop = FALSE]
-    )[, cols]
-    rownames(data) <- NULL
+    setcolorder(data, data_names)
   }
   data
 }

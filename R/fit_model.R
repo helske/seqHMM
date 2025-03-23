@@ -33,7 +33,7 @@
 #'     varied? The default is `TRUE`.
 #'   * `emission`\cr Logical. Should the original emission probabilities be 
 #'     varied? The default is `TRUE`.
-#'   * `sd`\cr Standard deviation for [rnorm()] used in randomization. The 
+#'   * `sd`\cr Standard deviation for [stats::rnorm()] used in randomization. The 
 #'     default is 0.25.
 #'   * `maxeval`\cr Maximum number of iterations, the default is 
 #'     `control_em$maxeval`
@@ -106,9 +106,8 @@
 #' [build_mm()],  [build_mmm()], and  [build_lcm()]
 #'   for constructing different types of models; [summary.mhmm()]
 #'   for a summary of a MHMM; [separate_mhmm()] for reorganizing a MHMM into
-#'   a list of separate hidden Markov models; [plot.hmm()] and [plot.mhmm()]
-#'   for plotting model objects; and [ssplot()] and [mssplot()] for plotting
-#'   stacked sequence plots of `hmm` and `mhmm` objects.
+#'   a list of separate hidden Markov models; and [plot.hmm()] and [plot.mhmm()]
+#'   for plotting model objects.
 #' @details The fitting function provides three estimation steps: 1) EM algorithm,
 #'   2) global optimization, and 3) local optimization. The user can call for one method
 #'   or any combination of these steps, but should note that they are preformed in the
@@ -620,8 +619,6 @@ fit_model <- function(
   )
   mhmm <- inherits(model, c("mhmm"))
   if (mhmm) {
-    df <- attr(model, "df")
-    nobs <- attr(model, "nobs")
     original_model <- model
     model <- .combine_models(model)
   }
@@ -734,12 +731,12 @@ fit_model <- function(
       
       for (i in 1:restart.con$times) {
         if (restart.con$transition) {
-          random_trans[nz_trans] <- abs(base_trans + rnorm(np_trans, sd = restart.con$sd))
+          random_trans[nz_trans] <- abs(base_trans + stats::rnorm(np_trans, sd = restart.con$sd))
           random_trans[(random_trans < 1e-4) & (model$transition_probs > 0)] <- 1e-4
           random_trans <- random_trans / rowSums(random_trans)
         }
         if (restart.con$emission) {
-          random_emiss[nz_emiss] <- abs(base_emiss + rnorm(np_emiss, sd = restart.con$sd))
+          random_emiss[nz_emiss] <- abs(base_emiss + stats::rnorm(np_emiss, sd = restart.con$sd))
           random_emiss[(random_emiss < 1e-4) & (emissionArray > 0)] <- 1e-4
           for (j in 1:model$n_channels) {
             random_emiss[, 1:model$n_symbols[j], j] <-
@@ -747,7 +744,7 @@ fit_model <- function(
           }
         }
         if (restart.con$coef) {
-          random_coef[] <- rnorm(n_coef, base_coef, sd = coef_scale)
+          random_coef[] <- stats::rnorm(n_coef, base_coef, sd = coef_scale)
         }
         
         if (!log_space) {
@@ -1462,10 +1459,6 @@ fit_model <- function(
   
   if (mhmm) {
     model <- spread_models(model)
-    attr(model, "df") <- df
-    attr(model, "nobs") <- nobs
-    attr(model, "type") <- attr(original_model, "type")
-    
     for (i in 1:model$n_clusters) {
       dimnames(model$transition_probs[[i]]) <- dimnames(original_model$transition_probs[[i]])
       for (j in 1:model$n_channels) {

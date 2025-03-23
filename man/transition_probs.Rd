@@ -13,6 +13,7 @@ get_transition_probs(model, ...)
 \method{get_transition_probs}{nhmm}(
   model,
   probs = NULL,
+  condition = NULL,
   newdata = NULL,
   remove_voids = TRUE,
   ...
@@ -21,6 +22,7 @@ get_transition_probs(model, ...)
 \method{get_transition_probs}{mnhmm}(
   model,
   probs = NULL,
+  condition = NULL,
   newdata = NULL,
   remove_voids = TRUE,
   ...
@@ -36,8 +38,15 @@ get_transition_probs(model, ...)
 \item{...}{Ignored.}
 
 \item{probs}{Vector defining the quantiles of interest. Default is
-\code{c(0.025, 0.5, 0.975)}. The quantiles are based on bootstrap samples of
-coefficients, stored in \code{object$boot}.}
+\code{NULL}, in which case no quantiles are computed. The quantiles are based on
+bootstrap samples of coefficients, stored in \code{object$boot}.}
+
+\item{condition}{An optional vector of variable names used for conditional
+marginal probabilities. Default is \code{NULL}, in which case no marginalization is
+done.}
+
+\item{newdata}{An optional data frame containing the new data to be used in
+computing the probabilities.}
 
 \item{remove_voids}{Should the time points corresponding to \code{TraMineR}'s
 void in the observed sequences be removed? Default is \code{TRUE}.}

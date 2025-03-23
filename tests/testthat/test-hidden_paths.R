@@ -1,28 +1,39 @@
-
+data("hmm_biofam")
+data("mhmm_biofam")
+y <- hmm_biofam$channel_names
+time <- "age"
+id <- "individual"
+d <- stslist_to_data(
+  hmm_biofam$observations, id, time, y
+)
 test_that("'hidden_paths' works for 'hmm'", {
-  data("hmm_biofam")
   expect_error(
-    out <- hidden_paths(hmm_biofam),
+    out <- hidden_paths(hmm_biofam, as_stslist = TRUE),
     NA
   )
-  expect_identical(sum(table(unlist(out))), 32000L)
-  expect_identical(length(table(unlist(out))), 7L)
+  expect_identical(
+    c(table(droplevels(unlist(out)))), 
+    c(`State 1` = 16075L, `State 2` = 5888L, `State 3` = 3453L, 
+      `State 4` = 5094L, `State 5` = 1490L)
+  )
 })
 test_that("'hidden_paths' works for 'mhmm'", {
-  data("mhmm_biofam")
   expect_error(
     out <- hidden_paths(mhmm_biofam),
     NA
   )
-  expect_identical(sum(table(unlist(out))), 32000L)
-  expect_identical(length(table(unlist(out))), 16L)
+  expect_identical(
+    c(table(out$state)), 
+    c(`State 1` = 16058L, `State 2` = 5888L, `State 3` = 3438L, 
+      `State 4` = 6291L, `State 5` = 238L, `State 6` = 87L)
+  )
 })
 test_that("'hidden_paths' works for 'nhmm'", {
-  data("hmm_biofam")
   set.seed(1)
   expect_error(
     fit <- estimate_nhmm(
-      hmm_biofam$observations, n_states = 5,
+      y, n_states = 5, 
+      data = d, id = id, time = time,
       inits = hmm_biofam[
         c("initial_probs", "transition_probs", "emission_probs")
       ], maxeval = 1, lambda = 1, method = "DNM"
@@ -33,13 +44,17 @@ test_that("'hidden_paths' works for 'nhmm'", {
     out <- hidden_paths(fit),
     NA
   )
-  expect_identical(sum(table(unlist(out))), 32000L)
-  expect_identical(length(table(unlist(out))), 7L)
+  expect_identical(
+    c(table(out$state)), 
+    c(`State 1` = 16075L, `State 2` = 5888L, `State 3` = 3453L, 
+    `State 4` = 5094L, `State 5` = 1490L)
+  )
   
   set.seed(1)
   expect_error(
     fit <- estimate_nhmm(
-      hmm_biofam$observations[[1]], n_states = 3,
+      y[1], n_states = 3,
+      data = d, id = id, time = time,
       restarts = 2, maxeval = 1, method = "DNM",
       control_restart = list(maxeval = 1)
     ),
@@ -49,16 +64,18 @@ test_that("'hidden_paths' works for 'nhmm'", {
     out <- hidden_paths(fit),
     NA
   )
-  expect_identical(sum(table(unlist(out))), 32000L)
-  expect_identical(length(table(unlist(out))), 5L)
+  expect_identical(
+    c(table(out$state)), 
+    c(`State 1` = 6692L, `State 2` = 16409L, `State 3` = 8899L)
+  )
 })
 
 test_that("'hidden_paths' works for 'mnhmm'", {
-  data("hmm_biofam")
   set.seed(1)
   expect_error(
     fit <- estimate_mnhmm(
-      hmm_biofam$observations, n_states = 3, n_clusters = 2, maxeval = 1,
+      y, n_states = 3,
+      data = d, id = id, time = time, n_clusters = 2, maxeval = 1,
       maxeval_em_dnm = 1
     ),
     NA
@@ -67,13 +84,15 @@ test_that("'hidden_paths' works for 'mnhmm'", {
     out <- hidden_paths(fit),
     NA
   )
-  expect_identical(sum(table(unlist(out))), 32000L)
-  expect_identical(length(table(unlist(out))), 8L)
-  
+  expect_identical(
+    c(table(out$state)), 
+    c(`State 1` = 1445L, `State 2` = 27369L, `State 3` = 3186L)
+  )
   set.seed(1)
   expect_error(
     fit <- estimate_mnhmm(
-      hmm_biofam$observations[[1]], n_states = 3, n_clusters = 2,
+      y[1], n_states = 3,
+      data = d, id = id, time = time, n_clusters = 2,
       restarts = 2, maxeval = 1, method = "DNM",
       control_restart = list(maxeval = 1)
     ),
@@ -83,6 +102,8 @@ test_that("'hidden_paths' works for 'mnhmm'", {
     out <- hidden_paths(fit),
     NA
   )
-  expect_identical(sum(table(unlist(out))), 32000L)
-  expect_identical(length(table(unlist(out))), 8L)
+  expect_identical(
+    c(table(out$state)), 
+    c(`State 1` = 363L, `State 2` = 9520L, `State 3` = 22117L)
+  )
 })

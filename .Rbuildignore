@@ -18,3 +18,4 @@ vignettes/jss.cls
 ^codecov\.yml$
 ^.covrignore
 ^\.covrignore$
+^data-raw$

@@ -85,14 +85,16 @@ logLik.mhmm <- function(object, partials = FALSE, threads = 1,
 #' @export
 #' @export
 logLik.nhmm <- function(object, partials = FALSE, ...) {
+  # Avoid warnings due to NSE
+  ll <- time <- id <- log_alpha <- NULL
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")
   if (partials || is.null(object$estimation_results$loglik)) {
-    out <- forward_backward(object, forward_only = TRUE, as_data_frame = FALSE)
-    ll <- numeric(object$n_sequences)
-    for (i in seq_len(object$n_sequences)) {
-      ll[i] <- logSumExp(out$forward_probs[, object$sequence_lengths[i], i])
-    }
+    out <- forward_backward(object, forward_only = TRUE)
+    ll <- out[, list(ll = logSumExp(log_alpha[time == time[.N]])), 
+        by = id, 
+        env = list(id = object$id_variable, time = object$time_variable)
+    ]$ll
     if (!is.null(object$estimation_results$lambda)) {
       ll <- ll - 0.5 * object$estimation_results$lambda * sum(unlist(object$etas)^2) / object$n_sequences
     }
@@ -108,14 +110,16 @@ logLik.nhmm <- function(object, partials = FALSE, ...) {
 #' @rdname logLik_nhmm
 #' @export
 logLik.mnhmm <- function(object, partials = FALSE, ...) {
+  # Avoid warnings due to NSE
+  ll <- time <- id <- log_alpha <- NULL
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")
   if (partials || is.null(object$estimation_results$loglik)) {
-    out <- forward_backward(object, forward_only = TRUE, as_data_frame = FALSE)
-    ll <- numeric(object$n_sequences)
-    for (i in seq_len(object$n_sequences)) {
-      ll[i] <- logSumExp(out$forward_probs[, object$sequence_lengths[i], i])
-    }
+    out <- forward_backward(object, forward_only = TRUE)
+    ll <- out[, list(ll = logSumExp(log_alpha[time == time[.N]])), 
+              by = id, 
+              env = list(id = object$id_variable, time = object$time_variable)
+    ]$ll
     if (!is.null(object$estimation_results$lambda)) {
       ll <- ll - 0.5 * object$estimation_results$lambda * sum(unlist(object$etas)^2) / object$n_sequences
     }

@@ -106,13 +106,13 @@ create_initial_values_ <- function(inits, init_sd, S, M, K_pi, K_A, K_B, D = 1,
 }
 
 create_eta_pi_nhmm <- function(x, S, K, sd = 0) {
-  matrix(rnorm((S - 1) * K, x, sd), S - 1, K)
+  matrix(stats::rnorm((S - 1) * K, x, sd), S - 1, K)
 }
 create_eta_A_nhmm <- function(x, S, K, sd = 0) {
-  array(rnorm((S - 1) * K * S, x, sd), c(S - 1, K, S))
+  array(stats::rnorm((S - 1) * K * S, x, sd), c(S - 1, K, S))
 }
 create_eta_B_nhmm <- function(x, S, M, K, sd = 0) {
-  array(rnorm((M - 1) * K * S, x, sd), c(M - 1, K, S))
+  array(stats::rnorm((M - 1) * K * S, x, sd), c(M - 1, K, S))
   
 }
 create_eta_multichannel_B_nhmm <- function(x, S, M, K, sd = 0) {
@@ -146,7 +146,7 @@ create_eta_multichannel_B_mnhmm <- function(x, S, M, K, D, sd = 0) {
   })
 }
 create_eta_omega_mnhmm <- function(x, D, K, sd = 0) {
-  matrix(rnorm((D - 1) * K, x, sd), D - 1, K)
+  matrix(stats::rnorm((D - 1) * K, x, sd), D - 1, K)
 }
 
 create_eta_pi_inits <- function(x, S, K, init_sd = 0, D = 1) {
@@ -291,7 +291,7 @@ create_eta_omega_inits <- function(x, D, K, init_sd = 0) {
 create_inits_vector <- function(x, n, K, sd = 0, D = 1) {
   cbind(
     p_to_eta(x), # intercepts
-    matrix(rnorm((n - 1) * (K - 1), sd = sd), n - 1, K - 1)
+    matrix(stats::rnorm((n - 1) * (K - 1), sd = sd), n - 1, K - 1)
   )
 }
 create_inits_matrix <- function(x, n, m, K, sd = 0) {

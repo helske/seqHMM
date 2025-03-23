@@ -25,9 +25,6 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
   n_obs <- nobs(model)
   need_grad <- grepl("NLOPT_LD_", control$algorithm)
   obs <- create_obsArray(model)
-  if (C == 1) {
-    obs <- array(obs, dim(obs)[2:3])
-  }
   all_solutions <- NULL
   if (C == 1L) {
     if (need_grad) {

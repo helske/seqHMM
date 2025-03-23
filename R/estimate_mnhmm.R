@@ -40,26 +40,19 @@
 #'   )
 #' }
 estimate_mnhmm <- function(
-    observations, n_states, n_clusters, initial_formula = ~1, 
+    responses, n_states, n_clusters, initial_formula = ~1, 
     transition_formula = ~1, emission_formula = ~1, cluster_formula = ~1,
-    data = NULL, time = NULL, id = NULL, state_names = NULL, 
-    channel_names = NULL, cluster_names = NULL, inits = "random", init_sd = 2, 
+    data, time, id, state_names = NULL, 
+    cluster_names = NULL, inits = "random", init_sd = 2, 
     restarts = 0L, lambda = 0, method = "EM-DNM", bound = Inf, 
-    control_restart = list(), control_mstep = list(), store_data = TRUE, ...) {
+    control_restart = list(), control_mstep = list(), ...) {
   
   call <- match.call()
   model <- build_mnhmm(
-    observations, n_states, n_clusters, initial_formula, 
-    transition_formula, emission_formula, cluster_formula, data, time, id, 
-    state_names, channel_names, cluster_names
+    responses, n_states, n_clusters, initial_formula, 
+    transition_formula, emission_formula, cluster_formula, data, id, time, 
+    state_names, cluster_names
   )
-  stopifnot_(
-    checkmate::test_flag(x = store_data), 
-    "Argument {.arg store_data} must be a single {.cls logical} value."
-  )
-  if (!store_data) {
-    model$data <- NULL
-  }
   control <- list(...)
   start_time <- proc.time()
   out <- fit_mnhmm(model, inits, init_sd, restarts, lambda, method, bound, 

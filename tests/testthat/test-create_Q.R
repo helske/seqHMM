@@ -7,7 +7,7 @@ test_that("Test that QR decomposition of A works", {
   }
   set.seed(123)
   S <- 10
-  x <- rnorm(S - 1)
+  x <- stats::rnorm(S - 1)
   expect_equal(create_QR(S), -create_Q(S))
   expect_equal(create_QR(S) %*% x, -create_Q(S) %*% x)
 })

@@ -17,5 +17,6 @@ as well as the simulated hidden state sequences.
 }
 \description{
 Simulate new sequences of observed and hidden states given an estimated FAN-HMM
-and potentially new covariate data.
+and potentially new covariate data, conditionally on the observations at
+the first time point.
 }

@@ -28,10 +28,7 @@
 #'
 #' @return A list of state sequence objects of class `stslist`.
 #' @seealso [build_mhmm()] and [fit_model()] for building
-#' and fitting mixture hidden Markov models; [ssplot()] for plotting
-#' multiple sequence data sets; [seqdef()] for more
-#' information on state sequence objects; and [simulate_hmm()]
-#' for simulating hidden Markov models.
+#' and fitting mixture hidden Markov models.
 #' @export
 #' @examples
 #' emission_probs_1 <- matrix(c(0.75, 0.05, 0.25, 0.95), 2, 2)
@@ -84,7 +81,7 @@
 #' fit <- fit_model(hmm)
 #' fit$model
 #'
-#' paths <- hidden_paths(fit$model)
+#' paths <- hidden_paths(fit$model, as_stslist = TRUE)
 #'
 #' stacked_sequence_plot(
 #'   list(
@@ -208,8 +205,8 @@ simulate_mhmm <- function(
   }
   
   if (is.null(formula)) {
-    formula <- stats::formula(~ 1)
-    X <- model.matrix(formula, data = data.frame(y = rep(1, n_sequences)))
+    formula <- formula(~ 1)
+    X <- stats::model.matrix(formula, data = data.frame(y = rep(1, n_sequences)))
     n_covariates <- 1L
   } else {
     stopifnot_(
@@ -220,13 +217,13 @@ simulate_mhmm <- function(
       "If {.arg formula} is provided, {.arg data} must be a {.cls data.frame} 
       object."
     )
-    X <- model.matrix(formula, data)
+    X <- stats::model.matrix(formula, data)
     if (nrow(X) != n_sequences) {
       if (length(all.vars(formula)) > 0 && 
-          sum(!complete.cases(data[all.vars(formula)])) > 0) {
+          sum(!stats::complete.cases(data[all.vars(formula)])) > 0) {
         stop_(
           "Missing cases are not allowed in covariates. Use e.g. the 
-                {.fn complete.cases} to detect them, then fix, impute, or 
+                {.fn stats::complete.cases} to detect them, then fix, impute, or 
                 remove."
         )
       } else {

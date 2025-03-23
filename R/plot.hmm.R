@@ -482,12 +482,12 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
   # Defining rescale, xlim, ylim if not given
   if (!is.matrix(layout) && !is.function(layout)) {
     if (layout == "horizontal") {
-      if (hasArg(rescale)) {
+      if (methods::hasArg(rescale)) {
         rescale <- dots$rescale
       } else {
         rescale <- FALSE
       }
-      if (hasArg(xlim)) {
+      if (methods::hasArg(xlim)) {
         xlim <- dots$xlim
       } else {
         if (rescale == TRUE) {
@@ -496,7 +496,7 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
           xlim <- c(-0.1, ncol(transM) - 1 + 0.1)
         }
       }
-      if (hasArg(ylim)) {
+      if (methods::hasArg(ylim)) {
         ylim <- dots$ylim
       } else {
         if (rescale == TRUE) {
@@ -509,12 +509,12 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
       dots[["ylim"]] <- NULL
       dots[["rescale"]] <- NULL
     } else if (layout == "vertical") {
-      if (hasArg(rescale)) {
+      if (methods::hasArg(rescale)) {
         rescale <- dots$rescale
       } else {
         rescale <- FALSE
       }
-      if (hasArg(xlim)) {
+      if (methods::hasArg(xlim)) {
         xlim <- dots$xlim
       } else {
         if (rescale == TRUE) {
@@ -523,7 +523,7 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
           xlim <- c(-0.5, 0.5)
         }
       }
-      if (hasArg(ylim)) {
+      if (methods::hasArg(ylim)) {
         ylim <- dots$ylim
       } else {
         if (rescale == TRUE) {
@@ -655,14 +655,14 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
   if (with.legend != FALSE && pie == TRUE) {
     # Order by appearance
     if (legend.order) {
-      seqlegend(x$observations,
+      TraMineR::seqlegend(x$observations,
                 cpal = pie.colors.l, ltext = ltext,
                 position = "center", cex = cex.legend, ncol = ncol.legend,
                 with.missing = FALSE
       )
       # Original order (by alphabet in observations)
     } else {
-      seqlegend(x$observations,
+      TraMineR::seqlegend(x$observations,
                 cpal = cpal.legend, ltext = ltext.orig,
                 position = "center", cex = cex.legend, ncol = ncol.legend,
                 with.missing = FALSE

@@ -1,33 +1,39 @@
 # Creates the Model Components for Non-homogeneous Hidden Markov Model
 #' @noRd
-create_base_nhmm <- function(observations, data, time, id, n_states, 
-                             state_names, channel_names,
+create_base_nhmm <- function(responses, data, id_var, time_var, n_states, state_names, 
                              initial_formula, transition_formula, 
                              emission_formula, cluster_formula = NA, 
                              cluster_names = "", scale = TRUE, 
-                             check_formulas = TRUE, fanhmm = FALSE) {
-  
+                             fanhmm = FALSE) {
+  # avoid CRAN check warnings due to NSE
+  tmax <- y <- NULL
+  stopifnot_(!missing(data), "Argument {.arg data} is missing.")
   stopifnot_(
     !missing(n_states) && checkmate::test_int(x = n_states, lower = 2L), 
     "Argument {.arg n_states} must be a single integer larger than 1."
   )
+  stopifnot_(
+    !missing(responses) && checkmate::test_character(x = responses), 
+    "Argument {.arg responses} must be a character vector defining the response 
+    variable(s) in the {.arg data}."
+  )
+  
   n_clusters <- length(cluster_names)
   mixture <- n_clusters > 1L
   
-  if (check_formulas) {
-    stopifnot_(
-      inherits(initial_formula, "formula"), 
-      "Argument {.arg initial_formula} must be a {.cls formula} object.")
-    stopifnot_(
-      inherits(transition_formula, "formula"), 
-      "Argument {.arg transition_formula} must be a {.cls formula} object.")
-    stopifnot_(
-      inherits(emission_formula, "formula"), 
-      "Argument {.arg emission_formula} must be a {.cls formula} object.")
-    stopifnot_(
-      !mixture || inherits(cluster_formula, "formula"), 
-      "Argument {.arg cluster_formula} must be a {.cls formula} object.")
-  }
+  stopifnot_(
+    inherits(initial_formula, "formula"), 
+    "Argument {.arg initial_formula} must be a {.cls formula} object.")
+  stopifnot_(
+    inherits(transition_formula, "formula"), 
+    "Argument {.arg transition_formula} must be a {.cls formula} object.")
+  stopifnot_(
+    inherits(emission_formula, "formula"), 
+    "Argument {.arg emission_formula} must be a {.cls formula} object.")
+  stopifnot_(
+    !mixture || inherits(cluster_formula, "formula"), 
+    "Argument {.arg cluster_formula} must be a {.cls formula} object.")
+  
   n_states <- as.integer(n_states)
   if (is.null(state_names)) {
     state_names <- paste("State", seq_len(n_states))
@@ -74,76 +80,65 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
   icpt_only_s <- intercept_only(transition_formula)
   icpt_only_o <- intercept_only(emission_formula)
   icpt_only_d <- ifelse(mixture, intercept_only(cluster_formula), TRUE)
-  y_in_data <- checkmate::test_character(observations)
-  if (!icpt_only_i || !icpt_only_s || !icpt_only_o || !icpt_only_d || y_in_data) {
-    data <- .check_data(data, time, id)
-    data <- fill_time(data, time, id)
-    ids <- unique(data[[id]])
-    times <- unique(data[[time]])
-    n_sequences <- length(ids)
-    length_of_sequences <- length(times)
-    if (y_in_data) {
-      channel_names <- observations
-      observations <- lapply(
-        observations,
-        function(y) {
-          stopifnot_(
-            !is.null(data[[y]]), 
-            "Can't find response variable {.var {y}} in {.arg data}."
-          )
-          stopifnot_(
-            is.factor(data[[y]]), 
-            "Response {.var {y}} in {.arg data} should be a factor."
-          )
-          x <- suppressMessages(
-            seqdef(matrix(
-              data[[y]], 
-              n_sequences, 
-              length_of_sequences, byrow = TRUE),
-              id = ids,
-              alphabet = levels(droplevels(data[[y]]))
-            )
-          )
-          colnames(x) <- sort(times)
-          x
-        }
-      )
-      observations <- .check_observations(observations, channel_names)
-    }
+  
+  n_channels <- length(responses)
+  data <- .check_data(data, id_var, time_var, responses)
+  ids <- unique(data[[id_var]])
+  times <- unique(data[[time_var]])
+  n_sequences <- length(ids)
+  symbol_names <- lapply(responses, function(y) levels(data[[y]]))
+  n_symbols <- lengths(symbol_names)
+  if (n_channels == 1) symbol_names <- symbol_names[[1]]
+  n_obs <- sum(!is.na(data[, y, env = list(y = I(responses))])) / n_channels
+  if (n_obs == 0) {
+    warning_("Responses contain only missing values.")
   }
-  if (!y_in_data) {
-    observations <- .check_observations(observations, channel_names, 
-                                        nhmm = TRUE)
-    n_sequences <- attr(observations, "n_sequences")
-    length_of_sequences <- attr(observations, "length_of_sequences")  
+  data[, tmax := max(time_var), by = id_var, 
+       env = list(id_var = id_var, time_var = time_var)]
+  data <- fill_time(data, id_var, time_var)
+  sequence_lengths <- data[, 
+                           sum(time_var <= tmax, na.rm = TRUE), 
+                           by = id_var, 
+                           env = list(
+                             id_var = id_var, 
+                             time_var = time_var
+                           )]$V1
+  data[, tmax := NULL]
+  length_of_sequences <- length(unique(data[[time_var]]))
+  if (fanhmm) {
+    lag_obs <- paste0("lag_", responses)
+    data[[lag_obs]] <- group_lag(data, id_var, responses)
+    ar <- lag_obs %in% attr(stats::terms(emission_formula), "term.labels")
+  } else {
+    ar <- FALSE
   }
-  n_channels <- attr(observations, "n_channels")
-  n_symbols <- attr(observations, "n_symbols")
-  sequence_lengths <- attr(observations, "sequence_lengths")
+  if (ar) n_obs <- n_obs - n_sequences
+  
   pi <- model_matrix_initial_formula(
-    initial_formula, data, n_sequences, length_of_sequences, n_states, 
-    time, id, scale = scale
+    initial_formula, data, n_sequences, n_states, id_var, scale = scale
   )
   A <- model_matrix_transition_formula(
     transition_formula, data, n_sequences, length_of_sequences, n_states, 
-    time, id, sequence_lengths, scale = scale
+    id_var, time_var, sequence_lengths, scale = scale
   )
   B <- model_matrix_emission_formula(
     emission_formula, data, n_sequences, length_of_sequences, n_states, 
-    n_symbols, time, id, sequence_lengths, scale = scale, fanhmm = fanhmm
+    n_symbols, id_var, time_var, sequence_lengths, scale = scale, 
+    autoregression = ar
   )
   if (mixture) {
     omega <- model_matrix_cluster_formula(
-      cluster_formula, data, n_sequences, n_clusters, time, id, scale = scale
+      cluster_formula, data, n_sequences, n_clusters, id_var, scale = scale
     )
   } else {
     omega <- list(n_pars = 0, iv = FALSE, X_mean = NULL)
   }
+  
   list(
     model = list(
-      observations = observations, 
-      time_variable = if (is.null(time)) "time" else time,
-      id_variable = if (is.null(id)) "id" else id,
+      responses = responses, 
+      time_variable = time_var,
+      id_variable = id_var,
       X_pi = pi$X, 
       X_A = A$X, 
       X_B = B$X,
@@ -153,19 +148,19 @@ create_base_nhmm <- function(observations, data, time, id, n_states,
       emission_formula = B$formula,
       cluster_formula = if(mixture) omega$formula else NULL,
       state_names = state_names,
-      symbol_names = attr(observations, "symbol_names"),
-      channel_names = attr(observations, "channel_names"),
+      symbol_names = symbol_names,
       cluster_names = cluster_names,
       length_of_sequences = length_of_sequences,
       sequence_lengths = sequence_lengths,
       n_sequences = n_sequences,
       n_states = n_states,
-      n_symbols = attr(observations, "n_symbols"),
-      n_channels = attr(observations, "n_channels"),
+      n_symbols = n_symbols,
+      n_channels = n_channels,
       n_clusters = n_clusters,
       data = data
     ),
     extras = list(
+      n_obs = n_obs,
       np_pi = pi$n_pars,
       np_A = A$n_pars,
       np_B = B$n_pars,

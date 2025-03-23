@@ -16,14 +16,19 @@ simulate_fanhmm(
   feedback_formula = ~1,
   obs_1,
   data,
-  time,
   id,
-  coefs = "random",
-  init_sd = 2,
-  response_name = "y"
+  time,
+  responses,
+  coefs = NULL,
+  init_sd = 2
 )
 }
 \arguments{
+\item{n_sequences}{The number of sequences to simulate.}
+
+\item{sequence_lengths}{The lengths of the simulated sequences.
+Either a scalar or vector of length \code{n_sequences}.}
+
 \item{n_symbols}{A scalar giving the number of observed symbols.}
 
 \item{n_states}{The number of hidden states.}
@@ -55,18 +60,24 @@ of \code{autoregression_formula} is not \code{NULL}.}
 formulas. Can be omitted in case of model with no covariates and observations
 given as \code{stslist} objects.}
 
-\item{time}{Name of the time index variable in \code{data}.}
-
 \item{id}{Name of the id variable in \code{data} identifying different
 sequences.}
 
-\item{coefs}{If \code{coefs = "random"} (default), random coefficient values are
-used. Otherwise \code{coefs} should be named list of \code{eta_pi}, \code{eta_A},
-and \code{eta_B}.}
+\item{time}{Name of the time index variable in \code{data}.}
+
+\item{responses}{A scalar or a vector giving the names of the response variables.}
+
+\item{coefs}{If \code{NULL} (default), model parameters \code{eta_pi}, \code{eta_A}, and
+\code{eta_B} are generated randomly. You can also specify the coefficients by
+providing a named list with elements \code{eta_pi}, \code{eta_A}, and \code{eta_B}.
+Alternatively, values \code{initial_probs}, \code{transition_probs}, and
+\code{emission_probs} can be used, which define the values of the \eqn{\eta}
+coefficients corresponding to the intercept terms, while rest of the values
+are generated randomly.}
 
 \item{init_sd}{Standard deviation of the normal distribution used to generate
-random initial values. Default is \code{2}. If you want to fix the initial values
-of the regression coefficients to zero, use \code{init_sd = 0}.}
+random coefficient values. Default is \code{2}. Setting this to zero allows you
+to use the coefficients fixed in \code{coefs}.}
 }
 \value{
 A list with the model used in simulation as well as the simulated

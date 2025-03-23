@@ -30,7 +30,7 @@ check_unique_N <- function(arr) {
 #'
 #' @noRd
 model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters, 
-                                         time, id, scale = TRUE, X_mean = TRUE, 
+                                         id_var, scale = TRUE, X_mean = TRUE, 
                                          R_inv = NULL, check = TRUE) {
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
@@ -41,21 +41,21 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
     X_mean <- NULL
     R_inv <- NULL
   } else {
-    first_time_point <- min(data[[time]])
+    data <- data[, .SD[1], by = id_var]
     X <- stats::model.matrix.lm(
       formula, 
-      data = data[data[[time]] == first_time_point, ], 
+      data = data, 
       na.action = stats::na.pass
     )
-    missing_values <- which(!complete.cases(X))
+    missing_values <- which(!stats::complete.cases(X))
     stopifnot_(
       length(missing_values) == 0L,
       c(
         "Missing cases are not allowed in covariates of `cluster_formula`.",
-        "Use {.fn complete.cases} to detect them, then fix or impute them.",
+        "Use {.fn stats::complete.cases} to detect them, then fix or impute them.",
         paste0(
           "First missing value found for ID ",
-          "{data[missing_values[1], id]}."
+          "{data[missing_values[1], c(id_var)]}."
         )
       )
     )
@@ -86,15 +86,14 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
   attr(X, "X_mean") <- X_mean
   attr(X, "coef_names") <- coef_names
   attr(X, "icpt_only") <- icpt_only
-  attr(formula, "xlevels") <- stats::.getXlevels(terms(formula), data)
+  
   list(formula = formula, n_pars = n_pars, X = X)
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
 #' @noRd
-model_matrix_initial_formula <- function(formula, data, n_sequences, 
-                                         length_of_sequences, n_states, 
-                                         time, id, scale = TRUE, X_mean = TRUE, 
+model_matrix_initial_formula <- function(formula, data, n_sequences, n_states, 
+                                         id_var, scale = TRUE, X_mean = TRUE, 
                                          R_inv = NULL, check = TRUE) {
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
@@ -104,22 +103,21 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
     X_mean <- NULL
     R_inv <- NULL
   } else {
-    first_time_point <- min(data[[time]])
-    data <- data[data[[time]] == first_time_point, ]
+    data <- data[, .SD[1], by = id_var]
     X <- stats::model.matrix.lm(
       formula, 
       data = data, 
       na.action = stats::na.pass
     )
-    missing_values <- which(!complete.cases(X))
+    missing_values <- which(!stats::complete.cases(X))
     stopifnot_(
       length(missing_values) == 0L,
       c(
         "Missing cases are not allowed in covariates of `initial_formula`.",
-        "Use {.fn complete.cases} to detect them, then fix or impute them.",
+        "Use {.fn stats::complete.cases} to detect them, then fix or impute them.",
         paste0(
           "First missing value found for ID ",
-          "{data[missing_values[1], id]}."
+          "{data[missing_values[1], c(id_var)]}."
         )
       )
     )
@@ -148,7 +146,7 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
   attr(X, "X_mean") <- X_mean
   attr(X, "coef_names") <- coef_names
   attr(X, "icpt_only") <- icpt_only
-  attr(formula, "xlevels") <- stats::.getXlevels(terms(formula), data)
+  
   list(formula = formula, n_pars = n_pars, X = X)
 }
 #' Create the Model Matrix based on NHMM Formulas
@@ -156,9 +154,11 @@ model_matrix_initial_formula <- function(formula, data, n_sequences,
 #' @noRd
 model_matrix_transition_formula <- function(formula, data, n_sequences,
                                             length_of_sequences, n_states,
-                                            time, id, sequence_lengths, 
+                                            id_var, time_var, sequence_lengths, 
                                             scale = TRUE, X_mean = TRUE, 
                                             R_inv = NULL, check = TRUE) {
+  # avoid CRAN check warning due to NSE
+  time <- NULL
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
     n_pars <-  n_states * (n_states - 1L)
@@ -174,26 +174,26 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
       data = data, 
       na.action = stats::na.pass
     )
-    
-    complete <- complete.cases(X)
+    complete <- stats::complete.cases(X)
     missing_values <- which(!complete)
     # A_1 is not used anywhere, so we can allow missing values in the first time point
-    missing_values <- setdiff(missing_values, which(data[[time]] == min(data[[time]])))
+    missing_values <- setdiff(missing_values, which(data[[time_var]] == min(data[[time_var]])))
     if (length(missing_values) > 0 && check) {
-      ends <- data[sequence_lengths[match(data[[id]], unique(data[[id]]))], time]
+      idx <- sequence_lengths[match(data[[id_var]], unique(data[[id_var]]))]
+      ends <- data[idx, time, env = list(time = time_var)]
       stopifnot_(
-        all(z <- data[missing_values, time] > ends[missing_values]),
+        all(z <- data[missing_values, time, env = list(time = time_var)] > ends[missing_values]),
         c(
           paste0(
             "Missing cases are not allowed in covariates of ",
             "{.arg transition_formula}, unless they correspond to void ",
             "response values at the end of the sequences.",
-            "Use {.fn complete.cases} to detect them, then fix or impute them."
+            "Use {.fn stats::complete.cases} to detect them, then fix or impute them."
           ),
           paste0(
             "First missing value found for ID ",
-            "{data[missing_values, id][which(!z)[1]]} at time point ",
-            "{data[missing_values, time][which(!z)[1]]}."
+            "{data[missing_values, c(id_var)][which(!z)[1]]} at time point ",
+            "{data[missing_values, c(time_var)][which(!z)[1]]}."
           )
         )
       )
@@ -232,7 +232,7 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
   attr(X, "tv") <- tv
   attr(X, "icpt_only") <- icpt_only
   attr(X, "missing") <- missing_values
-  attr(formula, "xlevels") <- stats::.getXlevels(terms(formula), data)
+  
   list(formula = formula, n_pars = n_pars, X = X)
 }
 #' Create the Model Matrix based on NHMM Formulas
@@ -241,10 +241,12 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
 model_matrix_emission_formula <- function(formula, data, n_sequences, 
                                           length_of_sequences, n_states,
                                           n_symbols,
-                                          time, id, sequence_lengths, 
+                                          id_var, time_var, sequence_lengths, 
                                           scale = TRUE, X_mean = TRUE, 
                                           R_inv = NULL, check = TRUE,
-                                          fanhmm = FALSE) {
+                                          autoregression = FALSE) {
+  # avoid CRAN check warning due to NSE
+  time <- NULL
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
     n_pars <-  sum(n_states * (n_symbols - 1L))
@@ -261,30 +263,27 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
       na.action = stats::na.pass
     )
     
-    complete <- complete.cases(X)
+    complete <- stats::complete.cases(X)
     missing_values <- which(!complete)
-    if (fanhmm) {
+    if (autoregression) {
       # first observation is fixed so missing (lagged) values do not matter
-      missing_values <- setdiff(missing_values, which(data[[time]] == min(data[[time]])))
-      #complete[which(data[[time]] == min(data[[time]]))] <- TRUE
+      missing_values <- setdiff(missing_values, which(data[[time_var]] == min(data[[time_var]])))
     } 
     if (length(missing_values) > 0 && check) {
-      ends <- data[sequence_lengths[match(data[[id]], unique(data[[id]]))], time]
+      idx <- sequence_lengths[match(data[[id_var]], unique(data[[id_var]]))]
+      ends <- data[idx, time, env = list(time = time_var)]
       stopifnot_(
-        all(z <- data[missing_values, time] > ends[missing_values]),
+        all(z <- data[missing_values, time, env = list(time = time_var)] > ends[missing_values]),
         c(paste0(
           "Missing cases are not allowed in covariates of ",
           "{.arg emission_formula}, unless they correspond to missing ",
-          "void reponses at the end of the sequences. ",
-          "Use {.fn complete.cases} to detect them, then fix or impute them. ",
-          "Note that the missing covariates in {.arg emission_formula} ",
-          "corresponding to time points where response variables are also ",
-          "missing can be set to arbitrary value."
+          "responses at the end of the sequences. ",
+          "Use {.fn stats::complete.cases} to detect them, then fix or impute them. "
         ),
         paste0(
           "First missing value found for ID ",
-          "{data[missing_values, id][which(!z)[1]]} at time point ",
-          "{data[missing_values, time][which(!z)[1]]}."
+          "{data[missing_values, c(id_var)][which(!z)[1]]} at time point ",
+          "{data[missing_values, c(time_var)][which(!z)[1]]}."
         )
         )
       )
@@ -323,6 +322,6 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
   attr(X, "tv") <- tv
   attr(X, "icpt_only") <- icpt_only
   attr(X, "missing") <- missing_values
-  attr(formula, "xlevels") <- stats::.getXlevels(terms(formula), data)
+  
   list(formula = formula, n_pars = n_pars, X = X)
 }

@@ -36,6 +36,7 @@
 #' * `symbol_names`\cr Names for observed states.
 #' * `channel_names`\cr Names for channels of sequence data
 #' * `length_of_sequences`\cr (Maximum) length of sequences.
+#' * `sequence_lengths`\cr A vector of sequence lengths.
 #' * `n_sequences`\cr Number of sequences.
 #' * `n_symbols`\cr Number of observed states (in each channel).
 #' * `n_states`\cr Number of hidden states.
@@ -136,7 +137,7 @@
 #' n <- 100
 #' X <- cbind(1, x1 = runif(n, 0, 1), x2 = runif(n, 0, 1))
 #' coefs <- cbind(0, c(-2, 5, -2), c(0, -2, 2))
-#' pr <- exp(X %*% coefs) + rnorm(n * 3)
+#' pr <- exp(X %*% coefs) + stats::rnorm(n * 3)
 #' pr <- pr / rowSums(pr)
 #' y <- apply(pr, 1, which.max)
 #' table(y)

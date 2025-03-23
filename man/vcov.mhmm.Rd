@@ -37,4 +37,7 @@ are based on the numerical approximation of the full Hessian of the coefficients
 and the model parameters corresponding to nonzero probabilities.
 Computing the non-conditional standard errors can be slow for large models as
 the Jacobian of analytical gradients is computed using finite difference approximation.
+
+Alternatively, by using the non-homogeneous model via \code{estimate_mnhmm} you
+can compute the standard errors of the coefficients using the bootstrap method.
 }

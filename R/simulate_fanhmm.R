@@ -4,10 +4,6 @@
 #' non-homogeneous hidden Markov model.
 #'
 #' @param n_symbols A scalar giving the number of observed symbols.
-#' @param n_states The number of hidden states.
-#' @param coefs If `coefs = "random"` (default), random coefficient values are 
-#' used. Otherwise `coefs` should be named list of `eta_pi`, `eta_A`, 
-#' and `eta_B`.
 #' @param autoregression_formula Formula for autoregression 
 #' \eqn{y_t \to y_{t+1}}.
 #' Default intercept means is shorthand for \eqn{y_{t+1} ~ y_{t}}, while 
@@ -19,7 +15,7 @@
 #' If `NULL`, no feedback is used.
 #' @param obs_1 Vector defining the observations at first time points in case 
 #' of `autoregression_formula` is not `NULL`.
-#' @inheritParams estimate_nhmm
+#' @inheritParams simulate_nhmm
 #' @return A list with the model used in simulation as well as the simulated 
 #' hidden state sequences.
 #' @export
@@ -27,8 +23,8 @@ simulate_fanhmm <- function(
     n_sequences, sequence_lengths, n_symbols, n_states, 
     initial_formula = ~1, transition_formula = ~1, 
     emission_formula = ~1, autoregression_formula = ~1, 
-    feedback_formula = ~1, obs_1, data, time, id, coefs = "random", 
-    init_sd = 2, response_name = "y") {
+    feedback_formula = ~1, obs_1, data, id, time, responses, 
+    coefs = NULL, init_sd = 2) {
   
   stopifnot_(
     !missing(n_sequences) && checkmate::test_int(x = n_sequences, lower = 1L), 
@@ -49,19 +45,19 @@ simulate_fanhmm <- function(
   )
   stopifnot_(
     !missing(data),
-    "{.arg data}  is missing, use {.fn simulate_mhmm} instead."
+    "{.arg data} is missing."
   )
   stopifnot_(
-    checkmate::test_string(response_name),
-    "Argument {.arg response_name} must be a scalar of type character."
+    checkmate::test_string(responses),
+    "Argument {.arg responses} must be a scalar of type character."
   )
   stopifnot_(
-    !(response_name %in% names(data)),
-    "Variable with name {.arg response_name} found in {.arg data}.
-    Use other name for the response variable."
+    all(idx <- !(responses %in% names(data))),
+    "Variable{?s} with name{?s} {responses[!idx]} found in {.arg data}.
+    Use other name{?s} for the response variable{?s}."
   )
   sequence_lengths <- rep(sequence_lengths, length.out = n_sequences)
-  n_channels <- length(n_symbols)
+  n_channels <- length(responses)
   stopifnot_(
     n_channels == 1,
     "Currently only single-channel responses are supported for FAN-HMM."
@@ -75,12 +71,12 @@ simulate_fanhmm <- function(
   }
   symbol_names <- as.character(seq_len(n_symbols))
   T_ <- max(sequence_lengths)
-  data[[response_name]] <- factor(rep(symbol_names, length = nrow(data)), 
+  data[[responses]] <- factor(rep(symbol_names, length = nrow(data)), 
                                   levels = symbol_names)
   
   model <- build_fanhmm(
-    response_name, n_states, initial_formula, transition_formula, emission_formula, 
-    autoregression_formula, feedback_formula, data, time, id, scale = FALSE
+    responses, n_states, initial_formula, transition_formula, emission_formula, 
+    autoregression_formula, feedback_formula, data, id, time, scale = FALSE
   )
   
   W <- update_W_for_fanhmm(model, data)
@@ -111,28 +107,7 @@ simulate_fanhmm <- function(
       out$observations[(Ti + 1):T_, i] <- NA
     }
   }
-  state_names <- model$state_names
-  out$states[] <- state_names[c(out$states) + 1]
-  states <- suppressWarnings(suppressMessages(
-    seqdef(
-      matrix(
-        t(out$states),
-        n_sequences, max(sequence_lengths)
-      ), 
-      alphabet = state_names, cnames = seq_len(T_)
-    )
-  ))
-  out$observations[] <- symbol_names[c(out$observations) + 1]
-  model$observations <- suppressWarnings(suppressMessages(
-    seqdef(t(out$observations), alphabet = symbol_names, cnames = seq_len(T_))
-  ))
-  model$data[[response_name]] <- factor(
-    c(t(model$observations)), 
-    levels = TraMineR::alphabet(model$observations)
-  )
-  if (!is.null(autoregression_formula)) {
-    model$data[[paste0("lag_", response_name)]] <- group_lag(model$data, id, response_name)
-  }
+  model$data[[responses]] <- factor(c(out$observations) + 1L)
   attr(model$X_pi, "X_mean") <- TRUE
   attr(model$X_A, "X_mean") <- TRUE
   attr(model$X_B, "X_mean") <- TRUE
@@ -171,5 +146,9 @@ simulate_fanhmm <- function(
       model$etas$B[, , s] <- tQm %*% model$gammas$B[, , s]
     }
   }
+  states <- cbind(
+    model$data[, c(id, time)],
+    state = model$state_names[c(out$states) + 1L]
+  )
   list(model = model, states = states)
 }

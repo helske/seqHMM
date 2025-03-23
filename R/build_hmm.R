@@ -34,6 +34,7 @@
 #' * `symbol_names`\cr Names for observed states.
 #' * `channel_names`\cr Names for channels of sequence data.
 #' * `length_of_sequences`\cr (Maximum) length of sequences.
+#' * `sequence_lengths`\cr A vector of sequence lengths.
 #' * `n_sequences`\cr Number of sequences.
 #' * `n_symbols`\cr Number of observed states (in each channel).
 #' * `n_states`\cr Number of hidden states.
@@ -217,7 +218,9 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
       symbol_names, channel_names
     )
   }
-  
+  if (attr(observations, "nobs") == 0) {
+    warning_("Sequences contain only missing values.")
+  }
   model <- structure(
     list(
       observations = observations, transition_probs = transition_probs,
@@ -225,6 +228,7 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
       state_names = state_names,
       symbol_names = symbol_names, channel_names = channel_names,
       length_of_sequences = attr(observations, "length_of_sequences"),
+      sequence_lengths = attr(observations, "sequence_lengths"),
       n_sequences = attr(observations, "n_sequences"),
       n_symbols = n_symbols, n_states = n_states,
       n_channels = n_channels,

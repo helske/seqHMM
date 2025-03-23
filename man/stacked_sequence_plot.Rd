@@ -81,7 +81,7 @@ p <- stacked_sequence_plot(
   type = "d", 
   legend_position = c("right", "right", "right", "none")
 )
-library(ggplot2)
+library("ggplot2")
 p & theme(plot.margin = unit(c(1, 1, 0, 2), "mm"))
 
 }

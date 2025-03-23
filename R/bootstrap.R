@@ -137,13 +137,13 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
     formula_A <- model$transition_formula
     formula_B <- model$emission_formula
     d <- model$data
-    time <- model$time_variable
-    id <- model$id_variable
+    time_var <- model$time_variable
+    id_var <- model$id_variable
     out <- future.apply::future_lapply(
       seq_len(nsim), function(i) {
-        mod <- simulate_nhmm( #TODO proper forward trajectory simulation
+        mod <- simulate_nhmm(
           N, T_, M, S, formula_pi, formula_A, formula_B,
-          d, time, id, init, 0)$model
+          d, id_var, time_var, init, 0)$model
         fit <- fit_nhmm(
           mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
           method = method, bound = bound, control = control,
@@ -253,13 +253,13 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
     formula_B <- model$emission_formula
     formula_omega <- model$cluster_formula
     d <- model$data
-    time <- model$time_variable
-    id <- model$id_variable
+    time_var <- model$time_variable
+    id_var <- model$id_variable
     out <- future.apply::future_lapply(
       seq_len(nsim), function(i) {
         mod <- simulate_mnhmm(
           N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
-          d, time, id, init, 0)$model
+          d, id_var, time_var, init, 0)$model
         fit <- fit_mnhmm(
           mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
           method = method, bound = bound, control = control,

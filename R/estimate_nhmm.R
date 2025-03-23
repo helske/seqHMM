@@ -44,10 +44,7 @@
 #' default value are `ftol_rel = 1e-6`, `xtol_rel = 1e-4`, and `maxeval = 100`.
 #' 
 #' @references Steven G. Johnson, The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt
-#' @param observations Either the name of the response variable in `data`, or 
-#' an `stslist` object (see [TraMineR::seqdef()]) containing the 
-#' sequences. In case of multichannel data, `observations` should be a vector 
-#' of response variable names in `data`, or a list of `stslist` objects.
+#' @param responses Name(s) of the response variable(s) in `data`.
 #' @param n_states An integer > 1 defining the number of hidden states.
 #' @param initial_formula of class [formula()] for the
 #' initial state probabilities.
@@ -63,8 +60,6 @@
 #' sequences.
 #' @param state_names A vector of optional labels for the hidden states. If this
 #' is `NULL` (the default), numbered states are used.
-#' @param channel_names A vector of optional names for the channels. If this
-#' is `NULL` (the default), numbered channels are used.
 #' @param inits If `inits = "random"` (default), random initial values are 
 #' used. Otherwise `inits` should be list of initial values. If coefficients 
 #' are given using list components `eta_pi`, `eta_A`, `eta_B`, 
@@ -96,10 +91,6 @@
 #' for M-step in intercept-only case with `lambda = 0`.
 #' @param control_restart Controls for restart steps, see details.
 #' @param control_mstep Controls for M-step of EM algorithm, see details.
-#' @param store_data If `TRUE` (default), The data frame used to construct the 
-#' covariate arrays is stored to the model object. For large datasets, 
-#' this can be set to `FALSE`, in which case you might need to pass the data 
-#' separately to some post-prosessing functions.
 #' @param ... Additional arguments to [nloptr::nloptr()] and EM algorithm. 
 #' See details.
 #' @return Object of class `nhmm`.
@@ -119,26 +110,18 @@
 #'   )
 #' }
 estimate_nhmm <- function(
-    observations, n_states, initial_formula = ~1, 
+    responses, n_states, initial_formula = ~1, 
     transition_formula = ~1, emission_formula = ~1, 
-    data = NULL, time = NULL, id = NULL, state_names = NULL, 
-    channel_names = NULL, inits = "random", init_sd = 2, restarts = 0L, 
+    data, time, id, state_names = NULL, 
+    inits = "random", init_sd = 2, restarts = 0L, 
     lambda = 0, method = "EM-DNM", bound = Inf, control_restart = list(), 
-    control_mstep = list(), store_data = TRUE, ...) {
+    control_mstep = list(), ...) {
   
   call <- match.call()
   model <- build_nhmm(
-    observations, n_states, initial_formula, 
-    transition_formula, emission_formula, data, time, id, state_names, 
-    channel_names
-    )
-  stopifnot_(
-    checkmate::test_flag(x = store_data), 
-    "Argument {.arg store_data} must be a single {.cls logical} value."
+    responses, n_states, initial_formula, transition_formula, emission_formula, 
+    data, id, time, state_names
   )
-  if (!store_data) {
-    model$data <- NULL
-  }
   control <- list(...)
   start_time <- proc.time()
   out <- fit_nhmm(model, inits, init_sd, restarts, lambda, method, bound, 

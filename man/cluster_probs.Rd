@@ -8,18 +8,25 @@
 \usage{
 get_cluster_probs(model, ...)
 
-\method{get_cluster_probs}{mnhmm}(model, probs = NULL, newdata = NULL, ...)
+\method{get_cluster_probs}{mnhmm}(model, probs = NULL, condition = NULL, newdata = NULL, ...)
 
 \method{get_cluster_probs}{mhmm}(model, ...)
 }
 \arguments{
-\item{model}{A mixture hidden Markov model.}
+\item{model}{A hidden Markov model.}
 
 \item{...}{Ignored.}
 
 \item{probs}{Vector defining the quantiles of interest. Default is
-\code{c(0.025, 0.5, 0.975)}. The quantiles are based on bootstrap samples of
-coefficients, stored in \code{object$boot}.}
+\code{NULL}, in which case no quantiles are computed. The quantiles are based on
+bootstrap samples of coefficients, stored in \code{object$boot}.}
+
+\item{condition}{An optional vector of variable names used for conditional
+marginal probabilities. Default is \code{NULL}, in which case no marginalization is
+done.}
+
+\item{newdata}{An optional data frame containing the new data to be used in
+computing the probabilities.}
 }
 \description{
 Extract the Prior Cluster Probabilities of MHMM or MNHMM

@@ -10,27 +10,13 @@
 \usage{
 forward_backward(model, ...)
 
-\method{forward_backward}{hmm}(
-  model,
-  forward_only = FALSE,
-  log_space = TRUE,
-  threads = 1,
-  as_data_frame = TRUE,
-  ...
-)
+\method{forward_backward}{hmm}(model, forward_only = FALSE, ...)
 
-\method{forward_backward}{mhmm}(
-  model,
-  forward_only = FALSE,
-  log_space = TRUE,
-  threads = 1,
-  as_data_frame = TRUE,
-  ...
-)
+\method{forward_backward}{mhmm}(model, forward_only = FALSE, ...)
 
-\method{forward_backward}{nhmm}(model, forward_only = FALSE, as_data_frame = TRUE, ...)
+\method{forward_backward}{nhmm}(model, forward_only = FALSE, ...)
 
-\method{forward_backward}{mnhmm}(model, forward_only = FALSE, as_data_frame = TRUE, ...)
+\method{forward_backward}{mnhmm}(model, forward_only = FALSE, ...)
 }
 \arguments{
 \item{model}{A hidden Markov model.}
@@ -39,34 +25,9 @@ forward_backward(model, ...)
 
 \item{forward_only}{If \code{TRUE}, only forward probabilities are computed. The
 default is \code{FALSE}.}
-
-\item{log_space}{If \code{TRUE} (default), forward and backward probabilities are
-computed and returned in logarithmic scale for numerical stability. If
-\code{FALSE}, scaling is used instead, which is somewhat faster. Not used for
-\code{nhmm} and \code{mnhmm} objects which always use logarithmic scale.}
-
-\item{threads}{Number of threads used in parallel computing. The default
-is \code{1}. Not used for \code{nhmm} and \code{mnhmm} objects.}
-
-\item{as_data_frame}{If \code{TRUE} (default), the output is returned as a
-data.frame. Otherwise, a list of array(s) is returned. Ignored if
-\code{log_space} is \code{FALSE}, in which case list of arrays is always returned.}
 }
 \value{
-If \code{as_data_frame} is \code{TRUE} a \code{data.frame} with
-log-values of forward and backward probabilities. If \code{FALSE} or
-\code{log_space = FALSE}, a list with components
-\itemize{
-\item forward_probs\cr If \code{log_space = FALSE}, scaled forward probabilities,
-i.e. probability of state given observations up to that time point.
-If \code{log_space = TRUE}, logarithms of non-scaled forward probabilities.
-\item backward_probs\cr Scaled backward probabilities (\code{log_space = FALSE}),
-or logarithms of non-scaled backward probabilities(\code{log_space = TRUE}).
-\item scaling_factors\cr Sum of non-scaled forward probabilities at each time
-point. Only computed if \code{log_space = FALSE}.
-In case of multiple observations, these are computed independently for each
-sequence.
-}
+A \code{data.frame} with log-values of forward and backward probabilities.
 }
 \description{
 The \code{forward_backward} function computes forward and backward
@@ -77,10 +38,8 @@ probabilities of a hidden Markov model.
 data("mhmm_biofam")
 
 # Compute forward and backward probabilities
-fb <- forward_backward(mhmm_biofam, as_data_frame = FALSE)
+fb <- forward_backward(mhmm_biofam)
 
-# The most probable hidden state at time t
-# given the observations up to time t for the first subject:
-apply(fb$forward_probs[, , 1], 2, which.max)
+head(fb)
 
 }

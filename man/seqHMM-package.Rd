@@ -18,7 +18,9 @@ namely Markov models, mixture Markov models, and latent class models.
 \details{
 Maximum likelihood estimation via the EM algorithm and direct numerical maximization
 with analytical gradients is supported. All main algorithms are written in C++.
-Parallel computation is implemented via OpenMP.
+Parallel computation is implemented via OpenMP for pre-2.0.0 functions, while
+estimation of non-homogenous models support parallelization via \code{future}
+package by parallelization of multistart optimizations and bootstrap sampling.
 }
 \references{
 Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,

@@ -26,27 +26,20 @@
 #' @seealso [estimate_nhmm()] for further details.
 #' @export
 estimate_fanhmm <- function(
-    observations, n_states, initial_formula = ~1, 
+    responses, n_states, initial_formula = ~1, 
     transition_formula = ~1, emission_formula = ~1, autoregression_formula = ~1,
     feedback_formula = ~1,
-    data = NULL, time = NULL, id = NULL, state_names = NULL, 
+    data, time, id, state_names = NULL, 
     inits = "random", init_sd = 2, 
     restarts = 0L, lambda = 0, method = "EM-DNM", bound = Inf, 
-    control_restart = list(), control_mstep = list(), store_data = TRUE, ...) {
+    control_restart = list(), control_mstep = list(), ...) {
   
   call <- match.call()
   model <- build_fanhmm(
-    observations, n_states, initial_formula, 
+    responses, n_states, initial_formula, 
     transition_formula, emission_formula, autoregression_formula, 
-    feedback_formula, data, time, id, state_names
+    feedback_formula, data, id, time, state_names
   )
-  stopifnot_(
-    checkmate::test_flag(x = store_data), 
-    "Argument {.arg store_data} must be a single {.cls logical} value."
-  )
-  if (!store_data) {
-    model$data <- NULL
-  }
   control <- list(...)
   start_time <- proc.time()
   out <- fit_nhmm(model, inits, init_sd, restarts, lambda, method, bound, 

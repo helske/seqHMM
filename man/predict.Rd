@@ -27,6 +27,29 @@
   ...
 )
 }
+\arguments{
+\item{object}{An object of class \code{nhmm}, \code{mnhmm}, or \code{fanhmm}.}
+
+\item{newdata}{A data frame used for computing the predictions.}
+
+\item{newdata2}{An optional data frame for predictions, in which case the
+estimates are differences between predictions using \code{newdata} and \code{newdata2}.}
+
+\item{condition}{An optional vector of variable names used for conditional
+predictions.}
+
+\item{type}{A character string specifying the type of predictions. Possible
+values are \code{"observations"} (marginal probabilities of observations),
+\code{"states"} (marginals of states), and \code{"conditionals"} (emission probabilities).
+Default computes all of these.}
+
+\item{probs}{A numeric vector of quantiles to compute.}
+
+\item{boot_idx}{Logical indicating whether to use bootstrap samples in
+marginalization when computing quantiles. Default is \code{FALSE}.}
+
+\item{...}{Ignored.}
+}
 \description{
 Predictions from Non-homogeneous Hidden Markov Models
 }

@@ -4,16 +4,11 @@ test_that("Gradients for singlechannel-NHMM are correct", {
   S <- 3
   n_id <- 5
   n_time <- 10
-  obs <- suppressMessages(seqdef(
-    matrix(
-      sample(letters[1:M], n_id * n_time, replace = TRUE), 
-      n_id, n_time
-    )
-  ))
-  data <- data.frame(
-    y = unlist(obs), 
-    x = rnorm(n_id * n_time), 
-    z = rnorm(n_id * n_time),
+ 
+  data <- data.table(
+    y = sample(factor(letters[1:M]), n_id * n_time, replace = TRUE), 
+    x = stats::rnorm(n_id * n_time), 
+    z = stats::rnorm(n_id * n_time),
     time = rep(1:n_time, each = n_id),
     id = rep(1:n_id, n_time)
   )
@@ -21,6 +16,7 @@ test_that("Gradients for singlechannel-NHMM are correct", {
   data[data$time > 9, c("y", "x", "z")] <- NA
   data$x[12:15] <- 0
   data$y[10:25] <- NA
+  data <- stats::na.omit(data, cols = c("x", "z"))
   model <- build_nhmm(
     "y", S, initial_formula = ~ x, transition_formula = ~z,
     emission_formula = ~ x, data = data, time = "time", id = "id")
@@ -35,8 +31,7 @@ test_that("Gradients for singlechannel-NHMM are correct", {
   K_A <- nrow(X_A)
   K_B <- nrow(X_B)
   obs <- create_obsArray(model)
-  obs <- array(obs, dim(obs)[2:3])
-  pars <- rnorm(n_i + n_s + n_o)
+  pars <- stats::rnorm(n_i + n_s + n_o)
   
   f <- function(pars) {
     eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
@@ -70,23 +65,11 @@ test_that("Gradients for multichannel-NHMM are correct", {
   S <- 3
   n_id <- 5
   n_time <- 15
-  obs1 <- suppressMessages(seqdef(
-    matrix(
-      sample(letters[1:M[1]], n_id * n_time, replace = TRUE), 
-      n_id, n_time
-    )
-  ))
-  obs2 <- suppressMessages(seqdef(
-    matrix(
-      sample(LETTERS[1:M[2]], n_id * n_time, replace = TRUE), 
-      n_id, n_time
-    )
-  ))
-  data <- data.frame(
-    y1 = unlist(obs1), 
-    y2 = unlist(obs2), 
-    x = rnorm(n_id * n_time), 
-    z = rnorm(n_id * n_time),
+  data <- data.table(
+    y1 = sample(factor(letters[1:M[1]]), n_id * n_time, replace = TRUE), 
+    y2 = sample(factor(LETTERS[1:M[2]]), n_id * n_time, replace = TRUE), 
+    x = stats::rnorm(n_id * n_time), 
+    z = stats::rnorm(n_id * n_time),
     time = rep(1:n_time, each = n_id),
     id = rep(1:n_id, n_time)
   )
@@ -96,7 +79,7 @@ test_that("Gradients for multichannel-NHMM are correct", {
   data$x[12:15] <- 0
   data$y1[10:25] <- NA
   data$y2[10:35] <- NA
-  
+  data <- stats::na.omit(data, cols = c("x", "z"))
   model <- build_nhmm(
     c("y1", "y2"), S, initial_formula = ~ x, transition_formula = ~z,
     emission_formula = ~ z, data = data, time = "time", id = "id")
@@ -111,7 +94,7 @@ test_that("Gradients for multichannel-NHMM are correct", {
   K_A <- nrow(X_A)
   K_B <- nrow(X_B)
   obs <- create_obsArray(model)
-  pars <- rnorm(n_i + n_s + n_o)
+  pars <- stats::rnorm(n_i + n_s + n_o)
   
   f <- function(pars) {
     eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
@@ -146,16 +129,10 @@ test_that("Gradients for singlechannel-MNHMM are correct", {
   D <- 2
   n_id <- 5
   n_time <- 10
-  obs <- suppressMessages(seqdef(
-    matrix(
-      sample(letters[1:M], n_id * n_time, replace = TRUE), 
-      n_id, n_time
-    )
-  ))
-  data <- data.frame(
-    y = unlist(obs), 
-    x = rnorm(n_id * n_time), 
-    z = rnorm(n_id * n_time),
+  data <- data.table(
+    y = sample(factor(letters[1:M]), n_id * n_time, replace = TRUE), 
+    x = stats::rnorm(n_id * n_time), 
+    z = stats::rnorm(n_id * n_time),
     time = rep(1:n_time, each = n_id),
     id = rep(1:n_id, n_time)
   )
@@ -163,6 +140,7 @@ test_that("Gradients for singlechannel-MNHMM are correct", {
   data[data$time > 9, c("y", "x", "z")] <- NA
   data$x[12:15] <- 0
   data$y[10:25] <- NA
+  data <- stats::na.omit(data, cols = c("x", "z"))
   model <- build_mnhmm(
     "y", S, D, initial_formula = ~ x, transition_formula = ~z,
     emission_formula = ~ z, cluster_formula = ~ z, data = data, 
@@ -181,8 +159,7 @@ test_that("Gradients for singlechannel-MNHMM are correct", {
   K_B <- nrow(X_B)
   K_omega <- nrow(X_omega)
   obs <- create_obsArray(model)
-  obs <- array(obs, dim(obs)[2:3])
-  pars <- rnorm(n_i + n_s + n_o + n_d)
+  pars <- stats::rnorm(n_i + n_s + n_o + n_d)
   f <- function(pars) {
     eta_pi <- create_eta_pi_mnhmm(pars[seq_len(n_i)], S, K_pi, D)
     eta_A <- create_eta_A_mnhmm(pars[n_i + seq_len(n_s)], S, K_A, D)
@@ -223,23 +200,11 @@ test_that("Gradients for multichannel-MNHMM are correct", {
   D <- 4
   n_id <- 5
   n_time <- 15
-  obs1 <- suppressMessages(seqdef(
-    matrix(
-      sample(letters[1:M[1]], n_id * n_time, replace = TRUE), 
-      n_id, n_time
-    )
-  ))
-  obs2 <- suppressMessages(seqdef(
-    matrix(
-      sample(LETTERS[1:M[2]], n_id * n_time, replace = TRUE), 
-      n_id, n_time
-    )
-  ))
-  data <- data.frame(
-    y1 = unlist(obs1), 
-    y2 = unlist(obs2), 
-    x = rnorm(n_id * n_time), 
-    z = rnorm(n_id * n_time),
+  data <- data.table(
+    y1 = sample(factor(letters[1:M[1]]), n_id * n_time, replace = TRUE), 
+    y2 = sample(factor(LETTERS[1:M[2]]), n_id * n_time, replace = TRUE), 
+    x = stats::rnorm(n_id * n_time), 
+    z = stats::rnorm(n_id * n_time),
     time = rep(1:n_time, each = n_id),
     id = rep(1:n_id, n_time)
   )
@@ -249,7 +214,7 @@ test_that("Gradients for multichannel-MNHMM are correct", {
   data$x[12:15] <- 0
   data$y1[10:25] <- NA
   data$y2[10:35] <- NA
-  
+  data <- stats::na.omit(data, cols = c("x", "z"))
   model <- build_mnhmm(
     c("y1", "y2"), S, D, initial_formula = ~ x, transition_formula = ~z,
     emission_formula = ~ z, cluster_formula = ~ z, data = data, 
@@ -268,7 +233,7 @@ test_that("Gradients for multichannel-MNHMM are correct", {
   K_B <- nrow(X_B)
   K_omega <- nrow(X_omega)
   obs <- create_obsArray(model)
-  pars <- rnorm(n_i + n_s + n_o + n_d)
+  pars <- stats::rnorm(n_i + n_s + n_o + n_d)
   f <- function(pars) {
     eta_pi <- create_eta_pi_mnhmm(pars[seq_len(n_i)], S, K_pi, D)
     eta_A <- create_eta_A_mnhmm(pars[n_i + seq_len(n_s)], S, K_A, D)

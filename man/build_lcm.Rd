@@ -58,6 +58,7 @@ Object of class \code{mhmm} with the following elements:
 \item \code{symbol_names}\cr Names for observed states.
 \item \code{channel_names}\cr Names for channels of sequence data
 \item \code{length_of_sequences}\cr (Maximum) length of sequences.
+\item \code{sequence_lengths}\cr A vector of sequence lengths.
 \item \code{n_sequences}\cr Number of sequences.
 \item \code{n_symbols}\cr Number of observed states (in each channel).
 \item \code{n_states}\cr Number of hidden states.
@@ -157,7 +158,7 @@ set.seed(123)
 n <- 100
 X <- cbind(1, x1 = runif(n, 0, 1), x2 = runif(n, 0, 1))
 coefs <- cbind(0, c(-2, 5, -2), c(0, -2, 2))
-pr <- exp(X \%*\% coefs) + rnorm(n * 3)
+pr <- exp(X \%*\% coefs) + stats::rnorm(n * 3)
 pr <- pr / rowSums(pr)
 y <- apply(pr, 1, which.max)
 table(y)

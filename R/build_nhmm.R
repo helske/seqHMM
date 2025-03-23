@@ -2,12 +2,12 @@
 #'
 #' @noRd
 build_nhmm <- function(
-    observations, n_states, initial_formula, transition_formula, 
-    emission_formula, data, time, id, state_names = NULL, channel_names = NULL, 
+    responses, n_states, initial_formula, transition_formula, 
+    emission_formula, data, id_var, time_var, state_names = NULL,
     scale = TRUE) {
   
   out <- create_base_nhmm(
-    observations, data, time, id, n_states, state_names, channel_names,
+    responses, data, id_var, time_var, n_states, state_names,
     initial_formula, transition_formula, emission_formula, scale = scale) 
   out[c("cluster_names", "n_clusters", "X_omega")] <- NULL
   out$model$etas <- stats::setNames(
@@ -16,7 +16,7 @@ build_nhmm <- function(
   structure(
     out$model,
     class = "nhmm",
-    nobs = attr(out$model$observations, "nobs"),
+    nobs = out$extras$n_obs,
     df = out$extras$np_pi + out$extras$np_A + out$extras$np_B,
     type = paste0(out$extras$multichannel, "nhmm"),
     intercept_only = out$extras$intercept_only,

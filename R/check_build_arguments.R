@@ -1,33 +1,68 @@
-#' Create observations for the model objects
+#' Check that the data is well defined
+#' @noRd
+.check_data <- function(data, id_var, time_var, responses) {
+  stopifnot_(
+    is.data.frame(data), 
+    "Argument {.arg data} must be a {.cls data.frame} object."
+  )
+  stopifnot_(!missing(time_var), "Argument {.arg time} is missing.")
+  stopifnot_(!missing(id_var), "Argument {.arg id} is missing.")
+  stopifnot_(
+    checkmate::test_string(x = time_var), 
+    "Argument {.arg time} must be a single character string."
+  )
+  stopifnot_(
+    checkmate::test_string(x = id_var), 
+    "Argument {.arg id} must be a single character string."
+  )
+  stopifnot_(
+    !is.null(data[[id_var]]), 
+    "Can't find grouping variable {.var {id_var}} in {.arg data}."
+  )
+  stopifnot_(
+    !is.null(data[[time_var]]), 
+    "Can't find time index variable {.var {time_var}} in {.arg data}."
+  )
+  stopifnot_(
+    is.numeric(data[[time_var]]),
+    c(
+      "Time index variable {.arg {time_var}} must be of type {.cls numeric} or 
+      {.cls integer}."
+    )
+  )
+  stopifnot_(
+    all(x <- responses %in% names(data)), 
+    "Can't find response variable{?s} {.var {responses[!x]}} in {.arg data}."
+  )
+  for (y in responses) {
+    stopifnot_(
+      is.factor(data[[y]]), 
+      "Response {.var {y}} in {.arg data} should be a factor."
+    )
+  }
+  data <- data.table(data, key = c(id_var, time_var))
+  data
+}
+
+#' Check observations for the homogeneous HMMs using seqdef as input
 #' 
 #' Note that for backward compatibility reasons `length_of_sequences` refers 
 #' to the maximum length of sequences, whereas `sequence_lengths` refers to 
 #' the actual non-void lengths of each sequence.
 #'@noRd
 #'
-.check_observations <- function(x, channel_names = NULL, 
-                                nhmm = FALSE) {
+.check_observations <- function(x, channel_names = NULL) {
   
   if (TraMineR::is.stslist(x)) {
     multichannel <- FALSE
   } else {
-    if (nhmm) {
-      stopifnot_(
-        is_list_of_lists(x) && all(unlist(lapply(x, TraMineR::is.stslist))),
-        "{.arg observations} should be a {.cls stslist} object created with 
-        {.fn seqdef}, a {.cls list} of {.cls stslist} objects, or a 
-        {.cls character} vector containing names of the response variables in 
-        {.arg data}."
-      )
-    } else {
+    multichannel <- TRUE
       stopifnot_(
         is_list_of_lists(x) && all(unlist(lapply(x, TraMineR::is.stslist))),
         "{.arg observations} should be a {.cls stslist} object created with 
         {.fn seqdef}, or a {.cls list} of {.cls stslist} objects in a 
         multichannel case."
       )
-    }
-    multichannel <- TRUE
     stopifnot_(
       length(unique(sapply(x, nrow))) == 1,
       "The number of subjects (rows) is not the same in all channels."
@@ -253,38 +288,7 @@
   x
 }
 
-.check_data <- function(data, time, id) {
-  stopifnot_(
-    is.data.frame(data), 
-    "Argument {.arg data} must be a {.cls data.frame} object."
-  )
-  stopifnot_(!missing(time), "Argument {.arg time} is missing.")
-  stopifnot_(!missing(id), "Argument {.arg id} is missing.")
-  stopifnot_(
-    checkmate::test_string(x = time), 
-    "Argument {.arg time} must be a single character string."
-  )
-  stopifnot_(
-    checkmate::test_string(x = id), 
-    "Argument {.arg id} must be a single character string."
-  )
-  stopifnot_(
-    !is.null(data[[id]]), 
-    "Can't find grouping variable {.var {id}} in {.arg data}."
-  )
-  stopifnot_(
-    !is.null(data[[time]]), 
-    "Can't find time index variable {.var {time}} in {.arg data}."
-  )
-  stopifnot_(
-    is.numeric(data[[time]]),
-    c(
-      "Time index variable {.arg {time}} must be of type {.cls numeric} or 
-      {.cls integer}."
-    )
-  )
-  data <- data[order(data[[id]], data[[time]]), ]
-}
+
 #' Checks that the design matrix is of full rank
 #' @noRd
 .check_identifiability <- function(X, type) {

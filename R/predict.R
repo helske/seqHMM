@@ -1,7 +1,8 @@
 #' Compute marginal and conditional probabilities from joint distributions obtained from predict
-#' @noRd 
-#' @importFrom data.table set setDT := copy setorderv
-compute_joint <- function(x, newdata, type, cond, state_names, symbol_names, response_names) {
+#' @noRd
+compute_joint <- function(x, newdata, type, cond, state_names, symbol_names, responses) {
+  # avoid CRAN check warnings due to NSE
+  ..cond_base <- estimate <- probability <- NULL
   S <- length(state_names)
   M <- length(symbol_names)
   cond_obs <- cond$obs
@@ -11,28 +12,29 @@ compute_joint <- function(x, newdata, type, cond, state_names, symbol_names, res
   # Convert inputs to factors
   state_factor <- factor(rep(state_names, times = M), levels = state_names)
   obs_factor <- factor(rep(symbol_names, each = S), levels = symbol_names)
-  newdata <- setDT(newdata)[rep(seq_len(nrow(newdata)), each = S * M), cond_base, with = FALSE, drop = FALSE]
+  newdata <- setDT(newdata)[rep(seq_len(nrow(newdata)), each = S * M), 
+                            ..cond_base]
   set(newdata, j = "state", value = rep(state_factor, length.out = nrow(newdata)))
-  set(newdata, j = response_names, value = rep(obs_factor, length.out = nrow(newdata)))
-  set(newdata, j = "estimate", value = na.omit(c(x)))
+  set(newdata, j = responses, value = rep(obs_factor, length.out = nrow(newdata)))
+  set(newdata, j = "estimate", value = stats::na.omit(c(x)))
   # Compute joint distribution P(Y, Z)
-  d <- newdata[, .(probability = mean(estimate)), by = cond_both]
+  d <- newdata[, list(probability = mean(estimate)), by = cond_both]
   
   d_obs <- d_state <- d_cond <- NULL
   
   # P(Y)
   if ("observations" %in% type) {
-    d_obs <- d[, .(probability = sum(probability)), by = cond_obs]
+    d_obs <- d[, list(probability = sum(probability)), by = cond_obs]
     setorderv(d_obs, cond_obs)
   }
   # P(Z)
   if ("states" %in% type) {
-    d_state <- d[, .(probability = sum(probability)), by = cond_state]
+    d_state <- d[, list(probability = sum(probability)), by = cond_state]
     setorderv(d_state, cond_state)
   }
   # P(Y | Z)
   if ("conditionals" %in% type) {
-    d_cond <- d[, "probability" := .(probability / sum(probability)), by = cond_state]
+    d_cond <- d[, "probability" := list(probability / sum(probability)), by = cond_state]
     setorderv(d_cond, cond_state)
   }
   list(observations = d_obs, states = d_state, conditionals = d_cond)
@@ -40,6 +42,20 @@ compute_joint <- function(x, newdata, type, cond, state_names, symbol_names, res
 #' Predictions from Non-homogeneous Hidden Markov Models
 #'
 #' @rdname predict
+#' @param object An object of class `nhmm`, `mnhmm`, or `fanhmm`.
+#' @param newdata A data frame used for computing the predictions.
+#' @param newdata2 An optional data frame for predictions, in which case the 
+#' estimates are differences between predictions using `newdata` and `newdata2`.
+#' @param condition An optional vector of variable names used for conditional 
+#' predictions.
+#' @param type A character string specifying the type of predictions. Possible 
+#' values are `"observations"` (marginal probabilities of observations), 
+#' `"states"` (marginals of states), and `"conditionals"` (emission probabilities).
+#' Default computes all of these.
+#' @param probs A numeric vector of quantiles to compute.
+#' @param boot_idx Logical indicating whether to use bootstrap samples in 
+#' marginalization when computing quantiles. Default is `FALSE`.
+#' @param ... Ignored.
 #' @export
 predict.nhmm <- function(
     object, newdata, newdata2 = NULL, condition = NULL, 
@@ -90,7 +106,7 @@ predict.nhmm <- function(
   
   state_names <- object$state_names
   symbol_names <- object$symbol_names
-  response_names <- object$channel_names
+  responses <- object$responses
   S <- object$n_states
   M <- object$n_symbols
   
@@ -102,13 +118,13 @@ predict.nhmm <- function(
   }
   conditions <- list(
     base = condition,
-    obs = c(response_names, condition),
+    obs = c(responses, condition),
     state = c("state", condition),
-    both = c("state", response_names, condition)
+    both = c("state", responses, condition)
   )
   if (is.null(conditions$base)) conditions$base <- id
   object <- update(object, newdata)
-  obs <- create_obsArray(object)
+  obsArray <- create_obsArray(object)
   stopifnot_(
     object$n_channels == 1L,
     "Predictions for multichannel NHMMs are not yet supported."
@@ -118,13 +134,13 @@ predict.nhmm <- function(
     object$etas$pi, object$X_pi,
     object$etas$A, object$X_A, 
     object$etas$B, object$X_B, 
-    array(obs[1, , ], dim(obs)[2:3]),
+    obsArray,
     object$sequence_lengths, 
     attr(object$X_pi, "icpt_only"), attr(object$X_A, "icpt_only"), 
     attr(object$X_B, "icpt_only"), attr(object$X_A, "iv"), 
     attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv")
   ))
-  d_mean <- compute_joint(out, newdata, type, conditions, state_names, symbol_names, response_names)
+  d_mean <- compute_joint(out, newdata, type, conditions, state_names, symbol_names, responses)
   
   if (!is.null(newdata2)) {
     object2 <- update(object, newdata2)
@@ -141,7 +157,7 @@ predict.nhmm <- function(
     ))
     d <- compute_joint(
       out2, newdata2, type, conditions, state_names, symbol_names, 
-      response_names
+      responses
     )
     for(i in names(d_mean)) {
       if(!is.null(d_mean[[i]])) {
@@ -159,7 +175,7 @@ predict.nhmm <- function(
         object$etas$pi, object$X_pi,
         object$etas$A, object$X_A, 
         object$etas$B, object$X_B, 
-        array(obs[1, , ], dim(obs)[2:3]),
+        obsArray,
         object$sequence_lengths, 
         attr(object$X_pi, "icpt_only"), attr(object$X_A, "icpt_only"), 
         attr(object$X_B, "icpt_only"), attr(object$X_A, "iv"), 
@@ -169,12 +185,12 @@ predict.nhmm <- function(
       if (boot_idx) {
         d_boot[[i]] <- compute_joint(
           out[, , , object$boot$idx[, i], drop = FALSE], 
-          newdata, type, conditions, state_names, symbol_names, response_names
+          newdata, type, conditions, state_names, symbol_names, responses
         )
       } else {
         d_boot[[i]] <- compute_joint(
           out, newdata, type, conditions, state_names, symbol_names, 
-          response_names
+          responses
         )
       }
       if (!is.null(newdata2)) {
@@ -193,12 +209,12 @@ predict.nhmm <- function(
           d <- compute_joint(
             out2[, , , object$boot$idx[, i], drop = FALSE], 
             newdata2, type, conditions, state_names, symbol_names,
-            response_names
+            responses
           )
         } else {
           d <- compute_joint(
             out2, newdata2, type, conditions, state_names, symbol_names,
-            response_names
+            responses
           )
         }
         for(j in names(d_mean)) {
@@ -211,7 +227,7 @@ predict.nhmm <- function(
     for(i in names(d_mean)) {
       if(!is.null(d_mean[[i]])) {
         di <- do.call(rbind, lapply(d_boot, function(x) x[[i]]$probability))
-        qs <- t(apply(di, 2, quantile, probs = probs))
+        qs <- t(apply(di, 2, stats::quantile, probs = probs))
         colnames(qs) <- paste0("q", 100 * probs)
         d_mean[[i]] <- cbind(d_mean[[i]], qs)
       }
@@ -270,7 +286,7 @@ predict.fanhmm <- function(
   
   state_names <- object$state_names
   symbol_names <- object$symbol_names
-  response_names <- object$channel_names
+  responses <- object$responses
   S <- object$n_states
   M <- object$n_symbols
   
@@ -282,9 +298,9 @@ predict.fanhmm <- function(
   }
   conditions <- list(
     base = condition,
-    obs = c(response_names, condition),
+    obs = c(responses, condition),
     state = c("state", condition),
-    both = c("state", response_names, condition)
+    both = c("state", responses, condition)
   )
   if (is.null(conditions$base)) conditions$base <- id
   object <- update(object, newdata)
@@ -299,14 +315,13 @@ predict.fanhmm <- function(
     object$etas$pi, object$X_pi,
     object$etas$A, object$X_A, 
     object$etas$B, object$X_B, 
-    array(obs[1, , ], dim(obs)[2:3]),
-    object$sequence_lengths, 
+    obs, object$sequence_lengths, 
     attr(object$X_pi, "icpt_only"), attr(object$X_A, "icpt_only"), 
     attr(object$X_B, "icpt_only"), attr(object$X_A, "iv"), 
     attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv"),
     W$W_A, W$W_B, !is.null(object$autoregression_formula)
   ))
-  d_mean <- compute_joint(out, newdata, type, conditions, state_names, symbol_names, response_names)
+  d_mean <- compute_joint(out, newdata, type, conditions, state_names, symbol_names, responses)
   
   if (!is.null(newdata2)) {
     object2 <- update(object, newdata2)
@@ -316,8 +331,7 @@ predict.fanhmm <- function(
       object2$etas$pi, object2$X_pi,
       object2$etas$A, object2$X_A, 
       object2$etas$B, object2$X_B, 
-      array(obs2[1, , ], dim(obs2)[2:3]),
-      object2$sequence_lengths, 
+      obs2, object2$sequence_lengths, 
       attr(object2$X_pi, "icpt_only"), attr(object2$X_A, "icpt_only"), 
       attr(object2$X_B, "icpt_only"), attr(object2$X_A, "iv"), 
       attr(object2$X_B, "iv"), attr(object2$X_A, "tv"), attr(object2$X_B, "tv"),
@@ -325,7 +339,7 @@ predict.fanhmm <- function(
     ))
     d <- compute_joint(
       out2, newdata2, type, conditions, state_names, symbol_names, 
-      response_names
+      responses
     )
     for(i in names(d_mean)) {
       if(!is.null(d_mean[[i]])) {
@@ -343,8 +357,7 @@ predict.fanhmm <- function(
         object$etas$pi, object$X_pi,
         object$etas$A, object$X_A, 
         object$etas$B, object$X_B, 
-        array(obs[1, , ], dim(obs)[2:3]),
-        object$sequence_lengths, 
+        obs, object$sequence_lengths, 
         attr(object$X_pi, "icpt_only"), attr(object$X_A, "icpt_only"), 
         attr(object$X_B, "icpt_only"), attr(object$X_A, "iv"), 
         attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv"),
@@ -355,12 +368,12 @@ predict.fanhmm <- function(
       if (boot_idx) {
         d_boot[[i]] <- compute_joint(
           out[, , , object$boot$idx[, i], drop = FALSE], 
-          newdata, type, conditions, state_names, symbol_names, response_names
+          newdata, type, conditions, state_names, symbol_names, responses
         )
       } else {
         d_boot[[i]] <- compute_joint(
           out, newdata, type, conditions, state_names, symbol_names, 
-          response_names
+          responses
         )
       }
       if (!is.null(newdata2)) {
@@ -368,8 +381,7 @@ predict.fanhmm <- function(
           object2$etas$pi, object2$X_pi,
           object2$etas$A, object2$X_A, 
           object2$etas$B, object2$X_B, 
-          array(obs2[1, , ], dim(obs2)[2:3]),
-          object2$sequence_lengths, 
+          obs2, object2$sequence_lengths, 
           attr(object2$X_pi, "icpt_only"), attr(object2$X_A, "icpt_only"), 
           attr(object2$X_B, "icpt_only"), attr(object2$X_A, "iv"), 
           attr(object2$X_B, "iv"), attr(object2$X_A, "tv"), attr(object2$X_B, "tv"),
@@ -381,12 +393,12 @@ predict.fanhmm <- function(
           d <- compute_joint(
             out2[, , , object$boot$idx[, i], drop = FALSE], 
             newdata2, type, conditions, state_names, symbol_names,
-            response_names
+            responses
           )
         } else {
           d <- compute_joint(
             out2, newdata2, type, conditions, state_names, symbol_names,
-            response_names
+            responses
           )
         }
         for(j in names(d_mean)) {
@@ -399,7 +411,7 @@ predict.fanhmm <- function(
     for(i in names(d_mean)) {
       if(!is.null(d_mean[[i]])) {
         di <- do.call(rbind, lapply(d_boot, function(x) x[[i]]$probability))
-        qs <- t(apply(di, 2, quantile, probs = probs))
+        qs <- t(apply(di, 2, stats::quantile, probs = probs))
         colnames(qs) <- paste0("q", 100 * probs)
         d_mean[[i]] <- cbind(d_mean[[i]], qs)
       }

@@ -25,9 +25,6 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
   Ti <- model$sequence_lengths
   n_obs <- nobs(model)
   obs <- create_obsArray(model)
-  if (C == 1) {
-    obs <- array(obs, dim(obs)[2:3])
-  }
   all_solutions <- NULL
   if (restarts > 0L) {
     p <- progressr::progressor(along = seq_len(restarts))

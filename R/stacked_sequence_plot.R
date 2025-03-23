@@ -53,7 +53,7 @@
 #'   type = "d", 
 #'   legend_position = c("right", "right", "right", "none")
 #' )
-#' library(ggplot2)
+#' library("ggplot2")
 #' p & theme(plot.margin = unit(c(1, 1, 0, 2), "mm"))
 #' 
 stacked_sequence_plot <- function(
@@ -65,23 +65,31 @@ stacked_sequence_plot <- function(
   
   if (inherits(x, c("hmm", "nhmm", "mhmm", "mnhmm"))) {
     if (is.null(group) && inherits(x, c("mhmm", "mnhmm"))) {
-      hp <- hidden_paths(x)
+      hp <- hidden_paths(x, as_stslist = TRUE)
       group <- factor(
         most_probable_cluster(x, type = "viterbi", hp = hp),
         levels = x$cluster_names
       )
     } else {
       if (plots != "obs") {
-        hp <- hidden_paths(x)
+        hp <- hidden_paths(x, as_stslist = TRUE)
       }
     }
     if (plots == "both") {
-      if (x$n_channels == 1) {
-        y <- list(x$observations, hp)
+      if (inherits(x, c("nhmm", "mnhmm"))) {
+        y <- suppressMessages(
+          data_to_stslist(x$data, x$id_variable, x$time_variable, x$responses)
+        )
+        channel_names <- c(x$responses, "Hidden states")
       } else {
-        y <- c(x$observations, list(hp))
+        y <- x$observations
+        channel_names <- c(x$channel_names, "Hidden states")
       }
-      channel_names <- c(x$channel_names, "Hidden states")
+      if (x$n_channels == 1) {
+        y <- list(y, hp)
+      } else {
+        y <- c(y, list(hp))
+      }
       n_channels <- x$n_channels + 1
     }
     if (plots == "hidden_paths") {
@@ -90,8 +98,15 @@ stacked_sequence_plot <- function(
       n_channels <- 1
     }
     if (plots == "obs") {
-      y <- x$observations
-      channel_names <- x$channel_names
+      if (inherits(x, c("nhmm", "mnhmm"))) {
+        y <- suppressMessages(
+          data_to_stslist(x$data, x$id_variable, x$time_variable, x$responses)
+        )
+        channel_names <- x$responses
+      } else {
+        y <- x$observations
+        channel_names <- x$channel_names
+      }
       n_channels <- x$n_channels
     }
   } else {
@@ -130,8 +145,8 @@ stacked_sequence_plot <- function(
       stopifnot_(
         sort_channel %in% channel_names || sort_channel %in% seq_len(n_channels),
         paste0("{.arg sort_channel} should be either ",
-        "{cli::cli_vec(channel_names, style = list('vec-last' = ' or '))}, ",
-        "or integer between 1 and {n_channels}."
+               "{cli::cli_vec(channel_names, style = list('vec-last' = ' or '))}, ",
+               "or integer between 1 and {n_channels}."
         )
       )
       if (n_channels > 1) names(y) <- channel_names
@@ -150,8 +165,8 @@ stacked_sequence_plot <- function(
   type <- match.arg(type, c("distribution", "index"))
   
   if (n_channels == 1) {
+    cpal_y <- stats::setNames(attr(y, "cpal"), attr(y, "labels"))
     if (type == "distribution") {
-      cpal_y <- stats::setNames(attr(y, "cpal"), attr(y, "labels"))
       p <- ggseqplot::ggseqdplot(y, group = group, sortv = sort_by, ...) + 
         ggplot2::theme(legend.position = legend_position) +
         ggplot2::ylab("Proportion") +
@@ -162,7 +177,6 @@ stacked_sequence_plot <- function(
       )
     }
     if (type == "index") {
-      cpal_y <- stats::setNames(attr(y, "cpal"), attr(y, "labels"))
       p <- ggseqplot::ggseqiplot(y, group = group, sortv = sort_by, ...) + 
         ggplot2::theme(legend.position = legend_position) +
         ggplot2::ylab("Sequence") +

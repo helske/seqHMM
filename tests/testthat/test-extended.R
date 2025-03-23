@@ -36,7 +36,7 @@ test_that("estimate_nhmm recovers true parameters", {
   d <- data.frame(
     person = rep(seq_len(n_seq), each = t_seq),
     year = rep(seq_len(t_seq), n_seq),
-    x = rnorm(n_seq * t_seq)
+    x = stats::rnorm(n_seq * t_seq)
   )
   # Intercepts
   pi <- c(0.7, 0.2, 0.1)

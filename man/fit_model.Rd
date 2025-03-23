@@ -57,7 +57,7 @@ values. The default is \code{0}, i.e. no restarts.
 varied? The default is \code{TRUE}.
 \item \code{emission}\cr Logical. Should the original emission probabilities be
 varied? The default is \code{TRUE}.
-\item \code{sd}\cr Standard deviation for \code{\link[=rnorm]{rnorm()}} used in randomization. The
+\item \code{sd}\cr Standard deviation for \code{\link[stats:Normal]{stats::rnorm()}} used in randomization. The
 default is 0.25.
 \item \code{maxeval}\cr Maximum number of iterations, the default is
 \code{control_em$maxeval}
@@ -632,7 +632,6 @@ Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
 \code{\link[=build_mm]{build_mm()}},  \code{\link[=build_mmm]{build_mmm()}}, and  \code{\link[=build_lcm]{build_lcm()}}
 for constructing different types of models; \code{\link[=summary.mhmm]{summary.mhmm()}}
 for a summary of a MHMM; \code{\link[=separate_mhmm]{separate_mhmm()}} for reorganizing a MHMM into
-a list of separate hidden Markov models; \code{\link[=plot.hmm]{plot.hmm()}} and \code{\link[=plot.mhmm]{plot.mhmm()}}
-for plotting model objects; and \code{\link[=ssplot]{ssplot()}} and \code{\link[=mssplot]{mssplot()}} for plotting
-stacked sequence plots of \code{hmm} and \code{mhmm} objects.
+a list of separate hidden Markov models; and \code{\link[=plot.hmm]{plot.hmm()}} and \code{\link[=plot.mhmm]{plot.mhmm()}}
+for plotting model objects.
 }

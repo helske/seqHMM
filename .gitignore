@@ -1,25 +1,17 @@
-.lue
-# History files
+^seqHMM\.Rproj$
+^\.Rproj\.user$
+^\.github$
+^codecov\.yml$
+^data-raw$
+.Rproj.user
 .Rhistory
-# Example code in package build process
-*-Ex.R
-# RStudio files
-.Rproj.user/
-# Eclipse files
-.project
-.settings
+*.Rproj
 # Extra source folders and compiled code
 vignettes/cache
-src-i386
-src-x64
+vignettes/figure
 *.o
 *.dll
 *.so
-*.Rproj
-*.Rproj.user
-.Rproj.user
-.settings
-vignettes/figure
 *.sty
 *.log
 *.synctex.gz

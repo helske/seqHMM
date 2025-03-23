@@ -21,21 +21,38 @@ get_cluster_probs <- function(model, ...) {
 #' Extract the Initial State Probabilities of Hidden Markov Model
 #' @param model A hidden Markov model.
 #' @param probs Vector defining the quantiles of interest. Default is 
-#' `c(0.025, 0.975)`. The quantiles are based on bootstrap samples of 
-#' coefficients, stored in `object$boot`.
+#' `NULL`, in which case no quantiles are computed. The quantiles are based on 
+#' bootstrap samples of coefficients, stored in `object$boot`.
+#'@param condition An optional vector of variable names used for conditional 
+#' marginal probabilities. Default is `NULL`, in which case no marginalization is 
+#' done.
+#' @param newdata An optional data frame containing the new data to be used in 
+#' computing the probabilities.
 #' @param ... Ignored.
 #' @rdname initial_probs
 #' @export
-get_initial_probs.nhmm <- function(model, probs = NULL, 
+get_initial_probs.nhmm <- function(model, probs = NULL, condition = NULL, 
                                    newdata = NULL, ...) {
   if (!is.null(newdata)) {
     model <- update(model, newdata)
   }
-  if (model$n_channels == 1L) {
-    ids <- rownames(model$observations)
+  if (!is.null(condition)) {
+    if(is.null(newdata)) {
+      stopifnot_(
+        all(condition %in% colnames(model$data)), 
+        "Not all variables defined in {.arg condition} are present in {.arg model$data} ."
+      )
+    } else {
+      stopifnot_(
+        all(condition %in% colnames(newdata)), 
+        "Not all variables defined in {.arg condition} are present in {.arg newdata} ."
+      )
+    }
   } else {
-    ids <- rownames(model$observations[[1]])
+    conditions <- "state"
   }
+  conditions <- c("state", condition)
+  ids <- unique(model$data[[model$id_variable]])
   if (attr(model$X_pi, "icpt_only")) {
     X <- model$X_pi[, 1L, drop = FALSE]
     ids <- "all"
@@ -49,7 +66,6 @@ get_initial_probs.nhmm <- function(model, probs = NULL,
       get_pi_all(model$gammas$pi, X)
     )
   )
-  d <- stats::setNames(d, c(model$id_variable, "state", "estimate"))
   if (!is.null(probs)) {
     stopifnot_(
       !is.null(model$boot),
@@ -65,16 +81,16 @@ get_initial_probs.nhmm <- function(model, probs = NULL,
     for(i in seq_along(probs)) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
     } 
+    setnames(d, "id", model$id_variable)
   }
   d
 }
 #' @rdname initial_probs
 #' @export
-get_initial_probs.mnhmm <- function(model, probs = NULL, newdata = NULL, ...) {
-  if (!is.null(newdata)) {
-    model <- update(model, newdata)
-  }
-  x <- lapply(split_mnhmm(model), get_initial_probs, probs = probs)
+get_initial_probs.mnhmm <- function(model, probs = NULL, condition = NULL, 
+                                    newdata = NULL, ...) {
+  x <- lapply(split_mnhmm(model), get_initial_probs, probs = probs,
+              condition = condition, newdata = newdata)
   do.call(rbind, lapply(seq_along(x), function(i) {
     cbind(cluster = names(x)[i], x[[i]])
   }))
@@ -90,17 +106,15 @@ get_initial_probs.mhmm <- function(model, ...) {
   model$initial_probs
 }
 #' Extract the State Transition Probabilities of Hidden Markov Model
-#' @param model A hidden Markov model.
-#' @param probs Vector defining the quantiles of interest. Default is 
-#' `c(0.025, 0.5, 0.975)`. The quantiles are based on bootstrap samples of 
-#' coefficients, stored in `object$boot`.
+#' @inheritParams get_initial_probs.nhmm
 #' @param remove_voids Should the time points corresponding to `TraMineR`'s 
 #' void in the observed sequences be removed? Default is `TRUE`.
-#' @param ... Ignored.
 #' @rdname transition_probs
 #' @export
-get_transition_probs.nhmm <- function(model, probs = NULL, newdata = NULL, 
-                                      remove_voids = TRUE, ...) {
+get_transition_probs.nhmm <- function(model, probs = NULL, condition = NULL, 
+                                      newdata = NULL, remove_voids = TRUE, ...) {
+  # avoid CRAN check warnings due to NSE
+  time <- NULL
   stopifnot_(
     checkmate::test_flag(x = remove_voids), 
     "Argument {.arg remove_voids} must be a single {.cls logical} value."
@@ -108,38 +122,43 @@ get_transition_probs.nhmm <- function(model, probs = NULL, newdata = NULL,
   if (!is.null(newdata)) {
     model <- update(model, newdata)
   }
+  if (!is.null(condition)) {
+    if(is.null(newdata)) {
+      stopifnot_(
+        all(condition %in% colnames(model$data)), 
+        "Not all variables defined in {.arg condition} are present in {.arg model$data} ."
+      )
+    } else {
+      stopifnot_(
+        all(condition %in% colnames(newdata)), 
+        "Not all variables defined in {.arg condition} are present in {.arg newdata} ."
+      )
+    }
+  }
+  conditions <- c("state", condition)
   S <- model$n_states
   T_ <- model$length_of_sequences
-  model$X_A[attr(model$X_A, "missing")] <- NA
-  if (model$n_channels == 1L) {
-    ids <- rownames(model$observations)
-    times <- as.numeric(colnames(model$observations))
-  } else {
-    ids <- rownames(model$observations[[1]])
-    times <- as.numeric(colnames(model$observations[[1]]))
-  }
+  id_var <- model$id_variable
+  time_var <- model$time_variable
+  ids <- unique(model$data[[id_var]])
+  times <- unique(model$data[[time_var]])
+  
   if (!attr(model$X_A, "iv") && !isTRUE(attr(model$W_A, "iv"))) {
     X <- model$X_A[, , 1L, drop = FALSE]
     ids <- "all"
   } else {
     X <- model$X_A
   }
-  d <- data.frame(
+  d <- data.table(
     id = rep(ids, each = S^2 * T_),
     time = rep(times, each = S^2),
     state_from = model$state_names,
     state_to = rep(model$state_names, each = S),
     estimate = unlist(get_A_all(
-      model$gammas$A, X, attr(model$X_A, "tv") || isTRUE(attr(model$W_A, "tv"))
+      model$gammas$A, X, attr(model$X_A, "tv")
     ))
   )
-  d <- stats::setNames(
-    d, 
-    c(
-      model$id_variable, model$time_variable, 
-      "state_from", "state_to", "estimate"
-    )
-  )
+  
   if (!is.null(probs)) {
     stopifnot_(
       !is.null(model$boot),
@@ -150,23 +169,27 @@ get_transition_probs.nhmm <- function(model, probs = NULL, newdata = NULL,
     )
     qs <- get_A_qs(
       model$boot$gamma_A, 
-      X, attr(model$X_A, "tv") || isTRUE(attr(model$W_A, "tv")), probs
+      X, attr(model$X_A, "tv"), probs, model$sequence_lengths
     )
     for(i in seq_along(probs)) {
       d[paste0("q", 100 * probs[i])] <- qs[, i]
     }
   }
+  
+  d <- d[time == time[1]] # remove A_1
+  setnames(d, c("id", "time"), c(id_var, time_var))
   if (remove_voids) {
-    d[complete.cases(d), ]
+    stats::na.omit(d)
   } else {
     d
   }
 }
 #' @rdname transition_probs
 #' @export
-get_transition_probs.mnhmm <- function(model, probs = NULL, newdata = NULL, remove_voids = TRUE, ...) {
+get_transition_probs.mnhmm <- function(model, probs = NULL, condition = NULL, newdata = NULL, remove_voids = TRUE, ...) {
   x <- lapply(split_mnhmm(model), 
-              get_transition_probs, probs = probs, newdata = newdata, remove_voids = remove_voids)
+              get_transition_probs, probs = probs, condition = condition, 
+              newdata = newdata, remove_voids = remove_voids)
   do.call(rbind, lapply(seq_along(x), function(i) {
     cbind(cluster = names(x)[i], x[[i]])
   }))
@@ -182,16 +205,15 @@ get_transition_probs.mhmm <- function(model, ...) {
   model$transition_probs
 }
 #' Extract the Emission Probabilities of Hidden Markov Model
-#' @param model A hidden Markov model.
-#' @param probs Vector defining the quantiles of interest. Default is 
-#' `c(0.025, 0.5, 0.975)`. The quantiles are based on bootstrap samples of 
-#' coefficients, stored in `object$boot`.
+#' @inheritParams get_initial_probs.nhmm
 #' @param remove_voids Should the time points corresponding to `TraMineR`'s 
 #' void in the observed sequences be removed? Default is `TRUE`.
-#' @param ... Ignored.
 #' @rdname emission_probs
 #' @export
-get_emission_probs.nhmm <- function(model, probs = NULL, newdata = NULL, remove_voids = TRUE, ...) {
+get_emission_probs.nhmm <- function(model, probs = NULL, condition = NULL, 
+                                    newdata = NULL, remove_voids = TRUE, ...) {
+  # avoid CRAN check warnings due to NSE
+  time <- NULL
   stopifnot_(
     checkmate::test_flag(x = remove_voids), 
     "Argument {.arg remove_voids} must be a single {.cls logical} value."
@@ -199,19 +221,30 @@ get_emission_probs.nhmm <- function(model, probs = NULL, newdata = NULL, remove_
   if (!is.null(newdata)) {
     model <- update(model, newdata)
   }
+  if (!is.null(condition)) {
+    if(is.null(newdata)) {
+      stopifnot_(
+        all(condition %in% colnames(model$data)), 
+        "Not all variables defined in {.arg condition} are present in {.arg model$data} ."
+      )
+    } else {
+      stopifnot_(
+        all(condition %in% colnames(newdata)), 
+        "Not all variables defined in {.arg condition} are present in {.arg newdata} ."
+      )
+    }
+  }
+  conditions <- c("state", condition)
   S <- model$n_states
   C <- model$n_channels
   T_ <- model$length_of_sequences
   M <- model$n_symbols
-  model$X_B[attr(model$X_B, "missing")] <- NA
+  ids <- unique(model$data[[model$id_variable]])
+  times <- unique(model$data[[model$time_variable]])
   if (C == 1L) {
-    ids <- rownames(model$observations)
-    times <- as.numeric(colnames(model$observations))
     symbol_names <- list(model$symbol_names)
     model$gammas$B <- list(model$gammas$B)
   } else {
-    ids <- rownames(model$observations[[1]])
-    times <- as.numeric(colnames(model$observations[[1]]))
     symbol_names <- model$symbol_names
   }
   if (!attr(model$X_B, "iv")) {
@@ -223,22 +256,17 @@ get_emission_probs.nhmm <- function(model, probs = NULL, newdata = NULL, remove_
   d <- do.call(
     rbind,
     lapply(seq_len(C), function(i) {
-      data.frame(
+      data.table(
         id = rep(ids, each = S * M[i] * T_),
         time = rep(times, each = S * M[i]),
         state = model$state_names,
-        channel = model$channel_names[i],
+        response = model$responses[i],
         observation = rep(symbol_names[[i]], each = S),
         estimate = unlist(get_B_all(
           model$gammas$B[[i]], X, attr(model$X_B, "tv")
         ))
       )
     })
-  )
-  d <- stats::setNames(
-    d, 
-    c(model$id_variable, model$time_variable, "state", "channel", 
-      "observation", "estimate")
   )
   if (!is.null(probs)) {
     stopifnot_(
@@ -251,7 +279,7 @@ get_emission_probs.nhmm <- function(model, probs = NULL, newdata = NULL, remove_
     if (C == 1) {
       qs <- get_B_qs(
         model$boot$gamma_B, 
-        X, attr(model$X_B, "tv"), probs
+        X, attr(model$X_B, "tv"), probs, model$sequence_lengths
       )
     } else {
       qs <- do.call(
@@ -259,7 +287,7 @@ get_emission_probs.nhmm <- function(model, probs = NULL, newdata = NULL, remove_
         lapply(seq_len(C), function(i) {
           get_B_qs(
             lapply(model$boot$gamma_B, "[[", i), 
-            X, attr(model$X_B, "tv"), probs
+            X, attr(model$X_B, "tv"), probs, model$sequence_lengths
           )
         })
       )
@@ -268,17 +296,24 @@ get_emission_probs.nhmm <- function(model, probs = NULL, newdata = NULL, remove_
       d[paste0("q", 100 * probs[i])] <- qs[, i]
     }
   }
+  if (!is.null(model$autoregression_formula)) {
+    # remove B_1 as y_1 is fixed
+    d <- d[time == time[1]]
+  }
+  setnames(d, c("id", "time"), c(model$id_variable, model$time_variable))
   if (remove_voids) {
-    d[complete.cases(d), ]
+    stats::na.omit(d)
   } else {
     d
   }
 }
 #' @rdname emission_probs
 #' @export
-get_emission_probs.mnhmm <- function(model, probs = NULL, newdata = NULL, remove_voids = TRUE, ...) {
+get_emission_probs.mnhmm <- function(model, probs = NULL, condition = NULL, 
+                                     newdata = NULL, remove_voids = TRUE, ...) {
   x <- lapply(split_mnhmm(model), 
-              get_emission_probs, probs = probs, newdata = newdata, remove_voids = remove_voids)
+              get_emission_probs, probs = probs, condition = condition,
+              newdata = newdata, remove_voids = remove_voids)
   do.call(rbind, lapply(seq_along(x), function(i) {
     cbind(cluster = names(x)[i], x[[i]])
   }))
@@ -295,23 +330,30 @@ get_emission_probs.mhmm <- function(model, ...) {
 }
 #' Extract the Prior Cluster Probabilities of MHMM or MNHMM
 #' 
-#' @param model A mixture hidden Markov model.
-#' @param probs Vector defining the quantiles of interest. Default is 
-#' `c(0.025, 0.5, 0.975)`. The quantiles are based on bootstrap samples of 
-#' coefficients, stored in `object$boot`.
-#' @param ... Ignored.
+#' @inheritParams get_initial_probs.nhmm
 #' @rdname cluster_probs
 #' @export
 #' @seealso [posterior_cluster_probabilities()].
-get_cluster_probs.mnhmm <- function(model, probs = NULL, newdata = NULL, ...) {
+get_cluster_probs.mnhmm <- function(model, probs = NULL, condition = NULL, 
+                                    newdata = NULL, ...) {
   if (!is.null(newdata)) {
     model <- update(model, newdata)
   }
-  if (model$n_channels == 1L) {
-    ids <- rownames(model$observations)
-  } else {
-    ids <- rownames(model$observations[[1]])
+  if (!is.null(condition)) {
+    if(is.null(newdata)) {
+      stopifnot_(
+        all(condition %in% colnames(model$data)), 
+        "Not all variables defined in {.arg condition} are present in {.arg model$data} ."
+      )
+    } else {
+      stopifnot_(
+        all(condition %in% colnames(newdata)), 
+        "Not all variables defined in {.arg condition} are present in {.arg newdata} ."
+      )
+    }
   }
+  conditions <- c("cluster", condition)
+  ids <- unique(model$data[[model$id_variable]])
   if (attr(model$X_omega, "icpt_only")) {
     X <- model$X_omega[, 1L, drop = FALSE]
     ids <- "all"
@@ -325,6 +367,7 @@ get_cluster_probs.mnhmm <- function(model, probs = NULL, newdata = NULL, ...) {
       model$gammas$omega, X
     ))
   )
+  setnames(d, "id", model$id_variable)
   d <- stats::setNames(d, c("cluster", model$id_variable, "estimate"))
   if (!is.null(probs)) {
     stopifnot_(
@@ -359,55 +402,4 @@ get_cluster_probs.mhmm <- function(model, ...) {
     id = rep(ids, each = model$n_clusters),
     estimate = c(t(prior_cluster_probabilities))
   )
-}
-#' Get the Estimated Initial, Transition, Emission and (Prior) Cluster 
-#' Probabilities for NHMM or MNHMM
-#' 
-#' @param model An object of class `nhmm` or `mnhmm`.
-#' @param probs Vector defining the quantiles of interest. Default is 
-#' `c(0.025, 0.5, 0.975)`. The quantiles are based on bootstrap samples of 
-#' coefficients, stored in `object$boot`.
-#' @param newdata An optional data frame containing the new data to be used in 
-#' computing the probabilities.
-#' @param remove_voids Should the time points corresponding to `TraMineR`'s 
-#' void in the observed sequences be removed? Default is `TRUE`.
-#' @param ... Ignored.
-#' @rdname get_probs
-#' @export
-get_probs <- function(model, ...) {
-  UseMethod("get_probs", model)
-}
-#' @rdname get_probs
-#' @export
-get_probs.nhmm <- function(model, probs = NULL, newdata = NULL, remove_voids = TRUE, ...) {
-  if (!is.null(newdata)) {
-    model <- update(model, newdata)
-  }
-  out <- list(
-    initial_probs = get_initial_probs(model, probs),
-    transition_probs = get_transition_probs(model, probs, remove_voids = remove_voids),
-    emission_probs = get_emission_probs(model, probs, remove_voids = remove_voids)
-  )
-  rownames(out$initial_probs) <- NULL
-  rownames(out$transition_probs) <- NULL
-  rownames(out$emission_probs) <- NULL
-  out
-}
-#' @rdname get_probs
-#' @export
-get_probs.mnhmm <- function(model, probs = NULL, newdata = NULL, remove_voids = TRUE, ...) {
-  if (!is.null(newdata)) {
-    model <- update(model, newdata)
-  }
-  out <- list(
-    initial_probs = get_initial_probs(model, probs),
-    transition_probs = get_transition_probs(model, probs, remove_voids = remove_voids),
-    emission_probs = get_emission_probs(model, probs, remove_voids = remove_voids),
-    cluster_probs = get_cluster_probs(model, probs)
-  )
-  rownames(out$initial_probs) <- NULL
-  rownames(out$transition_probs) <- NULL
-  rownames(out$emission_probs) <- NULL
-  rownames(out$cluster_probs) <- NULL
-  out
 }
