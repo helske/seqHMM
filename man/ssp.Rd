@@ -200,3 +200,6 @@ Object of class \code{ssp}.
 Function \code{ssp} defines the arguments for plotting with
 \code{\link[=plot.ssp]{plot.ssp()}} or \code{\link[=gridplot]{gridplot()}}.
 }
+\details{
+This function is deprecated, use \code{\link[=stacked_sequence_plot]{stacked_sequence_plot()}} instead.
+}

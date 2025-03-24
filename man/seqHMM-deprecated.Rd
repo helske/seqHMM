@@ -10,6 +10,6 @@ of \code{seqHMM}.
 \details{
 \itemize{
 \item \code{ssplot}, \code{ssp}, \code{mssplot}, \code{plot.ssp}. Use \code{\link[=stacked_sequence_plot]{stacked_sequence_plot()}} instead.
-\item \code{gridplot} Use \code{\link[=stacked_sequence_plot]{stacked_sequence_plot()}} and \code{patchwork} package instead.
+\item \code{gridplot} Use \code{\link[=stacked_sequence_plot]{stacked_sequence_plot()}}, \code{ggseqplot}, and \code{patchwork} packages instead.
 }
 }

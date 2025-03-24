@@ -22,6 +22,9 @@ hidden_paths(model, ...)
 \item{model}{A hidden Markov model.}
 
 \item{...}{Ignored.}
+
+\item{as_stslist}{Logical. If \code{TRUE}, the output the is converted to an
+\code{stslist} object. Default is \code{FALSE}, which returns a \code{data.table}.}
 }
 \value{
 The most probable paths of hidden states as an \code{data.table}.
