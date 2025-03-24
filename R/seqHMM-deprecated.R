@@ -4,7 +4,7 @@
 #' of `seqHMM`.
 #' 
 #' * `ssplot`, `ssp`, `mssplot`, `plot.ssp`. Use [stacked_sequence_plot()] instead.
-#' * `gridplot` Use [stacked_sequence_plot()] and `patchwork` package instead.
+#' * `gridplot` Use [stacked_sequence_plot()], `ggseqplot`, and `patchwork` packages instead.
 #' 
 #' @name seqHMM-deprecated
 NULL

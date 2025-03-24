@@ -42,11 +42,12 @@ forward_backward.hmm <- function(model, forward_only = FALSE, ...) {
     expand.grid(
       state = model$state_names,
       time = times,
-      id = ids,
+      id = as.factor(ids),
       stringsAsFactors = FALSE
     )[, 3:1],
     log_alpha = c(out$forward_probs),
-    log_beta = if (forward_only) NULL else c(out$backward_probs)
+    log_beta = if (forward_only) NULL else c(out$backward_probs),
+    key = c("id", "time")
   )
   d
 }
@@ -77,7 +78,8 @@ forward_backward.mhmm <- function(model, forward_only = FALSE, ...) {
       stringsAsFactors = FALSE
     )[, 3:1],
     log_alpha = c(out$forward_probs),
-    log_beta = if (forward_only) NULL else c(out$backward_probs)
+    log_beta = if (forward_only) NULL else c(out$backward_probs),
+    key = c("id", "time")
   )
   d[, c("cluster", "state") := tstrsplit(state, ":", fixed = TRUE)]
   d
@@ -137,7 +139,8 @@ forward_backward.nhmm <- function(model, forward_only = FALSE,  ...) {
       stringsAsFactors = FALSE
     )[, 3:1],
     log_alpha = c(fp),
-    log_beta = if (forward_only) NULL else c(bp)
+    log_beta = if (forward_only) NULL else c(bp),
+    key = c("id", "time")
   )
   setnames(d, c("id", "time"), c(model$id_variable, model$time_variable))
   stats::na.omit(d)
@@ -213,7 +216,8 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,  ...) {
       stringsAsFactors = FALSE
     )[, 3:1],
     log_alpha = c(fp),
-    log_beta = if (forward_only) NULL else c(bp)
+    log_beta = if (forward_only) NULL else c(bp),
+    key = c("id", "time")
   )
   setnames(d, c("id", "time"), c(model$id_variable, model$time_variable))
   d[, c("cluster", "state") := tstrsplit(state, ":", fixed = TRUE)]

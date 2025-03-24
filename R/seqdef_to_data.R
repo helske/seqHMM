@@ -16,7 +16,7 @@
 data_to_stslist <- function(x, id, time, responses, ...) {
   if (inherits(x, "nhmm") || inherits(x, "mnhmm")) {
     responses <- x$responses
-    x <- x$data[, c(x$id_variable, x$time_variable, )]
+    x <- x$data[, c(x$id_variable, x$time_variable)]
   } else {
     cols <- c(id, time, responses)
     x <- as.data.table(x)
@@ -41,7 +41,6 @@ data_to_stslist <- function(x, id, time, responses, ...) {
 #' @rdname data_to_stslist
 #' @export
 stslist_to_data <- function(x, id, time, responses, ...) {
-  
   if (TraMineR::is.stslist(x)) {
     x <- list(x)
   } else {
@@ -80,15 +79,16 @@ stslist_to_data <- function(x, id, time, responses, ...) {
       "The numeric time indices based on column names of sequence object ", 
       "are not numerically sorted. Please recode the column names.")
   )
-  ids <- rownames(x[[1]])
+  ids <- factor(rownames(x[[1]]), levels = rownames(x[[1]]))
   data <- data.table(
     id = rep(ids, times = length(timenames)), 
     time = rep(timenames, each = length(ids))
   )
-  colnames(data) <- c(id, time)
   for (i in seq_along(x)) {
     data[, (responses[i]) := factor(unlist(x[[i]]), levels = alphabet(x[[i]]))]
   }
+  setkeyv(data, c("id", "time"))
+  setnames(data, c("id", "time"), c(id, time))
   data[]
 }
 

@@ -397,9 +397,10 @@ get_cluster_probs.mhmm <- function(model, ...) {
   } else {
     ids <- rownames(model$observations[[1]])
   }
-  data.frame(
+  data.table(
     cluster = model$cluster_names,
-    id = rep(ids, each = model$n_clusters),
-    estimate = c(t(prior_cluster_probabilities))
+    id = rep(factor(ids), each = model$n_clusters),
+    estimate = c(t(prior_cluster_probabilities)),
+    key = "id"
   )
 }

@@ -3,6 +3,8 @@
 #'
 #' Function `ssp` defines the arguments for plotting with
 #' [plot.ssp()] or [gridplot()].
+#' 
+#' This function is deprecated, use [stacked_sequence_plot()] instead.
 #' @export
 #' @param x Either a hidden Markov model object of class `hmm` or a state
 #'   sequence object of class `stslist` (created with the [TraMineR::seqdef()])
@@ -434,7 +436,7 @@ ssp <- function(
     }
     # Hidden paths not provided (compute)
     if (is.null(hidden.paths)) {
-      hidden.paths <- suppressMessages(hidden_paths(x, respect_void = respect_void))
+      hidden.paths <- suppressMessages(hidden_paths(x, as_stslist = TRUE))
       # No labels
       if (length(hidden.states.labels) == 1 && is.null(hidden.states.labels)) {
         hidden.states.labels <- rep("", length(alphabet(hidden.paths)))

@@ -19,6 +19,7 @@
     !is.null(data[[id_var]]), 
     "Can't find grouping variable {.var {id_var}} in {.arg data}."
   )
+  data[[id_var]] <- as.factor(data[[id_var]])
   stopifnot_(
     !is.null(data[[time_var]]), 
     "Can't find time index variable {.var {time_var}} in {.arg data}."

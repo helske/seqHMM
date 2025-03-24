@@ -5,6 +5,8 @@
 #'
 #' @export
 #' @param model A hidden Markov model.
+#' @param as_stslist Logical. If `TRUE`, the output the is converted to an 
+#' `stslist` object. Default is `FALSE`, which returns a `data.table`.
 #' @param ... Ignored.
 #' @return The most probable paths of hidden states as an `data.table`. 
 #' The log-probability is included as an attribute 
@@ -155,6 +157,7 @@ create_mpp_data <- function(out, model, as_stslist = FALSE) {
       state = c(mpp)
     )[time <= times[model$sequence_lengths[id]], ]
   } else {
+    if (model$n_channels == 1) model$observations <- list(model$observations)
     if (is.null(times <- as.numeric(colnames(model$observations[[1]])))) {
       times <- seq_len(model$length_of_sequences)
     }
@@ -171,7 +174,7 @@ create_mpp_data <- function(out, model, as_stslist = FALSE) {
       state = c(mpp)
     )[time <= times[model$sequence_lengths[id]], ]
   }
-  
+  setkey(d, id, time)
   if (as_stslist) {
     d <- suppressMessages(
       data_to_stslist(d, "id", "time", "state")
