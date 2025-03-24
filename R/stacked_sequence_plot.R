@@ -65,10 +65,13 @@ stacked_sequence_plot <- function(
   
   if (inherits(x, c("hmm", "nhmm", "mhmm", "mnhmm"))) {
     if (is.null(group) && inherits(x, c("mhmm", "mnhmm"))) {
-      hp <- hidden_paths(x, as_stslist = TRUE)
+      hp <- hidden_paths(x)
       group <- factor(
         most_probable_cluster(x, type = "viterbi", hp = hp),
         levels = x$cluster_names
+      )
+      hp <- suppressMessages(
+        data_to_stslist(hp, colnames(hp)[1], colnames(hp)[2], "state")
       )
     } else {
       if (plots != "obs") {
