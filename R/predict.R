@@ -417,5 +417,5 @@ predict.fanhmm <- function(
       }
     }
   }
-  lapply(d_mean[lengths(d_mean) > 0], as.data.frame)
+  lapply(d_mean[lengths(d_mean) > 0], as.data.table)
 }

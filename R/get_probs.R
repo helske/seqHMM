@@ -59,7 +59,7 @@ get_initial_probs.nhmm <- function(model, probs = NULL, condition = NULL,
   } else {
     X <- model$X_pi
   }
-  d <- data.frame(
+  d <- data.table(
     id = rep(ids, each = model$n_states),
     state = model$state_names,
     estimate = c(
@@ -360,7 +360,7 @@ get_cluster_probs.mnhmm <- function(model, probs = NULL, condition = NULL,
   } else {
     X <- model$X_omega
   }
-  d <- data.frame(
+  d <- data.table(
     cluster = model$cluster_names,
     id = rep(ids, each = model$n_clusters),
     estimate = c(get_omega_all(

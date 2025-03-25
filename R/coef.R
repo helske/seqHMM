@@ -17,7 +17,7 @@ coef.nhmm <- function(object, probs = NULL, ...) {
   gamma_pi <- gamma_std_to_gamma(
     object$gammas$pi, R_inv_pi, coef_names_pi, X_mean_pi
   )
-  gamma_pi <- data.frame(
+  gamma_pi <- data.table(
     state = object$state_names,
     parameter = rep(coef_names_pi, each = S),
     estimate = c(gamma_pi)
@@ -29,7 +29,7 @@ coef.nhmm <- function(object, probs = NULL, ...) {
   gamma_A <- gamma_std_to_gamma(
     object$gammas$A, R_inv_A, coef_names_A, X_mean_A
   )
-  gamma_A <- data.frame(
+  gamma_A <- data.table(
     state_from = rep(object$state_names, each = S * K),
     state_to = object$state_names,
     parameter = rep(coef_names_A, each = S),
@@ -43,7 +43,7 @@ coef.nhmm <- function(object, probs = NULL, ...) {
     object$gammas$B, R_inv_B, coef_names_B, X_mean_B
   )
   if (object$n_channels == 1) {
-    gamma_B <- data.frame(
+    gamma_B <- data.table(
       state = rep(object$state_names, each = M * K),
       observation = object$symbol_names,
       parameter = rep(coef_names_B, each = M),
@@ -54,7 +54,7 @@ coef.nhmm <- function(object, probs = NULL, ...) {
       rbind,
       lapply(
         seq_len(object$n_channels), function(i) {
-          data.frame(
+          data.table(
             state = rep(object$state_names, each = M[i] * K),
             observation = object$symbol_names[[i]],
             parameter = rep(coef_names_B, each = M[i]),
@@ -128,7 +128,7 @@ coef.mnhmm <- function(object, probs = NULL, ...) {
   gamma_pi <- gamma_std_to_gamma(
     object$gammas$pi, R_inv_pi, coef_names_pi, X_mean_pi
   )
-  gamma_pi <- data.frame(
+  gamma_pi <- data.table(
     cluster = rep(object$cluster_names, each = S * K),
     state = unlist(object$state_names),
     parameter = rep(coef_names_pi, each = S),
@@ -141,7 +141,7 @@ coef.mnhmm <- function(object, probs = NULL, ...) {
   gamma_A <- gamma_std_to_gamma(
     object$gammas$A, R_inv_A, coef_names_A, X_mean_A
   )
-  gamma_A <- data.frame(
+  gamma_A <- data.table(
     cluster = rep(object$cluster_names, each = S * S * K),
     state_from = rep(unlist(object$state_names), each = S * K),
     state_to = unlist(object$state_names),
@@ -157,7 +157,7 @@ coef.mnhmm <- function(object, probs = NULL, ...) {
     object$gammas$B, R_inv_B, coef_names_B, X_mean_B
   )
   if (object$n_channels == 1) {
-    gamma_B <- data.frame(
+    gamma_B <- data.table(
       cluster =  rep(object$cluster_names, each = S * M * K),
       state = rep(unlist(object$state_names), each = M * K),
       observation = object$symbol_names,
@@ -173,7 +173,7 @@ coef.mnhmm <- function(object, probs = NULL, ...) {
             rbind,
             lapply(
               seq_len(object$n_channels), function(i) {
-                data.frame(
+                data.table(
                   cluster = rep(object$cluster_names[d], each = S * M[i] * K),
                   state = rep(object$state_names[[d]], each = M[i] * K),
                   observation = object$symbol_names[[i]],
@@ -193,7 +193,7 @@ coef.mnhmm <- function(object, probs = NULL, ...) {
   gamma_omega <- gamma_std_to_gamma(
     object$gammas$omega, R_inv_omega, coef_names_omega, X_mean_omega
   )
-  gamma_omega <- data.frame(
+  gamma_omega <- data.table(
     cluster = object$cluster_names,
     parameter = rep(coef_names_omega, each = D),
     estimate = c(gamma_omega)

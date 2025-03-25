@@ -8,12 +8,25 @@
 #' @param id A character string specifying the id variable. Ignored if `x` 
 #' is NHMM.
 #' @param responses A character vector specifying the name(s) of the response 
-#' variable(s).Ignored if `x` is NHMM.
-#' @param ... Additional arguments to [TraMineR::seqdef()] in case of 
-#' `data_to_stslist`. Ignored in `stslist_to_data`.
+#' variable(s). Ignored if `x` is NHMM.
+#' @param seqdef_args A list of additional arguments to [TraMineR::seqdef()] in 
+#' case of  `data_to_stslist`. In case of `length(responses) > 1`, a list of 
+#' lists. Ignored in `stslist_to_data`.
+#' @param ... Ignored
 #' @rdname data_to_stslist
 #' @export
-data_to_stslist <- function(x, id, time, responses, ...) {
+data_to_stslist <- function(x, id, time, responses, seqdef_args = NULL, ...) {
+  
+  stopifnot_(
+    !missing(responses) && checkmate::test_character(x = responses), 
+    "Argument {.arg responses} must be a character vector defining the response 
+    variable(s) in the {.arg x}."
+  )
+  stopifnot_(
+    length(responses) == length(unique(responses)), 
+    "Response names in {.arg responses} should be unique."
+  )
+  
   if (inherits(x, "nhmm") || inherits(x, "mnhmm")) {
     responses <- x$responses
     x <- x$data[, c(x$id_variable, x$time_variable)]
@@ -27,13 +40,23 @@ data_to_stslist <- function(x, id, time, responses, ...) {
   sequences <- vector("list", length(responses))
   names(sequences) <- responses
   colnames(x)[1:2] <- c("id", "time")
+  if (!is.null(seqdef_args) && length(responses) > 1) {
+    #TODO check if seqdef_args is a list of lists
+    names(seqdef_args) <- responses
+  }
   for (y in responses) {
     wide_data <- dcast(x, id ~ time, value.var = y, drop = FALSE)
-    sequences[[y]] <- seqdef(
-      wide_data[, -1],
-      informat = "STS",
-      alphabet = levels(x[[y]]),
-      id = wide_data[["id"]]
+    sequences[[y]] <- do.call(
+      TraMineR::seqdef, 
+      c(
+        list(
+          data = wide_data[, -1],
+          informat = "STS",
+          alphabet = levels(x[[y]]),
+          id = wide_data[["id"]]
+        ),
+        seqdef_args[[y]]
+      )
     )
   }
   if (length(responses) == 1) sequences[[1]] else sequences
@@ -41,6 +64,15 @@ data_to_stslist <- function(x, id, time, responses, ...) {
 #' @rdname data_to_stslist
 #' @export
 stslist_to_data <- function(x, id, time, responses, ...) {
+  stopifnot_(
+    !missing(responses) && checkmate::test_character(x = responses), 
+    "Argument {.arg responses} must be a character vector defining the names of 
+    the response variable(s)."
+  )
+  stopifnot_(
+    length(responses) == length(unique(responses)), 
+    "Response names in {.arg responses} should be unique."
+  )
   if (TraMineR::is.stslist(x)) {
     x <- list(x)
   } else {

@@ -17,7 +17,10 @@ create_base_nhmm <- function(responses, data, id_var, time_var, n_states, state_
     "Argument {.arg responses} must be a character vector defining the response 
     variable(s) in the {.arg data}."
   )
-  
+  stopifnot_(
+    length(responses) == length(unique(responses)), 
+    "Response names in {.arg responses} should be unique."
+  )
   n_clusters <- length(cluster_names)
   mixture <- n_clusters > 1L
   
