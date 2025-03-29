@@ -4,7 +4,7 @@
 \alias{get_marginals}
 \title{Compute the Marginal Probabilities from NHMMs}
 \usage{
-get_marginals(model, probs = NULL, condition = NULL, newdata = NULL, ...)
+get_marginals(model, probs = NULL, condition = NULL, newdata = NULL)
 }
 \arguments{
 \item{model}{An object of class \code{nhmm}.}

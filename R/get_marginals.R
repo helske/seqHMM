@@ -1,4 +1,5 @@
 compute_z_marginals <- function(model, id_time, pp, cond) {
+  probability <- NULL
   x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]
   x <- pp[x, on = id_time, nomatch = 0L]
   cond <- c(cond, "state")
@@ -6,6 +7,7 @@ compute_z_marginals <- function(model, id_time, pp, cond) {
 }
 
 compute_y_and_B_marginals <- function(model, id_time, pp, cond) {
+  probability <- state_prob <- NULL
   B <- get_emission_probs(model)
   x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]
   x <- B[x, on = id_time, nomatch = 0L]
@@ -18,6 +20,7 @@ compute_y_and_B_marginals <- function(model, id_time, pp, cond) {
 }
 
 compute_A_marginals <- function(model, id_time, pp, cond) {
+  probability <- i.probability <- state_prob <- cols <- NULL
   A <- get_transition_probs(model)
   x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]
   x <- A[x, on = id_time, nomatch = 0L]
@@ -44,7 +47,7 @@ compute_A_marginals <- function(model, id_time, pp, cond) {
 #' computing the probabilities.
 #' @export
 get_marginals <- function(model, probs = NULL, condition = NULL, 
-                          newdata = NULL, ...) {
+                          newdata = NULL) {
   stopifnot_(
     inherits(model, c("nhmm", "mnhmm")),
     "Argument {.arg model} must be an object of class {.cls nhmm} or {.cls mnhmm}."
