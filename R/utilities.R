@@ -1,4 +1,8 @@
-
+#' Quantile function with more data.frame friendly names
+#' @noRd
+quantileq <- function(x, probs, ...) {
+  setNames(quantile(x, probs = probs, ...), paste0("q", 100 * probs))
+}
 
 #' Base R version of group_by(id) |> mutate(lag = lag(x)) |> pull(lag)
 #' Instead of NA, missing values are set to d[[response]][1] as in order to 

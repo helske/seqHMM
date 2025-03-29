@@ -147,84 +147,30 @@ BEGIN_RCPP
 END_RCPP
 }
 // get_A_all
-arma::field<arma::cube> get_A_all(const arma::cube& gamma, const arma::cube& X, const bool tv);
-RcppExport SEXP _seqHMM_get_A_all(SEXP gammaSEXP, SEXP XSEXP, SEXP tvSEXP) {
+arma::field<arma::cube> get_A_all(const arma::cube& gamma, const arma::cube& X, const bool tv, const arma::uvec& Ti);
+RcppExport SEXP _seqHMM_get_A_all(SEXP gammaSEXP, SEXP XSEXP, SEXP tvSEXP, SEXP TiSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::cube& >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< const arma::cube& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const bool >::type tv(tvSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_A_all(gamma, X, tv));
+    Rcpp::traits::input_parameter< const arma::uvec& >::type Ti(TiSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_A_all(gamma, X, tv, Ti));
     return rcpp_result_gen;
 END_RCPP
 }
 // get_B_all
-arma::field<arma::cube> get_B_all(const arma::cube& gamma, const arma::cube& X, const bool tv);
-RcppExport SEXP _seqHMM_get_B_all(SEXP gammaSEXP, SEXP XSEXP, SEXP tvSEXP) {
+arma::field<arma::cube> get_B_all(const arma::cube& gamma, const arma::cube& X, const bool tv, const arma::uvec& Ti);
+RcppExport SEXP _seqHMM_get_B_all(SEXP gammaSEXP, SEXP XSEXP, SEXP tvSEXP, SEXP TiSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::cube& >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< const arma::cube& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const bool >::type tv(tvSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_B_all(gamma, X, tv));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_pi_qs
-arma::mat get_pi_qs(const arma::field<arma::mat>& gamma, const arma::mat& X, const arma::vec& probs);
-RcppExport SEXP _seqHMM_get_pi_qs(SEXP gammaSEXP, SEXP XSEXP, SEXP probsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::field<arma::mat>& >::type gamma(gammaSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_pi_qs(gamma, X, probs));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_A_qs
-arma::mat get_A_qs(const arma::field<arma::cube>& gamma, const arma::cube& X, const bool tv, const arma::vec& probs, const arma::uvec& Ti);
-RcppExport SEXP _seqHMM_get_A_qs(SEXP gammaSEXP, SEXP XSEXP, SEXP tvSEXP, SEXP probsSEXP, SEXP TiSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type gamma(gammaSEXP);
-    Rcpp::traits::input_parameter< const arma::cube& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const bool >::type tv(tvSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type Ti(TiSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_A_qs(gamma, X, tv, probs, Ti));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_B_qs
-arma::mat get_B_qs(const arma::field<arma::cube>& gamma, const arma::cube& X, const bool tv, const arma::vec& probs, const arma::uvec& Ti);
-RcppExport SEXP _seqHMM_get_B_qs(SEXP gammaSEXP, SEXP XSEXP, SEXP tvSEXP, SEXP probsSEXP, SEXP TiSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::field<arma::cube>& >::type gamma(gammaSEXP);
-    Rcpp::traits::input_parameter< const arma::cube& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const bool >::type tv(tvSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
-    Rcpp::traits::input_parameter< const arma::uvec& >::type Ti(TiSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_B_qs(gamma, X, tv, probs, Ti));
-    return rcpp_result_gen;
-END_RCPP
-}
-// get_omega_qs
-arma::mat get_omega_qs(const arma::field<arma::mat>& gamma, const arma::mat& X, const arma::vec& probs);
-RcppExport SEXP _seqHMM_get_omega_qs(SEXP gammaSEXP, SEXP XSEXP, SEXP probsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::field<arma::mat>& >::type gamma(gammaSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type probs(probsSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_omega_qs(gamma, X, probs));
+    rcpp_result_gen = Rcpp::wrap(get_B_all(gamma, X, tv, Ti));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -1361,12 +1307,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_fast_quantiles", (DL_FUNC) &_seqHMM_fast_quantiles, 2},
     {"_seqHMM_get_omega_all", (DL_FUNC) &_seqHMM_get_omega_all, 2},
     {"_seqHMM_get_pi_all", (DL_FUNC) &_seqHMM_get_pi_all, 2},
-    {"_seqHMM_get_A_all", (DL_FUNC) &_seqHMM_get_A_all, 3},
-    {"_seqHMM_get_B_all", (DL_FUNC) &_seqHMM_get_B_all, 3},
-    {"_seqHMM_get_pi_qs", (DL_FUNC) &_seqHMM_get_pi_qs, 3},
-    {"_seqHMM_get_A_qs", (DL_FUNC) &_seqHMM_get_A_qs, 5},
-    {"_seqHMM_get_B_qs", (DL_FUNC) &_seqHMM_get_B_qs, 5},
-    {"_seqHMM_get_omega_qs", (DL_FUNC) &_seqHMM_get_omega_qs, 3},
+    {"_seqHMM_get_A_all", (DL_FUNC) &_seqHMM_get_A_all, 4},
+    {"_seqHMM_get_B_all", (DL_FUNC) &_seqHMM_get_B_all, 4},
     {"_seqHMM_logSumExp", (DL_FUNC) &_seqHMM_logSumExp, 1},
     {"_seqHMM_EM_LBFGS_mnhmm_singlechannel", (DL_FUNC) &_seqHMM_EM_LBFGS_mnhmm_singlechannel, 33},
     {"_seqHMM_EM_LBFGS_mnhmm_multichannel", (DL_FUNC) &_seqHMM_EM_LBFGS_mnhmm_multichannel, 33},

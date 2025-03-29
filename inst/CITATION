@@ -1,28 +1,32 @@
-c(
-bibentry(bibtype = "Article",
+bibentry("Article",
   title        = "Mixture Hidden {M}arkov Models for Sequence Data: The {seqHMM} Package in {R}",
   author       = c(person(given = "Satu",
                           family = "Helske",
-                          email = "satu.helske@liu.se"),
+                          email = "satu.helske@utu.fi"),
                    person(given = "Jouni",
                           family = "Helske",
-                          email = "jouni.helske@liu.se")),
+                          email = "jouni.helske@iki.fi")),
   journal      = "Journal of Statistical Software",
   year         = "2019",
   volume       = "88",
   number       = "3",
   pages        = "1--32",
   doi          = "10.18637/jss.v088.i03",
+)
 
-  header       = "To cite seqHMM in publications use:"
-),
-  bibentry(
-    bibtype = "Manual",
-    title = "seqHMM: Mixture hidden {Markov} models for social sequence data and other multivariate, multichannel categorical time series",
-    author = "Jouni Helske and Satu Helske",
-    year = sub("-.*", "", meta$Date),
-    note = sprintf("R package version %s", meta$Version),
-    url = "https://cran.r-project.org/package=seqHMM",
-    key = "seqHMM"
-  )
+bibentry("Article",
+  title        = "Feedback-augmented Non-homogeneous Hidden {M}arkov Models for Longitudinal Causal Inference",
+  author       = person(given = "Jouni", family = "Helske", email = "jouni.helske@iki.fi"),
+  journal      = "arXiv preprint",
+  year         = "2025",
+  doi          = "10.48550/arXiv.2503.16014"
+)
+
+bibentry(
+  bibtype = "Manual",
+  title = "seqHMM: Mixture hidden {Markov} models for social sequence data and other multivariate, multichannel categorical time series",
+  author = "Jouni Helske and Satu Helske",
+  year = sub("-.*", "", meta$Date),
+  note = sprintf("R package version %s", meta$Version),
+  doi = "10.32614/CRAN.package.seqHMM"
 )

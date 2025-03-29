@@ -45,28 +45,12 @@ get_pi_all <- function(gamma, X) {
     .Call(`_seqHMM_get_pi_all`, gamma, X)
 }
 
-get_A_all <- function(gamma, X, tv) {
-    .Call(`_seqHMM_get_A_all`, gamma, X, tv)
+get_A_all <- function(gamma, X, tv, Ti) {
+    .Call(`_seqHMM_get_A_all`, gamma, X, tv, Ti)
 }
 
-get_B_all <- function(gamma, X, tv) {
-    .Call(`_seqHMM_get_B_all`, gamma, X, tv)
-}
-
-get_pi_qs <- function(gamma, X, probs) {
-    .Call(`_seqHMM_get_pi_qs`, gamma, X, probs)
-}
-
-get_A_qs <- function(gamma, X, tv, probs, Ti) {
-    .Call(`_seqHMM_get_A_qs`, gamma, X, tv, probs, Ti)
-}
-
-get_B_qs <- function(gamma, X, tv, probs, Ti) {
-    .Call(`_seqHMM_get_B_qs`, gamma, X, tv, probs, Ti)
-}
-
-get_omega_qs <- function(gamma, X, probs) {
-    .Call(`_seqHMM_get_omega_qs`, gamma, X, probs)
+get_B_all <- function(gamma, X, tv, Ti) {
+    .Call(`_seqHMM_get_B_all`, gamma, X, tv, Ti)
 }
 
 logSumExp <- function(x) {

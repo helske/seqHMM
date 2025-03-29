@@ -10,9 +10,9 @@
 \usage{
 get_initial_probs(model, ...)
 
-\method{get_initial_probs}{nhmm}(model, probs = NULL, condition = NULL, newdata = NULL, ...)
+\method{get_initial_probs}{nhmm}(model, ...)
 
-\method{get_initial_probs}{mnhmm}(model, probs = NULL, condition = NULL, newdata = NULL, ...)
+\method{get_initial_probs}{mnhmm}(model, ...)
 
 \method{get_initial_probs}{hmm}(model, ...)
 
@@ -22,17 +22,6 @@ get_initial_probs(model, ...)
 \item{model}{A hidden Markov model.}
 
 \item{...}{Ignored.}
-
-\item{probs}{Vector defining the quantiles of interest. Default is
-\code{NULL}, in which case no quantiles are computed. The quantiles are based on
-bootstrap samples of coefficients, stored in \code{object$boot}.}
-
-\item{condition}{An optional vector of variable names used for conditional
-marginal probabilities. Default is \code{NULL}, in which case no marginalization is
-done.}
-
-\item{newdata}{An optional data frame containing the new data to be used in
-computing the probabilities.}
 }
 \description{
 Extract the Initial State Probabilities of Hidden Markov Model

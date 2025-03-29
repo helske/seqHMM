@@ -5,7 +5,7 @@
 \alias{stslist_to_data}
 \title{Transform TraMineR's state sequence object to data.table and vice versa}
 \usage{
-data_to_stslist(x, id, time, responses, ...)
+data_to_stslist(x, id, time, responses, seqdef_args = NULL, ...)
 
 stslist_to_data(x, id, time, responses, ...)
 }
@@ -21,10 +21,13 @@ is NHMM.}
 is NHMM.}
 
 \item{responses}{A character vector specifying the name(s) of the response
-variable(s).Ignored if \code{x} is NHMM.}
+variable(s). Ignored if \code{x} is NHMM.}
 
-\item{...}{Additional arguments to \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}} in case of
-\code{data_to_stslist}. Ignored in \code{stslist_to_data}.}
+\item{seqdef_args}{A list of additional arguments to \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}} in
+case of  \code{data_to_stslist}. In case of \code{length(responses) > 1}, a list of
+lists. Ignored in \code{stslist_to_data}.}
+
+\item{...}{Ignored}
 }
 \description{
 Transform TraMineR's state sequence object to data.table and vice versa

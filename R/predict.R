@@ -2,7 +2,7 @@
 #' @noRd
 compute_joint <- function(x, newdata, type, cond, state_names, symbol_names, responses) {
   # avoid CRAN check warnings due to NSE
-  ..cond_base <- estimate <- probability <- NULL
+  estimate <- probability <- NULL
   S <- length(state_names)
   M <- length(symbol_names)
   cond_obs <- cond$obs
@@ -13,7 +13,7 @@ compute_joint <- function(x, newdata, type, cond, state_names, symbol_names, res
   state_factor <- factor(rep(state_names, times = M), levels = state_names)
   obs_factor <- factor(rep(symbol_names, each = S), levels = symbol_names)
   newdata <- setDT(newdata)[rep(seq_len(nrow(newdata)), each = S * M), 
-                            ..cond_base]
+                            cols, env = list(cols = as.list(cond_base))]
   set(newdata, j = "state", value = rep(state_factor, length.out = nrow(newdata)))
   set(newdata, j = responses, value = rep(obs_factor, length.out = nrow(newdata)))
   set(newdata, j = "estimate", value = stats::na.omit(c(x)))
