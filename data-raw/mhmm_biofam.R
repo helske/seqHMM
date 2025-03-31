@@ -1,3 +1,4 @@
+library(seqHMM)
 data("biofam3c")
 
 # Building sequence objects
@@ -131,4 +132,4 @@ init_mhmm_bf <- build_mhmm(
 # Fitting the model
 mhmm_biofam <- fit_model(init_mhmm_bf)$model
 
-usethis::use_data(mhmm_biofam, overwrite = TRUE)
+usethis::use_data(mhmm_biofam)

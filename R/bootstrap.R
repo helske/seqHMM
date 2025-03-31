@@ -1,21 +1,25 @@
 #' Bootstrap observations
 #' @noRd
-bootstrap_model <- function(model) {
-  idx <- sample.int(model$n_sequences, replace = TRUE)
-  if (model$n_channels  == 1) {
-    model$observations[] <- model$observations[idx, ]
-  } else {
-    for(i in seq_len(model$n_channels)) {
-      model$observations[[i]][] <- model$observations[[i]][idx, ,]
-    }
-  }
+bootstrap_model <- function(model, ids) {
+  idx <- sort(sample.int(model$n_sequences, replace = TRUE))
+  ids <- ids[idx]
+  model$data <- model$data[list(ids), on = model$id_variable]
+  new_ids <- rep(seq_len(model$n_sequences), each = model$length_of_sequences)
+  model$data[, id := new_ids, env = list(id = model$id_variable)]
+  model$sequence_lengths <- model$sequence_lengths[idx]
   model$X_pi[] <- model$X_pi[, idx]
   model$X_A[] <- model$X_A[, , idx]
   model$X_B[] <- model$X_B[, , idx]
   if (inherits(model, "mnhmm")) {
     model$X_omega[] <- model$X_omega[, idx]
   }
-  model$sequence_lengths <- model$sequence_lengths[idx]
+  lag_obs <- paste0("lag_", model$responses)
+  ar <- any(
+    lag_obs %in% attr(stats::terms(model$emission_formula), "term.labels")
+  )
+  attr(model, "nobs") <- sum(!is.na(
+    model$data[, y, env = list(y = I(model$responses))]
+  )) / model$n_channels - ar * model$n_sequences
   list(model = model, idx = idx)
 }
 #' Permute states of bootstrap sample to match MLE
@@ -109,9 +113,10 @@ bootstrap_coefs.nhmm <- function(model, nsim = 1000,
   control_mstep <- model$controls$mstep
   control_mstep$print_level <- 0
   if (type == "nonparametric") {
+    ids <- unique(model$data[[model$id_variable]])
     out <- future.apply::future_lapply(
       seq_len(nsim), function(i) {
-        boot_mod <- bootstrap_model(model)
+        boot_mod <- bootstrap_model(model, ids)
         fit <- fit_nhmm(
           boot_mod$model, init, init_sd = 0, restarts = 0, lambda = lambda, 
           method = method, bound = bound, control = control,
@@ -215,9 +220,10 @@ bootstrap_coefs.mnhmm <- function(model, nsim = 1000,
   control_mstep <- model$controls$mstep
   control_mstep$print_level <- 0
   if (type == "nonparametric") {
+    ids <- unique(model$data[[model$id_variable]])
     out <- future.apply::future_lapply(
       seq_len(nsim), function(i) {
-        boot_mod <- bootstrap_model(model)
+        boot_mod <- bootstrap_model(model, ids)
         fit <- fit_mnhmm(
           boot_mod$model, init, init_sd = 0, restarts = 0, lambda = lambda, 
           method = method, bound = bound, control = control,

@@ -101,11 +101,10 @@ coef.nhmm <- function(object, probs = NULL, ...) {
     q_pi <- fast_quantiles(matrix(unlist(boot_gamma_pi), ncol = nsim), probs)
     q_A <- fast_quantiles(matrix(unlist(boot_gamma_A), ncol = nsim), probs)
     q_B <- fast_quantiles(matrix(unlist(boot_gamma_B), ncol = nsim), probs)
-    for(i in seq_along(probs)) {
-      gamma_pi[paste0("q", 100 * probs[i])] <- q_pi[, i]
-      gamma_A[paste0("q", 100 * probs[i])] <- q_A[, i]
-      gamma_B[paste0("q", 100 * probs[i])] <- q_B[, i]
-    }
+    probs <- paste0("q", 100 * probs)
+    gamma_pi[, (probs) := data.table(q_pi)]
+    gamma_A[, (probs) := data.table(q_A)]
+    gamma_B[, (probs) := data.table(q_B)]
   }
   list(
     initial = gamma_pi, 
@@ -244,12 +243,11 @@ coef.mnhmm <- function(object, probs = NULL, ...) {
     q_B <- fast_quantiles(matrix(unlist(boot_gamma_B), ncol = nsim), probs)
     q_omega <- fast_quantiles(matrix(unlist(boot_gamma_omega), ncol = nsim), probs)
     
-    for(i in seq_along(probs)) {
-      gamma_pi[paste0("q", 100 * probs[i])] <- q_pi[, i]
-      gamma_A[paste0("q", 100 * probs[i])] <- q_A[, i]
-      gamma_B[paste0("q", 100 * probs[i])] <- q_B[, i]
-      gamma_omega[paste0("q", 100 * probs[i])] <- q_omega[, i]
-    }
+    probs <- paste0("q", 100 * probs)
+    gamma_pi[, (probs) := data.table(q_pi)]
+    gamma_A[, (probs) := data.table(q_A)]
+    gamma_B[, (probs) := data.table(q_B)]
+    gamma_omega[, (probs) := data.table(q_omega)]
   }
   list(
     initial = gamma_pi, 

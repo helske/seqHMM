@@ -79,7 +79,7 @@ simulate_fanhmm <- function(
     autoregression_formula, feedback_formula, data, id, time, scale = FALSE
   )
   
-  W <- update_W_for_fanhmm(model, data)
+  W <- update_W_for_fanhmm(model)
   if (identical(coefs, "random")) {
     coefs <- list(
       initial_probs = NULL, 

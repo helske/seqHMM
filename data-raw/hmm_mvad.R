@@ -1,3 +1,4 @@
+library(seqHMM)
 data("mvad", package = "TraMineR")
 
 mvad_alphabet <-
@@ -33,4 +34,4 @@ init_hmm_mvad <- build_hmm(observations = mvad_seq,
 set.seed(21)
 fit_hmm_mvad <- fit_model(init_hmm_mvad, control_em = list(restart = list(times = 100)))
 hmm_mvad <- fit_hmm_mvad$model
-usethis::use_data(hmm_mvad, overwrite = TRUE)
+usethis::use_data(hmm_mvad)

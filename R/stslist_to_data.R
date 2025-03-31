@@ -40,8 +40,16 @@ data_to_stslist <- function(x, id, time, responses, seqdef_args = NULL, ...) {
   sequences <- vector("list", length(responses))
   names(sequences) <- responses
   colnames(x)[1:2] <- c("id", "time")
-  if (!is.null(seqdef_args) && length(responses) > 1) {
-    #TODO check if seqdef_args is a list of lists
+  if (!is.null(seqdef_args)) {
+    if (length(responses) > 1) {
+      stopifnot_(
+        is_list_of_lists(seqdef_args) && length(seqdef_args) == length(responses),
+        "Argument {.arg seqdef_args} should be a list of lists in case of 
+        multiple responses."
+      )
+    } else {
+      seqdef_args <- list(seqdef_args)
+    }
     names(seqdef_args) <- responses
   }
   for (y in responses) {

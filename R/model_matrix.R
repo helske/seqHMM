@@ -219,7 +219,6 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     X <- t(X)
     dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
     n_pars <- n_states * (n_states - 1L) * nrow(X)
-    missing_values <- which(is.na(X))
     # Replace NAs in void cases and t = 1 with zero
     X[is.na(X)] <- 0
     iv <- iv_X(X[, -1L, , drop = FALSE])
@@ -231,7 +230,6 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
   attr(X, "iv") <- iv
   attr(X, "tv") <- tv
   attr(X, "icpt_only") <- icpt_only
-  attr(X, "missing") <- missing_values
   
   list(formula = formula, n_pars = n_pars, X = X)
 }
@@ -309,7 +307,6 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     X <- t(X)
     dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
     n_pars <- sum(n_states * (n_symbols - 1L) * nrow(X))
-    missing_values <- which(is.na(X))
     # Replace NAs in void cases with zero
     X[is.na(X)] <- 0
     iv <- iv_X(X)
@@ -321,7 +318,6 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
   attr(X, "iv") <- iv
   attr(X, "tv") <- tv
   attr(X, "icpt_only") <- icpt_only
-  attr(X, "missing") <- missing_values
   
   list(formula = formula, n_pars = n_pars, X = X)
 }

@@ -309,8 +309,7 @@ predict.fanhmm <- function(
     object$n_channels == 1L,
     "Multichannel FAN-HMM is not yet supported."
   )
-  W <- update_W_for_fanhmm(object, newdata)
-  
+  W <- update_W_for_fanhmm(object)
   out <- unlist(predict_fanhmm_singlechannel( 
     object$etas$pi, object$X_pi,
     object$etas$A, object$X_A, 
@@ -326,7 +325,7 @@ predict.fanhmm <- function(
   if (!is.null(newdata2)) {
     object2 <- update(object, newdata2)
     obs2 <- create_obsArray(object2, FALSE) # don't set first obs to missing
-    W2 <- update_W_for_fanhmm(object2, newdata2)
+    W2 <- update_W_for_fanhmm(object2)
     out2 <- unlist(predict_fanhmm_singlechannel( 
       object2$etas$pi, object2$X_pi,
       object2$etas$A, object2$X_A, 
@@ -411,8 +410,7 @@ predict.fanhmm <- function(
     for(i in names(d_mean)) {
       if(!is.null(d_mean[[i]])) {
         di <- do.call(rbind, lapply(d_boot, function(x) x[[i]]$probability))
-        qs <- t(apply(di, 2, stats::quantile, probs = probs))
-        colnames(qs) <- paste0("q", 100 * probs)
+        qs <- t(apply(di, 2, quantileq, probs = probs))
         d_mean[[i]] <- cbind(d_mean[[i]], qs)
       }
     }

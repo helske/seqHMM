@@ -18,7 +18,7 @@ simulate_new_sequences <- function(model, newdata = NULL) {
   if (!is.null(newdata)) {
     model <- update(model, newdata)
   }
-  W <- update_W_for_fanhmm(model, newdata)
+  W <- update_W_for_fanhmm(model)
   times <- model$data[[model$time_variable]]
   obs_1 <- model$data[[model$response]][times == min(times)]
   out <- simulate_fanhmm_singlechannel(

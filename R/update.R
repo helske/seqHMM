@@ -9,7 +9,7 @@
 #' @export
 update.nhmm <- function(object, newdata, ...) {
   # avoid CRAN check warning due to NSE
-  tmax <-y <-  NULL
+  tmax <- y <- NULL
   initial_formula <- object$initial_formula
   attr(initial_formula, "xlevels") <- stats::.getXlevels(
     stats::terms(initial_formula), object$data
@@ -26,7 +26,6 @@ update.nhmm <- function(object, newdata, ...) {
   id_var <- object$id_variable
   responses <- object$responses
   newdata <- .check_data(newdata, id_var, time_var, responses)
-  object$data <- newdata
   ids <- unique(newdata[[id_var]])
   object$n_sequences <- length(ids)
   times <- unique(newdata[[time_var]])
@@ -43,6 +42,7 @@ update.nhmm <- function(object, newdata, ...) {
                                        id_var = id_var, 
                                        time_var = time_var
                                      )]$V1
+  newdata[, tmax := NULL]
   if (inherits(object, "fanhmm") & !is.null(object$autoregression_formula)) {
     newdata[[paste0("lag_", responses)]] <- 
       group_lag(newdata, id_var, responses)
@@ -54,8 +54,8 @@ update.nhmm <- function(object, newdata, ...) {
     scale = TRUE, R_inv = attr(object$X_pi, "R_inv")
   )$X
   object$X_A <- model_matrix_transition_formula(
-    transition_formula, newdata, object$n_sequences, object$n_states, 
-    id_var, time_var, object$sequence_lengths,
+    transition_formula, newdata, object$n_sequences, object$length_of_sequences,
+    object$n_states, id_var, time_var, object$sequence_lengths,
     X_mean = attr(object$X_A, "X_mean"), check = FALSE, 
     scale = TRUE, R_inv = attr(object$X_A, "R_inv")
   )$X
@@ -67,6 +67,7 @@ update.nhmm <- function(object, newdata, ...) {
     scale = TRUE, R_inv = attr(object$X_B, "R_inv"), 
     autoregression = !is.null(object$autoregression_formula)
   )$X
+  object$data <- newdata
   object
 }
 #' @rdname update_nhmm
@@ -95,14 +96,12 @@ update.mnhmm <- function(object, newdata, ...) {
   id_var <- object$id_variable
   responses <- object$responses
   newdata <- .check_data(newdata, id_var, time_var, responses)
-  object$data <- newdata
   ids <- unique(newdata[[id_var]])
   object$n_sequences <- length(ids)
   times <- unique(newdata[[time_var]])
   object$length_of_sequences <- length(times)
   n_obs <- sum(!is.na(newdata[, y, env = list(y = I(responses))])) / object$n_channels
   attr(object, "nobs") <- n_obs
-  
   newdata[, tmax := max(time_var), by = id_var, 
           env = list(id_var = id_var, time_var = time_var)]
   newdata <- fill_time(newdata, id_var, time_var)
@@ -113,7 +112,7 @@ update.mnhmm <- function(object, newdata, ...) {
                                        id_var = id_var, 
                                        time_var = time_var
                                      )]$V1
-  
+  newdata[, tmax := NULL]
   if (inherits(object, "fanhmm") & !is.null(object$autoregression_formula)) {
     newdata[[paste0("lag_", responses)]] <- 
       group_lag(newdata, id_var, responses)
@@ -143,10 +142,11 @@ update.mnhmm <- function(object, newdata, ...) {
     scale = TRUE, R_inv = attr(object$X_B, "R_inv"), 
     autoregression = !is.null(object$autoregression_formula)
   )$X
+  object$data <- newdata
   object
 }
 
-update_W_for_fanhmm <- function(object, newdata, ...) {
+update_W_for_fanhmm <- function(object) {
   transition_formula <- object$transition_formula
   attr(transition_formula, "xlevels") <- stats::.getXlevels(
     stats::terms(transition_formula), object$data
@@ -156,11 +156,8 @@ update_W_for_fanhmm <- function(object, newdata, ...) {
     stats::terms(emission_formula), object$data
   )
   responses <- object$responses
-  newdata <- newdata[order(newdata[[object$id_variable]], newdata[[object$time_variable]]), ]
-  newdata <- fill_time(newdata, object$time_variable, object$id_variable)
+  newdata <- object$data
   W_A <- W_B <- vector("list", object$n_symbols)
-  newdata[[responses]] <- factor(object$symbol_names[1], levels = object$symbol_names)
-  newdata[[paste0("lag_", responses)]] <- newdata[[responses]]
   for (i in seq_len(object$n_symbols)) {
     newdata[[responses]][] <- object$symbol_names[i]
     newdata[[paste0("lag_", responses)]][] <- object$symbol_names[i]
