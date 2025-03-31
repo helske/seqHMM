@@ -6,34 +6,34 @@
 #' 16 state variables, and a separate data frame with 1 id variable,
 #' 8 covariates, and 2 weight variables.
 #'
-#' @details This data is constructed from the \code{\link[TraMineR]{biofam}}
+#' @details This data is constructed from the [TraMineR::biofam()]
 #' data in the TraMineR package. Here the original state sequences are
-#' converted into three separate data sets: \code{children}, \code{married},
-#' and \code{left}. These include the corresponding life states from age 15 to
-#' 30: \code{childless} or (having) \code{children}; \code{single},
-#' \code{married}, or \code{divorced}; and (living) \code{with parents} or
-#' \code{left home}.
+#' converted into three separate data sets: `children`, `married`,
+#' and `left`. These include the corresponding life states from age 15 to
+#' 30: `childless` or (having) `children`; `single`,
+#' `married`, or `divorced`; and (living) `with parents` or
+#' `left home`.
 #'
-#' Note that the \code{divorced} state does not give information on parenthood
+#' Note that the `divorced` state does not give information on parenthood
 #' or residence, so a guess is made based on preceeding states.
 #'
-#' The fourth data frame \code{covariates} is a collection of
+#' The fourth data frame `covariates` is a collection of
 #' additional variables from the original data:
 #' \tabular{ll}{
-#'  \code{idhous }\tab id\cr
-#'  \code{sex }\tab sex\cr
-#'  \code{birthyr }\tab birth year\cr
-#'  \code{nat_1_02 }\tab first nationality\cr
-#'  \code{plingu02 }\tab language of questionnaire\cr
-#'  \code{p02r01 }\tab religion\cr
-#'  \code{p02r04 }\tab religious participation\cr
-#'  \code{cspfaj }\tab father's social status\cr
-#'  \code{cspmoj }\tab mother's social status\cr
-#'  \code{wp00tbgp }\tab weights inflating to the Swiss population\cr
-#'  \code{wp00tbgs }\tab weights respecting sample size
+#'  `idhous `\tab id\cr
+#'  `sex `\tab sex\cr
+#'  `birthyr `\tab birth year\cr
+#'  `nat_1_02 `\tab first nationality\cr
+#'  `plingu02 `\tab language of questionnaire\cr
+#'  `p02r01 `\tab religion\cr
+#'  `p02r04 `\tab religious participation\cr
+#'  `cspfaj `\tab father's social status\cr
+#'  `cspmoj `\tab mother's social status\cr
+#'  `wp00tbgp `\tab weights inflating to the Swiss population\cr
+#'  `wp00tbgs `\tab weights respecting sample size
 #'  }
 #'
-#' The data is loaded by calling \code{data(biofam3c)}. It was built using
+#' The data is loaded by calling `data(biofam3c)`. It was built using
 #' following code:
 #' \preformatted{
 #' data("biofam" , package = "TraMineR")
@@ -72,14 +72,14 @@
 #' })
 #' }
 #'
-#' @source \code{\link[TraMineR]{biofam}} data constructed from the Swiss
+#' @source [TraMineR::biofam()] data constructed from the Swiss
 #' Household Panel
-#' \url{https://forscenter.ch/projects/swiss-household-panel/}
+#' <https://forscenter.ch/projects/swiss-household-panel/>
 #'
 #' @references Müller, N. S., M. Studer, G. Ritschard (2007). Classification de
-#' parcours de vie à l'aide de l'optimal matching. In \emph{XIVe Rencontre de l
+#' parcours de vie à l'aide de l'optimal matching. In *XIVe Rencontre de l
 #' a Société francophone de classification (SFC 2007), Paris, 5 - 7 septembre
-#' 2007}, pp. 157–160.
+#' 2007*, pp. 157–160.
 #'
 #' @docType data
 #' @keywords datasets

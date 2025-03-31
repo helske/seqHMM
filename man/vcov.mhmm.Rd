@@ -4,7 +4,7 @@
 \alias{vcov.mhmm}
 \title{Variance-Covariance Matrix for Coefficients of Covariates of Mixture Hidden Markov Model}
 \usage{
-\method{vcov}{mhmm}(object, conditional = TRUE, threads = 1, log_space = FALSE, ...)
+\method{vcov}{mhmm}(object, conditional = TRUE, threads = 1, log_space = TRUE, ...)
 }
 \arguments{
 \item{object}{Object of class \code{mhmm}.}
@@ -15,7 +15,8 @@ computed conditional on other model parameters. See details.}
 \item{threads}{Number of threads to use in parallel computing. Default is 1.}
 
 \item{log_space}{Make computations using log-space instead of scaling for greater
-numerical stability at cost of decreased computational performance. Default is \code{FALSE}.}
+numerical stability at cost of decreased computational performance.
+Default is \code{TRUE}.}
 
 \item{...}{Additional arguments to function \code{jacobian} of \code{numDeriv} package.}
 }
@@ -36,4 +37,7 @@ are based on the numerical approximation of the full Hessian of the coefficients
 and the model parameters corresponding to nonzero probabilities.
 Computing the non-conditional standard errors can be slow for large models as
 the Jacobian of analytical gradients is computed using finite difference approximation.
+
+Alternatively, by using the non-homogeneous model via \code{estimate_mnhmm} you
+can compute the standard errors of the coefficients using the bootstrap method.
 }

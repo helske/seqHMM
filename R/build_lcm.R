@@ -1,20 +1,20 @@
 #' Build a Latent Class Model
 #'
-#' Function \code{build_lcm} is a shortcut for constructing a latent class model
-#' as a restricted case of an \code{mhmm} object.
+#' Function `build_lcm` is a shortcut for constructing a latent class model
+#' as a restricted case of an `mhmm` object.
 #'
 #' @export
-#' @param observations An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
+#' @param observations An `stslist` object (see [TraMineR::seqdef()]) containing
 #'   the sequences, or a list of such objects (one for each channel).
 #' @param n_clusters A scalar giving the number of clusters/submodels
-#' (not used if starting values for model parameters are given with \code{emission_probs}).
+#' (not used if starting values for model parameters are given with `emission_probs`).
 #' @param emission_probs A matrix containing emission probabilities for each class by rows,
 #'   or in case of multichannel data a list of such matrices.
 #'   Note that the matrices must have dimensions k x s where k is the number of
 #'   latent classes and s is the number of unique symbols (observed states) in the
 #'   data. Emission probabilities should follow the ordering of the alphabet of
-#'   observations (\code{alphabet(observations)}, returned as \code{symbol_names}).
-#' @param formula Optional formula of class \code{\link{formula}} for the
+#'   observations (`alphabet(observations)`, returned as `symbol_names`).
+#' @param formula Optional formula of class [formula()] for the
 #' mixture probabilities. Left side omitted.
 #' @param data A data frame containing the variables used in the formula.
 #' Ignored if no formula is provided.
@@ -24,30 +24,30 @@
 #'   mixture probabilities. The first column is set to zero.
 #' @param cluster_names A vector of optional names for the classes/clusters.
 #' @param channel_names A vector of optional names for the channels.
-#' @return Object of class \code{mhmm} with the following elements:
-#' \describe{
-#'    \item{\code{observations}}{State sequence object or a list of such containing the data.}
-#'    \item{\code{transition_probs}}{A matrix of transition probabilities.}
-#'    \item{\code{emission_probs}}{A matrix or a list of matrices of emission probabilities.}
-#'    \item{\code{initial_probs}}{A vector of initial probabilities.}
-#'    \item{\code{coefficients}}{A matrix of parameter coefficients for covariates (covariates in rows, clusters in columns).}
-#'    \item{\code{X}}{Covariate values for each subject.}
-#'    \item{\code{cluster_names}}{Names for clusters.}
-#'    \item{\code{state_names}}{Names for hidden states.}
-#'    \item{\code{symbol_names}}{Names for observed states.}
-#'    \item{\code{channel_names}}{Names for channels of sequence data}
-#'    \item{\code{length_of_sequences}}{(Maximum) length of sequences.}
-#'    \item{\code{n_sequences}}{Number of sequences.}
-#'    \item{\code{n_symbols}}{Number of observed states (in each channel).}
-#'    \item{\code{n_states}}{Number of hidden states.}
-#'    \item{\code{n_channels}}{Number of channels.}
-#'    \item{\code{n_covariates}}{Number of covariates.}
-#'    \item{\code{n_clusters}}{Number of clusters.}
-#' }
-#' @seealso \code{\link{fit_model}} for estimating model parameters;
-#' \code{\link{summary.mhmm}} for a summary of a mixture model;
-#' \code{\link{separate_mhmm}} for organizing an \code{mhmm} object into a list of
-#' separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting
+#' @return Object of class `mhmm` with the following elements:
+#' * `observations`\cr State sequence object or a list of such containing the data.
+#' * `transition_probs`\cr A matrix of transition probabilities.
+#' * `emission_probs`\cr A matrix or a list of matrices of emission probabilities.
+#' * `initial_probs`\cr A vector of initial probabilities.
+#' * `coefficients`\cr A matrix of parameter coefficients for covariates (covariates in rows, clusters in columns).
+#' * `X`\cr Covariate values for each subject.
+#' * `cluster_names`\cr Names for clusters.
+#' * `state_names`\cr Names for hidden states.
+#' * `symbol_names`\cr Names for observed states.
+#' * `channel_names`\cr Names for channels of sequence data
+#' * `length_of_sequences`\cr (Maximum) length of sequences.
+#' * `sequence_lengths`\cr A vector of sequence lengths.
+#' * `n_sequences`\cr Number of sequences.
+#' * `n_symbols`\cr Number of observed states (in each channel).
+#' * `n_states`\cr Number of hidden states.
+#' * `n_channels`\cr Number of channels.
+#' * `n_covariates`\cr Number of covariates.
+#' * `n_clusters`\cr Number of clusters.
+#' 
+#' @seealso [fit_model()] for estimating model parameters;
+#' [summary.mhmm()] for a summary of a mixture model;
+#' [separate_mhmm()] for organizing an `mhmm` object into a list of
+#' separate `hmm` objects; and [plot.mhmm()] for plotting
 #' mixture models.
 #'
 #' @examples
@@ -66,7 +66,8 @@
 #' fit <- fit_model(model)
 #'
 #' # How many of the observations were correctly classified:
-#' sum(summary(fit$model)$most_probable_cluster == rep(c("Class 2", "Class 1"), times = c(500, 200)))
+#' sum(summary(fit$model)$most_probable_cluster == rep(c("Class 2", "Class 1"), 
+#'   times = c(500, 200)))
 #'
 #' ############################################################
 #' \dontrun{
@@ -83,7 +84,7 @@
 #'   "joblessness", "school", "training"
 #' )
 #' mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-#' mvad_seq <- seqdef(mvad, 17:86,
+#' mvad_seq <- seqdef(mvad, 15:86,
 #'   alphabet = mvad_alphabet, states = mvad_scodes,
 #'   labels = mvad_labels, xtstep = 6
 #' )
@@ -136,7 +137,7 @@
 #' n <- 100
 #' X <- cbind(1, x1 = runif(n, 0, 1), x2 = runif(n, 0, 1))
 #' coefs <- cbind(0, c(-2, 5, -2), c(0, -2, 2))
-#' pr <- exp(X %*% coefs) + rnorm(n * 3)
+#' pr <- exp(X %*% coefs) + stats::rnorm(n * 3)
 #' pr <- pr / rowSums(pr)
 #' y <- apply(pr, 1, which.max)
 #' table(y)
@@ -152,38 +153,33 @@
 build_lcm <- function(observations, n_clusters, emission_probs,
                       formula = NULL, data = NULL, coefficients = NULL,
                       cluster_names = NULL, channel_names = NULL) {
-  if (missing(n_clusters) && missing(emission_probs)) {
-    stop("Provide either 'n_clusters' or 'emission_probs'.")
-  }
-  multichannel <- is_multichannel(observations)
-  # Single channel but observations is a list
-  if (is.list(observations) && !inherits(observations, "stslist") && length(observations) == 1) {
-    observations <- observations[[1]]
-    multichannel <- FALSE
-  }
-  n_channels <- ifelse(multichannel, length(observations), 1L)
-
-  if (missing(emission_probs)) {
-    if (multichannel) {
-      symbol_names <- lapply(observations, alphabet)
-      n_symbols <- lengths(symbol_names)
-    } else {
-      symbol_names <- alphabet(observations)
-      n_symbols <- length(symbol_names)
-    }
-    emission_probs <- simulate_emission_probs(1, n_symbols, n_clusters)
+  
+  n_clusters_given <- !missing(n_clusters)
+  emission_probs_given <- !missing(emission_probs)
+  stopifnot_(
+    n_clusters_given || emission_probs_given,
+    "Provide either {.arg emission_probs} or {.arg n_clusters}."
+  )
+  observations <- .check_observations(observations, channel_names)
+  n_channels <- attr(observations, "n_channels")
+  n_symbols <- attr(observations, "n_symbols")
+  channel_names <- attr(observations, "channel_names")
+  
+  if (!emission_probs_given) {
+    emission_probs <- simulate_emission_probs(1L, n_symbols, n_clusters)
   } else {
-    if (multichannel) {
+    if (n_channels > 1L) {
       n_clusters <- nrow(emission_probs[[1]])
       emission_probs_list <- vector("list", n_clusters)
-      for (i in 1:n_channels) {
-        if (nrow(emission_probs[[i]]) != n_clusters) {
-          stop("Different number of rows in 'emission_probs'.")
-        }
+      for (i in seq_len(n_channels)) {
+        stopifnot_(
+          nrow(emission_probs[[i]]) != n_clusters,
+          "Different number of rows in the list components of {.arg emission_probs}."
+        )
       }
-      for (i in 1:n_clusters) {
+      for (i in seq_len(n_clusters)) {
         emission_probs_list[[i]] <- vector("list", n_channels)
-        for (j in 1:n_channels) {
+        for (j in seq_len(n_channels)) {
           emission_probs_list[[i]][[j]] <- emission_probs[[j]][i, , drop = FALSE]
         }
       }
@@ -196,18 +192,18 @@ build_lcm <- function(observations, n_clusters, emission_probs,
     }
     emission_probs <- emission_probs_list
   }
+  if (is.null(cluster_names)) {
+    cluster_names <- paste("Class", seq_len(n_clusters))
+  } else if (length(cluster_names) != n_clusters) {
+    warning_(
+      "The length of {.arg cluster_names} does not match the number of clusters.
+      Names were not used."
+      )
+    cluster_names <- paste("Class", seq_len(n_clusters))
+  }
   n_states <- rep(1, n_clusters)
   initial_probs <- replicate(n_clusters, 1, simplify = FALSE)
-
-  if (is.null(cluster_names)) {
-    cluster_names <- paste("Class", 1:n_clusters)
-  } else if (length(cluster_names) != n_clusters) {
-    warning("The length of argument cluster_names does not match the number of clusters. Names were not used.")
-    cluster_names <- paste("Class", 1:n_clusters)
-  }
-
   transition_probs <- replicate(n_clusters, matrix(1), simplify = FALSE)
-  names(transition_probs) <- names(emission_probs) <- names(initial_probs) <- cluster_names
 
   model <- build_mhmm(
     observations = observations, transition_probs = transition_probs,
@@ -215,6 +211,7 @@ build_lcm <- function(observations, n_clusters, emission_probs,
     formula = formula, data = data, coefficients = coefficients,
     cluster_names = cluster_names, state_names = cluster_names,
     channel_names = channel_names)
+  model$call <- match.call()
   attr(model, "type") <- "lcm"
   model
 }

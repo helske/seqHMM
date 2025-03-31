@@ -8,7 +8,7 @@ mc_to_sc_data(data, combine_missing = TRUE, all_combinations = FALSE, cpal)
 }
 \arguments{
 \item{data}{A list of state sequence objects (\code{stslist}s)
-created with the \code{\link{seqdef}} function.}
+created with the \code{\link[=seqdef]{seqdef()}} function.}
 
 \item{combine_missing}{Controls whether combined states of observations
 at time t are coded missing (coded with * in \code{stslist}s)
@@ -28,7 +28,7 @@ the \code{seqHMM::colorpalette} is used).}
 }
 \description{
 Function \code{mc_to_sc_data} combines observed states of multiple
-  sequence objects into one, time point by time point.
+sequence objects into one, time point by time point.
 }
 \examples{
 # Load three-channel sequence data
@@ -37,21 +37,19 @@ data("biofam3c")
 # Building sequence objects
 marr_seq <- seqdef(biofam3c$married,
   start = 15,
-  alphabet = c("single", "married", "divorced")
+  alphabet = c("single", "married", "divorced"),
+  cpal = c("violetred2", "darkgoldenrod2", "darkmagenta")
 )
 child_seq <- seqdef(biofam3c$children,
   start = 15,
-  alphabet = c("childless", "children")
+  alphabet = c("childless", "children"),
+  cpal = c("darkseagreen1", "coral3")
 )
 left_seq <- seqdef(biofam3c$left,
   start = 15,
-  alphabet = c("with parents", "left home")
+  alphabet = c("with parents", "left home"),
+  cpal = c("lightblue", "red3")
 )
-
-# Define colors
-attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
-attr(child_seq, "cpal") <- c("darkseagreen1", "coral3")
-attr(left_seq, "cpal") <- c("lightblue", "red3")
 
 # Converting multichannel data to single-channel data
 sc_data <- mc_to_sc_data(list(marr_seq, child_seq, left_seq))
@@ -63,13 +61,13 @@ alphabet(sc_data)
 attr(sc_data, "cpal") <- colorpalette[[14]][1:10]
 
 # Plotting sequences for the first 10 subjects
-ssplot(
+stacked_sequence_plot(
   list(
     "Marriage" = marr_seq, "Parenthood" = child_seq,
     "Residence" = left_seq, "Combined" = sc_data
   ),
-  type = "I",
-  tlim = 1:10
+  type = "i",
+  ids = 1:10
 )
 
 
@@ -83,8 +81,8 @@ seqstatf(sc_data_all)
 
 }
 \seealso{
-\code{\link{mc_to_sc}} for transforming multichannel \code{hmm}
-  or \code{mhmm} objects into single-channel representations;
-  \code{\link{ssplot}} for plotting multiple sequence data sets in the
-  same plot; and \code{\link{seqdef}} for creating state sequence objects.
+\code{\link[=mc_to_sc]{mc_to_sc()}} for transforming multichannel \code{hmm}
+or \code{mhmm} objects into single-channel representations;
+\link{stacked_sequence_plot} for plotting multiple sequence data sets in the
+same plot; and \code{\link[=seqdef]{seqdef()}} for creating state sequence objects.
 }

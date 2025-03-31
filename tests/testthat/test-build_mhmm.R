@@ -2,7 +2,9 @@
 set.seed(123)
 s <- 2:3
 k <- length(s)
-obs <- seqdef(matrix(sample(letters[1:5], 50, replace = TRUE), ncol = 10))
+obs <- suppressMessages(
+  seqdef(matrix(sample(letters[1:5], 50, replace = TRUE), ncol = 10))
+)
 
 test_that("build_mhmm returns object of class 'mhmm'", {
   expect_error(
@@ -25,41 +27,41 @@ test_that("build_mhmm errors with incorrect dims", {
     build_mhmm(obs, initial_probs = simulate_initial_probs(s, k+1),
                emission_probs = simulate_emission_probs(s, 5, k),
                transition_probs = simulate_transition_probs(s, k)),
-    "Unequal list lengths of 'transition_probs', 'emission_probs' and 'initial_probs'."
+    "Length of a `initial_probs` does not match with the length of `transition_probs`."
   )
   expect_error(
     build_mhmm(obs, initial_probs = simulate_initial_probs(rev(s), k),
                emission_probs = simulate_emission_probs(s, 5, k),
                transition_probs = simulate_transition_probs(s, k)),
-    "Lengths of `initial_probs` does not match with the number of states."
+    "Length of `initial_probs` is not equal to the number of hidden states."
   )
   expect_error(
     build_mhmm(obs, initial_probs = simulate_initial_probs(s, k),
                emission_probs = simulate_emission_probs(rev(s), 5, k),
                transition_probs = simulate_transition_probs(s, k)),
-    "Number of rows in 'emission_probs' is not equal to the number of states."
+    "`emission_probs` do not sum to one."
   )
   expect_error(
     build_mhmm(obs, initial_probs = simulate_initial_probs(s, k),
                emission_probs = simulate_emission_probs(s, 4, k),
                transition_probs = simulate_transition_probs(s, k)),
-    "Number of columns in 'emission_probs' is not equal to the number of symbols."
+    "Number of columns in `emission_probs` is not equal to the number of symbols."
   )
   expect_error(
     build_mhmm(obs, initial_probs = simulate_initial_probs(s, k),
                emission_probs = simulate_emission_probs(s, 5, k)),
-    "Provide either 'n_states' or all three of 'initial_probs', 'transition_probs', and 'emission_probs'."
+    "Provide either `n_states` or all three of `initial_probs`, `transition_probs`, and `emission_probs`."
   )
 })
 
 test_that("build_mhmm formula works", {
   expect_error(
     build_mhmm(obs, n_states = k, formula = ~ 1),
-    "Argument 'n_states' is of length 1, leading to ordinary HMM. Please use 'build_hmm' instead."
+    "`n_states` is of length 1, leading to an ordinary HMM. Please use `build_hmm\\(\\)` instead\\."
   )
   expect_error(
     build_mhmm(obs, n_states = s, formula = ~ 1),
-    "Argument 'data' is missing, but 'formula' was provided."
+    "If `formula` is provided, `data` must be a <data\\.frame> object\\."
   )
   # default error message from model.matrix, could be more informative..
   expect_error(

@@ -16,3 +16,6 @@ vignettes/jss.bst
 vignettes/jss.cls
 ^\.github$
 ^codecov\.yml$
+^.covrignore
+^\.covrignore$
+^data-raw$

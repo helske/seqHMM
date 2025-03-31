@@ -11,25 +11,34 @@
 #'
 #' Maximum likelihood estimation via the EM algorithm and direct numerical maximization
 #' with analytical gradients is supported. All main algorithms are written in C++.
-#' Parallel computation is implemented via OpenMP.
+#' Parallel computation is implemented via OpenMP for pre-2.0.0 functions, while 
+#' estimation of non-homogenous models support parallelization via `future` 
+#' package by parallelization of multistart optimizations and bootstrap sampling.
 #'
 #' @docType package
-#' @name seqHMM
+#' @name seqHMM-package
 #' @aliases seqHMM
 #' @useDynLib seqHMM, .registration = TRUE
 #' @import igraph
 #' @import gridBase
 #' @import grid
 #' @import nloptr
-#' @importFrom Rcpp evalCpp
-#' @importFrom Matrix .bdiag
-#' @importFrom stats logLik cmdscale complete.cases model.matrix BIC rnorm runif vcov
-#' @importFrom TraMineR alphabet seqstatf seqdef seqlegend seqdist seqdistmc seqplot seqlength is.stslist
-#' @importFrom grDevices col2rgb rainbow
-#' @importFrom graphics barplot par plot plot.new polygon strwidth text
-#' @importFrom methods hasArg
-#' @importFrom utils menu
+#' @import Rcpp
+#' @importFrom Rcpp loadModule evalCpp
+#' @importFrom stats logLik vcov predict update coef nobs
+#' @importFrom TraMineR seqlegend
+#' @importFrom graphics par plot.new
+#' @importFrom ggplot2 ggplot aes geom_pointrange geom_ribbon geom_line facet_wrap
+#' @import data.table
 #' @references Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: The seqHMM Package in R,
 #' Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
-#'
-NULL
+"_PACKAGE"
+#' @importFrom TraMineR alphabet
+#' @export
+TraMineR::alphabet
+#' @importFrom TraMineR seqstatf
+#' @export
+TraMineR::seqstatf
+#' @importFrom TraMineR seqdef
+#' @export
+TraMineR::seqdef

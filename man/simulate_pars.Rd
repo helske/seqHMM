@@ -6,21 +6,26 @@
 \alias{simulate_emission_probs}
 \title{Simulate Parameters of Hidden Markov Models}
 \usage{
-simulate_initial_probs(n_states, n_clusters = 1)
+simulate_initial_probs(n_states, n_clusters = 1, alpha = 1)
 
 simulate_transition_probs(
   n_states,
   n_clusters = 1,
   left_right = FALSE,
-  diag_c = 0
+  diag_c = 0,
+  alpha = 1
 )
 
-simulate_emission_probs(n_states, n_symbols, n_clusters = 1)
+simulate_emission_probs(n_states, n_symbols, n_clusters = 1, alpha = 1)
 }
 \arguments{
 \item{n_states}{Number of states in each cluster.}
 
 \item{n_clusters}{Number of clusters.}
+
+\item{alpha}{A scalar, or a vector of length S (number of states) or M
+(number of symbols) defining the parameters of the Dirichlet distribution
+used to simulate the probabilities.}
 
 \item{left_right}{Constrain the transition probabilities to upper triangular.
 Default is \code{FALSE}.}
@@ -33,9 +38,4 @@ Default is \code{FALSE}.}
 These are helper functions for quick construction of initial values for various
 model building functions.
 Mostly useful for global optimization algorithms which do not depend on initial values.
-}
-\seealso{
-\code{\link{build_hmm}}, \code{\link{build_mhmm}},
-  \code{\link{build_mm}}, \code{\link{build_mmm}}, and  \code{\link{build_lcm}}
-  for constructing different types of models.
 }

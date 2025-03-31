@@ -1,13 +1,11 @@
-#' Posterior Probabilities for (Mixture) Hidden Markov Models
+#' Posterior Probabilities for Hidden Markov Models
 #'
-#' Function \code{posterior_probs} computes the posterior probabilities of hidden states of
-#' a (mixture) hidden Markov model.
-#'
+#' Function `posterior_probs` computes the posterior probabilities of hidden 
+#' states of a (mixture) hidden Markov model.
 #' @export
-#' @param model A (mixture) hidden Markov model of class \code{hmm} or \code{mhmm}.
-#' @param log_space Compute posterior probabilities in logarithmic scale. The default is \code{FALSE}.
-#' @return Posterior probabilities. In case of multiple observations,
-#' these are computed independentlsy for each sequence.
+#' @param model A hidden Markov model object.
+#' @param ... Ignored.
+#' @return A data frame of posterior probabilities for each state and sequence.
 #' @examples
 #' # Load a pre-defined MHMM
 #' data("mhmm_biofam")
@@ -15,19 +13,52 @@
 #' # Compute posterior probabilities
 #' pb <- posterior_probs(mhmm_biofam)
 #'
-#' # Locally most probable states for the first subject:
-#' pb[, , 1]
-posterior_probs <- function(model, log_space = FALSE) {
-  fb <- forward_backward(model, log_space = log_space)
-  if (!log_space) {
-    fb$forward_probs * fb$backward_probs /
-      aperm(replicate(sum(model$n_states), fb$scaling_factors), c(3, 1, 2))
-  } else {
-    ll <- logLik(model, partials = TRUE, log_space = TRUE)
-    fb$forward_probs + fb$backward_probs -
-      array(
-        rep(ll, each = sum(model$n_states) * model$length_of_sequences),
-        c(sum(model$n_states), model$length_of_sequences, model$n_sequences)
-      )
-  }
+#' @rdname posterior_probs
+#' @export
+posterior_probs <- function(model, ...) {
+  UseMethod("posterior_probs", model)
+}
+#' @rdname posterior_probs
+#' @export
+posterior_probs.hmm <- function(model, ...) {
+  # avoid CRAN check warning due to NSE
+  time <- id <- ll <- probability <- log_alpha <- log_beta <- NULL
+  out <- forward_backward(model)
+  out[, ll := logSumExp(log_alpha[time == time[.N]]), by = id]
+  out[, probability := exp(log_alpha + log_beta - ll)][, -c("log_alpha", "log_beta", "ll")]
+}
+#' @rdname posterior_probs
+#' @export
+posterior_probs.mhmm <- function(model, ...) {
+  # avoid CRAN check warning due to NSE
+  time <- id <- ll <- probability <- log_alpha <- log_beta <- NULL
+  out <- forward_backward(model)
+  out[, ll := logSumExp(log_alpha[time == time[.N]]), by = id]
+  out[, probability := exp(log_alpha + log_beta - ll)][, -c("log_alpha", "log_beta", "ll")]
+}
+#' @rdname posterior_probs
+#' @export
+posterior_probs.nhmm <- function(model, ...) { 
+  # avoid CRAN check warning due to NSE
+  ll <- probability <- log_alpha <- log_beta <- NULL
+  out <- forward_backward(model)
+  time_var <- model$time_variable
+  id_var <- model$id_variable
+  out[, ll := logSumExp(log_alpha[time_var == time_var[.N]]), 
+      by = id_var, env = list(id_var = id_var, time_var = time_var)]
+  out[, probability := exp(log_alpha + log_beta - ll)]
+  out[, -c("log_alpha", "log_beta", "ll")]
+}
+#' @rdname posterior_probs
+#' @export
+posterior_probs.mnhmm <- function(model, ...) {
+  # avoid CRAN check warning due to NSE
+  ll <- probability <- log_alpha <- log_beta <- NULL
+  out <- forward_backward(model)
+  time_var <- model$time_variable
+  id_var <- model$id_variable
+  out[, ll := logSumExp(log_alpha[time_var == time_var[.N]]), 
+      by = id_var, env = list(id_var = id_var, time_var = time_var)]
+  out[, probability := exp(log_alpha + log_beta - ll)]
+  out[, -c("log_alpha", "log_beta", "ll")]
 }

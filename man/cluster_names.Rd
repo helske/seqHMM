@@ -2,16 +2,16 @@
 % Please edit documentation in R/cluster_names.R
 \name{cluster_names}
 \alias{cluster_names}
-\title{Get cluster names from mhmm object}
+\title{Get Cluster Names from Mixture HMMs}
 \usage{
 cluster_names(object)
 }
 \arguments{
-\item{object}{An object of class `mhmm`.}
+\item{object}{An object of class \code{mhmm} or \code{mnhmm}.}
 }
 \value{
 A character vector containing the cluster names.
 }
 \description{
-Get cluster names from mhmm object
+Get Cluster Names from Mixture HMMs
 }

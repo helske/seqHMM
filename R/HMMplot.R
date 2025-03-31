@@ -15,7 +15,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
                     cex.legend = 1, ncol.legend = "auto", cpal = "auto",
                     legend.pos = "center", main = "auto", ...) {
   dots <- list(...)
-
+  
   labelprint <- function(z, labs) {
     if (labs == TRUE && (z > 0.001 || z == 0)) {
       labs <- FALSE
@@ -26,44 +26,42 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
       z <- prettyNum(signif(z, digits = label.signif), scientific = labs)
     }
   }
-
-  if (!is.matrix(layout) && !is.function(layout)) {
-    if (!(layout %in% c("horizontal", "vertical"))) {
-      stop("Argument layout only accepts numerical matrices, igraph layout functions, or strings \"horizontal\" and \"vertical\".")
-    }
-  }
-
+  
+  stopifnot_(
+    is.matrix(layout) || is.function(layout) || 
+      layout %in% c("horizontal", "vertical"),
+    "{.arg layout} only accepts numerical matrices, igraph layout functions, 
+    or strings {.val 'horizontal'} and {.val 'vertical'}."
+  )
   if (!is.numeric(vertex.label.pos)) {
     choices <- c("bottom", "top", "left", "right")
     ind <- pmatch(vertex.label.pos, choices, duplicates.ok = TRUE)
-    if (any(is.na(ind))) {
-      stop("Argument vertex.label.pos only accepts values \"bottom\", \"top\", \"left\", \"right\" or a numerical vector.")
-    }
+    stopifnot_(
+      !any(is.na(ind)),
+      "{.arg vertex.label.pos} only accepts values {.val 'bottom'}, 
+      {.val 'top'},{.val 'left'}, {.val 'right'} or numerical vector."
+    )
     vertex.label.pos <- choices[ind]
   }
-
   choices <- c(TRUE, FALSE, "bottom", "top", "left", "right")
   ind <- pmatch(with.legend, choices)
-  if (is.na(ind)) {
-    stop("Argument with.legend must be one of TRUE, FALSE, \"bottom\", \"right\", \"top\", or \"left\".")
-  }
+  stopifnot_(
+    !is.na(ind),
+    "{.arg  with.legend} only accepts values {.val 'TRUE'}, {.val 'FALSE'}, 
+    {.val 'bottom'}, {.val 'top'},{.val 'left'}, or {.val 'right'}."
+  )
   with.legend <- choices[ind]
   if (with.legend %in% c(TRUE, "auto")) {
     with.legend <- "bottom"
   }
-
-
   # Convert multichannel models to single-channel
   if (x$n_channels > 1) {
     x <- mc_to_sc(x, cpal = cpal)
   }
-
   # No slices -> no legends needed
   if (pie == FALSE && with.legend != FALSE) {
     with.legend <- FALSE
   }
-
-
   # Positions of vertex labels
   if (!is.numeric(vertex.label.pos)) {
     vpos <- numeric(length(vertex.label.pos))
@@ -80,7 +78,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
     }
     vertex.label.pos <- vpos
   }
-
+  
   # Vertex labels
   if (length(vertex.label) == 1 && !is.na(vertex.label) && vertex.label != FALSE) {
     if (vertex.label == "initial.probs") {
@@ -89,27 +87,31 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
       vertex.label <- x$state_names
     }
   } else if (length(vertex.label) != length(x$state_names)) {
-    warning("The length of the vector provided for the argument \"vertex.label\" does not match the number of hidden states.")
+    warning_("The length of {.arg vertex.label} does not match the number of 
+             hidden states.")
     vertex.label <- rep(vertex.label, length.out = length(x$state_names))
   }
-
+  
   # Vertex label distances
   if (is.character(vertex.label.dist)) {
     ind <- pmatch(vertex.label.dist, "auto")
-    if (is.na(ind)) {
-      stop("Argument vertex.label.dist only accepts the value \"auto\" or a numerical vector.")
-    }
+    stopifnot_(
+      !is.na(ind),
+      "{.arg vertex.label.dist} only accepts the value {.val 'auto'} or a 
+      numerical vector."
+    )
     vertex.label.dist <- vertex.size * 0.4 / 3.5
   } else if (length(vertex.label.dist) > 1 && length(vertex.label.dist) != x$n_states) {
-    warning("The length of the vector provided for the argument \"vertex.label.dist\" does not match the number of edges.")
+    warning_("The length of {.arg vertex.label.dist} does not match the number 
+             of edges.")
     vertex.label.dist <- rep(vertex.label.dist, length.out = length(x$n_states))
   }
-
-
+  
+  
   # Trimming (remove small transition probablities from plot)
   transM <- x$transition_probs
   transM[transM < trim] <- 0
-
+  
   # Adjacency matrix (which edges to plot)
   edges <- transM
   edges[edges > 0] <- 1
@@ -117,40 +119,44 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
   if (!loops) {
     diag(edges) <- 0
   }
-
+  
   # Vector of non-zero transition probabilities
   transitions <- transM
   if (loops == FALSE && length(transitions) > 1) {
     diag(transitions) <- 0
   }
   transitions <- t(transitions)[t(transitions) > 0]
-
+  
   # Edge labels
   if (!is.na(edge.label) && edge.label != FALSE) {
     if (length(edge.label) == 1 && (edge.label == "auto" || edge.label == TRUE)) {
       edge.label <- sapply(transitions, labelprint, labs = label.scientific)
     } else if (length(edge.label) > 1 && length(edge.label) != length(transitions)) {
-      warning("The length of the vector provided for the argument \"edge.label\" does not match the number of edges.")
+      warning_("The length of {.arg edge.label} does not match the number of 
+               edges.")
       edge.label <- rep(edge.label, length.out = length(transitions))
     }
   }
-
-
+  
+  
   # Edge widths
   if (is.character(edge.width)) {
     ind <- pmatch(edge.width, "auto")
-    if (is.na(ind)) {
-      stop("Argument edge.width only accepts the value \"auto\" or a numerical vector.")
-    }
+    stopifnot_(
+      !is.na(ind),
+      "{.arg edge.width} only accepts the value {.val 'auto'} or a numerical 
+      vector."
+    )
     edge.width <- transitions * (7 / max(transitions)) * cex.edge.width
   } else if (length(edge.width) > 1 && edge.width != length(transitions)) {
-    warning("The length of the vector provided for the argument \"edge.width\" does not match the number of edges.")
+    warning_("The length of {.arg edge.width} does not match the number of 
+             edges.")
     edge.width <- rep(edge.width, length.out = length(transitions))
   }
-
+  
   # Defining the graph structure
   g1 <- graph.adjacency(edges, mode = "directed")
-
+  
   # Layout of the graph
   if (is.function(layout)) {
     glayout <- layout(g1)
@@ -163,44 +169,47 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
       glayout <- layout_on_grid(g1, width = 1)
     }
   }
-
-
+  
+  
   # Colors for the (combinations of) observed states
   if (identical(cpal, "auto")) {
-    pie.colors <- attr(x$observations, "cpal")
+    pie.colors <- TraMineR::cpal(x$observations)
   } else if (length(cpal) != ncol(x$emiss)) {
-    warning("The length of the vector provided for argument cpal does not match the number of observed states. Automatic color palette was used.")
-    pie.colors <- attr(x$observations, "cpal")
+    warning_("The length of {.arg cpal} does not match the number of observed 
+             states. Automatic color palette was used.")
+    pie.colors <- TraMineR::cpal(x$observations)
   } else if (!all(isColor(cpal))) {
-    stop(paste("Please provide a vector of colors for argument cpal or use value \"auto\" for automatic color palette."))
+    stop_("Please provide a vector of colors for {.arg cpal} or use value 
+          {.val 'auto'} for automatic color palette.")
   } else {
     pie.colors <- cpal
   }
   if (with.legend != FALSE) {
     pie.colors.l <- pie.colors
   }
-
+  
   # Legend position and number of columns
   if (with.legend != FALSE && pie == TRUE) {
     if (!is.null(ltext)) {
-      if (length(ltext) != x$n_symbols) {
-        stop("The length of the argument ltext does not match the number of (combined) observed states.")
-      }
-      # ltext = NULL
+      stopifnot_(
+        length(ltext) == x$n_symbols,
+        "The length of {.arg ltext} does not match the number of (combined) 
+        observed states in the observed data ({x$n_symbols})."
+      )
     } else {
       ltext <- x$symbol_names
     }
   }
-
+  
   # Defining rescale, xlim, ylim if not given
   if (!is.matrix(layout) && !is.function(layout)) {
     if (layout == "horizontal") {
-      if (hasArg(rescale)) {
+      if (methods::hasArg(rescale)) {
         rescale <- dots$rescale
       } else {
         rescale <- FALSE
       }
-      if (hasArg(xlim)) {
+      if (methods::hasArg(xlim)) {
         xlim <- dots$xlim
       } else {
         if (rescale == TRUE) {
@@ -209,7 +218,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
           xlim <- c(-0.1, ncol(transM) - 1 + 0.1)
         }
       }
-      if (hasArg(ylim)) {
+      if (methods::hasArg(ylim)) {
         ylim <- dots$ylim
       } else {
         if (rescale == TRUE) {
@@ -222,12 +231,12 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
       dots[["ylim"]] <- NULL
       dots[["rescale"]] <- NULL
     } else if (layout == "vertical") {
-      if (hasArg(rescale)) {
+      if (methods::hasArg(rescale)) {
         rescale <- dots$rescale
       } else {
         rescale <- FALSE
       }
-      if (hasArg(xlim)) {
+      if (methods::hasArg(xlim)) {
         xlim <- dots$xlim
       } else {
         if (rescale == TRUE) {
@@ -236,7 +245,7 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
           xlim <- c(-0.5, 0.5)
         }
       }
-      if (hasArg(ylim)) {
+      if (methods::hasArg(ylim)) {
         ylim <- dots$ylim
       } else {
         if (rescale == TRUE) {
@@ -250,14 +259,14 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
       dots[["rescale"]] <- NULL
     }
   }
-
-
+  
+  
   # Plotting graph
   if (pie == TRUE) {
     pie.values <- lapply(seq_len(nrow(transM)), function(i) x$emission_probs[i, ])
     # If slices are combined
     if (combine.slices > 0 &&
-      !all(unlist(pie.values)[unlist(pie.values) > 0] > combine.slices)) {
+        !all(unlist(pie.values)[unlist(pie.values) > 0] > combine.slices)) {
       if (with.legend != FALSE) {
         pie.colors.l <- NULL
         lt <- NULL
@@ -298,130 +307,129 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
         }
       }
     }
-
+    
     if (!is.matrix(layout) && !is.function(layout) &&
-      (layout == "horizontal" || layout == "vertical")) {
+        (layout == "horizontal" || layout == "vertical")) {
       if (length(dots) > 0) {
         plotcall <- as.call(c(list(plot.igraph, g1,
-          layout = glayout,
-          vertex.shape = "pie", vertex.pie = pie.values,
-          vertex.pie.color = list(pie.colors),
-          vertex.size = vertex.size,
-          vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-          vertex.label.degree = vertex.label.pos,
-          vertex.label.family = vertex.label.family,
-          edge.curved = edge.curved, edge.width = edge.width,
-          edge.label = edge.label,
-          edge.label.family = edge.label.family,
-          edge.arrow.size = edge.arrow.size,
-          xlim = xlim, ylim = ylim, rescale = rescale, main = main
+                                   layout = glayout,
+                                   vertex.shape = "pie", vertex.pie = pie.values,
+                                   vertex.pie.color = list(pie.colors),
+                                   vertex.size = vertex.size,
+                                   vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+                                   vertex.label.degree = vertex.label.pos,
+                                   vertex.label.family = vertex.label.family,
+                                   edge.curved = edge.curved, edge.width = edge.width,
+                                   edge.label = edge.label,
+                                   edge.label.family = edge.label.family,
+                                   edge.arrow.size = edge.arrow.size,
+                                   xlim = xlim, ylim = ylim, rescale = rescale, main = main
         ), dots))
       } else {
         plotcall <- call("plot.igraph", g1,
-          layout = glayout,
-          vertex.shape = "pie", vertex.pie = pie.values,
-          vertex.pie.color = list(pie.colors),
-          vertex.size = vertex.size,
-          vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-          vertex.label.degree = vertex.label.pos,
-          vertex.label.family = vertex.label.family,
-          edge.curved = edge.curved, edge.width = edge.width,
-          edge.label = edge.label,
-          edge.label.family = edge.label.family,
-          edge.arrow.size = edge.arrow.size,
-          xlim = xlim, ylim = ylim, rescale = rescale, main = main
+                         layout = glayout,
+                         vertex.shape = "pie", vertex.pie = pie.values,
+                         vertex.pie.color = list(pie.colors),
+                         vertex.size = vertex.size,
+                         vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+                         vertex.label.degree = vertex.label.pos,
+                         vertex.label.family = vertex.label.family,
+                         edge.curved = edge.curved, edge.width = edge.width,
+                         edge.label = edge.label,
+                         edge.label.family = edge.label.family,
+                         edge.arrow.size = edge.arrow.size,
+                         xlim = xlim, ylim = ylim, rescale = rescale, main = main
         )
       }
     } else {
       if (length(dots) > 0) {
         plotcall <- as.call(c(list(plot.igraph, g1,
-          layout = glayout,
-          vertex.shape = "pie", vertex.pie = pie.values,
-          vertex.pie.color = list(pie.colors),
-          vertex.size = vertex.size,
-          vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-          vertex.label.degree = vertex.label.pos,
-          vertex.label.family = vertex.label.family,
-          edge.curved = edge.curved, edge.width = edge.width,
-          edge.label = edge.label,
-          edge.label.family = edge.label.family,
-          edge.arrow.size = edge.arrow.size, main = main
+                                   layout = glayout,
+                                   vertex.shape = "pie", vertex.pie = pie.values,
+                                   vertex.pie.color = list(pie.colors),
+                                   vertex.size = vertex.size,
+                                   vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+                                   vertex.label.degree = vertex.label.pos,
+                                   vertex.label.family = vertex.label.family,
+                                   edge.curved = edge.curved, edge.width = edge.width,
+                                   edge.label = edge.label,
+                                   edge.label.family = edge.label.family,
+                                   edge.arrow.size = edge.arrow.size, main = main
         ), dots))
       } else {
         plotcall <- call("plot.igraph", g1,
-          layout = glayout,
-          vertex.shape = "pie", vertex.pie = pie.values,
-          vertex.pie.color = list(pie.colors),
-          vertex.size = vertex.size,
-          vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-          vertex.label.degree = vertex.label.pos,
-          vertex.label.family = vertex.label.family,
-          edge.curved = edge.curved, edge.width = edge.width,
-          edge.label = edge.label,
-          edge.label.family = edge.label.family,
-          edge.arrow.size = edge.arrow.size, main = main
+                         layout = glayout,
+                         vertex.shape = "pie", vertex.pie = pie.values,
+                         vertex.pie.color = list(pie.colors),
+                         vertex.size = vertex.size,
+                         vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+                         vertex.label.degree = vertex.label.pos,
+                         vertex.label.family = vertex.label.family,
+                         edge.curved = edge.curved, edge.width = edge.width,
+                         edge.label = edge.label,
+                         edge.label.family = edge.label.family,
+                         edge.arrow.size = edge.arrow.size, main = main
         )
       }
     }
   } else {
     if (!is.matrix(layout) && !is.function(layout) &&
-      (layout == "horizontal" || layout == "vertical")) {
+        (layout == "horizontal" || layout == "vertical")) {
       if (length(dots) > 0) {
         plotcall <- as.call(c(list(plot.igraph, g1,
-          layout = glayout,
-          vertex.size = vertex.size,
-          vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-          vertex.label.degree = vertex.label.pos,
-          vertex.label.family = vertex.label.family,
-          edge.curved = edge.curved, edge.width = edge.width,
-          edge.label = edge.label,
-          edge.label.family = edge.label.family,
-          xlim = xlim, ylim = ylim, rescale = rescale, main = main
+                                   layout = glayout,
+                                   vertex.size = vertex.size,
+                                   vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+                                   vertex.label.degree = vertex.label.pos,
+                                   vertex.label.family = vertex.label.family,
+                                   edge.curved = edge.curved, edge.width = edge.width,
+                                   edge.label = edge.label,
+                                   edge.label.family = edge.label.family,
+                                   xlim = xlim, ylim = ylim, rescale = rescale, main = main
         ), dots))
       } else {
         plotcall <- call("plot.igraph", g1,
-          layout = glayout,
-          vertex.size = vertex.size,
-          vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-          vertex.label.degree = vertex.label.pos,
-          vertex.label.family = vertex.label.family,
-          edge.curved = edge.curved, edge.width = edge.width,
-          edge.label = edge.label,
-          edge.label.family = edge.label.family,
-          xlim = xlim, ylim = ylim, rescale = rescale, main = main
+                         layout = glayout,
+                         vertex.size = vertex.size,
+                         vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+                         vertex.label.degree = vertex.label.pos,
+                         vertex.label.family = vertex.label.family,
+                         edge.curved = edge.curved, edge.width = edge.width,
+                         edge.label = edge.label,
+                         edge.label.family = edge.label.family,
+                         xlim = xlim, ylim = ylim, rescale = rescale, main = main
         )
       }
     } else {
       if (length(dots) > 0) {
         plotcall <- as.call(c(list(plot.igraph, g1,
-          layout = glayout,
-          vertex.size = vertex.size,
-          vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-          vertex.label.degree = vertex.label.pos,
-          vertex.label.family = vertex.label.family,
-          edge.curved = edge.curved, edge.width = edge.width,
-          edge.label = edge.label,
-          edge.label.family = edge.label.family, main = main
+                                   layout = glayout,
+                                   vertex.size = vertex.size,
+                                   vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+                                   vertex.label.degree = vertex.label.pos,
+                                   vertex.label.family = vertex.label.family,
+                                   edge.curved = edge.curved, edge.width = edge.width,
+                                   edge.label = edge.label,
+                                   edge.label.family = edge.label.family, main = main
         ), dots))
       } else {
         plotcall <- call("plot.igraph", g1,
-          layout = glayout,
-          vertex.size = vertex.size,
-          vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
-          vertex.label.degree = vertex.label.pos,
-          vertex.label.family = vertex.label.family,
-          edge.curved = edge.curved, edge.width = edge.width,
-          edge.label = edge.label,
-          edge.label.family = edge.label.family, main = main
+                         layout = glayout,
+                         vertex.size = vertex.size,
+                         vertex.label = vertex.label, vertex.label.dist = vertex.label.dist,
+                         vertex.label.degree = vertex.label.pos,
+                         vertex.label.family = vertex.label.family,
+                         edge.curved = edge.curved, edge.width = edge.width,
+                         edge.label = edge.label,
+                         edge.label.family = edge.label.family, main = main
         )
       }
     }
   }
-
-
   # Plotting legend
   if (with.legend != FALSE && pie == TRUE) {
-    legendcall <- call("seqlegend",
+    legendcall <- call(
+      "seqlegend",
       seqdata = x$observations, cpal = pie.colors.l, ltext = ltext,
       position = legend.pos, cex = cex.legend, ncol = ncol.legend,
       with.missing = FALSE
@@ -429,9 +437,5 @@ HMMplot <- function(x, layout = "horizontal", pie = TRUE,
   } else {
     legendcall <- NULL
   }
-
-
   return(list(plotcall = plotcall, legendcall = legendcall))
-
-  # graphics::layout(1)
 }

@@ -2,7 +2,9 @@
 set.seed(123)
 s <- 4
 k <- 3
-obs <- seqdef(matrix(sample(letters[1:s], 50, replace = TRUE), ncol = 10))
+obs <- suppressMessages(
+  seqdef(matrix(sample(letters[1:s], 50, replace = TRUE), ncol = 10))
+)
 
 test_that("build_lcm returns object of class 'mhmm'", {
   expect_error(
@@ -18,20 +20,34 @@ test_that("build_lcm returns object of class 'mhmm'", {
               emission_probs = cbind(1, matrix(0, 2, s - 1))),
     NA
   )
+  expect_error(
+    build_lcm(list(obs, obs), n_clusters = k),
+    NA
+  )
+  expect_warning(
+    model <- build_lcm(
+      list(obs, obs), n_clusters = k,
+      channel_names = 1:2, 
+      cluster_names = letters[1:(k + 1)]),
+    "The length of `cluster_names` does not match the number of clusters. Names were not used."
+  )
+  expect_equal(
+    cluster_names(model),
+    paste("Class", seq_len(k))
+  )
 })
 test_that("build_lcm errors with incorrect dims", {
   expect_error(
     build_lcm(obs, emission_probs = diag(2)),
-    "Number of columns in 'emission_probs' is not equal to the number of symbols."
+    "Number of columns in `emission_probs` is not equal to the number of symbols."
   )
 })
 
 test_that("build_lcm formula works", {
   expect_error(
     build_lcm(obs, n_clusters = k, formula = ~ 1),
-    "Argument 'data' is missing, but 'formula' was provided."
+    "If `formula` is provided, `data` must be a <data.frame> object\\."
   )
-  # default error message from model.matrix, could be more informative..
   expect_error(
     build_lcm(obs, n_clusters = k, formula = ~ x, data = data.frame(y = 1)),
     "object 'x' not found"
@@ -45,8 +61,8 @@ test_that("build_lcm formula works", {
   )
   expect_error(
     model <- build_lcm(obs, n_clusters = k, formula = ~ x,
-              data = data.frame(x = 1:5),
-              cluster_names = c("A", "B", "C")),
+                       data = data.frame(x = 1:5),
+                       cluster_names = c("A", "B", "C")),
     NA
   )
   expect_equal(

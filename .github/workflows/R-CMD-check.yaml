@@ -2,9 +2,9 @@
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
-    branches: [main, master]
+    branches: [main, nhmm]
   pull_request:
-    branches: [main, master]
+    branches: [main, nhmm]
 
 name: R-CMD-check
 
@@ -27,6 +27,10 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      # this sets the env variable to true or false depending on whether the
+      # commit message contains text 'run-extended'
+      SEQHMM_EXTENDED_TESTS: ${{contains(github.event.head_commit.message, 'run-extended')}}
+     
 
     steps:
       - uses: actions/checkout@v3

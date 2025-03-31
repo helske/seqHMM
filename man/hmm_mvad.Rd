@@ -9,7 +9,7 @@ A hidden Markov model of class \code{hmm};
 unrestricted model with six hidden states.
 }
 \description{
-A hidden Markov model (MMM) fitted for the \code{\link[TraMineR]{mvad}} data.
+A hidden Markov model (MMM) fitted for the \code{\link[TraMineR:mvad]{TraMineR::mvad()}} data.
 }
 \details{
 Model was created with the following code:
@@ -22,10 +22,9 @@ mvad_alphabet <-
 mvad_labels <- c("employment", "further education", "higher education",
   "joblessness", "school", "training")
 mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet,
-  states = mvad_scodes, labels = mvad_labels, xtstep = 6)
-
-attr(mvad_seq, "cpal") <- colorpalette[[6]]
+mvad_seq <- seqdef(mvad, 15:86, alphabet = mvad_alphabet,
+  states = mvad_scodes, labels = mvad_labels, xtstep = 6,
+  cpal = colorpalette[[6]])
 
 # Starting values for the emission matrix
 emiss <- matrix(
@@ -61,7 +60,7 @@ plot(hmm_mvad)
 
 }
 \seealso{
-Examples of building and fitting HMMs in \code{\link{build_hmm}} and
-\code{\link{fit_model}}; and \code{\link[TraMineR]{mvad}} for more information on the data.
+Examples of building and fitting HMMs in \code{\link[=build_hmm]{build_hmm()}} and
+\code{\link[=fit_model]{fit_model()}}; and \code{\link[TraMineR:mvad]{TraMineR::mvad()}} for more information on the data.
 }
 \keyword{datasets}

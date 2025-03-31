@@ -2,17 +2,51 @@
 % Please edit documentation in R/state_names.R
 \name{state_names}
 \alias{state_names}
-\title{Get state names from hmm or mhmm object}
+\alias{state_names.hmm}
+\alias{state_names.mhmm}
+\alias{state_names.nhmm}
+\alias{state_names.mnhmm}
+\alias{state_names<-}
+\alias{state_names<-.hmm}
+\alias{state_names<-.mhmm}
+\alias{state_names<-.nhmm}
+\alias{state_names<-.mnhmm}
+\title{Get State Names of Hidden Markov  Model}
 \usage{
 state_names(object)
+
+\method{state_names}{hmm}(object)
+
+\method{state_names}{mhmm}(object)
+
+\method{state_names}{nhmm}(object)
+
+\method{state_names}{mnhmm}(object)
+
+state_names(object) <- value
+
+\method{state_names}{hmm}(object) <- value
+
+\method{state_names}{mhmm}(object) <- value
+
+\method{state_names}{nhmm}(object) <- value
+
+\method{state_names}{mnhmm}(object) <- value
 }
 \arguments{
-\item{object}{An object of class `hmm` or `mhmm`.}
+\item{object}{object An object of class \code{hmm}, \code{mhmm}, \code{nhmm}, or \code{mnhmm}.}
+
+\item{value}{A character vector containing the new state names, or a list of
+such vectors in case of mixture models.}
 }
 \value{
 A character vector containing the state names, or a list of such
-  vectors in `mhmm` case.
+vectors in case of mixture models.
+
+The original object with updated state names.
 }
 \description{
-Get state names from hmm or mhmm object
+Get State Names of Hidden Markov  Model
+
+Set State Names of Hidden Markov  Model
 }

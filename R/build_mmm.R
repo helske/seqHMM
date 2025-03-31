@@ -1,19 +1,19 @@
 #' Build a Mixture Markov Model
 #'
-#' Function \code{build_mmm} is a shortcut for constructing a mixture Markov
-#' model as a restricted case of an \code{mhmm} object.
+#' Function [build_mmm()] is a shortcut for constructing a mixture Markov
+#' model as a restricted case of an `mhmm` object.
 #'
 #' @export
-#' @param observations An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
+#' @param observations An `stslist` object (see [TraMineR::seqdef()]) containing
 #'   the sequences.
 #' @param n_clusters A scalar giving the number of clusters/submodels
 #' (not used if starting values for model parameters are given with
-#' \code{initial_probs} and \code{transition_probs}).
+#' `initial_probs` and `transition_probs`).
 #' @param transition_probs A list of matrices of transition
 #'   probabilities for submodels of each cluster.
 #' @param initial_probs A list which contains vectors of initial state
 #'   probabilities for submodels of each cluster.
-#' @param formula Optional formula of class \code{\link{formula}} for the
+#' @param formula Optional formula of class [formula()] for the
 #' mixture probabilities. Left side omitted.
 #' @param data A data frame containing the variables used in the formula.
 #' Ignored if no formula is provided.
@@ -22,31 +22,31 @@
 #'   of clusters and \eqn{k} is the number of covariates. A logit-link is used for
 #'   mixture probabilities. The first column is set to zero.
 #' @param cluster_names A vector of optional names for the clusters.
-#' @param ... Additional arguments to \code{simulate_transition_probs}.
-#' @return Object of class \code{mhmm} with following elements:
-#' \describe{
-#'    \item{\code{observations}}{State sequence object or a list of such containing the data.}
-#'    \item{\code{transition_probs}}{A matrix of transition probabilities.}
-#'    \item{\code{emission_probs}}{A matrix or a list of matrices of emission probabilities.}
-#'    \item{\code{initial_probs}}{A vector of initial probabilities.}
-#'    \item{\code{coefficients}}{A matrix of parameter coefficients for covariates (covariates in rows, clusters in columns).}
-#'    \item{\code{X}}{Covariate values for each subject.}
-#'    \item{\code{cluster_names}}{Names for clusters.}
-#'    \item{\code{state_names}}{Names for hidden states.}
-#'    \item{\code{symbol_names}}{Names for observed states.}
-#'    \item{\code{channel_names}}{Names for channels of sequence data}
-#'    \item{\code{length_of_sequences}}{(Maximum) length of sequences.}
-#'    \item{\code{n_sequences}}{Number of sequences.}
-#'    \item{\code{n_symbols}}{Number of observed states (in each channel).}
-#'    \item{\code{n_states}}{Number of hidden states.}
-#'    \item{\code{n_channels}}{Number of channels.}
-#'    \item{\code{n_covariates}}{Number of covariates.}
-#'    \item{\code{n_clusters}}{Number of clusters.}
-#' }
-#' @seealso \code{\link{fit_model}} for estimating model parameters;
-#' \code{\link{summary.mhmm}} for a summary of a mixture model;
-#' \code{\link{separate_mhmm}} for organizing an \code{mhmm} object into a list of
-#' separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting
+#' @param ... Additional arguments to `simulate_transition_probs`.
+#' @return Object of class `mhmm` with following elements:
+#' * `observations`\cr State sequence object or a list of such containing the data.
+#' * `transition_probs`\cr A matrix of transition probabilities.
+#' * `emission_probs`\cr A matrix or a list of matrices of emission probabilities.
+#' * `initial_probs`\cr A vector of initial probabilities.
+#' * `coefficients`\cr A matrix of parameter coefficients for covariates (covariates in rows, clusters in columns).
+#' * `X`\cr Covariate values for each subject.
+#' * `cluster_names`\cr Names for clusters.
+#' * `state_names`\cr Names for hidden states.
+#' * `symbol_names`\cr Names for observed states.
+#' * `channel_names`\cr Names for channels of sequence data
+#' * `length_of_sequences`\cr (Maximum) length of sequences.
+#' * `sequence_lengths`\cr A vector of sequence lengths.
+#' * `n_sequences`\cr Number of sequences.
+#' * `n_symbols`\cr Number of observed states (in each channel).
+#' * `n_states`\cr Number of hidden states.
+#' * `n_channels`\cr Number of channels.
+#' * `n_covariates`\cr Number of covariates.
+#' * `n_clusters`\cr Number of clusters.
+#' 
+#' @seealso [fit_model()] for estimating model parameters;
+#' [summary.mhmm()] for a summary of a mixture model;
+#' [separate_mhmm()] for organizing an `mhmm` object into a list of
+#' separate `hmm` objects; and [plot.mhmm()] for plotting
 #' mixture models.
 #'
 #' @examples
@@ -63,7 +63,7 @@
 #'   "joblessness", "school", "training"
 #' )
 #' mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-#' mvad_seq <- seqdef(mvad, 17:86,
+#' mvad_seq <- seqdef(mvad, 15:86,
 #'   alphabet = mvad_alphabet, states = mvad_scodes,
 #'   labels = mvad_labels, xtstep = 6
 #' )
@@ -100,38 +100,47 @@
 build_mmm <- function(observations, n_clusters, transition_probs, initial_probs,
                       formula = NULL, data = NULL, coefficients = NULL,
                       cluster_names = NULL, ...) {
-  multichannel <- is_multichannel(observations)
-  # Single channel but observations is a list
-  if (is.list(observations) && !inherits(observations, "stslist") && length(observations) == 1) {
-    observations <- observations[[1]]
-    multichannel <- FALSE
-  }
-  if (multichannel) {
-    stop(
-      paste0("The 'build_mmm' function can only be used for single-channel ",
-             "sequence data (as an stslist object). Use the 'mc_to_sc_data' function ",
-             "to convert data into single-channel state sequences."
-      )
+  observations <- .check_observations(observations)
+  n_channels <- attr(observations, "n_channels")
+  stopifnot_(
+    n_channels == 1,
+    paste0(
+      "{.fn build_mmm} can only be used for single-channel sequence data ",
+      "(a {.cls stslist} object). Use {.fn mc_to_sc_data} to convert data ",
+      "into single-channel state sequences."
     )
-  }
-  n_sequences <- nrow(observations)
-  length_of_sequences <- ncol(observations)
-  symbol_names <- alphabet(observations)
-  n_symbols <- length(symbol_names)
-
+  )
+  n_symbols <- n_states <- attr(observations, "n_symbols")
+  symbol_names <- state_names <- attr(observations, "symbol_names")
+  emission_probs <- diag(n_symbols)
+  rownames(emission_probs) <- colnames(emission_probs) <- symbol_names
   if (!missing(transition_probs) && !missing(initial_probs)) {
-    if (is.list(transition_probs)) {
-      n_clusters <- length(transition_probs)
-    } else {
-      stop("Argument 'transition_probs' is not a list.")
+    stopifnot_(
+      is.list(transition_probs),
+      "{.arg transition_probs} is not a {.cls list}."
+    )
+    stopifnot_(
+      is.list(initial_probs),
+      "{.arg initial_probs} is not a {.cls list}."
+    )
+    n_clusters <- length(transition_probs)
+    for (i in seq_len(n_clusters)) {
+      transition_probs[[i]] <- .check_transition_probs(
+        transition_probs[[i]],
+        state_names)
+      initial_probs[[i]] <- .check_initial_probs(
+        initial_probs[[i]], 
+        n_states,
+        state_names
+      )
     }
     # Simulate starting values
   } else {
     if (missing(n_clusters)) {
-      stop(paste0(
-        "Provide either 'n_clusters' or both 'initial_probs' ",
-        "and 'transition_probs'."
-      ))
+      stop_(
+        "Provide either {.arg n_clusters} or both {.arg initial_probs} and 
+        {.arg transition_probs}."
+      )
     }
     n_states <- rep(n_symbols, n_clusters)
     transition_probs <- simulate_transition_probs(
@@ -140,14 +149,16 @@ build_mmm <- function(observations, n_clusters, transition_probs, initial_probs,
     initial_probs <- simulate_initial_probs(
       n_states = n_states, n_clusters = n_clusters)
   }
-  emission_probs <- replicate(n_clusters, diag(n_symbols), simplify = FALSE)
-  state_names <- replicate(n_clusters, symbol_names, simplify = FALSE)
-
+  emission_probs <- replicate(n_clusters, emission_probs, simplify = FALSE)
+  state_names <- replicate(n_clusters, state_names, simplify = FALSE)
+  names(transition_probs) <- names(emission_probs) <- names(initial_probs) <- 
+    cluster_names
   model <- build_mhmm(
     observations = observations, transition_probs = transition_probs,
     emission_probs = emission_probs, initial_probs = initial_probs,
     formula = formula, data = data, coefficients = coefficients,
     cluster_names = cluster_names, state_names = state_names)
+  model$call <- match.call()
   attr(model, "type") <- "mmm"
   model
 }

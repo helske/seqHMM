@@ -13,7 +13,7 @@ simulate_hmm(
 )
 }
 \arguments{
-\item{n_sequences}{Number of simulations.}
+\item{n_sequences}{The number of sequences to simulate.}
 
 \item{initial_probs}{A vector of initial state probabilities.}
 
@@ -46,12 +46,12 @@ sim <- simulate_hmm(
   sequence_length = 20
 )
 
-ssplot(sim, sortv = "mds.obs", type = "I")
+stacked_sequence_plot(sim, sort_by = "mds", type = "i")
 }
 \seealso{
-\code{\link{build_hmm}} and \code{\link{fit_model}} for building
-and fitting hidden Markov models; \code{\link{ssplot}} for plotting
-multiple sequence data sets; \code{\link{seqdef}} for more
-information on state sequence objects; and \code{\link{simulate_mhmm}}
+\code{\link[=build_hmm]{build_hmm()}} and \code{\link[=fit_model]{fit_model()}} for building
+and fitting hidden Markov models; \code{\link[=stacked_sequence_plot]{stacked_sequence_plot()}} for plotting
+multiple sequence data sets; \code{\link[=seqdef]{seqdef()}} for more
+information on state sequence objects; and \code{\link[=simulate_mhmm]{simulate_mhmm()}}
 for simulating mixture hidden Markov models.
 }
