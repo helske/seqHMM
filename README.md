@@ -15,6 +15,7 @@ Maximum likelihood estimation via EM algorithm and direct numerical maximization
 When using the package in publications, please cite:
 
 Helske, Satu and Helske, Jouni (2019). Mixture hidden Markov models for sequence data: the seqHMM package in R. *Journal of Statistical Software, 88*(3). [doi:10.18637/jss.v088.i03](https://dx.doi.org/10.18637/jss.v088.i03).
+
 Helske, Jouni (2025). Feedback-augmented Non-homogeneous Hidden Markov Models for Longitudinal Causal Inference. *arXiv preprint*. [doi:10.48550/arXiv.2503.16014](https://doi.org/10.48550/arXiv.2503.16014).
 
 If you find bugs, please add a new issue here in GitHub. You can also contact Satu Helske (firstname.lastname@utu.fi) or Jouni Helske (firstname.lastname@iki.fi). We would be happy to hear your feedback.
