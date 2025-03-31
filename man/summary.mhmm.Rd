@@ -4,13 +4,7 @@
 \alias{summary.mhmm}
 \title{Summary method for mixture hidden Markov models}
 \usage{
-\method{summary}{mhmm}(
-  object,
-  parameters = FALSE,
-  conditional_se = TRUE,
-  log_space = FALSE,
-  ...
-)
+\method{summary}{mhmm}(object, parameters = FALSE, conditional_se = TRUE, ...)
 }
 \arguments{
 \item{object}{Mixture hidden Markov model of class \code{mhmm}.}
@@ -19,28 +13,25 @@
 initial probabilities. \code{FALSE} by default.}
 
 \item{conditional_se}{Return conditional standard errors of coefficients.
-See \code{\link{vcov.mhmm}} for details. \code{TRUE} by default.}
+See \code{\link[=vcov.mhmm]{vcov.mhmm()}} for details. \code{TRUE} by default.}
 
-\item{log_space}{Make computations using log-space instead of scaling for greater
-numerical stability at cost of decreased computational performance. Default is \code{FALSE}.}
-
-\item{...}{Further arguments to \code{\link{vcov.mhmm}}.}
+\item{...}{Further arguments to \code{\link[=vcov.mhmm]{vcov.mhmm()}}.}
 }
 \value{
-\describe{
-   \item{transition_probs}{Transition probabilities. Only returned if \code{parameters = TRUE}.}
-   \item{emission_probs}{Emission probabilities. Only returned if \code{parameters = TRUE}.}
-   \item{initial_probs}{Initial state probabilities. Only returned if \code{parameters = TRUE}.}
-   \item{logLik}{Log-likelihood.}
-   \item{BIC}{Bayesian information criterion.}
-   \item{most_probable_cluster}{The most probable cluster according to posterior probabilities.}
-   \item{coefficients}{Coefficients of covariates.}
-   \item{vcov}{Variance-covariance matrix of coefficients.}
-   \item{prior_cluster_probabilities}{Prior cluster probabilities
-   (mixing proportions) given the covariates.}
-   \item{posterior_cluster_probabilities}{Posterior cluster membership probabilities.}
-   \item{classification_table}{Cluster probabilities (columns) by the most probable cluster (rows).}
-  }
+\itemize{
+\item transition_probs\cr Transition probabilities. Only returned if \code{parameters = TRUE}.
+\item emission_probs\cr Emission probabilities. Only returned if \code{parameters = TRUE}.
+\item initial_probs\cr Initial state probabilities. Only returned if \code{parameters = TRUE}.
+\item logLik\cr Log-likelihood.
+\item BIC\cr Bayesian information criterion.
+\item most_probable_cluster\cr The most probable cluster according to posterior probabilities.
+\item coefficients\cr Coefficients of covariates.
+\item vcov\cr Variance-covariance matrix of coefficients.
+\item prior_cluster_probabilities\cr Prior cluster probabilities
+(mixing proportions) given the covariates.
+\item posterior_cluster_probabilities\cr Posterior cluster membership probabilities.
+\item classification_table\cr Cluster probabilities (columns) by the most probable cluster (rows).
+}
 }
 \description{
 Function \code{summary.mhmm} gives a summary of a mixture hidden Markov model.
@@ -61,7 +52,7 @@ summary(mhmm_biofam)
 
 }
 \seealso{
-\code{\link{build_mhmm}} and \code{\link{fit_model}} for building and
-  fitting mixture hidden Markov models; and
-  \code{\link{mhmm_biofam}} for information on the model used in examples.
+\code{\link[=build_mhmm]{build_mhmm()}} and \code{\link[=fit_model]{fit_model()}} for building and
+fitting mixture hidden Markov models; and
+\code{\link[=mhmm_biofam]{mhmm_biofam()}} for information on the model used in examples.
 }

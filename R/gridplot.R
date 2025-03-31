@@ -1,164 +1,64 @@
 #' Plot Multidimensional Sequence Plots in a Grid
 #'
-#' Function \code{gridplot} plots multiple \code{ssp} objects to a
+#' Function `gridplot` plots multiple `ssp` objects to a
 #' grid.
 #'
-#'
-#'
 #' @export
-
 #'
-#' @param x A list of \code{\link{ssp}} objects.
+#' @param x A list of [ssp()] objects.
 #'
 #' @param nrow,ncol Optional arguments to arrange plots.
 #'
-#' @param byrow Controls the order of plotting. Defaults to \code{FALSE}, i.e. plots
+#' @param byrow Controls the order of plotting. Defaults to `FALSE`, i.e. plots
 #'   are arranged column-wise.
 #'
 #' @param with.legend Defines if and how the legends for the states are plotted.
-#'   The default value \code{"auto"} (equivalent to \code{TRUE} and
-#'   \code{"many"}) creates separate legends for each requested plot. Other
-#'   possibilities are \code{"combined"} (all legends combined) and \code{FALSE}
+#'   The default value `"auto"` (equivalent to `TRUE` and
+#'   `"many"`) creates separate legends for each requested plot. Other
+#'   possibilities are `"combined"` (all legends combined) and `FALSE`
 #'   (no legend).
 #'
 #' @param legend.pos Defines the positions of the legend boxes relative to the
-#'   whole plot. Either one of \code{"bottom"} (equivalent to \code{"auto"}) or
-#'   \code{"right"}, or a numerical vector of grid cells (by order) to print the
+#'   whole plot. Either one of `"bottom"` (equivalent to `"auto"`) or
+#'   `"right"`, or a numerical vector of grid cells (by order) to print the
 #'   legends to (the cells must be in one row/column).
 #'
 #' @param legend.pos2 Defines the positions of the legend boxes relative to the
-#'   cell(s). One of \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"},
-#'   \code{"left"}, \code{"topleft"}, \code{"top"} (the default), \code{"topright"},
-#'   \code{"right"} and \code{"center"}.
+#'   cell(s). One of `"bottomright"`, `"bottom"`, `"bottomleft"`,
+#'   `"left"`, `"topleft"`, `"top"` (the default), `"topright"`,
+#'   `"right"` and `"center"`.
 #'
-#' @param title.legend The titles for the legend boxes. The default \code{"auto"} takes
-#'   the titles from the channel labels provided by the first object in \code{x}.
-#'   \code{NA} prints no title.
+#' @param title.legend The titles for the legend boxes. The default `"auto"` takes
+#'   the titles from the channel labels provided by the first object in `x`.
+#'   `NA` prints no title.
 #'
 #' @param ncol.legend (A vector of) the number of columns for the legend(s). The
-#'   default \code{"auto"} creates one column for each legend.
+#'   default `"auto"` creates one column for each legend.
 #'
-#' @param with.missing.legend If set to \code{"auto"} (the default), a legend
+#' @param with.missing.legend If set to `"auto"` (the default), a legend
 #'   for the missing state is added automatically if one or more of the
-#'   sequences in data contain missing states. With the value \code{TRUE} a
+#'   sequences in data contain missing states. With the value `TRUE` a
 #'   legend for the missing state is added in any case; equivalently
-#'   \code{FALSE} omits the legend for the missing state.
+#'   `FALSE` omits the legend for the missing state.
 #'
 #' @param cex.legend Expansion factor for setting the size of the font for the
 #'   labels in the legend. The default value is 1. Values lesser than 1 will
 #'   reduce the size of the font, values greater than 1 will increase the size.
 #'
 #' @param row.prop Sets the proportions of the row heights of the grid. The default
-#'   value is \code{"auto"} for even row heights. Takes a vector of values from
+#'   value is `"auto"` for even row heights. Takes a vector of values from
 #'   0 to 1, with values summing to 1.
 #'
 #' @param col.prop Sets the proportion of the column heights of the grid. The default
-#'   value is \code{"auto"} for even column widths. Takes a vector of values
+#'   value is `"auto"` for even column widths. Takes a vector of values
 #'   from 0 to 1, with values summing to 1.
-#'
-#' @examples
-#' \dontrun{
-#' data("biofam3c")
-#'
-#' # Creating sequence objects
-#' child_seq <- seqdef(biofam3c$children, start = 15)
-#' marr_seq <- seqdef(biofam3c$married, start = 15)
-#' left_seq <- seqdef(biofam3c$left, start = 15)
-#'
-#' ## Choosing colors
-#' attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
-#' attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-#' attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
-#'
-#'
-#' # Preparing plot for state distribution plots of observations for women
-#' ssp_f <- ssp(
-#'   list(
-#'     child_seq[biofam3c$covariates$sex == "woman", ],
-#'     marr_seq[biofam3c$covariates$sex == "woman", ],
-#'     left_seq[biofam3c$covariates$sex == "woman", ]
-#'   ),
-#'   type = "d", plots = "obs", title = "Women",
-#'   ylab = c("Children", "Married", "Left home")
-#' )
-#'
-#' # Preparing plot for state distribution plots of observations for men
-#' # (Updating the previous plot, only arguments that change values)
-#' ssp_m <- update(ssp_f,
-#'   title = "Men",
-#'   x = list(
-#'     child_seq[biofam3c$covariates$sex == "man", ],
-#'     marr_seq[biofam3c$covariates$sex == "man", ],
-#'     left_seq[biofam3c$covariates$sex == "man", ]
-#'   )
-#' )
-#'
-#' # Plotting state distribution plots of observations for women and men in two columns
-#' gridplot(list(ssp_f, ssp_m), ncol = 2, with.legend = FALSE)
-#'
-#' # Preparing plots for women's state distributions
-#' ssp_f2 <- ssp(
-#'   list(
-#'     marr_seq[biofam3c$covariates$sex == "woman", ],
-#'     child_seq[biofam3c$covariates$sex == "woman", ],
-#'     left_seq[biofam3c$covariates$sex == "woman", ]
-#'   ),
-#'   type = "d", border = NA, with.legend = FALSE,
-#'   title = "State distributions for women", title.n = FALSE, xtlab = 15:30,
-#'   ylab.pos = c(1, 2, 1), ylab = c("Married", "Children", "Left home")
-#' )
-#'
-#' # The same plot with sequences instead of state distributions
-#' ssp_f3 <- update(
-#'   ssp_f2,
-#'   type = "I", sortv = "mds.obs", title = "Sequences for women"
-#' )
-#'
-#' # State distributions with men's data
-#' ssp_m2 <- update(
-#'   ssp_f2,
-#'   title = "State distributions for men",
-#'   x = list(
-#'     marr_seq[biofam3c$covariates$sex == "man", ],
-#'     child_seq[biofam3c$covariates$sex == "man", ],
-#'     left_seq[biofam3c$covariates$sex == "man", ]
-#'   )
-#' )
-#'
-#' # Men's sequences
-#' ssp_m3 <- update(
-#'   ssp_m2,
-#'   type = "I", sortv = "mds.obs", title = "Sequences for men"
-#' )
-#'
-#' # Plotting state distributions and index plots of observations
-#' # for women and men in two columns (+ one column for legends)
-#' gridplot(
-#'   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3),
-#'   ncol = 3, byrow = TRUE,
-#'   with.legend = "combined", legend.pos = "right", col.prop = c(0.35, 0.35, 0.3)
-#' )
-#'
-#' # The same with different positioning and fixed cells for legends
-#' gridplot(
-#'   list(ssp_f2, ssp_f3, ssp_m2, ssp_m3),
-#'   ncol = 2, nrow = 3, byrow = TRUE,
-#'   # defining the legend positions by the cell numbers
-#'   legend.pos = 3:4
-#' )
-#' }
-#'
-#' @seealso \code{\link{ssp}} for defining the plot before using
-#'   \code{gridplot}, and \code{\link{plot.ssp}} for plotting only one ssp object.
-
 gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
                      with.legend = "auto", legend.pos = "auto",
                      legend.pos2 = "center", title.legend = "auto",
                      ncol.legend = "auto",
                      with.missing.legend = "auto",
                      row.prop = "auto", col.prop = "auto", cex.legend = 1) {
-  check_deprecated_args(match.call())
-
+  .Deprecated(msg = "'gridplot' is deprecated. Use 'stacked_sequence_plot' and patchwork package instead.")
   grid.newpage()
   plot.new()
   opar <- par(no.readonly = TRUE)
@@ -439,7 +339,6 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
     col.prop <- rep(1 / gridncol, gridncol)
   }
 
-
   if (!byrow) {
     plotnrow <- rep(c(1:gridnrow), times = gridncol)
     plotncol <- rep(c(1:gridncol), each = gridnrow)
@@ -631,7 +530,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
           for (i in 1:x[[1]]$nchannels) {
             pushViewport(viewport(layout.pos.col = 1, layout.pos.row = i))
             par(plt = gridPLT(), new = TRUE)
-            seqlegend(x[[1]]$obs[[i]],
+            TraMineR::seqlegend(x[[1]]$obs[[i]],
               cex = cex.legend, position = legend.pos2,
               cpal = cpals[[i]], ltext = ltexts[[i]],
               ncol = ncol.legend[i], with.missing = with.missing.legend,
@@ -644,7 +543,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         if (x[[1]]$plots == "both" || x[[1]]$plots == "hidden.paths") {
           pushViewport(viewport(layout.pos.col = 1, layout.pos.row = x[[1]]$nplots))
           par(plt = gridPLT(), new = TRUE)
-          seqlegend(x[[1]]$hidden.paths,
+          TraMineR::seqlegend(x[[1]]$hidden.paths,
             cex = cex.legend,
             position = legend.pos2, ncol = ncol.legend[length(ncol.legend)],
             cpal = hscpal, ltext = hstext,
@@ -672,7 +571,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
           for (i in 1:x[[1]]$nchannels) {
             pushViewport(viewport(layout.pos.col = i, layout.pos.row = 1))
             par(plt = gridPLT(), new = TRUE)
-            seqlegend(x[[1]]$obs[[i]],
+            TraMineR::seqlegend(x[[1]]$obs[[i]],
               cex = cex.legend, position = legend.pos2,
               cpal = cpals[[i]], ltext = ltexts[[i]],
               ncol = ncol.legend[i], with.missing = with.missing.legend,
@@ -685,7 +584,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         if (x[[1]]$plots == "both" || x[[1]]$plots == "hidden.paths") {
           pushViewport(viewport(layout.pos.col = x[[1]]$nplots, layout.pos.row = 1))
           par(plt = gridPLT(), new = TRUE)
-          seqlegend(x[[1]]$hidden.paths,
+          TraMineR::seqlegend(x[[1]]$hidden.paths,
             cex = cex.legend,
             position = legend.pos2, ncol = ncol.legend[length(ncol.legend)],
             cpal = hscpal, ltext = hstext,
@@ -703,7 +602,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         par(plt = gridPLT(), new = TRUE)
         pushViewport(viewport(width = unit(0.9, "npc")))
 
-        seqlegend(x[[1]]$obs[[1]],
+        TraMineR::seqlegend(x[[1]]$obs[[1]],
           cex = cex.legend, position = legend.pos2,
           ncol = ncol.legend, cpal = cpal, ltext = ltext,
           with.missing = anymissing,
@@ -721,7 +620,7 @@ gridplot <- function(x, nrow = NA, ncol = NA, byrow = FALSE,
         par(plt = gridPLT(), new = TRUE)
         pushViewport(viewport(width = unit(0.9, "npc")))
 
-        seqlegend(x[[1]]$obs[[1]],
+        TraMineR::seqlegend(x[[1]]$obs[[1]],
           cex = cex.legend, position = legend.pos2,
           ncol = ncol.legend, cpal = cpal, ltext = ltext,
           with.missing = anymissing,

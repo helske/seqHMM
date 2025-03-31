@@ -10,7 +10,7 @@ two clusters including 3 and 4 hidden states.
 No covariates.
 }
 \description{
-A mixture hidden Markov model (MHMM) fitted for the \code{\link[TraMineR]{mvad}} data.
+A mixture hidden Markov model (MHMM) fitted for the \code{\link[TraMineR:mvad]{TraMineR::mvad()}} data.
 }
 \details{
 The model is loaded by calling \code{data(mhmm_mvad)}. It was created with the
@@ -23,10 +23,9 @@ mvad_alphabet <-
 mvad_labels <- c("employment", "further education", "higher education",
   "joblessness", "school", "training")
 mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-mvad_seq <- seqdef(mvad, 17:86, alphabet = mvad_alphabet,
-  states = mvad_scodes, labels = mvad_labels, xtstep = 6)
-
-attr(mvad_seq, "cpal") <- colorpalette[[6]]
+mvad_seq <- seqdef(mvad, 15:86, alphabet = mvad_alphabet,
+  states = mvad_scodes, labels = mvad_labels, xtstep = 6,
+  cpal = colorpalette[[6]])
 
 # Starting values for the emission matrices
 emiss_1 <- matrix(
@@ -85,7 +84,7 @@ if (interactive()) {
 
 }
 \seealso{
-Examples of building and fitting MHMMs in \code{\link{build_mhmm}} and
-\code{\link{fit_model}}; and \code{\link[TraMineR]{mvad}} for more information on the data.
+Examples of building and fitting MHMMs in \code{\link[=build_mhmm]{build_mhmm()}} and
+\code{\link[=fit_model]{fit_model()}}; and \code{\link[TraMineR:mvad]{TraMineR::mvad()}} for more information on the data.
 }
 \keyword{datasets}

@@ -30,7 +30,7 @@ sep_hmm <- separate_mhmm(mhmm_biofam)
 plot(sep_hmm[[1]])
 }
 \seealso{
-\code{\link{build_mhmm}} and \code{\link{fit_model}}
-for building and fitting MHMMs; and \code{\link{mhmm_biofam}} for
+\code{\link[=build_mhmm]{build_mhmm()}} and \code{\link[=fit_model]{fit_model()}}
+for building and fitting MHMMs; and \code{\link[=mhmm_biofam]{mhmm_biofam()}} for
 more information on the model used in examples.
 }

@@ -28,7 +28,7 @@ the model object. The default is \code{FALSE}.}
 
 \item{verbose}{Print results of trimming. The default is \code{TRUE}.}
 
-\item{...}{Further parameters passed on to \code{\link{fit_model}}.}
+\item{...}{Further parameters passed on to \code{\link[=fit_model]{fit_model()}}.}
 }
 \description{
 Function \code{trim_model} tries to set small insignificant probabilities to zero
@@ -42,7 +42,7 @@ data("hmm_biofam")
 hmm_trim <- trim_model(hmm_biofam, zerotol = 1e-03, maxit = 10)
 }
 \seealso{
-\code{\link{build_hmm}} and \code{\link{fit_model}} for building and fitting
-hidden Markov models; and \code{\link{hmm_biofam}} for information on the model used
+\code{\link[=build_hmm]{build_hmm()}} and \code{\link[=fit_model]{fit_model()}} for building and fitting
+hidden Markov models; and \code{\link[=hmm_biofam]{hmm_biofam()}} for information on the model used
 in the example.
 }

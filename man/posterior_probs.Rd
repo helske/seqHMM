@@ -2,22 +2,33 @@
 % Please edit documentation in R/posterior_probs.R
 \name{posterior_probs}
 \alias{posterior_probs}
-\title{Posterior Probabilities for (Mixture) Hidden Markov Models}
+\alias{posterior_probs.hmm}
+\alias{posterior_probs.mhmm}
+\alias{posterior_probs.nhmm}
+\alias{posterior_probs.mnhmm}
+\title{Posterior Probabilities for Hidden Markov Models}
 \usage{
-posterior_probs(model, log_space = FALSE)
+posterior_probs(model, ...)
+
+\method{posterior_probs}{hmm}(model, ...)
+
+\method{posterior_probs}{mhmm}(model, ...)
+
+\method{posterior_probs}{nhmm}(model, ...)
+
+\method{posterior_probs}{mnhmm}(model, ...)
 }
 \arguments{
-\item{model}{A (mixture) hidden Markov model of class \code{hmm} or \code{mhmm}.}
+\item{model}{A hidden Markov model object.}
 
-\item{log_space}{Compute posterior probabilities in logarithmic scale. The default is \code{FALSE}.}
+\item{...}{Ignored.}
 }
 \value{
-Posterior probabilities. In case of multiple observations,
-these are computed independentlsy for each sequence.
+A data frame of posterior probabilities for each state and sequence.
 }
 \description{
-Function \code{posterior_probs} computes the posterior probabilities of hidden states of
-a (mixture) hidden Markov model.
+Function \code{posterior_probs} computes the posterior probabilities of hidden
+states of a (mixture) hidden Markov model.
 }
 \examples{
 # Load a pre-defined MHMM
@@ -26,6 +37,4 @@ data("mhmm_biofam")
 # Compute posterior probabilities
 pb <- posterior_probs(mhmm_biofam)
 
-# Locally most probable states for the first subject:
-pb[, , 1]
 }

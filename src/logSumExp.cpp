@@ -1,27 +1,23 @@
 //log-sum-exp trick
 #include "logsumexp.h"
 
-#ifdef HAVE_LONG_DOUBLE
-#  define LDOUBLE long double
-#  define EXPL expl
-#else
-#  define LDOUBLE double
-#  define EXPL exp
-#endif
-
+// No idea how I decided to implement logSumExp like this, but apparently this
+// is now recommended in
+// Pierre Blanchard, Desmond J Higham, Nicholas J Higham (2021). 
+// Accurately computing the log-sum-exp and softmax functions, 
+// IMA Journal of Numerical Analysis, 41, 4, 2311–2330
 // [[Rcpp::export]]
 double logSumExp(const arma::vec& x) {
-  unsigned int maxi = x.index_max();
-  LDOUBLE maxv = x(maxi);
-  if (!(maxv > -arma::datum::inf)) {
-    return -arma::datum::inf;
+  arma::uword maxi = x.index_max();
+  double maxv = x(maxi);
+  if (!std::isfinite(maxv)) {
+    return maxv;
   }
-  LDOUBLE cumsum = 0.0;
-  for (unsigned int i = 0; i < x.n_elem; i++) {
+  double cumsum = 0.0;
+  for (arma::uword i = 0; i < x.n_elem; i++) {
     if ((i != maxi) && (x(i) > -arma::datum::inf)) {
-      cumsum += EXPL(x(i) - maxv);
+      cumsum += exp(x(i) - maxv);
     }
   }
-  
   return maxv + log1p(cumsum);
 }

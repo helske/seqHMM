@@ -10,13 +10,13 @@ simulate_mhmm(
   transition_probs,
   emission_probs,
   sequence_length,
-  formula,
-  data,
-  coefficients
+  formula = NULL,
+  data = NULL,
+  coefficients = NULL
 )
 }
 \arguments{
-\item{n_sequences}{The number of simulations.}
+\item{n_sequences}{The number of sequences to simulate.}
 
 \item{initial_probs}{A list containing vectors of initial state probabilities
 for the submodel of each cluster.}
@@ -33,7 +33,7 @@ data.}
 
 \item{sequence_length}{The length of the simulated sequences.}
 
-\item{formula}{Covariates as an object of class \code{\link{formula}},
+\item{formula}{Covariates as an object of class \code{\link[=formula]{formula()}},
 left side omitted.}
 
 \item{data}{An optional data frame, a list or an environment containing
@@ -89,9 +89,8 @@ sim <- simulate_mhmm(
   data = dataf, coefficients = coefs
 )
 
-ssplot(sim$observations,
-  hidden.paths = sim$states, plots = "both",
-  sortv = "from.start", sort.channel = 0, type = "I"
+stacked_sequence_plot(sim, 
+  sort_by = "start", sort_channel = "states", type = "i"
 )
 
 hmm <- build_mhmm(sim$observations,
@@ -105,19 +104,20 @@ hmm <- build_mhmm(sim$observations,
 fit <- fit_model(hmm)
 fit$model
 
-paths <- hidden_paths(fit$model)
+paths <- hidden_paths(fit$model, as_stslist = TRUE)
 
-ssplot(list(estimates = paths, true = sim$states),
-  sortv = "from.start",
-  sort.channel = 2, ylab = c("estimated paths", "true (simulated)"),
-  type = "I"
+stacked_sequence_plot(
+  list(
+    "estimated paths" = paths, 
+    "true (simulated)" = sim$states
+  ),
+  sort_by = "start",
+  sort_channel = "true (simulated)",
+  type = "i"
 )
 
 }
 \seealso{
-\code{\link{build_mhmm}} and \code{\link{fit_model}} for building
-and fitting mixture hidden Markov models; \code{\link{ssplot}} for plotting
-multiple sequence data sets; \code{\link{seqdef}} for more
-information on state sequence objects; and \code{\link{simulate_hmm}}
-for simulating hidden Markov models.
+\code{\link[=build_mhmm]{build_mhmm()}} and \code{\link[=fit_model]{fit_model()}} for building
+and fitting mixture hidden Markov models.
 }

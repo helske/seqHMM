@@ -1,9 +1,8 @@
-# Transform a mhmm object to separate hmm objects
+# spread combined mhmm back to original mhmm
 
 spread_models <- function(model) {
   stnames <- unlist(model$original_state_names)
   rownames(model$transition_probs) <- colnames(model$transition_probs) <- stnames
-
   if (model$n_channels == 1) {
     rownames(model$emission_probs) <- stnames
   } else {
@@ -12,8 +11,6 @@ spread_models <- function(model) {
     }
     names(model$emission_probs) <- model$channel_names
   }
-
-
   transM <- vector("list", model$n_clusters)
   emissM <- vector("list", model$n_clusters)
   init <- vector("list", model$n_clusters)
@@ -44,8 +41,6 @@ spread_models <- function(model) {
   }
 
   names(transM) <- names(emissM) <- names(init) <- model$cluster_names
-
-
   model$transition_probs <- transM
   model$emission_probs <- emissM
   model$initial_probs <- init
@@ -56,6 +51,5 @@ spread_models <- function(model) {
     names(model$initial_probs[[m]]) <- model$state_names[[m]]
   }
   class(model) <- "mhmm"
-
   model
 }

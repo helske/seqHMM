@@ -20,7 +20,7 @@ build_mhmm(
 )
 }
 \arguments{
-\item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
+\item{observations}{An \code{stslist} object (see \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}}) containing
 the sequences, or a list of such objects (one for each channel).}
 
 \item{n_states}{A numerical vector giving the number of hidden states in each submodel
@@ -40,7 +40,7 @@ observations (\code{alphabet(observations)}, returned as \code{symbol_names}).}
 \item{initial_probs}{A list which contains vectors of initial state
 probabilities for the submodel of each cluster.}
 
-\item{formula}{Optional formula of class \code{\link{formula}} for the
+\item{formula}{Optional formula of class \code{\link[=formula]{formula()}} for the
 mixture probabilities. Left side omitted.}
 
 \item{data}{A data frame containing the variables used in the formula.
@@ -63,24 +63,25 @@ numbered states are used.}
 }
 \value{
 Object of class \code{mhmm} with following elements:
-\describe{
-   \item{\code{observations}}{State sequence object or a list of such containing the data.}
-   \item{\code{transition_probs}}{A matrix of transition probabilities.}
-   \item{\code{emission_probs}}{A matrix or a list of matrices of emission probabilities.}
-   \item{\code{initial_probs}}{A vector of initial probabilities.}
-   \item{\code{coefficients}}{A matrix of parameter coefficients for covariates (covariates in rows, clusters in columns).}
-   \item{\code{X}}{Covariate values for each subject.}
-   \item{\code{cluster_names}}{Names for clusters.}
-   \item{\code{state_names}}{Names for hidden states.}
-   \item{\code{symbol_names}}{Names for observed states.}
-   \item{\code{channel_names}}{Names for channels of sequence data}
-   \item{\code{length_of_sequences}}{(Maximum) length of sequences.}
-   \item{\code{n_sequences}}{Number of sequences.}
-   \item{\code{n_symbols}}{Number of observed states (in each channel).}
-   \item{\code{n_states}}{Number of hidden states.}
-   \item{\code{n_channels}}{Number of channels.}
-   \item{\code{n_covariates}}{Number of covariates.}
-   \item{\code{n_clusters}}{Number of clusters.}
+\itemize{
+\item \code{observations}\cr State sequence object or a list of such containing the data.
+\item \code{transition_probs}\cr A matrix of transition probabilities.
+\item \code{emission_probs}\cr A matrix or a list of matrices of emission probabilities.
+\item \code{initial_probs}\cr A vector of initial probabilities.
+\item \code{coefficients}\cr A matrix of parameter coefficients for covariates (covariates in rows, clusters in columns).
+\item \code{X}\cr Covariate values for each subject.
+\item \code{cluster_names}\cr Names for clusters.
+\item \code{state_names}\cr Names for hidden states.
+\item \code{symbol_names}\cr Names for observed states.
+\item \code{channel_names}\cr Names for channels of sequence data
+\item \code{length_of_sequences}\cr (Maximum) length of sequences.
+\item \code{sequence_lengths}\cr A vector of sequence lengths.
+\item \code{n_sequences}\cr Number of sequences.
+\item \code{n_symbols}\cr Number of observed states (in each channel).
+\item \code{n_states}\cr Number of hidden states.
+\item \code{n_channels}\cr Number of channels.
+\item \code{n_covariates}\cr Number of covariates.
+\item \code{n_clusters}\cr Number of clusters.
 }
 }
 \description{
@@ -103,21 +104,19 @@ data("biofam3c")
 ## Building sequence objects
 marr_seq <- seqdef(biofam3c$married,
   start = 15,
-  alphabet = c("single", "married", "divorced")
+  alphabet = c("single", "married", "divorced"),
+  cpal = c("#AB82FF", "#E6AB02", "#E7298A")
 )
 child_seq <- seqdef(biofam3c$children,
   start = 15,
-  alphabet = c("childless", "children")
+  alphabet = c("childless", "children"),
+  cpal = c("#66C2A5", "#FC8D62")
 )
 left_seq <- seqdef(biofam3c$left,
   start = 15,
-  alphabet = c("with parents", "left home")
+  alphabet = c("with parents", "left home"),
+  cpal = c("#A6CEE3", "#E31A1C")
 )
-
-## Choosing colors
-attr(marr_seq, "cpal") <- c("#AB82FF", "#E6AB02", "#E7298A")
-attr(child_seq, "cpal") <- c("#66C2A5", "#FC8D62")
-attr(left_seq, "cpal") <- c("#A6CEE3", "#E31A1C")
 
 ## MHMM with random starting values, no covariates
 set.seed(468)
@@ -290,8 +289,8 @@ Helske S. and Helske J. (2019). Mixture Hidden Markov Models for Sequence Data: 
 Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
 }
 \seealso{
-\code{\link{fit_model}} for fitting mixture Hidden Markov models;
-\code{\link{summary.mhmm}} for a summary of a MHMM; \code{\link{separate_mhmm}} for
+\code{\link[=fit_model]{fit_model()}} for fitting mixture Hidden Markov models;
+\code{\link[=summary.mhmm]{summary.mhmm()}} for a summary of a MHMM; \code{\link[=separate_mhmm]{separate_mhmm()}} for
 reorganizing a MHMM into a list of separate hidden Markov models; and
-\code{\link{plot.mhmm}} for plotting \code{mhmm} objects.
+\code{\link[=plot.mhmm]{plot.mhmm()}} for plotting \code{mhmm} objects.
 }

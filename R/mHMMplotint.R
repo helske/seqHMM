@@ -42,7 +42,7 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout = "horizontal
   if (ask && is.null(which.plots)) {
     tmenu <- x$cluster_names
     repeat {
-      pick <- menu(tmenu, title = "\nSelect graph (or 0 to exit):\n")
+      pick <- utils::menu(tmenu, title = "\nSelect graph (or 0 to exit):\n")
       if (pick == 0) {
         return(invisible())
       } else {
@@ -66,7 +66,7 @@ mHMMplotint <- function(x, ask = FALSE, which.plots = NULL, layout = "horizontal
   } else if (ask && !is.null(which.plots)) {
     tmenu <- which.plots
     repeat {
-      pick <- menu(tmenu, title = "\nSelect graph (or 0 to exit):\n")
+      pick <- utils::menu(tmenu, title = "\nSelect graph (or 0 to exit):\n")
       if (pick == 0) {
         return(invisible())
       } else {

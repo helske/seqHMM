@@ -1,17 +1,17 @@
 #' Reorganize a mixture hidden Markov model to a list of separate hidden Markov models
 #' (covariates ignored)
 #'
-#' The \code{separate_mhmm} function reorganizes the parameters of a \code{mhmm} object
-#' into a list where each list component is an object of class \code{hmm} consisting of the
+#' The `separate_mhmm` function reorganizes the parameters of a `mhmm` object
+#' into a list where each list component is an object of class `hmm` consisting of the
 #' parameters of the corresponding cluster.
 #'
 #' @export
-#' @param model Mixture hidden Markov model of class \code{mhmm}.
+#' @param model Mixture hidden Markov model of class `mhmm`.
 #'
-#' @return List with components of class \code{hmm}.
+#' @return List with components of class `hmm`.
 #'
-#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_model}}
-#' for building and fitting MHMMs; and \code{\link{mhmm_biofam}} for
+#' @seealso [build_mhmm()] and [fit_model()]
+#' for building and fitting MHMMs; and [mhmm_biofam()] for
 #' more information on the model used in examples.
 #'
 #' @examples

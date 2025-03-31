@@ -155,7 +155,7 @@ Following \citet{Levinson1983}, by using the scaled forward and backward variabl
 and
 \[
 \frac{\partial \log P(Y_i|\mathcal{M})}{\partial b_{rc}(m)} = 
-\sum_{t: y_{itc} = m} \sum_{s=1}^S \alpha_{1t}(s)a_{sr} \hat \beta_{i(t+1)}(r) + \textrm{I}(y_{i1c} = m)\pi_r\hat\beta_{i1}(r).
+\sum_{t: y_{itc} = m} \sum_{s=1}^S \alpha_{it}(s)a_{sr} \hat \beta_{i(t+1)}(r) + \textrm{I}(y_{i1c} = m)\pi_r\hat\beta_{i1}(r).
 \]
 
 In the direct numerical optimization algorithms used by \texttt{seqHMM}, the model is parameterised using unconstrained parameters $\pi'_s, a'_{sr}, b'_{rc}(m)$ such that $a_{sr} = \exp(a'_sr)/\sum_{k=1}^S \exp(a'_sk)$, and similarly for emission and initial probabilities. This leads to

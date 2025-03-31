@@ -2,21 +2,34 @@
 % Please edit documentation in R/hidden_paths.R
 \name{hidden_paths}
 \alias{hidden_paths}
+\alias{hidden_paths.hmm}
+\alias{hidden_paths.mhmm}
+\alias{hidden_paths.nhmm}
+\alias{hidden_paths.mnhmm}
 \title{Most Probable Paths of Hidden States}
 \usage{
-hidden_paths(model, respect_void = TRUE)
+hidden_paths(model, ...)
+
+\method{hidden_paths}{hmm}(model, as_stslist = FALSE, ...)
+
+\method{hidden_paths}{mhmm}(model, as_stslist = FALSE, ...)
+
+\method{hidden_paths}{nhmm}(model, as_stslist = FALSE, ...)
+
+\method{hidden_paths}{mnhmm}(model, as_stslist = FALSE, ...)
 }
 \arguments{
-\item{model}{A hidden Markov model of class \code{hmm} or
-a mixture HMM of class \code{mhmm}.}
+\item{model}{A hidden Markov model.}
 
-\item{respect_void}{If \code{TRUE} (default), states at the time points
-corresponding to TraMineR's void in the observed sequences are set to void
-in the hidden state sequences as well.}
+\item{...}{Ignored.}
+
+\item{as_stslist}{Logical. If \code{TRUE}, the output the is converted to an
+\code{stslist} object. Default is \code{FALSE}, which returns a \code{data.table}.}
 }
 \value{
-The most probable paths of hidden states as an \code{stslist} object
-(see \code{\link{seqdef}}). The log-probability is included as an attribute \code{log_prob}.
+The most probable paths of hidden states as an \code{data.table}.
+The log-probability is included as an attribute
+\code{log_prop}.
 }
 \description{
 Function \code{hidden_paths} computes the most probable path of
@@ -28,9 +41,10 @@ data("hmm_biofam")
 
 # Compute the most probable hidden state paths given the data and the model
 mpp <- hidden_paths(hmm_biofam)
-
+head(mpp)
 # Plot hidden paths for the first 100 individuals
-ssplot(mpp, type = "I", tlim = 1:100)
+seqs <- data_to_stslist(mpp, "id", "time", "state")
+stacked_sequence_plot(seqs, type = "i", ids = 1:100)
 
 # Because the model structure is so sparse that the posterior probabilities are
 # mostly peaked to single state at each time point, the joint probability of
@@ -42,7 +56,7 @@ logLik(hmm_biofam)
 
 }
 \seealso{
-\code{\link{hmm_biofam}} for information on the model used in the example;
-  and \code{\link{seqIplot}}, \code{\link{ssplot}}, or \code{\link{mssplot}}
-  for plotting hidden paths.
+\link{hmm_biofam} for information on the model used in the example;
+and \code{\link[ggseqplot:ggseqiplot]{ggseqplot::ggseqiplot()}} and \code{\link[=stacked_sequence_plot]{stacked_sequence_plot()}}
+for plotting hidden paths.
 }

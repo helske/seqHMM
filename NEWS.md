@@ -1,3 +1,31 @@
+seqHMM 2.0.0
+==============
+  * Added support for non-homogeneous HMMs (NHMMs) where initial, transition, 
+  and emission probabilities can depend on individual-specific covariates. For 
+  mixture NHMMs cluster probabilities can also depend on covariates.
+  * Added support for feedback-augmented NHMMs where responses and states can 
+  depend also on the past responses.
+  * Added `bootstrap_coef` bootstrapping coefficients of NHMMs.
+  * Added a function `predict`, which can be used to compute average marginal 
+  predictions for NHMMs, which can be interpreted as average causal effects 
+  under suitable assumptions (https://arxiv.org/abs/2503.16014).
+  * Added `get_*` functions for obtaining initial, transition, emission and 
+  cluster probabilities and their (conditional) marginals.
+  * Rewrote all post-estimation functions such as `hidden_paths` and 
+  `forward_backward` so that they return `data.table`.
+  * Added functions `stslist_to_data` and `data_to_stslist` to convert between 
+  data frames and TraMineR's `stslist` objects (created by `seqdef`).
+  * Rewrote sequence visualization functions using `ggseqplot` and `patchwork` 
+  packages. Old plotting functions are deprecated and will be removed in the 
+  future.
+  * Warning and error messages were rewritten using `cli` package.
+  * Removed the function `estimate_coef`. A portion of the code was accidentally 
+  commented out, rendering the function non-functional for several years. 
+  Rather than correcting the code, the function was removed as it was deemed 
+  unnecessary.
+  * Added automatic tests using `testthat` package.
+  * Internally switched from Rd syntax to Markdown in Roxygen documentation.
+
 seqHMM 1.2.6 (Release date: 2023-06-07)
 ==============
   * Armadillo solver now fails directly instead of trying approximate solution 

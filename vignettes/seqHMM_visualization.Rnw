@@ -13,7 +13,7 @@
 
 % \newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 
-\author{Satu Helske \\ University of Oxford, UK}
+\author{Satu Helske and Jouni Helske\\ University of Turku, Finland}
 \title{Visualization tools in the \texttt{seqHMM} package}
 
 \begin{document}
@@ -36,49 +36,31 @@ library("seqHMM")
 
 data("biofam", package = "TraMineR")
 biofam_seq <- seqdef(biofam[, 10:25], start = 15, labels = c(
-  "parent",
-  "left", "married", "left+marr", "child", "left+child", "left+marr+ch",
-  "divorced"
-))
+  "parent", "left", "married", "left+marr", "child", "left+child",
+  "left+marr+ch", "divorced")
+)
 
 data("biofam3c")
 marr_seq <- seqdef(biofam3c$married, start = 15, alphabet = c(
-  "single",
-  "married", "divorced"
-))
+  "single", "married", "divorced"),
+  cpal = c("violetred2", "darkgoldenrod2", "darkmagenta")
+)
 child_seq <- seqdef(biofam3c$children,
   start = 15,
-  alphabet = c("childless", "children")
+  alphabet = c("childless", "children"),
+  cpal = c("darkseagreen1", "coral3")
 )
 left_seq <- seqdef(biofam3c$left, start = 15, alphabet = c(
-  "with parents",
-  "left home"
-))
-
-attr(marr_seq, "cpal") <- c("violetred2", "darkgoldenrod2", "darkmagenta")
-attr(child_seq, "cpal") <- c("darkseagreen1", "coral3")
-attr(left_seq, "cpal") <- c("lightblue", "red3")
+  "with parents","left home"),
+  cpal = c("lightblue", "red3")
+)
 @
 
-<<seqplotSingle, fig.width=6.5, fig.height=3, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Sequence index plot (left) and state distribution plot (right) of annual family states for 100 individuals from the \\texttt{biofam} data.", fig.align='center', fig.keep='last', cache = TRUE, message=FALSE>>=
-seqIplot <- ssp(
-  biofam_seq[1:100, ],
-  type = "I", sortv = "mds.obs", sort.channel = 1,
-  xtlab = 15:30, xlab = "Age",
-  title.n = FALSE, ylab = "", title = "Sequences", title.pos = 0.5,
-  legend.prop = 0.63, with.legend = FALSE
-)
-
-
-seqdplot <- ssp(
-  biofam_seq[1:100, ],
-  type = "d",
-  xtlab = 15:30, xlab = "Age", yaxis = TRUE, ylab = "Proportion",
-  title.n = FALSE, title = "State distributions",
-  legend.prop = 0.63, with.legend = FALSE
-)
-
-gridplot(list(seqIplot, seqdplot), ncol = 3, col.prop = c(0.35, 0.4, 0.25))
+<<seqplotSingle, fig.width=6.5, fig.height=3, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Sequence index plot (left) and state distribution plot (right) of annual family states for 100 individuals from the \\texttt{biofam} data.", fig.align='center', fig.keep='last', message=FALSE>>=
+library(patchwork)
+p1 <- stacked_sequence_plot(biofam_seq[1:100, ], type = "i", legend_position = "none")
+p2 <- stacked_sequence_plot(biofam_seq[1:100, ], type = "d", legend_position = "right")
+p1 + p2 & ggplot2::xlab("Age")
 @
 
 
@@ -87,27 +69,17 @@ When the number of subjects is moderate, sequence index plots give an accurate r
 \textit{State distribution plots} \citep[also called tempograms or chronograms;][]{Billari2005,Widmer2009} summarize information in the whole data. Such graphs show the change in the prevalence of states in the course of time (see the right-hand side of Figure \ref{fig:seqplotSingle}). Also here, the horizontal axis represents time but vertical axis is now a percentage scale. These plots simplify the overall patterns but do not give information on transitions between different states. Other summary plots include, e.g., \textit{transversal entropy plots} \citep{Billari2001}, which describe how evenly states are distributed at a given time point, and \textit{mean time plots} \citep{Gabadinho2011}, which show the mean time spent in each state across the time points.
 
 
-Visualizing multichannel data is not a straightforward task. The \texttt{TraMineR} package \citep{Gabadinho2011} provides nice plotting options and summaries for simple sequence data, but there are no easy options for multichannel data. Combining states into a single-channel representation often works well if the state space is small and states at each time point are either completely observed or completely missing. In other cases it can be preferable to preserve the multichannel structure. The \textit{stacked sequence plot} shows sequence data plotted separately for each channel (see Figure \ref{fig:seqplotMulti}). The order of the subjects is kept the same in each plot and the plots are stacked on top of each other. Since the time axes are horizontally aligned, comparing timing in different life domains should be relatively easy. This approach also protects the privacy of the subjects; even though all data are shown, combining information across channels for a single individual is difficult unless the number of subjects is small. State distribution plots can then be used to show information on the prevalence and timing of combined states on a more general level. 
-
-
-<<seqplotMulti, fig.width=6.5, fig.height=3.7, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Stacked sequence plot of the first ten individuals in the \\texttt{biofam} data. The top plot shows the original sequences, and the three bottom plots show the sequences in the separate channels for the same individuals. The sequences are in the same order in each plot, i.e., the same row always matches the same individual.", fig.align='center', fig.keep='last', cache = FALSE, message=FALSE>>=
+<<seqplotMulti, fig.width=6.5, fig.height=3.7, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Stacked sequence plot of the first ten individuals in the \\texttt{biofam} data. The top plot shows the original sequences, and the three bottom plots show the sequences in the separate channels for the same individuals. The sequences are in the same order in each plot, i.e., the same row always matches the same individual.", fig.align='center', fig.keep='last', message=FALSE>>=
 seq_data <- list(
-  biofam_seq[1:10, ], marr_seq[1:10, ], child_seq[1:10, ],
-  left_seq[1:10, ]
+  Original = biofam_seq[1:10, ], 
+  Marriage = marr_seq[1:10, ], 
+  Parenthood = child_seq[1:10, ],
+  Residence = left_seq[1:10, ]
 )
-ssplot(
-  seq_data,
-  type = "I", sortv = "from.start", sort.channel = 1,
-  ylab = c("Original", "Marriage", "Parenthood", "Residence"),
-  xtlab = 15:30, xlab = "Age", ylab.pos = c(1, 1.5),
-  title.n = FALSE, title = "Ten first sequences",
-  legend.prop = 0.63,
-  ncol.legend = c(3, 1, 1, 1)
-)
+stacked_sequence_plot(seq_data, sort_by = "start", sort_channel = "Original") & ggplot2::xlab("Age")
 @
 
-
-
+Visualizing multichannel data is not a straightforward task. The \texttt{TraMineR} package \citep{Gabadinho2011} provides nice plotting options and summaries for simple sequence data, but there are no easy options for multichannel data. Combining states into a single-channel representation often works well if the state space is small and states at each time point are either completely observed or completely missing. In other cases it can be preferable to preserve the multichannel structure. The \textit{stacked sequence plot} shows sequence data plotted separately for each channel (see Figure \ref{fig:seqplotMulti}). The order of the subjects is kept the same in each plot and the plots are stacked on top of each other. Since the time axes are horizontally aligned, comparing timing in different life domains should be relatively easy. This approach also protects the privacy of the subjects; even though all data are shown, combining information across channels for a single individual is difficult unless the number of subjects is small. State distribution plots can then be used to show information on the prevalence and timing of combined states on a more general level. 
 
 \subsection{Visualizing hidden Markov models}
 \label{sec:visHMM}
@@ -119,7 +91,6 @@ Figure \ref{fig:HMMplot} illustrates a HMM with five hidden states for the multi
 Vertices are drawn as pie charts where the slices represent emitted observations or -- in a multichannel case -- combinations of observed states across channels. The size of the slice is proportional to the emission probability of the observed state (or in a multichannel model, the product of the emission probabilities across channels). In this model, the hidden states are very close to observed states, the largest emission probabilities for the combined observations are 0.94 or higher in all states. For emphasizing the relevant information, observations with small emission probabilities can be combined into one category -- here we've combined states with emission probabilities less than 2\%.
 
 The width of the edge depends on the probability of the transition; the most probable transitions are thus easy to detect. Here the most probable transition between two hidden states is the transition into parenthood (typically married/childless/left home $\to$ married/children/left home) with a probability of 0.19.
-
 
 
 <<HMMplot, fig.width=6.5, fig.height=4.5, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Illustrating a left-to-right hidden Markov model for the multichannel \\texttt{biofam} data as a directed graph. Pies represent the hidden states, with emission probabilities of combined observations as slices. Arrows illustrate transition probabilities between the hidden states. Probabilities of starting in each state are shown next to the pies.", fig.align='center', fig.keep='last', cache = TRUE, message=FALSE>>=
@@ -143,25 +114,18 @@ plot(hmm_biofam,
 )
 @
 
-
-
-
-
 \subsection{Example data}
 
 As an example we use the \texttt{biofam} data available in the \texttt{TraMineR} package \citep{Gabadinho2011}. 
 It is a sample of 2000 individuals born in 1909--1972, constructed from the Swiss Household Panel survey in 2002 \citep{Mueller2007}. The data set contains sequences of annual family life statuses from age 15 to 30. Eight observed states are defined from the combination of five basic states: living with parents, left home, married, having children, and divorced. To show a more complex example, we have split the original data into three separate channels representing different life domains: marriage, parenthood, and residence. The data for each individual now includes three parallel sequences constituting of two or three states each: single/married/divorced, childless/parent, and living with parents / having left home. This three-channel version of the data is stored as a new data object called \texttt{biofam3c}.
 
-
-
 \section{Tools for visualizing multichannel sequence data}
 
-\subsection{\texttt{ssplot}: stacked sequence plots}
+\subsection{Stacked sequence plots}
 
+The \texttt{stacked\_sequence\_plot} function is the simplest way of plotting multichannel sequence data in \texttt{seqHMM}. It can be used to illustrate state distributions or sequence index plots. The former is the default option, since index plots can take a lot of time and memory if data are large. \\
 
-The \texttt{ssplot} function is the simplest way of plotting multichannel sequence data in \texttt{seqHMM}. It can be used to illustrate state distributions or sequence index plots. The former is the default option, since index plots can take a lot of time and memory if data are large. \\
-
-\noindent \textbf{Data types.} The \texttt{ssplot} function accepts two types of objects, either state sequence objects of type \texttt{stslist} from the \texttt{seqdef} function or a hidden Markov model object of class \texttt{hmm} from the \texttt{build\_hmm} function.
+\noindent \textbf{Data types.} The \texttt{stacked\_sequence\_plot} function accepts two types of objects, either state sequence objects of type \texttt{stslist} from the \texttt{seqdef} function or a hidden Markov model object of \texttt{seqHMM} package.
 
 As an example of the former, we start by preparing three state sequence objects from the \texttt{biofam3c} data. Here we set the start of the sequence at age 15 and define the states in each channel with the \texttt{alphabet} argument. The colour palette is stored as an attribute and may be modified accordingly.
 
@@ -172,173 +136,52 @@ data("biofam3c")
 marr_seq <- seqdef(
   biofam3c$married,
   start = 15,
-  alphabet = c("single", "married", "divorced")
+  alphabet = c("single", "married", "divorced"),
+  cpal = c("violetred2", "darkgoldenrod2", "darkmagenta")
 )
 child_seq <- seqdef(
   biofam3c$children,
   start = 15,
-  alphabet = c("childless", "children")
+  alphabet = c("childless", "children"),
+  cpal = c("darkseagreen1", "coral3")
 )
 left_seq <- seqdef(
   biofam3c$left,
   start = 15,
-  alphabet = c("with parents", "left home")
+  alphabet = c("with parents", "left home"),
+  cpal = c("lightblue", "red3")
 )
-
-attr(marr_seq, "cpal") <- c(
-  "violetred2", "darkgoldenrod2",
-  "darkmagenta"
-)
-attr(child_seq, "cpal") <- c("darkseagreen1", "coral3")
-attr(left_seq, "cpal") <- c("lightblue", "red3")
 @
 
-The \texttt{ssplot} function is designed for multichannel data but also works for single-channel sequences. For multichannel data, when using \texttt{stslist} objects the different channels are given as a list. Figure \ref{fig:plottingsequences} illustrates a default plot.
+The \texttt{stacked\_sequence\_plot} function is designed for multichannel data but also works for single-channel sequences. For multichannel data, when using \texttt{stslist} objects the different channels are given as a list. Figure \ref{fig:plottingsequences} illustrates a default plot.
 
 <<plottingsequences, fig.width=5, fig.height=3, dev.args=list(pointsize=10), fig.cap="Stacked sequence plot of annual state distributions in the three-channel \\texttt{biofam} data. This is the default output of the \\texttt{ssplot} function.", fig.keep='last', fig.align='center', cache=FALSE, echo = TRUE>>=
-ssplot(
-  x = list(
-    "Marriage" = marr_seq, "Parenthood" = child_seq,
-    "Residence" = left_seq
-  )
+p <- stacked_sequence_plot(
+  x = list(Marriage = marr_seq, Parenthood = child_seq, Residence = left_seq)
 )
+p
 @
+The object returned by \texttt{stacked\_sequence\_plot} can be further modified with the functionalities of \texttt{patchwork} and \texttt{ggplot2} packages. For example, the x-axis label may be modified with the \texttt{ggplot2::xlab} function and \texttt{patchwork}'s \texttt{\&} operator as \texttt{p \& ggplot2::xlab("Age")} (In single-channel case, \texttt{+} could be used, but here \texttt{\&} modifies all three subfigures).
 
-\noindent \textbf{Observed and hidden state sequences.} The \texttt{ssplot} function may be asked to plot observed sequences, hidden state sequences, or both. In the case of \texttt{hmm} objects, the most probable hidden state sequences are computed from the data 
-
-\noindent \textbf{Choosing plots.} The \texttt{ssplot} function is able to also hidden state paths in addition to or instead of observed sequences. The type of sequences is set with the \texttt{plots} argument. Figure \ref{fig:plottingsequencesHMM} shows state distributions for the observations as well as hidden states.
+\noindent \textbf{Choosing plots.} In the case of hidden Markov model, the \texttt{stacked\_sequence\_plot} function may be asked to plot observed sequences, most probable hidden state sequences, or both. The type of sequences is set with the \texttt{plots} argument. Figure \ref{fig:plottingsequencesHMM} shows state distributions for the observations as well as hidden states.
 
 <<plottingsequencesHMM, fig.width=5, fig.height=5, dev.args=list(pointsize=10), fig.cap="Stacked sequence plot of observations and hidden state paths using a hidden Markov model object.", fig.keep='last', fig.align='center', cache=FALSE, echo = TRUE>>=
 data("hmm_biofam")
-
-ssplot(x = hmm_biofam, plots = "both")
+stacked_sequence_plot(x = hmm_biofam, plots = "both")
 @
 
-\noindent \textbf{Sequence index plots} are called with the \texttt{type = "I"} argument in a similar way to the \texttt{seqplot} function in \texttt{TraMineR}. This type of plot shows the sequences as a whole. As the index plot is often difficult to interpret as such, sequences may be ordered in a more meaningful way. \\
+\noindent \textbf{Sequence index plots} are called with the \texttt{type = "index"}. This type of plot shows the sequences as a whole. As the index plot is often difficult to interpret as such, sequences may be ordered in a more meaningful way. \\
 
-\noindent \textbf{Sorting.} The \texttt{sortv} argument may be given a sorting variable or a sorting method. A sorting method may be one of \texttt{from.start}, \texttt{from.end}, \texttt{mds.obs}, and \texttt{mds.hidden}. The \texttt{from.start} and \texttt{from.end} arguments sort the sequences by the elements of the alphabet in the channel defined by the \texttt{sort.channel} argument (the first channel by default), starting from the start of the end of the sequences. The \texttt{mds.obs} and \texttt{mds.hidden} arguments sort the sequences according to the scores of multidimensional scaling for the observed data or hidden states paths, respectively. The \texttt{tlim} argument may be used to select only certain subjects for the plot. Figure \ref{fig:seqIplot} shows sequences sorted by the third channel, residence.
-
-<<seqIplot, fig.width=5, fig.height=3, dev.args=list(pointsize=10), fig.cap="Sequence index plot showing observed sequences sorted by the third channel, residence.", fig.keep='last', fig.align='center', cache=TRUE, echo = TRUE>>=
-ssplot(
+<<seqIplot, fig.width=5, fig.height=3, dev.args=list(pointsize=10), fig.cap="Sequence index plot showing observed sequences sorted by the third channel, residence.", fig.align='center', cache=TRUE, echo = TRUE>>=
+stacked_sequence_plot(
   hmm_biofam,
-  type = "I", sortv = "from.start", sort.channel = 3
+  type = "index", sort_by = "start", sort_channel = 3
 )
 @
 
-\noindent The labels and positions of the ssplot may be modified in many ways. \\
+\noindent \textbf{Sorting.} The \texttt{sort\_by} argument may be given a sorting variable or a sorting method. A sorting method may be one of \texttt{"start"}, \texttt{"end"}, or \texttt{"mds"}. The \texttt{"start"} and \texttt{"end"} options sort the sequences by the elements of the alphabet in the channel defined by the \texttt{sort\_channel} argument, starting from the start or the end of the sequences. \texttt{sort\_channel} should be either an integer or the name of the channel (name of the list component). Hidden states are automatically given a name \texttt{"Hidden states"}. The \texttt{"mds"} option sorts the sequences according to the scores of multidimensional scaling for the channel defined by the \texttt{sort\_channel}. Figure \ref{fig:seqIplot} shows sequences sorted by the third channel, residence.
 
-\noindent \textbf{Title.} By default, the function shows the number of subjects in the plot. Additional title printed in front of this is given with the \texttt{title} argument. This may be suppressed by \texttt{title.n = FALSE}. \\
-
-\noindent \textbf{Legend.} The \texttt{with.legend} argument defines if and where the legend for the states is plotted. The default value \texttt{"right"} creates separate legends for each channel (and hidden states, when relevant) and positiones them on the right-hand side of the plot. Other possible values are \texttt{"bottom"}, \texttt{"right.combined"}, and \texttt{"bottom.combined"}, of which the last two create one combined legend of the states in all channels in the selected position. The legend may be supressed altogether with the value \texttt{FALSE}. The \texttt{ncol.legend} argument gives the number of columns in (each of) the legend(s) and the \texttt{legend.prop} argument sets the proportion of the graphic area that is used for plotting the legend (0.3 by default). \\
-
-\noindent \textbf{Axes.} The user may choose to suppress or plot both the a axis (\texttt{TRUE} by default) and the y axis (\texttt{FALSE} by default). Both may be given optional labels with the \texttt{xlab} and \texttt{ylab} arguments and the distance of the labels from the plot may be modified with the \texttt{xlab.pos} and \texttt{ylab.pos} arguments (note: for hidden states, the label for the y axis is given with the \texttt{hidden.states.title} argument). The labels for the ticks of the x axis are modified with the \texttt{xtlab} argument. \\
-
-\noindent \textbf{Text sizes.} The sizes of the title, legend, axis labels, and axis tick labels are modified with the \texttt{cex.title}, \texttt{cex.legend}, \texttt{cex.lab}, and \texttt{cex.axis} arguments, respectively.
-
-\subsection{\texttt{ssp}: saving stacked sequence plots}
-
-The user may also pre-define function arguments with the \texttt{ssp} function and then use this object for plotting with a simple \texttt{plot} method. After defining one ssp, modifications are easy to do with the \texttt{update} function (see an example in the next section).
-
-
-<<ssp, fig.width=6, fig.height=3.2, dev.args=list(pointsize=10), fig.cap="Example on saving \\texttt{ssp} objects. Sequences are sorted according to multidimensional scaling scores.", fig.keep='last', fig.align='center', cache=TRUE, echo = TRUE>>=
-ssp_def <- ssp(
-  hmm_biofam,
-  plots = "both", type = "I", sortv = "mds.hidden",
-  ylab.pos = c(1, 2),
-  title = "Family trajectories", title.n = FALSE,
-  xtlab = 15:30, xlab = "Age",
-  ncol.legend = c(2, 1, 1), legend.prop = 0.37
-)
-
-plot(ssp_def)
-@
-
-Figure \ref{fig:ssp} shows the plot from the saved ssp. Here, the sequences were sorted according to multidimensional scaling scores computed from the most probable hidden state sequences. Labels and their positions as well as the legends were also modified.
-
-
-
-\subsection{\texttt{gridplot}: multiple stacked sequence plots}
-
-The \texttt{gridplot} function combines several \texttt{ssp} figures into one. It is useful for showing different features for the same subjects or the same features for different groups. The dimensions of the grid, widths and heights of the cells, and positions of the legends are easily modified.
-
-<<gridplot1, fig.width=5.5, fig.height=3.5, dev.args=list(pointsize=10), echo=TRUE, fig.cap="Showing state distribution plots for women and men in the \\texttt{biofam} data. Two figures were defined with the \\texttt{ssp} function and then combined into one figure with the \\texttt{gridplot} function.", fig.align='center', fig.keep='last', cache = TRUE>>=
-ssp_f <- ssp(
-  list(
-    marr_seq[biofam3c$covariates$sex == "woman", ],
-    child_seq[biofam3c$covariates$sex == "woman", ],
-    left_seq[biofam3c$covariates$sex == "woman", ]
-  ),
-  type = "I", sortv = "mds.obs", with.legend = FALSE,
-  title = "Women", xtlab = 15:30, ylab.pos = c(1, 2, 1),
-  ylab = c("Married", "Children", "Residence")
-)
-
-ssp_m <- update(
-  ssp_f,
-  title = "Men",
-  x = list(
-    marr_seq[biofam3c$covariates$sex == "man", ],
-    child_seq[biofam3c$covariates$sex == "man", ],
-    left_seq[biofam3c$covariates$sex == "man", ]
-  )
-)
-
-gridplot(
-  list(ssp_f, ssp_m),
-  ncol = 2, nrow = 2, byrow = TRUE,
-  legend.pos = "bottom", legend.pos2 = "top",
-  row.prop = c(0.65, 0.35)
-)
-@
-
-Figure \ref{fig:gridplot1} illustrates an example of a gridplot showing sequence index plots for women and men. Sequences were sorted using multidimensional scaling scores for observations. The \texttt{legend.pos} function defines the position of the legend(s) relative to the whole plot. It may be one of \texttt{"bottom"} or \texttt{"right"} or a numerical vector of grid cells.
-
-
-<<gridplot2, fig.width=5.5, fig.height=4.5, dev.args=list(pointsize=10), echo=TRUE, fig.cap="Another example of \\texttt{gridplot}. Showing sequences and state distributions for women and men.", fig.align='center', fig.keep='last', cache = TRUE>>=
-ssp_f2 <- update(ssp_f, type = "d", title = FALSE)
-
-ssp_m2 <- update(ssp_m, type = "d", title = FALSE)
-
-gridplot(
-  list(ssp_f, ssp_f2, ssp_m, ssp_m2),
-  ncol = 3, nrow = 2,
-  legend.pos = 3:4
-)
-@
-
-Figure \ref{fig:gridplot2} shows an example of manual positioning of legends into grid cells 3 and 4.
-
-The \texttt{gridplot} function uses the first list object for defining the legends. If the legends are different for different ssp figures, the common legend may be suppressed with the \texttt{with.legend = FALSE} argument.
-
-<<gridplot3, fig.width=5.5, fig.height=4, dev.args=list(pointsize=10), echo=TRUE, fig.cap="Another example of \\texttt{gridplot}. Showing three-channel sequences and state distributions of combined states for women.", fig.align='center', fig.keep='last', cache = TRUE>>=
-ssp_f3 <- update(
-  ssp_f,
-  with.legend = TRUE, legend.prop = 0.4, ylab.pos = 1,
-  cex.lab = 0.9, cex.axis = 0.8, cex.legend = 0.9
-)
-
-ssp_f4 <- ssp(
-  biofam_seq[biofam3c$covariates$sex == "woman", ],
-  type = "d", title.n = FALSE, xtlab = 15:30,
-  title = "State distributions for \n combined states (women)",
-  title.pos = 1.5, ylab = "", xlab = "Age",
-  with.legend = "bottom", ncol.legend = 2,
-  cex.lab = 0.9, cex.axis = 0.8, cex.legend = 0.9
-)
-
-gridplot(list(ssp_f3, ssp_f4),
-  with.legend = FALSE, ncol = 2,
-  col.prop = c(0.55, 0.45)
-)
-@
-
-
-\subsection{\texttt{mssplot}: ssp for mixture HMMs}
-
-The \texttt{mssplot} draws stacked sequence plots of observed sequences and/or most probable hidden state paths for clusters based on a mixture hidden Markov model of class \texttt{mhmm}. The most probable cluster (submodel) for each subject is chosen according to the most probable path of hidden states. By default, the function plots all clusters but the user may choose a subset of clusters with the \texttt{which.plots} argument. This is an interactive plot that shows several plots in a row. The default is to change the plot by pressing Enter. With the \texttt{ask = TRUE} argument the user gets a menu from which to choose the next cluster for plotting.
-
-
-
+\noindent \textbf{Legend.} The \texttt{legend\_position} argument defines if and where the legend for the states is plotted. The default value \texttt{"right"} creates separate legends for each channel and positions them on the right-hand side of the plot. This argument can be a single value or a vector of length matching the number of channels; these value of passed to \texttt{ggplot2::theme(legend.position)}. The legend of one or multiple channels may be supressed altogether with the value \texttt{"none"}.
 
 
 \section{Tools for hidden Markov models}

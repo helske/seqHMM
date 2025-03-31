@@ -17,7 +17,7 @@ build_mmm(
 )
 }
 \arguments{
-\item{observations}{An \code{stslist} object (see \code{\link[TraMineR]{seqdef}}) containing
+\item{observations}{An \code{stslist} object (see \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}}) containing
 the sequences.}
 
 \item{n_clusters}{A scalar giving the number of clusters/submodels
@@ -30,7 +30,7 @@ probabilities for submodels of each cluster.}
 \item{initial_probs}{A list which contains vectors of initial state
 probabilities for submodels of each cluster.}
 
-\item{formula}{Optional formula of class \code{\link{formula}} for the
+\item{formula}{Optional formula of class \code{\link[=formula]{formula()}} for the
 mixture probabilities. Left side omitted.}
 
 \item{data}{A data frame containing the variables used in the formula.
@@ -47,28 +47,29 @@ mixture probabilities. The first column is set to zero.}
 }
 \value{
 Object of class \code{mhmm} with following elements:
-\describe{
-   \item{\code{observations}}{State sequence object or a list of such containing the data.}
-   \item{\code{transition_probs}}{A matrix of transition probabilities.}
-   \item{\code{emission_probs}}{A matrix or a list of matrices of emission probabilities.}
-   \item{\code{initial_probs}}{A vector of initial probabilities.}
-   \item{\code{coefficients}}{A matrix of parameter coefficients for covariates (covariates in rows, clusters in columns).}
-   \item{\code{X}}{Covariate values for each subject.}
-   \item{\code{cluster_names}}{Names for clusters.}
-   \item{\code{state_names}}{Names for hidden states.}
-   \item{\code{symbol_names}}{Names for observed states.}
-   \item{\code{channel_names}}{Names for channels of sequence data}
-   \item{\code{length_of_sequences}}{(Maximum) length of sequences.}
-   \item{\code{n_sequences}}{Number of sequences.}
-   \item{\code{n_symbols}}{Number of observed states (in each channel).}
-   \item{\code{n_states}}{Number of hidden states.}
-   \item{\code{n_channels}}{Number of channels.}
-   \item{\code{n_covariates}}{Number of covariates.}
-   \item{\code{n_clusters}}{Number of clusters.}
+\itemize{
+\item \code{observations}\cr State sequence object or a list of such containing the data.
+\item \code{transition_probs}\cr A matrix of transition probabilities.
+\item \code{emission_probs}\cr A matrix or a list of matrices of emission probabilities.
+\item \code{initial_probs}\cr A vector of initial probabilities.
+\item \code{coefficients}\cr A matrix of parameter coefficients for covariates (covariates in rows, clusters in columns).
+\item \code{X}\cr Covariate values for each subject.
+\item \code{cluster_names}\cr Names for clusters.
+\item \code{state_names}\cr Names for hidden states.
+\item \code{symbol_names}\cr Names for observed states.
+\item \code{channel_names}\cr Names for channels of sequence data
+\item \code{length_of_sequences}\cr (Maximum) length of sequences.
+\item \code{sequence_lengths}\cr A vector of sequence lengths.
+\item \code{n_sequences}\cr Number of sequences.
+\item \code{n_symbols}\cr Number of observed states (in each channel).
+\item \code{n_states}\cr Number of hidden states.
+\item \code{n_channels}\cr Number of channels.
+\item \code{n_covariates}\cr Number of covariates.
+\item \code{n_clusters}\cr Number of clusters.
 }
 }
 \description{
-Function \code{build_mmm} is a shortcut for constructing a mixture Markov
+Function \code{\link[=build_mmm]{build_mmm()}} is a shortcut for constructing a mixture Markov
 model as a restricted case of an \code{mhmm} object.
 }
 \examples{
@@ -85,7 +86,7 @@ mvad_labels <- c(
   "joblessness", "school", "training"
 )
 mvad_scodes <- c("EM", "FE", "HE", "JL", "SC", "TR")
-mvad_seq <- seqdef(mvad, 17:86,
+mvad_seq <- seqdef(mvad, 15:86,
   alphabet = mvad_alphabet, states = mvad_scodes,
   labels = mvad_labels, xtstep = 6
 )
@@ -121,9 +122,9 @@ summary(mmm_mvad)
 }
 }
 \seealso{
-\code{\link{fit_model}} for estimating model parameters;
-\code{\link{summary.mhmm}} for a summary of a mixture model;
-\code{\link{separate_mhmm}} for organizing an \code{mhmm} object into a list of
-separate \code{hmm} objects; and \code{\link{plot.mhmm}} for plotting
+\code{\link[=fit_model]{fit_model()}} for estimating model parameters;
+\code{\link[=summary.mhmm]{summary.mhmm()}} for a summary of a mixture model;
+\code{\link[=separate_mhmm]{separate_mhmm()}} for organizing an \code{mhmm} object into a list of
+separate \code{hmm} objects; and \code{\link[=plot.mhmm]{plot.mhmm()}} for plotting
 mixture models.
 }

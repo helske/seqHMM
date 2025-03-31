@@ -1,41 +1,38 @@
 #' Summary method for mixture hidden Markov models
 #'
-#' Function \code{summary.mhmm} gives a summary of a mixture hidden Markov model.
+#' Function `summary.mhmm` gives a summary of a mixture hidden Markov model.
 #'
 #' @export
-#' @method summary mhmm
-#' @param object Mixture hidden Markov model of class \code{mhmm}.
+#' @param object Mixture hidden Markov model of class `mhmm`.
 #' @param parameters Whether or not to return transition, emission, and
-#' initial probabilities. \code{FALSE} by default.
+#' initial probabilities. `FALSE` by default.
 #' @param conditional_se Return conditional standard errors of coefficients.
-#' See \code{\link{vcov.mhmm}} for details. \code{TRUE} by default.
-#' @param log_space Make computations using log-space instead of scaling for greater
-#' numerical stability at cost of decreased computational performance. Default is \code{FALSE}.
-#' @param ... Further arguments to \code{\link{vcov.mhmm}}.
+#' See [vcov.mhmm()] for details. `TRUE` by default.
+#' @param ... Further arguments to [vcov.mhmm()].
 #'
-#' @details The \code{summary.mhmm} function computes features from a mixture hidden Markov
-#' model and stores them as a list. A \code{print} method prints summaries of these:
+#' @details The `summary.mhmm` function computes features from a mixture hidden Markov
+#' model and stores them as a list. A `print` method prints summaries of these:
 #' log-likelihood and BIC, coefficients and standard errors of covariates, means of prior
 #' cluster probabilities, and information on most probable clusters.
 #'
-#' @return \describe{
-#'    \item{transition_probs}{Transition probabilities. Only returned if \code{parameters = TRUE}.}
-#'    \item{emission_probs}{Emission probabilities. Only returned if \code{parameters = TRUE}.}
-#'    \item{initial_probs}{Initial state probabilities. Only returned if \code{parameters = TRUE}.}
-#'    \item{logLik}{Log-likelihood.}
-#'    \item{BIC}{Bayesian information criterion.}
-#'    \item{most_probable_cluster}{The most probable cluster according to posterior probabilities.}
-#'    \item{coefficients}{Coefficients of covariates.}
-#'    \item{vcov}{Variance-covariance matrix of coefficients.}
-#'    \item{prior_cluster_probabilities}{Prior cluster probabilities
-#'    (mixing proportions) given the covariates.}
-#'    \item{posterior_cluster_probabilities}{Posterior cluster membership probabilities.}
-#'    \item{classification_table}{Cluster probabilities (columns) by the most probable cluster (rows).}
-#'   }
+#' @return
+#' * transition_probs\cr Transition probabilities. Only returned if `parameters = TRUE`.
+#' * emission_probs\cr Emission probabilities. Only returned if `parameters = TRUE`.
+#' * initial_probs\cr Initial state probabilities. Only returned if `parameters = TRUE`.
+#' * logLik\cr Log-likelihood.
+#' * BIC\cr Bayesian information criterion.
+#' * most_probable_cluster\cr The most probable cluster according to posterior probabilities.
+#' * coefficients\cr Coefficients of covariates.
+#' * vcov\cr Variance-covariance matrix of coefficients.
+#' * prior_cluster_probabilities\cr Prior cluster probabilities
+#'    (mixing proportions) given the covariates.
+#' * posterior_cluster_probabilities\cr Posterior cluster membership probabilities.
+#' * classification_table\cr Cluster probabilities (columns) by the most probable cluster (rows).
 #'
-#' @seealso \code{\link{build_mhmm}} and \code{\link{fit_model}} for building and
+#'
+#' @seealso [build_mhmm()] and [fit_model()] for building and
 #'   fitting mixture hidden Markov models; and
-#'   \code{\link{mhmm_biofam}} for information on the model used in examples.
+#'   [mhmm_biofam()] for information on the model used in examples.
 #'
 #' @examples
 #' # Loading mixture hidden Markov model (mhmm object)
@@ -46,53 +43,31 @@
 #' summary(mhmm_biofam)
 #'
 summary.mhmm <- function(
-    object, parameters = FALSE, conditional_se = TRUE,
-    log_space = FALSE, ...) {
-  partial_ll <- logLik(object, partials = TRUE, log_space = log_space)
-  ll <- structure(sum(partial_ll), class = "logLik", df = attr(object, "df"), nobs = attr(object, "nobs"))
-
-  fw <- forward_backward(object, forward_only = TRUE, log_space = log_space)$forward_probs[, object$length_of_sequences, ]
-
+    object, parameters = FALSE, conditional_se = TRUE, ...) {
+  # avoid CRAN check warning due to NSE
+  probability <- id <- cluster <- NULL
+  pcp <- posterior_cluster_probabilities(object)
   pr <- exp(object$X %*% object$coefficients)
-  prior_cluster_probabilities <- pr / rowSums(pr)
-
-
-  posterior_cluster_probabilities <- array(0, dim = dim(pr))
-
-  if (!log_space) {
-    p <- 0
-    for (i in 1:object$n_clusters) {
-      posterior_cluster_probabilities[, i] <- colSums(fw[(p + 1):(p + object$n_states[i]), , drop = FALSE])
-      p <- p + object$n_states[i]
-    }
-  } else {
-    for (j in 1:object$n_sequences) {
-      p <- 0
-      for (i in 1:object$n_clusters) {
-        posterior_cluster_probabilities[j, i] <- exp(logSumExp(fw[(p + 1):(p + object$n_states[i]), j]) - partial_ll[j])
-        p <- p + object$n_states[i]
-      }
-    }
-  }
-  most_probable_cluster <- factor(apply(posterior_cluster_probabilities, 1, which.max),
-    levels = 1:object$n_clusters, labels = object$cluster_names
+  prior_cluster_probabilities <- data.table(
+    pcp[, 1:2], 
+    probability = c(t(pr / rowSums(pr)))
   )
-
-
+  mpc <- pcp[, .SD[which.max(probability)], by = id]$cluster
   clProbs <- matrix(NA, nrow = object$n_clusters, ncol = object$n_clusters)
   rownames(clProbs) <- colnames(clProbs) <- object$cluster_names
-  for (i in 1:object$n_clusters) {
-    for (j in 1:object$n_clusters) {
-      clProbs[i, j] <- mean(posterior_cluster_probabilities[most_probable_cluster == object$cluster_names[i], j])
+  for (i in object$cluster_names) {
+    for (j in object$cluster_names) {
+      clProbs[j, i] <- mean(pcp[cluster == i][mpc == j, probability])
     }
   }
-
+  ll <- logLik(object)
   if (!parameters) {
     summary_mhmm <- list(
-      logLik = ll, BIC = BIC(ll), most_probable_cluster = most_probable_cluster,
-      coefficients = object$coefficients, vcov = vcov(object, conditional_se, log_space = log_space, ...),
+      logLik = ll, BIC = stats::BIC(ll), most_probable_cluster = mpc,
+      coefficients = object$coefficients, 
+      vcov = vcov(object, conditional_se, ...),
       prior_cluster_probabilities = prior_cluster_probabilities,
-      posterior_cluster_probabilities = posterior_cluster_probabilities,
+      posterior_cluster_probabilities = pcp,
       classification_table = clProbs
     )
   } else {
@@ -100,13 +75,80 @@ summary.mhmm <- function(
       transition_probs = object$transition_probs,
       emission_probs = object$emission_probs,
       initial_probs = object$initial_probs,
-      logLik = ll, BIC = BIC(ll), most_probable_cluster = most_probable_cluster,
-      coefficients = object$coefficients, vcov = vcov(object, conditional_se, log_space = log_space, ...),
+      logLik = ll, BIC = stats::BIC(ll), most_probable_cluster = mpc,
+      coefficients = object$coefficients, 
+      vcov = vcov(object, conditional_se, ...),
       prior_cluster_probabilities = prior_cluster_probabilities,
-      posterior_cluster_probabilities = posterior_cluster_probabilities,
+      posterior_cluster_probabilities = pcp,
       classification_table = clProbs
     )
   }
-  class(summary_mhmm) <- "summary.mhmm"
+  class(summary_mhmm) <- "summary_mhmm"
   summary_mhmm
 }
+#' @export
+#' @rdname print
+print.summary_mhmm <- function(x, digits = 3, ...) {
+  # to avoid NSE warnings
+  probability <- cluster <- NULL
+  
+  if (exists("transition_probs", x)) {
+    cat("Initial probabilities :\n")
+    print.listof(x$initial_probs, digits = digits, ...)
+    cat("Transition probabilities :\n")
+    print.listof(x$transition_probs, digits = digits, ...)
+    cat("Emission probabilities :\n")
+    if (!is.list(x$emission_probs[[1]])) {
+      print.listof(x$emission_probs, digits = digits, ...)
+    } else {
+      for (i in 1:length(x$emission_probs)) {
+        cat(names(x$emission_probs)[i], ":\n\n")
+        print.listof(x$emission_probs[[i]], digits = digits, ...)
+      }
+    }
+  }
+  coef_se <- matrix(sqrt(diag(x$vcov)), nrow(x$coefficients))
+  coefs <- replicate((ncol(x$coefficients) - 1),
+                     matrix(NA, nrow = nrow(x$coefficients), ncol = 2),
+                     simplify = FALSE
+  )
+  for (i in 1:length(coefs)) {
+    coefs[[i]][, 1] <- x$coefficients[, i + 1]
+    coefs[[i]][, 2] <- coef_se[, i]
+    rownames(coefs[[i]]) <- rownames(x$coefficients)
+    colnames(coefs[[i]]) <- c("Estimate", "Std. error")
+  }
+  cluster_names <- colnames(x$coefficients)
+  names(coefs) <- cluster_names[-1]
+  cat("Covariate effects :\n")
+  cat(cluster_names[1], "is the reference.\n\n")
+  print.listof(coefs, print.gap = 2, digits = digits, quote = FALSE, ...)
+  
+  cat("Log-likelihood:", x$logLik, "  BIC:", x$BIC, "\n\n")
+  
+  cat("Means of prior cluster probabilities :\n")
+  p <- x$prior_cluster_probabilities[, list(mean = mean(probability)), by = cluster]
+  p <- stats::setNames(p$mean, p$cluster)
+  print(p, digits = digits, ...)
+  cat("\n")
+  
+  tbl <- table(x$most_probable_cluster)
+  cl <- matrix(
+    c(
+      as.character(tbl),
+      as.character(round(prop.table(tbl), digits = digits))
+    ),
+    nrow = 2, byrow = TRUE
+  )
+  colnames(cl) <- cluster_names
+  rownames(cl) <- c("count", "proportion")
+  cat("Most probable clusters :\n")
+  print.default(cl, quote = FALSE, print.gap = 2, right = TRUE)
+  cat("\n")
+  
+  cat("Classification table :\n")
+  cat("Mean cluster probabilities (in columns) by the most probable cluster (rows)\n\n")
+  print(x$classification_table, digits = digits, ...)
+  invisible(x)
+}
+

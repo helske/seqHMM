@@ -1,17 +1,17 @@
 #' Color palettes
 #'
 #' A list containing ready defined color palettes with distinct colors using
-#' iWantHue. By default, \code{seqHMM} uses these palettes when assigning colors.
+#' iWantHue. By default, `seqHMM` uses these palettes when assigning colors.
 #'
 #' @format A list with 200 color palettes.
 #'
-#' @source iWantHue web page \url{https://medialab.github.io/iwanthue/}
+#' @source iWantHue web page <https://medialab.github.io/iwanthue/>
 #'
-#' @seealso \code{\link{plot_colors}} for visualization of color palettes.
+#' @seealso [plot_colors()] for visualization of color palettes.
 #' Implementations of iWantHue for R:
 #'   \itemize{
-#'     \item \url{https://github.com/hoesler/rwantshue}
-#'     \item \url{https://github.com/johnbaums/hues}
+#'     \item <https://github.com/hoesler/rwantshue>
+#'     \item <https://github.com/johnbaums/hues>
 #'   }
 #' @docType data
 #' @keywords datasets

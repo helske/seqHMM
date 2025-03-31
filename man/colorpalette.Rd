@@ -23,11 +23,11 @@ colorpalette[[24]]
 
 }
 \seealso{
-\code{\link{plot_colors}} for visualization of color palettes.
+\code{\link[=plot_colors]{plot_colors()}} for visualization of color palettes.
 Implementations of iWantHue for R:
-  \itemize{
-    \item \url{https://github.com/hoesler/rwantshue}
-    \item \url{https://github.com/johnbaums/hues}
-  }
+\itemize{
+\item \url{https://github.com/hoesler/rwantshue}
+\item \url{https://github.com/johnbaums/hues}
+}
 }
 \keyword{datasets}
