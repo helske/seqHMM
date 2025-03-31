@@ -54,7 +54,10 @@ permute_states <- function(gammas_boot, gammas_mle) {
 #' Permute clusters of bootstrap sample to match MLE
 #' @noRd
 permute_clusters <- function(model, pcp_mle) {
-  pcp <- posterior_cluster_probabilities(model)
+  pcp <- matrix(
+    posterior_cluster_probabilities(model)$probability, 
+    ncol = model$n_clusters, byrow = TRUE
+  )
   m <- cost_matrix_clusters(pcp, pcp_mle)
   perm <- RcppHungarian::HungarianSolver(m)$pairs[, 2]
   model$gammas$omega[perm, , drop = FALSE]
@@ -225,11 +228,13 @@ bootstrap_coefs.mnhmm <- function(model, nsim,
   )
   init <- stats::setNames(model$etas, c("eta_pi", "eta_A", "eta_B", "eta_omega"))
   gammas_mle <- model$gammas
-  pcp_mle <- posterior_cluster_probabilities(model)
+  D <- model$n_clusters
+  pcp_mle <- matrix(
+    posterior_cluster_probabilities(model)$probability, ncol = D, byrow = TRUE
+  )
   lambda <- model$estimation_results$lambda
   bound <- model$estimation_results$bound
   method <- model$estimation_results$method
-  D <- model$n_clusters
   p <- progressr::progressor(along = seq_len(nsim))
   original_options <- options(future.globals.maxSize = Inf)
   on.exit(options(original_options))

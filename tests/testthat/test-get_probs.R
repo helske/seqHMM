@@ -150,7 +150,7 @@ test_that("'get_probs' and 'coef' works for 'fanhmm'", {
     NA
   )
   expect_equal(
-    names(cf), 
+    names(p), 
     c("workplace", "father", "state", "leave", "probability")
   )
   expect_error(

@@ -1,18 +1,15 @@
-# create test data
-set.seed(123)
-s <- 2
-n_id <- 10
-n_time <- 15
-
-d <- data.frame(
-  y = factor(sample(letters[1:s], n_id * n_time, replace = TRUE)), 
-  x = stats::rnorm(n_id * n_time), 
-  time = rep(1:n_time, each = n_id),
-  id = rep(1:n_id, n_time)
-)
-
 test_that("boostrap works for `nhmm`", {
+  set.seed(123)
+  s <- 2
+  n_id <- 10
+  n_time <- 15
   
+  d <- data.frame(
+    y = factor(sample(letters[1:s], n_id * n_time, replace = TRUE)), 
+    x = stats::rnorm(n_id * n_time), 
+    time = rep(1:n_time, each = n_id),
+    id = rep(1:n_id, n_time)
+  )
   expect_error(
     fit <- estimate_nhmm("y", s, data = d, time = "time", id = "id"),
     NA
@@ -41,9 +38,21 @@ test_that("boostrap works for `nhmm`", {
 })
 
 test_that("boostrap works for `mnhmm`", {
+  set.seed(123)
+  s <- 2
+  n_id <- 50
+  n_time <- 20
   
+  d <- data.frame(
+    y = factor(sample(letters[1:s], n_id * n_time, replace = TRUE)), 
+    x = stats::rnorm(n_id * n_time), 
+    time = rep(1:n_time, each = n_id),
+    id = rep(1:n_id, n_time)
+  )
   expect_error(
-    fit <- estimate_mnhmm("y", s, 2, data = d, time = "time", id = "id"),
+    fit <- estimate_mnhmm(
+      "y", s, 2, data = d, time = "time", id = "id", method = "DNM"
+    ),
     NA
   )
   expect_error(
