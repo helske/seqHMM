@@ -154,14 +154,16 @@ bootstrap_coefs.nhmm <- function(model, nsim,
     formula_pi <- model$initial_formula
     formula_A <- model$transition_formula
     formula_B <- model$emission_formula
-    d <- model$data
+    d <- copy(model$data)
     time_var <- model$time_variable
     id_var <- model$id_variable
+    y <- model$responses
+    d[, y := NULL, env = list(y = I(y))]
     out <- future.apply::future_lapply(
       seq_len(nsim), function(i) {
         mod <- simulate_nhmm(
           N, T_, M, S, formula_pi, formula_A, formula_B,
-          d, id_var, time_var, init, 0)$model
+          d, id_var, time_var, init, 0, responses = y)$model
         fit <- fit_nhmm(
           mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
           method = method, bound = bound, control = control,
@@ -201,7 +203,7 @@ bootstrap_coefs.nhmm <- function(model, nsim,
     model$boot$gamma_pi <- c(model$boot$gamma_pi, boot$gamma_pi)
     model$boot$gamma_A <- c(model$boot$gamma_A, boot$gamma_A)
     model$boot$gamma_B <- c(model$boot$gamma_B, boot$gamma_B)
-    model$boot$idx <- cbind(model$boot$idx, idx)
+    model$boot$idx <- cbind(model$boot$idx, boot$idx)
   } else {
     model$boot <- boot
   }
@@ -282,14 +284,16 @@ bootstrap_coefs.mnhmm <- function(model, nsim,
     formula_A <- model$transition_formula
     formula_B <- model$emission_formula
     formula_omega <- model$cluster_formula
-    d <- model$data
+    d <- copy(model$data)
     time_var <- model$time_variable
     id_var <- model$id_variable
+    y <- model$responses
+    d[, y := NULL, env = list(y = I(y))]
     out <- future.apply::future_lapply(
       seq_len(nsim), function(i) {
         mod <- simulate_mnhmm(
           N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
-          d, id_var, time_var, init, 0)$model
+          d, id_var, time_var, init, 0, responses = y)$model
         fit <- fit_mnhmm(
           mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
           method = method, bound = bound, control = control,
@@ -341,7 +345,7 @@ bootstrap_coefs.mnhmm <- function(model, nsim,
     model$boot$gamma_A <- c(model$boot$gamma_A, boot$gamma_A)
     model$boot$gamma_B <- c(model$boot$gamma_B, boot$gamma_B)
     model$boot$gamma_omega <- c(model$boot$gamma_omega, boot$gamma_omega)
-    model$boot$idx <- cbind(model$boot$idx, idx)
+    model$boot$idx <- cbind(model$boot$idx, boot$idx)
   } else {
     model$boot <- boot
   }

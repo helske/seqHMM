@@ -1,25 +1,17 @@
 #' Compute marginal and conditional probabilities from joint distributions obtained from predict
 #' @noRd
-compute_joint <- function(x, newdata, type, cond, state_names, symbol_names, responses) {
+compute_joint <- function(x, newdata, type, cond, include) {
   # avoid CRAN check warnings due to NSE
-  estimate <- probability <- cols <- NULL
-  S <- length(state_names)
-  M <- length(symbol_names)
+  estimate <- probability <- NULL
   cond_obs <- cond$obs
   cond_state <- cond$state
   cond_both <- cond$both
-  cond_base <- cond$base
-  # Convert inputs to factors
-  state_factor <- factor(rep(state_names, times = M), levels = state_names)
-  obs_factor <- factor(rep(symbol_names, each = S), levels = symbol_names)
-  newdata <- setDT(newdata)[rep(seq_len(nrow(newdata)), each = S * M), 
-                            cols, env = list(cols = as.list(cond_base))]
-  set(newdata, j = "state", value = rep(state_factor, length.out = nrow(newdata)))
-  set(newdata, j = responses, value = rep(obs_factor, length.out = nrow(newdata)))
   set(newdata, j = "estimate", value = stats::na.omit(c(x)))
   # Compute joint distribution P(Y, Z)
+  if (!is.null(include)) {
+    newdata <- newdata[include]
+  }
   d <- newdata[, list(probability = mean(estimate)), by = cond_both]
-  
   d_obs <- d_state <- d_cond <- NULL
   
   # P(Y)
@@ -60,9 +52,12 @@ compute_joint <- function(x, newdata, type, cond, state_names, symbol_names, res
 predict.nhmm <- function(
     object, newdata, newdata2 = NULL, condition = NULL, 
     type = c("observations", "states", "conditionals"),
-    probs = c(0.025, 0.975), 
-    boot_idx = FALSE, ...) {
-  
+    probs = c(0.025, 0.975), boot_idx = FALSE, ...) {
+  cols <- NULL
+  stopifnot_(
+    object$n_channels == 1L,
+    "Predictions for multichannel NHMMs are not yet supported."
+  )
   type <- try(match.arg(type, several.ok = TRUE), silent = TRUE)
   stopifnot_(
     !inherits(type, "try-error"),
@@ -129,41 +124,47 @@ predict.nhmm <- function(
   )
   if (is.null(conditions$base)) conditions$base <- id
   object <- update(object, newdata)
-  obsArray <- create_obsArray(object)
-  stopifnot_(
-    object$n_channels == 1L,
-    "Predictions for multichannel NHMMs are not yet supported."
-  )
+  obs <- create_obsArray(object)
+  state_factor <- factor(rep(state_names, times = M), levels = state_names)
+  obs_factor <- factor(rep(symbol_names, each = S), levels = symbol_names)
+  newdata <- setDT(newdata, key = c(id, time))[
+    rep(seq_len(nrow(newdata)), each = S * M), 
+    cols, env = list(cols = as.list(conditions$base))
+  ]
+  set(newdata, j = "state", value = rep(state_factor, length.out = nrow(newdata)))
+  set(newdata, j = responses, value = rep(obs_factor, length.out = nrow(newdata)))
+  include <- NULL
   
   out <- unlist(predict_nhmm_singlechannel( 
     object$etas$pi, object$X_pi,
     object$etas$A, object$X_A, 
     object$etas$B, object$X_B, 
-    obsArray,
-    object$sequence_lengths, 
+    obs, object$sequence_lengths, 
     attr(object$X_pi, "icpt_only"), attr(object$X_A, "icpt_only"), 
     attr(object$X_B, "icpt_only"), attr(object$X_A, "iv"), 
     attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv")
   ))
-  d_mean <- compute_joint(out, newdata, type, conditions, state_names, symbol_names, responses)
+  d_mean <- compute_joint(out, newdata, type, conditions, include)
   
   if (!is.null(newdata2)) {
     object2 <- update(object, newdata2)
+    newdata2 <- setDT(newdata2, key = c(id, time))[
+      rep(seq_len(nrow(newdata2)), each = S * M), 
+      cols, env = list(cols = as.list(conditions$base))
+    ]
+    set(newdata2, j = "state", value = rep(state_factor, length.out = nrow(newdata2)))
+    set(newdata2, j = responses, value = rep(obs_factor, length.out = nrow(newdata2)))
     obs2 <- create_obsArray(object2)
     out2 <- unlist(predict_nhmm_singlechannel( 
       object2$etas$pi, object2$X_pi,
       object2$etas$A, object2$X_A, 
       object2$etas$B, object2$X_B, 
-      array(obs2[1, , ], dim(obs2)[2:3]),
-      object2$sequence_lengths, 
+      obs2, object2$sequence_lengths, 
       attr(object2$X_pi, "icpt_only"), attr(object2$X_A, "icpt_only"), 
       attr(object2$X_B, "icpt_only"), attr(object2$X_A, "iv"), 
       attr(object2$X_B, "iv"), attr(object2$X_A, "tv"), attr(object2$X_B, "tv")
     ))
-    d <- compute_joint(
-      out2, newdata2, type, conditions, state_names, symbol_names, 
-      responses
-    )
+    d <- compute_joint(out2, newdata2, type, conditions, include)
     for(i in names(d_mean)) {
       if(!is.null(d_mean[[i]])) {
         d_mean[[i]]$probability <- d_mean[[i]]$probability - d[[i]]$probability
@@ -180,8 +181,7 @@ predict.nhmm <- function(
         object$etas$pi, object$X_pi,
         object$etas$A, object$X_A, 
         object$etas$B, object$X_B, 
-        obsArray,
-        object$sequence_lengths, 
+        obs, object$sequence_lengths, 
         attr(object$X_pi, "icpt_only"), attr(object$X_A, "icpt_only"), 
         attr(object$X_B, "icpt_only"), attr(object$X_A, "iv"), 
         attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv"),
@@ -190,21 +190,17 @@ predict.nhmm <- function(
       if (boot_idx) {
         d_boot[[i]] <- compute_joint(
           out[, , , object$boot$idx[, i], drop = FALSE], 
-          newdata, type, conditions, state_names, symbol_names, responses
+          newdata, type, conditions, include
         )
       } else {
-        d_boot[[i]] <- compute_joint(
-          out, newdata, type, conditions, state_names, symbol_names, 
-          responses
-        )
+        d_boot[[i]] <- compute_joint(out, newdata, type, conditions, include)
       }
       if (!is.null(newdata2)) {
         out2 <- simplify2array(boot_predict_nhmm_singlechannel( 
           object2$etas$pi, object2$X_pi,
           object2$etas$A, object2$X_A, 
           object2$etas$B, object2$X_B, 
-          array(obs2[1, , ], dim(obs2)[2:3]),
-          object2$sequence_lengths, 
+          obs2, object2$sequence_lengths, 
           attr(object2$X_pi, "icpt_only"), attr(object2$X_A, "icpt_only"), 
           attr(object2$X_B, "icpt_only"), attr(object2$X_A, "iv"), 
           attr(object2$X_B, "iv"), attr(object2$X_A, "tv"), attr(object2$X_B, "tv"),
@@ -213,14 +209,11 @@ predict.nhmm <- function(
         if (boot_idx) {
           d <- compute_joint(
             out2[, , , object$boot$idx[, i], drop = FALSE], 
-            newdata2, type, conditions, state_names, symbol_names,
-            responses
+            newdata2, type, conditions, include
           )
         } else {
           d <- compute_joint(
-            out2, newdata2, type, conditions, state_names, symbol_names,
-            responses
-          )
+            out2, newdata2, type, conditions, include)
         }
         for(j in names(d_mean)) {
           if(!is.null(d_mean[[j]])) {
@@ -245,8 +238,12 @@ predict.nhmm <- function(
 predict.fanhmm <- function(
     object, newdata, newdata2 = NULL, condition = NULL, 
     type = c("observations", "states", "conditionals"),
-    probs = c(0.025, 0.975), 
-    boot_idx = FALSE, ...) {
+    probs = c(0.025, 0.975), boot_idx = FALSE, ...) {
+  
+  stopifnot_(
+    object$n_channels == 1L,
+    "Multichannel FAN-HMM is not yet supported."
+  )
   
   type <- try(match.arg(type, several.ok = TRUE), silent = TRUE)
   stopifnot_(
@@ -315,10 +312,21 @@ predict.fanhmm <- function(
   if (is.null(conditions$base)) conditions$base <- id
   object <- update(object, newdata)
   obs <- create_obsArray(object, FALSE) # don't set first obs to missing
-  stopifnot_(
-    object$n_channels == 1L,
-    "Multichannel FAN-HMM is not yet supported."
-  )
+  state_factor <- factor(rep(state_names, times = M), levels = state_names)
+  obs_factor <- factor(rep(symbol_names, each = S), levels = symbol_names)
+  newdata <- setDT(newdata, key = c(id, time))[
+    rep(seq_len(nrow(newdata)), each = S * M), 
+    cols, env = list(cols = as.list(c(time, conditions$base)))
+  ]
+  set(newdata, j = "state", value = rep(state_factor, length.out = nrow(newdata)))
+  set(newdata, j = responses, value = rep(obs_factor, length.out = nrow(newdata)))
+  if (!is.null(object$autoregression_formula)) {
+    include <- which(newdata[[time]] != min(newdata[[time]]))
+  } else {
+    include <- NULL
+  }
+  newdata[, time := NULL, env = list(time = time)]
+  
   W <- update_W_for_fanhmm(object)
   out <- unlist(predict_fanhmm_singlechannel( 
     object$etas$pi, object$X_pi,
@@ -330,10 +338,15 @@ predict.fanhmm <- function(
     attr(object$X_B, "iv"), attr(object$X_A, "tv"), attr(object$X_B, "tv"),
     W$W_A, W$W_B, !is.null(object$autoregression_formula)
   ))
-  d_mean <- compute_joint(out, newdata, type, conditions, state_names, symbol_names, responses)
-  
+  d_mean <- compute_joint(out, newdata, type, conditions, include)
   if (!is.null(newdata2)) {
     object2 <- update(object, newdata2)
+    newdata2 <- setDT(newdata2, key = c(id, time))[
+      rep(seq_len(nrow(newdata2)), each = S * M), 
+      cols, env = list(cols = as.list(conditions$base))
+    ]
+    set(newdata2, j = "state", value = rep(state_factor, length.out = nrow(newdata2)))
+    set(newdata2, j = responses, value = rep(obs_factor, length.out = nrow(newdata2)))
     obs2 <- create_obsArray(object2, FALSE) # don't set first obs to missing
     W2 <- update_W_for_fanhmm(object2)
     out2 <- unlist(predict_fanhmm_singlechannel( 
@@ -346,10 +359,7 @@ predict.fanhmm <- function(
       attr(object2$X_B, "iv"), attr(object2$X_A, "tv"), attr(object2$X_B, "tv"),
       W2$W_A, W2$W_B, !is.null(object2$autoregression_formula)
     ))
-    d <- compute_joint(
-      out2, newdata2, type, conditions, state_names, symbol_names, 
-      responses
-    )
+    d <- compute_joint(out2, newdata2, type, conditions, include)
     for(i in names(d_mean)) {
       if(!is.null(d_mean[[i]])) {
         d_mean[[i]]$probability <- d_mean[[i]]$probability - d[[i]]$probability
@@ -377,12 +387,11 @@ predict.fanhmm <- function(
       if (boot_idx) {
         d_boot[[i]] <- compute_joint(
           out[, , , object$boot$idx[, i], drop = FALSE], 
-          newdata, type, conditions, state_names, symbol_names, responses
+          newdata, type, conditions, include
         )
       } else {
         d_boot[[i]] <- compute_joint(
-          out, newdata, type, conditions, state_names, symbol_names, 
-          responses
+          out, newdata, type, conditions, include
         )
       }
       if (!is.null(newdata2)) {
@@ -401,14 +410,10 @@ predict.fanhmm <- function(
         if (boot_idx) {
           d <- compute_joint(
             out2[, , , object$boot$idx[, i], drop = FALSE], 
-            newdata2, type, conditions, state_names, symbol_names,
-            responses
+            newdata2, type, conditions, include
           )
         } else {
-          d <- compute_joint(
-            out2, newdata2, type, conditions, state_names, symbol_names,
-            responses
-          )
+          d <- compute_joint(out2, newdata2, type, conditions, include)
         }
         for(j in names(d_mean)) {
           if(!is.null(d_mean[[j]])) {

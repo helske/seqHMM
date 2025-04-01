@@ -62,7 +62,7 @@ state_names.mnhmm <- function(object) {
 #' @export
 `state_names<-.mhmm` <- function(object, value) {
   stopifnot_(
-    length(value) != object$n_clusters,
+    length(value) == object$n_clusters,
     "New state names should be a {.cls list} with length of 
     {object$n_clusters}."
   )
@@ -99,7 +99,7 @@ state_names.mnhmm <- function(object) {
 #' @export
 `state_names<-.mnhmm` <- function(object, value) {
   stopifnot_(
-    length(value) != object$n_clusters,
+    length(value) == object$n_clusters,
     "New state names should be a {.cls list} with length of 
     {object$n_clusters}."
   )

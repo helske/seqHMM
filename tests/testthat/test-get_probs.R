@@ -110,6 +110,14 @@ test_that("'get_probs' and 'coef' works for single-channel 'mnhmm'", {
     NA
   )
   expect_error(
+    fit <- bootstrap_coefs(fit, nsim = 10),
+    NA
+  )
+  expect_error(
+    p <- get_cluster_probs(fit),
+    NA
+  )
+  expect_error(
     p <- get_initial_probs(fit),
     NA
   )
@@ -122,19 +130,46 @@ test_that("'get_probs' and 'coef' works for single-channel 'mnhmm'", {
     NA
   )
   expect_error(
-    coef(fit),
+    coef(fit, probs = 0.5),
     NA
   )
 })
-
+test_that("'get_probs' works for 'hmm' and 'mhmm", {
+  expect_error(
+    get_initial_probs(hmm_biofam),
+    NA
+  )
+  expect_error(
+    get_transition_probs(hmm_biofam),
+    NA
+  )
+  expect_error(
+    get_emission_probs(hmm_biofam),
+    NA
+  )
+  expect_error(
+    get_initial_probs(mhmm_biofam),
+    NA
+  )
+  expect_error(
+    get_transition_probs(mhmm_biofam),
+    NA
+  )
+  expect_error(
+    get_emission_probs(mhmm_biofam),
+    NA
+  )
+  expect_error(
+    get_cluster_probs(mhmm_biofam),
+    NA
+  )
+})
 test_that("'get_probs' and 'coef' works for 'fanhmm'", {
   data("fanhmm_leaves")
-  
   expect_error(
     cf <- coef(fanhmm_leaves, probs = c(0.1, 0.9)),
     NA
   )
-  
   expect_equal(names(cf), c("initial", "transition", "emission"))
   expect_equal(
     names(cf$transition), 
@@ -144,7 +179,6 @@ test_that("'get_probs' and 'coef' works for 'fanhmm'", {
     cf$emission$estimate[1:3], 
     c(-1.30118969295931, 0.829786497113022, 0.471403195846288)
   )
-  
   expect_error(
     p <- get_emission_probs(fanhmm_leaves),
     NA

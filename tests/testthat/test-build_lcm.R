@@ -5,7 +5,9 @@ k <- 3
 obs <- suppressMessages(
   seqdef(matrix(sample(letters[1:s], 50, replace = TRUE), ncol = 10))
 )
-
+obs2 <- suppressMessages(
+  seqdef(matrix(sample(LETTERS[1:s], 50, replace = TRUE), ncol = 10))
+)
 test_that("build_lcm returns object of class 'mhmm'", {
   expect_error(
     model <- build_lcm(obs, n_clusters = k),
@@ -14,6 +16,10 @@ test_that("build_lcm returns object of class 'mhmm'", {
   expect_s3_class(
     model,
     "mhmm"
+  )
+  expect_error(
+    model <- build_lcm(list(y1 = obs, y2 = obs2), n_clusters = k),
+    NA
   )
   expect_error(
     build_lcm(obs, n_clusters = k,

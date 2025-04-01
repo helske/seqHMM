@@ -121,7 +121,7 @@ simulate_nhmm <- function(
   }
   states <- cbind(
     model$data[, list(id, time), env = list(id = id, time = time)], 
-    state = state_names[c(out$states) + 1]
+    state = model$state_names[c(out$states) + 1]
   )
   list(model = model, states = states)
 }

@@ -17,9 +17,29 @@ most_probable_cluster <- function(x, type = "viterbi", hp = NULL) {
     inherits(x, "mhmm") || inherits(x, "mnhmm"),
     "Argument {.arg x} must be a {.cls mhmm} or {.cls mnhmm} object."
   )
-  type <- match.arg(type, c("viterbi", "posterior"))
+  type <- try(match.arg(type, c("viterbi", "posterior")), silent = TRUE)
+  stopifnot_(
+    !inherits(type, "try-error"),
+    "Argument {.arg type} must be either {.val viterbi} or {.val posterior}."
+  )
   if (type == "viterbi") {
-    if (is.null(hp)) hp <- hidden_paths(x)
+    if (is.null(hp)) {
+      hp <- hidden_paths(x)
+    } else {
+      if (inherits(x, "mhmm")) {
+        id <- x$id_variable
+        time <- x$time_variable
+      } else {
+        id <- "id"
+        time <- "time"
+      }
+      cols <- c(id, time, "state", "cluster")
+      stopifnot_(
+        inherits(hp, "data.table") && all(cols %in% names(hp)),
+        "Argument {.arg hp} must be a {.cls data.table} object from 
+        {.fun hidden_paths}."
+      )
+    }
     if (inherits(x, "mnhmm")) id <- x$id_variable else id <- "id"
     clusters <- hp[, .SD[1], by = id]$cluster
   } else {
@@ -38,11 +58,11 @@ posterior_cluster_probabilities <- function(x) {
   # avoid CRAN check warnings due to NSE
   probability <- id <- time <- cluster <- NULL
   stopifnot_(
-    mhmm <- inherits(x, "mhmm") || inherits(x, "mnhmm"),
+    inherits(x, "mhmm") || inherits(x, "mnhmm"),
     "Argument {.arg x} must be a {.cls mhmm} or {.cls mnhmm} object."
   )
   pp <- posterior_probs(x)[time == min(time), ]
-  if (mhmm) {
+  if (inherits(x, "mhmm")) {
     pp[, list(probability = sum(probability)), by = list(id, cluster)]
   } else {
     pp[, list(probability = sum(probability)), by = c(x$id_variable, "cluster")]

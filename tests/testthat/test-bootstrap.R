@@ -15,11 +15,11 @@ test_that("boostrap works for `nhmm`", {
     NA
   )
   expect_error(
-    fit <- bootstrap_coefs(fit, method = "nonparametric", nsim = 2),
+    fit <- bootstrap_coefs(fit, type = "nonparametric", nsim = 2),
     NA
   )
   expect_error(
-    fit <- bootstrap_coefs(fit, method = "parametric", nsim = 2, append = TRUE),
+    fit <- bootstrap_coefs(fit, type = "parametric", nsim = 2, append = TRUE),
     NA
   )
   expect_equal(length(fit$boot), 4L)
@@ -39,9 +39,9 @@ test_that("boostrap works for `nhmm`", {
 
 test_that("boostrap works for `mnhmm`", {
   set.seed(123)
-  s <- 2
-  n_id <- 50
-  n_time <- 20
+  s <- 4
+  n_id <- 30
+  n_time <- 10
   
   d <- data.frame(
     y = factor(sample(letters[1:s], n_id * n_time, replace = TRUE)), 
@@ -51,16 +51,16 @@ test_that("boostrap works for `mnhmm`", {
   )
   expect_error(
     fit <- estimate_mnhmm(
-      "y", s, 2, data = d, time = "time", id = "id", method = "DNM"
+      "y", 3, 2, data = d, time = "time", id = "id", method = "DNM"
     ),
     NA
   )
   expect_error(
-    fit <- bootstrap_coefs(fit, method = "nonparametric", nsim = 2),
+    fit <- bootstrap_coefs(fit, type = "nonparametric", nsim = 2),
     NA
   )
   expect_error(
-    fit <- bootstrap_coefs(fit, method = "parametric", nsim = 2, append = TRUE),
+    fit <- bootstrap_coefs(fit, type = "parametric", nsim = 2, append = TRUE),
     NA
   )
   expect_equal(length(fit$boot), 5L)

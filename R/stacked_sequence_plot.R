@@ -168,7 +168,7 @@ stacked_sequence_plot <- function(
            "or integer between 1 and {n_channels}."
     )
   )
-  names(y) <- channel_names
+  if (n_channels > 1) names(y) <- channel_names
   y <- sort_sequences(y, sort_by, sort_channel, dist_method)
   if (length(sort_by) > 1) sort_by <- NULL # handle sorting by ids in ggseqplot
   

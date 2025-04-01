@@ -94,8 +94,8 @@ Rcpp::List simulate_mnhmm_singlechannel(
     const arma::mat& eta_omega, const arma::mat& X_omega) {
   arma::uword N = X_A.n_slices;
   arma::uword T = X_A.n_cols;
-  arma::uword S = eta_A.n_slices;
-  arma::uword M = eta_B.n_rows + 1;
+  arma::uword S = eta_A(0).n_slices;
+  arma::uword M = eta_B(0).n_rows + 1;
   arma::uword D = eta_omega.n_rows + 1;
   arma::ucube y(1, T, N);
   arma::umat z(T, N);

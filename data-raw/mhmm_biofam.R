@@ -2,20 +2,26 @@ library(seqHMM)
 data("biofam3c")
 
 # Building sequence objects
-marr_seq <- seqdef(biofam3c$married,
-                   start = 15,
-                   alphabet = c("single", "married", "divorced"),
-                   cpal = c("violetred2", "darkgoldenrod2", "darkmagenta")
+marr_seq <- seqdef(
+  biofam3c$married,
+  start = 15,
+  alphabet = c("single", "married", "divorced"),
+  cpal = c("violetred2", "darkgoldenrod2", "darkmagenta"
+  )
 )
-child_seq <- seqdef(biofam3c$children,
-                    start = 15,
-                    alphabet = c("childless", "children"),
-                    cpal = c("darkseagreen1", "coral3")
+child_seq <- seqdef(
+  biofam3c$children,
+  start = 15,
+  alphabet = c("childless", "children"),
+  cpal = c("darkseagreen1", "coral3"
+  )
 )
-left_seq <- seqdef(biofam3c$left,
-                   start = 15,
-                   alphabet = c("with parents", "left home"),
-                   cpal = c("lightblue", "red3")
+left_seq <- seqdef(
+  biofam3c$left,
+  start = 15,
+  alphabet = c("with parents", "left home"),
+  cpal = c("lightblue", "red3"
+  )
 )
 
 ## Starting values for emission probabilities
@@ -115,17 +121,23 @@ initial_probs1 <- c(0.9, 0.07, 0.02, 0.01)
 initial_probs2 <- c(0.9, 0.04, 0.03, 0.01, 0.01, 0.01)
 
 # Birth cohort
-biofam3c$covariates$cohort <- factor(cut(biofam3c$covariates$birthyr,
-                                         c(1908, 1935, 1945, 1957)), labels = c("1909-1935", "1936-1945", "1946-1957"))
+biofam3c$covariates$cohort <- factor(
+  cut(biofam3c$covariates$birthyr,
+      c(1908, 1935, 1945, 1957), 
+      c("1909-1935", "1936-1945", "1946-1957")
+  )
+)
 
 # Build mixture HMM
 init_mhmm_bf <- build_mhmm(
   observations = list(marr_seq, child_seq, left_seq),
   initial_probs = list(initial_probs1, initial_probs1, initial_probs2),
   transition_probs = list(A1, A1, A2),
-  emission_probs = list(list(B1_marr, B1_child, B1_left),
-                        list(B2_marr, B2_child, B2_left),
-                        list(B3_marr, B3_child, B3_left)),
+  emission_probs = list(
+    list(B1_marr, B1_child, B1_left),
+    list(B2_marr, B2_child, B2_left),
+    list(B3_marr, B3_child, B3_left)
+  ),
   formula = ~sex + cohort, data = biofam3c$covariates,
   channel_names = c("Marriage", "Parenthood", "Residence"))
 

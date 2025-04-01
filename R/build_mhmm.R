@@ -384,7 +384,7 @@ build_mhmm <- function(observations,
       )
     }
   }
-  
+  names(state_names) <- cluster_names
   if (is.null(formula)) {
     formula <- formula(~ 1)
     X <- stats::model.matrix(formula, data = data.frame(y = rep(1, n_sequences)))
