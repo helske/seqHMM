@@ -43,7 +43,7 @@ update.nhmm <- function(object, newdata, ...) {
                                        time_var = time_var
                                      )]$V1
   newdata[, tmax := NULL]
-  if (inherits(object, "fanhmm") & !is.null(object$autoregression_formula)) {
+  if (inherits(object, "fanhmm") && !is.null(object$autoregression_formula)) {
     newdata[[paste0("lag_", responses)]] <- 
       group_lag(newdata, id_var, responses)
   }
@@ -113,7 +113,7 @@ update.mnhmm <- function(object, newdata, ...) {
                                        time_var = time_var
                                      )]$V1
   newdata[, tmax := NULL]
-  if (inherits(object, "fanhmm") & !is.null(object$autoregression_formula)) {
+  if (inherits(object, "fanhmm") && !is.null(object$autoregression_formula)) {
     newdata[[paste0("lag_", responses)]] <- 
       group_lag(newdata, id_var, responses)
   }

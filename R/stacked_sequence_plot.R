@@ -57,13 +57,24 @@
 #' p & theme(plot.margin = unit(c(1, 1, 0, 2), "mm"))
 #' 
 stacked_sequence_plot <- function(
-    x, plots = "obs", type = "d", ids,
+    x, plots = "obs", type = "distribution", ids,
     sort_by = "none", sort_channel, dist_method = "OM", group = NULL, 
     legend_position = "right", ...) {
   
-  plots <- match.arg(plots, c("obs", "hidden_paths", "both"))
-  
+  plots <- try(match.arg(plots), silent = TRUE)
+  stopifnot_(
+    !inherits(plots, "try-error"),
+    "Argument {.arg plots} must be {.val obs},
+    {.val hidden_paths}, or {.val both}."
+  )
+  type <- try(match.arg(type, c("distribution", "index")), silent = TRUE)
+  stopifnot_(
+    !inherits(type, "try-error"),
+    "Argument {.arg type} must be {.val distribution} or {.val index}."
+  )
+ 
   if (inherits(x, c("hmm", "nhmm", "mhmm", "mnhmm"))) {
+    n <- x$length_of_sequences
     if (is.null(group) && inherits(x, c("mhmm", "mnhmm"))) {
       hp <- hidden_paths(x)
       group <- factor(
@@ -121,18 +132,26 @@ stacked_sequence_plot <- function(
     if (TraMineR::is.stslist(y)) {
       n_channels <- 1
       channel_names <- "Observations"
+      n <- nrow(y)
     } else {
       stopifnot_(
         all(unlist(lapply(y, inherits, "stslist"))),
-        "{.arg x} is not an {.cls stslist} object or a list of such objects."
+        "{.arg x} is not an {.cls stslist} object, a list of such objects, or 
+        an object of class {.cls hmm}, {.cls mhmm}, {.cls nhmm}, or 
+        {.cls mnhmm}."
       )
       n_channels <- length(y)
       if (is.null(channel_names <- names(y))) {
         channel_names <- paste("Channel", seq_len(n_channels))
       }
+      n <- nrow(y[[1]])
     }
   }
   if (!missing(ids)) {
+    stopifnot_(
+      checkmate::test_integerish(ids, lower = 1, upper = n),
+      "Argument {.arg ids} should be a vector of integers between 1 and {n}."
+    )
     if (n_channels == 1) {
       y <- y[ids, ]
     } else {
@@ -141,32 +160,19 @@ stacked_sequence_plot <- function(
       }
     }
   }
-  if (!identical(sort_by, "none")) {
-    if (length(sort_by) == 1) {
-      sort_by <- match.arg(sort_by, c("none", "start", "end", "mds"))
-      if (missing(sort_channel)) sort_channel <- channel_names[1]
-      stopifnot_(
-        sort_channel %in% channel_names || sort_channel %in% seq_len(n_channels),
-        paste0("{.arg sort_channel} should be either ",
-               "{cli::cli_vec(channel_names, style = list('vec-last' = ' or '))}, ",
-               "or integer between 1 and {n_channels}."
-        )
-      )
-      if (n_channels > 1) names(y) <- channel_names
-      y <- sort_sequences(y, sort_by, sort_channel, dist_method)
-      sort_by <- NULL
-    } else {
-      stopifnot_(
-        length(sort_by) == nrow(y),
-        "Length of {.arg sort_by} does not match the number of sequences 
-        {nrow(y)}."
-      )
-    }
-  }
+  if (missing(sort_channel)) sort_channel <- channel_names[1]
+  stopifnot_(
+    sort_channel %in% channel_names || sort_channel %in% seq_len(n_channels),
+    paste0("{.arg sort_channel} should be either ",
+           "{cli::cli_vec(channel_names, style = list('vec-last' = ' or '))}, ",
+           "or integer between 1 and {n_channels}."
+    )
+  )
+  names(y) <- channel_names
+  y <- sort_sequences(y, sort_by, sort_channel, dist_method)
+  if (length(sort_by) > 1) sort_by <- NULL # handle sorting by ids in ggseqplot
+  
   if (identical(group, NA)) group <- NULL
-  
-  type <- match.arg(type, c("distribution", "index"))
-  
   if (n_channels == 1) {
     cpal_y <- stats::setNames(attr(y, "cpal"), attr(y, "labels"))
     if (type == "distribution") {

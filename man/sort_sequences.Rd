@@ -7,15 +7,20 @@
 sort_sequences(x, sort_by = "start", sort_channel = 1, dist_method = "OM")
 }
 \arguments{
-\item{x}{A sequence object or a list of sequence objects}
+\item{x}{An \code{stslist} object or a list of of such objects of same size,
+typically created with \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}} or \code{\link[=data_to_stslist]{data_to_stslist()}}.}
 
-\item{sort_by}{A character string specifying the sorting criterion.}
+\item{sort_by}{A character string specifying the sorting criterion. Options
+are \code{"none"} (no sorting), \code{"start"} (sort by the first state), \code{"end"} (sort by
+last state), and \code{"mds"} (sort by the multidimensional scaling).}
 
 \item{sort_channel}{An integer or character string specifying the channel to
 sort by (unless \verb{sort_by = "mds} in which case all channels are used for
 defining the sorting).}
 
-\item{dist_method}{A character string specifying the distance method to use.}
+\item{dist_method}{A character string specifying the distance method to use
+when sorting by the multidimensional scaling. Passed to
+\code{\link[TraMineR:seqdist]{TraMineR::seqdist()}}, or \code{\link[TraMineR:seqMD]{TraMineR::seqMD()}} in the multichannel case.}
 }
 \description{
 Sort sequences in a sequence object

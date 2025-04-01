@@ -27,7 +27,7 @@ Description: Designed for estimating variants of hidden (latent) Markov models
     direct numerical maximization with analytical gradients. Documentation is 
     available via several vignettes, and the paper by Helske and Helske 
     (2019, <doi:10.18637/jss.v088.i03>). For methodology behind the NHMMs,
-    see Helske (2025, <doi:arXiv:2503.16014>)
+    see Helske (2025, <arXiv:2503.16014>)
 LazyData: true
 LinkingTo:
     nloptr,

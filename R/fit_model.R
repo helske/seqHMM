@@ -11,9 +11,10 @@
 #' @param em_step Logical. Whether or not to use the EM algorithm at the start
 #'   of the parameter estimation. The default is `TRUE`.
 #' @param global_step Logical. Whether or not to use global optimization via
-#'   [nloptr()] (possibly after the EM step). The default is `FALSE`.
+#'   [nloptr::nloptr()] (possibly after the EM step). The default is `FALSE`.
 #' @param local_step Logical. Whether or not to use local optimization via
-#'   [nloptr()] (possibly after the EM and/or global steps). The default is `FALSE`.
+#'   [nloptr::nloptr()] (possibly after the EM and/or global steps). The 
+#'   default is `FALSE`.
 #' @param control_em Optional list of control parameters for the EM algorithm.
 #' Possible arguments are 
 #' * `maxeval`\cr The maximum number of iterations, the default is 1000. Note that iteration 
@@ -51,7 +52,7 @@
 #'     starting points for the permutations. Otherwise permute the results of 
 #'     the first EM run.
 #' @param control_global Optional list of additional arguments for 
-#' [nloptr()] argument `opts`. The default values are
+#' [nloptr::nloptr()] argument `opts`. The default values are
 #'  * `algorithm`\cr `"NLOPT_GD_MLSL_LDS"`
 #'  * `local_opts`\cr `list(algorithm = "NLOPT_LD_LBFGS", ftol_rel = 1e-6, xtol_rel = 1e-4)`
 #'  * `maxeval`\cr `10000` (maximum number of iterations in global 
@@ -65,7 +66,7 @@
 #' Note that it might still be a good idea to scale covariates around unit 
 #' scale. Bounds are used only in the global optimization step.
 #' @param control_local Optional list of additional arguments for
-#'   [nloptr()] argument `opts`. The default values are
+#'   [nloptr::nloptr()] argument `opts`. The default values are
 #'  * `algorithm`\cr `"NLOPT_LD_LBFGS"`
 #'  * `ftol_rel`\cr `1e-10`
 #'  * `xtol_rel`\cr `1e-8`
@@ -92,7 +93,7 @@
 #' where each element is either `TRUE` (fixed) or `FALSE` (to be estimated). 
 #' Note that zero probabilities are always fixed to 0. Not supported for EM 
 #' algorithm. See details.
-#' @param ... Additional arguments to `nloptr`.
+#' @param ... Additional arguments to [nloptr::nloptr()].
 #' @return
 #' * logLik\cr Log-likelihood of the estimated model.
 #' * em_results\cr Results after the EM step: log-likelihood (`logLik`), 

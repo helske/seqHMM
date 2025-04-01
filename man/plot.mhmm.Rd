@@ -118,7 +118,7 @@ more information.}
 \item{edge.curved}{Defines whether to plot curved edges (arcs, arrows)
 between vertices. A logical or numerical vector or scalar. Numerical
 values specify curvatures of edges. The default value \code{TRUE}
-gives curvature of 0.5 to all edges. See \code{\link[=igraph.plotting]{igraph.plotting()}} for
+gives curvature of 0.5 to all edges. See \code{\link[igraph:plot.common]{igraph::igraph.plotting()}} for
 more information.}
 
 \item{edge.label}{Labels for edges. Possible options include
@@ -188,7 +188,7 @@ plotted (if the probability is less than \code{combine.slices}).}
 
 \item{withlegend}{Deprecated. Use \code{with.legend} instead.}
 
-\item{...}{Other parameters passed on to \code{\link[=plot.igraph]{plot.igraph()}} such as
+\item{...}{Other parameters passed on to \code{\link[igraph:plot.igraph]{igraph::plot.igraph()}} such as
 \code{vertex.color}, \code{vertex.label.cex}, or \code{edge.lty}.}
 }
 \description{
@@ -233,7 +233,7 @@ Journal of Statistical Software, 88(3), 1-32. doi:10.18637/jss.v088.i03
 }
 \seealso{
 \code{\link[=build_mhmm]{build_mhmm()}} and \code{\link[=fit_model]{fit_model()}} for building and
-fitting mixture hidden Markov models; \code{\link[=plot.igraph]{plot.igraph()}} for plotting
+fitting mixture hidden Markov models; \code{\link[igraph:plot.igraph]{igraph::plot.igraph()}} for plotting
 directed graphs; and \code{\link[=mhmm_biofam]{mhmm_biofam()}} and \code{\link[=mhmm_mvad]{mhmm_mvad()}} for
 the models used in examples.
 }

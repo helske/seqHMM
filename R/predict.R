@@ -2,7 +2,7 @@
 #' @noRd
 compute_joint <- function(x, newdata, type, cond, state_names, symbol_names, responses) {
   # avoid CRAN check warnings due to NSE
-  estimate <- probability <- NULL
+  estimate <- probability <- cols <- NULL
   S <- length(state_names)
   M <- length(symbol_names)
   cond_obs <- cond$obs
@@ -63,12 +63,17 @@ predict.nhmm <- function(
     probs = c(0.025, 0.975), 
     boot_idx = FALSE, ...) {
   
-  type <- match.arg(type, several.ok = TRUE)
+  type <- try(match.arg(type, several.ok = TRUE), silent = TRUE)
+  stopifnot_(
+    !inherits(type, "try-error"),
+    "Argument {.arg type} must be {.val observations},
+    {.val states}, {.val conditionals}, or a combination of these."
+  )
   
   time <- object$time_variable
   id <- object$id_variable
   stopifnot_(
-    !missing(newdata) & is.data.frame(newdata), 
+    !missing(newdata) && is.data.frame(newdata), 
     "Argument {.arg newdata} must be a {.cls data.frame} object."
   )
   stopifnot_(
@@ -169,7 +174,7 @@ predict.nhmm <- function(
   nsim <- length(object$boot$gamma_pi)
   if (nsim > 0 && length(probs) > 0) {
     d_boot <- vector("list", nsim)
-    boot_idx <- boot_idx & !is.null(object$boot$idx)
+    boot_idx <- boot_idx && !is.null(object$boot$idx)
     for (i in seq_len(nsim)) {
       out <- simplify2array(boot_predict_nhmm_singlechannel( 
         object$etas$pi, object$X_pi,
@@ -243,12 +248,17 @@ predict.fanhmm <- function(
     probs = c(0.025, 0.975), 
     boot_idx = FALSE, ...) {
   
-  type <- match.arg(type, several.ok = TRUE)
+  type <- try(match.arg(type, several.ok = TRUE), silent = TRUE)
+  stopifnot_(
+    !inherits(type, "try-error"),
+    "Argument {.arg type} must be {.val observations},
+    {.val states}, {.val conditionals}, or a combination of these."
+  )
   
   time <- object$time_variable
   id <- object$id_variable
   stopifnot_(
-    !missing(newdata) & is.data.frame(newdata), 
+    !missing(newdata) && is.data.frame(newdata), 
     "Argument {.arg newdata} must be a {.cls data.frame} object."
   )
   stopifnot_(
@@ -350,7 +360,7 @@ predict.fanhmm <- function(
   nsim <- length(object$boot$gamma_pi)
   if (nsim > 0 && length(probs) > 0) {
     d_boot <- vector("list", nsim)
-    boot_idx <- boot_idx & !is.null(object$boot$idx)
+    boot_idx <- boot_idx && !is.null(object$boot$idx)
     for (i in seq_len(nsim)) {
       out <- simplify2array(boot_predict_fanhmm_singlechannel( 
         object$etas$pi, object$X_pi,

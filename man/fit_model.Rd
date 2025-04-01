@@ -31,10 +31,11 @@ fit_model(
 of the parameter estimation. The default is \code{TRUE}.}
 
 \item{global_step}{Logical. Whether or not to use global optimization via
-\code{\link[=nloptr]{nloptr()}} (possibly after the EM step). The default is \code{FALSE}.}
+\code{\link[nloptr:nloptr]{nloptr::nloptr()}} (possibly after the EM step). The default is \code{FALSE}.}
 
 \item{local_step}{Logical. Whether or not to use local optimization via
-\code{\link[=nloptr]{nloptr()}} (possibly after the EM and/or global steps). The default is \code{FALSE}.}
+\code{\link[nloptr:nloptr]{nloptr::nloptr()}} (possibly after the EM and/or global steps). The
+default is \code{FALSE}.}
 
 \item{control_em}{Optional list of control parameters for the EM algorithm.
 Possible arguments are
@@ -78,7 +79,7 @@ the first EM run.
 }}
 
 \item{control_global}{Optional list of additional arguments for
-\code{\link[=nloptr]{nloptr()}} argument \code{opts}. The default values are
+\code{\link[nloptr:nloptr]{nloptr::nloptr()}} argument \code{opts}. The default values are
 \itemize{
 \item \code{algorithm}\cr \code{"NLOPT_GD_MLSL_LDS"}
 \item \code{local_opts}\cr \code{list(algorithm = "NLOPT_LD_LBFGS", ftol_rel = 1e-6, xtol_rel = 1e-4)}
@@ -89,7 +90,7 @@ unlimited time.)
 }}
 
 \item{control_local}{Optional list of additional arguments for
-\code{\link[=nloptr]{nloptr()}} argument \code{opts}. The default values are
+\code{\link[nloptr:nloptr]{nloptr::nloptr()}} argument \code{opts}. The default values are
 \itemize{
 \item \code{algorithm}\cr \code{"NLOPT_LD_LBFGS"}
 \item \code{ftol_rel}\cr \code{1e-10}
@@ -132,7 +133,7 @@ where each element is either \code{TRUE} (fixed) or \code{FALSE} (to be estimate
 Note that zero probabilities are always fixed to 0. Not supported for EM
 algorithm. See details.}
 
-\item{...}{Additional arguments to \code{nloptr}.}
+\item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}}.}
 }
 \value{
 \itemize{

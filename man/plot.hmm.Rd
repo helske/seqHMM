@@ -87,7 +87,7 @@ more information.}
 \item{edge.curved}{Defines whether to plot curved edges (arcs, arrows)
 between vertices. A logical or numerical vector or scalar. Numerical
 values specify curvatures of edges. The default value \code{TRUE}
-gives curvature of 0.5 to all edges. See \code{\link[=igraph.plotting]{igraph.plotting()}} for
+gives curvature of 0.5 to all edges. See \code{\link[igraph:plot.common]{igraph::igraph.plotting()}} for
 more information.}
 
 \item{edge.label}{Labels for edges. Possible options include
@@ -162,7 +162,7 @@ legend.order is FALSE. Should match ltext.}
 
 \item{withlegend}{Deprecated. Use \code{with.legend} instead.}
 
-\item{...}{Other parameters passed on to \code{\link[=plot.igraph]{plot.igraph()}} such as
+\item{...}{Other parameters passed on to \code{\link[igraph:plot.igraph]{igraph::plot.igraph()}} such as
 \code{vertex.color}, \code{vertex.label.cex}, or \code{edge.lty}.}
 }
 \description{

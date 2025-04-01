@@ -1,6 +1,7 @@
 #' Bootstrap observations
 #' @noRd
 bootstrap_model <- function(model, ids) {
+  id <- y <- NULL
   idx <- sort(sample.int(model$n_sequences, replace = TRUE))
   ids <- ids[idx]
   model$data <- model$data[list(ids), on = model$id_variable]

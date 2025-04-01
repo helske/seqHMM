@@ -8,7 +8,7 @@ Paths from Hidden Markov Models}
 stacked_sequence_plot(
   x,
   plots = "obs",
-  type = "d",
+  type = "distribution",
   ids,
   sort_by = "none",
   sort_channel,

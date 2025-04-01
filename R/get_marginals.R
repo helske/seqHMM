@@ -1,5 +1,5 @@
 compute_z_marginals <- function(model, id_time, pp, cond) {
-  probability <- NULL
+  probability <- cols <- NULL
   x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]
   x <- pp[x, on = id_time, nomatch = 0L]
   cond <- c(cond, "state")
@@ -7,7 +7,7 @@ compute_z_marginals <- function(model, id_time, pp, cond) {
 }
 
 compute_y_and_B_marginals <- function(model, id_time, pp, cond) {
-  probability <- state_prob <- NULL
+  probability <- i.probability <- state_prob <- cols <- NULL
   B <- get_emission_probs(model)
   x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]
   x <- B[x, on = id_time, nomatch = 0L]

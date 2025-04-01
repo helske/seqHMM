@@ -63,7 +63,7 @@
 #' @param edge.curved Defines whether to plot curved edges (arcs, arrows)
 #'   between vertices. A logical or numerical vector or scalar. Numerical
 #'   values specify curvatures of edges. The default value `TRUE`
-#'   gives curvature of 0.5 to all edges. See [igraph.plotting()] for
+#'   gives curvature of 0.5 to all edges. See [igraph::igraph.plotting()] for
 #'   more information.
 #' @param edge.label Labels for edges. Possible options include
 #'   `"auto"`, `NA`, and a character or numerical vector. The
@@ -113,11 +113,11 @@
 #' @param main Optional main titles for plots. The default `"auto"` uses
 #' `cluster_names` as titles, `NULL` prints no titles.
 #' @param withlegend Deprecated. Use `with.legend` instead.
-#' @param ... Other parameters passed on to [plot.igraph()] such as
+#' @param ... Other parameters passed on to [igraph::plot.igraph()] such as
 #'   `vertex.color`, `vertex.label.cex`, or `edge.lty`.
 #'
 #' @seealso [build_mhmm()] and [fit_model()] for building and
-#'   fitting mixture hidden Markov models; [plot.igraph()] for plotting
+#'   fitting mixture hidden Markov models; [igraph::plot.igraph()] for plotting
 #'   directed graphs; and [mhmm_biofam()] and [mhmm_mvad()] for
 #'   the models used in examples.
 #'

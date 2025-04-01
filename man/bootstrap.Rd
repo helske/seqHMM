@@ -10,7 +10,7 @@ bootstrap_coefs(model, ...)
 
 \method{bootstrap_coefs}{nhmm}(
   model,
-  nsim = 1000,
+  nsim,
   type = c("nonparametric", "parametric"),
   append = FALSE,
   ...
@@ -18,7 +18,7 @@ bootstrap_coefs(model, ...)
 
 \method{bootstrap_coefs}{mnhmm}(
   model,
-  nsim = 1000,
+  nsim,
   type = c("nonparametric", "parametric"),
   append = FALSE,
   ...

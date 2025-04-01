@@ -36,7 +36,7 @@
 #'   scores of multidimensional scaling (using [stats::cmdscale()]) for the
 #'   observed data or hidden states paths.
 #'   MDS scores are computed from distances/dissimilarities using a metric
-#'   defined in argument `dist.method`. See [plot.stslist()] for
+#'   defined in argument `dist.method`. See [TraMineR::plot.stslist()] for
 #'   more details on `"from.start"` and `"from.end"`.
 #'
 #' @param sort.channel The number of the channel according to which the

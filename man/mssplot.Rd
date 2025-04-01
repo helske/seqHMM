@@ -73,7 +73,7 @@ the first ten subjects in data.}
 scores of multidimensional scaling (using \code{\link[stats:cmdscale]{stats::cmdscale()}}) for the
 observed data or hidden states paths.
 MDS scores are computed from distances/dissimilarities using a metric
-defined in argument \code{dist.method}. See \code{\link[=plot.stslist]{plot.stslist()}} for
+defined in argument \code{dist.method}. See \code{\link[TraMineR:plot.stslist]{TraMineR::plot.stslist()}} for
 more details on \code{"from.start"} and \code{"from.end"}.}
 
 \item{sort.channel}{The number of the channel according to which the
