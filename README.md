@@ -25,11 +25,9 @@ The package is available on CRAN. Install it via
 ```R
 install.packages("seqHMM")
 ```
-If you want to try the development version of the `seqHMM` package, install it from Github using the `remotes` package:
+If you want to try the development version of the `seqHMM` package, install it from the [R-universe](https://helske.r-universe.dev/seqHMM):
 
 ```R
-install.packages("remotes")
-library("remotes")
-install_github("helske/seqHMM")
+install.packages("seqHMM", repos = "https://helske.r-universe.dev")
 ```
 

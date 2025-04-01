@@ -61,7 +61,10 @@ stacked_sequence_plot <- function(
     sort_by = "none", sort_channel, dist_method = "OM", group = NULL, 
     legend_position = "right", ...) {
   
-  plots <- try(match.arg(plots), silent = TRUE)
+  plots <- try(
+    match.arg(plots, c("obs", "hidden_paths", "both")), 
+    silent = TRUE
+  )
   stopifnot_(
     !inherits(plots, "try-error"),
     "Argument {.arg plots} must be {.val obs},
@@ -72,7 +75,7 @@ stacked_sequence_plot <- function(
     !inherits(type, "try-error"),
     "Argument {.arg type} must be {.val distribution} or {.val index}."
   )
- 
+  
   if (inherits(x, c("hmm", "nhmm", "mhmm", "mnhmm"))) {
     n <- x$length_of_sequences
     if (is.null(group) && inherits(x, c("mhmm", "mnhmm"))) {
