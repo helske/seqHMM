@@ -239,7 +239,7 @@ predict.fanhmm <- function(
     object, newdata, newdata2 = NULL, condition = NULL, 
     type = c("observations", "states", "conditionals"),
     probs = c(0.025, 0.975), boot_idx = FALSE, ...) {
-  
+  cols <- NULL
   stopifnot_(
     object$n_channels == 1L,
     "Multichannel FAN-HMM is not yet supported."

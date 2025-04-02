@@ -292,6 +292,6 @@ plot(hmm_mvad,
 fitting Hidden Markov models, \code{\link[=mc_to_sc]{mc_to_sc()}} for transforming
 multistate \code{hmm} objects into single-channel objects,
 \code{\link[=hmm_biofam]{hmm_biofam()}} and \code{\link[=hmm_mvad]{hmm_mvad()}} for information on the models
-used in the examples, and
-\code{\link[=plot.igraph]{plot.igraph()}} for the general plotting function of directed graphs.
+used in the examples, and \code{\link[igraph:plot.igraph]{igraph::plot.igraph()}} for the general plotting
+function of directed graphs.
 }

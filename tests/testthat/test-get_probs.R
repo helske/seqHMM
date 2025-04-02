@@ -34,6 +34,10 @@ test_that("'get_probs' and 'coef' works for multichannel 'nhmm'", {
     coef(fit),
     NA
   )
+  expect_error(
+    marginals <- get_marginals(fit),
+    NA
+  )
 })
 test_that("'get_probs' and 'coef' works for single-channel 'nhmm'", {
   set.seed(1)

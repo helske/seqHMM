@@ -10,12 +10,24 @@ compute_y_and_B_marginals <- function(model, id_time, pp, cond) {
   probability <- i.probability <- state_prob <- cols <- NULL
   B <- get_emission_probs(model)
   x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]
-  x <- B[x, on = id_time, nomatch = 0L]
-  x[pp, state_prob := i.probability, on = c(id_time, "state")]
-  cond <- c(cond, model$responses)
-  p_y <- x[, list(probability = sum(probability * state_prob) / sum(state_prob)), by = cond]
-  cond <- c("state", cond)
-  p_B <- x[, list(probability = sum(probability * state_prob) / sum(state_prob)), by = cond]
+  if (model$n_channels > 1) {
+    p_B <- p_y <- vector("list", model$n_channels)
+    for (i in seq_len(model$n_channels)) {
+      x_i <- B[[i]][x, on = id_time, nomatch = 0L]
+      x_i[pp, state_prob := i.probability, on = c(id_time, "state")]
+      cond_i <- c(cond, model$responses[[i]])
+      p_y[[i]] <- x_i[, list(probability = sum(probability * state_prob) / sum(state_prob)), by = cond_i]
+      cond_i <- c("state", cond_i)
+      p_B[[i]] <- x_i[, list(probability = sum(probability * state_prob) / sum(state_prob)), by = cond_i]
+    }
+  } else {
+    x <- B[x, on = id_time, nomatch = 0L]
+    x[pp, state_prob := i.probability, on = c(id_time, "state")]
+    cond <- c(cond, model$responses)
+    p_y <- x[, list(probability = sum(probability * state_prob) / sum(state_prob)), by = cond]
+    cond <- c("state", cond)
+    p_B <- x[, list(probability = sum(probability * state_prob) / sum(state_prob)), by = cond]
+  }
   list(B = p_B, y = p_y)
 }
 

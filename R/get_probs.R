@@ -29,14 +29,15 @@ get_initial_probs.nhmm <- function(model, ...) {
   ids <- unique(model$data[[model$id_variable]])
   if (attr(model$X_pi, "icpt_only")) {
     X <- model$X_pi[, 1L, drop = FALSE]
-    ids <- "all"
   } else {
     X <- model$X_pi
   }
+  S <- model$n_states
+  N <- model$n_sequences
   d <- data.table(
-    id = rep(ids, each =  model$n_states),
-    state =  factor(model$state_names, levels = model$state_names),
-    probability = c(get_pi_all(model$gammas$pi, X)),
+    id = rep(ids, each = S),
+    state = model$state_names,
+    probability = rep_len(c(get_pi_all(model$gammas$pi, X)), S * N),
     key = "id"
   )
   setnames(d, "id", model$id_variable)
@@ -73,9 +74,8 @@ get_transition_probs.nhmm <- function(model, ...) {
   ids <- unique(model$data[[id_var]])
   times <- unique(model$data[[time_var]])
   times <- unlist(lapply(model$sequence_lengths, function(i) times[seq_len(i)]))
-  if (!attr(model$X_A, "iv") && !isTRUE(attr(model$W_A, "iv"))) {
+  if (!attr(model$X_A, "iv") && !attr(model$X_A, "tv")) {
     X <- model$X_A[, , 1L, drop = FALSE]
-    ids <- "all"
   } else {
     X <- model$X_A
   }
@@ -83,11 +83,11 @@ get_transition_probs.nhmm <- function(model, ...) {
     model$gammas$A, X, attr(model$X_A, "tv"), model$sequence_lengths
   )
   d <- data.table(
-    id = rep(ids, lengths(A)),
+    id = rep(ids, S^2 * model$sequence_lengths),
     time = rep(times, each = S^2),
     state_from = model$state_names,
     state_to = rep(model$state_names, each = S),
-    probability = unlist(A),
+    probability = rep_len(unlist(A), sum(S^2 * model$sequence_lengths)),
     key = c("id", "time")
   )
   d <- d[time != time[1]] # remove A_1
@@ -135,9 +135,8 @@ get_emission_probs.nhmm <- function(model, ...) {
   ids <- unique(model$data[[id_var]])
   times <- unique(model$data[[time_var]])
   times <- unlist(lapply(model$sequence_lengths, function(i) times[seq_len(i)]))
-  if (!attr(model$X_B, "iv")) {
+  if (!attr(model$X_B, "iv") && !attr(model$X_B, "tv")) {
     X <- model$X_B[, , 1L, drop = FALSE]
-    ids <- "all"
   } else {
     X <- model$X_B
   }
@@ -147,11 +146,11 @@ get_emission_probs.nhmm <- function(model, ...) {
       model$gammas$B[[i]], X, attr(model$X_B, "tv"), model$sequence_lengths
     )
     out[[i]] <- data.table(
-      id = rep(ids, lengths(B)),
+      id = rep(ids, S * M[i] * model$sequence_lengths),
       time = rep(times, each = S * M[i]),
       state = model$state_names,
       response = rep(symbol_names[[i]], each = S),
-      probability = unlist(B),
+      probability = rep_len(unlist(B), sum(S * M[i] * model$sequence_lengths)),
       key = c("id", "time")
     )
     if (!is.null(model$autoregression_formula)) {
@@ -196,14 +195,15 @@ get_cluster_probs.mnhmm <- function(model, ...) {
   ids <- unique(model$data[[model$id_variable]])
   if (attr(model$X_omega, "icpt_only")) {
     X <- model$X_omega[, 1L, drop = FALSE]
-    ids <- "all"
   } else {
     X <- model$X_omega
   }
+  D <- model$n_clusters
+  N <- model$n_sequences
   d <- data.table(
-    id = rep(ids, each = model$n_clusters),
+    id = rep(ids, each = D),
     cluster = model$cluster_names,
-    probability = c(get_omega_all(model$gammas$omega, X)),
+    probability = rep_len(c(get_omega_all(model$gammas$omega, X)), D * N),
     key = "id"
   )
   setnames(d, "id", model$id_variable)

@@ -101,8 +101,8 @@
 #'   fitting Hidden Markov models, [mc_to_sc()] for transforming
 #'   multistate `hmm` objects into single-channel objects,
 #'   [hmm_biofam()] and [hmm_mvad()] for information on the models
-#'   used in the examples, and
-#'   [plot.igraph()] for the general plotting function of directed graphs.
+#'   used in the examples, and [igraph::plot.igraph()] for the general plotting 
+#'   function of directed graphs.
 #'
 #' @examples
 #' # Multichannel data, left-to-right model
