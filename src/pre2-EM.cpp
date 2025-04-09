@@ -35,7 +35,7 @@ Rcpp::List EM(const arma::mat& transition_, const arma::cube& emission_, const a
     
 #pragma omp parallel for if(obs.n_slices>=threads) schedule(static) reduction(+:sumlogLik_new) num_threads(threads) \
     default(shared) // gcc9 needs sharing of zeros, but doesn't work on earlier compilers..shared(init, transition, obs, emission, delta, ksii, gamma, nSymbols, error_code, max_sf, arma::fill::zeros)
-      for (arma::uword k = 0; k < obs.n_slices; k++) {
+      for (arma::uword k = 0; k < obs.n_slices; ++k) {
         
         if (error_code == 0) {
           arma::mat alpha(emission.n_rows, obs.n_cols); //m,n,k
@@ -51,12 +51,12 @@ Rcpp::List EM(const arma::mat& transition_, const arma::cube& emission_, const a
           delta_k = alpha.col(0) % beta.col(0) / scales(0);
           
           if (obs.n_cols > 1) {
-            for (arma::uword j = 0; j < emission.n_rows; j++) {
-              for (arma::uword i = 0; i < emission.n_rows; i++) {
+            for (arma::uword j = 0; j < emission.n_rows; ++j) {
+              for (arma::uword i = 0; i < emission.n_rows; ++i) {
                 if (transition(i, j) > 0.0) {
-                  for (arma::uword t = 0; t < (obs.n_cols - 1); t++) {
+                  for (arma::uword t = 0; t < (obs.n_cols - 1); ++t) {
                     double tmp = alpha(i, t) * transition(i, j) * beta(j, t + 1);
-                    for (arma::uword r = 0; r < obs.n_rows; r++) {
+                    for (arma::uword r = 0; r < obs.n_rows; ++r) {
                       tmp *= emission(j, obs(r, t + 1, k), r);
                     }
                     ksii_k(i, j) += tmp;
@@ -66,11 +66,11 @@ Rcpp::List EM(const arma::mat& transition_, const arma::cube& emission_, const a
               }
             }
           }
-          for (arma::uword r = 0; r < emission.n_slices; r++) {
-            for (arma::uword l = 0; l < nSymbols(r); l++) {
-              for (arma::uword i = 0; i < emission.n_rows; i++) {
+          for (arma::uword r = 0; r < emission.n_slices; ++r) {
+            for (arma::uword l = 0; l < nSymbols(r); ++l) {
+              for (arma::uword i = 0; i < emission.n_rows; ++i) {
                 if (emission(i, l, r) > 0.0) {
-                  for (arma::uword t = 0; t < obs.n_cols; t++) {
+                  for (arma::uword t = 0; t < obs.n_cols; ++t) {
                     if (l == (obs(r, t, k))) {
                       gamma_k(i, l, r) += alpha(i, t) * beta(i, t) / scales(t);
                     }
@@ -121,7 +121,7 @@ Rcpp::List EM(const arma::mat& transition_, const arma::cube& emission_, const a
       if (change > tol) {
         if (obs.n_cols > 1) {
           arma::vec rsums = sum(ksii, 1);
-          for (arma::uword kk = 0; kk < ksii.n_rows; kk++) {
+          for (arma::uword kk = 0; kk < ksii.n_rows; ++kk) {
             if (rsums(kk) == 0) {
               rsums(kk) = 1;
             }
@@ -129,7 +129,7 @@ Rcpp::List EM(const arma::mat& transition_, const arma::cube& emission_, const a
           ksii.each_col() /= rsums;
           transition = ksii;
         }
-        for (arma::uword r = 0; r < emission.n_slices; r++) {
+        for (arma::uword r = 0; r < emission.n_slices; ++r) {
           gamma.slice(r).cols(0, nSymbols(r) - 1).each_col() /= sum(
             gamma.slice(r).cols(0, nSymbols(r) - 1), 1);
           emission.slice(r).cols(0, nSymbols(r) - 1) = gamma.slice(r).cols(0, nSymbols(r) - 1);
@@ -175,7 +175,7 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
   weights.each_row() /= sum(weights, 0);
   
   arma::mat initk(emission.n_rows, obs.n_slices);
-  for (arma::uword k = 0; k < obs.n_slices; k++) {
+  for (arma::uword k = 0; k < obs.n_slices; ++k) {
     initk.col(k) = init % reparma(weights.col(k), numberOfStates);
   }
   
@@ -203,7 +203,7 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
     
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) reduction(+:sumlogLik_new) num_threads(threads) \
     default(shared) //shared(bsi, initk, transition, obs, emission, delta, ksii, gamma, nSymbols, error_code, max_sf, arma::fill::zeros)
-      for (arma::uword k = 0; k < obs.n_slices; k++) {
+      for (arma::uword k = 0; k < obs.n_slices; ++k) {
         
         if (error_code == 0) {
           arma::mat alpha(emission.n_rows, obs.n_cols); //m,n,k
@@ -218,12 +218,12 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
           arma::vec delta_k(emission.n_rows);
           delta_k = alpha.col(0) % beta.col(0) / scales(0);
           
-          for (arma::uword i = 0; i < emission.n_rows; i++) {
-            for (arma::uword j = 0; j < emission.n_rows; j++) {
+          for (arma::uword i = 0; i < emission.n_rows; ++i) {
+            for (arma::uword j = 0; j < emission.n_rows; ++j) {
               if (transition(i, j) > 0.0) {
-                for (arma::uword t = 0; t < (obs.n_cols - 1); t++) {
+                for (arma::uword t = 0; t < (obs.n_cols - 1); ++t) {
                   double tmp = alpha(i, t) * transition(i, j) * beta(j, t + 1);
-                  for (arma::uword r = 0; r < obs.n_rows; r++) {
+                  for (arma::uword r = 0; r < obs.n_rows; ++r) {
                     tmp *= emission(j, obs(r, t + 1, k), r);
                   }
                   ksii_k(i, j) += tmp;
@@ -231,11 +231,11 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
               }
             }
           }
-          for (arma::uword r = 0; r < emission.n_slices; r++) {
-            for (arma::uword l = 0; l < nSymbols(r); l++) {
-              for (arma::uword i = 0; i < emission.n_rows; i++) {
+          for (arma::uword r = 0; r < emission.n_slices; ++r) {
+            for (arma::uword l = 0; l < nSymbols(r); ++l) {
+              for (arma::uword i = 0; i < emission.n_rows; ++i) {
                 if (emission(i, l, r) > 0.0) {
-                  for (arma::uword t = 0; t < obs.n_cols; t++) {
+                  for (arma::uword t = 0; t < obs.n_cols; ++t) {
                     if (l == (obs(r, t, k))) {
                       double tmp = alpha(i, t) * beta(i, t) / scales(t);
                       gamma_k(i, l, r) += tmp;
@@ -246,7 +246,7 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
             }
           }
           
-          for (arma::uword j = 0; j < emission.n_rows; j++) {
+          for (arma::uword j = 0; j < emission.n_rows; ++j) {
             bsi(j, k) = beta(j, 0)  * initk(j, k);
           }
           
@@ -297,7 +297,7 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
         
         if (obs.n_cols > 1) {
           arma::vec rsums = sum(ksii, 1);
-          for (arma::uword kk = 0; kk < ksii.n_rows; kk++) {
+          for (arma::uword kk = 0; kk < ksii.n_rows; ++kk) {
             if (rsums(kk) == 0) {
               rsums(kk) = 1;
             }
@@ -305,20 +305,20 @@ Rcpp::List EMx(const arma::mat& transition_, const arma::cube& emission_, const 
           ksii.each_col() /= rsums;
           transition = ksii;
         }
-        for (arma::uword r = 0; r < emission.n_slices; r++) {
+        for (arma::uword r = 0; r < emission.n_slices; ++r) {
           
           gamma.slice(r).cols(0, nSymbols(r) - 1).each_col() /= sum(
             gamma.slice(r).cols(0, nSymbols(r) - 1), 1);
           emission.slice(r).cols(0, nSymbols(r) - 1) = gamma.slice(r).cols(0, nSymbols(r) - 1);
         }
         
-        for (arma::uword i = 0; i < numberOfStates.n_elem; i++) {
+        for (arma::uword i = 0; i < numberOfStates.n_elem; ++i) {
           delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1) /= arma::as_scalar(
             arma::accu(delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1)));
         }
         init = delta;
         
-        for (arma::uword k = 0; k < obs.n_slices; k++) {
+        for (arma::uword k = 0; k < obs.n_slices; ++k) {
           initk.col(k) = init % reparma(weights.col(k), numberOfStates);
         }
       }

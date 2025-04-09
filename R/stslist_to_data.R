@@ -43,7 +43,7 @@ data_to_stslist <- function(x, id, time, responses, seqdef_args = NULL, ...) {
   if (!is.null(seqdef_args)) {
     if (length(responses) > 1) {
       stopifnot_(
-        is_list_of_lists(seqdef_args) && length(seqdef_args) == length(responses),
+        is_list(seqdef_args, length(responses)),
         "Argument {.arg seqdef_args} should be a list of lists in case of 
         multiple responses."
       )
@@ -85,7 +85,7 @@ stslist_to_data <- function(x, id, time, responses, ...) {
     x <- list(x)
   } else {
     stopifnot_(
-      is_list_of_lists(x) && all(unlist(lapply(x, TraMineR::is.stslist))),
+      is.list(x) && is_stslist(x, length(x)),
       "{.arg observations} should be a {.cls stslist} object created with 
         {.fn seqdef}, or a {.cls list} of {.cls stslist} objects in a 
         multichannel case."

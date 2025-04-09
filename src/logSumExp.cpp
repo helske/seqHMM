@@ -14,7 +14,7 @@ double logSumExp(const arma::vec& x) {
     return maxv;
   }
   double cumsum = 0.0;
-  for (arma::uword i = 0; i < x.n_elem; i++) {
+  for (arma::uword i = 0; i < x.n_elem; ++i) {
     if ((i != maxi) && (x(i) > -arma::datum::inf)) {
       cumsum += exp(x(i) - maxv);
     }

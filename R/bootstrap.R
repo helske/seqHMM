@@ -10,45 +10,32 @@ bootstrap_model <- function(model, ids) {
   model$sequence_lengths <- model$sequence_lengths[idx]
   model$X_pi[] <- model$X_pi[, idx]
   model$X_A[] <- model$X_A[, , idx]
-  model$X_B[] <- model$X_B[, , idx]
+  for (y in model$responses) {
+    model$X_B[[y]][] <- model$X_B[[y]][, , idx]
+  }
   if (inherits(model, "mnhmm")) {
     model$X_omega[] <- model$X_omega[, idx]
   }
   lag_obs <- paste0("lag_", model$responses)
-  ar <- any(
-    lag_obs %in% attr(stats::terms(model$emission_formula), "term.labels")
-  )
   attr(model, "nobs") <- sum(!is.na(
     model$data[, y, env = list(y = I(model$responses))]
-  )) / model$n_channels - ar * model$n_sequences
+  )) / model$n_channels
   list(model = model, idx = idx)
 }
 #' Permute states of bootstrap sample to match MLE
 #' @noRd
 permute_states <- function(gammas_boot, gammas_mle) {
-  C <- if(is.list(gammas_mle$B)) length(gammas_mle$B) else 1
-  if (C == 1) {
-    m <- cost_matrix_singlechannel(
-      gammas_boot$pi, gammas_mle$pi,
-      gammas_boot$A, gammas_mle$A,
-      gammas_boot$B, gammas_mle$B
-    )
-  } else {
-    m <- cost_matrix_multichannel(
-      gammas_boot$pi, gammas_mle$pi,
-      gammas_boot$A, gammas_mle$A,
-      gammas_boot$B, gammas_mle$B
-    )
-  }
+  C <- length(gammas_mle$B)
+  m <- cost_matrix(
+    gammas_boot$pi, gammas_mle$pi, 
+    gammas_boot$A, gammas_mle$A,
+    gammas_boot$B, gammas_mle$B
+  )
   perm <- RcppHungarian::HungarianSolver(m)$pairs[, 2]
   gammas_boot$pi <- gammas_boot$pi[perm, , drop = FALSE]
   gammas_boot$A <- gammas_boot$A[perm, , perm, drop = FALSE]
-  if (C == 1) {
-    gammas_boot$B <- gammas_boot$B[, , perm, drop = FALSE]
-  } else {
-    for (c in seq_len(C)) {
-      gammas_boot$B[[c]] <- gammas_boot$B[[c]][, , perm, drop = FALSE]
-    }
+  for (c in seq_len(C)) {
+    gammas_boot$B[[c]] <- gammas_boot$B[[c]][, , perm, drop = FALSE]
   }
   gammas_boot
 }
@@ -128,7 +115,7 @@ bootstrap_coefs.nhmm <- function(model, nsim,
   if (type == "nonparametric") {
     ids <- unique(model$data[[model$id_variable]])
     out <- future.apply::future_lapply(
-      seq_len(nsim), function(i) {
+      seq_len(nsim), \(i) {
         boot_mod <- bootstrap_model(model, ids)
         fit <- fit_nhmm(
           boot_mod$model, init, init_sd = 0, restarts = 0, lambda = lambda, 
@@ -160,10 +147,10 @@ bootstrap_coefs.nhmm <- function(model, nsim,
     y <- model$responses
     d[, y := NULL, env = list(y = I(y))]
     out <- future.apply::future_lapply(
-      seq_len(nsim), function(i) {
+      seq_len(nsim), \(i) {
         mod <- simulate_nhmm(
-          N, T_, M, S, formula_pi, formula_A, formula_B,
-          d, id_var, time_var, init, 0, responses = y)$model
+          N, T_, M, S, formula_B, formula_pi, formula_A,
+          d, id_var, time_var, init, 0)$model
         fit <- fit_nhmm(
           mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
           method = method, bound = bound, control = control,
@@ -248,7 +235,7 @@ bootstrap_coefs.mnhmm <- function(model, nsim,
   if (type == "nonparametric") {
     ids <- unique(model$data[[model$id_variable]])
     out <- future.apply::future_lapply(
-      seq_len(nsim), function(i) {
+      seq_len(nsim), \(i) {
         boot_mod <- bootstrap_model(model, ids)
         fit <- fit_mnhmm(
           boot_mod$model, init, init_sd = 0, restarts = 0, lambda = lambda, 
@@ -290,10 +277,10 @@ bootstrap_coefs.mnhmm <- function(model, nsim,
     y <- model$responses
     d[, y := NULL, env = list(y = I(y))]
     out <- future.apply::future_lapply(
-      seq_len(nsim), function(i) {
+      seq_len(nsim), \(i) {
         mod <- simulate_mnhmm(
-          N, T_, M, S, D, formula_pi, formula_A, formula_B, formula_omega,
-          d, id_var, time_var, init, 0, responses = y)$model
+          N, T_, M, S, D, formula_B, formula_pi, formula_A, formula_omega,
+          d, id_var, time_var, init, 0)$model
         fit <- fit_mnhmm(
           mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
           method = method, bound = bound, control = control,

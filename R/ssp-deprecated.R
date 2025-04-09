@@ -380,9 +380,9 @@ ssp <- function(
         x$n_sequences <- length(tlim)
       }
     } else {
-      obs <- lapply(obs, function(x) x[tlim, ])
+      obs <- lapply(obs, \(x) x[tlim, ])
       if (inherits(x, "hmm")) {
-        x$observations <- lapply(obs, function(x) x[tlim, ])
+        x$observations <- lapply(obs, \(x) x[tlim, ])
         x$n_sequences <- length(tlim)
       }
     }

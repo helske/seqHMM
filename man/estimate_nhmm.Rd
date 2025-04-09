@@ -5,11 +5,10 @@
 \title{Build and Estimate a Non-homogeneous Hidden Markov Model}
 \usage{
 estimate_nhmm(
-  responses,
   n_states,
+  emission_formula,
   initial_formula = ~1,
   transition_formula = ~1,
-  emission_formula = ~1,
   data,
   time,
   id,
@@ -26,18 +25,16 @@ estimate_nhmm(
 )
 }
 \arguments{
-\item{responses}{Name(s) of the response variable(s) in \code{data}.}
-
 \item{n_states}{An integer > 1 defining the number of hidden states.}
+
+\item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
+state emission probabilities.}
 
 \item{initial_formula}{of class \code{\link[=formula]{formula()}} for the
 initial state probabilities.}
 
 \item{transition_formula}{of class \code{\link[=formula]{formula()}} for the
 state transition probabilities.}
-
-\item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
-state emission probabilities.}
 
 \item{data}{A data frame containing the variables used in the model
 formulas. Can be omitted in case of model with no covariates and observations
@@ -91,6 +88,8 @@ Default is \verb{Inf´, i.e., no bounds. Note that he bounds are not enforced  f
 
 \item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}} and EM algorithm.
 See details.}
+
+\item{responses}{Name(s) of the response variable(s) in \code{data}.}
 }
 \value{
 Object of class \code{nhmm}.

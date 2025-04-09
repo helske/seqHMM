@@ -26,8 +26,8 @@
 #' @export
 simulate_mnhmm <- function(
     n_sequences, sequence_lengths, n_symbols, n_states, n_clusters,
-    initial_formula = ~1, transition_formula = ~1, emission_formula = ~1, 
-    cluster_formula = ~1, data, id, time, responses, coefs = NULL, 
+    emission_formula, initial_formula = ~1, transition_formula = ~1, 
+    cluster_formula = ~1, data, id, time, coefs = NULL, 
     init_sd = 2) {
   
   stopifnot_(
@@ -56,17 +56,41 @@ simulate_mnhmm <- function(
     "{.arg data}  is missing, use {.fn simulate_mhmm} instead."
   )
   stopifnot_(
-    checkmate::test_character(responses),
-    "Argument {.arg responses} must be a scalar or a vector of type character."
+    !missing(emission_formula),
+    "Argument {.arg emission_formula} is missing."
   )
+  if (inherits(emission_formula, "formula")) {
+    responses <- get_responses(emission_formula)
+    C <- length(responses)
+    if (C > 1L) {
+      rhs <- deparse1(emission_formula[[3L]])
+      emission_formula <- lapply(
+        responses, \(y) as.formula(
+          paste(y, " ~ ", rhs), 
+          env = environment(emission_formula)
+        )
+      )
+    } else {
+      emission_formula <- list(emission_formula)
+    }
+  } else {
+    responses <- vapply(emission_formula, get_responses, allow_mv = FALSE, "")
+    C <- length(responses)
+  }
+  stopifnot_(
+    C == length(unique(responses)), 
+    "Response names in {.arg responses} should be unique."
+  )
+  names(emission_formula) <- responses
   stopifnot_(
     all(idx <- !(responses %in% names(data))),
-    "Variable{?s} with name{?s} {responses[!idx]} found in {.arg data}.
+    "Variable{?s} with name{?s} {responses[!idx]} already found in {.arg data}.
     Use other name{?s} for the response variable{?s}."
   )
   stopifnot_(
     length(n_symbols) == length(responses),
-    "`length(symbols) should match `length(responses)`."
+    "`length(symbols)` is not equal to the number of responses 
+    {length(responses)}."
   )
   sequence_lengths <- rep(sequence_lengths, length.out = n_sequences)
   n_channels <- length(n_symbols)
@@ -76,8 +100,8 @@ simulate_mnhmm <- function(
     data[[responses[i]]] <- factor(1, levels = seq_len(n_symbols[i]))
   }
   model <- build_mnhmm(
-    responses, n_states, n_clusters, initial_formula, transition_formula, 
-    emission_formula, cluster_formula, data, id, time, scale = TRUE
+    n_states, n_clusters, emission_formula, initial_formula, transition_formula, 
+    cluster_formula, data, id, time, scale = TRUE
   )
   if (identical(coefs, "random")) {
     coefs <- list(
@@ -94,41 +118,19 @@ simulate_mnhmm <- function(
   model$etas <- stats::setNames(
     create_initial_values(coefs, model, init_sd), c("pi", "A", "B", "omega")
   )
-  model$gammas$pi <- c(eta_to_gamma_mat_field(
-    model$etas$pi
-  ))
-  model$gammas$A <- c(eta_to_gamma_cube_field(
-    model$etas$A
-  ))
-  if (model$n_channels == 1L) {
-    model$gammas$B <- c(eta_to_gamma_cube_field(
-      model$etas$B
-    ))
-  } else {
-    l <- lengths(model$etas$B)
-    gamma_B <- c(eta_to_gamma_cube_field(unlist(model$etas$B, recursive = FALSE)))
-    model$gammas$B <- split(gamma_B, rep(seq_along(l), l))
-  }
-  model$gammas$omega <- eta_to_gamma_mat(
-    model$etas$omega
+  model$gammas$pi <- drop(eta_to_gamma_mat_field(model$etas$pi))
+  model$gammas$A <- drop(eta_to_gamma_cube_field(model$etas$A))
+  model$gammas$B <- split(
+    eta_to_gamma_cube_2d_field(model$etas$B), seq_len(model$n_clusters)
   )
-  if (n_channels == 1L) {
-    out <- simulate_mnhmm_singlechannel(
-      model$etas$pi, model$X_pi, 
-      model$etas$A, model$X_A, 
-      model$etas$B, model$X_B,
-      model$etas$omega, model$X_omega
-    )
-  } else {
-    eta_B <- unlist(model$etas$B, recursive = FALSE)
-    out <- simulate_mnhmm_multichannel(
-      model$etas$pi, model$X_pi, 
-      model$etas$A, model$X_A, 
-      eta_B, model$X_B,
-      model$etas$omega, model$X_omega,
-      model$n_symbols
-    )
-  }
+  model$gammas$omega <- eta_to_gamma_mat(model$etas$omega)
+  out <- simulate_mnhmm_cpp(
+    model$etas$pi, model$X_pi, 
+    model$etas$A, model$X_A, 
+    model$etas$B, model$X_B,
+    model$etas$omega, model$X_omega,
+    model$n_symbols
+  )
   for (i in seq_len(model$n_sequences)) {
     Ti <- sequence_lengths[i]
     if (Ti < T_) {

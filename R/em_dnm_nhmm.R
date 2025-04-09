@@ -5,126 +5,75 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
   S <- model$n_states
   T_ <- model$length_of_sequences
   C <- model$n_channels
-  n_i <- attr(model, "np_pi")
-  n_s <- attr(model, "np_A")
-  n_o <- attr(model, "np_B")
-  icpt_only_pi <- attr(model$X_pi, "icpt_only")
-  icpt_only_A <- attr(model$X_A, "icpt_only")
-  icpt_only_B <- attr(model$X_B, "icpt_only")
-  iv_A <- attr(model$X_A, "iv")
-  iv_B <- attr(model$X_B, "iv")
-  tv_A <- attr(model$X_A, "tv")
-  tv_B <- attr(model$X_B, "tv")
+  np_pi <- attr(model, "np_pi")
+  np_A <- attr(model, "np_A")
+  np_B <- attr(model, "np_B")
   X_pi <- model$X_pi
   X_A <- model$X_A
   X_B <- model$X_B
+  icpt_only_pi <- io(X_pi)
+  icpt_only_A <- io(X_A)
+  icpt_only_B <- io(X_B)
+  iv_A <- iv(X_A)
+  iv_B <- iv(X_B)
+  tv_A <- tv(X_A)
+  tv_B <- tv(X_B)
   K_pi <- nrow(X_pi)
   K_A <- nrow(X_A)
-  K_B <- nrow(X_B)
+  K_B <- vapply(X_B, \(x) nrow(x), 1L)
   Ti <- model$sequence_lengths
   n_obs <- nobs(model)
   need_grad <- grepl("NLOPT_LD_", control$algorithm)
   obs <- create_obsArray(model)
   all_solutions <- NULL
-  if (C == 1L) {
-    if (need_grad) {
-      objectivef <- function(pars) {
-        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
-        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
-        eta_B <- create_eta_B_nhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-        )
-        out <- log_objective_nhmm_singlechannel(
-          eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti,
-          icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
-        )
-        list(
-          objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
-          gradient = - (unlist(out[-1]) - lambda * pars) / n_obs
-        )
-      }
-    } else {
-      objectivef <- function(pars) {
-        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
-        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
-        eta_B <- create_eta_B_nhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-        )
-        out <- forward_nhmm_singlechannel(
-          eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti,
-          icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
-        )
-        - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
-      }
+  if (need_grad) {
+    objectivef <- function(pars) {
+      eta_pi <- create_eta_pi_nhmm(pars[seq_len(np_pi)], S, K_pi)
+      eta_A <- create_eta_A_nhmm(pars[np_pi + seq_len(np_A)], S, K_A)
+      eta_B <- create_eta_B_nhmm(
+        pars[np_pi + np_A + seq_len(np_B)], S, M, K_B
+      )
+      out <- log_objective_nhmm(
+        obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
+        iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B
+      )
+      list(
+        objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
+        gradient = - (unlist(out[-1]) - lambda * pars) / n_obs
+      )
     }
   } else {
-    if (need_grad) {
-      objectivef <- function(pars) {
-        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
-        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
-        eta_B <- create_eta_multichannel_B_nhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-        )
-        out <- log_objective_nhmm_multichannel(
-          eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti,
-          icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
-        )
-        list(
-          objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
-          gradient = - (unlist(out[-1]) - lambda * pars) / n_obs
-        )
-      }
-    } else {
-      objectivef <- function(pars) {
-        eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
-        eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
-        eta_B <- create_eta_multichannel_B_nhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-        )
-        out <- forward_nhmm_multichannel(
-          eta_pi, X_pi, eta_A, X_A, eta_B, X_B, obs, Ti,
-          icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B
-        )
-        - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
-      }
+    objectivef <- function(pars) {
+      eta_pi <- create_eta_pi_nhmm(pars[seq_len(np_pi)], S, K_pi)
+      eta_A <- create_eta_A_nhmm(pars[np_pi + seq_len(np_A)], S, K_A)
+      eta_B <- create_eta_B_nhmm(
+        pars[np_pi + np_A + seq_len(np_B)], S, M, K_B
+      )
+      out <- forward_nhmm(
+        obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
+        iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B
+      )
+      - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
     }
   }
   if (restarts > 0L) {
-    p <- progressr::progressor(along = seq_len(restarts))
-    original_options <- options(future.globals.maxSize = Inf)
-    on.exit(options(original_options))
-    base_init <- create_initial_values(inits, model, init_sd = 0)
-    u <- t(stats::qnorm(
-      lhs::maximinLHS(restarts, length(unlist(base_init))), 
-      sd = init_sd))
-    out <- future.apply::future_lapply(seq_len(restarts), function(i) {
+    .fun <- function(i, base_init, u) {
       init <- base_init
-      init$eta_pi[] <- init$eta_pi[] + u[seq_len(n_i), i]
-      init$eta_A[] <- init$eta_A[] + u[n_i + seq_len(n_s), i]
-      init$eta_B[] <- init$eta_B[] + u[n_i + n_s + seq_len(n_o), i]
-      if (C == 1) {
-        fit <- EM_LBFGS_nhmm_singlechannel(
-          init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, obs,
-          Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
-          n_obs, control$maxeval_em_dnm,
-          control_restart$ftol_abs, control_restart$ftol_rel,
-          control_restart$xtol_abs, control_restart$xtol_rel, 
-          control_restart$print_level, control_mstep$maxeval,
-          control_mstep$ftol_abs, control_mstep$ftol_rel,
-          control_mstep$xtol_abs, control_mstep$xtol_rel, 
-          control_mstep$print_level, lambda, bound)
-      } else {
-        fit <- EM_LBFGS_nhmm_multichannel(
-          init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, obs,
-          Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
-          n_obs, control$maxeval_em_dnm,
-          control_restart$ftol_abs, control_restart$ftol_rel,
-          control_restart$xtol_abs, control_restart$xtol_rel, 
-          control_restart$print_level, control_mstep$maxeval,
-          control_mstep$ftol_abs, control_mstep$ftol_rel,
-          control_mstep$xtol_abs, control_mstep$xtol_rel, 
-          control_mstep$print_level, lambda, bound)
-      }
+      init$eta_pi[] <- init$eta_pi[] + u[seq_len(np_pi)]
+      init$eta_A[] <- init$eta_A[] + u[np_pi + seq_len(np_A)]
+      z <- matrix(unlist(init$eta_B) + u[np_pi + np_A + seq_len(np_B)], ncol = C)
+      init$eta_B <- lapply(seq_len(C), \(c) array(z[, c], dim = dim(init$eta_B[[c]])))
+      fit <- EM_LBFGS_nhmm(
+        obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
+        iv_A, iv_B, tv_A, tv_B, init$eta_pi, init$eta_A, init$eta_B, lambda,
+        control_restart$maxeval,
+        control_restart$ftol_abs, control_restart$ftol_rel,
+        control_restart$xtol_abs, control_restart$xtol_rel, 
+        control_restart$print_level, control_mstep$maxeval,
+        control_mstep$ftol_abs, control_mstep$ftol_rel,
+        control_mstep$xtol_abs, control_mstep$xtol_rel, 
+        control_mstep$print_level, bound
+      )
       em_return_code <- fit$return_code
       if (em_return_code >= 0) {
         init <- unlist(
@@ -154,11 +103,22 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
         p()
         fit
       } else {
+        p()
         list(status = -1000 + em_return_code, objective = NaN)
       }
-    },
-    future.seed = TRUE)
-    
+    }
+    p <- progressr::progressor(along = seq_len(restarts))
+    original_options <- options(future.globals.maxSize = Inf)
+    on.exit(options(original_options))
+    base_init <- create_initial_values(inits, model, init_sd = 0)
+    u <- t(
+      stats::qnorm(
+        lhs::maximinLHS(restarts, length(unlist(base_init))), sd = init_sd
+      )
+    )
+    out <- future.apply::future_lapply(
+      seq_len(restarts), \(i) .fun(i, base_init, u[, i]), future.seed = TRUE
+    )
     logliks <- -unlist(lapply(out, "[[", "objective")) * n_obs
     return_codes <- unlist(lapply(out, "[[", "status"))
     successful <- which(return_codes > 0)
@@ -175,46 +135,27 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
       optimum <- successful[which.max(logliks[successful])]
       pars <- out[[optimum]]$solution
       init <- list()
-      init$eta_pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
-      init$eta_A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
-      if (C == 1L) {
-        init$eta_B <- create_eta_B_nhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-        )
-      } else {
-        init$eta_B <- create_eta_multichannel_B_nhmm(
-          pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-        )
-      }
+      init$eta_pi <- create_eta_pi_nhmm(pars[seq_len(np_pi)], S, K_pi)
+      init$eta_A <- create_eta_A_nhmm(pars[np_pi + seq_len(np_A)], S, K_A)
+      init$eta_B <- create_eta_B_nhmm(
+        pars[np_pi + np_A + seq_len(np_B)], S, M, K_B
+      )
+      
     }
     if (save_all_solutions) {
       all_solutions <- out
     }
   } else {
     init <- create_initial_values(inits, model, init_sd)
-    if (C == 1) {
-      out <- EM_LBFGS_nhmm_singlechannel(
-        init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, obs,
-        Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
-        n_obs, control$maxeval_em_dnm,
-        control$ftol_abs, control$ftol_rel,
-        control$xtol_abs, control$xtol_rel, 
-        control$print_level, control_mstep$maxeval,
-        control_mstep$ftol_abs, control_mstep$ftol_rel,
-        control_mstep$xtol_abs, control_mstep$xtol_rel, 
-        control_mstep$print_level, lambda, bound)
-    } else {
-      out <- EM_LBFGS_nhmm_multichannel(
-        init$eta_pi, model$X_pi, init$eta_A, model$X_A, init$eta_B, model$X_B, obs,
-        Ti, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B,
-        n_obs, control$maxeval_em_dnm,
-        control$ftol_abs, control$ftol_rel,
-        control$xtol_abs, control$xtol_rel, 
-        control$print_level, control_mstep$maxeval,
-        control_mstep$ftol_abs, control_mstep$ftol_rel,
-        control_mstep$xtol_abs, control_mstep$xtol_rel, 
-        control_mstep$print_level, lambda, bound)
-    }
+    out <- EM_LBFGS_nhmm(
+      obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
+      iv_A, iv_B, tv_A, tv_B, init$eta_pi, init$eta_A, init$eta_B, lambda,
+      control$maxeval, control$ftol_abs, control$ftol_rel,
+      control$xtol_abs, control$xtol_rel, control$print_level, 
+      control_mstep$maxeval, control_mstep$ftol_abs, control_mstep$ftol_rel,
+      control_mstep$xtol_abs, control_mstep$xtol_rel, 
+      control_mstep$print_level, bound)
+    
     em_return_code <- out$return_code
     if (em_return_code >= 0) {
       init <- out[c("eta_pi", "eta_A", "eta_B")]
@@ -251,21 +192,14 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
   }
   
   pars <- out$solution
-  model$etas$pi <- create_eta_pi_nhmm(pars[seq_len(n_i)], S, K_pi)
+  model$etas$pi <- create_eta_pi_nhmm(pars[seq_len(np_pi)], S, K_pi)
   model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
-  model$etas$A <- create_eta_A_nhmm(pars[n_i + seq_len(n_s)], S, K_A)
+  model$etas$A <- create_eta_A_nhmm(pars[np_pi + seq_len(np_A)], S, K_A)
   model$gammas$A <- eta_to_gamma_cube(model$etas$A)
-  if (C == 1L) {
-    model$etas$B <- create_eta_B_nhmm(
-      pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-    )
-    model$gammas$B <- eta_to_gamma_cube(model$etas$B)
-  } else {
-    model$etas$B <- create_eta_multichannel_B_nhmm(
-      pars[n_i + n_s + seq_len(n_o)], S, M, K_B
-    )
-    model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
-  }
+  model$etas$B <- create_eta_B_nhmm(
+    pars[np_pi + np_A + seq_len(np_B)], S, M, K_B
+  )
+  model$gammas$B <- drop(eta_to_gamma_cube_field(model$etas$B))
   model$estimation_results <- list(
     loglik = -out$objective * n_obs, 
     return_code = out$status,

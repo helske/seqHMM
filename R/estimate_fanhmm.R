@@ -29,7 +29,7 @@ estimate_fanhmm <- function(
     responses, n_states, initial_formula = ~1, 
     transition_formula = ~1, emission_formula = ~1, autoregression_formula = ~1,
     feedback_formula = ~1,
-    data, time, id, state_names = NULL, 
+    data, time, id, state_names = NULL,
     inits = "random", init_sd = 2, 
     restarts = 0L, lambda = 0, method = "EM-DNM", bound = Inf, 
     control_restart = list(), control_mstep = list(), ...) {

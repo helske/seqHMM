@@ -72,62 +72,30 @@ hidden_paths.mhmm <- function(model, as_stslist = FALSE, ...) {
 #' @export
 hidden_paths.nhmm <- function(model, as_stslist = FALSE, ...) {
   
-  obsArray <- create_obsArray(model)
-  if (model$n_channels == 1) {
-    out <- viterbi_nhmm_singlechannel(
-      model$etas$pi, model$X_pi,
-      model$etas$A, model$X_A,
-      model$etas$B, model$X_B,
-      obsArray, model$sequence_lengths, 
-      attr(model$X_pi, "icpt_only"), attr(model$X_A, "icpt_only"), 
-      attr(model$X_B, "icpt_only"),
-      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
-      attr(model$X_B, "tv"))
-  } else {
-    out <- viterbi_nhmm_multichannel(
-      model$etas$pi, model$X_pi,
-      model$etas$A, model$X_A,
-      model$etas$B, model$X_B,
-      obsArray, model$sequence_lengths, 
-      attr(model$X_pi, "icpt_only"), attr(model$X_A, "icpt_only"), 
-      attr(model$X_B, "icpt_only"),
-      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
-      attr(model$X_B, "tv"))
-  }
+  obs <- create_obsArray(model)
+  out <- viterbi_nhmm(
+    obs, model$sequence_lengths, model$n_symbols, 
+    model$X_pi, model$X_A, model$X_B, 
+    io(model$X_pi), io(model$X_A), io(model$X_B),
+    iv(model$X_A), iv(model$X_B),
+    tv(model$X_A), tv(model$X_B),
+    model$etas$pi, model$etas$A, model$etas$B
+  )
   create_mpp_data(out, model, as_stslist)
 }
 #' @rdname hidden_paths
 #' @export
 hidden_paths.mnhmm <- function(model, as_stslist = FALSE, ...) {
   
-  obsArray <- create_obsArray(model)
-  if (model$n_channels == 1) {
-    out <- viterbi_mnhmm_singlechannel(
-      model$etas$omega, model$X_omega,
-      model$etas$pi, model$X_pi,
-      model$etas$A, model$X_A,
-      model$etas$B, model$X_B,
-      obsArray, model$sequence_lengths, 
-      attr(model$X_omega, "icpt_only"), attr(model$X_pi, "icpt_only"), 
-      attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
-      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
-      attr(model$X_B, "tv")
-    )
-  } else {
-    eta_B <- unlist(model$etas$B, recursive = FALSE)
-    out <- viterbi_mnhmm_multichannel(
-      model$etas$omega, model$X_omega,
-      model$etas$pi, model$X_pi,
-      model$etas$A, model$X_A,
-      eta_B,
-      model$X_B,
-      obsArray, model$sequence_lengths, 
-      attr(model$X_omega, "icpt_only"), attr(model$X_pi, "icpt_only"), 
-      attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
-      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
-      attr(model$X_B, "tv")
-    )
-  }
+  obs <- create_obsArray(model)
+  out <- viterbi_mnhmm(
+    obs, model$sequence_lengths, model$n_symbols, 
+    model$X_pi, model$X_A, model$X_B, model$X_omega,
+    io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
+    iv(model$X_A), iv(model$X_B),
+    tv(model$X_A), tv(model$X_B),
+    model$etas$pi, model$etas$A, model$etas$B, model$etas$omega
+  )
   model$state_names <- paste0(
     rep(model$cluster_names, each = model$n_states), ": ",
     unlist(model$state_names)
@@ -142,7 +110,7 @@ create_mpp_data <- function(out, model, as_stslist = FALSE) {
   if (model$n_sequences == 1) {
     mpp <- model$state_names[out$q + 1]
   } else {
-    mpp <- apply(out$q + 1, 2, function(x) model$state_names[x])
+    mpp <- apply(out$q + 1, 2, \(x) model$state_names[x])
   }
   if (inherits(model, "nhmm") || inherits(model, "mnhmm")) {
     ids <- unique(model$data[[model$id_variable]])

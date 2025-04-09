@@ -19,6 +19,11 @@ coefficients, stored in \code{object$boot}.}
 
 \item{...}{Ignored.}
 }
+\value{
+A list of data tables with the estimated coefficients for initial,
+transition, emission (separate \code{data.table} for each response), and cluster
+probabilities (in case of mixture model).
+}
 \description{
 Get the Estimated Regression Coefficients of Non-Homogeneous Hidden Markov
 Models

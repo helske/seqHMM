@@ -21,10 +21,9 @@
 #' @export
 simulate_fanhmm <- function(
     n_sequences, sequence_lengths, n_symbols, n_states, 
-    initial_formula = ~1, transition_formula = ~1, 
-    emission_formula = ~1, autoregression_formula = ~1, 
-    feedback_formula = ~1, obs_1, data, id, time, responses, 
-    coefs = NULL, init_sd = 2) {
+    emission_formula, initial_formula = ~1, transition_formula = ~1, 
+    autoregression_formula = ~1, feedback_formula = ~1, obs_1, 
+    data, id, time, coefs = NULL, init_sd = 2) {
   
   stopifnot_(
     !missing(n_sequences) && checkmate::test_int(x = n_sequences, lower = 1L), 
@@ -48,13 +47,41 @@ simulate_fanhmm <- function(
     "{.arg data} is missing."
   )
   stopifnot_(
-    checkmate::test_string(responses),
-    "Argument {.arg responses} must be a scalar of type character."
+    !missing(emission_formula),
+    "Argument {.arg emission_formula} is missing."
   )
+  if (inherits(emission_formula, "formula")) {
+    responses <- get_responses(emission_formula)
+    C <- length(responses)
+    if (C > 1L) {
+      rhs <- deparse1(emission_formula[[3L]])
+      emission_formula <- lapply(
+        responses, \(y) as.formula(
+          paste(y, " ~ ", rhs), 
+          env = environment(emission_formula)
+        )
+      )
+    } else {
+      emission_formula <- list(emission_formula)
+    }
+  } else {
+    responses <- vapply(emission_formula, get_responses, allow_mv = FALSE, "")
+    C <- length(responses)
+  }
+  stopifnot_(
+    C == length(unique(responses)), 
+    "Response names in {.arg responses} should be unique."
+  )
+  names(emission_formula) <- responses
   stopifnot_(
     all(idx <- !(responses %in% names(data))),
-    "Variable{?s} with name{?s} {responses[!idx]} found in {.arg data}.
+    "Variable{?s} with name{?s} {responses[!idx]} already found in {.arg data}.
     Use other name{?s} for the response variable{?s}."
+  )
+  stopifnot_(
+    length(n_symbols) == length(responses),
+    "`length(symbols)` is not equal to the number of responses 
+    {length(responses)}."
   )
   sequence_lengths <- rep(sequence_lengths, length.out = n_sequences)
   n_channels <- length(responses)
@@ -75,7 +102,7 @@ simulate_fanhmm <- function(
                                   levels = symbol_names)
   
   model <- build_fanhmm(
-    responses, n_states, initial_formula, transition_formula, emission_formula, 
+    responses, n_states, emission_formula, initial_formula, transition_formula, 
     autoregression_formula, feedback_formula, data, id, time, scale = FALSE
   )
   
@@ -96,7 +123,7 @@ simulate_fanhmm <- function(
   model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
   model$gammas$A <- eta_to_gamma_cube(model$etas$A)
   model$gammas$B <- eta_to_gamma_cube(model$etas$B)
-  out <- simulate_fanhmm_singlechannel(
+  out <- simulate_fanhmm(
     model$etas$pi, model$X_pi, model$etas$A, W$W_A, model$etas$B, W$W_B,
     as.integer(obs_1) - 1, !is.null(autoregression_formula)
   )
@@ -117,7 +144,7 @@ simulate_fanhmm <- function(
   model <- update(model, model$data)
   tQs <- t(create_Q(n_states))
   
-  if (!attr(model$X_pi, "icpt_only")) {
+  if (!io(model$X_pi)) {
     coef_names <- attr(model$X_pi, "coef_names")
     model$gammas$pi <- gamma_to_gamma_std(
       model$gammas$pi, solve(attr(model$X_pi, "R_inv")), 
@@ -125,7 +152,7 @@ simulate_fanhmm <- function(
     )
     model$etas$pi[] <- tQs %*% model$gammas$pi
   }
-  if (!attr(model$X_A, "icpt_only")) {
+  if (!io(model$X_A)) {
     coef_names <- attr(model$X_A, "coef_names")
     model$gammas$A <- gamma_to_gamma_std(
       model$gammas$A, solve(attr(model$X_A, "R_inv")), 
@@ -135,7 +162,7 @@ simulate_fanhmm <- function(
       model$etas$A[, , s] <- tQs %*% model$gammas$A[, , s]
     }
   }
-  if (!attr(model$X_B, "icpt_only")) {
+  if (!io(model$X_B)) {
     tQm <- t(create_Q(model$n_symbols))
     coef_names <- attr(model$X_B, "coef_names")
     model$gammas$B <- gamma_to_gamma_std(

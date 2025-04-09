@@ -10,14 +10,13 @@ simulate_mnhmm(
   n_symbols,
   n_states,
   n_clusters,
+  emission_formula,
   initial_formula = ~1,
   transition_formula = ~1,
-  emission_formula = ~1,
   cluster_formula = ~1,
   data,
   id,
   time,
-  responses,
   coefs = NULL,
   init_sd = 2
 )
@@ -35,14 +34,14 @@ of observed symbols per channel.}
 
 \item{n_clusters}{The number of clusters/mixtures.}
 
+\item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
+state emission probabilities.}
+
 \item{initial_formula}{of class \code{\link[=formula]{formula()}} for the
 initial state probabilities.}
 
 \item{transition_formula}{of class \code{\link[=formula]{formula()}} for the
 state transition probabilities.}
-
-\item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
-state emission probabilities.}
 
 \item{cluster_formula}{of class \code{\link[=formula]{formula()}} for the
 mixture probabilities.}
@@ -55,8 +54,6 @@ given as \code{stslist} objects.}
 sequences.}
 
 \item{time}{Name of the time index variable in \code{data}.}
-
-\item{responses}{Name(s) of the response variable(s) in \code{data}.}
 
 \item{coefs}{If \code{NULL} (default), model parameters \code{eta_pi}, \code{eta_A},
 \code{eta_B}, and \code{eta_omega} are generated randomly. You can also specify the coefficients by

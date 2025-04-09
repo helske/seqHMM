@@ -1,9 +1,9 @@
 #' Build a Mixture Non-homogeneous Hidden Markov Model
 #' @noRd
 build_mnhmm <- function(
-    responses, n_states, n_clusters, initial_formula, 
-    transition_formula, emission_formula, cluster_formula,
-    data, id_var, time_var, state_names = NULL, cluster_names = NULL, scale = TRUE) {
+    n_states, n_clusters, emission_formula, initial_formula, 
+    transition_formula, cluster_formula, data, id_var, time_var, 
+    state_names = NULL, cluster_names = NULL, scale = TRUE) {
   
   stopifnot_(
     !missing(n_clusters) && checkmate::test_int(x = n_clusters, lower = 2L), 
@@ -19,20 +19,24 @@ build_mnhmm <- function(
     )
   }
   out <- create_base_nhmm(
-    responses, data, id_var, time_var, n_states, state_names, 
-    initial_formula, transition_formula, emission_formula, cluster_formula, 
+    data, id_var, time_var, n_states, state_names, 
+    emission_formula, initial_formula, transition_formula, cluster_formula, 
     cluster_names, scale = scale)
   out$model$etas <- stats::setNames(
     create_initial_values(list(), out$model, 0), c("pi", "A", "B", "omega")
   )
+  out$model$gammas$pi <- drop(eta_to_gamma_mat_field(out$model$etas$pi))
+  out$model$gammas$A <- drop(eta_to_gamma_cube_field(out$model$etas$A))
+  out$model$gammas$B <- split(
+    eta_to_gamma_cube_2d_field(out$model$etas$B), seq_len(n_clusters)
+  )
+  out$model$gammas$omega <- eta_to_gamma_mat(out$model$etas$omega)
   structure(
     out$model,
     class = "mnhmm",
     nobs = out$extras$n_obs,
     df = out$extras$np_omega + 
       n_clusters * (out$extras$np_pi + out$extras$np_A + out$extras$np_B),
-    type = paste0(out$extras$multichannel, "mnhmm"),
-    intercept_only = out$extras$intercept_only,
     np_pi = n_clusters * out$extras$np_pi,
     np_A = n_clusters * out$extras$np_A,
     np_B = n_clusters * out$extras$np_B,

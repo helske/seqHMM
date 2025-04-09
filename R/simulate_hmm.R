@@ -59,9 +59,9 @@ simulate_hmm <- function(
   n_symbols <- sapply(emission_probs, ncol)
 
   if (is.null(colnames(emission_probs[[1]]))) {
-    symbol_names <- lapply(seq_len(n_channels), function(i) 1:n_symbols[i])
+    symbol_names <- lapply(seq_len(n_channels), \(i) 1:n_symbols[i])
   } else {
-    symbol_names <- lapply(seq_len(n_channels), function(i) colnames(emission_probs[[i]]))
+    symbol_names <- lapply(seq_len(n_channels), \(i) colnames(emission_probs[[i]]))
   }
 
   if (is.null(channel_names <- names(emission_probs))) {
@@ -92,7 +92,7 @@ simulate_hmm <- function(
     }
   }
 
-  obs <- suppressMessages(lapply(seq_len(n_channels), function(i) {
+  obs <- suppressMessages(lapply(seq_len(n_channels), \(i) {
     seqdef(matrix(obs[, , i], nrow = n_sequences), alphabet = symbol_names[[i]])
   }))
   names(obs) <- channel_names

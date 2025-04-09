@@ -27,7 +27,7 @@ get_cluster_probs <- function(model, ...) {
 #' @export
 get_initial_probs.nhmm <- function(model, ...) {
   ids <- unique(model$data[[model$id_variable]])
-  if (attr(model$X_pi, "icpt_only")) {
+  if (io(model$X_pi)) {
     X <- model$X_pi[, 1L, drop = FALSE]
   } else {
     X <- model$X_pi
@@ -47,7 +47,7 @@ get_initial_probs.nhmm <- function(model, ...) {
 #' @export
 get_initial_probs.mnhmm <- function(model,...) {
   x <- lapply(split_mnhmm(model), get_initial_probs)
-  do.call(rbind, lapply(seq_along(x), function(i) {
+  do.call(rbind, lapply(seq_along(x), \(i) {
     cbind(cluster = names(x)[i], x[[i]])
   }))
 }
@@ -73,14 +73,14 @@ get_transition_probs.nhmm <- function(model, ...) {
   time_var <- model$time_variable
   ids <- unique(model$data[[id_var]])
   times <- unique(model$data[[time_var]])
-  times <- unlist(lapply(model$sequence_lengths, function(i) times[seq_len(i)]))
-  if (!attr(model$X_A, "iv") && !attr(model$X_A, "tv")) {
+  times <- unlist(lapply(model$sequence_lengths, \(i) times[seq_len(i)]))
+  if (!io(model$X_A) && !tv(model$X_A)) {
     X <- model$X_A[, , 1L, drop = FALSE]
   } else {
     X <- model$X_A
   }
   A <- get_A_all(
-    model$gammas$A, X, attr(model$X_A, "tv"), model$sequence_lengths
+    model$gammas$A, X, tv(model$X_A), model$sequence_lengths
   )
   d <- data.table(
     id = rep(ids, S^2 * model$sequence_lengths),
@@ -99,7 +99,7 @@ get_transition_probs.nhmm <- function(model, ...) {
 #' @export
 get_transition_probs.mnhmm <- function(model,...) {
   x <- lapply(split_mnhmm(model), get_transition_probs)
-  do.call(rbind, lapply(seq_along(x), function(i) {
+  do.call(rbind, lapply(seq_along(x), \(i) {
     cbind(cluster = names(x)[i], x[[i]])
   }))
 }
@@ -124,26 +124,22 @@ get_emission_probs.nhmm <- function(model, ...) {
   T_ <- model$length_of_sequences
   C <- model$n_channels
   M <- model$n_symbols
-  if (C == 1L) {
-    symbol_names <- list(model$symbol_names)
-    model$gammas$B <- list(model$gammas$B)
-  } else {
-    symbol_names <- model$symbol_names
-  }
+  symbol_names <- model$symbol_names
   id_var <- model$id_variable
   time_var <- model$time_variable
   ids <- unique(model$data[[id_var]])
   times <- unique(model$data[[time_var]])
-  times <- unlist(lapply(model$sequence_lengths, function(i) times[seq_len(i)]))
-  if (!attr(model$X_B, "iv") && !attr(model$X_B, "tv")) {
-    X <- model$X_B[, , 1L, drop = FALSE]
-  } else {
-    X <- model$X_B
-  }
+  times <- unlist(lapply(model$sequence_lengths, \(i) times[seq_len(i)]))
+
   out <- vector("list", C)
   for (i in seq_len(C)) {
+    if (!io(model$X_B[[i]]) && !tv(model$X_B[[i]])) {
+      X <- model$X_B[[i]][, , 1L, drop = FALSE]
+    } else {
+      X <- model$X_B[[i]]
+    }
     B <- get_B_all(
-      model$gammas$B[[i]], X, attr(model$X_B, "tv"), model$sequence_lengths
+      model$gammas$B[[i]], X, tv(model$X_B[[i]]), model$sequence_lengths
     )
     out[[i]] <- data.table(
       id = rep(ids, S * M[i] * model$sequence_lengths),
@@ -153,25 +149,20 @@ get_emission_probs.nhmm <- function(model, ...) {
       probability = rep_len(unlist(B), sum(S * M[i] * model$sequence_lengths)),
       key = c("id", "time")
     )
-    if (!is.null(model$autoregression_formula)) {
-      out[[i]] <- out[[i]][time != time[1]] # remove B_1 as y_1 fixed
-    }
+    # if (!is.null(model$autoregression_formula)) {
+    #   out[[i]] <- out[[i]][time != time[1]] # remove B_1 as y_1 fixed
+    # }
     y <- model$responses[i]
     setnames(out[[i]], c("id", "time", "response"), c(id_var, time_var, y))
     setorderv(out[[i]], c(id_var, time_var, "state"))
   }
-  if (C > 1) {
-    names(out) <- model$responses
-  } else {
-    out <- out[[1]]
-  }
-  out
+  stats::setNames(out, model$responses)
 }
 #' @rdname emission_probs
 #' @export
 get_emission_probs.mnhmm <- function(model, ...) {
   x <- lapply(split_mnhmm(model), get_emission_probs)
-  do.call(rbind, lapply(seq_along(x), function(i) {
+  do.call(rbind, lapply(seq_along(x), \(i) {
     cbind(cluster = names(x)[i], x[[i]])
   }))
 }
@@ -193,7 +184,7 @@ get_emission_probs.mhmm <- function(model, ...) {
 #' @seealso [posterior_cluster_probabilities()].
 get_cluster_probs.mnhmm <- function(model, ...) {
   ids <- unique(model$data[[model$id_variable]])
-  if (attr(model$X_omega, "icpt_only")) {
+  if (io(model$X_omega)) {
     X <- model$X_omega[, 1L, drop = FALSE]
   } else {
     X <- model$X_omega

@@ -4,7 +4,13 @@
 \alias{get_marginals}
 \title{Compute the Marginal Probabilities from NHMMs}
 \usage{
-get_marginals(model, probs = NULL, condition = NULL, newdata = NULL)
+get_marginals(
+  model,
+  probs = NULL,
+  condition = NULL,
+  newdata = NULL,
+  weighting = c("posterior", "forward", "none")
+)
 }
 \arguments{
 \item{model}{An object of class \code{nhmm}.}
@@ -19,10 +25,20 @@ done.}
 
 \item{newdata}{An optional data frame containing the new data to be used in
 computing the probabilities.}
+
+\item{weighting}{A character string defining the type of weighting used in
+marginalization. See details.}
 }
 \description{
 \code{get_marginals} returns the marginal state, response, transition, and emission
-probabilities, optionally per grouping defined by \code{condition}. The
-marginalization uses weighted averages using the posterior state
-probabilities as weights.
+probabilities, optionally per grouping defined by \code{condition}. By default,
+the marginalization weights sequences by the corresponding posterior
+probabilities of the latent states (\code{weighting = "newdata"}). If
+\code{weighting = "original"} or \code{newdata} is \code{NULL}, the posterior probabilities
+are computed using the data in \code{model$data}. If \code{weighting = "none"}, all
+individuals and time points are treated equally, without accounting for the
+probability that individual is at particular state at particular time. The
+option \code{weighting = "original"} is mostly useful if you are interested in
+obtaining one-step marginals with new data, e.g.,
+\eqn{P(state_t | newdata_t, state_{t-1}, originaldata_{t-1},\ldots, original_data_1)}.
 }

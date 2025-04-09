@@ -1,5 +1,3 @@
-
-
 #include "logsumexp.h"
 #include "reparma.h"
 #include "useomp.h"
@@ -12,10 +10,10 @@ Rcpp::NumericVector logLikHMM(const arma::mat& transition, const arma::cube& emi
   arma::mat transition_t(transition.t());
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(ll, obs, init, emission, transition_t)
-    for (arma::uword k = 0; k < obs.n_slices; k++) {
+    for (arma::uword k = 0; k < obs.n_slices; ++k) {
       arma::vec alpha = init;
       
-      for (arma::uword r = 0; r < obs.n_rows; r++) {
+      for (arma::uword r = 0; r < obs.n_rows; ++r) {
         alpha %= emission.slice(r).col(obs(r, 0, k));
       }
       
@@ -23,9 +21,9 @@ Rcpp::NumericVector logLikHMM(const arma::mat& transition, const arma::cube& emi
       ll(k) = log(tmp);
       alpha /= tmp;
       
-      for (arma::uword t = 1; t < obs.n_cols; t++) {
+      for (arma::uword t = 1; t < obs.n_cols; ++t) {
         alpha = transition_t * alpha;
-        for (arma::uword r = 0; r < obs.n_rows; r++) {
+        for (arma::uword r = 0; r < obs.n_rows; ++r) {
           alpha %= emission.slice(r).col(obs(r, t, k));
         }
         
@@ -54,10 +52,10 @@ Rcpp::NumericVector logLikMixHMM(const arma::mat& transition, const arma::cube& 
   arma::mat transition_t(transition.t());
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(ll, obs, weights, init, emission, transition_t, numberOfStates)
-    for (arma::uword k = 0; k < obs.n_slices; k++) {
+    for (arma::uword k = 0; k < obs.n_slices; ++k) {
       arma::vec alpha = init % reparma(weights.col(k), numberOfStates);
       
-      for (arma::uword r = 0; r < obs.n_rows; r++) {
+      for (arma::uword r = 0; r < obs.n_rows; ++r) {
         alpha %= emission.slice(r).col(obs(r, 0, k));
       }
       
@@ -65,9 +63,9 @@ Rcpp::NumericVector logLikMixHMM(const arma::mat& transition, const arma::cube& 
       ll(k) = log(tmp);
       alpha /= tmp;
       
-      for (arma::uword t = 1; t < obs.n_cols; t++) {
+      for (arma::uword t = 1; t < obs.n_cols; ++t) {
         alpha = transition_t * alpha;
-        for (arma::uword r = 0; r < obs.n_rows; r++) {
+        for (arma::uword r = 0; r < obs.n_rows; ++r) {
           alpha %= emission.slice(r).col(obs(r, t, k));
         }
         
@@ -91,18 +89,18 @@ Rcpp::NumericVector log_logLikHMM(const arma::mat& transition_, const arma::cube
   arma::vec ll(obs.n_slices);
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(ll, obs, init, emission, transition)
-    for (arma::uword k = 0; k < obs.n_slices; k++) {
+    for (arma::uword k = 0; k < obs.n_slices; ++k) {
       arma::vec alpha = init;
-      for (arma::uword r = 0; r < obs.n_rows; r++) {
+      for (arma::uword r = 0; r < obs.n_rows; ++r) {
         alpha += emission.slice(r).col(obs(r, 0, k));
       }
       
       arma::vec alphatmp(emission.n_rows);
       
-      for (arma::uword t = 1; t < obs.n_cols; t++) {
-        for (arma::uword i = 0; i < emission.n_rows; i++) {
+      for (arma::uword t = 1; t < obs.n_cols; ++t) {
+        for (arma::uword i = 0; i < emission.n_rows; ++i) {
           alphatmp(i) = logSumExp(alpha + transition.col(i));
-          for (arma::uword r = 0; r < obs.n_rows; r++) {
+          for (arma::uword r = 0; r < obs.n_rows; ++r) {
             alphatmp(i) += emission(i, obs(r, t, k), r);
           }
         }
@@ -134,16 +132,16 @@ Rcpp::NumericVector log_logLikMixHMM(arma::mat transition, arma::cube emission, 
   
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(ll, obs, weights, init, emission, transition, numberOfStates)
-    for (arma::uword k = 0; k < obs.n_slices; k++) {
+    for (arma::uword k = 0; k < obs.n_slices; ++k) {
       arma::vec alpha = init + reparma(weights.col(k), numberOfStates);
-      for (arma::uword r = 0; r < obs.n_rows; r++) {
+      for (arma::uword r = 0; r < obs.n_rows; ++r) {
         alpha += emission.slice(r).col(obs(r, 0, k));
       }
       arma::vec alphatmp(emission.n_rows);
-      for (arma::uword t = 1; t < obs.n_cols; t++) {
-        for (arma::uword i = 0; i < emission.n_rows; i++) {
+      for (arma::uword t = 1; t < obs.n_cols; ++t) {
+        for (arma::uword i = 0; i < emission.n_rows; ++i) {
           alphatmp(i) = logSumExp(alpha + transition.col(i));
-          for (arma::uword r = 0; r < obs.n_rows; r++) {
+          for (arma::uword r = 0; r < obs.n_rows; ++r) {
             alphatmp(i) += emission(i, obs(r, t, k), r);
           }
         }

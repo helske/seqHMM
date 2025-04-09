@@ -72,28 +72,28 @@ vcov.mhmm <- function(object, conditional = TRUE, threads = 1,
     model$coefficients[, 1] <- 0
     
     
-    emissNZ <- lapply(model$emission_probs, function(i) {
+    emissNZ <- lapply(model$emission_probs, \(i) {
       x <- which(i > 0, arr.ind = TRUE)
       x[order(x[, 1]), ]
     })
     
     if (model$n_states > 1) {
-      maxEM <- lapply(model$emission_probs, function(i) cbind(1:model$n_states, max.col(i, ties.method = "first")))
-      paramEM <- lapply(1:model$n_channels, function(i) {
+      maxEM <- lapply(model$emission_probs, \(i) cbind(1:model$n_states, max.col(i, ties.method = "first")))
+      paramEM <- lapply(1:model$n_channels, \(i) {
         x <- rbind(emissNZ[[i]], maxEM[[i]])
         x[!(duplicated(x) | duplicated(x, fromLast = TRUE)), , drop = FALSE]
       })
       npEM <- sapply(paramEM, nrow)
     } else {
-      maxEM <- lapply(model$emission_probs, function(i) max.col(i, ties.method = "first"))
-      paramEM <- lapply(1:model$n_channels, function(i) {
+      maxEM <- lapply(model$emission_probs, \(i) max.col(i, ties.method = "first"))
+      paramEM <- lapply(1:model$n_channels, \(i) {
         x <- rbind(emissNZ[[i]], c(1, maxEM[[i]]))
         x[!(duplicated(x) | duplicated(x, fromLast = TRUE))][2]
       })
       npEM <- length(unlist(paramEM))
     }
     
-    maxEMvalue <- lapply(1:model$n_channels, function(i) {
+    maxEMvalue <- lapply(1:model$n_channels, \(i) {
       apply(model$emission_probs[[i]], 1, max)
     })
     
@@ -115,7 +115,7 @@ vcov.mhmm <- function(object, conditional = TRUE, threads = 1,
             ))
           },
           if (npIPAll > 0) {
-            unlist(sapply(1:original_model$n_clusters, function(m) {
+            unlist(sapply(1:original_model$n_clusters, \(m) {
               if (npIP[m] > 0) original_model$initial_probs[[m]][paramIP[[m]]]
             }))
           }

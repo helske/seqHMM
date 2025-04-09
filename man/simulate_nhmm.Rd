@@ -9,13 +9,12 @@ simulate_nhmm(
   sequence_lengths,
   n_symbols,
   n_states,
+  emission_formula,
   initial_formula = ~1,
   transition_formula = ~1,
-  emission_formula = ~1,
   data,
   id,
   time,
-  responses,
   coefs = NULL,
   init_sd = 2
 )
@@ -31,14 +30,14 @@ per response variable.}
 
 \item{n_states}{The number of hidden states.}
 
+\item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
+state emission probabilities.}
+
 \item{initial_formula}{of class \code{\link[=formula]{formula()}} for the
 initial state probabilities.}
 
 \item{transition_formula}{of class \code{\link[=formula]{formula()}} for the
 state transition probabilities.}
-
-\item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
-state emission probabilities.}
 
 \item{data}{A data frame containing the variables used in the model
 formulas. Can be omitted in case of model with no covariates and observations
@@ -48,8 +47,6 @@ given as \code{stslist} objects.}
 sequences.}
 
 \item{time}{Name of the time index variable in \code{data}.}
-
-\item{responses}{A scalar or a vector giving the names of the response variables.}
 
 \item{coefs}{If \code{NULL} (default), model parameters \code{eta_pi}, \code{eta_A}, and
 \code{eta_B} are generated randomly. You can also specify the coefficients by

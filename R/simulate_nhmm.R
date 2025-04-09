@@ -9,7 +9,6 @@
 #' @param n_symbols A scalar or a vector giving the number of observed symbols 
 #' per response variable.
 #' @param n_states The number of hidden states.
-#' @param responses A scalar or a vector giving the names of the response variables.
 #' @param coefs If `NULL` (default), model parameters `eta_pi`, `eta_A`, and 
 #' `eta_B` are generated randomly. You can also specify the coefficients by 
 #' providing a named list with elements `eta_pi`, `eta_A`, and `eta_B`. 
@@ -27,8 +26,8 @@
 #' @export
 simulate_nhmm <- function(
     n_sequences, sequence_lengths, n_symbols, n_states, 
-    initial_formula = ~1, transition_formula = ~1, 
-    emission_formula = ~1, data, id, time, responses, coefs = NULL, init_sd = 2) {
+    emission_formula, initial_formula = ~1, transition_formula = ~1, 
+    data, id, time, coefs = NULL, init_sd = 2) {
   
   stopifnot_(
     !missing(n_sequences) && checkmate::test_int(x = n_sequences, lower = 1L), 
@@ -52,17 +51,41 @@ simulate_nhmm <- function(
     "{.arg data}  is missing, use {.fn simulate_hmm} instead."
   )
   stopifnot_(
-    checkmate::test_character(responses),
-    "Argument {.arg responses} must be a scalar or a vector of type character."
+    !missing(emission_formula),
+    "Argument {.arg emission_formula} is missing."
   )
+  if (inherits(emission_formula, "formula")) {
+    responses <- get_responses(emission_formula)
+    C <- length(responses)
+    if (C > 1L) {
+      rhs <- deparse1(emission_formula[[3L]])
+      emission_formula <- lapply(
+        responses, \(y) as.formula(
+          paste(y, " ~ ", rhs), 
+          env = environment(emission_formula)
+        )
+      )
+    } else {
+      emission_formula <- list(emission_formula)
+    }
+  } else {
+    responses <- vapply(emission_formula, get_responses, allow_mv = FALSE, "")
+    C <- length(responses)
+  }
+  stopifnot_(
+    C == length(unique(responses)), 
+    "Response names in {.arg responses} should be unique."
+  )
+  names(emission_formula) <- responses
   stopifnot_(
     all(idx <- !(responses %in% names(data))),
-    "Variable{?s} with name{?s} {responses[!idx]} found in {.arg data}.
+    "Variable{?s} with name{?s} {responses[!idx]} already found in {.arg data}.
     Use other name{?s} for the response variable{?s}."
   )
   stopifnot_(
     length(n_symbols) == length(responses),
-    "`length(symbols) should match `length(responses)`."
+    "`length(symbols)` is not equal to the number of responses 
+    {length(responses)}."
   )
   sequence_lengths <- rep(sequence_lengths, length.out = n_sequences)
   n_channels <- length(n_symbols)
@@ -72,7 +95,7 @@ simulate_nhmm <- function(
     data[[responses[i]]] <- factor(1, levels = seq_len(n_symbols[i]))
   }
   model <- build_nhmm(
-    responses, n_states, initial_formula, transition_formula, emission_formula, 
+    n_states, emission_formula, initial_formula, transition_formula, 
     data, id, time, scale = TRUE
   )
   if (is.null(coefs)) {
@@ -90,25 +113,13 @@ simulate_nhmm <- function(
   )
   model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
   model$gammas$A <- eta_to_gamma_cube(model$etas$A)
-  if (n_channels == 1) {
-    model$gammas$B <- eta_to_gamma_cube(model$etas$B)
-  } else {
-    model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
-  }
-  if (n_channels == 1L) {
-    out <- simulate_nhmm_singlechannel(
-      model$etas$pi, model$X_pi, 
-      model$etas$A, model$X_A, 
-      model$etas$B, model$X_B
-    )
-  } else {
-    out <- simulate_nhmm_multichannel(
-      model$etas$pi, model$X_pi, 
-      model$etas$A, model$X_A, 
-      model$etas$B, model$X_B, 
-      model$n_symbols
-    )
-  }
+  model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
+  out <- simulate_nhmm_cpp(
+    model$etas$pi, model$X_pi, 
+    model$etas$A, model$X_A, 
+    model$etas$B, model$X_B, 
+    model$n_symbols
+  )
   for (i in seq_len(model$n_sequences)) {
     Ti <- sequence_lengths[i]
     if (Ti < T_) {

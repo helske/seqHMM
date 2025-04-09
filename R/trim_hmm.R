@@ -95,7 +95,7 @@ trim_model <- function(model, maxit = 0, return_loglik = FALSE, zerotol = 1e-8, 
     } else {
       if (!(any(model$initial_probs < zerotol & model$initial_probs > 0) ||
         any(model$transition_probs < zerotol & model$transition_probs > 0) ||
-        any(sapply(model$emission_probs, function(x) any(x < zerotol & x > 0))))) {
+        any(sapply(model$emission_probs, \(x) any(x < zerotol & x > 0))))) {
         if (verbose) {
           print("Nothing to trim.")
         }
@@ -141,7 +141,7 @@ trim_model <- function(model, maxit = 0, return_loglik = FALSE, zerotol = 1e-8, 
 
           if (!(any(model$initial_probs < zerotol & model$initial_probs > 0) ||
             any(model$transition_probs < zerotol & model$transition_probs > 0) ||
-            any(sapply(model$emission_probs, function(x) any(x < zerotol & x > 0))))) {
+            any(sapply(model$emission_probs, \(x) any(x < zerotol & x > 0))))) {
             break
           }
 

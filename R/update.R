@@ -19,9 +19,11 @@ update.nhmm <- function(object, newdata, ...) {
     stats::terms(transition_formula), object$data
   )
   emission_formula <- object$emission_formula
-  attr(emission_formula, "xlevels") <- stats::.getXlevels(
-    stats::terms(emission_formula), object$data
-  )
+  for (i in seq_len(object$n_channels)) {
+    attr(emission_formula[[i]], "xlevels") <- stats::.getXlevels(
+      stats::terms(emission_formula[[i]]), object$data
+    )
+  }
   time_var <- object$time_variable
   id_var <- object$id_variable
   responses <- object$responses
@@ -43,30 +45,38 @@ update.nhmm <- function(object, newdata, ...) {
                                        time_var = time_var
                                      )]$V1
   newdata[, tmax := NULL]
-  if (inherits(object, "fanhmm") && !is.null(object$autoregression_formula)) {
-    newdata[[paste0("lag_", responses)]] <- 
-      group_lag(newdata, id_var, responses)
+  if (inherits(object, "fanhmm")) {
+    for (y in responses) {
+      lag_obs <- paste0("lag_", y)
+      y1 <- data[[y]][1] #the value is not used anywhere
+      newdata[, lag_obs := shift(y, type = "lag", fill = y1), by = id, 
+              env = list(id = id_var, y = y, lag_obs = lag_obs, y1 = y1)]
+    }
   }
   object$X_pi <- model_matrix_initial_formula(
     initial_formula, newdata, object$n_sequences,
     object$n_states, id_var,
     X_mean = attr(object$X_pi, "X_mean"), check = FALSE, 
     scale = TRUE, R_inv = attr(object$X_pi, "R_inv")
-  )$X
+  )
   object$X_A <- model_matrix_transition_formula(
     transition_formula, newdata, object$n_sequences, object$length_of_sequences,
     object$n_states, id_var, time_var, object$sequence_lengths,
     X_mean = attr(object$X_A, "X_mean"), check = FALSE, 
     scale = TRUE, R_inv = attr(object$X_A, "R_inv")
-  )$X
-  object$X_B <- model_matrix_emission_formula(
-    emission_formula, newdata, object$n_sequences, 
-    object$length_of_sequences, object$n_states, object$n_symbols, 
-    id_var, time_var, object$sequence_lengths,
-    X_mean = attr(object$X_B, "X_mean"), check = FALSE, 
-    scale = TRUE, R_inv = attr(object$X_B, "R_inv"), 
-    autoregression = !is.null(object$autoregression_formula)
-  )$X
+  )
+  object$X_B <- stats::setNames(
+    lapply(responses, \(y) {
+      model_matrix_emission_formula(
+        emission_formula[[y]], newdata, object$n_sequences, 
+        object$length_of_sequences, object$n_states, 
+        object$n_symbols[y], id_var, time_var, object$sequence_lengths, 
+        X_mean = attr(object$X_B[[y]], "X_mean"), check = FALSE, 
+        scale = TRUE, R_inv = attr(object$X_B[[y]], "R_inv")
+      )
+    }),
+    responses
+  )
   object$data <- newdata
   object
 }
@@ -88,10 +98,11 @@ update.mnhmm <- function(object, newdata, ...) {
     stats::terms(transition_formula), object$data
   )
   emission_formula <- object$emission_formula
-  attr(emission_formula, "xlevels") <- stats::.getXlevels(
-    stats::terms(emission_formula), object$data
-  )
-  
+  for (i in seq_len(object$n_channels)) {
+    attr(emission_formula[[i]], "xlevels") <- stats::.getXlevels(
+      stats::terms(emission_formula[[i]]), object$data
+    )
+  }
   time_var <- object$time_variable
   id_var <- object$id_variable
   responses <- object$responses
@@ -113,35 +124,43 @@ update.mnhmm <- function(object, newdata, ...) {
                                        time_var = time_var
                                      )]$V1
   newdata[, tmax := NULL]
-  if (inherits(object, "fanhmm") && !is.null(object$autoregression_formula)) {
-    newdata[[paste0("lag_", responses)]] <- 
-      group_lag(newdata, id_var, responses)
+  if (inherits(object, "fanhmm")) {
+    for (y in responses) {
+      lag_obs <- paste0("lag_", y)
+      y1 <- data[[y]][1] #the value is not used anywhere
+      newdata[, lag_obs := shift(y, type = "lag", fill = y1), by = id, 
+              env = list(id = id_var, y = y, lag_obs = lag_obs, y1 = y1)]
+    }
   }
   object$X_omega <- model_matrix_cluster_formula(
     cluster_formula, newdata, object$n_sequences, object$n_clusters,
     id_var, X_mean = attr(object$X_omega, "X_mean"), check = FALSE, 
     scale = TRUE, R_inv = attr(object$X_omega, "R_inv")
-  )$X
+  )
   object$X_pi <- model_matrix_initial_formula(
     initial_formula, newdata, object$n_sequences, object$n_states, 
     id_var, X_mean = attr(object$X_pi, "X_mean"), check = FALSE, 
     scale = TRUE, R_inv = attr(object$X_pi, "R_inv")
-  )$X
+  )
   object$X_A <- model_matrix_transition_formula(
     transition_formula, newdata, object$n_sequences, 
     object$length_of_sequences, object$n_states, id_var, time_var, 
     object$sequence_lengths,
     X_mean = attr(object$X_A, "X_mean"), check = FALSE, 
     scale = TRUE, R_inv = attr(object$X_A, "R_inv")
-  )$X
-  object$X_B <- model_matrix_emission_formula(
-    emission_formula, newdata, object$n_sequences, 
-    object$length_of_sequences, object$n_states, object$n_symbols, 
-    id_var, time_var, object$sequence_lengths,
-    X_mean = attr(object$X_B, "X_mean"), check = FALSE, 
-    scale = TRUE, R_inv = attr(object$X_B, "R_inv"), 
-    autoregression = !is.null(object$autoregression_formula)
-  )$X
+  )
+  object$X_B <- stats::setNames(
+    lapply(responses, \(y) {
+      model_matrix_emission_formula(
+        emission_formula[[y]], newdata, object$n_sequences, 
+        object$length_of_sequences, object$n_states, 
+        object$n_symbols[y], id_var, time_var, object$sequence_lengths, 
+        X_mean = attr(object$X_B[[y]], "X_mean"), check = FALSE, 
+        scale = TRUE, R_inv = attr(object$X_B[[y]], "R_inv")
+      )
+    }),
+    responses
+  )
   object$data <- newdata
   object
 }
@@ -152,12 +171,15 @@ update_W_for_fanhmm <- function(object) {
     stats::terms(transition_formula), object$data
   )
   emission_formula <- object$emission_formula
-  attr(emission_formula, "xlevels") <- stats::.getXlevels(
-    stats::terms(emission_formula), object$data
-  )
+  for (i in seq_len(object$n_channels)) {
+    attr(emission_formula[[i]], "xlevels") <- stats::.getXlevels(
+      stats::terms(emission_formula[[i]]), object$data
+    )
+  }
   responses <- object$responses
   newdata <- object$data
   W_A <- W_B <- vector("list", object$n_symbols)
+  ##TODO
   for (i in seq_len(object$n_symbols)) {
     newdata[[responses]][] <- object$symbol_names[i]
     newdata[[paste0("lag_", responses)]][] <- object$symbol_names[i]
@@ -168,15 +190,14 @@ update_W_for_fanhmm <- function(object) {
       object$time_variable, object$sequence_lengths,
       X_mean = attr(object$X_A, "X_mean"), check = FALSE, 
       scale = TRUE, R_inv = attr(object$X_A, "R_inv")
-    )$X
+    )
     W_B[[i]] <- model_matrix_emission_formula(
       emission_formula, newdata, object$n_sequences, 
       object$length_of_sequences, object$n_states, object$n_symbols, 
       object$id_variable, object$time_variable, 
       object$sequence_lengths,
       X_mean = attr(object$X_B, "X_mean"), check = FALSE, 
-      scale = TRUE, R_inv = attr(object$X_B, "R_inv"), 
-      autoregression = !is.null(object$autoregression_formula)
+      scale = TRUE, R_inv = attr(object$X_B, "R_inv")
     )$X
   }
   list(W_A = W_A, W_B = W_B)

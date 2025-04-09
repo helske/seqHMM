@@ -7,15 +7,6 @@ quantileq <- function(x, probs, ...) {
   )
 }
 
-#' Base R version of group_by(id) |> mutate(lag = lag(x)) |> pull(lag)
-#' Instead of NA, missing values are set to d[[response]][1] as in order to 
-#' pass NA checks. These values are later removed in build_fanhmm
-#' @noRd
-group_lag <- function(d, id, response) {
-  lagged_response <- c(d[[response]][1], d[[response]][-nrow(d)])
-  lagged_response[which(!duplicated(d[[id]]))] <- NA
-  lagged_response
-}
 #' Convert return code from estimate_nhmm and estimate_mnhmm to text
 #' 
 #' @param code Integer return code from `model$estimation_results$return_code`.
@@ -102,16 +93,12 @@ return_msg <- function(code) {
   paste0(x, msg)
 }
 
-
-no_itcp_idx <- function(x) {
-  which(arrayInd(seq_along(x), dim(x))[ , 2] != 1)
-}
 #' Split mnhmm for multiple nhmms for get_transitions etc
 #' 
 #' @noRd
 split_mnhmm <- function(x) {
   D <- x$n_clusters
-  models <- lapply(seq_len(D), function(i) {
+  models <- lapply(seq_len(D), \(i) {
     z <- x
     z$etas[1:3] <- lapply(x$etas[1:3], "[[", i)
     z$gammas[1:3] <- lapply(x$gammas[1:3], "[[", i)
@@ -127,19 +114,75 @@ split_mnhmm <- function(x) {
   models
 }
 
-#' Check If an Object Is a List of Lists
-#' 
+io <- function(X) {
+  if (is.list(X)) { 
+    vapply(X, \(x) attr(x, "icpt_only"), TRUE)
+  } else {
+    attr(X, "icpt_only")
+  }
+}
+iv <- function(X) {
+  if (is.list(X)) { 
+    vapply(X, \(x) attr(x, "iv"), TRUE)
+  } else {
+    attr(X, "iv")
+  }
+}
+tv <- function(X) {
+  if (is.list(X)) { 
+    vapply(X, \(x) attr(x, "tv"), TRUE)
+  } else {
+    attr(X, "tv")
+  }
+}
+#' Check if x is a list of length n consisting of lists
 #' @noRd
-is_list_of_lists <- function(x) {
+is_list <- function(x, n) {
   if (!is.list(x)) {
     return(FALSE)
   } else {
-    if (all(unlist(lapply(x, is.list)))) {
-      return(TRUE)
-    } else {
-      return(FALSE)
-    }
+    return(all(vapply(x, is.list, TRUE)) && length(x) == n)
   }
+}
+#' Check that x is stslist or list of length n consisting of stslist objects
+#' #' @noRd
+is_stslist <- function(x, n) {
+  if (TraMineR::is.stslist(x)) {
+    return(n == 1L)
+  } else if (is.list(x)) {
+    return(all(vapply(x, \(i) TraMineR::is.stslist(i), TRUE)) && length(x) == n)
+  }
+  FALSE
+}
+#' Check that x is formula or list of length n consisting of formulas 
+#' @noRd
+is_formula <- function(x, n) {
+  if (inherits(x, "formula")) {
+    return(n == 1L)
+  } else if (is.list(x)) {
+    return(all(vapply(x, \(i) inherits(i, "formula"), TRUE)) && length(x) == n)
+  }
+  FALSE
+}
+get_responses <- function(x, allow_mv = TRUE) {
+  stopifnot_(
+    inherits(x, "formula"), 
+    "{.arg emission_formula} must be a {.cls formula} object or a list of 
+    {.cls formula} objects."
+  )
+  stopifnot_(
+    identical(length(x), 3L), 
+    "{.arg emission_formula} must contain the response variable(s) on the 
+    left-hand side of the {.cls formula} object(s)."
+  )
+  y <- all.vars(x[[2]])
+  stopifnot_(
+    length(y) == 1L || (length(y) > 1L && allow_mv),
+    "{.arg emission_formula} must be a {.cls formula} object with one or more 
+    response variables on the left-hand side, or a list of {.cls formula} 
+    objects with a single response variable on the LHS of each {.cls formula}"
+  )
+  y
 }
 #' (Regularized) Inverse of softmax(Q*eta)
 #' 
@@ -216,13 +259,9 @@ intercept_only <- function(f) {
 #' Create obsArray for Various C++ functions
 #' 
 #' @noRd
-create_obsArray <- function(model, autoregression = NULL) {
+create_obsArray <- function(model) {
   
   if (inherits(model, c("nhmm", "mnhmm"))) {
-    if (is.null(autoregression)) {
-      autoregression <- inherits(model, "fanhmm") && !is.null(model$autoregression_formula)
-    }
-    
     obsArray <- array(
       0L, 
       c(model$length_of_sequences, model$n_sequences, model$n_channels)
@@ -231,16 +270,8 @@ create_obsArray <- function(model, autoregression = NULL) {
       obs <- as.integer(model$data[[model$responses[i]]]) - 1L
       obs[is.na(obs)] <- model$n_symbols[i]
       obsArray[, , i] <- obs
-      if (autoregression) {
-        # if y_t depends on y_t-1, treat y_1 as fixed
-        # technically same as treating it as missing except in predictions
-        obsArray[1, , i] <- model$n_symbols[i]
-      }
     }
     obsArray <- aperm(obsArray, c(3, 1, 2))
-    if (model$n_channels == 1) {
-      obsArray <- array(obsArray[1, , ], dim = dim(obsArray)[2:3])
-    }
   } else {
     obsArray <- array(
       0L, 
@@ -257,7 +288,7 @@ create_obsArray <- function(model, autoregression = NULL) {
   }
   obsArray
 }
-#' Create emissionArray for Various C++ functions
+#' Create emissionArray for various pre-2.0.0 C++ functions
 #' 
 #' @noRd
 create_emissionArray <- function(model) {

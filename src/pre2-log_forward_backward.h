@@ -1,7 +1,7 @@
 #ifndef LFB_H
 #define LFB_H
 
-#include <RcppArmadillo.h>
+#include "config.h"
 
 void log_internalForward(
     const arma::mat& transition, const arma::cube& emission, 

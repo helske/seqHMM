@@ -541,7 +541,7 @@ plot.hmm <- function(x, layout = "horizontal", pie = TRUE,
   
   # Plotting graph
   if (pie == TRUE) {
-    pie.values <- lapply(seq_len(nrow(transM)), function(i) x$emission_probs[i, ])
+    pie.values <- lapply(seq_len(nrow(transM)), \(i) x$emission_probs[i, ])
     # If slices are combined
     if (combine.slices > 0 &&
         !all(unlist(pie.values)[unlist(pie.values) > 0] > combine.slices)) {

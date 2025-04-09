@@ -58,7 +58,7 @@ mc_to_sc <- function(model, combine_missing = TRUE, all_combinations = FALSE, cp
     )
     rownames(B) <- rownames(model$emission_probs[[1]])
     for (i in 1:model$n_states) {
-      B[i, ] <- apply(expand.grid(lapply(model$emission_probs, function(x) x[i, ])), 1, prod)
+      B[i, ] <- apply(expand.grid(lapply(model$emission_probs, \(x) x[i, ])), 1, prod)
     }
     B <- B[, order(colnames(B)), drop = FALSE]
     
@@ -116,7 +116,7 @@ mc_to_sc <- function(model, combine_missing = TRUE, all_combinations = FALSE, cp
       )
       rownames(B[[m]]) <- rownames(model$emission_probs[[m]][[1]])
       for (i in 1:model$n_states[[m]]) {
-        B[[m]][i, ] <- apply(expand.grid(lapply(model$emission_probs[[m]], function(x) x[i, ])), 1, prod)
+        B[[m]][i, ] <- apply(expand.grid(lapply(model$emission_probs[[m]], \(x) x[i, ])), 1, prod)
       }
       B[[m]] <- B[[m]][, order(colnames(B[[m]])), drop = FALSE]
       

@@ -81,7 +81,7 @@ test_that("build_lcm formula works", {
   )
   expect_equal(
     model$symbol_names,
-    c("a", "b", "c", "d")
+    factor(c("a", "b", "c", "d"))
   )
 })
 

@@ -15,8 +15,8 @@ data <- data.frame(
 test_that("build_mnhmm returns object of class 'mnhmm'", {
   expect_error(
     model <- build_mnhmm(
-      "y", s, d, initial_formula = ~ x, transition_formula = ~z,
-      emission_formula = ~ z, cluster_formula = ~ x, data = data, 
+      s, d, emission_formula = y ~ z,  initial_formula = ~ x, 
+      transition_formula = ~z, cluster_formula = ~ x, data = data, 
       time = "time", id = "id", state_names = 1:s,
       cluster_names = 1:d
     ),
@@ -38,8 +38,8 @@ test_that("build_mnhmm returns object of class 'mnhmm'", {
 test_that("estimate_mnhmm returns object of class 'mnhmm'", {
   expect_error(
     fit <- estimate_mnhmm(
-      "y", s, d, initial_formula = ~ x, transition_formula = ~z,
-      emission_formula = ~ z, cluster_formula = ~ x,
+      s, d, emission_formula = y ~ z, initial_formula = ~ x, 
+      transition_formula = ~ z, cluster_formula = ~ x,
       data = data, time = "time", id = "id", maxeval = 1,
       method = "EM"),
     NA
@@ -50,8 +50,19 @@ test_that("estimate_mnhmm returns object of class 'mnhmm'", {
   )
   expect_error(
     fit <- estimate_mnhmm(
-      c("y", "y2"), s, d, initial_formula = ~ x, transition_formula = ~z,
-      emission_formula = ~ z, cluster_formula = ~ x,
+      s, d, initial_formula = ~ x, transition_formula = ~ 1,
+      emission_formula = 2, cluster_formula = ~ x,
+      data = data, time = "time", id = "id", maxeval = 1, method = "DNM"),
+    paste0(
+      "`emission_formula` must be a <formula> object or a list of ",
+      "<formula> objects."
+    )
+  )
+  
+  expect_error(
+    fit <- estimate_mnhmm(
+      s, d, emission_formula = y ~ z, initial_formula = ~ x, 
+      transition_formula = ~ z, cluster_formula = ~ x,
       data = data, time = "time", id = "id", maxeval = 1, method = "DNM"),
     NA
   )
@@ -74,51 +85,32 @@ test_that("estimate_mnhmm errors with missing 'n_states' argument", {
 })
 test_that("estimate_mnhmm errors with incorrect formulas", {
   expect_error(
-    estimate_mnhmm("y", n_states = 3, n_clusters = 2, initial_formula = 5,
-                   data = data),
-    "Argument `initial\\_formula` must be a <formula> object\\."
-  )
-  expect_error(
-    estimate_mnhmm("y", n_states = 3, n_clusters = 2, transition_formula = 5,
-                   data = data),
-    "Argument `transition\\_formula` must be a <formula> object\\."
-  )
-  expect_error(
-    estimate_mnhmm("y", n_states = 3, n_clusters = 2, emission_formula = "a",
-                   data = data),
-    "Argument `emission\\_formula` must be a <formula> object\\."
-  )
-  expect_error(
-    estimate_mnhmm("y", n_states = 3, n_clusters = 2, cluster_formula = 5,
-                   data = data),
-    "Argument `cluster\\_formula` must be a <formula> object\\."
+    fit <- estimate_mnhmm(
+      s, d, emission_formula = y ~ z, initial_formula = ~ x, 
+      transition_formula = ~ z, cluster_formula = "a",
+      data = data, time = "time", id = "id", maxeval = 1,
+      method = "EM"),
+    "Argument `cluster_formula` must be a <formula> object."
   )
 })
 test_that("estimate_mnhmm errors with missing data arguments", {
   expect_error(
-    estimate_mnhmm("y", s, d, initial_formula = ~ x, data = "a"),
+    estimate_mnhmm(emission_formula = y ~ 1, s, d, data = "a"),
     "Argument `data` must be a <data.frame> object."
   )
   expect_error(
-    estimate_mnhmm("y", 3, 2, initial_formula = ~ z, transition_formula = ~x,
-                   data = data),
+    estimate_mnhmm(emission_formula = y ~ 1, s, d, data = data),
     "Argument `time` is missing."
   )
   expect_error(
-    estimate_mnhmm("y", 3, 5, emission_formula = ~x,
+    estimate_mnhmm(3, 5, emission_formula = y ~ x,
                    data = data, time = "time", id = 2),
     "Argument `id` must be a single character string."
   )
   expect_error(
-    estimate_mnhmm("y", 3, 5, emission_formula = ~x,
+    estimate_mnhmm(3, 5, emission_formula = y ~ x,
                    data = data, id = "id", time = -4),
     "Argument `time` must be a single character string."
-  )
-})
-test_that("estimate_mnhmm errors with incorrect observations", {
-  expect_error(
-    estimate_mnhmm(list(1,"a"), s, d, data = data, time = "time", id = "id"),
-    "Argument `responses` must be a character vector defining the response variable\\(s\\) in the `data`."
   )
 })
 
@@ -127,7 +119,7 @@ test_that("build_mnhmm works with missing observations", {
   data$y[50:55] <- NA
   expect_error(
     model <- estimate_mnhmm(
-      "y", s, d, data = data, time = "time", id = "id", maxeval = 1,
+      s, d, y ~ 1, data = data, time = "time", id = "id", maxeval = 1,
       maxeval_em_dnm = 1),
     NA
   )

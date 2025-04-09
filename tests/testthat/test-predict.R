@@ -23,12 +23,11 @@ test_that("'predict' works 'mnhmm'", {
   data("leaves")
   d <- leaves[leaves$workplace %in% seq_len(10), ]
   fit <- estimate_mnhmm(
-    responses = "leave",
     n_states = 2,
     n_clusters = 2,
     initial_formula = ~ year,
     transition_formula = ~ 1,
-    emission_formula = ~ reform2013 + occupation,
+    emission_formula = leave ~ reform2013 + occupation,
     cluster_formula = ~ 1,
     data = d,
     id = "workplace",

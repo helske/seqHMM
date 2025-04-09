@@ -172,37 +172,23 @@ stacked_sequence_plot <- function(
     )
   )
   if (n_channels > 1) names(y) <- channel_names
-  y <- sort_sequences(y, sort_by, sort_channel, dist_method)
-  if (length(sort_by) > 1) sort_by <- NULL # handle sorting by ids in ggseqplot
-  
+  if (type == "index" & length(sort_by) == 1) {
+    y <- sort_sequences(y, sort_by, sort_channel, dist_method)
+    sort_by <- NULL
+  }
   if (identical(group, NA)) group <- NULL
   if (n_channels == 1) {
-    cpal_y <- stats::setNames(attr(y, "cpal"), attr(y, "labels"))
     if (type == "distribution") {
-      p <- ggseqplot::ggseqdplot(y, group = group, sortv = sort_by, ...) + 
+      p <- ggseqplot::ggseqdplot(y, group = group, ...) + 
         ggplot2::theme(legend.position = legend_position) +
         ggplot2::ylab("Proportion") +
         ggplot2::xlab("Time")
-      suppressMessages(
-        p <- p +
-          ggplot2::scale_fill_manual(values = cpal_y)
-      )
     }
     if (type == "index") {
       p <- ggseqplot::ggseqiplot(y, group = group, sortv = sort_by, ...) + 
         ggplot2::theme(legend.position = legend_position) +
         ggplot2::ylab("Sequence") +
         ggplot2::xlab("Time")
-      suppressMessages(
-        p <- p +
-          ggplot2::scale_fill_manual(values = cpal_y)
-      )
-      if (!isTRUE(list(...)$border)) {
-        suppressMessages(
-          p <- p +
-            ggplot2::scale_colour_manual(values = cpal_y)
-        )
-      }
     }
   } else {
     if (length(legend_position) == 1) {
@@ -216,36 +202,20 @@ stacked_sequence_plot <- function(
     p <- vector("list", n_channels)
     if (type == "distribution") {
       for (i in seq_len(n_channels)) {
-        cpal_y <- stats::setNames(attr(y[[i]], "cpal"), attr(y[[i]], "labels"))
         p[[i]] <- ggseqplot::ggseqdplot(y[[i]], group = group, ...) + 
           ggplot2::theme(legend.position = legend_position[i]) +
           ggplot2::ggtitle(channel_names[i]) +
           ggplot2::ylab("Proportion") +
           ggplot2::xlab("Time")
-        suppressMessages(
-          p[[i]] <- p[[i]] + 
-            ggplot2::scale_fill_manual(values = cpal_y)
-        )
       }
     }
     if (type == "index") {
       for (i in seq_len(n_channels)) {
-        cpal_y <- stats::setNames(attr(y[[i]], "cpal"), attr(y[[i]], "labels"))
         p[[i]] <- ggseqplot::ggseqiplot(y[[i]], group = group, ...) + 
           ggplot2::theme(legend.position = legend_position[i]) +
           ggplot2::ggtitle(channel_names[i]) +
           ggplot2::ylab("Sequence") +
           ggplot2::xlab("Time")
-        suppressMessages(
-          p[[i]] <- p[[i]] + 
-            ggplot2::scale_fill_manual(values = cpal_y)
-        )
-        if (!isTRUE(list(...)$border)) {
-          suppressMessages(
-            p[[i]] <- p[[i]] +
-              ggplot2::scale_colour_manual(values = cpal_y)
-          )
-        }
       }
     }
     p <- patchwork::wrap_plots(p, ncol = 1, ...)

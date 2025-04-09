@@ -32,7 +32,7 @@ test_that("'hidden_paths' works for 'nhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_nhmm(
-      y, n_states = 5, 
+      emission_formula = c(Marriage, Parenthood, Residence) ~ 1, n_states = 5, 
       data = d, id = id, time = time,
       inits = hmm_biofam[
         c("initial_probs", "transition_probs", "emission_probs")
@@ -53,7 +53,7 @@ test_that("'hidden_paths' works for 'nhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_nhmm(
-      y[1], n_states = 3,
+      emission_formula = Marriage ~ 1, n_states = 3,
       data = d, id = id, time = time,
       restarts = 2, maxeval = 1, method = "DNM",
       control_restart = list(maxeval = 1)
@@ -72,9 +72,10 @@ test_that("'hidden_paths' works for 'nhmm'", {
 
 test_that("'hidden_paths' works for 'mnhmm'", {
   set.seed(1)
+  y <- c(Marriage, Parenthood, Residence) ~ 1
   expect_error(
     fit <- estimate_mnhmm(
-      y, n_states = 3,
+      emission_formula = y, n_states = 3,
       data = d, id = id, time = time, n_clusters = 2, maxeval = 1,
       maxeval_em_dnm = 1
     ),
@@ -86,12 +87,12 @@ test_that("'hidden_paths' works for 'mnhmm'", {
   )
   expect_identical(
     c(table(out$state)), 
-    c(`State 1` = 1445L, `State 2` = 27369L, `State 3` = 3186L)
+    c(`State 1` = 1553L, `State 2` = 29365L, `State 3` = 1082L)
   )
   set.seed(1)
   expect_error(
     fit <- estimate_mnhmm(
-      y[1], n_states = 3,
+      Marriage ~ 1, n_states = 3,
       data = d, id = id, time = time, n_clusters = 2,
       restarts = 2, maxeval = 1, method = "DNM",
       control_restart = list(maxeval = 1)

@@ -1,7 +1,7 @@
-#ifndef GETPROBS_H
-#define GETPROBS_H
+#ifndef GET_PROBS_H
+#define GET_PROBS_H
 
-#include <RcppArmadillo.h>
+#include "config.h"
 #include "softmax.h"
 
 arma::vec get_omega(
@@ -16,10 +16,6 @@ arma::cube get_A(
 arma::cube get_B(
     const arma::cube& gamma, const arma::mat& X, const bool tv = true,
     const bool add_missing = false
-);
-arma::field<arma::cube> get_B(
-    const arma::field<arma::cube>& gamma, const arma::mat& X, 
-    const arma::uvec& M, const bool tv = true, const bool add_missing = false
 );
 
 #endif

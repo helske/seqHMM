@@ -21,7 +21,7 @@ simulate_new_sequences <- function(model, newdata = NULL) {
   W <- update_W_for_fanhmm(model)
   times <- model$data[[model$time_variable]]
   obs_1 <- model$data[[model$response]][times == min(times)]
-  out <- simulate_fanhmm_singlechannel(
+  out <- simulate_fanhmm(
     model$etas$pi, model$X_pi, model$etas$A, W$W_A, model$etas$B, W$W_B,
     as.integer(obs_1) - 1L, !is.null(model$autoregression_formula)
   )

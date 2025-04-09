@@ -110,8 +110,8 @@
 #'   )
 #' }
 estimate_nhmm <- function(
-    responses, n_states, initial_formula = ~1, 
-    transition_formula = ~1, emission_formula = ~1, 
+    n_states, emission_formula, initial_formula = ~1, 
+    transition_formula = ~1, 
     data, time, id, state_names = NULL, 
     inits = "random", init_sd = 2, restarts = 0L, 
     lambda = 0, method = "EM-DNM", bound = Inf, control_restart = list(), 
@@ -119,7 +119,7 @@ estimate_nhmm <- function(
   
   call <- match.call()
   model <- build_nhmm(
-    responses, n_states, initial_formula, transition_formula, emission_formula, 
+    n_states, emission_formula, initial_formula, transition_formula, 
     data, id, time, state_names
   )
   control <- list(...)

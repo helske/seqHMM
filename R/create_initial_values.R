@@ -11,7 +11,7 @@ create_initial_values <- function(inits, model, init_sd) {
   D <- model$n_clusters
   K_pi <- nrow(model$X_pi)
   K_A <- nrow(model$X_A)
-  K_B <- nrow(model$X_B)
+  K_B <- vapply(model$X_B, nrow, 1L)
   if (D > 1) {
     K_omega <- nrow(model$X_omega)
   } else {
@@ -23,8 +23,12 @@ create_initial_values_ <- function(inits, init_sd, S, M, K_pi, K_A, K_B, D = 1,
                                    K_omega = 0) {
   if(!is.null(inits$initial_probs)) {
     if (D > 1) {
+      stopifnot_(
+        is.list(inits$initial_probs) && length(inits$initial_probs) == D,
+        "Initial values for initial states of MNHMM must be a list of length D."
+      )
       eta_pi <- lapply(
-        seq_len(D), function(i) {
+        seq_len(D), \(i) {
           create_inits_vector(inits$initial_probs[[i]], S, K_pi, init_sd)
         }
       )
@@ -39,8 +43,12 @@ create_initial_values_ <- function(inits, init_sd, S, M, K_pi, K_A, K_B, D = 1,
   
   if(!is.null(inits$transition_probs)) {
     if (D > 1) {
+      stopifnot_(
+        is.list(inits$transition_probs) && length(inits$transition_probs) == D,
+        "Initial values for transitions of MNHMM must be a list of length D."
+      )
       eta_A <- lapply(
-        seq_len(D), function(i) {
+        seq_len(D), \(i) {
           create_inits_matrix(inits$transition_probs[[i]], S, S, K_A, init_sd)
         }
       )
@@ -55,32 +63,22 @@ create_initial_values_ <- function(inits, init_sd, S, M, K_pi, K_A, K_B, D = 1,
   
   if(!is.null(inits$emission_probs)) {
     if (D > 1) {
-      if (length(M) > 1) {
-        eta_B <- lapply(
-          seq_len(D), function(i) {
-            lapply(seq_len(length(M)), function(j) {
-              create_inits_matrix(
-                inits$emission_probs[[i]][[j]], S, M[j], K_B, init_sd)
-            })
+      stopifnot_(
+        is.list(inits$emission_probs) && length(inits$emission_probs) == D,
+        "Initial values for emissions of MNHMM must be a list of length D."
+      )
+      eta_B <- lapply(
+        seq_len(D), \(i) {
+          lapply(seq_along(M), \(j) {
+            create_inits_matrix(
+              inits$emission_probs[[i]][[j]], S, M[j], K_B, init_sd)
           })
-      } else {
-        eta_B <- lapply(
-          seq_len(D), function(i) {
-            create_inits_matrix(inits$emission_probs[[i]], S, M, K_B, init_sd)
-          }
-        )
-      }
-    } else {
-      if (length(M) > 1) {
-        eta_B <- lapply(seq_len(length(M)), function(j) {
-          create_inits_matrix(
-            inits$emission_probs[[j]], S, M[j], K_B, init_sd)
         })
-      } else {
-        eta_B <- create_inits_matrix(
-          inits$emission_probs, S, M, K_B, init_sd
-        )
-      }
+    } else {
+      eta_B <- lapply(seq_along(M), \(j) {
+        create_inits_matrix(
+          inits$emission_probs[[j]], S, M[j], K_B[j], init_sd)
+      })
     }
   } else {
     eta_B <- create_eta_B_inits(inits$eta_B, S, M, K_B, init_sd, D)
@@ -112,37 +110,31 @@ create_eta_A_nhmm <- function(x, S, K, sd = 0) {
   array(stats::rnorm((S - 1) * K * S, x, sd), c(S - 1, K, S))
 }
 create_eta_B_nhmm <- function(x, S, M, K, sd = 0) {
-  array(stats::rnorm((M - 1) * K * S, x, sd), c(M - 1, K, S))
-  
-}
-create_eta_multichannel_B_nhmm <- function(x, S, M, K, sd = 0) {
   n <- c(0, cumsum((M - 1) * K * S))
-  lapply(seq_len(length(M)), function(i) {
-    create_eta_B_nhmm(x[(n[i] + 1):(n[i + 1])], S, M[i], K, sd)
+  lapply(seq_along(M), \(i) {
+    array(
+      stats::rnorm((M[i] - 1) * K[i] * S, x[(n[i] + 1):(n[i + 1])], sd), 
+      c(M[i] - 1, K[i], S)
+    )
   })
 }
 create_eta_pi_mnhmm <- function(x, S, K, D, sd = 0) {
   n <- (S - 1) * K
-  lapply(seq_len(D), function(i) {
+  lapply(seq_len(D), \(i) {
     create_eta_pi_nhmm(x[(i - 1) * n + 1:n], S, K, sd)
   })
 }
 create_eta_A_mnhmm <- function(x, S, K, D, sd = 0) {
   n <- (S - 1) * K * S
-  lapply(seq_len(D), function(i) {
+  lapply(seq_len(D), \(i) {
     create_eta_A_nhmm(x[(i - 1) * n + 1:n], S, K, sd)
   })
 }
+
 create_eta_B_mnhmm <- function(x, S, M, K, D, sd = 0) {
-  n <- (M - 1) * K * S
-  lapply(seq_len(D), function(i) {
-    create_eta_B_nhmm(x[(i - 1) * n + 1:n], S, M, K, sd)
-  })
-}
-create_eta_multichannel_B_mnhmm <- function(x, S, M, K, D, sd = 0) {
   n <- sum((M - 1) * K * S)
-  lapply(seq_len(D), function(i) {
-    create_eta_multichannel_B_nhmm(x[(i - 1) * n + 1:n], S, M, K, sd)
+  lapply(seq_len(D), \(i) {
+    create_eta_B_nhmm(x[(i - 1) * n + 1:n], S, M, K, sd)
   })
 }
 create_eta_omega_mnhmm <- function(x, D, K, sd = 0) {
@@ -208,68 +200,40 @@ create_eta_A_inits <- function(x, S, K, init_sd = 0, D = 1) {
   }
 }
 create_eta_B_inits <- function(x, S, M, K, init_sd = 0, D = 1) {
-  if (length(M) > 1) {
-    if (D > 1) {
-      if (is.null(x)) {
-        create_eta_multichannel_B_mnhmm(
-          numeric(sum((M - 1) * K * S) * D), 
-          S, M, K, D, init_sd
-        )
-      } else {
-        stopifnot_(
-          length(unlist(x)) == sum((M - 1) * K * S) * D,
-          paste0(
-            "Number of initial values for {.val eta_B} is not equal to ",
-            "sum((M - 1) * K * S) * D = {sum((M - 1) * K * S) * D}."
-          )
-        )
-        create_eta_multichannel_B_mnhmm(unlist(x), S, M, K, D, init_sd)
-      }
+  
+  if (D > 1) {
+    if (is.null(x)) {
+      create_eta_B_mnhmm(
+        numeric(sum((M - 1) * K * S) * D), 
+        S, M, K, D, init_sd
+      )
     } else {
-      if (is.null(x)) {
-        create_eta_multichannel_B_nhmm(
-          numeric(sum((M - 1) * K * S)), S, M, K, init_sd
+      stopifnot_(
+        length(unlist(x)) == sum((M - 1) * K * S) * D,
+        paste0(
+          "Number of initial values for {.val eta_B} is not equal to ",
+          "sum((M - 1) * K * S) * D = {sum((M - 1) * K * S) * D}."
         )
-      } else {
-        stopifnot_(
-          length(unlist(x)) == sum((M - 1) * K * S),
-          paste0(
-            "Number of initial values for {.val eta_B} is not equal to ",
-            "sum((M - 1) * K * S) = {sum((M - 1) * K * S)}."
-          )
-        )
-        create_eta_multichannel_B_nhmm(unlist(x), S, M, K, init_sd)
-      }
+      )
+      create_eta_B_mnhmm(unlist(x), S, M, K, D, init_sd)
     }
   } else {
-    if (D > 1) {
-      if (is.null(x)) {
-        create_eta_B_mnhmm(numeric((M - 1) * K * S * D), S, M, K, D, init_sd)
-      } else {
-        stopifnot_(
-          length(unlist(x)) == (M - 1) * K * S * D,
-          paste0(
-            "Number of initial values for {.val eta_B} is not equal to ",
-            "(M - 1) * K * S * D = {(M - 1) * K * S * D}."
-          )
-        )
-        create_eta_B_mnhmm(unlist(x), S, M, K, D, init_sd)
-      }
+    if (is.null(x)) {
+      create_eta_B_nhmm(
+        numeric(sum((M - 1) * K * S)), S, M, K, init_sd
+      )
     } else {
-      if (is.null(x)) {
-        create_eta_B_nhmm(numeric((M - 1) * K * S), S, M, K, init_sd)
-      } else {
-        stopifnot_(
-          length(x) == (M - 1) * K * S,
-          paste0(
-            "Number of initial values for {.val eta_B} is not equal to ",
-            "(M - 1) * K * S = {(M - 1) * K * S}."
-          )
+      stopifnot_(
+        length(unlist(x)) == sum((M - 1) * K * S),
+        paste0(
+          "Number of initial values for {.val eta_B} is not equal to ",
+          "sum((M - 1) * K * S) = {sum((M - 1) * K * S)}."
         )
-        create_eta_B_nhmm(x, S, M, K, init_sd)
-      }
+      )
+      create_eta_B_nhmm(unlist(x), S, M, K, init_sd)
     }
   }
+  
 }
 create_eta_omega_inits <- function(x, D, K, init_sd = 0) {
   

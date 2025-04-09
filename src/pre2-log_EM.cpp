@@ -27,7 +27,7 @@ Rcpp::List log_EM(const arma::mat& transition_, const arma::cube& emission_,
 
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(obs, alpha, ll)
-  for (arma::uword k = 0; k < obs.n_slices; k++) {
+  for (arma::uword k = 0; k < obs.n_slices; ++k) {
     ll(k) = logSumExp(alpha.slice(k).col(obs.n_cols - 1));
   }
 
@@ -48,22 +48,22 @@ Rcpp::List log_EM(const arma::mat& transition_, const arma::cube& emission_,
     arma::cube gamma(emission.n_rows, emission.n_cols, emission.n_slices, arma::fill::zeros);
     arma::vec delta(emission.n_rows, arma::fill::zeros);
 
-    for (arma::uword k = 0; k < obs.n_slices; k++) {
+    for (arma::uword k = 0; k < obs.n_slices; ++k) {
       delta += exp(alpha.slice(k).col(0) + beta.slice(k).col(0) - ll(k));
     }
 
 #pragma omp parallel for if(obs.n_slices>=threads) schedule(static) num_threads(threads) \
     default(none) shared(transition, obs, alpha, beta, ll,                  \
       emission, ksii, gamma, nSymbols)
-    for (arma::uword k = 0; k < obs.n_slices; k++) {
+    for (arma::uword k = 0; k < obs.n_slices; ++k) {
       if (obs.n_cols > 1) {
-        for (arma::uword j = 0; j < emission.n_rows; j++) {
-          for (arma::uword i = 0; i < emission.n_rows; i++) {
+        for (arma::uword j = 0; j < emission.n_rows; ++j) {
+          for (arma::uword i = 0; i < emission.n_rows; ++i) {
             if (transition(i, j) > -arma::datum::inf) {
               arma::vec tmpnm1(obs.n_cols - 1);
-              for (arma::uword t = 0; t < (obs.n_cols - 1); t++) {
+              for (arma::uword t = 0; t < (obs.n_cols - 1); ++t) {
                 tmpnm1(t) = alpha(i, t, k) + transition(i, j) + beta(j, t + 1, k);
-                for (arma::uword r = 0; r < obs.n_rows; r++) {
+                for (arma::uword r = 0; r < obs.n_rows; ++r) {
                   tmpnm1(t) += emission(j, obs(r, t + 1, k), r);
                 }
               }
@@ -74,12 +74,12 @@ Rcpp::List log_EM(const arma::mat& transition_, const arma::cube& emission_,
         }
       }
 
-      for (arma::uword r = 0; r < emission.n_slices; r++) {
-        for (arma::uword l = 0; l < nSymbols(r); l++) {
-          for (arma::uword i = 0; i < emission.n_rows; i++) {
+      for (arma::uword r = 0; r < emission.n_slices; ++r) {
+        for (arma::uword l = 0; l < nSymbols(r); ++l) {
+          for (arma::uword i = 0; i < emission.n_rows; ++i) {
             if (emission(i, l, r) > -arma::datum::inf) {
               arma::vec tmpn(obs.n_cols);
-              for (arma::uword t = 0; t < obs.n_cols; t++) {
+              for (arma::uword t = 0; t < obs.n_cols; ++t) {
                 if (l == (obs(r, t, k))) {
                   tmpn(t) = alpha(i, t, k) + beta(i, t, k);
                 } else
@@ -98,7 +98,7 @@ Rcpp::List log_EM(const arma::mat& transition_, const arma::cube& emission_,
       ksii.each_col() /= sum(ksii, 1);
       transition = log(ksii);
     }
-    for (arma::uword r = 0; r < emission.n_slices; r++) {
+    for (arma::uword r = 0; r < emission.n_slices; ++r) {
       gamma.slice(r).cols(0, nSymbols(r) - 1).each_col() /= sum(
           gamma.slice(r).cols(0, nSymbols(r) - 1), 1);
       emission.slice(r).cols(0, nSymbols(r) - 1) = log(gamma.slice(r).cols(0, nSymbols(r) - 1));
@@ -113,7 +113,7 @@ Rcpp::List log_EM(const arma::mat& transition_, const arma::cube& emission_,
     
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
     default(none) shared(obs, alpha, ll)
-    for (arma::uword k = 0; k < obs.n_slices; k++) {
+    for (arma::uword k = 0; k < obs.n_slices; ++k) {
       ll(k) = logSumExp(alpha.slice(k).col(obs.n_cols - 1));
     }
 
@@ -170,7 +170,7 @@ Rcpp::List log_EMx(const arma::mat& transition_, const arma::cube& emission_,
   weights = log(weights);
   
   arma::mat initk(emission.n_rows, obs.n_slices);
-  for (arma::uword k = 0; k < obs.n_slices; k++) {
+  for (arma::uword k = 0; k < obs.n_slices; ++k) {
     initk.col(k) = init + reparma(weights.col(k), numberOfStates);
   }
   
@@ -184,7 +184,7 @@ Rcpp::List log_EMx(const arma::mat& transition_, const arma::cube& emission_,
   
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) \
   default(none) shared(obs, alpha, ll)
-    for (arma::uword k = 0; k < obs.n_slices; k++) {
+    for (arma::uword k = 0; k < obs.n_slices; ++k) {
       ll(k) = logSumExp(alpha.slice(k).col(obs.n_cols - 1));
     }
     
@@ -206,21 +206,21 @@ Rcpp::List log_EMx(const arma::mat& transition_, const arma::cube& emission_,
     arma::cube gamma(emission.n_rows, emission.n_cols, emission.n_slices, arma::fill::zeros);
     arma::vec delta(emission.n_rows, arma::fill::zeros);
     
-    for (arma::uword k = 0; k < obs.n_slices; k++) {
+    for (arma::uword k = 0; k < obs.n_slices; ++k) {
       delta += exp(alpha.slice(k).col(0) + beta.slice(k).col(0) - ll(k));
     }
     
 #pragma omp parallel for if(obs.n_slices>=threads) schedule(static) num_threads(threads) \
     default(none) shared(transition, obs, ll, alpha, beta, emission, ksii, gamma, nSymbols)
-      for (arma::uword k = 0; k < obs.n_slices; k++) {
+      for (arma::uword k = 0; k < obs.n_slices; ++k) {
         if (obs.n_cols > 1) {
-          for (arma::uword j = 0; j < emission.n_rows; j++) {
-            for (arma::uword i = 0; i < emission.n_rows; i++) {
+          for (arma::uword j = 0; j < emission.n_rows; ++j) {
+            for (arma::uword i = 0; i < emission.n_rows; ++i) {
               if (transition(i, j) > -arma::datum::inf) {
                 arma::vec tmpnm1(obs.n_cols - 1);
-                for (arma::uword t = 0; t < (obs.n_cols - 1); t++) {
+                for (arma::uword t = 0; t < (obs.n_cols - 1); ++t) {
                   tmpnm1(t) = alpha(i, t, k) + transition(i, j) + beta(j, t + 1, k);
-                  for (arma::uword r = 0; r < obs.n_rows; r++) {
+                  for (arma::uword r = 0; r < obs.n_rows; ++r) {
                     tmpnm1(t) += emission(j, obs(r, t + 1, k), r);
                   }
                 }
@@ -231,12 +231,12 @@ Rcpp::List log_EMx(const arma::mat& transition_, const arma::cube& emission_,
           }
         }
         
-        for (arma::uword r = 0; r < emission.n_slices; r++) {
-          for (arma::uword l = 0; l < nSymbols[r]; l++) {
-            for (arma::uword i = 0; i < emission.n_rows; i++) {
+        for (arma::uword r = 0; r < emission.n_slices; ++r) {
+          for (arma::uword l = 0; l < nSymbols(r); ++l) {
+            for (arma::uword i = 0; i < emission.n_rows; ++i) {
               if (emission(i, l, r) > -arma::datum::inf) {
                 arma::vec tmpn(obs.n_cols);
-                for (arma::uword t = 0; t < obs.n_cols; t++) {
+                for (arma::uword t = 0; t < obs.n_cols; ++t) {
                   if (l == (obs(r, t, k))) {
                     tmpn(t) = alpha(i, t, k) + beta(i, t, k);
                   } else
@@ -260,27 +260,27 @@ Rcpp::List log_EMx(const arma::mat& transition_, const arma::cube& emission_,
       ksii.each_col() /= sum(ksii, 1);
       transition = log(ksii);
     }
-    for (arma::uword r = 0; r < emission.n_slices; r++) {
+    for (arma::uword r = 0; r < emission.n_slices; ++r) {
       gamma.slice(r).cols(0, nSymbols(r) - 1).each_col() /= sum(
         gamma.slice(r).cols(0, nSymbols(r) - 1), 1);
       emission.slice(r).cols(0, nSymbols(r) - 1) = log(gamma.slice(r).cols(0, nSymbols(r) - 1));
     }
     
-    for (arma::uword i = 0; i < numberOfStates.n_elem; i++) {
+    for (arma::uword i = 0; i < numberOfStates.n_elem; ++i) {
       delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1) /= arma::as_scalar(
         arma::accu(delta.subvec(cumsumstate(i) - numberOfStates(i), cumsumstate(i) - 1)));
     }
     
     init = log(delta);
     
-    for (arma::uword k = 0; k < obs.n_slices; k++) {
+    for (arma::uword k = 0; k < obs.n_slices; ++k) {
       initk.col(k) = init + reparma(weights.col(k), numberOfStates);
     }
     
     log_internalForward(transition, emission, initk, obs, alpha, threads);
     log_internalBackward(transition, emission, obs, beta, threads);
     
-    for (arma::uword k = 0; k < obs.n_slices; k++) {
+    for (arma::uword k = 0; k < obs.n_slices; ++k) {
       ll(k) = logSumExp(alpha.slice(k).col(obs.n_cols - 1));
     }
     

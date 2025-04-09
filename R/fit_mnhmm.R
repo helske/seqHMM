@@ -68,15 +68,11 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
     model$etas <- stats::setNames(
       create_initial_values(inits, model, init_sd), c("pi", "A", "B", "omega")
     )
-    model$gammas$pi <- c(eta_to_gamma_mat_field(model$etas$pi))
-    model$gammas$A <- c(eta_to_gamma_cube_field(model$etas$A))
-    if (model$n_channels == 1L) {
-      model$gammas$B <- c(eta_to_gamma_cube_field(model$etas$B))
-    } else {
-      l <- lengths(model$etas$B)
-      gamma_B <- c(eta_to_gamma_cube_field(unlist(model$etas$B, recursive = FALSE)))
-      model$gammas$B <- unname(split(gamma_B, rep(seq_along(l), l)))
-    }
+    model$gammas$pi <- drop(eta_to_gamma_mat_field(model$etas$pi))
+    model$gammas$A <- drop(eta_to_gamma_cube_field(model$etas$A))
+    model$gammas$B <- split(
+      eta_to_gamma_cube_2d_field(model$etas$B), seq_len(model$n_clusters)
+    )
     model$gammas$omega <- eta_to_gamma_mat(model$etas$omega)
     return(model)
   }

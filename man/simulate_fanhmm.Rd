@@ -9,16 +9,15 @@ simulate_fanhmm(
   sequence_lengths,
   n_symbols,
   n_states,
+  emission_formula,
   initial_formula = ~1,
   transition_formula = ~1,
-  emission_formula = ~1,
   autoregression_formula = ~1,
   feedback_formula = ~1,
   obs_1,
   data,
   id,
   time,
-  responses,
   coefs = NULL,
   init_sd = 2
 )
@@ -33,14 +32,14 @@ Either a scalar or vector of length \code{n_sequences}.}
 
 \item{n_states}{The number of hidden states.}
 
+\item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
+state emission probabilities.}
+
 \item{initial_formula}{of class \code{\link[=formula]{formula()}} for the
 initial state probabilities.}
 
 \item{transition_formula}{of class \code{\link[=formula]{formula()}} for the
 state transition probabilities.}
-
-\item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
-state emission probabilities.}
 
 \item{autoregression_formula}{Formula for autoregression
 \eqn{y_t \to y_{t+1}}.
@@ -64,8 +63,6 @@ given as \code{stslist} objects.}
 sequences.}
 
 \item{time}{Name of the time index variable in \code{data}.}
-
-\item{responses}{A scalar or a vector giving the names of the response variables.}
 
 \item{coefs}{If \code{NULL} (default), model parameters \code{eta_pi}, \code{eta_A}, and
 \code{eta_B} are generated randomly. You can also specify the coefficients by

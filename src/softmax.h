@@ -1,6 +1,8 @@
 #ifndef SOFTMAX_H
 #define SOFTMAX_H
 
-#include <RcppArmadillo.h>
+#include "config.h"
+
 arma::vec softmax(const arma::vec& x);
+
 #endif

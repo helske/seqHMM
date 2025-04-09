@@ -142,12 +142,12 @@ simulate_mhmm <- function(
   }
   n_symbols <- sapply(emission_probs[[1]], ncol)
   if (is.null(colnames(emission_probs[[1]][[1]]))) {
-    symbol_names <- lapply(seq_len(n_channels), function(i) seq_len(n_symbols[i]))
+    symbol_names <- lapply(seq_len(n_channels), \(i) seq_len(n_symbols[i]))
   } else {
-    symbol_names <- lapply(seq_len(n_channels), function(i) colnames(emission_probs[[1]][[i]]))
+    symbol_names <- lapply(seq_len(n_channels), \(i) colnames(emission_probs[[1]][[i]]))
   }
   
-  obs <- lapply(seq_len(n_channels), function(i) {
+  obs <- lapply(seq_len(n_channels), \(i) {
     suppressWarnings(suppressMessages(
       seqdef(matrix(symbol_names[[i]], n_sequences, sequence_length),
              alphabet = symbol_names[[i]]
@@ -156,11 +156,11 @@ simulate_mhmm <- function(
   names(obs) <- channel_names
   n_states <- sapply(transition_probs, nrow)
   if (is.null(rownames(transition_probs[[1]]))) {
-    state_names <- lapply(seq_len(n_clusters), function(i) {
+    state_names <- lapply(seq_len(n_clusters), \(i) {
       paste("State", seq_len(n_states[i]))
     })
   } else {
-    state_names <- lapply(seq_len(n_clusters), function(i) {
+    state_names <- lapply(seq_len(n_clusters), \(i) {
       rownames(transition_probs[[i]])
     }
     )

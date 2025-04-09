@@ -34,8 +34,7 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
                                          R_inv = NULL, check = TRUE) {
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
-    n_pars <- n_clusters - 1L
-    X <- matrix(1, n_sequences, 1)
+    X <- matrix(1, 1, n_sequences)
     coef_names <- "(Intercept)"
     iv <- FALSE
     X_mean <- NULL
@@ -59,12 +58,9 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
         )
       )
     )
-    n_pars <- (n_clusters - 1L) * ncol(X)
     if (check) .check_identifiability(X, "cluster")
-    
     coef_names <- colnames(X)
     cols <- which(coef_names != "(Intercept)")
-    
     if (scale) {
       X_scaled <- scale(X[, cols], X_mean, FALSE)
       X_mean <- attr(X_scaled, "scaled:center")
@@ -80,14 +76,13 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
       X_mean <- rep(0, length(cols))
       R_inv <- diag(length(cols))
     }
+    X <- t(X)
   }
-  X <- t(X)
   attr(X, "R_inv") <- R_inv
   attr(X, "X_mean") <- X_mean
   attr(X, "coef_names") <- coef_names
   attr(X, "icpt_only") <- icpt_only
-  
-  list(formula = formula, n_pars = n_pars, X = X)
+  X
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
@@ -97,8 +92,7 @@ model_matrix_initial_formula <- function(formula, data, n_sequences, n_states,
                                          R_inv = NULL, check = TRUE) {
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
-    n_pars <- n_states - 1L
-    X <- matrix(1, n_sequences, 1)
+    X <- matrix(1, 1, n_sequences)
     coef_names <- "(Intercept)"
     X_mean <- NULL
     R_inv <- NULL
@@ -121,7 +115,6 @@ model_matrix_initial_formula <- function(formula, data, n_sequences, n_states,
         )
       )
     )
-    n_pars <- (n_states - 1L) * ncol(X)
     if (check) .check_identifiability(X, "initial")
     coef_names <- colnames(X)
     cols <- which(coef_names != "(Intercept)")
@@ -140,14 +133,13 @@ model_matrix_initial_formula <- function(formula, data, n_sequences, n_states,
       X_mean <- rep(0, length(cols))
       R_inv <- diag(length(cols))
     }
+    X <- t(X)
   }
-  X <- t(X)
   attr(X, "R_inv") <- R_inv
   attr(X, "X_mean") <- X_mean
   attr(X, "coef_names") <- coef_names
   attr(X, "icpt_only") <- icpt_only
-  
-  list(formula = formula, n_pars = n_pars, X = X)
+  X
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
@@ -161,7 +153,6 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
   time <- NULL
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
-    n_pars <-  n_states * (n_states - 1L)
     X <- array(1, c(1L, length_of_sequences, n_sequences))
     coef_names <- "(Intercept)"
     iv <- tv <- FALSE
@@ -218,7 +209,6 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     }
     X <- t(X)
     dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
-    n_pars <- n_states * (n_states - 1L) * nrow(X)
     # Replace NAs in void cases and t = 1 with zero
     X[is.na(X)] <- 0
     iv <- iv_X(X[, -1L, , drop = FALSE])
@@ -230,8 +220,7 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
   attr(X, "iv") <- iv
   attr(X, "tv") <- tv
   attr(X, "icpt_only") <- icpt_only
-  
-  list(formula = formula, n_pars = n_pars, X = X)
+  X
 }
 #' Create the Model Matrix based on NHMM Formulas
 #'
@@ -241,13 +230,11 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
                                           n_symbols,
                                           id_var, time_var, sequence_lengths, 
                                           scale = TRUE, X_mean = TRUE, 
-                                          R_inv = NULL, check = TRUE,
-                                          autoregression = FALSE) {
+                                          R_inv = NULL, check = TRUE) {
   # avoid CRAN check warning due to NSE
   time <- NULL
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
-    n_pars <-  sum(n_states * (n_symbols - 1L))
     X <- array(1, c(1L, length_of_sequences, n_sequences))
     coef_names <- "(Intercept)"
     iv <- tv <- FALSE
@@ -260,13 +247,8 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
       data = data, 
       na.action = stats::na.pass
     )
-    
     complete <- stats::complete.cases(X)
     missing_values <- which(!complete)
-    if (autoregression) {
-      # first observation is fixed so missing (lagged) values do not matter
-      missing_values <- setdiff(missing_values, which(data[[time_var]] == min(data[[time_var]])))
-    } 
     if (length(missing_values) > 0 && check) {
       idx <- sequence_lengths[match(data[[id_var]], unique(data[[id_var]]))]
       ends <- data[idx, time, env = list(time = time_var)]
@@ -306,7 +288,6 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     }
     X <- t(X)
     dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
-    n_pars <- sum(n_states * (n_symbols - 1L) * nrow(X))
     # Replace NAs in void cases with zero
     X[is.na(X)] <- 0
     iv <- iv_X(X)
@@ -318,6 +299,5 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
   attr(X, "iv") <- iv
   attr(X, "tv") <- tv
   attr(X, "icpt_only") <- icpt_only
-  
-  list(formula = formula, n_pars = n_pars, X = X)
+  X
 }

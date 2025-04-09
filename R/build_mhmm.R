@@ -356,7 +356,7 @@ build_mhmm <- function(observations,
       )
       cluster_names <- paste("Cluster", seq_len(n_clusters))
     }
-    
+    cluster_names <- factor(cluster_names, levels = cluster_names)
     transition_probs <- 
       simulate_transition_probs(n_states = n_states, n_clusters = n_clusters,
                                 ...)
@@ -375,6 +375,7 @@ build_mhmm <- function(observations,
         state_names[[i]]
       )
       state_names[[i]] <- rownames(transition_probs[[i]])
+      state_names[[i]] <- factor(state_names[[i]], levels = state_names[[i]])
       initial_probs[[i]] <- .check_initial_probs(
         initial_probs[[i]], n_states[i], state_names[[i]]
       )
@@ -444,7 +445,8 @@ build_mhmm <- function(observations,
       emission_probs = emission_probs, initial_probs = initial_probs,
       coefficients = coefficients, X = X, cluster_names = cluster_names, 
       state_names = state_names,
-      symbol_names = symbol_names, channel_names = channel_names,
+      symbol_names = symbol_names, 
+      channel_names = channel_names,
       length_of_sequences = attr(observations, "length_of_sequences"),
       sequence_lengths = attr(observations, "sequence_lengths"),
       n_sequences = n_sequences, n_clusters = n_clusters,

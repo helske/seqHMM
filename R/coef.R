@@ -7,10 +7,16 @@
 #' coefficients, stored in `object$boot`.
 #' @param ... Ignored.
 #' @rdname coef
+#' @return A list of data tables with the estimated coefficients for initial,
+#' transition, emission (separate `data.table` for each response), and cluster 
+#' probabilities (in case of mixture model). 
 #' @export
 coef.nhmm <- function(object, probs = NULL, ...) {
   S <- object$n_states
   M <- object$n_symbols
+  states <- object$state_names
+  symbols <- object$symbol_names
+  responses <- object$responses
   coef_names_pi <- attr(object$X_pi, "coef_names")
   R_inv_pi <- attr(object$X_pi, "R_inv")
   X_mean_pi <- attr(object$X_pi, "X_mean")
@@ -18,7 +24,7 @@ coef.nhmm <- function(object, probs = NULL, ...) {
     object$gammas$pi, R_inv_pi, coef_names_pi, X_mean_pi
   )
   gamma_pi <- data.table(
-    state = object$state_names,
+    state = states,
     coefficient = rep(coef_names_pi, each = S),
     estimate = c(gamma_pi)
   )
@@ -30,40 +36,36 @@ coef.nhmm <- function(object, probs = NULL, ...) {
     object$gammas$A, R_inv_A, coef_names_A, X_mean_A
   )
   gamma_A <- data.table(
-    state_from = rep(object$state_names, each = S * K),
-    state_to = object$state_names,
+    state_from = rep(states, each = S * K),
+    state_to = states,
     coefficient = rep(coef_names_A, each = S),
     estimate = c(gamma_A)
   )
-  coef_names_B <- attr(object$X_B, "coef_names")
-  R_inv_B <- attr(object$X_B, "R_inv")
-  X_mean_B <- attr(object$X_B, "X_mean")
-  K <- length(coef_names_B)
-  gamma_B <- gamma_std_to_gamma(
-    object$gammas$B, R_inv_B, coef_names_B, X_mean_B
-  )
-  if (object$n_channels == 1) {
-    gamma_B <- data.table(
-      state = rep(object$state_names, each = M * K),
-      observation = object$symbol_names,
-      coefficient = rep(coef_names_B, each = M),
-      estimate = c(gamma_B)
-    )
-  } else {
-    gamma_B <- do.call(
-      rbind,
-      lapply(
-        seq_len(object$n_channels), function(i) {
-          data.table(
-            state = rep(object$state_names, each = M[i] * K),
-            observation = object$symbol_names[[i]],
-            coefficient = rep(coef_names_B, each = M[i]),
-            estimate = c(gamma_B[[i]])
-          )
-        }
-      )
+  
+  .funB <- function(gammas, states, symbols, coef_names, R_inv, X_mean) {
+    K <- length(coef_names)
+    M <- length(symbols)
+    data.table(
+      state = rep(states, each = M * K),
+      observation = symbols,
+      coefficient = rep(coef_names, each = M),
+      estimate = c(gamma_std_to_gamma(gammas, R_inv, coef_names, X_mean))
     )
   }
+  coef_names_B <- lapply(responses, \(y) attr(object$X_B[[y]], "coef_names"))
+  R_inv_B <- lapply(responses, \(y) attr(object$X_B[[y]], "R_inv"))
+  X_mean_B <- lapply(responses, \(y) attr(object$X_B[[y]], "X_mean"))
+  gamma_B <- stats::setNames(
+    lapply(
+      seq_len(length(responses)), 
+      \(i) .funB(
+        object$gammas$B[[i]], states, symbols[[i]], coef_names_B[[i]], 
+        R_inv_B[[i]], X_mean_B[[i]]
+      )
+    ),
+    responses
+  )
+  
   if (!is.null(probs)) {
     stopifnot_(
       checkmate::test_numeric(
@@ -72,9 +74,6 @@ coef.nhmm <- function(object, probs = NULL, ...) {
       "Argument {.arg probs} must be a {.cls numeric} vector with values
       between 0 and 1."
     )
-    p_i <- length(unlist(object$gammas$pi))
-    p_s <- length(unlist(object$gammas$A))
-    p_o <- length(unlist(object$gammas$B))
     stopifnot_(
       !is.null(object$boot),
       paste0(
@@ -83,28 +82,37 @@ coef.nhmm <- function(object, probs = NULL, ...) {
       )
     )
     nsim <- length(object$boot$gamma_pi)
+    probs <- paste0("q", 100 * probs)
     boot_gamma_pi <- lapply(
       object$boot$gamma_pi, 
       gamma_std_to_gamma, R_inv = R_inv_pi,
       coef_names = coef_names_pi, X_mean = X_mean_pi
     )
+    q_pi <- fast_quantiles(matrix(unlist(boot_gamma_pi), ncol = nsim), probs)
+    gamma_pi[, (probs) := data.table(q_pi)]
+    
     boot_gamma_A <- lapply(
       object$boot$gamma_A, 
       gamma_std_to_gamma, R_inv = R_inv_A,
       coef_names = coef_names_A, X_mean = X_mean_A
     )
+    q_A <- fast_quantiles(matrix(unlist(boot_gamma_A), ncol = nsim), probs)
+    gamma_A[, (probs) := data.table(q_A)]
+    
     boot_gamma_B <- lapply(
       object$boot$gamma_B, 
       gamma_std_to_gamma, R_inv = R_inv_B,
       coef_names = coef_names_B, X_mean = X_mean_B
     )
-    q_pi <- fast_quantiles(matrix(unlist(boot_gamma_pi), ncol = nsim), probs)
-    q_A <- fast_quantiles(matrix(unlist(boot_gamma_A), ncol = nsim), probs)
-    q_B <- fast_quantiles(matrix(unlist(boot_gamma_B), ncol = nsim), probs)
-    probs <- paste0("q", 100 * probs)
-    gamma_pi[, (probs) := data.table(q_pi)]
-    gamma_A[, (probs) := data.table(q_A)]
-    gamma_B[, (probs) := data.table(q_B)]
+    for (i in seq_along(responses)) {
+      boot_gamma_B <- lapply(
+        lapply(object$boot$gamma_B, "[[", responses[i]), 
+        gamma_std_to_gamma, R_inv = R_inv_B[[i]],
+        coef_names = coef_names_B[[i]], X_mean = X_mean_B[[i]]
+      )
+      q_B <- fast_quantiles(matrix(unlist(boot_gamma_B), ncol = nsim), probs)
+      gamma_B[[responses[i]]][, (probs) := data.table(q_B)]
+    }
   }
   list(
     initial = gamma_pi, 
@@ -155,37 +163,28 @@ coef.mnhmm <- function(object, probs = NULL, ...) {
   gamma_B <- gamma_std_to_gamma(
     object$gammas$B, R_inv_B, coef_names_B, X_mean_B
   )
-  if (object$n_channels == 1) {
-    gamma_B <- data.table(
-      cluster =  rep(object$cluster_names, each = S * M * K),
-      state = rep(unlist(object$state_names), each = M * K),
-      observation = object$symbol_names,
-      coefficient = rep(coef_names_B, each = M),
-      estimate = unlist(gamma_B)
-    )
-  } else {
-    gamma_B <- do.call(
-      rbind, 
-      lapply(
-        seq_len(object$n_clusters), function(d) {
-          do.call(
-            rbind,
-            lapply(
-              seq_len(object$n_channels), function(i) {
-                data.table(
-                  cluster = rep(object$cluster_names[d], each = S * M[i] * K),
-                  state = rep(object$state_names[[d]], each = M[i] * K),
-                  observation = object$symbol_names[[i]],
-                  coefficient = rep(coef_names_B, each = M[i]),
-                  estimate = c(gamma_B[[d]][[i]])
-                )
-              }
-            )
+  gamma_B <- do.call(
+    rbind, 
+    lapply(
+      seq_len(object$n_clusters), \(d) {
+        do.call(
+          rbind,
+          lapply(
+            seq_len(object$n_channels), \(i) {
+              data.table(
+                cluster = rep(object$cluster_names[d], each = S * M[i] * K),
+                state = rep(object$state_names[[d]], each = M[i] * K),
+                observation = object$symbol_names[[i]],
+                coefficient = rep(coef_names_B, each = M[i]),
+                estimate = c(gamma_B[[d]][[i]])
+              )
+            }
           )
-        }
-      )
+        )
+      }
     )
-  }
+  )
+  
   coef_names_omega <- attr(object$X_omega, "coef_names")
   R_inv_omega <- attr(object$X_omega, "R_inv")
   X_mean_omega <- attr(object$X_omega, "X_mean")

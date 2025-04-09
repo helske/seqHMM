@@ -52,12 +52,12 @@ print.hmm <- function(x, digits = 3, ...) {
 #' @rdname print
 print.mhmm <- function(x, digits = 3, ...) {
   if (attr(x, "type") == "lcm") {
-    cat("Latent Class Model: \n")
+    cat("Latent class model: \n")
   } else {
       if (attr(x, "type") == "mmm") {
-        cat("Mixture Markov Model: \n")
+        cat("Mixture Markov model: \n")
       } else {
-        cat("Mixture Hidden Markov Model: \n")
+        cat("Mixture hidden Markov model: \n")
       }
   }
   cat("\nNumber of sequences:", x$n_sequences)
@@ -120,7 +120,7 @@ print.mhmm <- function(x, digits = 3, ...) {
 #' @export
 #' @rdname print
 print.nhmm <- function(x, digits = 3, ...) {
-  cat("Non-homogeneous Hidden Markov model: \n")
+  cat("Non-homogeneous hidden Markov model: \n")
   cat("\nNumber of sequences:", x$n_sequences)
   cat("\nNumber of time points:", x$length_of_sequences)
   cat("\nNumber of observation channels:", x$n_channels)
@@ -137,7 +137,7 @@ print.nhmm <- function(x, digits = 3, ...) {
 #' @export
 #' @rdname print
 print.mnhmm <- function(x, digits = 3, ...) {
-  cat("Non-homogeneous Hidden Markov model: \n")
+  cat("Non-homogeneous mixture hidden Markov model: \n")
   cat("\nNumber of sequences:", x$n_sequences)
   cat("\nNumber of time points:", x$length_of_sequences)
   cat("\nNumber of observation channels:", x$n_channels)

@@ -91,7 +91,7 @@ test_that("build_mhmm formula works", {
   )
   expect_equal(
     model$symbol_names,
-    c("a", "b", "c", "d", "e")
+    factor(c("a", "b", "c", "d", "e"))
   )
 })
 

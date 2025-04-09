@@ -95,4 +95,3 @@ test_that("build_hmm returns the correct probabilities", {
   expect_true(all(model$transition_probs <= 1))
   expect_true(all(model$emission_probs <= 1))
 })
-

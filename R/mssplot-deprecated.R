@@ -306,7 +306,7 @@ mssplot <- function(
       if (pick == 0) {
         return(invisible())
       } else {
-        args$x <- lapply(x$observations, function(y) y[hp_by_cluster_logic[[pick]], ])
+        args$x <- lapply(x$observations, \(y) y[hp_by_cluster_logic[[pick]], ])
         if (plots != "obs") {
           args$hidden.states.labels <- hidden.pathslabs[[pick]]
           args$hidden.paths <- hp_by_cluster[[pick]]
@@ -349,7 +349,7 @@ mssplot <- function(
       if (pick == 0) {
         return(invisible())
       } else {
-        args$x <- lapply(x$observations, function(y) y[hp_by_cluster_logic[[pick]], ])
+        args$x <- lapply(x$observations, \(y) y[hp_by_cluster_logic[[pick]], ])
         if (plots != "obs") {
           args$hidden.states.labels <- hidden.pathslabs[[pick]]
           args$hidden.paths <- hp_by_cluster[[pick]]
@@ -387,7 +387,7 @@ mssplot <- function(
     ask <- length(which.plots) > 1
     plot.new()
     for (i in which.plots) {
-      args$x <- lapply(x$observations, function(y) y[hp_by_cluster_logic[[i]], ])
+      args$x <- lapply(x$observations, \(y) y[hp_by_cluster_logic[[i]], ])
       if (plots != "obs") {
         args$hidden.paths <- hp_by_cluster[[i]]
         states <- paste(

@@ -51,19 +51,17 @@
 #' to the maximum length of sequences, whereas `sequence_lengths` refers to 
 #' the actual non-void lengths of each sequence.
 #'@noRd
-#'
 .check_observations <- function(x, channel_names = NULL) {
-  
   if (TraMineR::is.stslist(x)) {
     multichannel <- FALSE
   } else {
     multichannel <- TRUE
-      stopifnot_(
-        is_list_of_lists(x) && all(unlist(lapply(x, TraMineR::is.stslist))),
-        "{.arg observations} should be a {.cls stslist} object created with 
+    stopifnot_(
+      is.list(x) && is_stslist(x, length(x)),
+      "{.arg observations} should be a {.cls stslist} object created with 
         {.fn seqdef}, or a {.cls list} of {.cls stslist} objects in a 
         multichannel case."
-      )
+    )
     stopifnot_(
       length(unique(sapply(x, nrow))) == 1,
       "The number of subjects (rows) is not the same in all channels."
@@ -84,8 +82,13 @@
   if (multichannel) {
     n_sequences <- nrow(x[[1]])
     length_of_sequences <- ncol(x[[1]])
-    
-    symbol_names <- lapply(x, alphabet)
+    symbol_names <- lapply(
+      x, 
+      function(x) {
+        a <- alphabet(x)
+        factor(a, levels = a)
+      }
+    )
     n_symbols <- lengths(symbol_names)
     dim(n_symbols) <- length(n_symbols)
     if (is.null(channel_names)) {
@@ -97,6 +100,7 @@
                of channels. Names were not used.")
       channel_names <- paste("Channel", seq_len(n_channels))
     }
+    channel_names <- factor(channel_names, levels = channel_names)
     sequence_lengths <- do.call(pmax, lapply(x, TraMineR::seqlength))
     times <- colnames(x[[1]])
     na_times <- suppressWarnings(any(is.na(timenames <- as.numeric(times))))
@@ -124,13 +128,13 @@
   } else {
     n_sequences <- nrow(x)
     length_of_sequences <- ncol(x)
-    
     symbol_names <- alphabet(x)
+    symbol_names <- factor(symbol_names, levels = symbol_names)
     n_symbols <- length(symbol_names)
-    
     if (is.null(channel_names)) {
       channel_names <- "Observations"
     }
+    channel_names <- factor(channel_names, levels = channel_names)
     sequence_lengths <- TraMineR::seqlength(x)
     times <- colnames(x)
     na_times <- suppressWarnings(any(is.na(timenames <- as.numeric(times))))
@@ -157,13 +161,12 @@
   sequence_lengths <- as.integer(sequence_lengths)
   dim(sequence_lengths) <- length(sequence_lengths)
   if (n_channels > 1L) {
-    nobs <- sum(sapply(x, function(x) {
+    nobs <- sum(sapply(x, \(x) {
       sum(!(x == attr(x, "nr") | x == attr(x, "void") | is.na(x)))
     })) / n_channels
   } else {
     nobs <- sum(!(x == attr(x, "nr") | x == attr(x, "void") | is.na(x)))
   }
-  
   attr(x, "n_channels") <- ifelse(
     multichannel, length(x), 1L)
   attr(x, "n_sequences") <- n_sequences
@@ -206,7 +209,6 @@
   dimnames(x) <- list(from = state_names, to = state_names)
   x
 }
-
 .check_initial_probs <- function(x, n_states, state_names = NULL) {
   stopifnot_(
     is.vector(x),
@@ -217,7 +219,6 @@
     "Length of {.arg initial_probs} is not equal to the number of hidden 
       states."
   )
-  
   stopifnot_(
     isTRUE(all.equal(sum(x), 1, check.attributes = FALSE)),
     "Initial state probabilities in {.arg x} do not sum to one."
@@ -225,7 +226,6 @@
   names(x) <- state_names
   x
 }
-
 .check_emission_probs <- function(
     x, n_states, n_channels, n_symbols, state_names, symbol_names,
     channel_names = NULL) {
@@ -264,7 +264,6 @@
       number of symbols."
     )
   }
-  
   if (is.null(channel_names)) {
     if (is.null(channel_names <- names(x))) {
       channel_names <- paste("Channel", seq_len(n_channels))
@@ -288,18 +287,15 @@
   }
   x
 }
-
-
 #' Checks that the design matrix is of full rank
 #' @noRd
 .check_identifiability <- function(X, type) {
   n <- nrow(X)
   nc <- ncol(X)
-  
   # Check if matrix is full rank
   if (!identical(qr(X)$rank, min(n, nc))) {
     # Check for zero-only columns
-    zero_col <- apply(X, 2L, function(x) all(x == 0))
+    zero_col <- apply(X, 2L, \(x) all(x == 0))
     
     if (any(zero_col)) {
       k <- sum(zero_col)

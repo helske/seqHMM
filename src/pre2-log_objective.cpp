@@ -23,7 +23,7 @@ Rcpp::List log_objective(const arma::mat& transition, const arma::cube& emission
   log_internalBackward(transitionLog, emissionLog, obs, beta, threads);
   
   arma::vec ll(obs.n_slices);
-  for (arma::uword k = 0; k < obs.n_slices; k++) {
+  for (arma::uword k = 0; k < obs.n_slices; ++k) {
     ll(k) = logSumExp(alpha.slice(k).col(obs.n_cols - 1));
   }
   
@@ -31,14 +31,14 @@ Rcpp::List log_objective(const arma::mat& transition, const arma::cube& emission
     arma::fill::zeros);
   
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) default(shared)
-    for (arma::uword k = 0; k < obs.n_slices; k++) {
+    for (arma::uword k = 0; k < obs.n_slices; ++k) {
       int countgrad = 0;
       
       // transitionMatrix
       arma::vec gradArow(emission.n_rows);
       arma::mat gradA(emission.n_rows, emission.n_rows);
       
-      for (arma::uword i = 0; i < emission.n_rows; i++) {
+      for (arma::uword i = 0; i < emission.n_rows; ++i) {
         arma::uvec ind = arma::find(ANZ.row(i));
         
         if (ind.n_elem > 0) {
@@ -47,10 +47,10 @@ Rcpp::List log_objective(const arma::mat& transition, const arma::cube& emission
           gradA.each_row() -= transition.row(i);
           gradA.each_col() %= transition.row(i).t();
           
-          for (arma::uword t = 0; t < (obs.n_cols - 1); t++) {
-            for (arma::uword j = 0; j < emission.n_rows; j++) {
+          for (arma::uword t = 0; t < (obs.n_cols - 1); ++t) {
+            for (arma::uword j = 0; j < emission.n_rows; ++j) {
               double tmp = 0.0;
-              for (arma::uword r = 0; r < obs.n_rows; r++) {
+              for (arma::uword r = 0; r < obs.n_rows; ++r) {
                 tmp += emissionLog(j, obs(r, t + 1, k), r);
               }
               gradArow(j) += exp(alpha(i, t, k) + tmp + beta(j, t + 1, k) - ll(k));
@@ -64,30 +64,30 @@ Rcpp::List log_objective(const arma::mat& transition, const arma::cube& emission
         }
       }
       // emissionMatrix
-      for (arma::uword r = 0; r < obs.n_rows; r++) {
+      for (arma::uword r = 0; r < obs.n_rows; ++r) {
         arma::vec gradBrow(nSymbols[r]);
         arma::mat gradB(nSymbols[r], nSymbols[r]);
-        for (arma::uword i = 0; i < emission.n_rows; i++) {
+        for (arma::uword i = 0; i < emission.n_rows; ++i) {
           arma::uvec ind = arma::find(BNZ.slice(r).row(i));
           if (ind.n_elem > 0) {
             gradBrow.zeros();
             gradB.eye();
             gradB.each_row() -= emission.slice(r).row(i).subvec(0, nSymbols[r] - 1);
             gradB.each_col() %= emission.slice(r).row(i).subvec(0, nSymbols[r] - 1).t();
-            for (arma::uword j = 0; j < nSymbols[r]; j++) {
+            for (arma::uword j = 0; j < nSymbols[r]; ++j) {
               if (obs(r, 0, k) == j) {
                 double tmp = 0.0;
-                for (arma::uword r2 = 0; r2 < obs.n_rows; r2++) {
+                for (arma::uword r2 = 0; r2 < obs.n_rows; ++r2) {
                   if (r2 != r) {
                     tmp += emissionLog(i, obs(r2, 0, k), r2);
                   }
                 }
                 gradBrow(j) += exp(initLog(i) + tmp + beta(i, 0, k) - ll(k));
               }
-              for (arma::uword t = 0; t < (obs.n_cols - 1); t++) {
+              for (arma::uword t = 0; t < (obs.n_cols - 1); ++t) {
                 if (obs(r, t + 1, k) == j) {
                   double tmp = 0.0;
-                  for (arma::uword r2 = 0; r2 < obs.n_rows; r2++) {
+                  for (arma::uword r2 = 0; r2 < obs.n_rows; ++r2) {
                     if (r2 != r) {
                       tmp += emissionLog(i, obs(r2, t + 1, k), r2);
                     }
@@ -117,9 +117,9 @@ Rcpp::List log_objective(const arma::mat& transition, const arma::cube& emission
         gradI.eye();
         gradI.each_row() -= init.t();
         gradI.each_col() %= init;
-        for (arma::uword j = 0; j < emission.n_rows; j++) {
+        for (arma::uword j = 0; j < emission.n_rows; ++j) {
           double tmp = 0.0;
-          for (arma::uword r = 0; r < obs.n_rows; r++) {
+          for (arma::uword r = 0; r < obs.n_rows; ++r) {
             tmp += emissionLog(j, obs(r, 0, k), r);
           }
           gradIrow(j) += exp(tmp + beta(j, 0, k) - ll(k));
@@ -163,7 +163,7 @@ Rcpp::List log_objectivex(const arma::mat& transition, const arma::cube& emissio
   
   
   arma::mat initk(emission.n_rows, obs.n_slices);
-  for (arma::uword k = 0; k < obs.n_slices; k++) {
+  for (arma::uword k = 0; k < obs.n_slices; ++k) {
     initk.col(k) = initLog + reparma(weights.col(k), numberOfStates);
   }
   
@@ -171,7 +171,7 @@ Rcpp::List log_objectivex(const arma::mat& transition, const arma::cube& emissio
   log_internalBackward(transitionLog, emissionLog, obs, beta, threads);
   
   arma::vec ll(obs.n_slices);
-  for (arma::uword k = 0; k < obs.n_slices; k++) {
+  for (arma::uword k = 0; k < obs.n_slices; ++k) {
     ll(k) = logSumExp(alpha.slice(k).col(obs.n_cols - 1));
   }
   
@@ -183,16 +183,16 @@ Rcpp::List log_objectivex(const arma::mat& transition, const arma::cube& emissio
   
   
 #pragma omp parallel for if(obs.n_slices >= threads) schedule(static) num_threads(threads) default(shared)
-  for (arma::uword k = 0; k < obs.n_slices; k++) {
+  for (arma::uword k = 0; k < obs.n_slices; ++k) {
     int countgrad = 0;
     
     // transitionMatrix
     if (arma::accu(ANZ) > 0) {
-      for (arma::uword jj = 0; jj < numberOfStates.n_elem; jj++) {
+      for (arma::uword jj = 0; jj < numberOfStates.n_elem; ++jj) {
         arma::vec gradArow(numberOfStates(jj));
         arma::mat gradA(numberOfStates(jj), numberOfStates(jj));
         int ind_jj = cumsumstate(jj) - numberOfStates(jj);
-        for (arma::uword i = 0; i < numberOfStates(jj); i++) {
+        for (arma::uword i = 0; i < numberOfStates(jj); ++i) {
           arma::uvec ind = arma::find(
             ANZ.row(ind_jj + i).subvec(ind_jj, cumsumstate(jj) - 1));
           
@@ -202,10 +202,10 @@ Rcpp::List log_objectivex(const arma::mat& transition, const arma::cube& emissio
             gradA.each_row() -= transition.row(ind_jj + i).subvec(ind_jj, cumsumstate(jj) - 1);
             gradA.each_col() %= transition.row(ind_jj + i).subvec(ind_jj, cumsumstate(jj) - 1).t();
             
-            for (arma::uword j = 0; j < numberOfStates(jj); j++) {
-              for (arma::uword t = 0; t < (obs.n_cols - 1); t++) {
+            for (arma::uword j = 0; j < numberOfStates(jj); ++j) {
+              for (arma::uword t = 0; t < (obs.n_cols - 1); ++t) {
                 double tmp = 0.0;
-                for (arma::uword r = 0; r < obs.n_rows; r++) {
+                for (arma::uword r = 0; r < obs.n_rows; ++r) {
                   tmp += emissionLog(ind_jj + j, obs(r, t + 1, k), r);
                 }
                 gradArow(j) += exp(
@@ -225,30 +225,30 @@ Rcpp::List log_objectivex(const arma::mat& transition, const arma::cube& emissio
     }
     if (arma::accu(BNZ) > 0) {
       // emissionMatrix
-      for (arma::uword r = 0; r < obs.n_rows; r++) {
+      for (arma::uword r = 0; r < obs.n_rows; ++r) {
         arma::vec gradBrow(nSymbols(r));
         arma::mat gradB(nSymbols(r), nSymbols(r));
-        for (arma::uword i = 0; i < emission.n_rows; i++) {
+        for (arma::uword i = 0; i < emission.n_rows; ++i) {
           arma::uvec ind = arma::find(BNZ.slice(r).row(i));
           if (ind.n_elem > 0) {
             gradBrow.zeros();
             gradB.eye();
             gradB.each_row() -= emission.slice(r).row(i).subvec(0, nSymbols(r) - 1);
             gradB.each_col() %= emission.slice(r).row(i).subvec(0, nSymbols(r) - 1).t();
-            for (arma::uword j = 0; j < nSymbols(r); j++) {
+            for (arma::uword j = 0; j < nSymbols(r); ++j) {
               if (obs(r, 0, k) == j) {
                 double tmp = 0.0;
-                for (arma::uword r2 = 0; r2 < obs.n_rows; r2++) {
+                for (arma::uword r2 = 0; r2 < obs.n_rows; ++r2) {
                   if (r2 != r) {
                     tmp += emissionLog(i, obs(r2, 0, k), r2);
                   }
                 }
                 gradBrow(j) += exp(initk(i, k) + tmp + beta(i, 0, k) - ll(k));
               }
-              for (arma::uword t = 0; t < (obs.n_cols - 1); t++) {
+              for (arma::uword t = 0; t < (obs.n_cols - 1); ++t) {
                 if (obs(r, t + 1, k) == j) {
                   double tmp = 0.0;
-                  for (arma::uword r2 = 0; r2 < obs.n_rows; r2++) {
+                  for (arma::uword r2 = 0; r2 < obs.n_rows; ++r2) {
                     if (r2 != r) {
                       tmp += emissionLog(i, obs(r2, t + 1, k), r2);
                     }
@@ -268,14 +268,14 @@ Rcpp::List log_objectivex(const arma::mat& transition, const arma::cube& emissio
       }
     }
     if (arma::accu(INZ) > 0) {
-      for (arma::uword i = 0; i < numberOfStates.n_elem; i++) {
+      for (arma::uword i = 0; i < numberOfStates.n_elem; ++i) {
         int ind_i = cumsumstate(i) - numberOfStates(i);
         arma::uvec ind = arma::find(INZ.subvec(ind_i, cumsumstate(i) - 1));
         if (ind.n_elem > 0) {
           arma::vec gradIrow(numberOfStates(i), arma::fill::zeros);
-          for (arma::uword j = 0; j < numberOfStates(i); j++) {
+          for (arma::uword j = 0; j < numberOfStates(i); ++j) {
             double tmp = 0.0;
-            for (arma::uword r = 0; r < obs.n_rows; r++) {
+            for (arma::uword r = 0; r < obs.n_rows; ++r) {
               tmp += emissionLog(ind_i + j, obs(r, 0, k), r);
             }
             gradIrow(j) += exp(tmp + beta(ind_i + j, 0, k) - ll(k) + weights(i, k));
@@ -291,11 +291,11 @@ Rcpp::List log_objectivex(const arma::mat& transition, const arma::cube& emissio
         }
       }
     }
-    for (arma::uword jj = 1; jj < numberOfStates.n_elem; jj++) {
+    for (arma::uword jj = 1; jj < numberOfStates.n_elem; ++jj) {
       arma::uword ind_jj = cumsumstate(jj) - numberOfStates(jj);
-      for (arma::uword j = 0; j < emission.n_rows; j++) {
+      for (arma::uword j = 0; j < emission.n_rows; ++j) {
         double tmp = 0.0;
-        for (arma::uword r = 0; r < obs.n_rows; r++) {
+        for (arma::uword r = 0; r < obs.n_rows; ++r) {
           tmp += emissionLog(j, obs(r, 0, k), r);
         }
         if ((j >= ind_jj) && (j < cumsumstate(jj))) {

@@ -15,8 +15,7 @@ data <- data.frame(
 test_that("build_nhmm returns object of class 'nhmm'", {
   expect_error(
     model <- build_nhmm(
-      "y", s, initial_formula = ~ x, transition_formula = ~z,
-      emission_formula = ~ z, data = data, 
+      s, y ~ z, ~ x, ~z, data = data, 
       time = "time", id = "id", state_names = 1:s,
     ),
     NA
@@ -29,8 +28,8 @@ test_that("build_nhmm returns object of class 'nhmm'", {
 test_that("estimate_nhmm returns object of class 'nhmm'", {
   expect_error(
     fit <- estimate_nhmm(
-      "y", s, initial_formula = ~ x, transition_formula = ~z,
-      emission_formula = ~ z, data = data, time = "time", id = "id"),
+      s, emission_formula = y ~ z, initial_formula = ~ x, 
+      transition_formula = ~ z, data = data, time = "time", id = "id"),
     NA
   )
   expect_s3_class(
@@ -40,30 +39,47 @@ test_that("estimate_nhmm returns object of class 'nhmm'", {
 })
 test_that("estimate_nhmm errors with missing 'n_states' argument", {
   expect_error(
-    estimate_nhmm("y", data = data, time = "time", id = "id"),
+    estimate_nhmm(emission_formula = y ~ 1, data = data, time = "t", id = "i"),
     "Argument `n\\_states` must be a single integer larger than 1\\."
   )
 })
 test_that("estimate_nhmm errors with incorrect formulas", {
   expect_error(
-    estimate_nhmm("y", n_states = 3, initial_formula = 5,
-                  data = data, time = "time", id = "id"),
-    "Argument `initial\\_formula` must be a <formula> object\\."
+    estimate_nhmm(n_states = 3, data = data, time = "time", id = "id"),
+    "Argument `emission_formula` is missing."
   )
   expect_error(
-    estimate_nhmm("y", n_states = 3, transition_formula = 5,
+    estimate_nhmm(n_states = 3, emission_formula = 5, initial_formula = 5,
                   data = data, time = "time", id = "id"),
-    "Argument `transition\\_formula` must be a <formula> object\\."
+    paste0(
+      "`emission_formula` must be a <formula> object or a list ",
+      "of <formula> objects."
+    )
   )
   expect_error(
-    estimate_nhmm("y", n_states = 3, emission_formula = "a",
+    estimate_nhmm(n_states = 3, emission_formula =  ~ x, initial_formula = 5,
                   data = data, time = "time", id = "id"),
-    "Argument `emission\\_formula` must be a <formula> object\\."
+   paste0(
+     "`emission\\_formula` must contain the response variable\\(s\\) on the ",
+     "left-hand side of the <formula> object\\(s\\)."
+   )
+  )
+  expect_error(
+    estimate_nhmm(n_states = 3, emission_formula = y ~ x, initial_formula = 5,
+                  data = data, time = "time", id = "id"),
+    "Argument `initial_formula` must be a <formula> object."
+  )
+  expect_error(
+    estimate_nhmm(2, emission_formula = y ~ x, transition_formula = 5,
+                  data = data, time = "time", id = "id"),
+    "Argument `transition_formula` must be a <formula> object."
   )
 })
 test_that("estimate_nhmm errors with incorrect observations", {
   expect_error(
-    estimate_nhmm(list(1, "a"), s, data = data, time = "time", id = "id"),
-    paste0("Argument `responses` must be a character vector defining the response variable\\(s\\) in the `data`.")
+    fit <- estimate_nhmm(
+      s, emission_formula = o ~ z, initial_formula = ~ x, 
+      transition_formula = ~ z, data = data, time = "time", id = "id"),
+    "Can't find response variable `o` in `data`."
   )
 })

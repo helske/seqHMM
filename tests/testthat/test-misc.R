@@ -1,4 +1,11 @@
-
+test_that("check for list of formulas work ", {
+  expect_true(is_formula(~1, 1L))
+  expect_true(is_formula(list(~x), 1L))
+  expect_true(is_formula(~x + y, 1L))
+  expect_true(is_formula(list(~x, ~y), 2L))             
+  expect_false(is_formula(list(~x, "not a formula")))
+  expect_false(is_formula("~x + y"))
+})
 test_that("'cluster_names' work for 'mhmm' objects", {
   expect_equal(cluster_names(mhmm_biofam), paste0("Cluster ", 1:3))
   expect_error(cluster_names(mhmm_biofam) <- 1:3, NA)
@@ -9,12 +16,11 @@ test_that("'cluster_names' work for 'mnhmm' objects", {
   data("leaves")
   d <- leaves[leaves$workplace %in% seq_len(10), ]
   fit <- estimate_mnhmm(
-    responses = "leave",
     n_states = 3,
     n_clusters = 2,
     initial_formula = ~ year,
     transition_formula = ~ 1,
-    emission_formula = ~ reform2013 + occupation,
+    emission_formula = leave ~ reform2013 + occupation,
     cluster_formula = ~ 1,
     data = d,
     id = "workplace",

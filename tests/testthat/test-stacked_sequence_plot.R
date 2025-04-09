@@ -18,11 +18,7 @@ test_that("'stacked_sequence_plot' works", {
     "Argument `ids` should be a vector of integers between 1 and 2000."
   )
   expect_error(
-    stacked_sequence_plot(hmm_biofam$observations, sort_by = "abc"),
-    "Argument `sort_by` must be \"none\", \"start\", \"end\", \"mds\", or an integer vector of length 2000."
-  )
-  expect_error(
-    stacked_sequence_plot(hmm_biofam$observations, sort_by = "abc"),
+    stacked_sequence_plot(hmm_biofam$observations, type = "i", sort_by = "abc"),
     "Argument `sort_by` must be \"none\", \"start\", \"end\", \"mds\", or an integer vector of length 2000."
   )
   expect_error(

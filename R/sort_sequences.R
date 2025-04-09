@@ -35,18 +35,16 @@ sort_sequences <- function(
 
   if (sort_by %in% c("start", "end")) {
     if (n_channels == 1) {
-      idx <- seq_len(max(TraMineR::seqlength(x)))
       if (sort_by == "start") {
-        ordering <- do.call(order, x[, idx])
+        ordering <- do.call(order, x)
       } else {
-        ordering <- do.call(order, x[, rev(idx)])
+        ordering <- do.call(order, x[, ncol(x):1])
       }
     } else {
-      idx <- seq_len(max(TraMineR::seqlength(x[[sort_channel]])))
       if (sort_by == "start") {
-        ordering <- do.call(order, x[[sort_channel]][, idx])
+        ordering <- do.call(order, x[[sort_channel]])
       } else {
-        ordering <- do.call(order, x[[sort_channel]][, rev(idx)])
+        ordering <- do.call(order, x[[sort_channel]][, ncol(x[[1]]):1])
       }
     }
   } else {

@@ -28,7 +28,7 @@ arma::mat compute_cs(const arma::uword n) {
   u = -u;
   arma::mat R(n, n, arma::fill::eye);
   arma::mat cs(2, n);
-  for (arma::uword j = 0; j < n; j++) {
+  for (arma::uword j = 0; j < n; ++j) {
     cs.col(j) = givens(R(j, j), u(j));
     R(j, j) = cs(0, j) * R(j, j) - cs(1, j) * u(j);
     if (j < n - 1) {
@@ -40,6 +40,13 @@ arma::mat compute_cs(const arma::uword n) {
   }
   return cs;
 }
+arma::field<arma::mat> create_Q(const arma::uvec n) {
+  arma::field<arma::mat> Q(n.n_elem);
+  for (arma::uword i = 0; i < n.n_elem; ++i) {
+    Q(i) = create_Q(n(i));
+  }
+  return Q;
+}
 // same as
 // arma::mat Q(n, n, arma::fill::eye);
 // Q.row(n - 1).fill(-1);
@@ -50,7 +57,7 @@ arma::mat create_Q(const arma::uword n) {
   arma::mat Q(n, n, arma::fill::eye);
   arma::vec t1(n);
   arma::vec t2(n);
-  for (arma::uword j = 0; j < n - 1; j++) {
+  for (arma::uword j = 0; j < n - 1; ++j) {
     t1 = Q.col(j);
     t2 = Q.col(n - 1);
     Q.col(j) = cs(0, j) * t1 - cs(1, j) * t2;

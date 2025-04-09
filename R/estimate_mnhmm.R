@@ -40,8 +40,8 @@
 #'   )
 #' }
 estimate_mnhmm <- function(
-    responses, n_states, n_clusters, initial_formula = ~1, 
-    transition_formula = ~1, emission_formula = ~1, cluster_formula = ~1,
+    n_states, n_clusters, emission_formula, initial_formula = ~1, 
+    transition_formula = ~1, cluster_formula = ~1,
     data, time, id, state_names = NULL, 
     cluster_names = NULL, inits = "random", init_sd = 2, 
     restarts = 0L, lambda = 0, method = "EM-DNM", bound = Inf, 
@@ -49,8 +49,8 @@ estimate_mnhmm <- function(
   
   call <- match.call()
   model <- build_mnhmm(
-    responses, n_states, n_clusters, initial_formula, 
-    transition_formula, emission_formula, cluster_formula, data, id, time, 
+    n_states, n_clusters, emission_formula, initial_formula, 
+    transition_formula, cluster_formula, data, id, time, 
     state_names, cluster_names
   )
   control <- list(...)

@@ -892,19 +892,19 @@ fit_model <- function(
         "Length of {.arg constraints} is not equal to the number of states."
       )
       uniqs <- !duplicated(constraints)
-      model$emission_probs <- lapply(model$emission_probs, function(x) {
+      model$emission_probs <- lapply(model$emission_probs, \(x) {
         x[uniqs, ]
       })
       n_states <- sum(uniqs)
     }
     if (is.null(fixed_emissions)) {
-      emissNZ <- lapply(model$emission_probs, function(i) {
+      emissNZ <- lapply(model$emission_probs, \(i) {
         i > 0
       })
     } else {
       if (mhmm) {
         if (model$n_channels > 1) {
-          fixed_emissions <- lapply(1:model$n_channels, function(i) {
+          fixed_emissions <- lapply(1:model$n_channels, \(i) {
             do.call(rbind, sapply(fixed_emissions, "[", i))
           })
         } else {
@@ -919,14 +919,14 @@ fit_model <- function(
       if (!is.null(constraints)) {
         for (i in 1:model$n_channels) fixed_emissions[[i]] <- fixed_emissions[[i]][uniqs, ]
       }
-      emissNZ <- lapply(1:model$n_channels, function(i) {
+      emissNZ <- lapply(1:model$n_channels, \(i) {
         model$emission_probs[[i]] > 0 & !fixed_emissions[[i]]
       })
     }
-    maxEM <- lapply(1:model$n_channels, function(i) {
+    maxEM <- lapply(1:model$n_channels, \(i) {
       cbind(1:n_states, apply(model$emission_probs[[i]], 1, which.max))
     })
-    maxEMvalue <- lapply(1:model$n_channels, function(i) {
+    maxEMvalue <- lapply(1:model$n_channels, \(i) {
       apply(model$emission_probs[[i]], 1, max)
     })
     emissNZ <- array(0, c(n_states, max(model$n_symbols), model$n_channels))
@@ -985,7 +985,7 @@ fit_model <- function(
               ))
             },
             if (npIPAll > 0) {
-              unlist(sapply(1:original_model$n_clusters, function(m) {
+              unlist(sapply(1:original_model$n_clusters, \(m) {
                 if (npIP[m] > 0) original_model$initial_probs[[m]][paramIP[[m]]]
               }))
             }

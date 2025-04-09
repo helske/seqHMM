@@ -25,7 +25,7 @@ test_that("'forward_backward' works for multichannel 'nhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_nhmm(
-      responses, n_states = 5,
+      5, c(Marriage, Parenthood, Residence) ~ 1,
       inits = hmm_biofam[
         c("initial_probs", "transition_probs", "emission_probs")
       ], maxeval = 1, method = "DNM",
@@ -45,7 +45,7 @@ test_that("'forward_backward' works for single-channel 'nhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_nhmm(
-      responses[2], n_states = 3,
+      n_states = 3, Parenthood ~ 1,
       data = d, id = id, time = time,
       restarts = 2, maxeval = 2, lambda = 0.1, method = "EM",
       control_restart = list(maxeval = 2)
@@ -65,7 +65,7 @@ test_that("'forward_backward' works for multichannel 'mnhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_mnhmm(
-      responses, n_states = 3, n_clusters = 2,
+      c(Marriage, Parenthood, Residence) ~ 1, n_states = 3, n_clusters = 2,
       maxeval = 1, method = "EM", data = d, id = id, time = time 
     ),
     NA
@@ -82,7 +82,7 @@ test_that("'forward_backward' works for single-channel 'mnhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_mnhmm(
-      responses[1], n_states = 2, n_clusters = 2,
+      emission_formula =  Marriage ~ Residence, n_states = 2, n_clusters = 2,
       data = d, id = id, time = time, maxeval = -1
     ),
     NA

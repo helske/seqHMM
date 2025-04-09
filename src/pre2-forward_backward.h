@@ -1,7 +1,7 @@
 #ifndef FB_H
 #define FB_H
 
-#include <RcppArmadillo.h>
+#include "config.h"
 
 void uvForward(
     const arma::mat& transition_t, const arma::cube& emission, 

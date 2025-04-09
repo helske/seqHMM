@@ -21,13 +21,13 @@ Description: Designed for estimating variants of hidden (latent) Markov models
     mixture models as well as initial, transition and emission probabilities in 
     NHMMs. The package provides functions for evaluating and 
     comparing models, as well as functions for visualizing of multichannel 
-    sequence data and HMMs. For NHMMs, there are also methods for computing 
-    average causal effects and marginal state and emission probabilities. 
-    Models are estimated using maximum likelihood via the EM algorithm or 
-    direct numerical maximization with analytical gradients. Documentation is 
-    available via several vignettes, and the paper by Helske and Helske 
+    sequence data and HMMs. For NHMMs, methods for computing 
+    average causal effects and marginal state and emission probabilities are 
+    available. Models are estimated using maximum likelihood via the EM 
+    algorithm or direct numerical maximization with analytical gradients. 
+    Documentation is available via several vignettes, and Helske and Helske 
     (2019, <doi:10.18637/jss.v088.i03>). For methodology behind the NHMMs,
-    see Helske (2025, <doi:10.48550/arXiv.2503.16014>)
+    see Helske (2025, <doi:10.48550/arXiv.2503.16014>).
 LazyData: true
 LinkingTo:
     nloptr,

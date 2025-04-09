@@ -87,47 +87,24 @@ forward_backward.mhmm <- function(model, forward_only = FALSE, ...) {
 #' @rdname forward_backward
 #' @export
 forward_backward.nhmm <- function(model, forward_only = FALSE,  ...) {
-  obsArray <- create_obsArray(model)
-  if (model$n_channels == 1) {
-    fp <- forward_nhmm_singlechannel(
-      model$etas$pi, model$X_pi,
-      model$etas$A, model$X_A,
-      model$etas$B, model$X_B,
-      obsArray, model$sequence_lengths, attr(model$X_pi, "icpt_only"), 
-      attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
-      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
-      attr(model$X_B, "tv"))
-    if (!forward_only) {
-      bp <- backward_nhmm_singlechannel(
-        model$etas$pi, model$X_pi,
-        model$etas$A, model$X_A,
-        model$etas$B, model$X_B,
-        obsArray, model$sequence_lengths, attr(model$X_pi, "icpt_only"), 
-        attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
-        attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
-        attr(model$X_B, "tv"))
-    }
-  } else {
-    fp <- forward_nhmm_multichannel(
-      model$etas$pi, model$X_pi,
-      model$etas$A, model$X_A,
-      model$etas$B, model$X_B,
-      obsArray,
-      model$sequence_lengths, attr(model$X_pi, "icpt_only"), 
-      attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
-      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
-      attr(model$X_B, "tv"))
-    if (!forward_only) {
-      bp <- backward_nhmm_multichannel(
-        model$etas$pi, model$X_pi,
-        model$etas$A, model$X_A,
-        model$etas$B, model$X_B,
-        obsArray, model$sequence_lengths, attr(model$X_pi, "icpt_only"), 
-        attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
-        attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
-        attr(model$X_B, "tv"))
-    }
-   
+  obs <- create_obsArray(model)
+  fp <- forward_nhmm(
+    obs, model$sequence_lengths, model$n_symbols, 
+    model$X_pi, model$X_A, model$X_B, 
+    io(model$X_pi), io(model$X_A), io(model$X_B),
+    iv(model$X_A), iv(model$X_B),
+    tv(model$X_A), tv(model$X_B),
+    model$etas$pi, model$etas$A, model$etas$B
+  )
+  if (!forward_only) {
+    bp <- backward_nhmm(
+      obs, model$sequence_lengths, model$n_symbols, 
+      model$X_pi, model$X_A, model$X_B, 
+      io(model$X_pi), io(model$X_A), io(model$X_B),
+      iv(model$X_A), iv(model$X_B),
+      tv(model$X_A), tv(model$X_B),
+      model$etas$pi, model$etas$A, model$etas$B
+    )
   }
   ids <- unique(model$data[[model$id_variable]])
   times <- unique(model$data[[model$time_variable]])
@@ -151,55 +128,24 @@ forward_backward.nhmm <- function(model, forward_only = FALSE,  ...) {
 forward_backward.mnhmm <- function(model, forward_only = FALSE,  ...) {
   # avoid CRAN check warnings due to NSE
   state <- NULL
-  obsArray <- create_obsArray(model)
-  if (model$n_channels == 1) {
-    fp <- forward_mnhmm_singlechannel(
-      model$etas$omega, model$X_omega,
-      model$etas$pi, model$X_pi,
-      model$etas$A, model$X_A,
-      model$etas$B, model$X_B,
-      obsArray,
-      model$sequence_lengths, attr(model$X_omega, "icpt_only"), 
-      attr(model$X_pi, "icpt_only"), attr(model$X_A, "icpt_only"), 
-      attr(model$X_B, "icpt_only"),
-      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
-      attr(model$X_B, "tv"))
-    if (!forward_only) {
-      bp <- backward_mnhmm_singlechannel(
-        model$etas$omega, model$X_omega,
-        model$etas$pi, model$X_pi,
-        model$etas$A, model$X_A,
-        model$etas$B, model$X_B,
-        obsArray, model$sequence_lengths, 
-        attr(model$X_omega, "icpt_only"), attr(model$X_pi, "icpt_only"), 
-        attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
-        attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
-        attr(model$X_B, "tv"))
-    }
-  } else {
-    eta_B <- unlist(model$etas$B, recursive = FALSE)
-    fp <- forward_mnhmm_multichannel(
-      model$etas$omega, model$X_omega,
-      model$etas$pi, model$X_pi,
-      model$etas$A, model$X_A,
-      eta_B, model$X_B,
-      obsArray, model$sequence_lengths, 
-      attr(model$X_omega, "icpt_only"), attr(model$X_pi, "icpt_only"), 
-      attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
-      attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
-      attr(model$X_B, "tv"))
-    if (!forward_only) {
-      bp <- backward_mnhmm_multichannel(
-        model$etas$omega, model$X_omega,
-        model$etas$pi, model$X_pi,
-        model$etas$A, model$X_A,
-        eta_B, model$X_B,
-        obsArray, model$sequence_lengths, 
-        attr(model$X_omega, "icpt_only"), attr(model$X_pi, "icpt_only"), 
-        attr(model$X_A, "icpt_only"), attr(model$X_B, "icpt_only"),
-        attr(model$X_A, "iv"), attr(model$X_B, "iv"), attr(model$X_A, "tv"), 
-        attr(model$X_B, "tv"))
-    }
+  obs <- create_obsArray(model)
+  fp <- forward_mnhmm(
+    obs, model$sequence_lengths, model$n_symbols, 
+    model$X_pi, model$X_A, model$X_B, model$X_omega,
+    io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
+    iv(model$X_A), iv(model$X_B),
+    tv(model$X_A), tv(model$X_B),
+    model$etas$pi, model$etas$A, model$etas$B, model$etas$omega
+  )
+  if (!forward_only) {
+    bp <- backward_mnhmm(
+      obs, model$sequence_lengths, model$n_symbols, 
+      model$X_pi, model$X_A, model$X_B, model$X_omega,
+      io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
+      iv(model$X_A), iv(model$X_B),
+      tv(model$X_A), tv(model$X_B),
+      model$etas$pi, model$etas$A, model$etas$B, model$etas$omega
+    )
   }
   state_names <- paste0(
     rep(model$cluster_names, each = model$n_states), ": ",
