@@ -1,8 +1,10 @@
-// forward algorithm for NHMM
+// Viterbi algorithm for MNHMMs
+#include "config.h"
 #include "mnhmm.h"
+#include "list_to_2d_field.h"
 
 // [[Rcpp::export]]
-arma::cube forward_mnhmm(
+Rcpp::List Rcpp_viterbi_mnhmm(
     const arma::ucube& obs,
     const arma::uvec& Ti,
     const arma::uvec& M,
@@ -18,19 +20,22 @@ arma::cube forward_mnhmm(
     const arma::uvec& iv_B,
     const bool tv_A,
     const arma::uvec& tv_B,
-    const arma::field<arma::mat>& eta_pi,
-    const arma::field<arma::cube>& eta_A,
-    const Rcpp::List& eta_B,
-    const arma::mat& eta_omega) {
-
+    const arma::field<arma::mat>& gamma_pi,
+    const arma::field<arma::cube>& gamma_A,
+    const Rcpp::List& gamma_B,
+    const arma::mat& gamma_omega) {
+  
   mnhmm model(
       obs, Ti, M, X_pi, X_A, X_B, X_omega, 
       icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega,
-      iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, eta_omega
+      iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, list_to_2d_field(gamma_B), 
+      gamma_omega
   );
-  arma::cube log_alpha(
-      model.S * model.D, model.T, model.N, arma::fill::value(arma::datum::nan)
-    );
-  model.forward(log_alpha);
-  return log_alpha;
+  arma::umat q(model.T, model.N, arma::fill::zeros);
+  arma::vec logp(model.N);
+  model.viterbi(q, logp);
+  return Rcpp::List::create(
+    Rcpp::Named("q") = Rcpp::wrap(q), 
+    Rcpp::Named("logp") = Rcpp::wrap(logp)
+  );
 }

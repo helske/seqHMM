@@ -2,7 +2,7 @@
 % Please edit documentation in R/estimate_nhmm.R
 \name{estimate_nhmm}
 \alias{estimate_nhmm}
-\title{Build and Estimate a Non-homogeneous Hidden Markov Model}
+\title{Estimate a Non-homogeneous Hidden Markov Model}
 \usage{
 estimate_nhmm(
   n_states,
@@ -12,11 +12,12 @@ estimate_nhmm(
   data,
   time,
   id,
+  lambda = 0,
+  prior_obs = "fixed",
   state_names = NULL,
   inits = "random",
   init_sd = 2,
   restarts = 0L,
-  lambda = 0,
   method = "EM-DNM",
   bound = Inf,
   control_restart = list(),
@@ -28,22 +29,35 @@ estimate_nhmm(
 \item{n_states}{An integer > 1 defining the number of hidden states.}
 
 \item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
-state emission probabilities.}
+state emission probabilities, or a list of such formulas in case of multiple
+response variables. The left-hand side of formulas define the responses.
+For multiple responses having same formula, you can use a form
+\code{c(y1, y2) ~ x}, where \code{y1} and \code{y2} are the response variables.}
 
 \item{initial_formula}{of class \code{\link[=formula]{formula()}} for the
-initial state probabilities.}
+initial state probabilities. Left-hand side of the formula should be empty.}
 
-\item{transition_formula}{of class \code{\link[=formula]{formula()}} for the
-state transition probabilities.}
+\item{transition_formula}{of class \code{\link[=formula]{formula()}} for the state transition
+probabilities. Left-hand side of the formula should be empty.}
 
 \item{data}{A data frame containing the variables used in the model
-formulas. Can be omitted in case of model with no covariates and observations
-given as \code{stslist} objects.}
+formulas.}
 
 \item{time}{Name of the time index variable in \code{data}.}
 
 \item{id}{Name of the id variable in \code{data} identifying different
 sequences.}
+
+\item{lambda}{Penalization factor \code{lambda} for penalized log-likelihood, where the
+penalization is \code{0.5 * lambda * sum(eta^2)}. Note that with
+\code{method = "L-BFGS"} both objective function (log-likelihood) and
+the penalization term is scaled with number of non-missing observations.
+Default is \code{0}, but small values such as \code{1e-4} can help to ensure numerical
+stability of L-BFGS by avoiding extreme probabilities. See also argument
+\code{bound} for hard constraints.}
+
+\item{prior_obs}{Either \code{"fixed"} or a list of vectors given the prior
+distributions for the responses at time "zero". See details.}
 
 \item{state_names}{A vector of optional labels for the hidden states. If this
 is \code{NULL} (the default), numbered states are used.}
@@ -63,14 +77,6 @@ of the regression coefficients to zero, use \code{init_sd = 0}.}
 \item{restarts}{Number of times to run optimization using random starting
 values (in addition to the final run). Default is 0.}
 
-\item{lambda}{Penalization factor \code{lambda} for penalized log-likelihood, where the
-penalization is \code{0.5 * lambda * sum(eta^2)}. Note that with
-\code{method = "L-BFGS"} both objective function (log-likelihood) and
-the penalization term is scaled with number of non-missing observations.
-Default is \code{0}, but small values such as \code{1e-4} can help to ensure numerical
-stability of L-BFGS by avoiding extreme probabilities. See also argument
-\code{bound} for hard constraints.}
-
 \item{method}{Optimization method used. Option \code{"EM"} uses EM
 algorithm with L-BFGS in the M-step. Option \code{"DNM"} uses
 direct maximization of the log-likelihood, by default using L-BFGS. Option
@@ -88,18 +94,37 @@ Default is \verb{Inf´, i.e., no bounds. Note that he bounds are not enforced  f
 
 \item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}} and EM algorithm.
 See details.}
-
-\item{responses}{Name(s) of the response variable(s) in \code{data}.}
 }
 \value{
-Object of class \code{nhmm}.
+Object of class \code{nhmm} or \code{fanhmm}.
 }
 \description{
-Function \code{estimate_nhmm} estimates a hidden Markov model object of class
-\code{nhmm} where initial, transition and emission probabilities
-(potentially) depend on covariates.
+Function \code{estimate_nhmm} estimates a non-homogeneous hidden Markov model
+(NHMM) where initial, transition, and emission probabilities can depend on
+covariates. Transition and emission probabilities can also depend on past
+responses, in which case the model is called feedback-augmented NHMM
+(FAN-HMM) (Helske, 2025).
 }
 \details{
+In case of FAN-HMM with autoregressive dependency on the observational level,
+(i.e. response \eqn{y_t} depend on \eqn{y_{t-1}}), the emission
+probabilities at the first time point need special attention. By default,
+the model is initialized with fixed values for the first time point
+(\code{prior_obs = "fixed"}), meaning that if the input data consists of
+time points \eqn{t=1, 2, \ldots}, then the model is defined from \eqn{t=2}
+onwards and the data on \eqn{t=1} is used only for defining the emission
+probabilities at \eqn{t=2}. Note that in this case also the initial state
+probabilities correspond to \eqn{t=2}.
+
+Alternatively, you can define \code{prior_obs} as a list of vectors, where
+the number of vectors is equal to the number of responses, and each vector
+gives the prior distribution for the response at \eqn{t=0}. For example,
+if you have response variables \code{y} and \code{x}, where \code{y} has 3 categories and
+\code{x} 2 categories, you can define
+\code{prior_obs = list(y = c(0.5, 0.3, 0.2), x = c(0.7, 0.3))}.
+These distributions are then used to marginalize out \eqn{y_0} and
+\eqn{x_0} in the relevant emission probabilities.
+
 By default, the model parameters are estimated using EM-DNM algorithm
 which first runs some iterations (100 by default) of EM algorithm, and then
 switches to L-BFGS. Other options include any numerical optimization
@@ -118,12 +143,12 @@ non-missing observations (\code{nobs(model)}), and the the covariate data is
 standardardized before optimization.
 
 By default, the convergence is claimed when the relative
-change of the objective function is less than \code{1e-8}, or the
-relative change of the parameters is less than \code{1e-6}. These can be changed
-by passing arguments \code{ftol_rel} and \code{xtol_rel} via \code{...}. These, as well as
-arguments \code{ftol_abs} and \code{xtol_abs} for absolute changes
-(\code{0} by default), \code{maxeval} (maximum number of iterations, 1e4 by default),
-and \code{print_level} (default is \code{0}, no console output of  optimization,
+change of the objective function is less than \code{1e-12}, the absolute change
+is less than \code{1e-8} or the relative or absolute change of the working
+parameters eta is less than \code{1e-6}. These can be changed
+by passing arguments \code{ftol_rel}, \code{ftol_abs}, \code{xtol_rel}, and \code{xtol_abs}
+via \code{...}. These, as well as, \code{maxeval} (maximum number of iterations,
+1e4 by default), and \code{print_level} (default is \code{0}, no console output,
 larger values are more verbose), are used by the chosen main optimization
 method. The number of initial EM iterations in \code{EM-DNM} can be set using
 argument \code{maxeval_em_dnm} (default is 100), and algorithm for direct
@@ -132,12 +157,12 @@ numerical optimization can be defined using argument \code{algorithm}
 
 For controlling these stopping criteria for the multistart phase, argument
 \code{control_restart} takes a list such as \code{list(ftol_rel = 0.01, print_level = 1)}.
-Default are as in the case of main optimization (which is always run once a
-fter the restarts, using best solution from restarts as initial value),
-except that \code{ftol_rel = 1e-6} and that \code{xtol_rel = 1e-4}.
+Default are as in the case of main optimization (which is always run once
+after the restarts, using best solution from restarts as initial value)
 Additionally, same options can be defined separately for the M-step of EM
 algorithm via list \code{control_mstep}. For \code{control_mstep}, the
-default value are \code{ftol_rel = 1e-6}, \code{xtol_rel = 1e-4}, and \code{maxeval = 100}.
+default values are \code{ftol_rel = 1e-10}, and \code{maxeval = 1000}, and otherwise
+identical to previous defaults above.
 }
 \examples{
 data("mvad", package = "TraMineR")
@@ -147,13 +172,17 @@ d <- reshape(mvad, direction = "long", varying = list(15:86),
 
 \dontrun{
 set.seed(1)
-fit <- estimate_nhmm("activity", n_states = 3,
+fit <- estimate_nhmm(n_states = 3,
   data = d, time = "time", id = "id", 
-  initial_formula = ~ 1, emission_formula =  ~ male + gcse5eq,
-  transition_formula = ~ male + gcse5eq, inits = "random"
+  emission_formula = activity ~ gcse5eq, initial_formula = ~ 1, 
+  transition_formula = ~ male + gcse5eq,
+  method = "DNM", maxeval = 2 # very small number of iterations for CRAN
   )
 }
 }
 \references{
-Steven G. Johnson, The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt
+Helske, J (2025). Feedback-augmented Non-homogeneous Hidden Markov Models for
+Longitudinal Causal Inference. arXiv preprint. \url{doi:10.48550/arXiv.2503.16014}.
+
+Johnson, SG. The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt.
 }

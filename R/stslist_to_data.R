@@ -23,7 +23,7 @@ data_to_stslist <- function(x, id, time, responses, seqdef_args = NULL, ...) {
     variable(s) in the {.arg x}."
   )
   stopifnot_(
-    length(responses) == length(unique(responses)), 
+    length(responses) == n_unique(responses), 
     "Response names in {.arg responses} should be unique."
   )
   
@@ -78,7 +78,7 @@ stslist_to_data <- function(x, id, time, responses, ...) {
     the response variable(s)."
   )
   stopifnot_(
-    length(responses) == length(unique(responses)), 
+    length(responses) == n_unique(responses), 
     "Response names in {.arg responses} should be unique."
   )
   if (TraMineR::is.stslist(x)) {
@@ -91,11 +91,11 @@ stslist_to_data <- function(x, id, time, responses, ...) {
         multichannel case."
     )
     stopifnot_(
-      length(unique(sapply(x, nrow))) == 1,
+      n_unique(vapply(x, nrow, 1L)) == 1,
       "The number of subjects (rows) is not the same in all channels."
     )
     stopifnot_(
-      length(unique(sapply(x, ncol))) == 1,
+      n_unique(vapply(x, ncol, 1L)) == 1,
       "The length of the sequences (columns) is not the same in all channels."
     )
   }
@@ -119,7 +119,7 @@ stslist_to_data <- function(x, id, time, responses, ...) {
       "The numeric time indices based on column names of sequence object ", 
       "are not numerically sorted. Please recode the column names.")
   )
-  ids <- factor(rownames(x[[1]]), levels = rownames(x[[1]]))
+  ids <- as_factor(rownames(x[[1]]))
   data <- data.table(
     id = rep(ids, times = length(timenames)), 
     time = rep(timenames, each = length(ids))

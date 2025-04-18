@@ -1,11 +1,5 @@
 #include "get_parameters.h"
 
-arma::vec get_omega(const arma::mat& gamma, const arma::vec& X) {
-  return softmax(gamma * X);
-}
-arma::vec get_pi(const arma::mat& gamma, const arma::vec& X) {
-  return softmax(gamma * X);
-}
 arma::cube get_A(const arma::cube& gamma, const arma::mat& X, 
                  const bool tv) {
   arma::uword S = gamma.n_slices;

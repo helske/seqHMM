@@ -9,7 +9,7 @@
 #' @export
 update.nhmm <- function(object, newdata, ...) {
   # avoid CRAN check warning due to NSE
-  tmax <- y <- NULL
+  tmax <- y <- id <- NULL
   initial_formula <- object$initial_formula
   attr(initial_formula, "xlevels") <- stats::.getXlevels(
     stats::terms(initial_formula), object$data
@@ -28,15 +28,36 @@ update.nhmm <- function(object, newdata, ...) {
   id_var <- object$id_variable
   responses <- object$responses
   newdata <- .check_data(newdata, id_var, time_var, responses)
-  ids <- unique(newdata[[id_var]])
-  object$n_sequences <- length(ids)
-  times <- unique(newdata[[time_var]])
-  object$length_of_sequences <- length(times)
-  n_obs <- sum(!is.na(newdata[, y, env = list(y = I(responses))])) / object$n_channels
-  attr(object, "nobs") <- n_obs
+  times_old <- unique(
+    object$data[[time_var]], 
+    nmax = object$length_of_sequences
+  )
+  times_new <- unique(newdata[[time_var]])
+  stopifnot_(
+    min(times_new) == min(times_old),
+    "Earliest time point in {.arg newdata} should match the earliest time point 
+    in the original data."
+  )
+  stopifnot_(
+    min(diff(times_new)) == min(diff(times_old)),
+    "Time resolution in {.arg newdata} should match the resolution in the 
+    original data."
+  )
   newdata[, tmax := max(time_var), by = id_var, 
           env = list(id_var = id_var, time_var = time_var)]
   newdata <- fill_time(newdata, id_var, time_var)
+  
+  if (inherits(object, "fanhmm")) {
+    for (y in responses) {
+      lag_obs <- paste0("lag_", y)
+      y1 <- newdata[[y]][1] #the value is not used anywhere
+      newdata[, lag_obs := shift(y, type = "lag", fill = y1), by = id, 
+              env = list(id = id_var, y = y, lag_obs = lag_obs, y1 = y1)]
+    }
+    if (length(object$autoregression) > 0L && identical(object$prior_y0, 0L)) {
+      newdata <- newdata[newdata[, .I[-1], by = id_var]$V1]
+    }
+  }
   object$sequence_lengths <- newdata[, 
                                      sum(time_var <= tmax, na.rm = TRUE), 
                                      by = id_var, 
@@ -45,14 +66,11 @@ update.nhmm <- function(object, newdata, ...) {
                                        time_var = time_var
                                      )]$V1
   newdata[, tmax := NULL]
-  if (inherits(object, "fanhmm")) {
-    for (y in responses) {
-      lag_obs <- paste0("lag_", y)
-      y1 <- data[[y]][1] #the value is not used anywhere
-      newdata[, lag_obs := shift(y, type = "lag", fill = y1), by = id, 
-              env = list(id = id_var, y = y, lag_obs = lag_obs, y1 = y1)]
-    }
-  }
+  object$length_of_sequences <- n_unique(newdata[[time_var]])
+  object$n_sequences <- n_unique(newdata[[id_var]])
+  n_obs <- sum(!is.na(newdata[, y, env = list(y = I(responses))])) / object$n_channels
+  attr(object, "nobs") <- n_obs
+  
   object$X_pi <- model_matrix_initial_formula(
     initial_formula, newdata, object$n_sequences,
     object$n_states, id_var,
@@ -84,7 +102,7 @@ update.nhmm <- function(object, newdata, ...) {
 #' @export
 update.mnhmm <- function(object, newdata, ...) {
   # avoid CRAN check warning due to NSE
-  tmax <- y <- NULL
+  tmax <- y <- id <- NULL
   cluster_formula <- object$cluster_formula
   attr(cluster_formula, "xlevels") <- stats::.getXlevels(
     stats::terms(cluster_formula), object$data
@@ -107,15 +125,36 @@ update.mnhmm <- function(object, newdata, ...) {
   id_var <- object$id_variable
   responses <- object$responses
   newdata <- .check_data(newdata, id_var, time_var, responses)
-  ids <- unique(newdata[[id_var]])
-  object$n_sequences <- length(ids)
-  times <- unique(newdata[[time_var]])
-  object$length_of_sequences <- length(times)
-  n_obs <- sum(!is.na(newdata[, y, env = list(y = I(responses))])) / object$n_channels
-  attr(object, "nobs") <- n_obs
+  times_old <- unique(
+    object$data[[time_var]], 
+    nmax = object$length_of_sequences
+  )
+  times_new <- unique(newdata[[time_var]])
+  stopifnot_(
+    min(times_new) == min(times_old),
+    "Earliest time point in {.arg newdata} should match the earliest time point 
+    in the original data."
+  )
+  stopifnot_(
+    min(diff(times_new)) == min(diff(times_old)),
+    "Time resolution in {.arg newdata} should match the resolution in the 
+    original data."
+  )
   newdata[, tmax := max(time_var), by = id_var, 
           env = list(id_var = id_var, time_var = time_var)]
   newdata <- fill_time(newdata, id_var, time_var)
+  
+  if (inherits(object, "fanhmm")) {
+    for (y in responses) {
+      lag_obs <- paste0("lag_", y)
+      y1 <- newdata[[y]][1] #the value is not used anywhere
+      newdata[, lag_obs := shift(y, type = "lag", fill = y1), by = id, 
+              env = list(id = id_var, y = y, lag_obs = lag_obs, y1 = y1)]
+    }
+    if (length(object$autoregression) > 0L && identical(object$prior_y0, 0L)) {
+      newdata <- newdata[newdata[, .I[-1], by = id_var]$V1]
+    }
+  }
   object$sequence_lengths <- newdata[, 
                                      sum(time_var <= tmax, na.rm = TRUE), 
                                      by = id_var, 
@@ -124,14 +163,11 @@ update.mnhmm <- function(object, newdata, ...) {
                                        time_var = time_var
                                      )]$V1
   newdata[, tmax := NULL]
-  if (inherits(object, "fanhmm")) {
-    for (y in responses) {
-      lag_obs <- paste0("lag_", y)
-      y1 <- data[[y]][1] #the value is not used anywhere
-      newdata[, lag_obs := shift(y, type = "lag", fill = y1), by = id, 
-              env = list(id = id_var, y = y, lag_obs = lag_obs, y1 = y1)]
-    }
-  }
+  object$length_of_sequences <- n_unique(newdata[[time_var]])
+  object$n_sequences <- n_unique(newdata[[id_var]])
+  n_obs <- sum(!is.na(newdata[, y, env = list(y = I(responses))])) / object$n_channels
+  attr(object, "nobs") <- n_obs
+  
   object$X_omega <- model_matrix_cluster_formula(
     cluster_formula, newdata, object$n_sequences, object$n_clusters,
     id_var, X_mean = attr(object$X_omega, "X_mean"), check = FALSE, 
@@ -166,6 +202,7 @@ update.mnhmm <- function(object, newdata, ...) {
 }
 
 update_W_for_fanhmm <- function(object) {
+  
   transition_formula <- object$transition_formula
   attr(transition_formula, "xlevels") <- stats::.getXlevels(
     stats::terms(transition_formula), object$data
@@ -178,12 +215,14 @@ update_W_for_fanhmm <- function(object) {
   }
   responses <- object$responses
   newdata <- object$data
-  W_A <- W_B <- vector("list", object$n_symbols)
-  ##TODO
-  for (i in seq_len(object$n_symbols)) {
-    newdata[[responses]][] <- object$symbol_names[i]
-    newdata[[paste0("lag_", responses)]][] <- object$symbol_names[i]
-    
+  C <- length(responses)
+  y <- expand.grid(object$symbol_names)
+  W_A <- W_B <- vector("list", nrow(y))
+  for (i in seq_along(W_A)) {
+    for (j in seq_len(C)) {
+      newdata[, old := new, 
+              env = list(old = paste0("lag_", responses[j]), new = y[i, j])]
+    }
     W_A[[i]] <- model_matrix_transition_formula(
       transition_formula, newdata, object$n_sequences, 
       object$length_of_sequences, object$n_states, object$id_variable, 
@@ -191,14 +230,17 @@ update_W_for_fanhmm <- function(object) {
       X_mean = attr(object$X_A, "X_mean"), check = FALSE, 
       scale = TRUE, R_inv = attr(object$X_A, "R_inv")
     )
-    W_B[[i]] <- model_matrix_emission_formula(
-      emission_formula, newdata, object$n_sequences, 
-      object$length_of_sequences, object$n_states, object$n_symbols, 
-      object$id_variable, object$time_variable, 
-      object$sequence_lengths,
-      X_mean = attr(object$X_B, "X_mean"), check = FALSE, 
-      scale = TRUE, R_inv = attr(object$X_B, "R_inv")
-    )$X
+    W_B[[i]] <- vector("list", C)
+    for (j in seq_len(C)) {
+      W_B[[i]][[j]] <- model_matrix_emission_formula(
+        emission_formula[[j]], newdata, object$n_sequences, 
+        object$length_of_sequences, object$n_states, object$n_symbols[[j]], 
+        object$id_variable, object$time_variable, 
+        object$sequence_lengths,
+        X_mean = attr(object$X_B[[j]], "X_mean"), check = FALSE, 
+        scale = TRUE, R_inv = attr(object$X_B[[j]], "R_inv")
+      )
+    }
   }
   list(W_A = W_A, W_B = W_B)
 }

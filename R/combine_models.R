@@ -9,7 +9,7 @@
   n_states <- sum(model$n_states)
   transition_probs <- as.matrix(Matrix::.bdiag(model$transition_probs))
   state_names <- unlist(original_state_names <- model$state_names)
-  if (length(unique(state_names)) != length(state_names)) {
+  if (n_unique(state_names) != length(state_names)) {
     state_names <- paste0(rep(model$cluster_names, model$n_states), 
                           ": ", state_names)
   }

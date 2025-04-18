@@ -7,13 +7,12 @@ test_that("simulate_mnhmm and coef works", {
     month = rep(1:n, p),
     x = stats::rnorm(n * p),
     z = stats::rnorm(n * p),
-    w = stats::rnorm(n * p)
+    w = stats::rnorm(n * p),
+    y = factor(NA, levels = letters[1:4]),
+    g = factor(NA, levels = 1:3)
   )
   expect_error(
     sim <- simulate_mnhmm(
-      n_sequences = p, 
-      sequence_lengths = as.integer(n), 
-      n_symbols = c(4L, 3L), 
       n_states = 2, 
       n_clusters = 3, 
       initial_formula = ~1, transition_formula = ~ x, 
@@ -23,8 +22,8 @@ test_that("simulate_mnhmm and coef works", {
   )
   expect_equal(
     c(table(sim$states$state)),
-    c(`Cluster 1: State 1` = 2L, `Cluster 1: State 2` = 8L, `Cluster 2: State 1` = 5L, 
-      `Cluster 2: State 2` = 5L, `Cluster 3: State 1` = 92L, `Cluster 3: State 2` = 88L
+    c(`Cluster 1: State 1` = 45L, `Cluster 1: State 2` = 45L, `Cluster 2: State 1` = 28L, 
+      `Cluster 2: State 2` = 32L, `Cluster 3: State 1` = 22L, `Cluster 3: State 2` = 28L
     )
   )
   expect_error(

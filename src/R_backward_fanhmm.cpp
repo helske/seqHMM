@@ -1,8 +1,9 @@
-// Viterbi algorithm for NHMMs
-#include "nhmm.h"
+// backward algorithm for FANHMM
+#include "config.h"
+#include "fanhmm.h"
 
 // [[Rcpp::export]]
-Rcpp::List viterbi_nhmm(
+arma::cube Rcpp_backward_fanhmm(
     const arma::ucube& obs,
     const arma::uvec& Ti,
     const arma::uvec& M,
@@ -16,19 +17,15 @@ Rcpp::List viterbi_nhmm(
     const arma::uvec& iv_B,
     const bool tv_A,
     const arma::uvec& tv_B,
-    const arma::mat& eta_pi,
-    const arma::cube& eta_A,
-    const arma::field<arma::cube>& eta_B) {
+    const arma::mat& gamma_pi,
+    const arma::cube& gamma_A,
+    const arma::field<arma::cube>& gamma_B,
+    const arma::vec& prior_y,
+    const Rcpp::List& W_X_B) {
   
-  nhmm model(
+  fanhmm model(
       obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, 
-      iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B
+      iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B, prior_y, W_X_B
   );
-  arma::umat q(model.T, model.N, arma::fill::zeros);
-  arma::vec logp(model.N);
-  model.viterbi(q, logp);
-  return Rcpp::List::create(
-    Rcpp::Named("q") = Rcpp::wrap(q), 
-    Rcpp::Named("logp") = Rcpp::wrap(logp)
-  );
+  return model.backward();
 }

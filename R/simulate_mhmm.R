@@ -169,7 +169,7 @@ simulate_mhmm <- function(
     cluster_names <- paste0("Cluster ", seq_len(n_clusters))
   }
   v_state_names <- unlist(state_names)
-  if (length(unique(v_state_names)) != length(v_state_names)) {
+  if (n_unique(v_state_names) != length(v_state_names)) {
     for (i in seq_len(n_clusters)) {
       transition_probs[[i]] <- 
         .check_transition_probs(

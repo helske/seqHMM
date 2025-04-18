@@ -28,9 +28,7 @@ test_that("'posterior_probs' works for 'nhmm'", {
     fit <- estimate_nhmm(
       emission_formula = c(Marriage, Parenthood) ~ 1, 
       data = d, time = "time", id = "id", n_states = 5,
-      inits = hmm_biofam[
-        c("initial_probs", "transition_probs", "emission_probs")
-      ], maxeval = 2, method = "DNM"
+      maxeval = 2, method = "DNM"
     ),
     NA
   )
@@ -66,7 +64,9 @@ test_that("'posterior_probs' works for 'mnhmm'", {
   set.seed(1)
   expect_error(
     fit <- estimate_mnhmm(
-      emission = lapply(hmm_biofam$channel_names, \(y) as.formula(paste0(y, " ~ 1"))), 
+      emission = lapply(
+        hmm_biofam$channel_names, \(y) stats::as.formula(paste0(y, " ~ 1"))
+      ), 
       data = d, time = "time", id = "id", n_states = 2, n_clusters = 2,
       maxeval = 2, method = "EM-DNM"
     ),

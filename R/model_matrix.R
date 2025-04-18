@@ -6,7 +6,7 @@ iv_X <- function(X) {
     all_same <- all_same && all(X[, , i] == X[, , 1])
     if (!all_same) break
   }
-  !all_same #dim(unique(X, MARGIN = 3))[3] > 1L
+  !all_same
 }
 #' Does covariate values vary in time?
 #' @noRd
@@ -16,16 +16,9 @@ tv_X <- function(X) {
     all_same <- all_same && all(X[, i, ] == X[, 1, ])
     if (!all_same) break
   }
-  !all_same #dim(unique(X, MARGIN = 2))[2] > 1L
+  !all_same
 }
 
-# Function to check uniqueness along the N dimension
-check_unique_N <- function(arr) {
-  # Flatten along the T and K dimensions
-  flattened_N <- apply(arr, 2, function(x) as.vector(x))
-  # Check for unique rows
-  length(unique(as.data.frame(t(flattened_N)))) > 1
-}
 #' Create the Model Matrix based on NHMM Formulas
 #'
 #' @noRd
@@ -109,7 +102,7 @@ model_matrix_initial_formula <- function(formula, data, n_sequences, n_states,
       c(
         "Missing cases are not allowed in covariates of `initial_formula`.",
         "Use {.fn stats::complete.cases} to detect them, then fix or impute them.",
-        paste0(
+        `x` = paste0(
           "First missing value found for ID ",
           "{data[missing_values[1], c(id_var)]}."
         )
@@ -156,9 +149,9 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     X <- array(1, c(1L, length_of_sequences, n_sequences))
     coef_names <- "(Intercept)"
     iv <- tv <- FALSE
-    missing_values <- integer(0)
     X_mean <- NULL
     R_inv <- NULL
+    feedback_terms <- character(0)
   } else {
     X <- stats::model.matrix.lm(
       formula, 
@@ -201,7 +194,7 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
         R_inv <- solve(qr.R(qr_out)[, qr_out$pivot] / scale_n)
         X[complete, cols] <- qr.Q(qr_out) * scale_n
       } else {
-        X[complete, cols] <- X_scaled %*% R_inv #t(solve(t(R), t(X_scaled)))
+        X[complete, cols] <- X_scaled %*% R_inv
       }
     } else {
       X_mean <- rep(0, length(cols))
@@ -213,6 +206,10 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     X[is.na(X)] <- 0
     iv <- iv_X(X[, -1L, , drop = FALSE])
     tv <- tv_X(X[, -1L, , drop = FALSE])
+    feedback_terms <- grep(
+      paste0("\\blag_", attr(formula, "responses"), "\\b", collapse = "|"),
+      coef_names
+    )
   }
   attr(X, "R_inv") <- R_inv
   attr(X, "X_mean") <- X_mean
@@ -220,6 +217,7 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
   attr(X, "iv") <- iv
   attr(X, "tv") <- tv
   attr(X, "icpt_only") <- icpt_only
+  attr(X, "feedback_terms") <- feedback_terms
   X
 }
 #' Create the Model Matrix based on NHMM Formulas
@@ -238,9 +236,9 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     X <- array(1, c(1L, length_of_sequences, n_sequences))
     coef_names <- "(Intercept)"
     iv <- tv <- FALSE
-    missing_values <- integer(0)
     X_mean <- NULL
     R_inv <- NULL
+    autoregression_terms <- character(0)
   } else {
     X <- stats::model.matrix.lm(
       formula, 
@@ -280,7 +278,7 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
         R_inv <- solve(qr.R(qr_out)[, qr_out$pivot] / scale_n)
         X[complete, cols] <- qr.Q(qr_out) * scale_n
       } else {
-        X[complete, cols] <- X_scaled %*% R_inv #t(solve(t(R), t(X_scaled)))
+        X[complete, cols] <- X_scaled %*% R_inv
       }
     } else {
       X_mean <- rep(0, length(cols))
@@ -292,6 +290,10 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     X[is.na(X)] <- 0
     iv <- iv_X(X)
     tv <- tv_X(X)
+    autoregression_terms <- grep(
+      paste0("\\blag_", attr(formula, "responses"), "\\b", collapse = "|"), 
+      coef_names
+    )
   }
   attr(X, "R_inv") <- R_inv
   attr(X, "X_mean") <- X_mean
@@ -299,5 +301,34 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
   attr(X, "iv") <- iv
   attr(X, "tv") <- tv
   attr(X, "icpt_only") <- icpt_only
+  attr(X, "autoregression_terms") <- autoregression_terms
   X
+}
+#' Create the design matrix for the emissions at first time point
+#' This is for marginalization over t=0
+#' @noRd
+create_W_X_B <- function(data, id_var, time_var, symbol_names, n_sequences,
+                         emission_formula, n_states, X_B) {
+  new <- old <- NULL
+  combs <- expand.grid(symbol_names)
+  d <- data[data[, .I[1], by = id_var]$V1]
+  W_X_B <- vector("list", nrow(combs))
+  responses <- names(symbol_names)
+  M <- lengths(symbol_names)
+  C <- length(responses)
+  for (i in seq_len(nrow(combs))) {
+    W_X_B[[i]] <- stats::setNames(vector("list", C), responses)
+    for (y in responses) {
+      d[, old := new, env = list(old = paste0("lag_", y), new = combs[i, y])]
+    }
+    for (y in responses) {
+      W_X_B[[i]][[y]] <- model_matrix_emission_formula(
+        emission_formula[[y]], d, n_sequences, 1L, 
+        n_states, M[y], id_var, time_var, rep(1L, n_sequences), 
+        X_mean = attr(X_B[[y]], "X_mean"), check = FALSE, 
+        scale = TRUE, R_inv = attr(X_B[[y]], "R_inv")
+      )
+    }
+  }
+  W_X_B
 }

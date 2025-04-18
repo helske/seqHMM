@@ -9,36 +9,44 @@ get_marginals(
   probs = NULL,
   condition = NULL,
   newdata = NULL,
+  type = c("state", "response", "transition", "emission"),
   weighting = c("posterior", "forward", "none")
 )
 }
 \arguments{
-\item{model}{An object of class \code{nhmm}.}
+\item{model}{An object of class \code{nhmm} or \code{mnhmm}.}
 
 \item{probs}{Vector defining the quantiles of interest. Default is
 \code{NULL}, in which case no quantiles are computed. The quantiles are based on
 bootstrap samples of coefficients, stored in \code{object$boot}.}
 
 \item{condition}{An optional vector of variable names used for conditional
-marginal probabilities. Default is \code{NULL}, in which case no marginalization is
-done.}
+marginal probabilities. Default is \code{NULL}, in which case marginalization is
+done over all variables, so that for example marginal emission probabilities
+are computed over all individuals and time points.}
 
 \item{newdata}{An optional data frame containing the new data to be used in
 computing the probabilities.}
 
+\item{type}{A character vector defining the marginal probabilities of
+interest. Can be one or multiple of \code{"state"}, \code{"response"}, \code{"transition"},
+and \code{"emission"}. Default is to compute all of these.}
+
 \item{weighting}{A character string defining the type of weighting used in
-marginalization. See details.}
+marginalization. One of \code{"posterior"} , \code{"forward"}, \code{"none"}. See details.}
 }
 \description{
 \code{get_marginals} returns the marginal state, response, transition, and emission
 probabilities, optionally per grouping defined by \code{condition}. By default,
 the marginalization weights sequences by the corresponding posterior
-probabilities of the latent states (\code{weighting = "newdata"}). If
-\code{weighting = "original"} or \code{newdata} is \code{NULL}, the posterior probabilities
-are computed using the data in \code{model$data}. If \code{weighting = "none"}, all
-individuals and time points are treated equally, without accounting for the
-probability that individual is at particular state at particular time. The
-option \code{weighting = "original"} is mostly useful if you are interested in
-obtaining one-step marginals with new data, e.g.,
-\eqn{P(state_t | newdata_t, state_{t-1}, originaldata_{t-1},\ldots, original_data_1)}.
+probabilities of the latent states, i.e., conditional probabilities of the
+latent states given all data (\code{weighting = "posterior"}). If
+\code{weighting = "forward"}, marginalization is based on forward probabilities,
+i.e. state probabilities given data up to that point which allows you to
+compute, for example, state marginals of form
+\eqn{P(state_t | data_1, \ldots, data_t)} (whereas in posterior probability
+weighting the conditioning is on \eqn{data_1,\ldots,data_T}.
+If \code{weighting = "none"}, all individuals and time points are treated equally,
+without accounting for the probability that individual is at particular
+state at particular time.
 }

@@ -1,81 +1,13 @@
 dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, bound, control, 
                       control_restart, save_all_solutions) {
-  M <- model$n_symbols
-  S <- model$n_states
-  T_ <- model$length_of_sequences
-  C <- model$n_channels
-  D <- model$n_clusters
-  np_pi <- attr(model, "np_pi")
-  np_A <- attr(model, "np_A")
-  np_B <- attr(model, "np_B")
-  np_omega <- attr(model, "np_omega")
-  X_pi <- model$X_pi
-  X_A <- model$X_A
-  X_B <- model$X_B
-  X_omega <- model$X_omega
-  icpt_only_pi <- io(X_pi)
-  icpt_only_A <- io(X_A)
-  icpt_only_B <- io(X_B)
-  icpt_only_omega <- io(X_omega)
-  iv_A <- iv(X_A)
-  iv_B <- iv(X_B)
-  tv_A <- tv(X_A)
-  tv_B <- tv(X_B)
-  K_omega <- nrow(X_omega)
-  K_pi <- nrow(X_pi)
-  K_A <- nrow(X_A)
-  K_B <- vapply(X_B, \(x) nrow(x), 1L)
-  Ti <- model$sequence_lengths
-  n_obs <- nobs(model)
-  need_grad <- grepl("NLOPT_LD_", control$algorithm)
-  obs <- create_obsArray(model)
+  
   all_solutions <- NULL
-  if (need_grad) {
-    objectivef <- function(pars) {
-      eta_pi <- create_eta_pi_mnhmm(pars[seq_len(np_pi)], S, K_pi, D)
-      eta_A <- create_eta_A_mnhmm(
-        pars[np_pi + seq_len(np_A)], 
-        S, K_A, D
-      )
-      eta_B <- create_eta_B_mnhmm(
-        pars[np_pi + np_A + seq_len(np_B)], S, M, K_B, D
-      )
-      eta_omega <- create_eta_omega_mnhmm(
-        pars[np_pi + np_A + np_B + seq_len(np_omega)], D, K_omega
-      )
-      out <- log_objective_mnhmm(
-        obs, Ti, M, X_pi, X_A, X_B, X_omega,
-        icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, 
-        iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, eta_omega
-      )
-      list(
-        objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
-        gradient = - (unlist(out[-1]) - lambda * pars) / n_obs
-      )
-    }
-  } else {
-    objectivef <- function(pars) {
-      eta_pi <- create_eta_pi_mnhmm(pars[seq_len(np_pi)], S, K_pi, D)
-      eta_A <- create_eta_A_mnhmm(
-        pars[np_pi + seq_len(np_A)], S, K_A, D
-      )
-      eta_B <- create_eta_B_mnhmm(
-        pars[np_pi + np_A + seq_len(np_B)], S, M, K_B, D
-      )
-      eta_omega <- create_eta_omega_mnhmm(
-        pars[np_pi + np_A + np_B + seq_len(np_omega)], D, K_omega
-      )
-      out <- forward_mnhmm(
-        obs, Ti, M, X_pi, X_A, X_B, X_omega,
-        icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, 
-        iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, eta_omega
-      )
-      
-      - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
-    }
-  }
+  need_grad <- grepl("NLOPT_LD_", control$algorithm)
+  objectivef <- make_objective_mnhmm(
+    model, lambda, need_grad
+  )
   if (restarts > 0L) {
-    .fun <- function(i, u, base_init) {
+    .fun <- function(base_init, u) {
       init <- base_init + u
       fit <- nloptr(
         x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
@@ -107,9 +39,9 @@ dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
       )
     )
     out <- future.apply::future_lapply(
-      seq_len(restarts), \(i) .fun(i, base_init, u[, i]), future.seed = TRUE
+      seq_len(restarts), \(i) .fun(base_init, u[, i]), future.seed = TRUE
     )
-    logliks <- -unlist(lapply(out, "[[", "objective")) * n_obs
+    logliks <- -unlist(lapply(out, "[[", "objective")) * nobs(model)
     return_codes <- unlist(lapply(out, "[[", "status"))
     successful <- which(return_codes > 0)
     if (length(successful) == 0) {
@@ -153,23 +85,36 @@ dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
     )
     loglik <- NaN
   } else {
-    loglik <- -out$objective * n_obs
+    loglik <- -out$objective * nobs(model)
   }
   pars <- out$solution
-  model$etas$pi <- create_eta_pi_mnhmm(pars[seq_len(np_pi)], S, K_pi, D)
-  model$gammas$pi <- drop(eta_to_gamma_mat_field(model$etas$pi))
-  model$etas$A <- create_eta_A_mnhmm(pars[np_pi + seq_len(np_A)], S, K_A, D)
-  model$gammas$A <- drop(eta_to_gamma_cube_field(model$etas$A))
-  model$etas$B <- create_eta_B_mnhmm(
+  
+  M <- model$n_symbols
+  S <- model$n_states
+  D <- model$n_clusters
+  np_pi <- attr(model, "np_pi")
+  np_A <- attr(model, "np_A")
+  np_B <- attr(model, "np_B")
+  np_omega <- attr(model, "np_omega")
+  K_omega <- nrow(model$X_omega)
+  K_pi <- nrow(model$X_pi)
+  K_A <- nrow(model$X_A)
+  K_B <- vapply(model$X_B, \(x) nrow(x), 1L)
+  
+  model$etas$eta_pi <- create_eta_pi_mnhmm(pars[seq_len(np_pi)], S, K_pi, D)
+  model$gammas$gamma_pi <- drop(eta_to_gamma_mat_field(model$etas$eta_pi))
+  model$etas$eta_A <- create_eta_A_mnhmm(pars[np_pi + seq_len(np_A)], S, K_A, D)
+  model$gammas$gamma_A <- drop(eta_to_gamma_cube_field(model$etas$eta_A))
+  model$etas$eta_B <- create_eta_B_mnhmm(
     pars[np_pi + np_A + seq_len(np_B)], S, M, K_B, D
   )
-  model$gammas$B <- split(
-    eta_to_gamma_cube_2d_field(model$etas$B), seq_len(D)
+  model$gammas$gamma_B <- split(
+    eta_to_gamma_cube_2d_field(model$etas$eta_B), seq_len(D)
   )
-  model$etas$omega <- create_eta_omega_mnhmm(
+  model$etas$eta_omega <- create_eta_omega_mnhmm(
     pars[np_pi + np_A + np_B + seq_len(np_omega)], D, K_omega
   )
-  model$gammas$omega <- eta_to_gamma_mat(model$etas$omega)
+  model$gammas$gamma_omega <- eta_to_gamma_mat(model$etas$eta_omega)
   model$estimation_results <- list(
     loglik = loglik, 
     return_code = out$status,

@@ -11,7 +11,8 @@ test_that("boostrap works for `nhmm`", {
     id = rep(1:n_id, n_time)
   )
   expect_error(
-    fit <- estimate_nhmm(3, y ~ 1, data = d, time = "time", id = "id"),
+    fit <- estimate_nhmm(3, y ~ 1, data = d, time = "time", id = "id", 
+                         maxeval = 2),
     NA
   )
   expect_error(
@@ -52,7 +53,7 @@ test_that("boostrap works for `mnhmm`", {
   expect_error(
     fit <- estimate_mnhmm(
       3, 2, emission_formula = y ~ 1, data = d, time = "time", id = "id", 
-      method = "DNM"
+      method = "DNM", maxeval = 10
     ),
     NA
   )

@@ -24,7 +24,7 @@
 #' the state names are taken from the row names of the transition matrix. If this is
 #' also `NULL`, numbered states are used.
 #' @param channel_names A vector of optional names for the channels.
-#' @param ... Additional arguments to [simulate_transition_probs()].#'
+#' @param ... Additional arguments to [simulate_transition_probs()].
 #' @return Object of class `hmm` with the following elements:
 #' * `observations`\cr State sequence object or a list of such objects containing the data.
 #' * `transition_probs`\cr A matrix of transition probabilities.
@@ -225,7 +225,7 @@ build_hmm <- function(observations, n_states, transition_probs, emission_probs, 
     list(
       observations = observations, transition_probs = transition_probs,
       emission_probs = emission_probs, initial_probs = initial_probs,
-      state_names = factor(state_names, levels = state_names),
+      state_names = as_factor(state_names),
       symbol_names = symbol_names, 
       channel_names = channel_names,
       length_of_sequences = attr(observations, "length_of_sequences"),

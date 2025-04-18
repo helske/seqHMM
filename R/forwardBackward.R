@@ -88,22 +88,21 @@ forward_backward.mhmm <- function(model, forward_only = FALSE, ...) {
 #' @export
 forward_backward.nhmm <- function(model, forward_only = FALSE,  ...) {
   obs <- create_obsArray(model)
-  fp <- forward_nhmm(
+  fp <- Rcpp_forward_nhmm(
     obs, model$sequence_lengths, model$n_symbols, 
     model$X_pi, model$X_A, model$X_B, 
     io(model$X_pi), io(model$X_A), io(model$X_B),
     iv(model$X_A), iv(model$X_B),
     tv(model$X_A), tv(model$X_B),
-    model$etas$pi, model$etas$A, model$etas$B
+    model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B
   )
   if (!forward_only) {
-    bp <- backward_nhmm(
+    bp <- Rcpp_backward_nhmm(
       obs, model$sequence_lengths, model$n_symbols, 
       model$X_pi, model$X_A, model$X_B, 
       io(model$X_pi), io(model$X_A), io(model$X_B),
-      iv(model$X_A), iv(model$X_B),
-      tv(model$X_A), tv(model$X_B),
-      model$etas$pi, model$etas$A, model$etas$B
+      iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+      model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B
     )
   }
   ids <- unique(model$data[[model$id_variable]])
@@ -129,22 +128,20 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,  ...) {
   # avoid CRAN check warnings due to NSE
   state <- NULL
   obs <- create_obsArray(model)
-  fp <- forward_mnhmm(
+  fp <- Rcpp_forward_mnhmm(
     obs, model$sequence_lengths, model$n_symbols, 
     model$X_pi, model$X_A, model$X_B, model$X_omega,
     io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
-    iv(model$X_A), iv(model$X_B),
-    tv(model$X_A), tv(model$X_B),
-    model$etas$pi, model$etas$A, model$etas$B, model$etas$omega
+    iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+    model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, model$gammas$gamma_omega
   )
   if (!forward_only) {
-    bp <- backward_mnhmm(
+    bp <- Rcpp_backward_mnhmm(
       obs, model$sequence_lengths, model$n_symbols, 
       model$X_pi, model$X_A, model$X_B, model$X_omega,
       io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
-      iv(model$X_A), iv(model$X_B),
-      tv(model$X_A), tv(model$X_B),
-      model$etas$pi, model$etas$A, model$etas$B, model$etas$omega
+      iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+      model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, model$gammas$gamma_omega
     )
   }
   state_names <- paste0(

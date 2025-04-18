@@ -1,3 +1,5 @@
+#' Functions for computing the marginal probabilities for `get_marginals`
+#' @noRd
 compute_z_marginals <- function(model, id_time, pp, cond) {
   probability <- cols <- NULL
   x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]
@@ -5,7 +7,6 @@ compute_z_marginals <- function(model, id_time, pp, cond) {
   cond <- c(cond, "state")
   x[, list(probability = mean(probability)), by = cond]
 }
-
 compute_y_and_B_marginals <- function(model, id_time, pp, cond) {
   probability <- i.probability <- state_prob <- cols <- NULL
   B <- get_emission_probs(model)
@@ -21,7 +22,6 @@ compute_y_and_B_marginals <- function(model, id_time, pp, cond) {
   }
   list(B = p_B, y = p_y)
 }
-
 compute_A_marginals <- function(model, id_time, pp, cond) {
   probability <- i.probability <- state_prob <- cols <- NULL
   A <- get_transition_probs(model)
@@ -37,33 +37,40 @@ compute_A_marginals <- function(model, id_time, pp, cond) {
 #' `get_marginals` returns the marginal state, response, transition, and emission
 #' probabilities, optionally per grouping defined by `condition`. By default, 
 #' the marginalization weights sequences by the corresponding posterior 
-#' probabilities of the latent states (`weighting = "newdata"`). If 
-#' `weighting = "original"` or `newdata` is `NULL`, the posterior probabilities 
-#' are computed using the data in `model$data`. If `weighting = "none"`, all 
-#' individuals and time points are treated equally, without accounting for the 
-#' probability that individual is at particular state at particular time. The 
-#' option `weighting = "original"` is mostly useful if you are interested in 
-#' obtaining one-step marginals with new data, e.g., 
-#' \eqn{P(state_t | newdata_t, state_{t-1}, originaldata_{t-1},\ldots, original_data_1)}.
+#' probabilities of the latent states, i.e., conditional probabilities of the 
+#' latent states given all data (`weighting = "posterior"`). If 
+#' `weighting = "forward"`, marginalization is based on forward probabilities, 
+#' i.e. state probabilities given data up to that point which allows you to 
+#' compute, for example, state marginals of form 
+#' \eqn{P(state_t | data_1, \ldots, data_t)} (whereas in posterior probability 
+#' weighting the conditioning is on \eqn{data_1,\ldots,data_T}. 
+#' If `weighting = "none"`, all individuals and time points are treated equally, 
+#' without accounting for the probability that individual is at particular 
+#' state at particular time.
 #' 
-#' @param model An object of class `nhmm`.
+#' @param model An object of class `nhmm` or `mnhmm`.
 #' @param probs Vector defining the quantiles of interest. Default is 
 #' `NULL`, in which case no quantiles are computed. The quantiles are based on 
 #' bootstrap samples of coefficients, stored in `object$boot`.
 #' @param condition An optional vector of variable names used for conditional 
-#' marginal probabilities. Default is `NULL`, in which case no marginalization is 
-#' done.
+#' marginal probabilities. Default is `NULL`, in which case marginalization is 
+#' done over all variables, so that for example marginal emission probabilities 
+#' are computed over all individuals and time points.
 #' @param newdata An optional data frame containing the new data to be used in 
 #' computing the probabilities.
+#' @param type A character vector defining the marginal probabilities of 
+#' interest. Can be one or multiple of `"state"`, `"response"`, `"transition"`, 
+#' and `"emission"`. Default is to compute all of these.
 #' @param weighting A character string defining the type of weighting used in 
-#' marginalization. See details.
+#' marginalization. One of `"posterior"` , `"forward"`, `"none"`. See details.
 #' @export
 get_marginals <- function(model, probs = NULL, condition = NULL, 
                           newdata = NULL, 
+                          type = c("state", "response", "transition", "emission"),
                           weighting = c("posterior", "forward", "none")) {
   
   # avoid CRAN check warnings due to NSE
-  time <- NULL
+  time <- probability <- NULL
   stopifnot_(
     inherits(model, c("nhmm", "mnhmm")),
     "Argument {.arg model} must be an object of class {.cls nhmm} or {.cls mnhmm}."
@@ -103,14 +110,24 @@ get_marginals <- function(model, probs = NULL, condition = NULL,
   if (weighting == "none") {
     pp[, probability := 1L]
   }
-  
   id_time <- c(model$id_variable, model$time_variable)
-  out_state <- compute_z_marginals(model, id_time, pp, condition)
-  out_A <- compute_A_marginals(model, id_time, pp, condition)
-  out_y_B <- compute_y_and_B_marginals(model, id_time, pp, condition)
-  out_obs <- stats::setNames(out_y_B$y, model$responses)
-  out_B <- stats::setNames(out_y_B$B, model$responses)
-  
+  out_state <- out_A <- out_obs <- out_B <- NULL
+  if (compute_z <- "state" %in% type) {
+    out_state <- compute_z_marginals(model, id_time, pp, condition)
+  }
+  if (compute_A <- "transition" %in% type) {
+    out_A <- compute_A_marginals(model, id_time, pp, condition)
+  }
+  compute_y <- compute_B <- FALSE
+  if ("response" %in% type || "emission" %in% type) {
+    out_y_B <- compute_y_and_B_marginals(model, id_time, pp, condition)
+    if (compute_y <- "response" %in% type) {
+      out_obs <- stats::setNames(out_y_B$y, model$responses)
+    }
+    if (compute_B <- "emission" %in% type) {
+      out_B <- stats::setNames(out_y_B$B, model$responses)
+    }
+  }
   if (!is.null(probs)) {
     stopifnot_(
       !is.null(model$boot),
@@ -120,23 +137,22 @@ get_marginals <- function(model, probs = NULL, condition = NULL,
       )
     )
     nsim <- length(model$boot$gamma_pi)
-    boot_state <- matrix(0, nrow(out_state), nsim)
-    boot_A <- matrix(0, nrow(out_A), nsim)
-    boot_obs <- matrix(0, nrow(out_obs), nsim)
+    boot_state <- matrix(0, nrow(out_state), nsim * compute_z)
+    boot_A <- matrix(0, nrow(out_A), nsim * compute_A)
+    boot_obs <- vector("list", model$n_channels)
     boot_B <- vector("list", model$n_channels)
     for (i in seq_len(model$n_channels)) {
-      boot_B[[i]] <- matrix(0, nrow(out_B[[i]]), nsim)
+      boot_B[[i]] <- matrix(0, nrow(out_B[[i]]), nsim * compute_B)
+      boot_obs[[i]] <- matrix(0, nrow(out_obs[[i]]), nsim * compute_y)
     }
     tQs <- t(create_Q(model$n_states))
-    tQm <- t(create_Q(model$n_states))
+    tQm <- lapply(model$n_symbols, \(i) t(create_Q(i)))
     for (i in seq_len(nsim)) {
-      model$gammas$pi[] <- model$boot$gamma_pi[[i]]
-      model$gammas$A[] <- model$boot$gamma_A[[i]]
-      model$gammas$B[] <- model$boot$gamma_B[[i]] #Fix for multichannel TODO
-      model$etas$pi[] <- tQs %*% model$gammas$pi[]
-      for (s in seq_len(model$n_states)) {
-        model$etas$A[, , s] <- tQs %*% model$gammas$A[, , s]
-        model$etas$B[, , s] <- tQm %*% model$gammas$B[, , s]
+      model$gammas$gamma_pi[] <- model$boot$gamma_pi[[i]]
+      model$gammas$gamma_A[] <- model$boot$gamma_A[[i]]
+      model$gammas$gamma_B <- model$boot$gamma_B[[i]]
+      if (inherits(model, "mnhmm")) {
+        model$gammas$gamma_omega[] <- model$boot$gamma_omega[[i]]
       }
       if (weighting == "posterior") {
         pp <- posterior_probs(model)
@@ -145,21 +161,47 @@ get_marginals <- function(model, probs = NULL, condition = NULL,
         pp <- forward_backward(model, forward_only = TRUE)
         setnames(pp, "log_alpha", "probability")
       }
-      boot_state[, i] <- compute_z_marginals(
-        model, id_time, pp, condition)$probability
-      boot_A[, i] <- compute_A_marginals(model, id_time, pp, condition)$probability
-      out_y_B <- compute_y_and_B_marginals(model, id_time, pp, condition)
-      boot_obs[, i] <- out_y_B$y$probability
-      boot_B[, i] <- out_y_B$B$probability
+      if (compute_z) {
+        boot_state[, i] <- compute_z_marginals(
+          model, id_time, pp, condition)$probability
+      }
+      if (compute_A) {
+        boot_A[, i] <- compute_A_marginals(model, id_time, pp, condition)$probability
+      }
+      if (compute_y || compute_B) {
+        out_y_B <- compute_y_and_B_marginals(model, id_time, pp, condition)
+        if (compute_y) {
+          for (j in seq_len(model$n_channels)) {
+            boot_obs[[j]][, i] <- out_y_B$y[[j]]$probability
+          }
+        }
+        if (compute_B) {
+          for (j in seq_len(model$n_channels)) {
+            boot_B[[j]][, i] <- out_y_B$B[[j]]$probability
+          }
+        }
+      }
     }
-    qs <- t(apply(boot_state, 1, quantileq, probs = probs))
-    out_state <- cbind(out_state, qs)
-    qs <- t(apply(boot_A, 1, quantileq, probs = probs))
-    out_A <- cbind(out_A, qs)
-    qs <- t(apply(boot_obs, 1, quantileq, probs = probs))
-    out_obs <- cbind(out_obs, qs)
-    qs <- t(apply(boot_B, 1, quantileq, probs = probs))
-    out_B <- cbind(out_B, qs)
+    if (compute_z) {
+      qs <- t(apply(boot_state, 1, quantileq, probs = probs))
+      out_state <- cbind(out_state, qs)
+    }
+    if (compute_A) {
+      qs <- t(apply(boot_A, 1, quantileq, probs = probs))
+      out_A <- cbind(out_A, qs)
+    }
+    if (compute_y) {
+      for (i in seq_len(model$n_channels)) {
+        qs <- t(apply(boot_obs[[i]], 1, quantileq, probs = probs))
+        out_obs[[i]] <- cbind(out_obs[[i]], qs)
+      }
+    }
+    if (compute_B) {
+      for (i in seq_len(model$n_channels)) {
+        qs <- t(apply(boot_B[[i]], 1, quantileq, probs = probs))
+        out_B[[i]] <- cbind(out_B[[i]], qs)
+      }
+    }
   }
   list(states = out_state, responses = out_obs, transitions = out_A, emissions = out_B)
 }

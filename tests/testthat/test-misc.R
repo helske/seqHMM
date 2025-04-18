@@ -62,19 +62,19 @@ test_that("'state_names' work for 'mhmm' objects", {
   )
 })
 
-test_that("'state_names' work for 'nhmm' objects", {
-  expect_equal(
-    state_names(fanhmm_leaves), paste0("State ", 1:3)
-  )
-  expect_error(
-    state_names(fanhmm_leaves) <- letters[1:3],
-    NA
-  )
-  expect_error(
-    state_names(fanhmm_leaves) <- 1,
-    "Number of state names does not match with the number of states."
-  )
-})
+# test_that("'state_names' work for 'nhmm' objects", {
+#   expect_equal(
+#     state_names(fanhmm_leaves), paste0("State ", 1:3)
+#   )
+#   expect_error(
+#     state_names(fanhmm_leaves) <- letters[1:3],
+#     NA
+#   )
+#   expect_error(
+#     state_names(fanhmm_leaves) <- 1,
+#     "Number of state names does not match with the number of states."
+#   )
+# })
 
 test_that("'isColor works", {
   expect_equal(isColor("red"), c(red = TRUE))

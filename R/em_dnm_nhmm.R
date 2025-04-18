@@ -22,51 +22,23 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
   K_A <- nrow(X_A)
   K_B <- vapply(X_B, \(x) nrow(x), 1L)
   Ti <- model$sequence_lengths
-  n_obs <- nobs(model)
   need_grad <- grepl("NLOPT_LD_", control$algorithm)
   obs <- create_obsArray(model)
   all_solutions <- NULL
-  if (need_grad) {
-    objectivef <- function(pars) {
-      eta_pi <- create_eta_pi_nhmm(pars[seq_len(np_pi)], S, K_pi)
-      eta_A <- create_eta_A_nhmm(pars[np_pi + seq_len(np_A)], S, K_A)
-      eta_B <- create_eta_B_nhmm(
-        pars[np_pi + np_A + seq_len(np_B)], S, M, K_B
-      )
-      out <- log_objective_nhmm(
-        obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
-        iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B
-      )
-      list(
-        objective = - (out$loglik - 0.5 * lambda * sum(pars^2)) / n_obs, 
-        gradient = - (unlist(out[-1]) - lambda * pars) / n_obs
-      )
-    }
-  } else {
-    objectivef <- function(pars) {
-      eta_pi <- create_eta_pi_nhmm(pars[seq_len(np_pi)], S, K_pi)
-      eta_A <- create_eta_A_nhmm(pars[np_pi + seq_len(np_A)], S, K_A)
-      eta_B <- create_eta_B_nhmm(
-        pars[np_pi + np_A + seq_len(np_B)], S, M, K_B
-      )
-      out <- forward_nhmm(
-        obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
-        iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B
-      )
-      - (sum(apply(out[, T_, ], 2, logSumExp)) - 0.5 * lambda * sum(pars^2)) / n_obs
-    }
-  }
+  objectivef <- make_objective_nhmm(
+    model, lambda, grepl("NLOPT_LD_", control$algorithm)
+  )
   if (restarts > 0L) {
-    .fun <- function(i, base_init, u) {
-      init <- base_init
-      init$eta_pi[] <- init$eta_pi[] + u[seq_len(np_pi)]
-      init$eta_A[] <- init$eta_A[] + u[np_pi + seq_len(np_A)]
-      z <- matrix(unlist(init$eta_B) + u[np_pi + np_A + seq_len(np_B)], ncol = C)
-      init$eta_B <- lapply(seq_len(C), \(c) array(z[, c], dim = dim(init$eta_B[[c]])))
-      fit <- EM_LBFGS_nhmm(
+    .fun <- function(base_init, u) {
+      pars <- base_init + u
+      eta_pi <- create_eta_pi_nhmm(pars[seq_len(np_pi)], S, K_pi)
+      eta_A <- create_eta_A_nhmm(pars[np_pi + seq_len(np_A)], S, K_A)
+      eta_B <- create_eta_B_nhmm(pars[np_pi + np_A + seq_len(np_B)], S, M, K_B)
+      fit <- Rcpp_EM_LBFGS_nhmm(
         obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
-        iv_A, iv_B, tv_A, tv_B, init$eta_pi, init$eta_A, init$eta_B, lambda,
-        control_restart$maxeval,
+        iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B,
+        lambda,
+        control_restart$maxeval_em_dnm,
         control_restart$ftol_abs, control_restart$ftol_rel,
         control_restart$xtol_abs, control_restart$xtol_rel, 
         control_restart$print_level, control_mstep$maxeval,
@@ -110,16 +82,16 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
     p <- progressr::progressor(along = seq_len(restarts))
     original_options <- options(future.globals.maxSize = Inf)
     on.exit(options(original_options))
-    base_init <- create_initial_values(inits, model, init_sd = 0)
+    base_init <- unlist(create_initial_values(inits, model, init_sd = 0))
     u <- t(
       stats::qnorm(
         lhs::maximinLHS(restarts, length(unlist(base_init))), sd = init_sd
       )
     )
     out <- future.apply::future_lapply(
-      seq_len(restarts), \(i) .fun(i, base_init, u[, i]), future.seed = TRUE
+      seq_len(restarts), \(i) .fun(base_init, u[, i]), future.seed = TRUE
     )
-    logliks <- -unlist(lapply(out, "[[", "objective")) * n_obs
+    logliks <- -unlist(lapply(out, "[[", "objective")) * nobs(model)
     return_codes <- unlist(lapply(out, "[[", "status"))
     successful <- which(return_codes > 0)
     if (length(successful) == 0) {
@@ -147,10 +119,10 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
     }
   } else {
     init <- create_initial_values(inits, model, init_sd)
-    out <- EM_LBFGS_nhmm(
+    out <- Rcpp_EM_LBFGS_nhmm(
       obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
       iv_A, iv_B, tv_A, tv_B, init$eta_pi, init$eta_A, init$eta_B, lambda,
-      control$maxeval, control$ftol_abs, control$ftol_rel,
+      control$maxeval_em_dnm, control$ftol_abs, control$ftol_rel,
       control$xtol_abs, control$xtol_rel, control$print_level, 
       control_mstep$maxeval, control_mstep$ftol_abs, control_mstep$ftol_rel,
       control_mstep$xtol_abs, control_mstep$xtol_rel, 
@@ -192,16 +164,16 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
   }
   
   pars <- out$solution
-  model$etas$pi <- create_eta_pi_nhmm(pars[seq_len(np_pi)], S, K_pi)
-  model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
-  model$etas$A <- create_eta_A_nhmm(pars[np_pi + seq_len(np_A)], S, K_A)
-  model$gammas$A <- eta_to_gamma_cube(model$etas$A)
-  model$etas$B <- create_eta_B_nhmm(
+  model$etas$eta_pi <- create_eta_pi_nhmm(pars[seq_len(np_pi)], S, K_pi)
+  model$gammas$gamma_pi <- eta_to_gamma_mat(model$etas$eta_pi)
+  model$etas$eta_A <- create_eta_A_nhmm(pars[np_pi + seq_len(np_A)], S, K_A)
+  model$gammas$gamma_A <- eta_to_gamma_cube(model$etas$eta_A)
+  model$etas$eta_B <- create_eta_B_nhmm(
     pars[np_pi + np_A + seq_len(np_B)], S, M, K_B
   )
-  model$gammas$B <- drop(eta_to_gamma_cube_field(model$etas$B))
+  model$gammas$gamma_B <- drop(eta_to_gamma_cube_field(model$etas$eta_B))
   model$estimation_results <- list(
-    loglik = -out$objective * n_obs, 
+    loglik = -out$objective * nobs(model), 
     return_code = out$status,
     message = out$message,
     iterations = out$iterations,

@@ -12,9 +12,11 @@ test_that("'get_probs' and 'coef' works for multichannel 'nhmm'", {
     fit <- estimate_nhmm(
       n_states = 5, emission_formula = c(Marriage, Parenthood) ~ Residence,
       data = d, time = age, id = id_var,
-      inits = hmm_biofam[
-        c("initial_probs", "transition_probs", "emission_probs")
-      ], maxeval = 1, method = "DNM"
+      inits = c(
+        hmm_biofam[c("initial_probs", "transition_probs")], 
+        list(emission_probs = hmm_biofam$emission_probs[1:2])
+      ), 
+      maxeval = 1, method = "DNM"
     ),
     NA
   )
@@ -102,7 +104,7 @@ test_that("'get_probs' and 'coef' works for single-channel 'mnhmm'", {
     time = 1:16,
     z = stats::rnorm(16 * 50),
     w = 1:16,
-    y = unlist(hmm_biofam$observations[[1]][1:50, ])
+    y = unlist(droplevels(hmm_biofam$observations[[1]][1:50, ]))
   )
   expect_error(
     fit <- estimate_mnhmm(
@@ -177,19 +179,19 @@ test_that("'get_probs' and 'coef' works for 'fanhmm'", {
   )
   expect_equal(names(cf), c("initial", "transition", "emission"))
   expect_equal(
-    names(cf$transition), 
+    names(cf$transition),
     c("state_from", "state_to", "coefficient", "estimate", "q10", "q90")
   )
   expect_equal(
-    cf$emission$estimate[1:3], 
-    c(-1.30118969295931, 0.829786497113022, 0.471403195846288)
+    cf$emission$leave$estimate[1:3],
+    c(-1.56945251336176, 1.09793875350406, 0.4715137598577)
   )
   expect_error(
     p <- get_emission_probs(fanhmm_leaves),
     NA
   )
   expect_equal(
-    names(p), 
+    names(p$leave),
     c("workplace", "father", "state", "leave", "probability")
   )
   expect_error(
@@ -197,11 +199,11 @@ test_that("'get_probs' and 'coef' works for 'fanhmm'", {
     NA
   )
   expect_equal(
-    names(marginals), 
+    names(marginals),
     c("states", "responses", "transitions", "emissions")
   )
   expect_equal(
-    names(marginals$states), 
+    names(marginals$states),
     c("state", "probability", "q10", "q50", "q90")
   )
   expect_true(

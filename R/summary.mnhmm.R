@@ -5,7 +5,7 @@
 #' @param ... Ignored
 summary.mnhmm <- function(object, ...) {
   cf <- coef(object)
-  pr <- exp(object$X_omega %*% object$gammas$omega)
+  pr <- exp(object$X_omega %*% object$gammas$gamma_omega)
   prior_cluster_probabilities <- pr / rowSums(pr)
   pcp <- posterior_cluster_probabilities(object)
   mpc <- factor(

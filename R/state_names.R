@@ -105,7 +105,7 @@ state_names.mnhmm <- function(object) {
   )
   for (i in seq_len(object$n_clusters)) {
     stopifnot_(
-      length(value[[i]]) == object$n_states[i],
+      length(value[[i]]) == object$n_states,
       "Number of new state names for cluster {i} is not equal to the number of 
       hidden states."
     )

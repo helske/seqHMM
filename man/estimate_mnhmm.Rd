@@ -2,7 +2,7 @@
 % Please edit documentation in R/estimate_mnhmm.R
 \name{estimate_mnhmm}
 \alias{estimate_mnhmm}
-\title{Build and Estimate a Mixture Non-homogeneous Hidden Markov Model}
+\title{Estimate a Mixture Non-homogeneous Hidden Markov Model}
 \usage{
 estimate_mnhmm(
   n_states,
@@ -14,12 +14,13 @@ estimate_mnhmm(
   data,
   time,
   id,
+  lambda = 0,
+  prior_obs = "fixed",
   state_names = NULL,
   cluster_names = NULL,
   inits = "random",
   init_sd = 2,
   restarts = 0L,
-  lambda = 0,
   method = "EM-DNM",
   bound = Inf,
   control_restart = list(),
@@ -34,25 +35,37 @@ estimate_mnhmm(
 (mixtures).}
 
 \item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
-state emission probabilities.}
+state emission probabilities, or a list of such formulas in case of multiple
+response variables. The left-hand side of formulas define the responses.
+For multiple responses having same formula, you can use a form
+\code{c(y1, y2) ~ x}, where \code{y1} and \code{y2} are the response variables.}
 
 \item{initial_formula}{of class \code{\link[=formula]{formula()}} for the
-initial state probabilities.}
+initial state probabilities. Left-hand side of the formula should be empty.}
 
-\item{transition_formula}{of class \code{\link[=formula]{formula()}} for the
-state transition probabilities.}
+\item{transition_formula}{of class \code{\link[=formula]{formula()}} for the state transition
+probabilities. Left-hand side of the formula should be empty.}
 
-\item{cluster_formula}{of class \code{\link[=formula]{formula()}} for the
-mixture probabilities.}
+\item{cluster_formula}{of class \code{\link[=formula]{formula()}} for the mixture probabilities.}
 
 \item{data}{A data frame containing the variables used in the model
-formulas. Can be omitted in case of model with no covariates and observations
-given as \code{stslist} objects.}
+formulas.}
 
 \item{time}{Name of the time index variable in \code{data}.}
 
 \item{id}{Name of the id variable in \code{data} identifying different
 sequences.}
+
+\item{lambda}{Penalization factor \code{lambda} for penalized log-likelihood, where the
+penalization is \code{0.5 * lambda * sum(eta^2)}. Note that with
+\code{method = "L-BFGS"} both objective function (log-likelihood) and
+the penalization term is scaled with number of non-missing observations.
+Default is \code{0}, but small values such as \code{1e-4} can help to ensure numerical
+stability of L-BFGS by avoiding extreme probabilities. See also argument
+\code{bound} for hard constraints.}
+
+\item{prior_obs}{Either \code{"fixed"} or a list of vectors given the prior
+distributions for the responses at time "zero". See details.}
 
 \item{state_names}{A vector of optional labels for the hidden states. If this
 is \code{NULL} (the default), numbered states are used.}
@@ -76,14 +89,6 @@ of the regression coefficients to zero, use \code{init_sd = 0}.}
 \item{restarts}{Number of times to run optimization using random starting
 values (in addition to the final run). Default is 0.}
 
-\item{lambda}{Penalization factor \code{lambda} for penalized log-likelihood, where the
-penalization is \code{0.5 * lambda * sum(eta^2)}. Note that with
-\code{method = "L-BFGS"} both objective function (log-likelihood) and
-the penalization term is scaled with number of non-missing observations.
-Default is \code{0}, but small values such as \code{1e-4} can help to ensure numerical
-stability of L-BFGS by avoiding extreme probabilities. See also argument
-\code{bound} for hard constraints.}
-
 \item{method}{Optimization method used. Option \code{"EM"} uses EM
 algorithm with L-BFGS in the M-step. Option \code{"DNM"} uses
 direct maximization of the log-likelihood, by default using L-BFGS. Option
@@ -106,9 +111,10 @@ See details.}
 Object of class \code{mnhmm}.
 }
 \description{
-Function \code{estimate_mnhmm} estimates a hidden Markov model object of class
-\code{mnhmm} where initial, transition, emission, and mixture probabilities
-(potentially) depend on covariates.
+Function \code{estimate_mnhmm} estimates a mixture version of
+non-homogeneous hidden Markov model (MNHMM) where initial, transition,
+emission, and mixture probabilities can depend on covariates. See
+\code{\link[=estimate_nhmm]{estimate_nhmm()}} for further details.
 }
 \examples{
 data("mvad", package = "TraMineR")

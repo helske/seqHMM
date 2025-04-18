@@ -3,7 +3,7 @@
 
 #include "config.h"
 
-arma::uvec sample(const arma::uvec& x, const arma::vec& probs);
+arma::uword sample(const arma::uvec& x, const arma::rowvec& probs);
 
 #endif
 

@@ -54,11 +54,11 @@ print.mhmm <- function(x, digits = 3, ...) {
   if (attr(x, "type") == "lcm") {
     cat("Latent class model: \n")
   } else {
-      if (attr(x, "type") == "mmm") {
-        cat("Mixture Markov model: \n")
-      } else {
-        cat("Mixture hidden Markov model: \n")
-      }
+    if (attr(x, "type") == "mmm") {
+      cat("Mixture Markov model: \n")
+    } else {
+      cat("Mixture hidden Markov model: \n")
+    }
   }
   cat("\nNumber of sequences:", x$n_sequences)
   cat("\nNumber of time points:", x$length_of_sequences)
@@ -120,9 +120,18 @@ print.mhmm <- function(x, digits = 3, ...) {
 #' @export
 #' @rdname print
 print.nhmm <- function(x, digits = 3, ...) {
-  cat("Non-homogeneous hidden Markov model: \n")
+  fanhmm <- inherits(x, "fanhmm")
+  if (fanhmm) {
+    cat("Non-homogeneous feedback-augmented hidden Markov model: \n")
+  } else {
+    cat("Non-homogeneous hidden Markov model: \n")
+  }
   cat("\nNumber of sequences:", x$n_sequences)
-  cat("\nNumber of time points:", x$length_of_sequences)
+  if (fanhmm && identical(x$prior_y0, 0L)) {
+    cat("\nNumber of time points:", x$length_of_sequences, " (after fixing the first time point)")
+  } else {
+    cat("\nNumber of time points:", x$length_of_sequences)
+  }
   cat("\nNumber of observation channels:", x$n_channels)
   cat("\nNumber of observed symbols:", paste(x$n_symbols, collapse = ", "))
   cat("\nNumber of hidden states:", x$n_states)
@@ -131,15 +140,26 @@ print.nhmm <- function(x, digits = 3, ...) {
   print(x$initial_formula, showEnv = FALSE)
   cat("\nFormula for transition probabilities: \n")
   print(x$transition_formula, showEnv = FALSE)
-  cat("\nFormula for emission probabilities: \n")
-  print(x$emission_formula, showEnv = FALSE)
+  cat("\nFormula(s) for emission probabilities: \n")
+  for (y in x$responses) {
+    print(x$emission_formula[[y]], showEnv = FALSE)
+  }
 }
 #' @export
 #' @rdname print
 print.mnhmm <- function(x, digits = 3, ...) {
-  cat("Non-homogeneous mixture hidden Markov model: \n")
+  fanhmm <- inherits(x, "fanhmm")
+  if (fanhmm) {
+    cat("Mixture of non-homogeneous feedback-augmented hidden Markov models: \n")
+  } else {
+    cat("Mixture of non-homogeneous hidden Markov models: \n")
+  }
   cat("\nNumber of sequences:", x$n_sequences)
-  cat("\nNumber of time points:", x$length_of_sequences)
+  if (fanhmm && identical(x$prior_y0, 0L)) {
+    cat("\nNumber of time points:", x$length_of_sequences, " (after fixing the first time point)")
+  } else {
+    cat("\nNumber of time points:", x$length_of_sequences)
+  }
   cat("\nNumber of observation channels:", x$n_channels)
   cat("\nNumber of observed symbols:", paste(x$n_symbols, collapse = ", "))
   cat("\nNumber of hidden states:", x$n_states)
@@ -149,8 +169,10 @@ print.mnhmm <- function(x, digits = 3, ...) {
   print(x$initial_formula, showEnv = FALSE)
   cat("\nFormula for transition probabilities: \n")
   print(x$transition_formula, showEnv = FALSE)
-  cat("\nFormula for emission probabilities: \n")
-  print(x$emission_formula, showEnv = FALSE)
+  cat("\nFormula(s) for emission probabilities: \n")
+  for (y in x$responses) {
+    print(x$emission_formula[[y]], showEnv = FALSE)
+  }
   cat("\nFormula for mixture probabilities: \n")
   print(x$cluster_formula, showEnv = FALSE)
 }

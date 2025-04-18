@@ -44,7 +44,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
   )
   control_mstep <- utils::modifyList(
     list(
-      ftol_rel = 1e-12,
+      ftol_rel = 1e-10,
       ftol_abs = 1e-8,
       xtol_rel = 1e-6,
       xtol_abs = 1e-6,
@@ -65,13 +65,10 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
   }
   
   if (isTRUE(control$maxeval < 0)) {
-    model$etas <- stats::setNames(
-      create_initial_values(inits, model, init_sd), 
-      c("pi","A", "B")
-    )
-    model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
-    model$gammas$A <- eta_to_gamma_cube(model$etas$A)
-    model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
+    model$etas <- create_initial_values(inits, model, init_sd)
+    model$gammas$gamma_pi <- eta_to_gamma_mat(model$etas$eta_pi)
+    model$gammas$gamma_A <- eta_to_gamma_cube(model$etas$eta_A)
+    model$gammas$gamma_B <- eta_to_gamma_cube_field(model$etas$eta_B)
     return(model)
   }
   if (method == "EM-DNM") {

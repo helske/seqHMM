@@ -73,13 +73,12 @@ hidden_paths.mhmm <- function(model, as_stslist = FALSE, ...) {
 hidden_paths.nhmm <- function(model, as_stslist = FALSE, ...) {
   
   obs <- create_obsArray(model)
-  out <- viterbi_nhmm(
+  out <- Rcpp_viterbi_nhmm(
     obs, model$sequence_lengths, model$n_symbols, 
     model$X_pi, model$X_A, model$X_B, 
     io(model$X_pi), io(model$X_A), io(model$X_B),
-    iv(model$X_A), iv(model$X_B),
-    tv(model$X_A), tv(model$X_B),
-    model$etas$pi, model$etas$A, model$etas$B
+    iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+    model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B
   )
   create_mpp_data(out, model, as_stslist)
 }
@@ -88,13 +87,12 @@ hidden_paths.nhmm <- function(model, as_stslist = FALSE, ...) {
 hidden_paths.mnhmm <- function(model, as_stslist = FALSE, ...) {
   
   obs <- create_obsArray(model)
-  out <- viterbi_mnhmm(
+  out <- Rcpp_viterbi_mnhmm(
     obs, model$sequence_lengths, model$n_symbols, 
     model$X_pi, model$X_A, model$X_B, model$X_omega,
     io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
-    iv(model$X_A), iv(model$X_B),
-    tv(model$X_A), tv(model$X_B),
-    model$etas$pi, model$etas$A, model$etas$B, model$etas$omega
+    iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+    model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, model$gammas$gamma_omega
   )
   model$state_names <- paste0(
     rep(model$cluster_names, each = model$n_states), ": ",

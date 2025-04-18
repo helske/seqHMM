@@ -75,11 +75,11 @@
 #'
 mc_to_sc_data <- function(data, combine_missing = TRUE, all_combinations = FALSE, cpal) {
   stopifnot_(
-    length(unique(sapply(data, nrow))) == 1,
+    n_unique(vapply(data, nrow, 1L)) == 1L,
     "The number of subjects (rows) is not the same in all channels."
   )
   stopifnot_(
-    length(unique(sapply(data, ncol))) == 1,
+    n_unique(vapply(data, ncol, 1L)) == 1L,
     "The length of the sequences (columns) is not the same in all channels."
   )
   alph <- apply(expand.grid(lapply(data, alphabet)), 1, paste0, collapse = "/")

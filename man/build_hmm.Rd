@@ -36,7 +36,7 @@ also \code{NULL}, numbered states are used.}
 
 \item{channel_names}{A vector of optional names for the channels.}
 
-\item{...}{Additional arguments to \code{\link[=simulate_transition_probs]{simulate_transition_probs()}}.#'}
+\item{...}{Additional arguments to \code{\link[=simulate_transition_probs]{simulate_transition_probs()}}.}
 }
 \value{
 Object of class \code{hmm} with the following elements:

@@ -5,9 +5,6 @@
 \title{Simulate Mixture Non-homogeneous Hidden Markov Models}
 \usage{
 simulate_mnhmm(
-  n_sequences,
-  sequence_lengths,
-  n_symbols,
   n_states,
   n_clusters,
   emission_formula,
@@ -22,49 +19,46 @@ simulate_mnhmm(
 )
 }
 \arguments{
-\item{n_sequences}{The number of sequences to simulate.}
-
-\item{sequence_lengths}{The lengths of the simulated sequences.
-Either a scalar or vector of length \code{n_sequences}.}
-
-\item{n_symbols}{A scalar or vector of length \code{n_channels} giving the number
-of observed symbols per channel.}
-
 \item{n_states}{The number of hidden states.}
 
 \item{n_clusters}{The number of clusters/mixtures.}
 
 \item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
-state emission probabilities.}
+state emission probabilities, or a list of such formulas in case of multiple
+response variables. The left-hand side of formulas define the responses.
+For multiple responses having same formula, you can use a form
+\code{c(y1, y2) ~ x}, where \code{y1} and \code{y2} are the response variables.}
 
 \item{initial_formula}{of class \code{\link[=formula]{formula()}} for the
-initial state probabilities.}
+initial state probabilities. Left-hand side of the formula should be empty.}
 
-\item{transition_formula}{of class \code{\link[=formula]{formula()}} for the
-state transition probabilities.}
+\item{transition_formula}{of class \code{\link[=formula]{formula()}} for the state transition
+probabilities. Left-hand side of the formula should be empty.}
 
-\item{cluster_formula}{of class \code{\link[=formula]{formula()}} for the
-mixture probabilities.}
+\item{cluster_formula}{of class \code{\link[=formula]{formula()}} for the mixture probabilities.}
 
 \item{data}{A data frame containing the variables used in the model
-formulas. Can be omitted in case of model with no covariates and observations
-given as \code{stslist} objects.}
+formulas. Note that this should also include also the response variable(s),
+which are used to define the number of observed symbols (using \code{\link[=levels]{levels()}})
+and the length of sequences. The actual values of the response variables
+does not matter though, as they are replaced by the simulated values. The
+exception is the first time point in FAN-HMM case: If the \code{emission_formula}
+contains lagged responses, the response variable values at the first time
+point are used to define the emissions at the second time point, and the
+simulations are done from the second time point onwards. This matches the
+case \code{prior_obs = "fixed"} in \code{\link[=estimate_nhmm]{estimate_nhmm()}}.}
 
 \item{id}{Name of the id variable in \code{data} identifying different
 sequences.}
 
 \item{time}{Name of the time index variable in \code{data}.}
 
-\item{coefs}{If \code{NULL} (default), model parameters \code{eta_pi}, \code{eta_A},
-\code{eta_B}, and \code{eta_omega} are generated randomly. You can also specify the coefficients by
-providing a named list with elements \code{eta_pi}, \code{eta_A}, \code{eta_B}, \code{eta_omega}.
-Alternatively, values \code{initial_probs}, \code{transition_probs},
-\code{emission_probs}, and \code{cluster_probs} can be used, which define the values of
-the \eqn{\eta} coefficients corresponding to the intercept terms, while rest
-of the values are generated randomly.}
+\item{coefs}{Same as argument \code{inits} in \code{\link[=estimate_mnhmm]{estimate_mnhmm()}}. If \code{NULL}
+(default), the model parameters are generated randomly.}
 
 \item{init_sd}{Standard deviation of the normal distribution used to generate
-random coefficient values. Default is \code{2}.}
+random coefficient values. Default is \code{2}. Setting this to zero allows you
+to use the coefficients fixed in \code{coefs}.}
 }
 \value{
 A list with the model used in simulation as well as the simulated

@@ -44,7 +44,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
   )
   control_mstep <- utils::modifyList(
     list(
-      ftol_rel = 1e-12,
+      ftol_rel = 1e-10,
       ftol_abs = 1e-8,
       xtol_rel = 1e-6,
       xtol_abs = 1e-6,
@@ -65,15 +65,13 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
   }
   
   if (isTRUE(control$maxeval < 0)) {
-    model$etas <- stats::setNames(
-      create_initial_values(inits, model, init_sd), c("pi", "A", "B", "omega")
+    model$etas <- create_initial_values(inits, model, init_sd)
+    model$gammas$gamma_pi <- drop(eta_to_gamma_mat_field(model$etas$eta_pi))
+    model$gammas$gamma_A <- drop(eta_to_gamma_cube_field(model$etas$eta_A))
+    model$gammas$gamma_B <- split(
+      eta_to_gamma_cube_2d_field(model$etas$eta_B), seq_len(model$n_clusters)
     )
-    model$gammas$pi <- drop(eta_to_gamma_mat_field(model$etas$pi))
-    model$gammas$A <- drop(eta_to_gamma_cube_field(model$etas$A))
-    model$gammas$B <- split(
-      eta_to_gamma_cube_2d_field(model$etas$B), seq_len(model$n_clusters)
-    )
-    model$gammas$omega <- eta_to_gamma_mat(model$etas$omega)
+    model$gammas$gamma_omega <- eta_to_gamma_mat(model$etas$eta_omega)
     return(model)
   }
   all_solutions <- NULL

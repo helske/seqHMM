@@ -1,14 +1,14 @@
-#' Build and Estimate a Mixture Non-homogeneous Hidden Markov Model
+#' Estimate a Mixture Non-homogeneous Hidden Markov Model
 #'
-#' Function `estimate_mnhmm` estimates a hidden Markov model object of class 
-#' `mnhmm` where initial, transition, emission, and mixture probabilities 
-#' (potentially) depend on covariates.
+#' Function `estimate_mnhmm` estimates a mixture version of 
+#' non-homogeneous hidden Markov model (MNHMM) where initial, transition, 
+#' emission, and mixture probabilities can depend on covariates. See 
+#' [estimate_nhmm()] for further details.
 #' 
 #' @inheritParams estimate_nhmm
 #' @param n_clusters A positive integer defining the number of clusters 
 #' (mixtures).
-#' @param cluster_formula of class [formula()] for the
-#' mixture probabilities.
+#' @param cluster_formula of class [formula()] for the mixture probabilities.
 #' @param inits If `inits = "random"` (default), random initial values are 
 #' used. Otherwise `inits` should be list of initial values. If coefficients 
 #' are given using list components `eta_pi`, `eta_A`, `eta_B`, 
@@ -42,16 +42,16 @@
 estimate_mnhmm <- function(
     n_states, n_clusters, emission_formula, initial_formula = ~1, 
     transition_formula = ~1, cluster_formula = ~1,
-    data, time, id, state_names = NULL, 
-    cluster_names = NULL, inits = "random", init_sd = 2, 
-    restarts = 0L, lambda = 0, method = "EM-DNM", bound = Inf, 
-    control_restart = list(), control_mstep = list(), ...) {
+    data, time, id, lambda = 0, prior_obs = "fixed", state_names = NULL, 
+    cluster_names = NULL, inits = "random", init_sd = 2, restarts = 0L, 
+    method = "EM-DNM", bound = Inf, control_restart = list(), 
+    control_mstep = list(), ...) {
   
   call <- match.call()
   model <- build_mnhmm(
     n_states, n_clusters, emission_formula, initial_formula, 
     transition_formula, cluster_formula, data, id, time, 
-    state_names, cluster_names
+    state_names, cluster_names, scale = TRUE, prior_obs
   )
   control <- list(...)
   start_time <- proc.time()

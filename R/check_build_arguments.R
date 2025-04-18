@@ -63,11 +63,11 @@
         multichannel case."
     )
     stopifnot_(
-      length(unique(sapply(x, nrow))) == 1,
+      n_unique(vapply(x, nrow, 1L)) == 1L,
       "The number of subjects (rows) is not the same in all channels."
     )
     stopifnot_(
-      length(unique(sapply(x, ncol))) == 1,
+      n_unique(vapply(x, ncol, 1L)) == 1L,
       "The length of the sequences (columns) is not the same in all channels."
     )
   }
@@ -83,11 +83,7 @@
     n_sequences <- nrow(x[[1]])
     length_of_sequences <- ncol(x[[1]])
     symbol_names <- lapply(
-      x, 
-      function(x) {
-        a <- alphabet(x)
-        factor(a, levels = a)
-      }
+      x, \(x) as_factor(TraMineR::alphabet(x))
     )
     n_symbols <- lengths(symbol_names)
     dim(n_symbols) <- length(n_symbols)
@@ -100,7 +96,7 @@
                of channels. Names were not used.")
       channel_names <- paste("Channel", seq_len(n_channels))
     }
-    channel_names <- factor(channel_names, levels = channel_names)
+    channel_names <- as_factor(channel_names)
     sequence_lengths <- do.call(pmax, lapply(x, TraMineR::seqlength))
     times <- colnames(x[[1]])
     na_times <- suppressWarnings(any(is.na(timenames <- as.numeric(times))))
@@ -122,19 +118,18 @@
         "The numeric time indices based on column names of sequence object ", 
         "are not numerically sorted. Please recode the column names.")
     )
-    for (i in seq_len(length(x))) {
+    for (i in seq_along(x)) {
       colnames(x[[i]]) <- timenames 
     }
   } else {
     n_sequences <- nrow(x)
     length_of_sequences <- ncol(x)
-    symbol_names <- alphabet(x)
-    symbol_names <- factor(symbol_names, levels = symbol_names)
+    symbol_names <- as_factor(alphabet(x))
     n_symbols <- length(symbol_names)
     if (is.null(channel_names)) {
       channel_names <- "Observations"
     }
-    channel_names <- factor(channel_names, levels = channel_names)
+    channel_names <- as_factor(channel_names)
     sequence_lengths <- TraMineR::seqlength(x)
     times <- colnames(x)
     na_times <- suppressWarnings(any(is.na(timenames <- as.numeric(times))))

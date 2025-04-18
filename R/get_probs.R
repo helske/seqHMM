@@ -37,7 +37,7 @@ get_initial_probs.nhmm <- function(model, ...) {
   d <- data.table(
     id = rep(ids, each = S),
     state = model$state_names,
-    probability = rep_len(c(get_pi_all(model$gammas$pi, X)), S * N),
+    probability = rep_len(c(get_pi_all(model$gammas$gamma_pi, X)), S * N),
     key = "id"
   )
   setnames(d, "id", model$id_variable)
@@ -80,7 +80,7 @@ get_transition_probs.nhmm <- function(model, ...) {
     X <- model$X_A
   }
   A <- get_A_all(
-    model$gammas$A, X, tv(model$X_A), model$sequence_lengths
+    model$gammas$gamma_A, X, tv(model$X_A), model$sequence_lengths
   )
   d <- data.table(
     id = rep(ids, S^2 * model$sequence_lengths),
@@ -139,7 +139,7 @@ get_emission_probs.nhmm <- function(model, ...) {
       X <- model$X_B[[i]]
     }
     B <- get_B_all(
-      model$gammas$B[[i]], X, tv(model$X_B[[i]]), model$sequence_lengths
+      model$gammas$gamma_B[[i]], X, tv(model$X_B[[i]]), model$sequence_lengths
     )
     out[[i]] <- data.table(
       id = rep(ids, S * M[i] * model$sequence_lengths),
@@ -194,7 +194,7 @@ get_cluster_probs.mnhmm <- function(model, ...) {
   d <- data.table(
     id = rep(ids, each = D),
     cluster = model$cluster_names,
-    probability = rep_len(c(get_omega_all(model$gammas$omega, X)), D * N),
+    probability = rep_len(c(get_omega_all(model$gammas$gamma_omega, X)), D * N),
     key = "id"
   )
   setnames(d, "id", model$id_variable)

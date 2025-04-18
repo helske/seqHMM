@@ -18,19 +18,26 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
   iv_B <- iv(X_B)
   tv_A <- tv(X_A)
   tv_B <- tv(X_B)
+  K_pi <- nrow(X_pi)
+  K_A <- nrow(X_A)
+  K_B <- vapply(X_B, \(x) nrow(x), 1L)
   Ti <- model$sequence_lengths
   obs <- create_obsArray(model)
   all_solutions <- NULL
   if (restarts > 0L) {
-    .fun <- function(i, base_init, u) {
-      init <- base_init
-      init$eta_pi[] <- init$eta_pi[] + u[seq_len(np_pi)]
-      init$eta_A[] <- init$eta_A[] + u[np_pi + seq_len(np_A)]
-      z <- matrix(unlist(init$eta_B) + u[np_pi + np_A + seq_len(np_B)], ncol = C)
-      init$eta_B <- lapply(seq_len(C), \(c) array(z[, c], dim = dim(init$eta_B[[c]])))
-      fit <- EM_LBFGS_nhmm(
+    .fun <- function(base_init, u) {
+      pars <- base_init + u
+      eta_pi <- create_eta_pi_nhmm(pars[seq_len(np_pi)], S, K_pi)
+      eta_A <- create_eta_A_nhmm(
+        pars[np_pi + seq_len(np_A)], 
+        S, K_A
+      )
+      eta_B <- create_eta_B_nhmm(
+        pars[np_pi + np_A + seq_len(np_B)], S, M, K_B
+      )
+      fit <- Rcpp_EM_LBFGS_nhmm(
         obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
-        iv_A, iv_B, tv_A, tv_B, init$eta_pi, init$eta_A, init$eta_B, lambda,
+        iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, lambda,
         control_restart$maxeval,
         control_restart$ftol_abs, control_restart$ftol_rel,
         control_restart$xtol_abs, control_restart$xtol_rel, 
@@ -45,14 +52,14 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
     p <- progressr::progressor(along = seq_len(restarts))
     original_options <- options(future.globals.maxSize = Inf)
     on.exit(options(original_options))
-    base_init <- create_initial_values(inits, model, init_sd = 0)
+    base_init <- unlist(create_initial_values(inits, model, init_sd = 0))
     u <- t(
       stats::qnorm(
         lhs::maximinLHS(restarts, length(unlist(base_init))), sd = init_sd
       )
     )
     out <- future.apply::future_lapply(
-      seq_len(restarts), \(i) .fun(i, base_init, u[, i]), future.seed = TRUE
+      seq_len(restarts), \(i) .fun(base_init, u[, i]), future.seed = TRUE
     )
     return_codes <- unlist(lapply(out, "[[", "return_code"))
     if (all(return_codes < 0)) {
@@ -72,7 +79,7 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
   } else {
     init <- create_initial_values(inits, model, init_sd)
   }
-  out <- EM_LBFGS_nhmm(
+  out <- Rcpp_EM_LBFGS_nhmm(
     obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
     iv_A, iv_B, tv_A, tv_B, init$eta_pi, init$eta_A, init$eta_B, lambda,
     control$maxeval, control$ftol_abs, control$ftol_rel,
@@ -85,12 +92,12 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
       paste("Optimization terminated due to error:", return_msg(out$return_code))
     )
   }
-  model$etas$pi <- out$eta_pi
-  model$gammas$pi <- eta_to_gamma_mat(model$etas$pi)
-  model$etas$A <- out$eta_A
-  model$gammas$A <- eta_to_gamma_cube(model$etas$A)
-  model$etas$B <- out$eta_B
-  model$gammas$B <- eta_to_gamma_cube_field(model$etas$B)
+  model$etas$eta_pi <- out$eta_pi
+  model$gammas$gamma_pi <- eta_to_gamma_mat(model$etas$eta_pi)
+  model$etas$eta_A <- out$eta_A
+  model$gammas$gamma_A <- eta_to_gamma_cube(model$etas$eta_A)
+  model$etas$eta_B <- out$eta_B
+  model$gammas$gamma_B <- eta_to_gamma_cube_field(model$etas$eta_B)
   
   model$estimation_results <- list(
     loglik = out$logLik,

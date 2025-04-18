@@ -6,7 +6,6 @@ quantileq <- function(x, probs, ...) {
     paste0("q", 100 * probs)
   )
 }
-
 #' Convert return code from estimate_nhmm and estimate_mnhmm to text
 #' 
 #' @param code Integer return code from `model$estimation_results$return_code`.
@@ -145,7 +144,7 @@ is_list <- function(x, n) {
   }
 }
 #' Check that x is stslist or list of length n consisting of stslist objects
-#' #' @noRd
+#' @noRd
 is_stslist <- function(x, n) {
   if (TraMineR::is.stslist(x)) {
     return(n == 1L)
@@ -164,36 +163,13 @@ is_formula <- function(x, n) {
   }
   FALSE
 }
-get_responses <- function(x, allow_mv = TRUE) {
-  stopifnot_(
-    inherits(x, "formula"), 
-    "{.arg emission_formula} must be a {.cls formula} object or a list of 
-    {.cls formula} objects."
-  )
-  stopifnot_(
-    identical(length(x), 3L), 
-    "{.arg emission_formula} must contain the response variable(s) on the 
-    left-hand side of the {.cls formula} object(s)."
-  )
-  y <- all.vars(x[[2]])
-  stopifnot_(
-    length(y) == 1L || (length(y) > 1L && allow_mv),
-    "{.arg emission_formula} must be a {.cls formula} object with one or more 
-    response variables on the left-hand side, or a list of {.cls formula} 
-    objects with a single response variable on the LHS of each {.cls formula}"
-  )
-  y
-}
-#' (Regularized) Inverse of softmax(Q*eta)
-#' 
+#' check that x is valid probability mass function
 #' @noRd
-p_to_eta <-function(x) {
-  Q <- create_Q(length(x))
-  x <- pmin(pmax(x, 1e-6), 1-1e-6)
-  x <- x / sum(x)
-  log_x <- log(x)
-  t(Q) %*% (log_x - mean(log_x))
+is_pmf <- function(x, n, tol = 1e-8) {
+  is.numeric(x) && length(x) == n && all(is.finite(x)) && all(x >= 0) && abs(sum(x) - 1) < tol
 }
+
+
 #' Stop Function Execution Unless Condition Is True
 #' 
 #' Function copied from the `dynamite` package.
@@ -300,4 +276,18 @@ create_emissionArray <- function(model) {
     emissionArray[, 1:model$n_symbols[i], i] <- model$emission_probs[[i]]
   }
   emissionArray
+}
+
+#' Count unique values
+#' @noRd
+n_unique <- function(x) {length(unique(x))}
+
+#' Create a factor from character vector of levels in order of appearance
+#' @noRd
+as_factor <- function(x) {
+  if (is.factor(x)) {
+    x
+  } else {
+    factor(x, levels = x)
+  }
 }

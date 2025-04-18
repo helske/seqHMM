@@ -1,8 +1,9 @@
-// backward algorithm for NHMM
+// simulate MNHMMs
+#include "config.h"
 #include "nhmm.h"
 
 // [[Rcpp::export]]
-arma::cube backward_nhmm(
+Rcpp::List Rcpp_simulate_nhmm(
     const arma::ucube& obs,
     const arma::uvec& Ti,
     const arma::uvec& M,
@@ -16,16 +17,15 @@ arma::cube backward_nhmm(
     const arma::uvec& iv_B,
     const bool tv_A,
     const arma::uvec& tv_B,
-    const arma::mat& eta_pi,
-    const arma::cube& eta_A,
-    const arma::field<arma::cube>& eta_B) {
+    const arma::mat& gamma_pi,
+    const arma::cube& gamma_A,
+    const arma::field<arma::cube>& gamma_B) {
   
   nhmm model(
-      obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, 
-      iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B
+      obs, Ti, M, X_pi, X_A, X_B, 
+      icpt_only_pi, icpt_only_A, icpt_only_B,
+      iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B
   );
-  
-  arma::cube log_beta(model.S, model.T, model.N, arma::fill::value(arma::datum::nan));
-  model.backward(log_beta);
-  return log_beta;
+
+  return model.simulate();
 }

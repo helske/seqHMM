@@ -4,12 +4,6 @@
 #include "config.h"
 #include "softmax.h"
 
-arma::vec get_omega(
-    const arma::mat& gamma, const arma::vec& X
-);
-arma::vec get_pi(
-    const arma::mat& gamma, const arma::vec& X
-);
 arma::cube get_A(
     const arma::cube& gamma, const arma::mat& X, const bool tv = true
 );

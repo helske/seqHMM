@@ -19,6 +19,33 @@ test_that("'predict' works 'fanhmm'", {
     'Argument `type` must be \"observations\", \"states\", \"conditionals\", or a combination of these.'
   )
 })
+test_that("'predict' works multichannel 'nhmm'", {
+  data("hmm_biofam")
+  y <- hmm_biofam$channel_names
+  age <- "age"
+  id_var <- "individual"
+  d <- stslist_to_data(
+    hmm_biofam$observations, id_var, age, y
+  )
+  set.seed(1)
+  expect_error(
+    fit <- estimate_nhmm(
+      n_states = 3, emission_formula = c(Marriage, Parenthood) ~ Residence,
+      data = d, time = age, id = id_var,
+      maxeval = 3, method = "DNM"
+    ),
+    NA
+  )
+  fit <- bootstrap_coefs(fit, nsim = 5)
+  d$Marriage[d$age > 25] <- NA
+  d$Parenthood[d$age > 28] <- NA
+  expect_error(
+    out <- predict(
+      fit, newdata = d, condition = "Residence", probs = c(0.1, 0.9)
+    ),
+    NA
+  )
+})
 test_that("'predict' works 'mnhmm'", {
   data("leaves")
   d <- leaves[leaves$workplace %in% seq_len(10), ]

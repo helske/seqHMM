@@ -25,15 +25,32 @@ create_initial_values_ <- function(inits, init_sd, S, M, K_pi, K_A, K_B, D = 1,
     if (D > 1) {
       stopifnot_(
         is.list(inits$initial_probs) && length(inits$initial_probs) == D,
-        "Initial values for initial states of MNHMM must be a list of length D."
+        "Initial values for initial states of MNHMM must be a list of length D,
+        with each element containing the initial state probability vector of 
+        length S, where D is the nubmer of mixtures and S is the number of 
+        states."
       )
       eta_pi <- lapply(
         seq_len(D), \(i) {
-          create_inits_vector(inits$initial_probs[[i]], S, K_pi, init_sd)
+          pi <- inits$initial_probs[[i]]
+          stopifnot_(
+            length(pi) == S,
+            "Initial values for initial states of MNHMM must be a list of length D,
+            with each element containing the initial state probability vector of 
+            length S, where D is the nubmer of mixtures and S is the number of 
+            states."
+          )
+          create_inits_vector(pi, S, K_pi, init_sd)
         }
       )
     } else {
-      eta_pi <- create_inits_vector(inits$initial_probs, S, K_pi, init_sd)
+      pi <- inits$initial_probs
+      stopifnot_(
+        length(pi) == S,
+        "Initial values for initial state probabilities must be a vector of 
+        length S, matching the number of states."
+      )
+      eta_pi <- create_inits_vector(pi, S, K_pi, init_sd)
     }
   } else {
     eta_pi <- create_eta_pi_inits(
@@ -45,39 +62,79 @@ create_initial_values_ <- function(inits, init_sd, S, M, K_pi, K_A, K_B, D = 1,
     if (D > 1) {
       stopifnot_(
         is.list(inits$transition_probs) && length(inits$transition_probs) == D,
-        "Initial values for transitions of MNHMM must be a list of length D."
+        "Initial values for transitions of MNHMM must be a list of length D, 
+        with each element containing S x S transition matrices, where 
+        D is the number of mixtures and S is the number of states."
       )
       eta_A <- lapply(
         seq_len(D), \(i) {
-          create_inits_matrix(inits$transition_probs[[i]], S, S, K_A, init_sd)
+          A <- inits$transition_probs[[i]]
+          stopifnot_(
+            nrow(A) == S && ncol(A) == S,
+            "Initial transition probability matrices must have dimensions 
+              (number of states) x (number of states)."
+          )
+          create_inits_matrix(A, S, S, K_A, init_sd)
         }
       )
     } else {
-      eta_A <- create_inits_matrix(
-        inits$transition_probs, S, S, K_A, init_sd
+      A <- inits$transition_probs
+      stopifnot_(
+        nrow(A) == S && ncol(A) == S,
+        "Initial transition probability matrix must have dimensions 
+        (number of states) x (number of states)."
       )
+      eta_A <- create_inits_matrix(A, S, S, K_A, init_sd)
     }
   } else {
     eta_A <- create_eta_A_inits(inits$eta_A, S, K_A, init_sd, D)
   }
   
   if(!is.null(inits$emission_probs)) {
+    C <- length(M)
     if (D > 1) {
       stopifnot_(
         is.list(inits$emission_probs) && length(inits$emission_probs) == D,
-        "Initial values for emissions of MNHMM must be a list of length D."
+        "Initial values for emissions of MNHMM must be a list of length D, 
+        where each element contains C matrices, one for each response."
       )
       eta_B <- lapply(
         seq_len(D), \(i) {
+          if (C == 1 && is.matrix(inits$emission_probs[[i]])) {
+            inits$emission_probs[[i]] <- list(inits$emission_probs[[i]])
+          }
+          stopifnot_(
+            is.list(inits$emission_probs[[i]]) && length(inits$emission_probs[[i]]) == C,
+            "Initial values for emissions of MNHMM must be a list of length D, 
+            where each element contains C matrices, one for each response."
+          )
           lapply(seq_along(M), \(j) {
-            create_inits_matrix(
-              inits$emission_probs[[i]][[j]], S, M[j], K_B, init_sd)
+            B <- inits$emission_probs[[i]][[j]]
+            stopifnot_(
+              nrow(B) == S && ncol(B) == M[j],
+              "Initial emission probability matrices must have dimensions 
+              (number of states) x (number of symbols)."
+            )
+            create_inits_matrix(B, S, M[j], K_B[j], init_sd)
           })
         })
     } else {
+      if (C == 1 && is.matrix(inits$emission_probs)) {
+        inits$emission_probs <- list(inits$emission_probs)
+      }
+      stopifnot_(
+        is.list(inits$emission_probs) && length(inits$emission_probs) == C,
+        "Initial values for emissions of NHMM must be a list of length C, 
+        containing the emission probabilties for each response."
+      )
       eta_B <- lapply(seq_along(M), \(j) {
-        create_inits_matrix(
-          inits$emission_probs[[j]], S, M[j], K_B[j], init_sd)
+        B <- inits$emission_probs[[j]]
+        stopifnot_(
+          nrow(B) == S && ncol(B) == M[j],
+          "Initial emission probability matrices must have dimensions 
+              (number of states) x (number of symbols)."
+        )
+        create_inits_matrix(B, S, M[j], K_B[j], init_sd)
       })
     }
   } else {
@@ -90,6 +147,11 @@ create_initial_values_ <- function(inits, init_sd, S, M, K_pi, K_A, K_B, D = 1,
   )
   if (D > 1) {
     if(!is.null(inits$cluster_probs)) {
+      stopifnot_(
+        length(inits$cluster_probs) == S,
+        "Initial cluster probabilities must be a vector with length D, 
+        matching the number of mixtures"
+      )
       eta_omega <- create_inits_vector(
         inits$cluster_probs, D, K_omega, init_sd
       )

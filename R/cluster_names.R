@@ -33,12 +33,12 @@ cluster_names.mnhmm <- function(object) {
   )
   object$cluster_names <- value
   names(object$state_names) <- value
-  names(object$etas$pi) <- value
-  names(object$etas$A) <- value
-  names(object$etas$B) <- value
-  names(object$gammas$pi) <- value
-  names(object$gammas$A) <- value
-  names(object$gammas$B) <- value
+  names(object$etas$eta_pi) <- value
+  names(object$etas$eta_A) <- value
+  names(object$etas$eta_B) <- value
+  names(object$gammas$gamma_pi) <- value
+  names(object$gammas$gamma_A) <- value
+  names(object$gammas$gamma_B) <- value
   object
 }
 #' @export

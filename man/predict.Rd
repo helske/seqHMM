@@ -2,7 +2,7 @@
 % Please edit documentation in R/predict.R
 \name{predict.nhmm}
 \alias{predict.nhmm}
-\alias{predict.fanhmm}
+\alias{predict.mnhmm}
 \title{Predictions from Non-homogeneous Hidden Markov Models}
 \usage{
 \method{predict}{nhmm}(
@@ -10,25 +10,25 @@
   newdata,
   newdata2 = NULL,
   condition = NULL,
-  type = c("observations", "states", "conditionals"),
+  type = c("state", "response", "transition", "emission"),
   probs = c(0.025, 0.975),
   boot_idx = FALSE,
   ...
 )
 
-\method{predict}{fanhmm}(
+\method{predict}{mnhmm}(
   object,
   newdata,
   newdata2 = NULL,
   condition = NULL,
-  type = c("observations", "states", "conditionals"),
+  type = c("state", "response", "transition", "emission"),
   probs = c(0.025, 0.975),
   boot_idx = FALSE,
   ...
 )
 }
 \arguments{
-\item{object}{An object of class \code{nhmm}, \code{mnhmm}, or \code{fanhmm}.}
+\item{object}{An object of class \code{nhmm} or \code{mnhmm}.}
 
 \item{newdata}{A data frame used for computing the predictions.}
 
@@ -38,18 +38,20 @@ estimates are differences between predictions using \code{newdata} and \code{new
 \item{condition}{An optional vector of variable names used for conditional
 predictions.}
 
-\item{type}{A character string specifying the type of predictions. Possible
-values are \code{"observations"} (marginal probabilities of observations),
-\code{"states"} (marginals of states), and \code{"conditionals"} (emission probabilities).
-Default computes all of these.}
+\item{type}{A character vector defining the marginal predictions of
+interest. Can be one or multiple of \code{"state"}, \code{"response"}, \code{"transition"},
+and \code{"emission"}. Default is to compute all of these.}
 
 \item{probs}{A numeric vector of quantiles to compute.}
 
 \item{boot_idx}{Logical indicating whether to use bootstrap samples in
-marginalization when computing quantiles. Default is \code{FALSE}.}
+marginalization when computing quantiles. Default is \code{FALSE}. Currently
+only used in case where \code{condition} is \code{NULL} and}
 
 \item{...}{Ignored.}
 }
 \description{
-Predictions from Non-homogeneous Hidden Markov Models
+This function computes the marginal forward predictions for NHMMs and
+MNHMMs, where the marginalization is (by default) over individuals and time
+points, weighted by the latent state probabilities.
 }

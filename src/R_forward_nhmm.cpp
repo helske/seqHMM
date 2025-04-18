@@ -1,8 +1,9 @@
 // forward algorithm for NHMM
+#include "config.h"
 #include "nhmm.h"
 
 // [[Rcpp::export]]
-arma::cube forward_nhmm(
+arma::cube Rcpp_forward_nhmm(
     const arma::ucube& obs,
     const arma::uvec& Ti,
     const arma::uvec& M,
@@ -24,7 +25,5 @@ arma::cube forward_nhmm(
       obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, 
       iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B
   );
-  arma::cube log_alpha(model.S, model.T, model.N, arma::fill::value(arma::datum::nan));
-  model.forward(log_alpha);
-  return log_alpha;
+  return model.forward();
 }

@@ -25,17 +25,17 @@ bootstrap_model <- function(model, ids) {
 #' Permute states of bootstrap sample to match MLE
 #' @noRd
 permute_states <- function(gammas_boot, gammas_mle) {
-  C <- length(gammas_mle$B)
+  C <- length(gammas_mle$gamma_B)
   m <- cost_matrix(
-    gammas_boot$pi, gammas_mle$pi, 
-    gammas_boot$A, gammas_mle$A,
-    gammas_boot$B, gammas_mle$B
+    gammas_boot$gamma_pi, gammas_mle$gamma_pi, 
+    gammas_boot$gamma_A, gammas_mle$gamma_A,
+    gammas_boot$gamma_B, gammas_mle$gamma_B
   )
   perm <- RcppHungarian::HungarianSolver(m)$pairs[, 2]
-  gammas_boot$pi <- gammas_boot$pi[perm, , drop = FALSE]
-  gammas_boot$A <- gammas_boot$A[perm, , perm, drop = FALSE]
+  gammas_boot$gamma_pi <- gammas_boot$gamma_pi[perm, , drop = FALSE]
+  gammas_boot$gamma_A <- gammas_boot$gamma_A[perm, , perm, drop = FALSE]
   for (c in seq_len(C)) {
-    gammas_boot$B[[c]] <- gammas_boot$B[[c]][, , perm, drop = FALSE]
+    gammas_boot$gamma_B[[c]] <- gammas_boot$gamma_B[[c]][, , perm, drop = FALSE]
   }
   gammas_boot
 }
@@ -48,10 +48,10 @@ permute_clusters <- function(model, pcp_mle) {
   )
   m <- cost_matrix_clusters(pcp, pcp_mle)
   perm <- RcppHungarian::HungarianSolver(m)$pairs[, 2]
-  model$gammas$omega[perm, , drop = FALSE]
-  model$gammas$pi <- model$gammas$pi[perm]
-  model$gammas$A <- model$gammas$A[perm]
-  model$gammas$B <- model$gammas$B[perm]
+  model$gammas$gamma_omega[perm, , drop = FALSE]
+  model$gammas$gamma_pi <- model$gammas$gamma_pi[perm]
+  model$gammas$gamma_A <- model$gammas$gamma_A[perm]
+  model$gammas$gamma_B <- model$gammas$gamma_B[perm]
   model
 }
 #' Bootstrap Sampling of NHMM Coefficients
@@ -100,7 +100,7 @@ bootstrap_coefs.nhmm <- function(model, nsim,
     checkmate::test_logical(x = append), 
     "Argument {.arg append} must be a single logical value."
   )
-  init <- stats::setNames(model$etas, c("eta_pi", "eta_A", "eta_B"))
+  init <- model$etas
   gammas_mle <- model$gammas
   lambda <- model$estimation_results$lambda
   bound <- model$estimation_results$bound
@@ -134,23 +134,19 @@ bootstrap_coefs.nhmm <- function(model, nsim,
     idx <- do.call(cbind, lapply(out, "[[", "idx"))
     out <- lapply(out, "[[", "gammas")
   } else {
-    N <- model$n_sequences
-    T_ <- model$sequence_lengths
-    M <- model$n_symbols
     S <- model$n_states
     formula_pi <- model$initial_formula
     formula_A <- model$transition_formula
     formula_B <- model$emission_formula
-    d <- copy(model$data)
     time_var <- model$time_variable
     id_var <- model$id_variable
-    y <- model$responses
-    d[, y := NULL, env = list(y = I(y))]
+    d <- model$data[, .SD[seq_len(model$sequence_lengths[.GRP])], by = id_var]
     out <- future.apply::future_lapply(
       seq_len(nsim), \(i) {
         mod <- simulate_nhmm(
-          N, T_, M, S, formula_B, formula_pi, formula_A,
-          d, id_var, time_var, init, 0)$model
+          S, formula_B, formula_pi, formula_A, d, id_var, time_var,
+          init, init_sd = 0
+        )$model
         fit <- fit_nhmm(
           mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
           method = method, bound = bound, control = control,
@@ -167,9 +163,9 @@ bootstrap_coefs.nhmm <- function(model, nsim,
     )
   }
   boot <- list(
-    gamma_pi = lapply(out, "[[", "pi"), 
-    gamma_A = lapply(out, "[[", "A"), 
-    gamma_B = lapply(out, "[[", "B")
+    gamma_pi = lapply(out, "[[", "gamma_pi"), 
+    gamma_A = lapply(out, "[[", "gamma_A"), 
+    gamma_B = lapply(out, "[[", "gamma_B")
   )
   boot <- lapply(boot,  function(x) x[lengths(x) > 0])
   if (length(boot[[1]]) < nsim) {
@@ -216,7 +212,7 @@ bootstrap_coefs.mnhmm <- function(model, nsim,
     checkmate::test_logical(x = append), 
     "Argument {.arg append} must be a single logical value."
   )
-  init <- stats::setNames(model$etas, c("eta_pi", "eta_A", "eta_B", "eta_omega"))
+  init <- model$etas
   gammas_mle <- model$gammas
   D <- model$n_clusters
   pcp_mle <- matrix(
@@ -246,12 +242,12 @@ bootstrap_coefs.mnhmm <- function(model, nsim,
           fit <- permute_clusters(fit, pcp_mle)
           for (j in seq_len(D)) {
             out <- permute_states(
-              lapply(fit$gammas[c("pi", "A", "B")], "[[", j), 
-              lapply(gammas_mle[c("pi", "A", "B")], "[[", j)
+              lapply(fit$gammas[c("gamma_pi", "gamma_A", "gamma_B")], "[[", j), 
+              lapply(gammas_mle[c("gamma_pi", "gamma_A", "gamma_B")], "[[", j)
             )
-            fit$gammas$pi[[j]] <- out$pi
-            fit$gammas$A[[j]] <- out$A
-            fit$gammas$B[[j]] <- out$B
+            fit$gammas$gamma_pi[[j]] <- out$gamma_pi
+            fit$gammas$gamma_A[[j]] <- out$gamma_A
+            fit$gammas$gamma_B[[j]] <- out$gamma_B
           }
         } else {
           fit$gammas <- NULL
@@ -263,24 +259,20 @@ bootstrap_coefs.mnhmm <- function(model, nsim,
     idx <- do.call(cbind, lapply(out, "[[", "idx"))
     out <- lapply(out, "[[", "gammas")
   } else {
-    N <- model$n_sequences
-    T_ <- model$sequence_lengths
-    M <- model$n_symbols
     S <- model$n_states
     formula_pi <- model$initial_formula
     formula_A <- model$transition_formula
     formula_B <- model$emission_formula
     formula_omega <- model$cluster_formula
-    d <- copy(model$data)
     time_var <- model$time_variable
     id_var <- model$id_variable
-    y <- model$responses
-    d[, y := NULL, env = list(y = I(y))]
+    d <- model$data[, .SD[seq_len(model$sequence_lengths[.GRP])], by = id_var]
     out <- future.apply::future_lapply(
       seq_len(nsim), \(i) {
         mod <- simulate_mnhmm(
-          N, T_, M, S, D, formula_B, formula_pi, formula_A, formula_omega,
-          d, id_var, time_var, init, 0)$model
+          S, D, formula_B, formula_pi, formula_A, formula_omega, d, id_var, 
+          time_var, init, init_sd = 0
+        )$model
         fit <- fit_mnhmm(
           mod, init, init_sd = 0, restarts = 0, lambda = lambda, 
           method = method, bound = bound, control = control,
@@ -290,12 +282,12 @@ bootstrap_coefs.mnhmm <- function(model, nsim,
           fit <- permute_clusters(fit, pcp_mle)
           for (j in seq_len(D)) {
             out <- permute_states(
-              lapply(fit$gammas[c("pi", "A", "B")], "[[", j), 
-              lapply(gammas_mle[c("pi", "A", "B")], "[[", j)
+              lapply(fit$gammas[c("gamma_pi", "gamma_A", "gamma_B")], "[[", j), 
+              lapply(gammas_mle[c("gamma_pi", "gamma_A", "gamma_B")], "[[", j)
             )
-            fit$gammas$pi[[j]] <- out$pi
-            fit$gammas$A[[j]] <- out$A
-            fit$gammas$B[[j]] <- out$B
+            fit$gammas$gamma_pi[[j]] <- out$gamma_pi
+            fit$gammas$gamma_A[[j]] <- out$gamma_A
+            fit$gammas$gamma_B[[j]] <- out$gamma_B
           }
         } else {
           fit$gammas <- NULL
@@ -307,10 +299,10 @@ bootstrap_coefs.mnhmm <- function(model, nsim,
     
   }
   boot <- list(
-    gamma_pi = lapply(out, "[[", "pi"), 
-    gamma_A = lapply(out, "[[", "A"), 
-    gamma_B = lapply(out, "[[", "B"),
-    gamma_omega = lapply(out, "[[", "omega")
+    gamma_pi = lapply(out, "[[", "gamma_pi"), 
+    gamma_A = lapply(out, "[[", "gamma_A"), 
+    gamma_B = lapply(out, "[[", "gamma_B"),
+    gamma_omega = lapply(out, "[[", "gamma_omega")
   )
   boot <- lapply(boot,  function(x) x[lengths(x) > 0])
   if (length(boot[[1]]) < nsim) {
