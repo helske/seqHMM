@@ -6,16 +6,14 @@
 \alias{get_cluster_probs.mhmm}
 \title{Extract the Prior Cluster Probabilities of MHMM or MNHMM}
 \usage{
-get_cluster_probs(model, ...)
+get_cluster_probs(model)
 
-\method{get_cluster_probs}{mnhmm}(model, ...)
+\method{get_cluster_probs}{mnhmm}(model)
 
-\method{get_cluster_probs}{mhmm}(model, ...)
+\method{get_cluster_probs}{mhmm}(model)
 }
 \arguments{
 \item{model}{A hidden Markov model.}
-
-\item{...}{Ignored.}
 }
 \description{
 Extract the Prior Cluster Probabilities of MHMM or MNHMM

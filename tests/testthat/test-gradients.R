@@ -27,10 +27,10 @@ test_that("Gradients for singlechannel-NHMM are correct", {
   X_pi <- model$X_pi
   X_A <- model$X_A
   X_B <- model$X_B
-  K_pi <- nrow(X_pi)
-  K_A <- nrow(X_A)
-  K_B <- vapply(X_B, \(x) nrow(x), 1L)
-  obs <- create_obsArray(model)
+  K_pi <- K(X_pi)
+  K_A <- K(X_A)
+  K_B <- K(X_B)
+  obs <- create_obs(model)
   pars <- stats::rnorm(np_pi + np_A + np_B)
   
   f <- function(pars) {
@@ -90,10 +90,10 @@ test_that("Gradients for multichannel-NHMM are correct", {
   X_pi <- model$X_pi
   X_A <- model$X_A
   X_B <- model$X_B
-  K_pi <- nrow(X_pi)
-  K_A <- nrow(X_A)
-  K_B <- vapply(X_B, \(x) nrow(x), 1L)
-  obs <- create_obsArray(model)
+  K_pi <- K(X_pi)
+  K_A <- K(X_A)
+  K_B <- K(X_B)
+  obs <- create_obs(model)
   pars <- stats::rnorm(np_pi + np_A + np_B)
   
   f <- function(pars) {
@@ -155,11 +155,11 @@ test_that("Gradients for singlechannel-MNHMM are correct", {
   X_A <- model$X_A
   X_B <- model$X_B
   X_omega <- model$X_omega
-  K_pi <- nrow(X_pi)
-  K_A <- nrow(X_A)
-  K_B <- vapply(X_B, \(x) nrow(x), 1L)
-  K_omega <- nrow(X_omega)
-  obs <- create_obsArray(model)
+  K_omega <- K(X_omega)
+  K_pi <- K(X_pi)
+  K_A <- K(X_A)
+  K_B <- K(X_B)
+  obs <- create_obs(model)
   pars <- stats::rnorm(np_pi + np_A + np_B + np_omega)
   f <- function(pars) {
     eta_pi <- create_eta_pi_mnhmm(pars[seq_len(np_pi)], S, K_pi, D)
@@ -231,11 +231,11 @@ test_that("Gradients for multichannel-MNHMM are correct", {
   X_A <- model$X_A
   X_B <- model$X_B
   X_omega <- model$X_omega
-  K_pi <- nrow(X_pi)
-  K_A <- nrow(X_A)
-  K_B <- vapply(X_B, \(x) nrow(x), 1L)
-  K_omega <- nrow(X_omega)
-  obs <- create_obsArray(model)
+  K_omega <- K(X_omega)
+  K_pi <- K(X_pi)
+  K_A <- K(X_A)
+  K_B <- K(X_B)
+  obs <- create_obs(model)
   pars <- stats::rnorm(np_pi + np_A + np_B + np_omega)
   f <- function(pars) {
     eta_pi <- create_eta_pi_mnhmm(pars[seq_len(np_pi)], S, K_pi, D)

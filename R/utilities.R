@@ -114,25 +114,32 @@ split_mnhmm <- function(x) {
 }
 
 io <- function(X) {
-  if (is.list(X)) { 
-    vapply(X, \(x) attr(x, "icpt_only"), TRUE)
-  } else {
-    attr(X, "icpt_only")
+  out <- attr(X, "icpt_only")
+  if (is.null(out)) { 
+    out <- vapply(X, io, TRUE)
   }
+  out
 }
 iv <- function(X) {
-  if (is.list(X)) { 
-    vapply(X, \(x) attr(x, "iv"), TRUE)
-  } else {
-    attr(X, "iv")
+  out <- attr(X, "iv")
+  if (is.null(out)) { 
+    out <- vapply(X, iv, TRUE)
   }
+  out
 }
 tv <- function(X) {
-  if (is.list(X)) { 
-    vapply(X, \(x) attr(x, "tv"), TRUE)
-  } else {
-    attr(X, "tv")
+  out <- attr(X, "tv")
+  if (is.null(out)) { 
+    out <- vapply(X, tv, TRUE)
   }
+  out
+}
+K <- function(X) {
+  out <- length(attr(X, "coef_names"))
+  if (out == 0) { 
+    out <- vapply(X, K, 1L)
+  }
+  out
 }
 #' Check if x is a list of length n consisting of lists
 #' @noRd
@@ -235,34 +242,40 @@ intercept_only <- function(f) {
 #' Create obsArray for Various C++ functions
 #' 
 #' @noRd
+create_obs <- function(model) {
+  lapply(
+    split(model$data, by = model$id_variable),
+    \(d) {
+      matrix(
+        unlist(lapply(
+          model$responses,
+          \(y) {
+            obs <- as.integer(d[[y]]) - 1L
+            obs[is.na(obs)] <- model$n_symbols[y]
+            obs
+          }
+        )),
+        nrow = model$n_channels, byrow = TRUE
+      )
+    }
+  )
+}
+#' Create obsArray for various pre-2.0.0 C++ functions
+#' 
+#' @noRd
 create_obsArray <- function(model) {
-  
-  if (inherits(model, c("nhmm", "mnhmm"))) {
-    obsArray <- array(
-      0L, 
-      c(model$length_of_sequences, model$n_sequences, model$n_channels)
-    )
-    for (i in seq_along(model$responses)) {
-      obs <- as.integer(model$data[[model$responses[i]]]) - 1L
-      obs[is.na(obs)] <- model$n_symbols[i]
-      obsArray[, , i] <- obs
-    }
-    obsArray <- aperm(obsArray, c(3, 1, 2))
-  } else {
-    obsArray <- array(
-      0L, 
-      c(model$n_sequences, model$length_of_sequences, model$n_channels)
-    )
-    if (model$n_channels == 1) {
-      model$observations <- list(model$observations)
-    }
-    for (i in seq_len(model$n_channels)) {
-      obsArray[, , i] <- unlist(lapply(model$observations[[i]], as.integer)) - 1L
-      obsArray[, , i][obsArray[, , i] > model$n_symbols[i]] <- model$n_symbols[i]
-    }
-    obsArray <- aperm(obsArray)
+  obsArray <- array(
+    0L, 
+    c(model$n_sequences, model$length_of_sequences, model$n_channels)
+  )
+  if (model$n_channels == 1) {
+    model$observations <- list(model$observations)
   }
-  obsArray
+  for (i in seq_len(model$n_channels)) {
+    obsArray[, , i] <- unlist(lapply(model$observations[[i]], as.integer)) - 1L
+    obsArray[, , i][obsArray[, , i] > model$n_symbols[i]] <- model$n_symbols[i]
+  }
+  aperm(obsArray)
 }
 #' Create emissionArray for various pre-2.0.0 C++ functions
 #' 

@@ -3,15 +3,16 @@
 bootstrap_model <- function(model, ids) {
   id <- y <- NULL
   idx <- sort(sample.int(model$n_sequences, replace = TRUE))
-  ids <- ids[idx]
-  model$data <- model$data[list(ids), on = model$id_variable]
-  new_ids <- rep(seq_len(model$n_sequences), each = model$length_of_sequences)
-  model$data[, id := new_ids, env = list(id = model$id_variable)]
   model$sequence_lengths <- model$sequence_lengths[idx]
+  ids <- ids[idx]
+  model$data <- model$data[list(ids), on = model$id_variable, 
+                           allow.cartesian = TRUE]
+  new_ids <- rep(seq_len(model$n_sequences), times = model$sequence_lengths)
+  set(model$data, j = model$id_variable, value = new_ids)
   model$X_pi[] <- model$X_pi[, idx]
-  model$X_A[] <- model$X_A[, , idx]
+  model$X_A[] <- model$X_A[idx]
   for (y in model$responses) {
-    model$X_B[[y]][] <- model$X_B[[y]][, , idx]
+    model$X_B[[y]][] <- model$X_B[[y]][idx]
   }
   if (inherits(model, "mnhmm")) {
     model$X_omega[] <- model$X_omega[, idx]
@@ -140,11 +141,10 @@ bootstrap_coefs.nhmm <- function(model, nsim,
     formula_B <- model$emission_formula
     time_var <- model$time_variable
     id_var <- model$id_variable
-    d <- model$data[, .SD[seq_len(model$sequence_lengths[.GRP])], by = id_var]
     out <- future.apply::future_lapply(
       seq_len(nsim), \(i) {
         mod <- simulate_nhmm(
-          S, formula_B, formula_pi, formula_A, d, id_var, time_var,
+          S, formula_B, formula_pi, formula_A,  model$data, id_var, time_var,
           init, init_sd = 0
         )$model
         fit <- fit_nhmm(
@@ -266,12 +266,11 @@ bootstrap_coefs.mnhmm <- function(model, nsim,
     formula_omega <- model$cluster_formula
     time_var <- model$time_variable
     id_var <- model$id_variable
-    d <- model$data[, .SD[seq_len(model$sequence_lengths[.GRP])], by = id_var]
     out <- future.apply::future_lapply(
       seq_len(nsim), \(i) {
         mod <- simulate_mnhmm(
-          S, D, formula_B, formula_pi, formula_A, formula_omega, d, id_var, 
-          time_var, init, init_sd = 0
+          S, D, formula_B, formula_pi, formula_A, formula_omega, model$data, 
+          id_var, time_var, init, init_sd = 0
         )$model
         fit <- fit_mnhmm(
           mod, init, init_sd = 0, restarts = 0, lambda = lambda, 

@@ -90,14 +90,26 @@ logLik.nhmm <- function(object, partials = FALSE, ...) {
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")
   if (partials || is.null(object$estimation_results$loglik)) {
-    ll <- Rcpp_loglik_nhmm(
-      create_obsArray(object), object$sequence_lengths, object$n_symbols, 
-      object$X_pi, object$X_A, object$X_B, 
-      io(object$X_pi), io(object$X_A), io(object$X_B),
-      iv(object$X_A), iv(object$X_B),
-      tv(object$X_A), tv(object$X_B),
-      object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B
-    )
+    if (inherits(object, "fanhmm")) {
+      ll <- Rcpp_loglik_fanhmm(
+        create_obs(object), object$sequence_lengths, object$n_symbols, 
+        object$X_pi, object$X_A, object$X_B, 
+        io(object$X_pi), io(object$X_A), io(object$X_B),
+        iv(object$X_A), iv(object$X_B),
+        tv(object$X_A), tv(object$X_B),
+        object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B,
+        object$prior_obs, object$W_X_B
+      )
+    } else {
+      ll <- Rcpp_loglik_nhmm(
+        create_obs(object), object$sequence_lengths, object$n_symbols, 
+        object$X_pi, object$X_A, object$X_B, 
+        io(object$X_pi), io(object$X_A), io(object$X_B),
+        iv(object$X_A), iv(object$X_B),
+        tv(object$X_A), tv(object$X_B),
+        object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B
+      )
+    }
     if (!is.null(object$estimation_results$lambda)) {
       ll <- ll - 0.5 * object$estimation_results$lambda * sum(unlist(object$etas)^2) / object$n_sequences
     }
@@ -118,14 +130,25 @@ logLik.mnhmm <- function(object, partials = FALSE, ...) {
   df <- attr(object, "df")
   nobs <- attr(object, "nobs")
   if (partials || is.null(object$estimation_results$loglik)) {
-    ll <- Rcpp_loglik_mnhmm(
-      create_obsArray(object), object$sequence_lengths, object$n_symbols, 
-      object$X_pi, object$X_A, object$X_B, object$X_omega,
-      io(object$X_pi), io(object$X_A), io(object$X_B), io(object$X_omega),
-      iv(object$X_A), iv(object$X_B), tv(object$X_A), tv(object$X_B),
-      object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B, 
-      object$gammas$gamma_omega
-    )
+    if (inherits(object, "fanhmm")) {
+      ll <- Rcpp_loglik_mfanhmm(
+        create_obs(object), object$sequence_lengths, object$n_symbols, 
+        object$X_pi, object$X_A, object$X_B, object$X_omega,
+        io(object$X_pi), io(object$X_A), io(object$X_B), io(object$X_omega),
+        iv(object$X_A), iv(object$X_B), tv(object$X_A), tv(object$X_B),
+        object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B, 
+        object$gammas$gamma_omega, object$prior_obs, object$W_X_B
+      )
+    } else {
+      ll <- Rcpp_loglik_mnhmm(
+        create_obs(object), object$sequence_lengths, object$n_symbols, 
+        object$X_pi, object$X_A, object$X_B, object$X_omega,
+        io(object$X_pi), io(object$X_A), io(object$X_B), io(object$X_omega),
+        iv(object$X_A), iv(object$X_B), tv(object$X_A), tv(object$X_B),
+        object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B, 
+        object$gammas$gamma_omega
+      )
+    }
     if (!is.null(object$estimation_results$lambda)) {
       ll <- ll - 0.5 * object$estimation_results$lambda * sum(unlist(object$etas)^2) / object$n_sequences
     }
@@ -147,7 +170,7 @@ logLik.fanhmm <- function(object, partials = FALSE, ...) {
   nobs <- attr(object, "nobs")
   if (partials || is.null(object$estimation_results$loglik)) {
     ll <- Rcpp_loglik_fanhmm(
-      create_obsArray(object), object$sequence_lengths, object$n_symbols, 
+      create_obs(object), object$sequence_lengths, object$n_symbols, 
       object$X_pi, object$X_A, object$X_B, 
       io(object$X_pi), io(object$X_A), io(object$X_B),
       iv(object$X_A), iv(object$X_B),

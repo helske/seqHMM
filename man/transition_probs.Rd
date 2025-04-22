@@ -8,20 +8,18 @@
 \alias{get_transition_probs.mhmm}
 \title{Extract the State Transition Probabilities of Hidden Markov Model}
 \usage{
-get_transition_probs(model, ...)
+get_transition_probs(model)
 
-\method{get_transition_probs}{nhmm}(model, ...)
+\method{get_transition_probs}{nhmm}(model)
 
-\method{get_transition_probs}{mnhmm}(model, ...)
+\method{get_transition_probs}{mnhmm}(model)
 
-\method{get_transition_probs}{hmm}(model, ...)
+\method{get_transition_probs}{hmm}(model)
 
-\method{get_transition_probs}{mhmm}(model, ...)
+\method{get_transition_probs}{mhmm}(model)
 }
 \arguments{
 \item{model}{A hidden Markov model.}
-
-\item{...}{Ignored.}
 }
 \description{
 Extract the State Transition Probabilities of Hidden Markov Model

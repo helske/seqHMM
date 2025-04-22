@@ -71,12 +71,12 @@ arma::mat get_pi_all(const arma::mat& gamma, const arma::mat& X) {
 // gamma is S x K x S (transition to, covariates, transition from)
 // X is K x T x N cube (covariates, time points, sequences)
 // [[Rcpp::export]]
-arma::field<arma::cube> get_A_all(const arma::cube& gamma, const arma::cube& X, 
-                                  const bool tv, const arma::uvec& Ti) {
-  arma::uword N = X.n_slices;
+arma::field<arma::cube> get_A_all(
+    const arma::cube& gamma, const arma::field<arma::mat>& X, const bool tv) {
+  arma::uword N = X.n_elem;
   arma::field<arma::cube> A(N);
   for (arma::uword i = 0; i < N; ++i) {
-    A(i) = get_A(gamma, X.slice(i).cols(0, Ti(i) - 1), tv);
+    A(i) = get_A(gamma, X(i), tv);
   }
   return A;
 }
@@ -84,12 +84,11 @@ arma::field<arma::cube> get_A_all(const arma::cube& gamma, const arma::cube& X,
 // X is K x T (covariates, time points)
 // [[Rcpp::export]]
 arma::field<arma::cube> get_B_all(
-    const arma::cube& gamma,  const arma::cube& X, const bool tv, 
-    const arma::uvec& Ti) {
-  arma::uword N = X.n_slices;
+    const arma::cube& gamma,  const arma::field<arma::mat>& X, const bool tv) {
+  arma::uword N = X.n_elem;
   arma::field<arma::cube> B(N);
   for (arma::uword i = 0; i < N; ++i) {
-    B(i) = get_B(gamma, X.slice(i).cols(0, Ti(i) - 1), tv);
+    B(i) = get_B(gamma, X(i), tv);
   }
   return B;
 }

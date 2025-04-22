@@ -1,29 +1,32 @@
-#ifndef FANHMM_H
-#define FANHMM_H
+#ifndef MFANHMM_H
+#define MFANHMM_H
 
 #include "config.h"
-#include "nhmm.h"
+#include "mnhmm.h"
 
-class fanhmm : public nhmm {
+class mfanhmm : public mnhmm {
   
 public:
-  fanhmm(
+  mfanhmm(
     const arma::field<arma::umat>& obs,
     const arma::uvec& Ti,
     const arma::uvec& M,
     const arma::mat& X_pi,
     const arma::field<arma::mat>& X_A,
     arma::field<arma::mat>&& X_B,
+    const arma::mat& X_omega,
     const bool icpt_only_pi,
     const bool icpt_only_A,
     const arma::uvec& icpt_only_B,
+    const bool icpt_only_omega,
     const bool iv_A,
     const arma::uvec& iv_B,
     const bool tv_A,
     const arma::uvec& tv_B,
-    const arma::mat& gamma_pi,
-    const arma::cube& gamma_A,
+    const arma::field<arma::mat>& gamma_pi,
+    const arma::field<arma::cube>& gamma_A,
     const arma::field<arma::cube>& gamma_B,
+    const arma::mat& gamma_omega,
     const arma::vec& prior_y,
     const Rcpp::List& W_X_B,
     double maxval_ = arma::datum::inf,

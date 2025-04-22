@@ -1,10 +1,10 @@
-// simulate MNHMMs
+// forward algorithm for NHMM
 #include "config.h"
-#include "nhmm.h"
+#include "fanhmm.h"
 #include "list_to_field.h"
 
 // [[Rcpp::export]]
-Rcpp::List Rcpp_simulate_nhmm(
+arma::vec Rcpp_loglik_fanhmm(
     const arma::field<arma::umat>& obs,
     const arma::uvec& Ti,
     const arma::uvec& M,
@@ -20,13 +20,15 @@ Rcpp::List Rcpp_simulate_nhmm(
     const arma::uvec& tv_B,
     const arma::mat& gamma_pi,
     const arma::cube& gamma_A,
-    const arma::field<arma::cube>& gamma_B) {
+    const arma::field<arma::cube>& gamma_B,
+    const arma::vec& prior_y,
+    const Rcpp::List& W_X_B) {
   
-  nhmm model(
+  fanhmm model(
       obs, Ti, M, X_pi, X_A, matlist_to_2d_field(X_B), 
       icpt_only_pi, icpt_only_A, icpt_only_B, 
-      iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B
+      iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B,
+      prior_y, W_X_B
   );
-
-  return model.simulate();
+  return model.loglik();
 }

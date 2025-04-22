@@ -1,108 +1,66 @@
 #' Compute marginal and conditional probabilities from joint distributions 
 #' obtained from predict based on forward predictions
 #' @noRd
-predict_y_B <- function(x, newdata, response, cond, only_estimates = TRUE, 
-                        cluster = NULL) {
+predict_y_B <- function(x, newdata, response, cond) {
   # avoid CRAN check warnings due to NSE
   estimate <- probability <- NULL
   set(newdata, j = "estimate", value = x)
-  cond_all <- c(cond, cluster, "state", response)
+  cond_all <- c(cond, "state", response)
   # Compute joint distribution P(Y_t, Z_t)
   d <- newdata[, list(probability = mean(estimate)), by = cond_all]
   setorderv(d, cond_all)
-  if (only_estimates) {
-    out_y <- d[, list(probability = sum(probability)), 
-               by = c(cluster, response, cond)]$probability
-    out_B <- d[, "probability" := list(probability / sum(probability)), 
-               by = c(cluster, "state", cond)]$probability
-  } else {
-    out_y <- d[, list(probability = sum(probability)), 
-               by = c(cluster, response, cond)]
-    out_B <- d[, "probability" := list(probability / sum(probability)), 
-               by = c(cluster, "state", cond)]
-  }
+  out_y <- d[, list(probability = sum(probability)), 
+             by = c(response, cond)]
+  out_B <- d[, "probability" := list(probability / sum(probability)), 
+             by = c("state", cond)]
+  
   list(y = out_y, B = out_B)
 }
-predict_z_A <- function(x, newdata, cond, only_estimates = TRUE, cluster = NULL) {
+predict_z_A <- function(x, newdata, cond) {
   # avoid CRAN check warnings due to NSE
   estimate <- probability <- NULL
   set(newdata, j = "estimate", value = x)
-  cond_all <- c(cond, cluster, "state_from", "state_to")
+  cond_all <- c(cond, "state_from", "state_to")
   # Compute joint distribution P(Z_t-1, Z_t)
   d <- newdata[, list(probability = mean(estimate)), by = cond_all]
   setorderv(d, cond_all)
-  if (only_estimates) {
-    out_z <- d[, list(probability = sum(probability)), 
-               by = c(cluster, "state_to", cond)]$probability
-    out_A <- d[, "probability" := list(probability / sum(probability)), 
-               by = c(cluster, "state_from", cond)]$probability
-  } else {
-    out_z <- d[, list(probability = sum(probability)), by = c(cluster, "state_to", cond)]
-    out_A <- d[, "probability" := list(probability / sum(probability)), 
-               by = c(cluster, "state_from", cond)]
-  }
+  out_z <- d[, list(probability = sum(probability)), by = c("state_to", cond)]
+  out_A <- d[, "probability" := list(probability / sum(probability)), 
+             by = c("state_from", cond)]
+  
   list(z = out_z, A = out_A)
 }
 
-.predict <- function(
-    dy, dz, condition, obs, object, type_y, type_B, type_z, type_A, 
-    only_estimates = TRUE) {
+.predict_nhmm <- function(
+    dy, dz, condition, obs, object, type_y, type_B, type_z, type_A) {
   
   if (inherits(object, "fanhmm")) {
-    if (inherits(object, "nhmm")) {
-      out <- Rcpp_predict_fanhmm(
-        obs, object$sequence_lengths, object$n_symbols, 
-        object$X_pi, object$X_A, object$X_B, 
-        io(object$X_pi), io(object$X_A), io(object$X_B), 
-        iv(object$X_A), iv(object$X_B), tv(object$X_A), tv(object$X_B),
-        object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B,
-        object$prior_y0, object$W_X_B, object$W_A, object$W_B
-      )
-    } else {
-      out <- Rcpp_predict_mfanhmm(
-        obs, object$sequence_lengths, object$n_symbols, 
-        object$X_pi, object$X_A, object$X_B, object$X_omega,
-        io(object$X_pi), io(object$X_A), io(object$X_B), io(object$X_omega),
-        iv(object$X_A), iv(object$X_B), tv(object$X_A), tv(object$X_B),
-        object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B,
-        object$gammas$gamma_omega,
-        object$prior_y0, object$W_X_B, object$W_A, object$W_B
-      )
-    }
+    out <- Rcpp_predict_fanhmm(
+      obs, object$sequence_lengths, object$n_symbols, 
+      object$X_pi, object$X_A, object$X_B, 
+      io(object$X_pi), io(object$X_A), io(object$X_B), 
+      iv(object$X_A), iv(object$X_B), tv(object$X_A), tv(object$X_B),
+      object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B,
+      object$prior_y0, object$W_X_B, object$W_A, object$W_B
+    )
   } else {
-    if (inherits(object, "nhmm")) {
-      out <- Rcpp_predict_nhmm(
-        obs, object$sequence_lengths, object$n_symbols, 
-        object$X_pi, object$X_A, object$X_B, 
-        io(object$X_pi), io(object$X_A), io(object$X_B), 
-        iv(object$X_A), iv(object$X_B), tv(object$X_A), tv(object$X_B),
-        object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B
-      )
-    } else {
-      out <- Rcpp_predict_mnhmm(
-        obs, object$sequence_lengths, object$n_symbols, 
-        object$X_pi, object$X_A, object$X_B, object$X_omega,
-        io(object$X_pi), io(object$X_A), io(object$X_B), io(object$X_omega),
-        iv(object$X_A), iv(object$X_B), tv(object$X_A), tv(object$X_B),
-        object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B,
-        object$gammas$gamma_omega
-      )
-    }
+    out <- Rcpp_predict_nhmm(
+      obs, object$sequence_lengths, object$n_symbols, 
+      object$X_pi, object$X_A, object$X_B, 
+      io(object$X_pi), io(object$X_A), io(object$X_B), 
+      iv(object$X_A), iv(object$X_B), tv(object$X_A), tv(object$X_B),
+      object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B
+    )
   }
   results_y <- results_B <- stats::setNames(
     vector("list", object$n_channels), object$responses
   )
   results_z <- results_A <- NULL
-  if (inherits(object, "mnhmm")) {
-    cluster <- "cluster"
-  } else {
-    cluster <- NULL
-  }
   if (type_y || type_B) {
     for (y in seq_along(object$responses)) {
       d <- predict_y_B(
         unlist(out$observations[y, ,]), dy[[y]], object$responses[y], 
-        condition, only_estimates, cluster
+        condition
       )
       if (type_y) {
         results_y[[y]] <- d$y  
@@ -113,7 +71,7 @@ predict_z_A <- function(x, newdata, cond, only_estimates = TRUE, cluster = NULL)
     }
   }
   if (type_z || type_A) {
-    d <- predict_z_A(unlist(out$states), dz, condition, only_estimates, cluster)
+    d <- predict_z_A(unlist(out$states), dz, condition)
     if (type_z) {
       results_z <- d$z
     }
@@ -123,6 +81,98 @@ predict_z_A <- function(x, newdata, cond, only_estimates = TRUE, cluster = NULL)
   }
   list(y = results_y, B = results_B, z = results_z, A = results_A)
 }
+.predict_mnhmm <- function(
+    dy, dz, condition, obs, object, type_y, type_B, type_z, type_A) {
+  # avoid CRAN check warnings due to NSE
+  probability <- NULL
+  if (inherits(object, "fanhmm")) {
+    out <- Rcpp_predict_mfanhmm(
+      obs, object$sequence_lengths, object$n_symbols, 
+      object$X_pi, object$X_A, object$X_B, object$X_omega,
+      io(object$X_pi), io(object$X_A), io(object$X_B), io(object$X_omega),
+      iv(object$X_A), iv(object$X_B), tv(object$X_A), tv(object$X_B),
+      object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B,
+      object$gammas$gamma_omega,
+      object$prior_y0, object$W_X_B, object$W_A, object$W_B
+    )
+  } else {
+    out <- Rcpp_predict_mnhmm(
+      obs, object$sequence_lengths, object$n_symbols, 
+      object$X_pi, object$X_A, object$X_B, object$X_omega,
+      io(object$X_pi), io(object$X_A), io(object$X_B), io(object$X_omega),
+      iv(object$X_A), iv(object$X_B), tv(object$X_A), tv(object$X_B),
+      object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B,
+      object$gammas$gamma_omega
+    )
+  }
+  results_z <- results_A <- results_y <- results_B <- stats::setNames(
+    vector("list", object$n_clusters), object$cluster_names
+  )
+  if (type_y || type_B) {
+    for (i in seq_along(object$cluster_names)) {
+      results_y[[i]] <- results_B[[i]] <- stats::setNames(
+        vector("list", object$n_channels), object$responses
+      )
+      states <- object$state_names[[i]]
+      for (y in seq_along(object$responses)) {
+        M <- object$n_symbols[y]
+        d <- predict_y_B(
+          unlist(out$observations[i, y,]), dy[[y]], object$responses[y], 
+          condition
+        )
+        if (type_y) {
+          results_y[[i]][[y]] <- d$y[, probability := probability / sum(probability)]
+        }
+        if (type_B) {
+          results_B[[i]][[y]] <- d$B
+          set(results_B[[i]][[y]], j = "state", value = rep(states, each = M))
+        }
+      }
+    }
+  }
+  if (type_z || type_A) {
+    for (i in seq_along(object$cluster_names)) {
+      d <- predict_z_A(unlist(out$states[i, ,]), dz, condition)
+      if (type_z) {
+        results_z[[i]] <- d$z[, probability := probability / sum(probability)] 
+      }
+      if (type_A) {
+        S <- length(states)
+        results_A[[i]] <- d$A
+        set(results_A[[i]], j = "state_from", value = rep(states, each = S))
+        set(results_A[[i]], j = "state_to", value = rep(states, S))
+      }
+    }
+  }
+  list(y = results_y, B = results_B, z = results_z, A = results_A)
+}
+prob_diff <- function(d1, d2, responses = NULL, clusters = NULL) {
+  if (is.null(clusters)) {
+    if (is.null(responses)) {
+      set(d1, j = "probability", 
+          value = d1[["probability"]] - d2[["probability"]])
+    } else {
+      for (y in responses) {
+        set(d1[[y]], j = "probability", 
+            value = d1[[y]][["probability"]] - d2[[y]][["probability"]])
+      }
+    }
+  } else {
+    for (i in seq_along(clusters)) {
+      if (is.null(responses)) {
+        set(d1[[i]], j = "probability", 
+            value = d1[[i]][["probability"]] - d2[[i]][["probability"]])
+      } else {
+        for (y in responses) {
+          set(d1[[y]], j = "probability", 
+              value = d1[[i]][[y]][["probability"]] - d2[[i]][[y]][["probability"]])
+        }
+      }
+    }
+  }
+}
+
+
 #' Predictions from Non-homogeneous Hidden Markov Models
 #'
 #' This function computes the marginal forward predictions for NHMMs and 
@@ -269,10 +319,9 @@ predict.nhmm <- function(
     }
   }
   
-  obs <- create_obsArray(object)
-  out <- .predict(
-    dy1, dz1, condition, obs, object, type_y, type_B, type_z, type_A,
-    only_estimates = FALSE
+  obs <- create_obs(object)
+  out <- .predict_nhmm(
+    dy1, dz1, condition, obs, object, type_y, type_B, type_z, type_A
   )
   if (type_y) out_y <- out$y
   if (type_B) out_B <- out$B
@@ -280,22 +329,14 @@ predict.nhmm <- function(
   if (type_A) out_A <- out$A
   
   if (!is.null(newdata2)) {
-    obs2 <- create_obsArray(object2)
-    out <- .predict(
+    obs2 <- create_obs(object2)
+    out <- .predict_nhmm(
       dy2, dz2, condition, obs2, object2, type_y, type_B, type_z, type_A
     )
-    if (type_y) {
-      for (y in responses) {
-        out_y[[y]][, probability := probability - out$y[[y]]]
-      }
-    } 
-    if (type_B) {
-      for (y in responses) {
-        out_B[[y]][, probability := probability - out$B[[y]]]
-      }
-    }
-    if (type_z) out_z[, probability := probability - out$z]
-    if (type_A) out_A[, probability := probability - out$A]
+    if (type_y) prob_diff(out_y, out$y, responses)
+    if (type_B) prob_diff(out_B, out$B, responses)
+    if (type_z) prob_diff(out_z, out$z)
+    if (type_A) prob_diff(out_A, out$A)
   }
   
   nsim <- length(object$boot$gamma_pi)
@@ -319,41 +360,41 @@ predict.nhmm <- function(
       object$gammas$gamma_pi <- object$boot$gamma_pi[[i]]
       object$gammas$gamma_A <- object$boot$gamma_A[[i]]
       object$gammas$gamma_B <- object$boot$gamma_B[[i]]
-      out <- .predict(
+      out <- .predict_nhmm(
         dy1, dz1, condition, obs, object, type_y, type_B, type_z, type_A
       )
       if (type_y) {
         for (y in responses) {
-          boot_y[[y]][, i] <- out$y[[y]]
+          boot_y[[y]][, i] <- out$y[[y]]$probability
         }
       }
       if (type_B) {
         for (y in responses) {
-          boot_B[[y]][, i] <- out$B[[y]]
+          boot_B[[y]][, i] <- out$B[[y]]$probability
         }
       }
-      if (type_z) boot_z[, i] <- out$z
-      if (type_A) boot_A[, i] <- out$A
+      if (type_z) boot_z[, i] <- out$z$probability
+      if (type_A) boot_A[, i] <- out$A$probability
       
       if (!is.null(newdata2)) {
         object2$gammas$gamma_pi <- object$boot$gamma_pi[[i]]
         object2$gammas$gamma_A <- object$boot$gamma_A[[i]]
         object2$gammas$gamma_B <- object$boot$gamma_B[[i]]
-        out <- .predict(
+        out <- .predict_nhmm(
           dy2, dz2, condition, obs2, object2, type_y, type_B, type_z, type_A
         )
         if (type_y) {
           for (y in responses) {
-            boot_y[[y]][, i] <- boot_y[[y]][, i] - out$y[[y]]
+            boot_y[[y]][, i] <- boot_y[[y]][, i] - out$y[[y]]$probability
           }
         }
         if (type_B) {
           for (y in responses) {
-            boot_B[[y]][, i] <- boot_B[[y]][, i] - out$B[[y]]
+            boot_B[[y]][, i] <- boot_B[[y]][, i] - out$B[[y]]$probability
           }
         }
-        if (type_z) boot_z[, i] <- boot_z[, i] - out$z
-        if (type_A) boot_A[, i] <- boot_A[, i] - out$A
+        if (type_z) boot_z[, i] <- boot_z[, i] - out$z$probability
+        if (type_A) boot_A[, i] <- boot_A[, i] - out$A$probability
       }
     }
     p <- paste0("q", 100 * probs)
@@ -471,55 +512,49 @@ predict.mnhmm <- function(
   type_A <- "transition" %in% type
   dy1 <- dy2 <- stats::setNames(vector("list", C), responses)
   dz1 <- dz2 <- NULL
+  states <- object$state_names[[1]]
   if (type_y || type_B) {
     for (y in responses) {
-      idx <- rep(seq_len(nrow(newdata)), each = D * S * M[y])
-      dy1[[y]] <- setDT(newdata, key = c(id, time))[
+      idx <- rep(seq_len(nrow(object$data)), each = S * M[y])
+      dy1[[y]] <- setDT(object$data, key = c(id, time))[
         idx, cols, env = list(cols = as.list(cond))
       ]
       n <- nrow(dy1[[y]])
-      cluster_names <- rep(rep(object$cluster_names, each = S), times = M[y])
-      state_names <- rep(unlist(object$state_names), times = M[y])
-      symbol_names <- rep(object$symbol_names[[y]], each = D * S)
-      set(dy1[[y]], j = "cluster", value = rep_len(cluster_names, n))
+      state_names <- rep(states, times = M[y])
+      symbol_names <- rep(object$symbol_names[[y]], each = S)
       set(dy1[[y]], j = "state", value = rep_len(state_names, n))
       set(dy1[[y]], j = y, value = rep_len(symbol_names, n))
       if (!is.null(newdata2)) {
-        dy2[[y]] <- setDT(newdata2, key = c(id, time))[
+        dy2[[y]] <- setDT(object2$data, key = c(id, time))[
           idx, cols, env = list(cols = as.list(cond))
         ]
-        set(dy2[[y]], j = "cluster", value = rep_len(cluster_names, n))
         set(dy2[[y]], j = "state", value = rep_len(state_names, n))
         set(dy2[[y]], j = y, value = rep_len(symbol_names, n))
       }
     }
   }
   if (type_z || type_A) {
-    idx <- rep(seq_len(nrow(newdata)), each = D * S * S)
-    dz1 <- setDT(newdata, key = c(id, time))[
+    idx <- rep(seq_len(nrow(object$data)), each = S * S)
+    dz1 <- setDT(object$data, key = c(id, time))[
       idx, cols, env = list(cols = as.list(cond))
     ]
     n <- nrow(dz1)
-    cluster_names <- rep(rep(object$cluster_names, each = S), times = S)
-    state_names_from <- rep(unlist(object$state_names), times = S)
-    state_names_to <- rep(unlist(object$state_names), each = D * S)
-    set(dz1, j = "cluster", value = rep_len(cluster_names, n))
+    state_names_from <- rep(states, times = S)
+    state_names_to <- rep(states, each = S)
     set(dz1, j = "state_from", value = rep_len(state_names_from, n))
     set(dz1, j = "state_to", value = rep_len(state_names_to, n))
     if (!is.null(newdata2)) {
-      dz2 <- setDT(newdata2, key = c(id, time))[
+      dz2 <- setDT(object2$data, key = c(id, time))[
         idx, cols, env = list(cols = as.list(cond))
       ]
-      set(dz2, j = "cluster", value = rep_len(cluster_names, n))
       set(dz2, j = "state_from", value = rep_len(state_names_from, n))
       set(dz2, j = "state_to", value = rep_len(state_names_to, n))
     }
   }
   
-  obs <- create_obsArray(object)
-  out <- .predict(
-    dy1, dz1, condition, obs, object, type_y, type_B, type_z, type_A,
-    only_estimates = FALSE
+  obs <- create_obs(object)
+  out <- .predict_mnhmm(
+    dy1, dz1, condition, obs, object, type_y, type_B, type_z, type_A
   )
   if (type_y) out_y <- out$y
   if (type_B) out_B <- out$B
@@ -527,22 +562,14 @@ predict.mnhmm <- function(
   if (type_A) out_A <- out$A
   
   if (!is.null(newdata2)) {
-    obs2 <- create_obsArray(object2)
-    out <- .predict(
+    obs2 <- create_obs(object2)
+    out <- .predict_mnhmm(
       dy2, dz2, condition, obs2, object2, type_y, type_B, type_z, type_A
     )
-    if (type_y) {
-      for (y in responses) {
-        out_y[[y]][, probability := probability - out$y[[y]]]
-      }
-    } 
-    if (type_B) {
-      for (y in responses) {
-        out_B[[y]][, probability := probability - out$B[[y]]]
-      }
-    }
-    if (type_z) out_z[, probability := probability - out$z]
-    if (type_A) out_A[, probability := probability - out$A]
+    if (type_y) prob_diff(out_y, out$y, responses, clusters)
+    if (type_B) prob_diff(out_B, out$B, responses, clusters)
+    if (type_z) prob_diff(out_z, out$z, clusters)
+    if (type_A) prob_diff(out_A, out$A, clusters)
   }
   
   nsim <- length(object$boot$gamma_pi)
@@ -551,80 +578,85 @@ predict.mnhmm <- function(
     if (type_y) {
       boot_y <- stats::setNames(vector("list", C), responses)
       for (y in responses) {
-        boot_y[[y]] <- matrix(NA, nrow(out_y[[y]]), nsim)
+        boot_y[[y]] <- array(NA, c(nrow(out_y[[1]][[y]]), D, nsim))
       }
     }
     if (type_B) {
       boot_B <- stats::setNames(vector("list", C), responses)
       for (y in responses) {
-        boot_B[[y]] <- matrix(NA, nrow(out_B[[y]]), nsim)
+        boot_B[[y]] <- array(NA, c(nrow(out_B[[1]][[y]]), D, nsim))
       }
     }
-    if (type_z) boot_z <- matrix(NA, nrow(out_z), nsim)
-    if (type_A) boot_A <- matrix(NA, nrow(out_A), nsim)
+    if (type_z) boot_z <- array(NA, c(nrow(out_z[[1]]), D, nsim))
+    if (type_A) boot_A <- array(NA, c(nrow(out_A[[1]]), D, nsim))
     for (i in seq_len(nsim)) {
       object$gammas$gamma_pi <- object$boot$gamma_pi[[i]]
       object$gammas$gamma_A <- object$boot$gamma_A[[i]]
       object$gammas$gamma_B <- object$boot$gamma_B[[i]]
       object$gammas$gamma_omega <- object$boot$gamma_omega[[i]]
-      out <- .predict(
+      out <- .predict_mnhmm(
         dy1, dz1, condition, obs, object, type_y, type_B, type_z, type_A
       )
-      if (type_y) {
-        for (y in responses) {
-          boot_y[[y]][, i] <- out$y[[y]]
+      for (d in seq_len(D)) {
+        if (type_y) {
+          for (y in responses) {
+            boot_y[[y]][, d, i] <- out$y[[d]][[y]]$probability
+          }
         }
-      }
-      if (type_B) {
-        for (y in responses) {
-          boot_B[[y]][, i] <- out$B[[y]]
+        if (type_B) {
+          for (y in responses) {
+            boot_B[[y]][, d, i] <- out$B[[d]][[y]]$probability
+          }
         }
+        if (type_z) boot_z[, d, i] <- out$z[[d]]$probability
+        if (type_A) boot_A[, d, i] <- out$A[[d]]$probability
       }
-      if (type_z) boot_z[, i] <- out$z
-      if (type_A) boot_A[, i] <- out$A
-      
       if (!is.null(newdata2)) {
         object2$gammas$gamma_pi <- object$boot$gamma_pi[[i]]
         object2$gammas$gamma_A <- object$boot$gamma_A[[i]]
         object2$gammas$gamma_B <- object$boot$gamma_B[[i]]
         object2$gammas$gamma_omega <- object$boot$gamma_omega[[i]]
-        out <- .predict(
+        out <- .predict_mnhmm(
           dy2, dz2, condition, obs2, object2, type_y, type_B, type_z, type_A
         )
-        if (type_y) {
-          for (y in responses) {
-            boot_y[[y]][, i] <- boot_y[[y]][, i] - out$y[[y]]
+        for (d in seq_len(D)) {
+          if (type_y) {
+            for (y in responses) {
+              boot_y[[y]][, d, i] <- boot_y[[y]][, d, i] - out$y[[d]][[y]]$probability
+            }
           }
-        }
-        if (type_B) {
-          for (y in responses) {
-            boot_B[[y]][, i] <- boot_B[[y]][, i] - out$B[[y]]
+          if (type_B) {
+            for (y in responses) {
+              boot_B[[y]][, d, i] <- boot_B[[y]][, d, i] - out$B[[d]][[y]]$probability
+            }
           }
+          if (type_z) boot_z[, d, i] <- boot_z[, d, i] - out$z[[d]]$probability
+          if (type_A) boot_A[, d, i] <- boot_A[, d, i] - out$A[[d]]$probability
         }
-        if (type_z) boot_z[, i] <- boot_z[, i] - out$z
-        if (type_A) boot_A[, i] <- boot_A[, i] - out$A
       }
     }
     p <- paste0("q", 100 * probs)
-    if (type_y) {
-      for (y in responses) {
-        q <- fast_quantiles(boot_y[[y]], probs)
-        out_y[[y]][, (p) := data.table(q)]
+    for (d in seq_len(D)) {
+      if (type_y) {
+        for (y in responses) {
+          q <- fast_quantiles(boot_y[[y]][, d, ], probs)
+          out_y[[d]][[y]][, (p) := data.table(q)]
+        }
       }
-    }
-    if (type_B) {
-      for (y in responses) {
-        q <- fast_quantiles(boot_B[[y]], probs)
-        out_B[[y]][, (p) := data.table(q)]
+      if (type_B) {
+        for (y in responses) {
+          q <- fast_quantiles(boot_B[[y]][, d, ], probs)
+          out_B[[d]][[y]][, (p) := data.table(q)]
+        }
       }
-    }
-    if (type_z) {
-      q <- fast_quantiles(boot_z, probs)
-      out_z[, (p) := data.table(q)]
-    }
-    if (type_A) {
-      q <- fast_quantiles(boot_A, probs)
-      out_A[, (p) := data.table(q)]
+      if (type_z) {
+        q <- fast_quantiles(boot_z[, d, ], probs)
+        out_z[[d]][, (p) := data.table(q)]
+      }
+      if (type_A) {
+        q <- fast_quantiles(boot_A[, d, ], probs)
+        out_A[[d]][, (p) := data.table(q)]
+      }
     }
   }
   out <- list(

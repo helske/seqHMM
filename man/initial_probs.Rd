@@ -8,20 +8,18 @@
 \alias{get_initial_probs.mhmm}
 \title{Extract the Initial State Probabilities of Hidden Markov Model}
 \usage{
-get_initial_probs(model, ...)
+get_initial_probs(model)
 
-\method{get_initial_probs}{nhmm}(model, ...)
+\method{get_initial_probs}{nhmm}(model)
 
-\method{get_initial_probs}{mnhmm}(model, ...)
+\method{get_initial_probs}{mnhmm}(model)
 
-\method{get_initial_probs}{hmm}(model, ...)
+\method{get_initial_probs}{hmm}(model)
 
-\method{get_initial_probs}{mhmm}(model, ...)
+\method{get_initial_probs}{mhmm}(model)
 }
 \arguments{
 \item{model}{A hidden Markov model.}
-
-\item{...}{Ignored.}
 }
 \description{
 Extract the Initial State Probabilities of Hidden Markov Model

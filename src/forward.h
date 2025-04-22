@@ -4,7 +4,6 @@
 #include "config.h"
 #include "logsumexp.h"
 
-// // time-varying A
 template<typename submat>
 void univariate_forward(
     submat& log_alpha,
@@ -16,9 +15,9 @@ void univariate_forward(
   arma::uword T = log_py.n_cols;
   log_alpha.col(0) = log_pi + log_py.col(0);
   for (arma::uword t = 1; t < T; ++t) {
-    for (arma::uword i = 0; i < S; ++i) {
-      log_alpha(i, t) = logSumExp(
-        log_alpha.col(t - 1) + log_A.slice(t).col(i) + log_py(i, t)
+    for (arma::uword s = 0; s < S; ++s) {
+      log_alpha(s, t) = logSumExp(
+        log_alpha.col(t - 1) + log_A.slice(t).col(s) + log_py(s, t)
       );
     }
   }

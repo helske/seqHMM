@@ -9,12 +9,13 @@ create_initial_values <- function(inits, model, init_sd) {
   S <- model$n_states
   M <- model$n_symbols
   D <- model$n_clusters
-  K_pi <- nrow(model$X_pi)
-  K_A <- nrow(model$X_A)
-  K_B <- vapply(model$X_B, nrow, 1L)
+  K_pi <- K(model$X_pi)
+  K_A <- K(model$X_A)
+  K_B <- K(model$X_B)
   if (D > 1) {
-    K_omega <- nrow(model$X_omega)
+    K_omega <- K(model$X_omega)
   } else {
+    K_omega <- 0
     D <- 1
   }
   create_initial_values_(inits, init_sd, S, M, K_pi, K_A, K_B, D, K_omega)

@@ -87,82 +87,120 @@ forward_backward.mhmm <- function(model, forward_only = FALSE, ...) {
 #' @rdname forward_backward
 #' @export
 forward_backward.nhmm <- function(model, forward_only = FALSE,  ...) {
-  obs <- create_obsArray(model)
-  fp <- Rcpp_forward_nhmm(
-    obs, model$sequence_lengths, model$n_symbols, 
-    model$X_pi, model$X_A, model$X_B, 
-    io(model$X_pi), io(model$X_A), io(model$X_B),
-    iv(model$X_A), iv(model$X_B),
-    tv(model$X_A), tv(model$X_B),
-    model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B
-  )
-  if (!forward_only) {
-    bp <- Rcpp_backward_nhmm(
+  obs <- create_obs(model)
+  if (inherits(model, "fanhmm")) {
+    fp <- Rcpp_forward_fanhmm(
       obs, model$sequence_lengths, model$n_symbols, 
       model$X_pi, model$X_A, model$X_B, 
       io(model$X_pi), io(model$X_A), io(model$X_B),
-      iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+      iv(model$X_A), iv(model$X_B),
+      tv(model$X_A), tv(model$X_B),
+      model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B,
+      model$prior_y0, model$W_X_B
+    )
+    if (!forward_only) {
+      bp <- Rcpp_backward_fanhmm(
+        obs, model$sequence_lengths, model$n_symbols, 
+        model$X_pi, model$X_A, model$X_B, 
+        io(model$X_pi), io(model$X_A), io(model$X_B),
+        iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+        model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B,
+        model$prior_y0, model$W_X_B
+      )
+    }
+  } else {
+    fp <- Rcpp_forward_nhmm(
+      obs, model$sequence_lengths, model$n_symbols, 
+      model$X_pi, model$X_A, model$X_B, 
+      io(model$X_pi), io(model$X_A), io(model$X_B),
+      iv(model$X_A), iv(model$X_B),
+      tv(model$X_A), tv(model$X_B),
       model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B
     )
+    if (!forward_only) {
+      bp <- Rcpp_backward_nhmm(
+        obs, model$sequence_lengths, model$n_symbols, 
+        model$X_pi, model$X_A, model$X_B, 
+        io(model$X_pi), io(model$X_A), io(model$X_B),
+        iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+        model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B
+      )
+    }
   }
-  ids <- unique(model$data[[model$id_variable]])
-  times <- unique(model$data[[model$time_variable]])
-  d <- data.table(
-    expand.grid(
-      state = model$state_names,
-      time = times,
-      id = ids,
-      stringsAsFactors = FALSE
-    )[, 3:1],
-    log_alpha = c(fp),
-    log_beta = if (forward_only) NULL else c(bp),
-    key = c("id", "time")
-  )
-  setnames(d, c("id", "time"), c(model$id_variable, model$time_variable))
-  stats::na.omit(d)
+  S <- model$n_states
+  id <- model$id_variable
+  time <- model$time_variable
+  d <- model$data[rep(seq_len(nrow(model$data)), each = S), 
+                  list(id, time), 
+                  env = list(id = id, time = time, S = S)]
+  n <- nrow(d)
+  set(d, j = "state", value = rep_len(model$state_names, n))
+  set(d, j = "log_alpha", value = unlist(fp))
+  if (!forward_only) {
+    set(d, j = "log_beta", value = unlist(bp))
+  }
+  d[]
 }
 
 #' @rdname forward_backward
 #' @export
 forward_backward.mnhmm <- function(model, forward_only = FALSE,  ...) {
-  # avoid CRAN check warnings due to NSE
-  state <- NULL
-  obs <- create_obsArray(model)
-  fp <- Rcpp_forward_mnhmm(
-    obs, model$sequence_lengths, model$n_symbols, 
-    model$X_pi, model$X_A, model$X_B, model$X_omega,
-    io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
-    iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
-    model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, model$gammas$gamma_omega
-  )
-  if (!forward_only) {
-    bp <- Rcpp_backward_mnhmm(
+  obs <- create_obs(model)
+  if (inherits(model, "fanhmm")) {
+    fp <- Rcpp_forward_mfanhmm(
       obs, model$sequence_lengths, model$n_symbols, 
       model$X_pi, model$X_A, model$X_B, model$X_omega,
       io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
       iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
-      model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, model$gammas$gamma_omega
+      model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, 
+      model$gammas$gamma_omega,
+      model$prior_y0, model$W_X_B
     )
+    if (!forward_only) {
+      bp <- Rcpp_backward_mfanhmm(
+        obs, model$sequence_lengths, model$n_symbols, 
+        model$X_pi, model$X_A, model$X_B, model$X_omega,
+        io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
+        iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+        model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, 
+        model$gammas$gamma_omega,
+        model$prior_y0, model$W_X_B
+      )
+    }
+  } else {
+    fp <- Rcpp_forward_mnhmm(
+      obs, model$sequence_lengths, model$n_symbols, 
+      model$X_pi, model$X_A, model$X_B, model$X_omega,
+      io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
+      iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+      model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, 
+      model$gammas$gamma_omega
+    )
+    if (!forward_only) {
+      bp <- Rcpp_backward_mnhmm(
+        obs, model$sequence_lengths, model$n_symbols, 
+        model$X_pi, model$X_A, model$X_B, model$X_omega,
+        io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
+        iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+        model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, 
+        model$gammas$gamma_omega
+      )
+    }
   }
-  state_names <- paste0(
-    rep(model$cluster_names, each = model$n_states), ": ",
-    unlist(model$state_names)
-  )
-  ids <- unique(model$data[[model$id_variable]])
-  times <- unique(model$data[[model$time_variable]])
-  
-  d <- data.table(
-    expand.grid(
-      state = state_names,
-      time = times,
-      id = ids,
-      stringsAsFactors = FALSE
-    )[, 3:1],
-    log_alpha = c(fp),
-    log_beta = if (forward_only) NULL else c(bp),
-    key = c("id", "time")
-  )
-  setnames(d, c("id", "time"), c(model$id_variable, model$time_variable))
-  d[, c("cluster", "state") := tstrsplit(state, ":", fixed = TRUE)]
-  stats::na.omit(d)
+  D <- model$n_clusters
+  S <- model$n_states
+  DS <- D * S
+  id <- model$id_variable
+  time <- model$time_variable
+  d <- model$data[rep(seq_len(nrow(model$data)), each = DS), 
+                  list(id, time), 
+                  env = list(id = id, time = time, DS = DS)]
+  n <- nrow(d)
+  set(d, j = "cluster", value = rep_len(rep(model$cluster_names, each = S), n))
+  set(d, j = "state", value = rep_len(unlist(model$state_names), n))
+  set(d, j = "log_alpha", value = unlist(fp))
+  if (!forward_only) {
+    set(d, j = "log_beta", value = unlist(bp))
+  }
+  d[]
 }

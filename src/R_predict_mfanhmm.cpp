@@ -1,16 +1,16 @@
 // forward predictions for FAN-HMMs
 #include "config.h"
-// #include "mfanhmm.h"
-#include "list_to_2d_field.h"
+#include "mfanhmm.h"
+#include "list_to_field.h"
 
 // [[Rcpp::export]]
 Rcpp::List Rcpp_predict_mfanhmm(
-    const arma::ucube& obs,
+    const arma::field<arma::umat>& obs,
     const arma::uvec& Ti,
     const arma::uvec& M,
     const arma::mat& X_pi,
-    const arma::cube& X_A,
-    const arma::field<arma::cube>& X_B,
+    const arma::field<arma::mat>& X_A,
+    const Rcpp::List& X_B,
     const arma::mat& X_omega,
     const bool icpt_only_pi,
     const bool icpt_only_A,
@@ -26,17 +26,14 @@ Rcpp::List Rcpp_predict_mfanhmm(
     const arma::mat& gamma_omega,
     const arma::vec& prior_y,
     const Rcpp::List& W_X_B, 
-    const arma::field<arma::cube>& W_A,
+    const Rcpp::List& W_A,
     const Rcpp::List& W_B) {
   
-  return Rcpp::List::create(
-    Rcpp::Named("W_A") = W_A,
-    Rcpp::Named("W_B") = W_B
+  mfanhmm model(
+      obs, Ti, M, X_pi, X_A, matlist_to_2d_field(X_B), X_omega, 
+      icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega,
+      iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, cubelist_to_2d_field(gamma_B), 
+      gamma_omega, prior_y, W_X_B
   );
-  // mfanhmm model(
-  //     obs, Ti, M, X_pi, X_A, X_B, X_omega, icpt_only_pi, icpt_only_A, 
-  //     icpt_only_B, icpt_only_omega, iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, 
-  //     gamma_B, gamma_omega, prior_y, W_X_B
-  // );
-  // return model.predict(W_A, list_to_2d_field(W_B));
+  return model.predict(matlist_to_2d_field(W_A), matlist_to_3d_field(W_B));
 }

@@ -61,10 +61,13 @@ posterior_cluster_probabilities <- function(x) {
     inherits(x, "mhmm") || inherits(x, "mnhmm"),
     "Argument {.arg x} must be a {.cls mhmm} or {.cls mnhmm} object."
   )
-  pp <- posterior_probs(x)[time == min(time), ]
+  pp <- posterior_probs(x)
   if (inherits(x, "mhmm")) {
-    pp[, list(probability = sum(probability)), by = list(id, cluster)]
+    pp[time == min(time), list(probability = sum(probability)), 
+       by = c("id", "cluster")]
   } else {
-    pp[, list(probability = sum(probability)), by = c(x$id_variable, "cluster")]
+    pp[time == min(time), list(probability = sum(probability)), 
+       by = list(id, cluster), 
+       env = list(id = x$id_variable, time = x$time_variable)]
   }
 }

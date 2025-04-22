@@ -7,12 +7,12 @@ class mnhmm {
   
 public:
   mnhmm(
-    const arma::ucube& obs,
+    const arma::field<arma::umat>& obs,
     const arma::uvec& Ti,
     const arma::uvec& M,
     const arma::mat& X_pi,
-    const arma::cube& X_A,
-    const arma::field<arma::cube>& X_B,
+    const arma::field<arma::mat>& X_A,
+    arma::field<arma::mat>&& X_B,
     const arma::mat& X_omega,
     const bool icpt_only_pi,
     const bool icpt_only_A,
@@ -35,10 +35,10 @@ public:
   virtual void update_B(const arma::uword i);
   void update_omega(const arma::uword i);
   void update_log_py(const arma::uword i);
-  void viterbi(arma::umat& q, arma::vec& logp);
+  Rcpp::List viterbi();
   arma::vec loglik();
-  arma::cube forward();
-  arma::cube backward();
+  arma::field<arma::mat> forward();
+  arma::field<arma::mat> backward();
   Rcpp::List predict();
   Rcpp::List simulate();
   Rcpp::List log_objective(
@@ -48,17 +48,18 @@ public:
   );
   
   // data
-  const arma::ucube& obs;
+  const arma::field<arma::umat>& obs;
   const arma::uvec& Ti;
   const arma::uvec& M;
   const arma::uword N;
-  const arma::uword T;
   const arma::uword C;
   const arma::uword S;
   const arma::uword D;
   const arma::mat& X_pi;
-  const arma::cube& X_A;
-  const arma::field<arma::cube>& X_B;
+  // field of length N containing K_A x T_i matrices
+  const arma::field<arma::mat>& X_A;
+  // N x C field containing K_B x T_i matrices
+  arma::field<arma::mat> X_B;
   const arma::mat& X_omega;
   const bool icpt_only_pi;
   const bool icpt_only_A;

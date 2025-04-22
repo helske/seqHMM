@@ -65,24 +65,29 @@ simulate_mnhmm <- function(
     n_states, n_clusters, emission_formula, initial_formula, transition_formula, 
     cluster_formula, data, id, time, coefs = coefs
   )
-  out <- Rcpp_simulate_mnhmm(
-    create_obsArray(model), model$sequence_lengths, model$n_symbols, 
-    model$X_pi, model$X_A, model$X_B, model$X_omega,
-    io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
-    iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
-    model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, model$gammas$gamma_omega
-  )
-  T_ <- model$length_of_sequences
-  for (i in seq_len(model$n_sequences)) {
-    Ti <- model$sequence_lengths[i]
-    if (Ti < T_) {
-      out$states[(Ti + 1):T_, i] <- NA
-      out$observations[, (Ti + 1):T_, i] <- NA
-    }
+  if (inherits(model, "fanhmm")) {
+    W <- update_W_for_fanhmm(model)
+    out <- Rcpp_simulate_mfanhmm(
+      create_obs(model), model$sequence_lengths, model$n_symbols, 
+      model$X_pi, model$X_A, model$X_B, model$X_omega,
+      io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
+      iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+      model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, 
+      model$gammas$gamma_omega, model$prior_obs, model$W_X_B, W$W_A, W$W_B
+    )
+  } else {
+    out <- Rcpp_simulate_mnhmm(
+      create_obs(model), model$sequence_lengths, model$n_symbols, 
+      model$X_pi, model$X_A, model$X_B, model$X_omega,
+      io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
+      iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+      model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, model$gammas$gamma_omega
+    )
   }
   for (i in seq_len(model$n_channels)) {
+    y <- unlist(lapply(out$observations, \(y) y[i, ] + 1L))
     model$data[[model$responses[i]]][] <- 
-      model$symbol_names[[i]][c(out$observations[i, , ] + 1)]
+      model$symbol_names[[i]][y]
   }
   state_names <- paste0(
     rep(model$cluster_names, each = model$n_states), ": ",
@@ -90,7 +95,7 @@ simulate_mnhmm <- function(
   )
   states <- cbind(
     model$data[, list(id, time), env = list(id = id, time = time)], 
-    state = state_names[c(out$states) + 1]
+    state = state_names[unlist(out$states) + 1L]
   )
   list(model = model, states = states)
 }

@@ -6,7 +6,7 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
                              scale = TRUE, prior_obs = "fixed") {
   
   # avoid CRAN check warnings due to NSE
-  tmax <- y <- NULL
+  .Ti <- y <- NULL
   stopifnot_(!missing(data), "Argument {.arg data} is missing.")
   stopifnot_(
     !missing(n_states) && checkmate::test_int(x = n_states, lower = 2L), 
@@ -96,9 +96,10 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
     names(state_names) <- cluster_names
   }
   data <- .check_data(data, id_var, time_var, responses)
-  data[, tmax := max(time_var), by = id_var, 
-       env = list(id_var = id_var, time_var = time_var)]
   data <- fill_time(data, id_var, time_var)
+  sequence_lengths <- data[, .Ti[1], by = id_var, 
+                           env = list(id_var = id_var)]$V1
+  data[, .Ti := NULL]
   symbol_names <- stats::setNames(
     lapply(responses, \(y) as_factor(levels(data[[y]]))), responses
   )
@@ -129,17 +130,11 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
     prior_y0 <- 0L
     W_X_B <- list()
     if (length(autoregression) > 0L && identical(prior_obs, "fixed")) {
-      data <- data[data[, .I[-1], by = id_var]$V1]
+      .idx <- data[, .I[-1], by = id_var, env = list(id_var = id_var)]$V1
+      data <- data[.idx]
+      sequence_lengths <- sequence_lengths - 1L
     } 
   }
-  sequence_lengths <- data[, 
-                           sum(time_var <= tmax, na.rm = TRUE), 
-                           by = id_var, 
-                           env = list(
-                             id_var = id_var, 
-                             time_var = time_var
-                           )]$V1
-  data[, tmax := NULL]
   length_of_sequences <- n_unique(data[[time_var]])
   n_sequences <- n_unique(data[[id_var]])
   n_obs <- sum(!is.na(data[, y, env = list(y = I(responses))])) / C
@@ -154,7 +149,7 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
     transition_formula, data, n_sequences, length_of_sequences, n_states, 
     id_var, time_var, sequence_lengths, scale = scale
   )
-  np_A <- n_states * (n_states - 1L) * nrow(X_A)
+  np_A <- n_states * (n_states - 1L) * nrow(X_A[[1]])
   attr(transition_formula, "responses") <- NULL
   X_B <- stats::setNames(vector("list", C), responses)
   for (y in responses) {
@@ -164,7 +159,7 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
     )
     attr(emission_formula[[y]], "responses") <- NULL
   }
-  np_B <- sum(n_states * (M - 1L) * vapply(X_B, \(x) nrow(x), 1L))
+  np_B <- sum(n_states * (M - 1L) * vapply(X_B, \(x) nrow(x[[1]]), 1L))
   if (mixture) {
     X_omega <- model_matrix_cluster_formula(
       cluster_formula, data, n_sequences, D, id_var, scale = scale
@@ -217,6 +212,10 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
       n_symbols = M,
       n_channels = C,
       n_clusters = D,
+      K_pi = nrow(X_pi),
+      K_A = nrow(X_A[[1]]),
+      K_B = vapply(X_B, \(x) nrow(x[[1]]), 1L),
+      K_omega = if (mixture) nrow(X_omega) else NULL,
       data = data,
       feedback = feedback,
       autoregression = autoregression,

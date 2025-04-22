@@ -35,4 +35,4 @@ progressr::with_progress(
 progressr::with_progress(
   fanhmm_leaves <- bootstrap_coefs(fanhmm_leaves, nsim = 100)
 )
-usethis::use_data(fanhmm_leaves)
+usethis::use_data(fanhmm_leaves,)

@@ -95,9 +95,9 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
   np_pi <- attr(model, "np_pi")
   np_A <- attr(model, "np_A")
   np_B <- attr(model, "np_B")
-  K_pi <- nrow(model$X_pi)
-  K_A <- nrow(model$X_A)
-  K_B <- vapply(model$X_B, nrow, integer(1))
+  K_pi <- K(model$X_pi)
+  K_A <- K(model$X_A)
+  K_B <- K(model$X_B)
   
   model$etas$eta_pi <- create_eta_pi_nhmm(pars[seq_len(np_pi)], S, K_pi)
   model$gammas$gamma_pi <- eta_to_gamma_mat(model$etas$eta_pi)

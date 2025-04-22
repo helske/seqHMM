@@ -6,7 +6,11 @@
 
 class EM_nhmm {
 public:
-  EM_nhmm(nhmm& model, const double lambda);
+  EM_nhmm(
+    nhmm& model, 
+    const arma::mat& Qs, 
+    const arma::field<arma::mat>& Qm,
+    const double lambda);
   ~EM_nhmm();
   Rcpp::List run(
       const arma::uword maxeval, 
@@ -78,9 +82,9 @@ private:
   
   // data
   nhmm& model;
-  const double lambda;
   const arma::mat Qs;
   const arma::field<arma::mat> Qm;
+  const double lambda;
   
   //coefficients //
   arma::mat eta_pi;

@@ -2,30 +2,29 @@
 
 #' @rdname initial_probs
 #' @export
-get_initial_probs <- function(model, ...) {
+get_initial_probs <- function(model) {
   UseMethod("get_initial_probs", model)
 }
 #' @rdname transition_probs
 #' @export
-get_transition_probs <- function(model, ...) {
+get_transition_probs <- function(model) {
   UseMethod("get_transition_probs", model)
 }
 #' @rdname emission_probs
 #' @export
-get_emission_probs <- function(model, ...) {
+get_emission_probs <- function(model) {
   UseMethod("get_emission_probs", model)
 }
 #' @rdname cluster_probs
 #' @export
-get_cluster_probs <- function(model, ...) {
+get_cluster_probs <- function(model) {
   UseMethod("get_cluster_probs", model)
 }
 #' Extract the Initial State Probabilities of Hidden Markov Model
 #' @param model A hidden Markov model.
-#' @param ... Ignored.
 #' @rdname initial_probs
 #' @export
-get_initial_probs.nhmm <- function(model, ...) {
+get_initial_probs.nhmm <- function(model) {
   ids <- unique(model$data[[model$id_variable]])
   if (io(model$X_pi)) {
     X <- model$X_pi[, 1L, drop = FALSE]
@@ -45,7 +44,7 @@ get_initial_probs.nhmm <- function(model, ...) {
 }
 #' @rdname initial_probs
 #' @export
-get_initial_probs.mnhmm <- function(model,...) {
+get_initial_probs.mnhmm <- function(model) {
   x <- lapply(split_mnhmm(model), get_initial_probs)
   do.call(rbind, lapply(seq_along(x), \(i) {
     cbind(cluster = names(x)[i], x[[i]])
@@ -53,51 +52,47 @@ get_initial_probs.mnhmm <- function(model,...) {
 }
 #' @rdname initial_probs
 #' @export
-get_initial_probs.hmm <- function(model, ...) {
+get_initial_probs.hmm <- function(model) {
   model$initial_probs
 }
 #' @rdname initial_probs
 #' @export
-get_initial_probs.mhmm <- function(model, ...) {
+get_initial_probs.mhmm <- function(model) {
   model$initial_probs
 }
 #' Extract the State Transition Probabilities of Hidden Markov Model
 #' @inheritParams get_initial_probs.nhmm
 #' @rdname transition_probs
 #' @export
-get_transition_probs.nhmm <- function(model, ...) {
-  # avoid CRAN check warnings due to NSE
-  time <- NULL
+get_transition_probs.nhmm <- function(model) {
+  probability <- state_from <- state_to <- S2 <- NULL
   S <- model$n_states
-  id_var <- model$id_variable
-  time_var <- model$time_variable
-  ids <- unique(model$data[[id_var]])
-  times <- unique(model$data[[time_var]])
-  times <- unlist(lapply(model$sequence_lengths, \(i) times[seq_len(i)]))
-  if (!io(model$X_A) && !tv(model$X_A)) {
-    X <- model$X_A[, , 1L, drop = FALSE]
+  id <- model$id_variable
+  time <- model$time_variable
+  states <- model$state_names
+  d <- model$data[rep(seq_len(nrow(model$data)), each = S2), 
+                  list(id, time), 
+                  env = list(id = id, time = time, S2 = S^2)]
+  n <- nrow(d)
+  set(d, j = "state_from", value = rep_len(states, n))
+  set(d, j = "state_to", value = rep_len(rep(states, each = S), n))
+  if (!iv(model$X_A)) {
+    A <- get_A_all(
+      model$gammas$gamma_A, model$X_A[1], tv(model$X_A)
+    )
+    set(d, j = "probability", value = rep_len(unlist(A), n))
   } else {
-    X <- model$X_A
+    A <- get_A_all(
+      model$gammas$gamma_A, model$X_A, tv(model$X_A)
+    )
+    set(d, j = "probability", value = unlist(A))
   }
-  A <- get_A_all(
-    model$gammas$gamma_A, X, tv(model$X_A), model$sequence_lengths
-  )
-  d <- data.table(
-    id = rep(ids, S^2 * model$sequence_lengths),
-    time = rep(times, each = S^2),
-    state_from = model$state_names,
-    state_to = rep(model$state_names, each = S),
-    probability = rep_len(unlist(A), sum(S^2 * model$sequence_lengths)),
-    key = c("id", "time")
-  )
-  d <- d[time != time[1]] # remove A_1
-  setnames(d, c("id", "time"), c(id_var, time_var))
-  setorderv(d, c(id_var, time_var, "state_from"))
-  d
+  setorderv(d, c(id, time, "state_from"))
+  d[]
 }
 #' @rdname transition_probs
 #' @export
-get_transition_probs.mnhmm <- function(model,...) {
+get_transition_probs.mnhmm <- function(model) {
   x <- lapply(split_mnhmm(model), get_transition_probs)
   do.call(rbind, lapply(seq_along(x), \(i) {
     cbind(cluster = names(x)[i], x[[i]])
@@ -105,75 +100,79 @@ get_transition_probs.mnhmm <- function(model,...) {
 }
 #' @rdname transition_probs
 #' @export
-get_transition_probs.hmm <- function(model, ...) {
+get_transition_probs.hmm <- function(model) {
   model$transition_probs
 }
 #' @rdname transition_probs
 #' @export
-get_transition_probs.mhmm <- function(model, ...) {
+get_transition_probs.mhmm <- function(model) {
   model$transition_probs
 }
 #' Extract the Emission Probabilities of Hidden Markov Model
 #' @inheritParams get_initial_probs.nhmm
 #' @rdname emission_probs
 #' @export
-get_emission_probs.nhmm <- function(model, ...) {
-  # avoid CRAN check warnings due to NSE
-  time <- NULL
-  S <- model$n_states
-  T_ <- model$length_of_sequences
-  C <- model$n_channels
+get_emission_probs.nhmm <- function(model) {
+  probability <- state <- SM <- NULL
+  responses <- model$responses
   M <- model$n_symbols
-  symbol_names <- model$symbol_names
-  id_var <- model$id_variable
-  time_var <- model$time_variable
-  ids <- unique(model$data[[id_var]])
-  times <- unique(model$data[[time_var]])
-  times <- unlist(lapply(model$sequence_lengths, \(i) times[seq_len(i)]))
-
-  out <- vector("list", C)
-  for (i in seq_len(C)) {
-    if (!io(model$X_B[[i]]) && !tv(model$X_B[[i]])) {
-      X <- model$X_B[[i]][, , 1L, drop = FALSE]
+  S <- model$n_states
+  id <- model$id_variable
+  time <- model$time_variable
+  states <- model$state_names
+  symbols <- model$symbol_names
+  out <- stats::setNames(vector("list", length(responses)), responses)
+  for (i in seq_along(responses)) {
+    y <- responses[i]
+    d <- model$data[rep(seq_len(nrow(model$data)), each = SM), 
+                    list(id, time), 
+                    env = list(id = id, time = time, SM = S * M[y])]
+    n <- nrow(d)
+    set(d, j = "state", value = rep_len(states, n))
+    set(d, j = y, value = rep_len(rep(symbols[[y]], each = S), n))
+    if (!iv(model$X_B[[y]])) {
+      B <- get_B_all(
+        model$gammas$gamma_B[[i]], model$X_B[[y]][1], tv(model$X_B[[y]])
+      )
+      d[, probability := rep_len(unlist(B), nrow(d))]
     } else {
-      X <- model$X_B[[i]]
+      B <- get_B_all(
+        model$gammas$gamma_B[[i]], model$X_B[[y]], tv(model$X_B[[y]])
+      )
+      set(d, j = "probability", value = unlist(B))
+      if (inherits(model, "fanhmm") && !identical(model$prior_obs, 0L)) {
+        warning(
+          "The emission probabilities of the first time point incorrect. ",
+          "The marginalization in `get_emission_probs` is not yet implemented."
+        )
+      }
     }
-    B <- get_B_all(
-      model$gammas$gamma_B[[i]], X, tv(model$X_B[[i]]), model$sequence_lengths
-    )
-    out[[i]] <- data.table(
-      id = rep(ids, S * M[i] * model$sequence_lengths),
-      time = rep(times, each = S * M[i]),
-      state = model$state_names,
-      response = rep(symbol_names[[i]], each = S),
-      probability = rep_len(unlist(B), sum(S * M[i] * model$sequence_lengths)),
-      key = c("id", "time")
-    )
-    # if (!is.null(model$autoregression_formula)) {
-    #   out[[i]] <- out[[i]][time != time[1]] # remove B_1 as y_1 fixed
-    # }
-    y <- model$responses[i]
-    setnames(out[[i]], c("id", "time", "response"), c(id_var, time_var, y))
-    setorderv(out[[i]], c(id_var, time_var, "state"))
+    setorderv(d, c(id, time, "state"))
+    out[[y]] <- d
   }
-  stats::setNames(out, model$responses)
+  out
 }
 #' @rdname emission_probs
 #' @export
-get_emission_probs.mnhmm <- function(model, ...) {
+get_emission_probs.mnhmm <- function(model) {
   x <- lapply(split_mnhmm(model), get_emission_probs)
-  do.call(rbind, lapply(seq_along(x), \(i) {
-    cbind(cluster = names(x)[i], x[[i]])
-  }))
+  stats::setNames(
+    lapply(model$responses, \(y) {
+      do.call(rbind, lapply(seq_along(x), \(i) {
+        cbind(cluster = names(x)[i], x[[i]][[y]])
+      }))
+    }),
+    model$responses
+  )
 }
 #' @rdname emission_probs
 #' @export
-get_emission_probs.hmm <- function(model, ...) {
+get_emission_probs.hmm <- function(model) {
   model$emission_probs
 }
 #' @rdname emission_probs
 #' @export
-get_emission_probs.mhmm <- function(model, ...) {
+get_emission_probs.mhmm <- function(model) {
   model$emission_probs
 }
 #' Extract the Prior Cluster Probabilities of MHMM or MNHMM
@@ -182,7 +181,7 @@ get_emission_probs.mhmm <- function(model, ...) {
 #' @rdname cluster_probs
 #' @export
 #' @seealso [posterior_cluster_probabilities()].
-get_cluster_probs.mnhmm <- function(model, ...) {
+get_cluster_probs.mnhmm <- function(model) {
   ids <- unique(model$data[[model$id_variable]])
   if (io(model$X_omega)) {
     X <- model$X_omega[, 1L, drop = FALSE]
@@ -201,7 +200,7 @@ get_cluster_probs.mnhmm <- function(model, ...) {
 }
 #' @rdname cluster_probs
 #' @export
-get_cluster_probs.mhmm <- function(model, ...) {
+get_cluster_probs.mhmm <- function(model) {
   pr <- exp(model$X %*% model$coefficients)
   prior_cluster_probabilities <- pr / rowSums(pr)
   if (model$n_channels == 1L) {

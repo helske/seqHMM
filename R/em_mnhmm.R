@@ -22,13 +22,13 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda,
   iv_B <- iv(X_B)
   tv_A <- tv(X_A)
   tv_B <- tv(X_B)
-  K_omega <- nrow(X_omega)
-  K_pi <- nrow(X_pi)
-  K_A <- nrow(X_A)
-  K_B <- vapply(model$X_B, \(x) nrow(x), 1L)
+  K_omega <- K(X_omega)
+  K_pi <- K(X_pi)
+  K_A <- K(X_A)
+  K_B <- K(X_B)
   Ti <- model$sequence_lengths
   n_obs <- nobs(model)
-  obs <- create_obsArray(model)
+  obs <- create_obs(model)
   all_solutions <- NULL
   if (restarts > 0L) {
     .fun <- function(base_init, u) {

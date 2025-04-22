@@ -1,13 +1,22 @@
 #' Functions for computing the marginal probabilities for `get_marginals`
 #' @noRd
-compute_z_marginals <- function(model, id_time, pp, cond) {
+compute_z_marginals <- function(model, id_time, pp, cond, cluster = NULL) {
   probability <- cols <- NULL
   x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]
   x <- pp[x, on = id_time, nomatch = 0L]
-  cond <- c(cond, "state")
+  cond <- c(cond, cluster, "state")
   x[, list(probability = mean(probability)), by = cond]
 }
-compute_y_and_B_marginals <- function(model, id_time, pp, cond) {
+compute_A_marginals <- function(model, id_time, pp, cond, cluster = NULL) {
+  probability <- i.probability <- state_prob <- cols <- NULL
+  A <- get_transition_probs(model)
+  x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]
+  x <- A[x, on = id_time, nomatch = 0L]
+  x[pp, state_prob := i.probability, on = c(id_time, state_from = "state")]
+  cond <- c(cond, cluster, "state_from", "state_to")
+  x[, list(probability = sum(probability * state_prob) / sum(state_prob)), by = cond]
+}
+compute_y_and_B_marginals <- function(model, id_time, pp, cond, cluster = NULL) {
   probability <- i.probability <- state_prob <- cols <- NULL
   B <- get_emission_probs(model)
   x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]
@@ -17,19 +26,10 @@ compute_y_and_B_marginals <- function(model, id_time, pp, cond) {
     x_i[pp, state_prob := i.probability, on = c(id_time, "state")]
     cond_i <- c(cond, model$responses[i])
     p_y[[i]] <- x_i[, list(probability = sum(probability * state_prob) / sum(state_prob)), by = cond_i]
-    cond_i <- c("state", cond_i)
+    cond_i <- c(cluster, "state", cond_i)
     p_B[[i]] <- x_i[, list(probability = sum(probability * state_prob) / sum(state_prob)), by = cond_i]
   }
   list(B = p_B, y = p_y)
-}
-compute_A_marginals <- function(model, id_time, pp, cond) {
-  probability <- i.probability <- state_prob <- cols <- NULL
-  A <- get_transition_probs(model)
-  x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]
-  x <- A[x, on = id_time, nomatch = 0L]
-  x[pp, state_prob := i.probability, on = c(id_time, state_from = "state")]
-  cond <- c(cond, "state_from", "state_to")
-  x[, list(probability = sum(probability * state_prob) / sum(state_prob)), by = cond]
 }
 
 #' Compute the Marginal Probabilities from NHMMs
@@ -112,15 +112,20 @@ get_marginals <- function(model, probs = NULL, condition = NULL,
   }
   id_time <- c(model$id_variable, model$time_variable)
   out_state <- out_A <- out_obs <- out_B <- NULL
+  if (inherits(model, "mnhmm")) {
+    cluster <- "cluster"
+  } else {
+    cluster <- NULL
+  }
   if (compute_z <- "state" %in% type) {
-    out_state <- compute_z_marginals(model, id_time, pp, condition)
+    out_state <- compute_z_marginals(model, id_time, pp, condition, cluster)
   }
   if (compute_A <- "transition" %in% type) {
-    out_A <- compute_A_marginals(model, id_time, pp, condition)
+    out_A <- compute_A_marginals(model, id_time, pp, condition, cluster)
   }
   compute_y <- compute_B <- FALSE
   if ("response" %in% type || "emission" %in% type) {
-    out_y_B <- compute_y_and_B_marginals(model, id_time, pp, condition)
+    out_y_B <- compute_y_and_B_marginals(model, id_time, pp, condition, cluster)
     if (compute_y <- "response" %in% type) {
       out_obs <- stats::setNames(out_y_B$y, model$responses)
     }
@@ -163,13 +168,18 @@ get_marginals <- function(model, probs = NULL, condition = NULL,
       }
       if (compute_z) {
         boot_state[, i] <- compute_z_marginals(
-          model, id_time, pp, condition)$probability
+          model, id_time, pp, condition, cluster
+        )$probability
       }
       if (compute_A) {
-        boot_A[, i] <- compute_A_marginals(model, id_time, pp, condition)$probability
+        boot_A[, i] <- compute_A_marginals(
+          model, id_time, pp, condition, cluster
+        )$probability
       }
       if (compute_y || compute_B) {
-        out_y_B <- compute_y_and_B_marginals(model, id_time, pp, condition)
+        out_y_B <- compute_y_and_B_marginals(
+          model, id_time, pp, condition, cluster
+        )
         if (compute_y) {
           for (j in seq_len(model$n_channels)) {
             boot_obs[[j]][, i] <- out_y_B$y[[j]]$probability

@@ -11,22 +11,22 @@
 #include <nloptrAPI.h>
 #include <chrono>
 
-EM_nhmm::EM_nhmm(nhmm& model, const double lambda)
-  : model(model), lambda(lambda),
-    Qs(create_Q(model.S)), Qm(create_Q(model.M)), 
+EM_nhmm::EM_nhmm(nhmm& model, const arma::mat& Qs, 
+                 const arma::field<arma::mat>& Qm, const double lambda)
+  : model(model), Qs(Qs), Qm(Qm), lambda(lambda),
     eta_pi(Qs.t() * model.gamma_pi), 
-    eta_A(model.S - 1, model.X_A.n_rows, model.S),
+    eta_A(model.S - 1, model.X_A(0).n_rows, model.S),
     eta_B(model.C),
     E_pi(model.S, model.N), E_A(model.S), E_B(model.C),
     opt_B(model.C, nullptr)
 {
   for (arma::uword s = 0; s < model.S; ++s) {
-    E_A(s) = arma::cube(model.S, model.N, model.T);
+    E_A(s) = arma::cube(model.S, model.N, model.Ti.max(), arma::fill::zeros);
     eta_A.slice(s) = Qs.t() * model.gamma_A.slice(s);
   }
   for (arma::uword c = 0; c < model.C; ++c) {
-    E_B(c) = arma::cube(model.T, model.N, model.S);
-    eta_B(c) = arma::cube(model.M(c) - 1, model.X_B(c).n_rows, model.S);
+    E_B(c) = arma::cube(model.Ti.max(), model.N, model.S, arma::fill::zeros);
+    eta_B(c) = arma::cube(model.M(c) - 1, model.X_B(c, 0).n_rows, model.S);
     for (arma::uword s = 0; s < model.S; ++s) {
       eta_B(c).slice(s) = Qm(c).t() * model.gamma_B(c).slice(s);
     }
@@ -107,7 +107,7 @@ void EM_nhmm::estep_B(const arma::uword i,
     for (arma::uword t = 0; t < model.Ti(i); ++t) { // time
       double pp = exp(log_alpha(k, t) + log_beta(k, t) - ll);
       for (arma::uword c = 0; c < model.C; ++c) { // channel
-        if (model.obs(c, t, i) < model.M(c) && pp > model.minval) {
+        if (model.obs(i)(c, t) < model.M(c) && pp > model.minval) {
           E_B(c)(t, i, k) = pp;
         } else {
           E_B(c)(t, i, k) = 0.0;
@@ -225,8 +225,8 @@ void EM_nhmm::mstep_B(const arma::uword print_level) {
         tmp.zeros();
         for (arma::uword i = 0; i < model.N; ++i) {
           for (arma::uword t = 0; t < model.Ti(i); ++t) {
-            if (model.obs(c, t, i) < model.M(c)) {
-              tmp(model.obs(c, t, i)) += E_B(c)(t, i, s);
+            if (model.obs(i)(c, t) < model.M(c)) {
+              tmp(model.obs(i)(c, t)) += E_B(c)(t, i, s);
             }
           }
         }
@@ -330,20 +330,20 @@ double EM_nhmm::objective_A(const arma::vec& x, arma::vec& grad) {
   
   mstep_iter++;
   double value = 0;
-  arma::mat eta_Arow = arma::mat(x.memptr(), model.S - 1, model.X_A.n_rows);
+  arma::mat eta_Arow = arma::mat(x.memptr(), model.S - 1, model.X_A(0).n_rows);
   arma::mat gamma_Arow = sum_to_zero(eta_Arow, Qs);
   arma::vec A1(model.S);
   arma::vec log_A1(model.S);
   grad.zeros();
   if (!model.iv_A && !model.tv_A) {
-    A1 = softmax(gamma_Arow * model.X_A.slice(0).col(0));
+    A1 = softmax(gamma_Arow * model.X_A(0).col(0));
     log_A1 = log(A1);
   }
   arma::mat tQs = Qs.t();
   arma::uvec idx(model.S);
   for (arma::uword i = 0; i < model.N; ++i) {
     if (model.iv_A && !model.tv_A) {
-      A1 = softmax(gamma_Arow * model.X_A.slice(i).col(0));
+      A1 = softmax(gamma_Arow * model.X_A(i).col(0));
       log_A1 = log(A1);
     }
     for (arma::uword t = 1; t < model.Ti(i); ++t) {
@@ -351,7 +351,7 @@ double EM_nhmm::objective_A(const arma::vec& x, arma::vec& grad) {
       idx = arma::find(counts);
       double sum_ea = arma::accu(counts.rows(idx));
       if (model.tv_A) {
-        A1 = softmax(gamma_Arow * model.X_A.slice(i).col(t));
+        A1 = softmax(gamma_Arow * model.X_A(i).col(t));
         log_A1 = log(A1);
       }
       double val = arma::dot(counts.rows(idx), log_A1.rows(idx));
@@ -360,7 +360,7 @@ double EM_nhmm::objective_A(const arma::vec& x, arma::vec& grad) {
         return model.maxval;
       }
       value -= val;
-      grad -= arma::vectorise(tQs * (counts - sum_ea * A1) * model.X_A.slice(i).col(t).t());
+      grad -= arma::vectorise(tQs * (counts - sum_ea * A1) * model.X_A(i).col(t).t());
     }
   }
   grad += lambda * x;
@@ -370,38 +370,38 @@ double EM_nhmm::objective_B(const arma::vec& x, arma::vec& grad) {
   mstep_iter++;
   double value = 0;
   arma::uword Mc = model.M(current_c);
-  arma::mat eta_Brow = arma::mat(x.memptr(), Mc - 1, model.X_B(current_c).n_rows);
+  arma::mat eta_Brow = arma::mat(x.memptr(), Mc - 1, model.X_B(current_c, 0).n_rows);
   arma::mat gamma_Brow = sum_to_zero(eta_Brow, Qm(current_c));
   arma::vec B1(Mc);
   arma::vec log_B1(Mc);
   grad.zeros();
   if (!model.iv_B(current_c) && !model.tv_B(current_c)) {
-    B1 = softmax(gamma_Brow * model.X_B(current_c).slice(0).col(0));
+    B1 = softmax(gamma_Brow * model.X_B(current_c, 0).col(0));
     log_B1 = log(B1);
   }
   arma::mat I(Mc, Mc, arma::fill::eye);
   arma::mat tQm = Qm(current_c).t();
   for (arma::uword i = 0; i < model.N; ++i) {
     if (model.iv_B(current_c) && !model.tv_B(current_c)) {
-      B1 = softmax(gamma_Brow * model.X_B(current_c).slice(i).col(0));
+      B1 = softmax(gamma_Brow * model.X_B(current_c, i).col(0));
       log_B1 = log(B1);
     }
     for (arma::uword t = 0; t < model.Ti(i); ++t) {
-      if (model.obs(current_c, t, i) < Mc) {
+      if (model.obs(i)(current_c, t) < Mc) {
         double e_b = E_B(current_c)(t, i, current_s);
         if (e_b > 0) {
           if (model.tv_B(current_c)) {
-            B1 = softmax(gamma_Brow * model.X_B(current_c).slice(i).col(t));
+            B1 = softmax(gamma_Brow * model.X_B(current_c, i).col(t));
             log_B1 = log(B1);
           }
-          double val = e_b * log_B1(model.obs(current_c, t, i));
+          double val = e_b * log_B1(model.obs(i)(current_c, t));
           if (!std::isfinite(val)) {
             grad.zeros();
             return model.maxval;
           }
           value -= val;
-          grad -= arma::vectorise(tQm * e_b  * (I.col(model.obs(current_c, t, i)) - B1) * 
-            model.X_B(current_c).slice(i).col(t).t());
+          grad -= arma::vectorise(tQm * e_b  * (I.col(model.obs(i)(current_c, t)) - B1) * 
+            model.X_B(current_c, i).col(t).t());
         }
       }
     }
@@ -423,7 +423,7 @@ Rcpp::List EM_nhmm::run(const arma::uword maxeval,
                         const double xtol_rel_m, 
                         const arma::uword print_level_m,
                         const double bound) {
-  
+
   const arma::uword n_obs = arma::accu(model.Ti);
   const arma::uword n_pi = eta_pi.n_elem;
   const arma::uword n_A = eta_A.n_elem;
@@ -485,8 +485,8 @@ Rcpp::List EM_nhmm::run(const arma::uword maxeval,
   arma::uword iter = 0;
   double ll_new;
   double ll = 0;
-  arma::mat log_alpha(model.S, model.T);
-  arma::mat log_beta(model.S, model.T);
+  arma::mat log_alpha(model.S, model.Ti(0));
+  arma::mat log_beta(model.S, model.Ti(0));
   
   // Initial log-likelihood
   for (arma::uword i = 0; i < model.N; ++i) {
@@ -500,6 +500,8 @@ Rcpp::List EM_nhmm::run(const arma::uword maxeval,
       model.update_B(i);
     }
     model.update_log_py(i);
+    log_alpha = arma::mat(model.S, model.Ti(i));
+    log_beta = arma::mat(model.S, model.Ti(i));
     univariate_forward(
       log_alpha, model.log_pi, model.log_A,
       model.log_py.cols(0, model.Ti(i) - 1)

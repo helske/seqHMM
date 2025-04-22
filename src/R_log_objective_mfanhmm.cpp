@@ -1,13 +1,12 @@
-// log-likelihood and gradients of MNHMM
+// log-likelihood and gradients of MFANHMM
 #include "config.h"
-#include "mnhmm.h"
+#include "mfanhmm.h"
 #include "create_Q.h"
-#include "list_to_field.h"
 #include "eta_to_gamma.h"
 #include "list_to_field.h"
 
 // [[Rcpp::export]]
-Rcpp::List Rcpp_log_objective_mnhmm(
+Rcpp::List Rcpp_log_objective_mfanhmm(
     const arma::field<arma::umat>& obs,
     const arma::uvec& Ti,
     const arma::uvec& M,
@@ -26,7 +25,9 @@ Rcpp::List Rcpp_log_objective_mnhmm(
     const arma::field<arma::mat>& eta_pi,
     const arma::field<arma::cube>& eta_A,
     const Rcpp::List& eta_B,
-    const arma::mat& eta_omega) {
+    const arma::mat& eta_omega,
+    const arma::vec& prior_y,
+    const Rcpp::List& W_X_B) {
   
   arma::uword S = eta_A(0).n_slices;
   arma::uword C = obs(0).n_rows;
@@ -37,14 +38,14 @@ Rcpp::List Rcpp_log_objective_mnhmm(
   for (arma::uword c = 0; c < C; ++c) {
     Qm(c) = create_Q(M(c));
   }
-  mnhmm model(
+  mfanhmm model(
       obs, Ti, M, X_pi, X_A, matlist_to_2d_field(X_B), X_omega, 
       icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega,
       iv_A, iv_B, tv_A, tv_B, 
       eta_to_gamma(eta_pi, Qs), 
       eta_to_gamma(eta_A, Qs), 
       eta_to_gamma(cubelist_to_2d_field(eta_B), Qm, D), 
-      eta_to_gamma(eta_omega, Qd)
+      eta_to_gamma(eta_omega, Qd), prior_y, W_X_B
   );
   return model.log_objective(Qs, Qm, Qd);
 }

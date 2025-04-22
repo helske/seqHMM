@@ -15,12 +15,12 @@ make_objective_nhmm <- function(model, lambda = 0, need_grad = TRUE) {
   iv_B <- iv(X_B)
   tv_A <- tv(X_A)
   tv_B <- tv(X_B)
-  K_pi <- nrow(X_pi)
-  K_A <- nrow(X_A)
-  K_B <- vapply(X_B, nrow, integer(1))
+  K_pi <- K(X_pi)
+  K_A <- K(X_A)
+  K_B <- K(X_B)
   Ti <- model$sequence_lengths
   n_obs <- nobs(model)
-  obs <- create_obsArray(model)
+  obs <- create_obs(model)
   
   W_X_B <- model$W_X_B
   prior_y0 <- model$prior_y0
@@ -100,13 +100,13 @@ make_objective_mnhmm <- function(model, lambda = 0, need_grad = TRUE) {
   iv_B <- iv(X_B)
   tv_A <- tv(X_A)
   tv_B <- tv(X_B)
-  K_omega <- nrow(X_omega)
-  K_pi <- nrow(X_pi)
-  K_A <- nrow(X_A)
-  K_B <- vapply(X_B, \(x) nrow(x), 1L)
+  K_omega <- K(X_omega)
+  K_pi <- K(X_pi)
+  K_A <- K(X_A)
+  K_B <- K(X_B)
   Ti <- model$sequence_lengths
   n_obs <- nobs(model)
-  obs <- create_obsArray(model)
+  obs <- create_obs(model)
   
   W_X_B <- model$W_X_B
   prior_y0 <- model$prior_y0
@@ -159,7 +159,7 @@ make_objective_mnhmm <- function(model, lambda = 0, need_grad = TRUE) {
         pars[np_pi + np_A + np_B + seq_len(np_omega)], D, K_omega
       )
       if (use_fanhmm) {
-        ll <- Rcpp_loglik_mnfanhmm(
+        ll <- Rcpp_loglik_mfanhmm(
           obs, Ti, M, X_pi, X_A, X_B, X_omega,
           icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, 
           iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, eta_omega,

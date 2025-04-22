@@ -72,28 +72,51 @@ hidden_paths.mhmm <- function(model, as_stslist = FALSE, ...) {
 #' @export
 hidden_paths.nhmm <- function(model, as_stslist = FALSE, ...) {
   
-  obs <- create_obsArray(model)
-  out <- Rcpp_viterbi_nhmm(
-    obs, model$sequence_lengths, model$n_symbols, 
-    model$X_pi, model$X_A, model$X_B, 
-    io(model$X_pi), io(model$X_A), io(model$X_B),
-    iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
-    model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B
-  )
+  obs <- create_obs(model)
+  if (inherits(model, "fanhmm")) {
+    out <- Rcpp_viterbi_fanhmm(
+      obs, model$sequence_lengths, model$n_symbols, 
+      model$X_pi, model$X_A, model$X_B, 
+      io(model$X_pi), io(model$X_A), io(model$X_B),
+      iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+      model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B,
+      model$prior_obs, model$W_X_B
+    )
+  } else {
+    out <- Rcpp_viterbi_nhmm(
+      obs, model$sequence_lengths, model$n_symbols, 
+      model$X_pi, model$X_A, model$X_B, 
+      io(model$X_pi), io(model$X_A), io(model$X_B),
+      iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+      model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B
+    )
+  }
   create_mpp_data(out, model, as_stslist)
 }
 #' @rdname hidden_paths
 #' @export
 hidden_paths.mnhmm <- function(model, as_stslist = FALSE, ...) {
   
-  obs <- create_obsArray(model)
-  out <- Rcpp_viterbi_mnhmm(
-    obs, model$sequence_lengths, model$n_symbols, 
-    model$X_pi, model$X_A, model$X_B, model$X_omega,
-    io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
-    iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
-    model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, model$gammas$gamma_omega
-  )
+  obs <- create_obs(model)
+  if (inherits(model, "fanhmm")) {
+    out <- Rcpp_viterbi_mfanhmm(
+      obs, model$sequence_lengths, model$n_symbols, 
+      model$X_pi, model$X_A, model$X_B, model$X_omega,
+      io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
+      iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+      model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, 
+      model$gammas$gamma_omega, model$prior_obs, model$W_X_B
+    )
+  } else {
+    out <- Rcpp_viterbi_mnhmm(
+      obs, model$sequence_lengths, model$n_symbols, 
+      model$X_pi, model$X_A, model$X_B, model$X_omega,
+      io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
+      iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
+      model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, 
+      model$gammas$gamma_omega
+    )
+  }
   model$state_names <- paste0(
     rep(model$cluster_names, each = model$n_states), ": ",
     unlist(model$state_names)
@@ -104,25 +127,21 @@ hidden_paths.mnhmm <- function(model, as_stslist = FALSE, ...) {
 #' @noRd
 create_mpp_data <- function(out, model, as_stslist = FALSE) {
   # avoid CRAN check warnings due to NSE
-  time <- id <- state <- state <- NULL
-  if (model$n_sequences == 1) {
-    mpp <- model$state_names[out$q + 1]
-  } else {
-    mpp <- apply(out$q + 1, 2, \(x) model$state_names[x])
-  }
+  state <- NULL
+  
   if (inherits(model, "nhmm") || inherits(model, "mnhmm")) {
-    ids <- unique(model$data[[model$id_variable]])
-    times <- unique(model$data[[model$time_variable]])
-    names(model$sequence_lengths) <- ids
-    d <- data.table(
-      expand.grid(
-        time = times,
-        id = ids,
-        stringsAsFactors = FALSE
-      )[, 2:1],
-      state = c(mpp)
-    )[time <= times[model$sequence_lengths[id]], ]
+    id <- model$id_variable
+    time <- model$time_variable
+    d <- model$data[, list(id, time), env = list(id = id, time = time)]
+    set(d, j = "state", value = model$state_names[unlist(out$q) + 1L])
   } else {
+    id <- "id"
+    time <- "time"
+    if (model$n_sequences == 1) {
+      mpp <- model$state_names[out$q + 1]
+    } else {
+      mpp <- apply(out$q + 1, 2, \(x) model$state_names[x])
+    }
     if (model$n_channels == 1) model$observations <- list(model$observations)
     if (is.null(times <- as.numeric(colnames(model$observations[[1]])))) {
       times <- seq_len(model$length_of_sequences)
@@ -139,11 +158,11 @@ create_mpp_data <- function(out, model, as_stslist = FALSE) {
       )[, 2:1],
       state = c(mpp)
     )[time <= times[model$sequence_lengths[id]], ]
+    setkey(d, id, time)
   }
-  setkey(d, id, time)
   if (as_stslist) {
     d <- suppressMessages(
-      data_to_stslist(d, "id", "time", "state")
+      data_to_stslist(d, id, time, "state")
     )
   } else {
     if (inherits(model, "combined_mhmm") || inherits(model, "mnhmm")) {
@@ -152,9 +171,6 @@ create_mpp_data <- function(out, model, as_stslist = FALSE) {
         d, 
         c(setdiff(names(d), c("state", "cluster")), c("state", "cluster"))
       )
-    }
-    if (inherits(model, c("nhmm", "mnhmm"))) {
-      colnames(d)[1:2] <- c(model$id_variable, model$time_variable)
     }
   }
   attr(d, "log_prob") <- c(out$logp)

@@ -8,7 +8,12 @@
 class EM_mnhmm {
   
 public:
-  EM_mnhmm(mnhmm& model, const double lambda);
+  EM_mnhmm(mnhmm& model, 
+           const arma::mat& Qs, 
+           const arma::field<arma::mat>& Qm, 
+           const arma::mat& Qd, 
+           const double lambda
+  );
   ~EM_mnhmm();
   Rcpp::List run(
       const arma::uword maxeval, 
@@ -82,10 +87,10 @@ private:
   
   // data
   mnhmm& model;
-  const double lambda;
   const arma::mat Qs;
   const arma::field<arma::mat> Qm;
   const arma::mat Qd;
+  const double lambda;
   
   // coefficients //
   arma::field<arma::mat> eta_pi;

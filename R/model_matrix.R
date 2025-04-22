@@ -1,22 +1,18 @@
-#' Does covariate values vary per ID?
-#' @noRd
-iv_X <- function(X) {
-  all_same <- TRUE
-  for (i in seq_len(dim(X)[3])) {
-    all_same <- all_same && all(X[, , i] == X[, , 1])
-    if (!all_same) break
-  }
-  !all_same
-}
 #' Does covariate values vary in time?
 #' @noRd
-tv_X <- function(X) {
-  all_same <- TRUE
-  for (i in seq_len(dim(X)[2])) {
-    all_same <- all_same && all(X[, i, ] == X[, 1, ])
-    if (!all_same) break
-  }
-  !all_same
+tv_X <- function(X, cols) {
+  id <- NULL
+  any(vapply(cols, function(x) {
+    any(X[, uniqueN(x), by = id, env = list(id = "id", x = x)]$V1 > 1)
+  }, TRUE))
+}
+#' Does covariate values vary per ID?
+#' @noRd
+iv_X <- function(X, cols) {
+  time <- NULL
+  any(vapply(cols, function(x) {
+    any(X[, uniqueN(x), by = time, env = list(time = "time", x = x)]$V1 > 1)
+  }, TRUE))
 }
 
 #' Create the Model Matrix based on NHMM Formulas
@@ -146,9 +142,10 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
   time <- NULL
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
-    X <- array(1, c(1L, length_of_sequences, n_sequences))
+    X <- lapply(seq_len(n_sequences), \(i) matrix(1, 1, sequence_lengths[i]))
     coef_names <- "(Intercept)"
-    iv <- tv <- FALSE
+    iv <- n_unique(sequence_lengths) != 1L
+    tv <- FALSE
     X_mean <- NULL
     R_inv <- NULL
     feedback_terms <- character(0)
@@ -163,8 +160,8 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     # A_1 is not used anywhere, so we can allow missing values in the first time point
     missing_values <- setdiff(missing_values, which(data[[time_var]] == min(data[[time_var]])))
     if (length(missing_values) > 0 && check) {
-      idx <- sequence_lengths[match(data[[id_var]], unique(data[[id_var]]))]
-      ends <- data[idx, time, env = list(time = time_var)]
+      .idx <- sequence_lengths[match(data[[id_var]], unique(data[[id_var]]))]
+      ends <- data[.idx, time, env = list(time = time_var)]
       stopifnot_(
         all(z <- data[missing_values, time, env = list(time = time_var)] > ends[missing_values]),
         c(
@@ -200,12 +197,15 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
       X_mean <- rep(0, length(cols))
       R_inv <- diag(length(cols))
     }
-    X <- t(X)
-    dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
-    # Replace NAs in void cases and t = 1 with zero
-    X[is.na(X)] <- 0
-    iv <- iv_X(X[, -1L, , drop = FALSE])
-    tv <- tv_X(X[, -1L, , drop = FALSE])
+    K <- ncol(X)
+    X <- data.table(id = data[[id_var]], time = data[[time_var]], X, 
+                       key = c("id", "time"))
+    tv <- tv_X(X, coef_names[cols])
+    iv <- n_unique(sequence_lengths) != 1L || iv_X(X, coef_names[cols])
+    X[, time := NULL]
+    X <- lapply(
+      split(X, by = "id", keep.by = FALSE, verbose = FALSE), \(x) t(x)
+    )
     feedback_terms <- grep(
       paste0("\\blag_", attr(formula, "responses"), "\\b", collapse = "|"),
       coef_names
@@ -233,9 +233,10 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
   time <- NULL
   icpt_only <- intercept_only(formula)
   if (icpt_only) {
-    X <- array(1, c(1L, length_of_sequences, n_sequences))
+    X <- lapply(seq_len(n_sequences), \(i) matrix(1, 1, sequence_lengths[i]))
     coef_names <- "(Intercept)"
-    iv <- tv <- FALSE
+    iv <- n_unique(sequence_lengths) != 1L
+    tv <- FALSE
     X_mean <- NULL
     R_inv <- NULL
     autoregression_terms <- character(0)
@@ -248,8 +249,8 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     complete <- stats::complete.cases(X)
     missing_values <- which(!complete)
     if (length(missing_values) > 0 && check) {
-      idx <- sequence_lengths[match(data[[id_var]], unique(data[[id_var]]))]
-      ends <- data[idx, time, env = list(time = time_var)]
+      .idx <- sequence_lengths[match(data[[id_var]], unique(data[[id_var]]))]
+      ends <- data[.idx, time, env = list(time = time_var)]
       stopifnot_(
         all(z <- data[missing_values, time, env = list(time = time_var)] > ends[missing_values]),
         c(paste0(
@@ -284,12 +285,15 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
       X_mean <- rep(0, length(cols))
       R_inv <- diag(length(cols))
     }
-    X <- t(X)
-    dim(X) <- c(nrow(X), length_of_sequences, n_sequences)
-    # Replace NAs in void cases with zero
-    X[is.na(X)] <- 0
-    iv <- iv_X(X)
-    tv <- tv_X(X)
+    K <- ncol(X)
+    X <- data.table(id = data[[id_var]], time = data[[time_var]], X, 
+                    key = c("id", "time"))
+    tv <- tv_X(X, coef_names[cols])
+    iv <- n_unique(sequence_lengths) != 1L || iv_X(X, coef_names[cols])
+    X[, time := NULL]
+    X <- lapply(
+      split(X, by = "id", keep.by = FALSE, verbose = FALSE), \(x) t(x)
+    )
     autoregression_terms <- grep(
       paste0("\\blag_", attr(formula, "responses"), "\\b", collapse = "|"), 
       coef_names
@@ -311,7 +315,8 @@ create_W_X_B <- function(data, id_var, time_var, symbol_names, n_sequences,
                          emission_formula, n_states, X_B) {
   new <- old <- NULL
   combs <- expand.grid(symbol_names)
-  d <- data[data[, .I[1], by = id_var]$V1]
+  idx <- data[, .I[1], by = id_var, env = list(id_var = id_var)]$V1
+  d <- data[idx]
   W_X_B <- vector("list", nrow(combs))
   responses <- names(symbol_names)
   M <- lengths(symbol_names)
@@ -319,7 +324,7 @@ create_W_X_B <- function(data, id_var, time_var, symbol_names, n_sequences,
   for (i in seq_len(nrow(combs))) {
     W_X_B[[i]] <- stats::setNames(vector("list", C), responses)
     for (y in responses) {
-      d[, old := new, env = list(old = paste0("lag_", y), new = combs[i, y])]
+      set(d, j = paste0("lag_", y), value = combs[i, y])
     }
     for (y in responses) {
       W_X_B[[i]][[y]] <- model_matrix_emission_formula(

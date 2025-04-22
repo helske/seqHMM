@@ -22,13 +22,13 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda,
   iv_B <- iv(X_B)
   tv_A <- tv(X_A)
   tv_B <- tv(X_B)
-  K_omega <- nrow(X_omega)
-  K_pi <- nrow(X_pi)
-  K_A <- nrow(X_A)
-  K_B <- vapply(X_B, \(x) nrow(x), 1L)
+  K_omega <- K(X_omega)
+  K_pi <- K(X_pi)
+  K_A <- K(X_A)
+  K_B <- K(X_B)
   Ti <- model$sequence_lengths
   need_grad <- grepl("NLOPT_LD_", control$algorithm)
-  obs <- create_obsArray(model)
+  obs <- create_obs(model)
   all_solutions <- NULL
   objectivef <- make_objective_mnhmm(
     model, lambda, grepl("NLOPT_LD_", control$algorithm)

@@ -16,7 +16,7 @@ test_that("'predict' works 'fanhmm'", {
   )
   expect_error(
     predict(fanhmm_leaves, newdata = d, type = "abc"),
-    'Argument `type` must be \"observations\", \"states\", \"conditionals\", or a combination of these.'
+    'Argument `type` must be \"state\", \"response\", \"transition\", \"emission\", or a combination of these.'
   )
 })
 test_that("'predict' works multichannel 'nhmm'", {
@@ -63,8 +63,9 @@ test_that("'predict' works 'mnhmm'", {
     lambda = 0.1
   )
   expect_equal(fit$estimation_results$return_code, 3)
+  fit <- bootstrap_coefs(fit, nsim = 5)
   expect_error(
-    out <- predict(fit, newdata = d),
-    "no applicable method for 'predict' applied to an object of class \"mnhmm\""
+    out <- predict(fit, newdata = d, probs = c(0.1, 0.9)),
+    NA
   )
 })
