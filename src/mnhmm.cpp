@@ -211,7 +211,7 @@ Rcpp::List mnhmm::viterbi() {
       );
       if (logp_d > logp(i)) {
         logp(i) = logp_d;
-        q(i) = q_d;
+        q(i) = q_d + d * S;
       }
     }
     

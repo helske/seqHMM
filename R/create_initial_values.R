@@ -167,18 +167,24 @@ create_initial_values_ <- function(inits, init_sd, S, M, K_pi, K_A, K_B, D = 1,
 }
 
 create_eta_pi_nhmm <- function(x, S, K, sd = 0) {
-  matrix(stats::rnorm((S - 1) * K, x, sd), S - 1, K)
+  if (sd > 0) {
+    x <- stats::rnorm((S - 1) * K, x, sd)
+  }
+  matrix(x, S - 1, K)
 }
 create_eta_A_nhmm <- function(x, S, K, sd = 0) {
-  array(stats::rnorm((S - 1) * K * S, x, sd), c(S - 1, K, S))
+  if (sd > 0) {
+    x <- stats::rnorm((S - 1) * K * S, x, sd)
+  }
+  array(x, c(S - 1, K, S))
 }
 create_eta_B_nhmm <- function(x, S, M, K, sd = 0) {
   n <- c(0, cumsum((M - 1) * K * S))
+  if (sd > 0) {
+    x <- stats::rnorm(n[length(n)], x, sd)
+  }
   lapply(seq_along(M), \(i) {
-    array(
-      stats::rnorm((M[i] - 1) * K[i] * S, x[(n[i] + 1):(n[i + 1])], sd), 
-      c(M[i] - 1, K[i], S)
-    )
+    array(x[(n[i] + 1):(n[i + 1])], c(M[i] - 1, K[i], S))
   })
 }
 create_eta_pi_mnhmm <- function(x, S, K, D, sd = 0) {

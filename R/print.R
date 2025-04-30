@@ -127,7 +127,7 @@ print.nhmm <- function(x, digits = 3, ...) {
     cat("Non-homogeneous hidden Markov model: \n")
   }
   cat("\nNumber of sequences:", x$n_sequences)
-  if (fanhmm && identical(x$prior_y0, 0L)) {
+  if (fanhmm && identical(x$prior_obs, 0L)) {
     cat("\nNumber of time points:", x$length_of_sequences, " (after fixing the first time point)")
   } else {
     cat("\nNumber of time points:", x$length_of_sequences)
@@ -155,7 +155,7 @@ print.mnhmm <- function(x, digits = 3, ...) {
     cat("Mixture of non-homogeneous hidden Markov models: \n")
   }
   cat("\nNumber of sequences:", x$n_sequences)
-  if (fanhmm && identical(x$prior_y0, 0L)) {
+  if (fanhmm && identical(x$prior_obs, 0L)) {
     cat("\nNumber of time points:", x$length_of_sequences, " (after fixing the first time point)")
   } else {
     cat("\nNumber of time points:", x$length_of_sequences)

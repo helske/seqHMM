@@ -8,6 +8,7 @@
 #include "eta_to_gamma.h"
 #include "forward.h"
 #include "backward.h"
+#include "mfanhmm.h"
 #include <nloptrAPI.h>
 #include <chrono>
 
@@ -16,12 +17,30 @@ EM_mnhmm::EM_mnhmm(
   const arma::mat& Qs, 
   const arma::field<arma::mat>& Qm, 
   const arma::mat& Qd, 
-  const double lambda)
+  const double lambda,
+  const arma::uword maxeval, 
+  const double ftol_abs, 
+  const double ftol_rel, 
+  const double xtol_abs, 
+  const double xtol_rel, 
+  const arma::uword print_level,
+  const arma::uword maxeval_m, 
+  const double ftol_abs_m, 
+  const double ftol_rel_m, 
+  const double xtol_abs_m, 
+  const double xtol_rel_m, 
+  const arma::uword print_level_m,
+  const double bound)
   : model(model), Qs(Qs), Qm(Qm), Qd(Qd), lambda(lambda),
     eta_pi(model.D), eta_A(model.D), eta_B(model.D, model.C), 
     eta_omega(Qd.t() * model.gamma_omega), E_pi(model.D),
     E_A(model.D, model.S), E_B(model.D, model.C), E_omega(model.D, model.N),
-    opt_B(model.C, nullptr)
+    opt_B(model.C, nullptr), 
+    maxeval(maxeval), ftol_abs(ftol_abs), ftol_rel(ftol_rel), 
+    xtol_abs(xtol_abs), xtol_rel(xtol_rel), print_level(print_level),
+    maxeval_m(maxeval_m), ftol_abs_m(ftol_abs_m), ftol_rel_m(ftol_rel_m), 
+    xtol_abs_m(xtol_abs_m), xtol_rel_m(xtol_rel_m), print_level_m(print_level_m),
+    bound(bound)
 {
   for (arma::uword d = 0; d < model.D; ++d) {
     eta_pi(d) = Qs.t() * model.gamma_pi(d);
@@ -101,21 +120,22 @@ Rcpp::List EM_mnhmm::mstep_error(int iter,
 
 void EM_mnhmm::estep_pi(const arma::uword i, const arma::uword d, 
                         const arma::vec& log_alpha, const arma::vec& log_beta, 
-                        const double ll) {
-  E_pi(d).col(i) = arma::exp(log_alpha + log_beta - ll);
+                        const double ll, const double pcp) {
+  E_pi(d).col(i) = pcp * arma::exp(log_alpha + log_beta - ll);
   // set minuscule values to zero in order to avoid numerical issues
   E_pi(d).col(i).clean(model.minval);
 }
 
 void EM_mnhmm::estep_A(const arma::uword i, const arma::uword d, 
                        const arma::mat& log_alpha, const arma::mat& log_beta, 
-                       const double ll) {
+                       const double ll, const double pcp) {
   
   for (arma::uword k = 0; k < model.S; ++k) { // from
     for (arma::uword j = 0; j < model.S; ++j) { // to
       for (arma::uword t = 0; t < (model.Ti(i) - 1); ++t) { // time
-        E_A(d, k)(j, i, t + 1) = exp(log_alpha(k, t) + model.log_A(d)(k, j, t + 1) + 
-          log_beta(j, t + 1) + model.log_py(j, t + 1, d) - ll);
+        E_A(d, k)(j, i, t + 1) = pcp * exp(log_alpha(k, t) + 
+          model.log_A(d)(k, j, t + 1) + log_beta(j, t + 1) + 
+          model.log_py(j, t + 1, d) - ll);
       }
     }
     // set minuscule values to zero in order to avoid numerical issues
@@ -125,14 +145,14 @@ void EM_mnhmm::estep_A(const arma::uword i, const arma::uword d,
 
 void EM_mnhmm::estep_B(const arma::uword i, const arma::uword d, 
                        const arma::mat& log_alpha, const arma::mat& log_beta, 
-                       const double ll) {
+                       const double ll, const double pcp) {
   
   for (arma::uword k = 0; k < model.S; ++k) { // state
     for (arma::uword t = 0; t < model.Ti(i); ++t) { // time
       double pp = exp(log_alpha(k, t) + log_beta(k, t) - ll);
       for (arma::uword c = 0; c < model.C; ++c) { // channel
         if (model.obs(i)(c, t) < model.M(c) && pp > model.minval) {
-          E_B(d, c)(t, i, k) = pp;
+          E_B(d, c)(t, i, k) = pcp * pp;
         } else {
           E_B(d, c)(t, i, k) = 0.0;
         }
@@ -140,15 +160,15 @@ void EM_mnhmm::estep_B(const arma::uword i, const arma::uword d,
     }
   }
 }
-void EM_mnhmm::estep_omega(const arma::uword i, const arma::vec ll_i, 
-                           const double ll) {
+void EM_mnhmm::estep_omega(const arma::uword i, const arma::vec& likelihood) {
   
-  E_omega.col(i) = arma::exp(ll_i - ll);
+  E_omega.col(i) = likelihood;
   // set minuscule values to zero in order to avoid numerical issues
   E_omega.col(i).clean(model.minval);
 }
 
-void EM_mnhmm::mstep_pi(const arma::uword print_level) {
+void EM_mnhmm::mstep_pi() {
+  
   mstep_return_code = 0;
   // Use closed form solution
   if (model.icpt_only_pi && lambda < 1e-12) {
@@ -168,30 +188,30 @@ void EM_mnhmm::mstep_pi(const arma::uword print_level) {
   arma::vec x(eta_pi(0).memptr(), eta_pi.n_elem, false, true);
   double minf;
   int return_code;
-  double ll;
   arma::vec grad(eta_pi(0).n_elem);
-  mstep_iter = 0;
   for (arma::uword d = 0; d < model.D; ++d) {
     current_d = d;
     arma::vec x(eta_pi(d).memptr(), eta_pi(d).n_elem, false, true);
-    ll = objective_pi(x, grad);
+    double ll = objective_pi(x, grad);
+    last_val = std::numeric_limits<double>::infinity();
+    abs_change = 0;
+    rel_change = 0;
     mstep_iter = 0;
     if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
       return_code = 1; // already converged (L-BFGS gradient tolerance)
     } else {
       return_code = nlopt_optimize(opt_pi, x.memptr(), &minf);
-      // nlopt_optimize can return generic failure code due to small gradients
-      if (return_code == -1) {
-        double ll_new = objective_pi(x, grad);
-        double relative_change = abs(ll_new - ll) / (std::abs(ll) + 1e-12);
-        if ((arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll_new)) || relative_change < 1e-8) {
-          return_code = 7;
-        }
+      // nlopt_optimize can return generic failure code, check that we still have progressed
+      if (return_code == -1 && (abs_change < ftol_abs || rel_change < ftol_rel)) {
+        return_code = 7;
       }
     }
-    if (print_level > 2) {
+    if (print_level_m > 0) {
       Rcpp::Rcout<<"M-step of initial probabilities ended with return code "<<
         return_code<<" after "<<mstep_iter + 1<<" iterations."<<std::endl;
+      if (print_level_m > 1) {
+        Rcpp::Rcout<<"Relative change "<<rel_change<<", absolute change "<<abs_change<<std::endl;
+      }
     }
     if (return_code < 0) {
       mstep_return_code = return_code - 110;
@@ -199,7 +219,7 @@ void EM_mnhmm::mstep_pi(const arma::uword print_level) {
     }
   }
 }
-void EM_mnhmm::mstep_A(const arma::uword print_level) {
+void EM_mnhmm::mstep_A() {
   
   mstep_return_code = 0;
   // Use closed form solution
@@ -233,23 +253,27 @@ void EM_mnhmm::mstep_A(const arma::uword print_level) {
       current_s = s;
       arma::vec x(eta_A(d).slice(s).memptr(), eta_A(d).slice(s).n_elem, false, true);
       ll = objective_A(x, grad);
+      last_val = std::numeric_limits<double>::infinity();
+      abs_change = 0;
+      rel_change = 0;
       mstep_iter = 0;
       if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
         return_code = 1; // already converged (L-BFGS gradient tolerance)
       } else {
         return_code = nlopt_optimize(opt_A, x.memptr(), &minf);
-        if (return_code == -1) {
-          double ll_new = objective_A(x, grad);
-          double relative_change = abs(ll_new - ll) / (std::abs(ll) + 1e-12);
-          if ((arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll_new)) || relative_change < 1e-8) {
-            return_code = 7;
-          }
+        // nlopt_optimize can return generic failure code, check that we still have progressed
+        if (return_code == -1 && (abs_change < ftol_abs || rel_change < ftol_rel)) {
+          return_code = 7;
         }
       }
-      if (print_level > 2) {
-        Rcpp::Rcout<<"M-step of transition probabilities of state "<<s + 1<<
-          " ended with return code "<<return_code<<" after "<<mstep_iter + 1<<
-            " iterations."<<std::endl;
+      if (print_level_m > 0) {
+        Rcpp::Rcout<<"M-step of transition probabilities of state "<<s + 1
+                   <<" in cluster "<<d
+                   <<" ended with return code "<< return_code
+                   <<" after "<<mstep_iter + 1<<" iterations."<<std::endl;
+        if (print_level_m > 1) {
+          Rcpp::Rcout<<"Relative change "<<rel_change<<", absolute change "<<abs_change<<std::endl;
+        }
       }
       if (return_code < 0) {
         mstep_return_code = return_code - 210;
@@ -258,7 +282,7 @@ void EM_mnhmm::mstep_A(const arma::uword print_level) {
     }
   }
 }
-void EM_mnhmm::mstep_B(const arma::uword print_level) {
+void EM_mnhmm::mstep_B() {
   mstep_return_code = 0;
   // use closed form solution
   if (arma::all(model.icpt_only_B) && lambda < 1e-12) {
@@ -297,25 +321,28 @@ void EM_mnhmm::mstep_B(const arma::uword print_level) {
         current_s = s;
         arma::vec x(eta_B(d, c).slice(s).memptr(), eta_B(d, c).slice(s).n_elem, false, true);
         ll = objective_B(x, grad);
+        last_val = std::numeric_limits<double>::infinity();
+        abs_change = 0;
+        rel_change = 0;
         mstep_iter = 0;
         if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
           return_code = 1; // already converged (L-BFGS gradient tolerance)
         } else {
           return_code = nlopt_optimize(opt_B[c], x.memptr(), &minf);
-          // nlopt_optimize can return generic failure code due to small gradients
-          if (return_code == -1) {
-            double ll_new = objective_B(x, grad);
-            double relative_change = abs(ll_new - ll) / (std::abs(ll) + 1e-12);
-            if ((arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll_new)) || relative_change < 1e-8) {
-              return_code = 7;
-            }
+          // nlopt_optimize can return generic failure code, check that we still have progressed
+          if (return_code == -1 && (abs_change < ftol_abs || rel_change < ftol_rel)) {
+            return_code = 7;
           }
         }
-        if (print_level > 2) {
-          Rcpp::Rcout<<"M-step of emission probabilities of state "<<s + 1<<
-            " and channel "<<c<<" ended with return code "<<
-              return_code<<" after "<<mstep_iter + 1<<
-                " iterations."<<std::endl;
+        if (print_level_m > 0) {
+          Rcpp::Rcout<<"M-step of emission probabilities of state "<<s + 1
+                     <<" in cluster "<<d
+                     <<" of response "<<c
+                     <<" ended with return code "<< return_code
+                     <<" after "<<mstep_iter + 1<<" iterations."<<std::endl;
+          if (print_level_m > 1) {
+            Rcpp::Rcout<<"Relative change "<<rel_change<<", absolute change "<<abs_change<<std::endl;
+          }
         }
         if (return_code < 0) {
           mstep_return_code = return_code - 310;
@@ -325,7 +352,7 @@ void EM_mnhmm::mstep_B(const arma::uword print_level) {
     }
   }
 }
-void EM_mnhmm::mstep_omega(const arma::uword print_level) {
+void EM_mnhmm::mstep_omega() {
   mstep_return_code = 0;
   // Use closed form solution
   if (model.icpt_only_omega && lambda < 1e-12) {
@@ -347,23 +374,25 @@ void EM_mnhmm::mstep_omega(const arma::uword print_level) {
   double ll;
   arma::vec grad(eta_omega.n_elem);
   ll = objective_omega(x, grad);
+  last_val = std::numeric_limits<double>::infinity();
+  abs_change = 0;
+  rel_change = 0;
   mstep_iter = 0;
   if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
     return_code = 1; // already converged (L-BFGS gradient tolerance)
   } else {
     return_code = nlopt_optimize(opt_omega, x.memptr(), &minf);
-    // nlopt_optimize can return generic failure code due to small gradients
-    if (return_code == -1) {
-      double ll_new = objective_omega(x, grad);
-      double relative_change = abs(ll_new - ll) / (std::abs(ll) + 1e-12);
-      if ((arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll_new)) || relative_change < 1e-8) {
-        return_code = 7;
-      }
+    // nlopt_optimize can return generic failure code, check that we still have progressed
+    if (return_code == -1 && (abs_change < ftol_abs || rel_change < ftol_rel)) {
+      return_code = 7;
     }
   }
-  if (print_level > 2) {
+  if (print_level_m > 0) {
     Rcpp::Rcout<<"M-step of cluster probabilities ended with return code "<<
       return_code<<" after "<<mstep_iter + 1<<" iterations."<<std::endl;
+    if (print_level_m > 1) {
+      Rcpp::Rcout<<"Relative change "<<rel_change<<", absolute change "<<abs_change<<std::endl;
+    }
   }
   if (return_code < 0) {
     mstep_return_code = return_code - 410;
@@ -413,16 +442,25 @@ double EM_mnhmm::objective_pi(const arma::vec& x, arma::vec& grad) {
     }
     const arma::vec& counts = E_pi(current_d).col(i);
     idx = arma::find(counts);
-    double val = arma::dot(counts.rows(idx), model.log_pi(current_d).rows(idx));
-    if (!std::isfinite(val)) {
-      grad.zeros();
-      return model.maxval;
+    if (idx.n_elem > 0) {
+      double sum_epi = arma::accu(counts.rows(idx));
+      double val = arma::dot(counts.rows(idx), model.log_pi(current_d).rows(idx));
+      if (!std::isfinite(val)) {
+        grad.zeros();
+        return model.maxval;
+      }
+      value -= val;
+      grad -= arma::vectorise(tQs * (counts - sum_epi * model.pi(current_d)) * model.X_pi.col(i).t());
     }
-    value -= val;
-    grad -= arma::vectorise(tQs * (counts - model.pi(current_d)) * model.X_pi.col(i).t());
   }
+  value += 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
+  value /= model.N;
   grad += lambda * x;
-  return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
+  grad /= model.N;
+  abs_change = value - last_val;
+  rel_change = std::abs(abs_change) / (std::abs(last_val) + 1e-12);
+  last_val = value;
+  return value;
 }
 
 double EM_mnhmm::objective_A(const arma::vec& x, arma::vec& grad) {
@@ -447,22 +485,30 @@ double EM_mnhmm::objective_A(const arma::vec& x, arma::vec& grad) {
     for (arma::uword t = 1; t < model.Ti(i); ++t) {
       const arma::vec& counts = E_A(current_d, current_s).slice(t).col(i);
       idx = arma::find(counts);
-      double sum_ea = arma::accu(counts.rows(idx));
-      if (model.tv_A) {
-        A1 = softmax(gamma_Arow * model.X_A(i).col(t));
-        log_A1 = log(A1);
+      if (idx.n_elem > 0) {
+        if (model.tv_A) {
+          A1 = softmax(gamma_Arow * model.X_A(i).col(t));
+          log_A1 = log(A1);
+        }
+        double sum_ea = arma::accu(counts.rows(idx));
+        double val = arma::dot(counts.rows(idx), log_A1.rows(idx));
+        if (!std::isfinite(val)) {
+          grad.zeros();
+          return model.maxval;
+        }
+        value -= val;
+        grad -= arma::vectorise(tQs * (counts - sum_ea * A1) * model.X_A(i).col(t).t());
       }
-      double val = arma::dot(counts.rows(idx), log_A1.rows(idx));
-      if (!std::isfinite(val)) {
-        grad.zeros();
-        return model.maxval;
-      }
-      value -= val;
-      grad -= arma::vectorise(tQs * (counts - sum_ea * A1) * model.X_A(i).col(t).t());
     }
   }
+  value += 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
+  value /= model.N;
   grad += lambda * x;
-  return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
+  grad /= model.N;
+  abs_change = value - last_val;
+  rel_change = std::abs(abs_change) / (std::abs(last_val) + 1e-12);
+  last_val = value;
+  return value;
 }
 
 double EM_mnhmm::objective_B(const arma::vec& x, arma::vec& grad) {
@@ -480,12 +526,44 @@ double EM_mnhmm::objective_B(const arma::vec& x, arma::vec& grad) {
   }
   arma::mat I(Mc, Mc, arma::fill::eye);
   arma::mat tQm = Qm(current_c).t();
+  
+  // Check if model is a fanhmm
+  bool marginalize_y0 = false;
+  const mfanhmm* fan_model = dynamic_cast<const mfanhmm*>(&model);
+  bool is_fanhmm = (fan_model != nullptr);
+  if (is_fanhmm) {
+    if (fan_model->prior_y.n_elem > 1) {
+      marginalize_y0 = true;
+    }
+  }
+  
   for (arma::uword i = 0; i < model.N; ++i) {
     if (model.iv_B(current_c) && !model.tv_B(current_c)) {
       B1 = softmax(gamma_Brow * model.X_B(current_c, i).col(0));
       log_B1 = log(B1);
     }
-    for (arma::uword t = 0; t < model.Ti(i); ++t) {
+    if (marginalize_y0) {
+      if (model.obs(i)(current_c, 0) < Mc) {
+        double e_b = E_B(current_d, current_c)(0, i, current_s);
+        if (e_b > 0) {
+          for (arma::uword j = 0; j < fan_model->prior_y.n_elem; ++j) {
+            if (model.tv_B(current_c)) {
+              B1 = softmax(gamma_Brow * fan_model->W_X_B(j, current_c, i));
+              log_B1 = log(B1);
+            }
+            double val = e_b * log_B1(model.obs(i)(current_c, 0));
+            if (!std::isfinite(val)) {
+              grad.zeros();
+              return model.maxval;
+            }
+            value -= val * fan_model->prior_y(j);
+            grad -= arma::vectorise(tQm * e_b  * (I.col(model.obs(i)(current_c, 0)) - B1) * 
+              fan_model->W_X_B(j, current_c, i).t() * fan_model->prior_y(j));
+          }
+        }
+      }
+    }
+    for (arma::uword t = 0 + marginalize_y0; t < model.Ti(i); ++t) {
       if (model.obs(i)(current_c, t) < Mc) {
         double e_b = E_B(current_d, current_c)(t, i, current_s);
         if (e_b > 0) {
@@ -505,15 +583,20 @@ double EM_mnhmm::objective_B(const arma::vec& x, arma::vec& grad) {
       }
     }
   }
+  value += 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
+  value /= model.N;
   grad += lambda * x;
-  return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
+  grad /= model.N;
+  abs_change = value - last_val;
+  rel_change = std::abs(abs_change) / (std::abs(last_val) + 1e-12);
+  last_val = value;
+  return value;
 }
 
 double EM_mnhmm::objective_omega(const arma::vec& x, arma::vec& grad) {
   
   mstep_iter++;
   double value = 0;
-  
   eta_omega = arma::mat(x.memptr(), model.D - 1, model.X_omega.n_rows);
   model.gamma_omega = sum_to_zero(eta_omega, Qd);
   grad.zeros();
@@ -533,24 +616,18 @@ double EM_mnhmm::objective_omega(const arma::vec& x, arma::vec& grad) {
     value -= val;
     grad -= arma::vectorise(tQd * (counts - model.omega) * model.X_omega.col(i).t());
   }
+  value += 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
+  value /= model.N;
   grad += lambda * x;
-  return value + 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
+  grad /= model.N;
+  abs_change = value - last_val;
+  rel_change = std::abs(abs_change) / (std::abs(last_val) + 1e-12);
+  last_val = value;
+  return value;
 }
 
-Rcpp::List EM_mnhmm::run(const arma::uword maxeval, 
-                         const double ftol_abs, 
-                         const double ftol_rel, 
-                         const double xtol_abs, 
-                         const double xtol_rel, 
-                         const arma::uword print_level,
-                         const arma::uword maxeval_m, 
-                         const double ftol_abs_m, 
-                         const double ftol_rel_m, 
-                         const double xtol_abs_m, 
-                         const double xtol_rel_m, 
-                         const arma::uword print_level_m,
-                         const double bound) {
-
+Rcpp::List EM_mnhmm::run() {
+  
   const arma::uword n_obs = arma::accu(model.Ti);
   arma::uword n_omega = eta_omega.n_elem;
   arma::uword n_pi = eta_pi(0).n_elem;
@@ -628,10 +705,11 @@ Rcpp::List EM_mnhmm::run(const arma::uword maxeval,
   arma::uword iter = 0;
   double ll_new;
   double ll;
-  arma::mat log_alpha(model.S, model.Ti(0));
-  arma::mat log_beta(model.S, model.Ti(0));
+  arma::cube log_alpha(model.S, model.Ti(0), model.D);
+  arma::cube log_beta(model.S, model.Ti(0), model.D);
   arma::vec loglik(model.N);
   arma::vec loglik_i(model.D);
+  arma::vec lls(model.D);
   // Initial log-likelihood
   for (arma::uword i = 0; i < model.N; ++i) {
     if (!model.icpt_only_pi || i == 0) {
@@ -647,23 +725,24 @@ Rcpp::List EM_mnhmm::run(const arma::uword maxeval,
       model.update_omega(i);
     }
     model.update_log_py(i);
-    log_alpha = arma::mat(model.S, model.Ti(i));
-    log_beta = arma::mat(model.S, model.Ti(i));
+    log_alpha = arma::cube(model.S, model.Ti(i), model.D);
+    log_beta = arma::cube(model.S, model.Ti(i), model.D);
     for (arma::uword d = 0; d < model.D; ++d) {
       univariate_forward(
-        log_alpha, model.log_pi(d), model.log_A(d), 
-        model.log_py.slice(d).cols(0, model.Ti(i) - 1)
+        log_alpha.slice(d), model.log_pi(d), model.log_A(d), model.log_py.slice(d)
       );
-      univariate_backward(
-        log_beta, model.log_A(d), model.log_py.slice(d).cols(0, model.Ti(i) - 1)
-      );
-      loglik_i(d) = logSumExp(log_alpha.col(model.Ti(i) - 1));
-      estep_pi(i, d, log_alpha.col(0), log_beta.col(0), loglik_i(d));
-      estep_A(i, d, log_alpha, log_beta, loglik_i(d));
-      estep_B(i, d, log_alpha, log_beta, loglik_i(d));
+      univariate_backward(log_beta.slice(d), model.log_A(d), model.log_py.slice(d));
+      loglik_i(d) = logSumExp(log_alpha.slice(d).col(model.Ti(i) - 1));
     }
-    loglik(i) = logSumExp(model.log_omega + loglik_i);
-    estep_omega(i, model.log_omega + loglik_i, loglik(i));
+    lls = model.log_omega + loglik_i;
+    loglik(i) = logSumExp(lls);
+    lls = arma::exp(lls - loglik(i));
+    for (arma::uword d = 0; d < model.D; ++d) {
+      estep_pi(i, d, log_alpha.slice(d).col(0), log_beta.slice(d).col(0), loglik_i(d), lls(d));
+      estep_A(i, d, log_alpha.slice(d), log_beta.slice(d), loglik_i(d), lls(d));
+      estep_B(i, d, log_alpha.slice(d), log_beta.slice(d), loglik_i(d), lls(d));
+    }
+    estep_omega(i, lls);
   }
   ll = arma::accu(loglik);
   double penalty_term = 0.5 * lambda * std::pow(arma::norm(pars, 2), 2);
@@ -692,28 +771,28 @@ Rcpp::List EM_mnhmm::run(const arma::uword maxeval,
     
     iter++;
     ll_new = 0;
-    mstep_pi(print_level_m);
+    mstep_pi();
+    if (mstep_return_code != 0) {
+      return mstep_error(
+        iter, relative_change, absolute_change, absolute_x_change, 
+        relative_x_change
+      );
+    }  
+    mstep_A();
     if (mstep_return_code != 0) {
       return mstep_error(
         iter, relative_change, absolute_change, absolute_x_change, 
         relative_x_change
       );
     }
-    mstep_A(print_level_m);
+    mstep_B();
     if (mstep_return_code != 0) {
       return mstep_error(
         iter, relative_change, absolute_change, absolute_x_change, 
         relative_x_change
       );
     }
-    mstep_B(print_level_m);
-    if (mstep_return_code != 0) {
-      return mstep_error(
-        iter, relative_change, absolute_change, absolute_x_change, 
-        relative_x_change
-      );
-    }
-    mstep_omega(print_level_m);
+    mstep_omega();
     if (mstep_return_code != 0) {
       return mstep_error(
         iter, relative_change, absolute_change, absolute_x_change, 
@@ -739,21 +818,24 @@ Rcpp::List EM_mnhmm::run(const arma::uword maxeval,
         model.update_omega(i);
       }
       model.update_log_py(i);
+      log_alpha = arma::cube(model.S, model.Ti(i), model.D);
+      log_beta = arma::cube(model.S, model.Ti(i), model.D);
       for (arma::uword d = 0; d < model.D; ++d) {
         univariate_forward(
-          log_alpha, model.log_pi(d), model.log_A(d), 
-          model.log_py.slice(d).cols(0, model.Ti(i) - 1)
+          log_alpha.slice(d), model.log_pi(d), model.log_A(d), model.log_py.slice(d)
         );
-        univariate_backward(
-          log_beta, model.log_A(d), model.log_py.slice(d).cols(0, model.Ti(i) - 1)
-        );
-        loglik_i(d) = logSumExp(log_alpha.col(model.Ti(i) - 1));
-        estep_pi(i, d, log_alpha.col(0), log_beta.col(0), loglik_i(d));
-        estep_A(i, d, log_alpha, log_beta, loglik_i(d));
-        estep_B(i, d, log_alpha, log_beta, loglik_i(d));
+        univariate_backward(log_beta.slice(d), model.log_A(d), model.log_py.slice(d));
+        loglik_i(d) = logSumExp(log_alpha.slice(d).col(model.Ti(i) - 1));
       }
-      loglik(i) = logSumExp(model.log_omega + loglik_i);
-      estep_omega(i, model.log_omega + loglik_i, loglik(i));
+      lls = model.log_omega + loglik_i;
+      loglik(i) = logSumExp(lls);
+      lls = arma::exp(lls - loglik(i));
+      for (arma::uword d = 0; d < model.D; ++d) {
+        estep_pi(i, d, log_alpha.slice(d).col(0), log_beta.slice(d).col(0), loglik_i(d), lls(d));
+        estep_A(i, d, log_alpha.slice(d), log_beta.slice(d), loglik_i(d), lls(d));
+        estep_B(i, d, log_alpha.slice(d), log_beta.slice(d), loglik_i(d), lls(d));
+      }
+      estep_omega(i, lls);
     }
     ll_new = arma::accu(loglik);
     new_pars.cols(0, n_omega - 1) = arma::vectorise(eta_omega).t();

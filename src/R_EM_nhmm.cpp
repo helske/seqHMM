@@ -50,10 +50,11 @@ Rcpp::List Rcpp_EM_LBFGS_nhmm(
       iv_A, iv_B, tv_A, tv_B, eta_to_gamma(eta_pi, Qs), 
       eta_to_gamma(eta_A, Qs), eta_to_gamma(eta_B, Qm)
   );
-  EM_nhmm EM(model, Qs, Qm, lambda);
-  return EM.run(
-    maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level,
-    maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m,
-    bound
+  EM_nhmm EM(
+      model, Qs, Qm, lambda,
+      maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level,
+      maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, 
+      bound
   );
+  return EM.run();
 }

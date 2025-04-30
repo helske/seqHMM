@@ -4,6 +4,7 @@
 #include "list_to_field.h"
 #include "joint_probability.h"
 #include "sample.h"
+#include "get_W_idx.h"
 
 mfanhmm::mfanhmm(
   const arma::field<arma::umat>& obs,
@@ -33,7 +34,14 @@ mfanhmm::mfanhmm(
     icpt_only_A, icpt_only_B, icpt_only_omega, iv_A, iv_B, tv_A, tv_B, 
     gamma_pi, gamma_A, gamma_B, gamma_omega, maxval, minval), prior_y(prior_y), 
     fixed_0(prior_y.n_elem == 1),
-    W_X_B(fixed_0 ? arma::field<arma::vec>() : veclist_to_3d_field(W_X_B)) {
+    W_X_B(fixed_0 ? arma::field<arma::vec>() : veclist_to_3d_field(W_X_B)),
+    B1(D, C), log_B1(D, C) {
+  for (arma::uword d = 0; d < D; ++d) {
+    for (arma::uword c = 0; c < C; ++c) {
+      B1(d, c) = arma::cube(S, M(c) + 1, prior_y.n_elem);
+      log_B1(d, c) = arma::cube(S, M(c) + 1, prior_y.n_elem);
+    }
+  }
 }
 void mfanhmm::update_B(const arma::uword i) {
   for (arma::uword c = 0; c < C; ++c) {
@@ -55,17 +63,18 @@ void mfanhmm::update_B(const arma::uword i) {
       if (tv_B(c)) {
         for (arma::uword d = 0; d < D; ++d) {
           if (!fixed_0) {
-            Btmp.rows(0, M(c) - 1).zeros();
-            for (arma::uword i = 0; prior_y.n_elem; ++i) {
-              for (arma::uword m = 0; m < M(c); ++m) { // time
-                for (arma::uword s = 0; s < S; ++s) { // from states
-                  Btmp.col(s).rows(0, M(c) - 1) += softmax(
-                    gamma_B(d, c).slice(s) * W_X_B(c, i).col(m)
-                  ) * prior_y(i);
-                }
+            B1(d, c).zeros();
+            B(d, c).slice(0).cols(0, M(c) - 1).zeros();
+            for (arma::uword j = 0; j < prior_y.n_elem; ++j) {
+              for (arma::uword s = 0; s < S; ++s) { // from states
+                B1(d, c).slice(j).row(s).cols(0, M(c) - 1) = softmax(
+                  gamma_B(d, c).slice(s) * W_X_B(j, c, i)
+                ).t();
               }
+              B(d, c).slice(0) += B1(d, c).slice(j) * prior_y(j);
+              B1(d, c).col(M(c)).ones();
             }
-            B(c).slice(0) = Btmp.t();
+            log_B1(d, c) = arma::log(B1(d, c));
           }
           for (arma::uword t = 1 - fixed_0; t < Ti(i); ++t) { // time
             for (arma::uword s = 0; s < S; ++s) { // from states
@@ -214,11 +223,12 @@ Rcpp::List mfanhmm::simulate(
   arma::uvec seqS = arma::linspace<arma::uvec>(0, S - 1, S);
   arma::uvec seqD = arma::linspace<arma::uvec>(0, D - 1, D);
   arma::field<arma::uvec> seqM(C);
+  arma::field<arma::vec> B(C);
   for (arma::uword c = 0; c < C; ++c) {
     seqM(c) = arma::linspace<arma::uvec>(0, M(c) - 1, M(c));
+    B(c) = arma::vec(M(c));
   }
   arma::vec A(S);
-  arma::field<arma::vec> B(C);
   for (arma::uword i = 0; i < N; ++i) {
     y(i) = arma::umat(C, Ti(i));
     z(i) = arma::uvec(Ti(i));
@@ -235,35 +245,32 @@ Rcpp::List mfanhmm::simulate(
         B(c) = softmax(
           gamma_B(cluster, c).slice(z(i)(0)) * X_B(c, i).col(0)
         );
-        y(i)(c, 0) = sample(seqM(c), B(c));
+        y(i)(c, 0) = sample(seqM(c), B(c).t());
       }
     } else {
       for (arma::uword c = 0; c < C; ++c) {
-        arma::mat Btmp(M(c) + 1, S, arma::fill::ones);
-        Btmp.rows(0, M(c) - 1).zeros();
+        B(c).zeros();
         for (arma::uword i = 0; prior_y.n_elem; ++i) {
-          for (arma::uword m = 0; m < M(c); ++m) { // time
-            for (arma::uword s = 0; s < S; ++s) { // from states
-              Btmp.col(s).rows(0, M(c) - 1) += softmax(
-                gamma_B(cluster, c).slice(s) * W_X_B(c, i).col(m)
+          for (arma::uword m = 0; m < M(c); ++m) {
+           B(c) += softmax(
+                gamma_B(cluster, c).slice(z(i)(0)) * W_X_B(c, i).col(m)
               ) * prior_y(i);
             }
           }
-        }
-        B(c) = Btmp.t();
-        y(i)(c, 0) = sample(seqM(c), B(c));
+        y(i)(c, 0) = sample(seqM(c), B(c).t());
       }
     }
     for (arma::uword t = 1; t < Ti(i); ++t) {
+      arma::uword idx = get_W_idx(y(i).col(t - 1), M);
+      A = softmax(
+        gamma_A(cluster).slice(z(i)(t - 1)) * W_A(idx, i).col(t)
+      );
+      z(i)(t) = sample(seqS, A.t());
       for (arma::uword c = 0; c < C; ++c) {
-        A = softmax(
-          gamma_A(cluster).slice(z(i)(t - 1)) * W_A(y(i)(c, t - 1), i).col(t)
-        );
-        z(i)(t) = sample(seqS, A);
         B(c) = softmax(
-          gamma_B(cluster, c).slice(z(i)(t)) * W_B(y(i)(c, t - 1)).col(t)
+          gamma_B(cluster, c).slice(z(i)(t)) * W_B(idx, c, i).col(t)
         );
-        y(i)(c, t) = sample(seqM(c), B(c));
+        y(i)(c, t) = sample(seqM(c), B(c).t());
       }
     }
     z(i) += cluster * S;
@@ -272,4 +279,47 @@ Rcpp::List mfanhmm::simulate(
     Rcpp::Named("observations") = Rcpp::wrap(y),
     Rcpp::Named("states") = Rcpp::wrap(z)
   );
+}
+void mfanhmm::gradient_B_t1(
+    arma::mat& grad, 
+    arma::vec& tmpvec, 
+    const arma::cube& log_beta, 
+    const arma::vec& loglik, 
+    const arma::uword i, 
+    const arma::uword s, 
+    const arma::uword c, 
+    const arma::uword d) {
+  
+  arma::uword C = M.n_elem;
+  arma::rowvec Brow(M(c));
+  arma::uword idx = obs(i)(c, 0);
+  if (!fixed_0) {
+    double tmp = log_omega(d) + log_pi(d)(s) + log_beta(s, 0, d) - loglik(i);
+    for (arma::uword j = 0; j < prior_y.n_elem; ++j) {
+      Brow = B1(d, c).slice(j).row(s).cols(0, M(c) - 1);
+      double brow = Brow(idx);
+      tmpvec = -Brow.t() * brow;
+      tmpvec(idx) += brow;
+      double logpy = 0;
+      for (arma::uword cc = 0; cc < C; ++cc) {
+        if (cc != c) {
+          logpy += log_B1(d, cc)(s, obs(i)(cc, 0), j);
+        }
+      }
+      grad += exp(tmp + logpy) * tmpvec * W_X_B(j, c, i).t() * prior_y(j);
+    }
+  } else {
+    Brow = B(d, c).slice(0).row(s).cols(0, M(c) - 1);
+    double brow = Brow(idx);
+    tmpvec = -Brow.t() * brow;
+    tmpvec(idx) += brow;
+    double logpy = 0;
+    for (arma::uword cc = 0; cc < C; ++cc) {
+      if (cc != c) {
+        logpy += log_B(d, cc)(s, obs(i)(cc, 0), 0);
+      }
+    }
+    grad += exp(log_omega(d) + log_pi(d)(s) + logpy + 
+      log_beta(s, 0, d) - loglik(i)) * tmpvec * X_B(c, i).col(0).t();
+  }
 }

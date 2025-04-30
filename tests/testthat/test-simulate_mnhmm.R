@@ -32,7 +32,7 @@ test_that("simulate_mnhmm and coef works", {
       n_clusters = 3, 
       initial_formula = ~1, transition_formula = ~ x, 
       emission_formula = c(y, g) ~ x + z, cluster_formula = ~w, 
-      data = sim$model$data, time = "month", id = "person", 
+      data = sim$data, time = "month", id = "person", 
       inits = sim$model$etas, maxeval = 1,
       maxeval_em_dnm = 1),
     NA

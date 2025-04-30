@@ -111,7 +111,7 @@ void log_internalBackward(const arma::mat& transition, const arma::cube& emissio
   default(none) shared(beta, obs, emission,transition)
     for (arma::uword k = 0; k < obs.n_slices; ++k) {
       beta.slice(k).col(obs.n_cols - 1).zeros();
-      for (int t = (obs.n_cols - 2); t >= 0; t--) {
+      for (arma::uword t = obs.n_cols - 1; t-- > 0;) {
         arma::vec tmpbeta(transition.n_rows);
         for (arma::uword i = 0; i < transition.n_rows; ++i) {
           tmpbeta = beta.slice(k).col(t + 1) + transition.row(i).t();

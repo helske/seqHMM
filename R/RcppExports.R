@@ -65,20 +65,20 @@ Rcpp_log_objective_nhmm <- function(obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, ic
     .Call(`_seqHMM_Rcpp_log_objective_nhmm`, obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B)
 }
 
-Rcpp_loglik_fanhmm <- function(obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B, prior_y, W_X_B) {
-    .Call(`_seqHMM_Rcpp_loglik_fanhmm`, obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B, prior_y, W_X_B)
+Rcpp_loglik_fanhmm <- function(obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, prior_y, W_X_B) {
+    .Call(`_seqHMM_Rcpp_loglik_fanhmm`, obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, prior_y, W_X_B)
 }
 
-Rcpp_loglik_mfanhmm <- function(obs, Ti, M, X_pi, X_A, X_B, X_omega, icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B, gamma_omega, prior_y, W_X_B) {
-    .Call(`_seqHMM_Rcpp_loglik_mfanhmm`, obs, Ti, M, X_pi, X_A, X_B, X_omega, icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B, gamma_omega, prior_y, W_X_B)
+Rcpp_loglik_mfanhmm <- function(obs, Ti, M, X_pi, X_A, X_B, X_omega, icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, eta_omega, prior_y, W_X_B) {
+    .Call(`_seqHMM_Rcpp_loglik_mfanhmm`, obs, Ti, M, X_pi, X_A, X_B, X_omega, icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, eta_omega, prior_y, W_X_B)
 }
 
-Rcpp_loglik_mnhmm <- function(obs, Ti, M, X_pi, X_A, X_B, X_omega, icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B, gamma_omega) {
-    .Call(`_seqHMM_Rcpp_loglik_mnhmm`, obs, Ti, M, X_pi, X_A, X_B, X_omega, icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B, gamma_omega)
+Rcpp_loglik_mnhmm <- function(obs, Ti, M, X_pi, X_A, X_B, X_omega, icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, eta_omega) {
+    .Call(`_seqHMM_Rcpp_loglik_mnhmm`, obs, Ti, M, X_pi, X_A, X_B, X_omega, icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, eta_omega)
 }
 
-Rcpp_loglik_nhmm <- function(obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B) {
-    .Call(`_seqHMM_Rcpp_loglik_nhmm`, obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B)
+Rcpp_loglik_nhmm <- function(obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B) {
+    .Call(`_seqHMM_Rcpp_loglik_nhmm`, obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B)
 }
 
 Rcpp_predict_fanhmm <- function(obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B, prior_y, W_X_B, W_A, W_B) {
@@ -179,6 +179,10 @@ get_A_all <- function(gamma, X, tv) {
 
 get_B_all <- function(gamma, X, tv) {
     .Call(`_seqHMM_get_B_all`, gamma, X, tv)
+}
+
+get_B1 <- function(gamma, M, W_X_B, prior_y) {
+    .Call(`_seqHMM_get_B1`, gamma, M, W_X_B, prior_y)
 }
 
 joint_probability <- function(prob) {

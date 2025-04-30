@@ -36,7 +36,7 @@ Rcpp::NumericVector logLikHMM(const arma::mat& transition, const arma::cube& emi
 }
 
 
-// log-likelihood of MHMM using log-space
+// log-likelihood of MHMM
 // [[Rcpp::export]]
 Rcpp::NumericVector logLikMixHMM(const arma::mat& transition, const arma::cube& emission,
                                  const arma::vec& init, const arma::ucube& obs, const arma::mat& coef, const arma::mat& X,

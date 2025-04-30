@@ -20,7 +20,7 @@ double univariate_viterbi(
     }
   }
   q(T - 1) = delta.col(T - 1).index_max();
-  for (int t = (T - 2); t >= 0; t--) {
+  for (arma::uword t = (T - 1); t-- > 0;) {
     q(t) = phi(q(t + 1), t + 1);
   }
   return delta.col(T - 1).max();

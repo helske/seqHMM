@@ -171,9 +171,7 @@ arma::vec nhmm::loglik() {
     if (arma::any(iv_B) || i == 0) {
       update_B(i);
     }
-    Rcpp::Rcout<<0<<std::endl;
     update_log_py(i);
-    Rcpp::Rcout<<1<<std::endl;
     log_alpha = log_pi + log_py.col(0);
     for (arma::uword t = 1; t < Ti(i); ++t) {
       for (arma::uword s = 0; s < S; ++s) {
@@ -427,6 +425,8 @@ Rcpp::List nhmm::log_objective(const arma::mat& Qs,
     if (iv_A || i == 0) {
       update_A(i);
     }
+    
+    
     if (arma::any(iv_B) || i == 0) {
       update_B(i);
     }
@@ -455,6 +455,7 @@ Rcpp::List nhmm::log_objective(const arma::mat& Qs,
         );
       }
     }
+   
     for (arma::uword c = 0; c < C; ++c) {
       for (arma::uword s = 0; s < S; ++s) {
         if (obs(i)(c, 0) < M(c)) {
@@ -473,7 +474,6 @@ Rcpp::List nhmm::log_objective(const arma::mat& Qs,
       }
     }
   }
-  
   grad_pi2 = Qs.t() * grad_pi;
   for (arma::uword s = 0; s < S; ++s) {
     grad_A2.slice(s) = Qs.t() * grad_A.slice(s);

@@ -122,6 +122,11 @@ get_emission_probs.nhmm <- function(model) {
   states <- model$state_names
   symbols <- model$symbol_names
   out <- stats::setNames(vector("list", length(responses)), responses)
+  if (inherits(model, "fanhmm") && !identical(model$prior_obs, 0L)) {
+    B1 <- get_B1(
+      model$gammas$gamma_B, model$n_symbols, model$W_X_B, model$prior_obs
+    )
+  }
   for (i in seq_along(responses)) {
     y <- responses[i]
     d <- model$data[rep(seq_len(nrow(model$data)), each = SM), 
@@ -139,13 +144,12 @@ get_emission_probs.nhmm <- function(model) {
       B <- get_B_all(
         model$gammas$gamma_B[[i]], model$X_B[[y]], tv(model$X_B[[y]])
       )
-      set(d, j = "probability", value = unlist(B))
       if (inherits(model, "fanhmm") && !identical(model$prior_obs, 0L)) {
-        warning(
-          "The emission probabilities of the first time point incorrect. ",
-          "The marginalization in `get_emission_probs` is not yet implemented."
-        )
+        for (j in seq_along(B)) {
+          B[[j]][, , 1] <- B1[[i]][, , j]
+        }
       }
+      set(d, j = "probability", value = unlist(B))
     }
     setorderv(d, c(id, time, "state"))
     out[[y]] <- d
@@ -197,6 +201,7 @@ get_cluster_probs.mnhmm <- function(model) {
     key = "id"
   )
   setnames(d, "id", model$id_variable)
+  d[]
 }
 #' @rdname cluster_probs
 #' @export
@@ -210,7 +215,7 @@ get_cluster_probs.mhmm <- function(model) {
   }
   data.table(
     cluster = model$cluster_names,
-    id = rep(factor(ids), each = model$n_clusters),
+    id = rep(as_factor(ids), each = model$n_clusters),
     probability = c(t(prior_cluster_probabilities)),
     key = "id"
   )

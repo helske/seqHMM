@@ -30,13 +30,14 @@
 #' 
 #' \dontrun{
 #' set.seed(1)
-#' fit <- estimate_mnhmm("activity", n_states = 3, n_clusters = 2,
+#' fit <- estimate_mnhmm(n_states = 3, n_clusters = 2,
 #'   data = d, time = "time", id = "id", 
 #'   cluster_formula = ~ male + catholic + gcse5eq + Grammar + 
 #'     funemp + fmpr + livboth + Belfast +
 #'   N.Eastern + Southern + S.Eastern + Western,
-#'   initial_formula = ~ 1, emission_formula =  ~ male + catholic + gcse5eq,
-#'   transition_formula = ~ male + gcse5eq, inits = "random"
+#'   emission_formula = activity ~ male + catholic + gcse5eq,
+#'   initial_formula = ~ 1, 
+#'   transition_formula = ~ male + gcse5eq
 #'   )
 #' }
 estimate_mnhmm <- function(

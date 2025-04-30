@@ -26,7 +26,7 @@ Rcpp::List viterbi(const arma::mat& transition, const arma::cube& emission,
       }
     }
     q(obs.n_cols - 1, k) = delta.col(obs.n_cols - 1).index_max();
-    for (int t = (obs.n_cols - 2); t >= 0; t--) {
+    for (arma::uword t = obs.n_cols - 1; t-- > 0;) {
       q(t, k) = phi(q(t + 1, k), t + 1);
     }
     logp(k) = delta.col(obs.n_cols - 1).max();
@@ -64,7 +64,7 @@ Rcpp::List viterbix(const arma::mat& transition, const arma::cube& emission,
       }
     }
     q(obs.n_cols - 1, k) = delta.col(obs.n_cols - 1).index_max();
-    for (int t = (obs.n_cols - 2); t >= 0; t--) {
+    for (arma::uword t = obs.n_cols - 1; t-- > 0;) {
       q(t, k) = phi(q(t + 1, k), t + 1);
     }
     logp(k) = delta.col(obs.n_cols - 1).max();

@@ -127,7 +127,6 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
   autoregression <- responses[autoregression]
   fanhmm <- length(feedback) > 0L || length(autoregression) > 0L
   if (fanhmm) {
-    prior_y0 <- 0L
     W_X_B <- list()
     if (length(autoregression) > 0L && identical(prior_obs, "fixed")) {
       .idx <- data[, .I[-1], by = id_var, env = list(id_var = id_var)]$V1
@@ -168,7 +167,7 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
   }
   if (length(autoregression) > 0L && !identical(prior_obs, "fixed")) {
     stopifnot_(
-      is_list(prior_obs) && length(prior_obs) == C,
+      is.list(prior_obs) && length(prior_obs) == C,
       c(x = "Argument {.arg prior_obs} must be {.val fixed}, or a list of 
           length {C}, the number of responses.",
         i = "Each element of the list must be a vector defining the prior 
@@ -182,11 +181,13 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
         vector of length {M[i]}."
       )
     }
-    prior_y0 <- joint_probability(prior_obs)
+    prior_obs <- c(joint_probability(prior_obs))
     W_X_B <- create_W_X_B(
       data, id_var, time_var, symbol_names, n_sequences, emission_formula, 
       n_states, X_B
     )
+  } else {
+    prior_obs <- 0L
   }
   
   structure(
@@ -220,7 +221,7 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
       feedback = feedback,
       autoregression = autoregression,
       W_X_B = if (fanhmm) W_X_B,
-      prior_y0 = if (fanhmm) prior_y0
+      prior_obs = if (fanhmm) prior_obs
     ),
     class = c(if (fanhmm) "fanhmm", ifelse(D > 1, "mnhmm", "nhmm")),
     nobs = n_obs,

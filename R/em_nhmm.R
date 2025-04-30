@@ -24,6 +24,7 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
   Ti <- model$sequence_lengths
   obs <- create_obs(model)
   all_solutions <- NULL
+  use_fanhmm <- inherits(model, "fanhmm") && !identical(model$prior_obs, 0L)
   if (restarts > 0L) {
     .fun <- function(base_init, u) {
       pars <- base_init + u
@@ -35,17 +36,32 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
       eta_B <- create_eta_B_nhmm(
         pars[np_pi + np_A + seq_len(np_B)], S, M, K_B
       )
-      fit <- Rcpp_EM_LBFGS_nhmm(
-        obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
-        iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, lambda,
-        control_restart$maxeval,
-        control_restart$ftol_abs, control_restart$ftol_rel,
-        control_restart$xtol_abs, control_restart$xtol_rel, 
-        control_restart$print_level, control_mstep$maxeval,
-        control_mstep$ftol_abs, control_mstep$ftol_rel,
-        control_mstep$xtol_abs, control_mstep$xtol_rel, 
-        control_mstep$print_level, bound
-      )
+      if (use_fanhmm) {
+        fit <- Rcpp_EM_LBFGS_fanhmm(
+          obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
+          iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, 
+          model$prior_obs, model$W_X_B, lambda,
+          control_restart$maxeval,
+          control_restart$ftol_abs, control_restart$ftol_rel,
+          control_restart$xtol_abs, control_restart$xtol_rel, 
+          control_restart$print_level, control_mstep$maxeval,
+          control_mstep$ftol_abs, control_mstep$ftol_rel,
+          control_mstep$xtol_abs, control_mstep$xtol_rel, 
+          control_mstep$print_level, bound
+        )
+      } else {
+        fit <- Rcpp_EM_LBFGS_nhmm(
+          obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
+          iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, lambda,
+          control_restart$maxeval,
+          control_restart$ftol_abs, control_restart$ftol_rel,
+          control_restart$xtol_abs, control_restart$xtol_rel, 
+          control_restart$print_level, control_mstep$maxeval,
+          control_mstep$ftol_abs, control_mstep$ftol_rel,
+          control_mstep$xtol_abs, control_mstep$xtol_rel, 
+          control_mstep$print_level, bound
+        )
+      }
       p()
       fit
     }
@@ -58,59 +74,77 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
         lhs::maximinLHS(restarts, length(unlist(base_init))), sd = init_sd
       )
     )
-    out <- future.apply::future_lapply(
+    fit <- future.apply::future_lapply(
       seq_len(restarts), \(i) .fun(base_init, u[, i]), future.seed = TRUE
     )
-    return_codes <- unlist(lapply(out, "[[", "return_code"))
+    return_codes <- unlist(lapply(fit, "[[", "return_code"))
     if (all(return_codes < 0)) {
       warning_(
         c("All restarts terminated due to error.",
           "Error of first restart: ", return_msg(return_codes[1]))
       )
-      optimum <- out[[1]]
+      optimum <- fit[[1]]
     } else {
-      logliks <- unlist(lapply(out, "[[", "logLik"))
-      optimum <- out[[which.max(logliks)]]
+      logliks <- unlist(lapply(fit, "[[", "logLik"))
+      optimum <- fit[[which.max(logliks)]]
     }
-    init <- optimum[c("eta_pi", "eta_A", "eta_B")]
+    init <- create_initial_values(
+      optimum[c("eta_pi", "eta_A", "eta_B")], 
+      model, 
+      init_sd = 0
+    )
     if (save_all_solutions) {
-      all_solutions <- out
+      all_solutions <- fit
     }
   } else {
     init <- create_initial_values(inits, model, init_sd)
   }
-  out <- Rcpp_EM_LBFGS_nhmm(
-    obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
-    iv_A, iv_B, tv_A, tv_B, init$eta_pi, init$eta_A, init$eta_B, lambda,
-    control$maxeval, control$ftol_abs, control$ftol_rel,
-    control$xtol_abs, control$xtol_rel, control$print_level, 
-    control_mstep$maxeval, control_mstep$ftol_abs, control_mstep$ftol_rel,
-    control_mstep$xtol_abs, control_mstep$xtol_rel, 
-    control_mstep$print_level, bound)
-  if (out$return_code < 0) {
-    warning_(
-      paste("Optimization terminated due to error:", return_msg(out$return_code))
+  if (use_fanhmm) {
+    fit <- Rcpp_EM_LBFGS_fanhmm(
+      obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
+      iv_A, iv_B, tv_A, tv_B, init$eta_pi, init$eta_A, init$eta_B, 
+      model$prior_obs, model$W_X_B, lambda,
+      control$maxeval, control$ftol_abs, control$ftol_rel,
+      control$xtol_abs, control$xtol_rel, control$print_level, 
+      control_mstep$maxeval, control_mstep$ftol_abs, control_mstep$ftol_rel,
+      control_mstep$xtol_abs, control_mstep$xtol_rel, 
+      control_mstep$print_level, bound
+    )
+  } else {
+    fit <- Rcpp_EM_LBFGS_nhmm(
+      obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
+      iv_A, iv_B, tv_A, tv_B, init$eta_pi, init$eta_A, init$eta_B, lambda,
+      control$maxeval, control$ftol_abs, control$ftol_rel,
+      control$xtol_abs, control$xtol_rel, control$print_level, 
+      control_mstep$maxeval, control_mstep$ftol_abs, control_mstep$ftol_rel,
+      control_mstep$xtol_abs, control_mstep$xtol_rel, 
+      control_mstep$print_level, bound
     )
   }
-  model$etas$eta_pi <- out$eta_pi
+  if (fit$return_code < 0) {
+    warning_(
+      paste("Optimization terminated due to error:", return_msg(fit$return_code))
+    )
+  }
+  model$etas$eta_pi <- fit$eta_pi
   model$gammas$gamma_pi <- eta_to_gamma_mat(model$etas$eta_pi)
-  model$etas$eta_A <- out$eta_A
+  model$etas$eta_A <- fit$eta_A
   model$gammas$gamma_A <- eta_to_gamma_cube(model$etas$eta_A)
-  model$etas$eta_B <- out$eta_B
+  model$etas$eta_B <- fit$eta_B
   model$gammas$gamma_B <- eta_to_gamma_cube_field(model$etas$eta_B)
   
   model$estimation_results <- list(
-    loglik = out$logLik,
-    penalty = out$penalty_term,
-    iterations = out$iterations,
-    return_code = out$return_code,
+    loglik = fit$logLik,
+    penalty = fit$penalty_term,
+    iterations = fit$iterations,
+    return_code = fit$return_code,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
     all_solutions = all_solutions,
-    f_rel_change = out$relative_f_change,
-    f_abs_change = out$absolute_f_change,
-    x_rel_change = out$relative_x_change,
-    x_abs_change = out$absolute_x_change,
+    f_rel_change = fit$relative_f_change,
+    f_abs_change = fit$absolute_f_change,
+    x_rel_change = fit$relative_x_change,
+    x_abs_change = fit$absolute_x_change,
     lambda = lambda,
     bound = bound,
     method = "EM"

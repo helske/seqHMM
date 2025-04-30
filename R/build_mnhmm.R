@@ -19,6 +19,7 @@ build_mnhmm <- function(
       "Length of {.arg cluster_names} is not equal to the number of clusters."
     )
   }
+  cluster_names <- factor(cluster_names)
   model <- create_base_nhmm(
     data, id_var, time_var, n_states, state_names, 
     emission_formula, initial_formula, transition_formula, cluster_formula, 

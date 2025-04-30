@@ -44,11 +44,11 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
   )
   control_mstep <- utils::modifyList(
     list(
-      ftol_rel = 1e-10,
-      ftol_abs = 1e-8,
-      xtol_rel = 1e-6,
-      xtol_abs = 1e-6,
-      maxeval = 1000,
+      ftol_rel = 1e-8,
+      ftol_abs = 1e-6,
+      xtol_rel = 1e-4,
+      xtol_abs = 1e-4,
+      maxeval = 100,
       print_level = 0
     ),
     control_mstep

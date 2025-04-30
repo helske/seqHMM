@@ -41,7 +41,7 @@ predict_z_A <- function(x, newdata, cond) {
       io(object$X_pi), io(object$X_A), io(object$X_B), 
       iv(object$X_A), iv(object$X_B), tv(object$X_A), tv(object$X_B),
       object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B,
-      object$prior_y0, object$W_X_B, object$W_A, object$W_B
+      object$prior_obs, object$W_X_B, object$W_A, object$W_B
     )
   } else {
     out <- Rcpp_predict_nhmm(
@@ -93,7 +93,7 @@ predict_z_A <- function(x, newdata, cond) {
       iv(object$X_A), iv(object$X_B), tv(object$X_A), tv(object$X_B),
       object$gammas$gamma_pi, object$gammas$gamma_A, object$gammas$gamma_B,
       object$gammas$gamma_omega,
-      object$prior_y0, object$W_X_B, object$W_A, object$W_B
+      object$prior_obs, object$W_X_B, object$W_A, object$W_B
     )
   } else {
     out <- Rcpp_predict_mnhmm(

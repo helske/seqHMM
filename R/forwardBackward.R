@@ -38,6 +38,7 @@ forward_backward.hmm <- function(model, forward_only = FALSE, ...) {
   if (is.null(ids <- rownames(model$observations[[1]]))) {
     ids <- seq_len(model$n_sequences)
   }
+  ids <- as_factor(ids)
   d <- data.table(
     expand.grid(
       state = model$state_names,
@@ -70,6 +71,7 @@ forward_backward.mhmm <- function(model, forward_only = FALSE, ...) {
   if (is.null(ids <- rownames(model$observations[[1]]))) {
     ids <- seq_len(model$n_sequences)
   }
+  ids <- as_factor(ids)
   d <- data.table(
     expand.grid(
       state = model$state_names,
@@ -82,7 +84,8 @@ forward_backward.mhmm <- function(model, forward_only = FALSE, ...) {
     key = c("id", "time")
   )
   d[, c("cluster", "state") := tstrsplit(state, ":", fixed = TRUE)]
-  d
+  setcolorder(d, c("id", "time", "cluster", 
+                   setdiff(names(d), c("id", "time", "cluster"))))
 }
 #' @rdname forward_backward
 #' @export
@@ -96,7 +99,7 @@ forward_backward.nhmm <- function(model, forward_only = FALSE,  ...) {
       iv(model$X_A), iv(model$X_B),
       tv(model$X_A), tv(model$X_B),
       model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B,
-      model$prior_y0, model$W_X_B
+      model$prior_obs, model$W_X_B
     )
     if (!forward_only) {
       bp <- Rcpp_backward_fanhmm(
@@ -105,7 +108,7 @@ forward_backward.nhmm <- function(model, forward_only = FALSE,  ...) {
         io(model$X_pi), io(model$X_A), io(model$X_B),
         iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
         model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B,
-        model$prior_y0, model$W_X_B
+        model$prior_obs, model$W_X_B
       )
     }
   } else {
@@ -154,7 +157,7 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,  ...) {
       iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
       model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, 
       model$gammas$gamma_omega,
-      model$prior_y0, model$W_X_B
+      model$prior_obs, model$W_X_B
     )
     if (!forward_only) {
       bp <- Rcpp_backward_mfanhmm(
@@ -164,7 +167,7 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,  ...) {
         iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
         model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, 
         model$gammas$gamma_omega,
-        model$prior_y0, model$W_X_B
+        model$prior_obs, model$W_X_B
       )
     }
   } else {

@@ -12,24 +12,23 @@ public:
            const arma::mat& Qs, 
            const arma::field<arma::mat>& Qm, 
            const arma::mat& Qd, 
-           const double lambda
+           const double lambda,
+           const arma::uword maxeval, 
+           const double ftol_abs, 
+           const double ftol_rel, 
+           const double xtol_abs, 
+           const double xtol_rel, 
+           const arma::uword print_level,
+           const arma::uword maxeval_m, 
+           const double ftol_abs_m, 
+           const double ftol_rel_m, 
+           const double xtol_abs_m, 
+           const double xtol_rel_m, 
+           const arma::uword print_level_m,
+           const double bound
   );
   ~EM_mnhmm();
-  Rcpp::List run(
-      const arma::uword maxeval, 
-      const double ftol_abs, 
-      const double ftol_rel, 
-      const double xtol_abs, 
-      const double xtol_rel, 
-      const arma::uword print_level,
-      const arma::uword maxeval_m, 
-      const double ftol_abs_m, 
-      const double ftol_rel_m, 
-      const double xtol_abs_m, 
-      const double xtol_rel_m, 
-      const arma::uword print_level_m,
-      const double bound
-  );
+  Rcpp::List run();
   
 private:
   // functions
@@ -52,28 +51,31 @@ private:
       const arma::uword d, 
       const arma::vec& log_alpha, 
       const arma::vec& log_beta, 
-      const double ll)
-    ;
+      const double ll,
+      const double omega
+  );
   void estep_A(
       const arma::uword i, 
       const arma::uword d, 
       const arma::mat& log_alpha, 
       const arma::mat& log_beta, 
-      const double ll
+      const double ll,
+      const double omega
   );
   void estep_B(
       const arma::uword i, 
       const arma::uword d, 
       const arma::mat& log_alpha, 
       const arma::mat& log_beta, 
-      const double ll
+      const double ll,
+      const double omega
   );
   
-  void estep_omega(const arma::uword i, const arma::vec ll_i, const double ll);
-  void mstep_pi(const arma::uword print_level);
-  void mstep_A(const arma::uword print_level);
-  void mstep_B(const arma::uword print_level);
-  void mstep_omega(const arma::uword print_level);
+  void estep_omega(const arma::uword i, const arma::vec& likelihood);
+  void mstep_pi();
+  void mstep_A();
+  void mstep_B();
+  void mstep_omega();
   
   double objective_pi(const arma::vec& x, arma::vec& grad);
   double objective_A(const arma::vec& x, arma::vec& grad);
@@ -107,12 +109,31 @@ private:
   arma::uword current_s = 0;
   arma::uword current_c = 0; 
   arma::uword current_d = 0;
-  arma::uword mstep_iter = 0;
+  unsigned int mstep_iter = 0;
   int mstep_return_code = 0;  
   nlopt_opt opt_pi = nullptr;
   nlopt_opt opt_A = nullptr;
   std::vector<nlopt_opt> opt_B;
   nlopt_opt opt_omega = nullptr;
+  
+  const arma::uword maxeval; 
+  const double ftol_abs; 
+  const double ftol_rel; 
+  const double xtol_abs; 
+  const double xtol_rel; 
+  const arma::uword print_level;
+  const arma::uword maxeval_m; 
+  const double ftol_abs_m; 
+  const double ftol_rel_m; 
+  const double xtol_abs_m; 
+  const double xtol_rel_m; 
+  const arma::uword print_level_m;
+  const double bound;
+  
+  double last_val = std::numeric_limits<double>::infinity();
+  double abs_change = 0;
+  double rel_change = 0;
+  
 };
 
 #endif

@@ -23,8 +23,8 @@ make_objective_nhmm <- function(model, lambda = 0, need_grad = TRUE) {
   obs <- create_obs(model)
   
   W_X_B <- model$W_X_B
-  prior_y0 <- model$prior_y0
-  use_fanhmm <- inherits(model, "fanhmm") && !identical(prior_y0, 0L)
+  prior_obs <- model$prior_obs
+  use_fanhmm <- inherits(model, "fanhmm") && !identical(prior_obs, 0L)
   
   if (need_grad) {
     function(pars) {
@@ -38,7 +38,7 @@ make_objective_nhmm <- function(model, lambda = 0, need_grad = TRUE) {
           obs, Ti, M, X_pi, X_A, X_B,
           icpt_only_pi, icpt_only_A, icpt_only_B,
           iv_A, iv_B, tv_A, tv_B,
-          eta_pi, eta_A, eta_B, prior_y0, W_X_B
+          eta_pi, eta_A, eta_B, prior_obs, W_X_B
         )
       } else {
         out <- Rcpp_log_objective_nhmm(
@@ -66,7 +66,7 @@ make_objective_nhmm <- function(model, lambda = 0, need_grad = TRUE) {
           obs, Ti, M, X_pi, X_A, X_B,
           icpt_only_pi, icpt_only_A, icpt_only_B,
           iv_A, iv_B, tv_A, tv_B,
-          eta_pi, eta_A, eta_B, prior_y0, W_X_B
+          eta_pi, eta_A, eta_B, prior_obs, W_X_B
         )
       } else {
         ll <- Rcpp_loglik_nhmm(
@@ -109,8 +109,8 @@ make_objective_mnhmm <- function(model, lambda = 0, need_grad = TRUE) {
   obs <- create_obs(model)
   
   W_X_B <- model$W_X_B
-  prior_y0 <- model$prior_y0
-  use_fanhmm <- inherits(model, "fanhmm") && !identical(prior_y0, 0L)
+  prior_obs <- model$prior_obs
+  use_fanhmm <- inherits(model, "fanhmm") && !identical(prior_obs, 0L)
   
   if (need_grad) {
     function(pars) {
@@ -130,7 +130,7 @@ make_objective_mnhmm <- function(model, lambda = 0, need_grad = TRUE) {
           obs, Ti, M, X_pi, X_A, X_B, X_omega,
           icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, 
           iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, eta_omega,
-          prior_y0, W_X_B
+          prior_obs, W_X_B
         )
       } else {
         out <- Rcpp_log_objective_mnhmm(
@@ -163,7 +163,7 @@ make_objective_mnhmm <- function(model, lambda = 0, need_grad = TRUE) {
           obs, Ti, M, X_pi, X_A, X_B, X_omega,
           icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, 
           iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, eta_omega,
-          prior_y0, W_X_B
+          prior_obs, W_X_B
         )
       } else {
         ll <- Rcpp_loglik_mnhmm(

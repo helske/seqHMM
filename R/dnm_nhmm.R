@@ -13,19 +13,6 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
         x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
         ub = rep(bound, length(init)), opts = control_restart
       )
-      if (fit$status == -1) {
-        grad_norm <- if (need_grad) {
-          max(abs(objectivef(fit$solution)$gradient))
-        } else {
-          1
-        }
-        relative_change <- abs(fit$objective - objectivef(init)$objective) / 
-          (abs(fit$objective) + 1e-12)
-        if ((grad_norm < 1e-8 && is.finite(fit$objective)) || 
-            relative_change < control_restart$ftol_rel) {
-          fit$status <- 7
-        }
-      }
       p()
       fit
     }
@@ -38,11 +25,11 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
         lhs::maximinLHS(restarts, length(unlist(base_init))), sd = init_sd
       )
     )
-    out <- future.apply::future_lapply(
+    fit <- future.apply::future_lapply(
       seq_len(restarts), \(i) .fun(base_init, u[, i]), future.seed = TRUE
     )
-    logliks <- -unlist(lapply(out, "[[", "objective")) * nobs(model)
-    return_codes <- unlist(lapply(out, "[[", "status"))
+    logliks <- -unlist(lapply(fit, "[[", "objective")) * nobs(model)
+    return_codes <- unlist(lapply(fit, "[[", "status"))
     successful <- which(return_codes > 0)
     if (length(successful) == 0) {
       warning_(
@@ -53,42 +40,29 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
       init <- unlist(create_initial_values(inits, model, init_sd))
     } else {
       optimum <- successful[which.max(logliks[successful])]
-      init <- out[[optimum]]$solution
+      init <- fit[[optimum]]$solution
     }
     if (save_all_solutions) {
-      all_solutions <- out
+      all_solutions <- fit
     }
   } else {
     init <- unlist(create_initial_values(inits, model, init_sd))
   }
   
-  out <- nloptr(
+  fit <- nloptr(
     x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
     ub = rep(bound, length(init)), opts = control
   )
-  if (out$status == -1) {
-    grad_norm <- if (need_grad) {
-      max(abs(objectivef(out$solution)$gradient))
-    } else {
-      1
-    }
-    relative_change <- abs(out$objective - objectivef(init)$objective) / 
-      (abs(out$objective) + 1e-12)
-    if ((grad_norm < 1e-8 && is.finite(out$objective)) || 
-        relative_change < control$ftol_rel) {
-      out$status <- 7
-    }
-  }
-  if (out$status < 0) {
+  if (fit$status < 0) {
     warning_(
-      paste("Optimization terminated due to error:", return_msg(out$status))
+      paste("Optimization terminated due to error:", return_msg(fit$status))
     )
     loglik <- NaN
   } else {
-    loglik <- -out$objective * nobs(model)
+    loglik <- -fit$objective * nobs(model)
   }
   
-  pars <- out$solution
+  pars <- fit$solution
   
   S <- model$n_states
   M <- model$n_symbols
@@ -110,9 +84,9 @@ dnm_nhmm <- function(model, inits, init_sd, restarts, lambda, bound, control,
   
   model$estimation_results <- list(
     loglik = loglik, 
-    return_code = out$status,
-    message = out$message,
-    iterations = out$iterations,
+    return_code = fit$status,
+    message = fit$message,
+    iterations = fit$iterations,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
     all_solutions = all_solutions,

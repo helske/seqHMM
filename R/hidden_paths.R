@@ -117,6 +117,7 @@ hidden_paths.mnhmm <- function(model, as_stslist = FALSE, ...) {
       model$gammas$gamma_omega
     )
   }
+  model$original_state_names <- model$state_names
   model$state_names <- paste0(
     rep(model$cluster_names, each = model$n_states), ": ",
     unlist(model$state_names)
@@ -149,6 +150,7 @@ create_mpp_data <- function(out, model, as_stslist = FALSE) {
     if (is.null(ids <- rownames(model$observations[[1]]))) {
       ids <- seq_len(model$n_sequences)
     }
+    ids <- as_factor(ids)
     names(model$sequence_lengths) <- ids
     d <- data.table(
       expand.grid(
@@ -171,6 +173,9 @@ create_mpp_data <- function(out, model, as_stslist = FALSE) {
         d, 
         c(setdiff(names(d), c("state", "cluster")), c("state", "cluster"))
       )
+      d[, cluster := factor(cluster, levels = model$cluster_names)]
+      d[, state := factor(state, 
+                          levels = unique(unlist(model$original_state_names)))]
     }
   }
   attr(d, "log_prob") <- c(out$logp)

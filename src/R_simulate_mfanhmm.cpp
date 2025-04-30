@@ -35,5 +35,5 @@ Rcpp::List Rcpp_simulate_mfanhmm(
       iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, cubelist_to_2d_field(gamma_B), 
       gamma_omega, prior_y, W_X_B
   );
-  return model.predict(matlist_to_2d_field(W_A), matlist_to_3d_field(W_B));
+  return model.simulate(matlist_to_2d_field(W_A), matlist_to_3d_field(W_B));
 }

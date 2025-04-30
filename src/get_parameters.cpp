@@ -1,4 +1,5 @@
 #include "get_parameters.h"
+#include "list_to_field.h"
 
 arma::cube get_A(const arma::cube& gamma, const arma::mat& X, 
                  const bool tv) {
@@ -89,6 +90,35 @@ arma::field<arma::cube> get_B_all(
   arma::field<arma::cube> B(N);
   for (arma::uword i = 0; i < N; ++i) {
     B(i) = get_B(gamma, X(i), tv);
+  }
+  return B;
+}
+
+// gamma is M x K x S (symbols, covariates, transition from)
+// X is K x T (covariates, time points)
+// [[Rcpp::export]]
+arma::field<arma::cube> get_B1(
+    const arma::field<arma::cube>& gamma, const arma::uvec M, 
+    const Rcpp::List& W_X_B, const arma::vec& prior_y) {
+  arma::uword S = gamma(0).n_slices;
+  arma::uword C = M.n_elem;
+  arma::field<arma::vec> X = veclist_to_3d_field(W_X_B);
+  arma::uword N = X.n_slices;
+  arma::field<arma::cube> B(C);
+  for (arma::uword c = 0; c < C; ++c) {
+    arma::mat Btmp(M(c), S);
+    B(c) = arma::cube(S, M(c), N);
+    for (arma::uword i = 0; i < N; ++i) {
+      Btmp.zeros();
+      for (arma::uword j = 0; j < prior_y.n_elem; ++j) {
+        for (arma::uword s = 0; s < S; ++s) { // from states
+          Btmp.col(s) += softmax(
+            gamma(c).slice(s) * X(j, c, i)
+          ) * prior_y(j);
+        }
+      }
+      B(c).slice(i) = Btmp.t();
+    }
   }
   return B;
 }

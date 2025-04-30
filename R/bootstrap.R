@@ -17,7 +17,15 @@ bootstrap_model <- function(model, ids) {
   if (inherits(model, "mnhmm")) {
     model$X_omega[] <- model$X_omega[, idx]
   }
-  lag_obs <- paste0("lag_", model$responses)
+  if (inherits(model, "fanhmm")) {
+    if (length(model$prior_obs) > 0L) {
+      for (i in seq_along(model$W_X_B)) {
+        for (j in seq_along(model$W_X_B[[1]])) {
+          model$W_X_B[[i]][[j]][] <- model$W_X_B[[i]][[j]][idx]
+        }
+      }
+    }
+  }
   attr(model, "nobs") <- sum(!is.na(
     model$data[, y, env = list(y = I(model$responses))]
   )) / model$n_channels

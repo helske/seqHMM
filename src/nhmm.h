@@ -89,7 +89,6 @@ private:
       const double ll, 
       const arma::uword i
   );
-  
   void gradient_A(
       arma::mat& grad,
       arma::mat& tmpmat,
@@ -100,8 +99,7 @@ private:
       const arma::uword t, 
       const arma::uword s
   );
-  
-  void gradient_B_t1(
+  virtual void gradient_B_t1(
       arma::mat& grad, 
       arma::vec& tmpvec, 
       const arma::mat& log_beta, 

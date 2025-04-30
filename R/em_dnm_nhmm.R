@@ -28,24 +28,40 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
   objectivef <- make_objective_nhmm(
     model, lambda, grepl("NLOPT_LD_", control$algorithm)
   )
+  use_fanhmm <- inherits(model, "fanhmm") && !identical(model$prior_obs, 0L)
   if (restarts > 0L) {
     .fun <- function(base_init, u) {
       pars <- base_init + u
       eta_pi <- create_eta_pi_nhmm(pars[seq_len(np_pi)], S, K_pi)
       eta_A <- create_eta_A_nhmm(pars[np_pi + seq_len(np_A)], S, K_A)
       eta_B <- create_eta_B_nhmm(pars[np_pi + np_A + seq_len(np_B)], S, M, K_B)
-      fit <- Rcpp_EM_LBFGS_nhmm(
-        obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
-        iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B,
-        lambda,
-        control_restart$maxeval_em_dnm,
-        control_restart$ftol_abs, control_restart$ftol_rel,
-        control_restart$xtol_abs, control_restart$xtol_rel, 
-        control_restart$print_level, control_mstep$maxeval,
-        control_mstep$ftol_abs, control_mstep$ftol_rel,
-        control_mstep$xtol_abs, control_mstep$xtol_rel, 
-        control_mstep$print_level, bound
-      )
+      if (use_fanhmm) {
+        fit <- Rcpp_EM_LBFGS_fanhmm(
+          obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
+          iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, model$prior_obs, 
+          model$W_X_B, lambda,
+          control_restart$maxeval_em_dnm,
+          control_restart$ftol_abs, control_restart$ftol_rel,
+          control_restart$xtol_abs, control_restart$xtol_rel, 
+          control_restart$print_level, control_mstep$maxeval,
+          control_mstep$ftol_abs, control_mstep$ftol_rel,
+          control_mstep$xtol_abs, control_mstep$xtol_rel, 
+          control_mstep$print_level, bound
+        )
+      } else {
+        fit <- Rcpp_EM_LBFGS_nhmm(
+          obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
+          iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B,
+          lambda,
+          control_restart$maxeval_em_dnm,
+          control_restart$ftol_abs, control_restart$ftol_rel,
+          control_restart$xtol_abs, control_restart$xtol_rel, 
+          control_restart$print_level, control_mstep$maxeval,
+          control_mstep$ftol_abs, control_mstep$ftol_rel,
+          control_mstep$xtol_abs, control_mstep$xtol_rel, 
+          control_mstep$print_level, bound
+        )
+      }
       em_return_code <- fit$return_code
       if (em_return_code >= 0) {
         init <- unlist(
@@ -59,19 +75,6 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
           x0 = init, eval_f = objectivef, lb = -rep(bound, length(init)), 
           ub = rep(bound, length(init)), opts = control_restart
         )
-        if (fit$status == -1) {
-          grad_norm <- if (need_grad) {
-            max(abs(objectivef(fit$solution)$gradient))
-          } else {
-            1
-          }
-          relative_change <- abs(fit$objective - objectivef(init)$objective) / 
-            (abs(fit$objective) + 1e-12)
-          if ((grad_norm < 1e-8 && is.finite(fit$objective)) || 
-              relative_change < control_restart$ftol_rel) {
-            fit$status <- 7
-          }
-        }
         p()
         fit
       } else {
@@ -88,11 +91,11 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
         lhs::maximinLHS(restarts, length(unlist(base_init))), sd = init_sd
       )
     )
-    out <- future.apply::future_lapply(
+    fit <- future.apply::future_lapply(
       seq_len(restarts), \(i) .fun(base_init, u[, i]), future.seed = TRUE
     )
-    logliks <- -unlist(lapply(out, "[[", "objective")) * nobs(model)
-    return_codes <- unlist(lapply(out, "[[", "status"))
+    logliks <- -unlist(lapply(fit, "[[", "objective")) * nobs(model)
+    return_codes <- unlist(lapply(fit, "[[", "status"))
     successful <- which(return_codes > 0)
     if (length(successful) == 0) {
       warning_(
@@ -105,7 +108,7 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
     } else {
       em_return_code <- 0 # generic success
       optimum <- successful[which.max(logliks[successful])]
-      pars <- out[[optimum]]$solution
+      pars <- fit[[optimum]]$solution
       init <- list()
       init$eta_pi <- create_eta_pi_nhmm(pars[seq_len(np_pi)], S, K_pi)
       init$eta_A <- create_eta_A_nhmm(pars[np_pi + seq_len(np_A)], S, K_A)
@@ -115,22 +118,35 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
       
     }
     if (save_all_solutions) {
-      all_solutions <- out
+      all_solutions <- fit
     }
   } else {
     init <- create_initial_values(inits, model, init_sd)
-    out <- Rcpp_EM_LBFGS_nhmm(
-      obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
-      iv_A, iv_B, tv_A, tv_B, init$eta_pi, init$eta_A, init$eta_B, lambda,
-      control$maxeval_em_dnm, control$ftol_abs, control$ftol_rel,
-      control$xtol_abs, control$xtol_rel, control$print_level, 
-      control_mstep$maxeval, control_mstep$ftol_abs, control_mstep$ftol_rel,
-      control_mstep$xtol_abs, control_mstep$xtol_rel, 
-      control_mstep$print_level, bound)
-    
-    em_return_code <- out$return_code
+    if (use_fanhmm) {
+      fit <- Rcpp_EM_LBFGS_fanhmm(
+        obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
+        iv_A, iv_B, tv_A, tv_B, init$eta_pi, init$eta_A, init$eta_B, 
+        model$prior_obs, model$W_X_B, lambda,
+        control$maxeval_em_dnm, control$ftol_abs, control$ftol_rel,
+        control$xtol_abs, control$xtol_rel, control$print_level, 
+        control_mstep$maxeval, control_mstep$ftol_abs, control_mstep$ftol_rel,
+        control_mstep$xtol_abs, control_mstep$xtol_rel, 
+        control_mstep$print_level, bound
+      )
+    } else {
+      fit <- Rcpp_EM_LBFGS_nhmm(
+        obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B,
+        iv_A, iv_B, tv_A, tv_B, init$eta_pi, init$eta_A, init$eta_B, lambda,
+        control$maxeval_em_dnm, control$ftol_abs, control$ftol_rel,
+        control$xtol_abs, control$xtol_rel, control$print_level, 
+        control_mstep$maxeval, control_mstep$ftol_abs, control_mstep$ftol_rel,
+        control_mstep$xtol_abs, control_mstep$xtol_rel, 
+        control_mstep$print_level, bound
+      )
+    }
+    em_return_code <- fit$return_code
     if (em_return_code >= 0) {
-      init <- out[c("eta_pi", "eta_A", "eta_B")]
+      init <- fit[c("eta_pi", "eta_A", "eta_B")]
     } else {
       warning_(
         paste("EM-step terminated due to error:", return_msg(em_return_code),
@@ -139,31 +155,18 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
       init <- create_initial_values(inits, model, init_sd)
     }
   }
-  out <- nloptr(
+  fit <- nloptr(
     x0 = unlist(init), eval_f = objectivef, 
     lb = -rep(bound, length(unlist(init))), 
     ub = rep(bound, length(unlist(init))), opts = control
   )
-  if (out$status == -1) {
-    grad_norm <- if (need_grad) {
-      max(abs(objectivef(out$solution)$gradient))
-    } else {
-      1
-    }
-    relative_change <- abs(out$objective - objectivef(unlist(init))$objective) / 
-      (abs(out$objective) + 1e-12)
-    if ((grad_norm < 1e-8 && is.finite(out$objective)) || 
-        relative_change < control$ftol_rel) {
-      out$status <- 7
-    }
-  }
-  if (out$status < 0) {
+  if (fit$status < 0) {
     warning_(
-      paste("Optimization terminated due to error:", return_msg(out$status))
+      paste("Optimization terminated due to error:", return_msg(fit$status))
     )
   }
   
-  pars <- out$solution
+  pars <- fit$solution
   model$etas$eta_pi <- create_eta_pi_nhmm(pars[seq_len(np_pi)], S, K_pi)
   model$gammas$gamma_pi <- eta_to_gamma_mat(model$etas$eta_pi)
   model$etas$eta_A <- create_eta_A_nhmm(pars[np_pi + seq_len(np_A)], S, K_A)
@@ -173,10 +176,10 @@ em_dnm_nhmm <- function(model, inits, init_sd, restarts, lambda,
   )
   model$gammas$gamma_B <- drop(eta_to_gamma_cube_field(model$etas$eta_B))
   model$estimation_results <- list(
-    loglik = -out$objective * nobs(model), 
-    return_code = out$status,
-    message = out$message,
-    iterations = out$iterations,
+    loglik = -fit$objective * nobs(model), 
+    return_code = fit$status,
+    message = fit$message,
+    iterations = fit$iterations,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
     all_solutions = all_solutions,

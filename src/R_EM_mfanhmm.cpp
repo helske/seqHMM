@@ -61,10 +61,11 @@ Rcpp::List Rcpp_EM_LBFGS_mfanhmm(
       eta_to_gamma(cubelist_to_2d_field(eta_B), Qm, D), 
       eta_to_gamma(eta_omega, Qd), prior_y, W_X_B
   );
-  EM_mnhmm EM(model, Qs, Qm, Qd, lambda);
-  return EM.run(
-    maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level,
-    maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m,
-    bound
+  EM_mnhmm EM(
+      model, Qs, Qm, Qd, lambda,
+      maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level,
+      maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, 
+      bound
   );
+  return EM.run();
 }

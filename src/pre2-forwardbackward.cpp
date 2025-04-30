@@ -57,7 +57,7 @@ void internalBackward(const arma::mat& transition, const arma::cube& emission,
   default(none) shared(beta, scales, obs, emission, transition)
     for (arma::uword k = 0; k < obs.n_slices; ++k) {
       beta.slice(k).col(obs.n_cols - 1).fill(scales(obs.n_cols - 1, k));
-      for (int t = obs.n_cols - 2; t >= 0; t--) {
+      for (arma::uword t = obs.n_cols - 1; t-- > 0;) {
         arma::vec tmpbeta = beta.slice(k).col(t + 1);
         for (arma::uword r = 0; r < obs.n_rows; ++r) {
           tmpbeta %= emission.slice(r).col(obs(r, t + 1, k));
@@ -92,7 +92,7 @@ void uvBackward(const arma::mat& transition, const arma::cube& emission,
                 const arma::umat& obs, arma::mat& beta, const arma::vec& scales) {
   
   beta.col(obs.n_cols - 1).fill(scales(obs.n_cols - 1));
-  for (int t = obs.n_cols - 2; t >= 0; t--) {
+  for (arma::uword t = obs.n_cols - 1; t-- > 0;) {
     arma::vec tmpbeta = beta.col(t + 1);
     for (arma::uword r = 0; r < obs.n_rows; ++r) {
       tmpbeta %= emission.slice(r).col(obs(r, t + 1));

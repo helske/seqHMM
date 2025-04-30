@@ -40,7 +40,7 @@ update.nhmm <- function(object, newdata, ...) {
       newdata[, lag_obs := shift(y, type = "lag", fill = y1), by = id, 
               env = list(id = id_var, y = y, lag_obs = lag_obs, y1 = y1)]
     }
-    if (length(object$autoregression) > 0L && identical(object$prior_y0, 0L)) {
+    if (length(object$autoregression) > 0L && identical(object$prior_obs, 0L)) {
       .idx <- newdata[, .I[-1], by = id_var]$V1
       newdata <- newdata[.idx]
       object$sequence_lengths <- object$sequence_lengths - 1L
@@ -99,7 +99,7 @@ update.nhmm <- function(object, newdata, ...) {
     }),
     responses
   )
-  if (length(object$autoregression) > 0L && !identical(object$prior_y0, 0L)) {
+  if (length(object$autoregression) > 0L && !identical(object$prior_obs, 0L)) {
     object$W_X_B <- create_W_X_B(
       newdata, id_var, time_var, object$symbol_names, object$n_sequences, 
       emission_formula, object$n_states, object$X_B
@@ -135,21 +135,6 @@ update.mnhmm <- function(object, newdata, ...) {
   id_var <- object$id_variable
   responses <- object$responses
   newdata <- .check_data(newdata, id_var, time_var, responses)
-  times_old <- unique(
-    object$data[[time_var]], 
-    nmax = object$length_of_sequences
-  )
-  times_new <- unique(newdata[[time_var]])
-  stopifnot_(
-    min(times_new) == min(times_old),
-    "Earliest time point in {.arg newdata} should match the earliest time point 
-    in the original data."
-  )
-  stopifnot_(
-    min(diff(times_new)) == min(diff(times_old)),
-    "Time resolution in {.arg newdata} should match the resolution in the 
-    original data."
-  )
   newdata <- fill_time(newdata, id_var, time_var)
   object$sequence_lengths <- newdata[, .Ti[1], by = id_var, 
                                      env = list(id_var = id_var)]$V1
@@ -161,12 +146,28 @@ update.mnhmm <- function(object, newdata, ...) {
       newdata[, lag_obs := shift(y, type = "lag", fill = y1), by = id, 
               env = list(id = id_var, y = y, lag_obs = lag_obs, y1 = y1)]
     }
-    if (length(object$autoregression) > 0L && identical(object$prior_y0, 0L)) {
+    if (length(object$autoregression) > 0L && identical(object$prior_obs, 0L)) {
       .idx <- newdata[, .I[-1], by = id_var]$V1
       newdata <- newdata[.idx]
       object$sequence_lengths <- object$sequence_lengths - 1L
     }
   }
+  times_old <- unique(
+    object$data[[time_var]], 
+    nmax = object$length_of_sequences
+  )
+  times_new <- unique(newdata[[time_var]])
+  stopifnot_(
+    min(times_new) == min(times_old),
+    c("Earliest time point in {.arg newdata} should match the earliest time point 
+    in the original data.",
+      i = msg)
+  )
+  stopifnot_(
+    min(diff(times_new)) == min(diff(times_old)),
+    "Time resolution in {.arg newdata} should match the resolution in the 
+    original data."
+  )
   object$length_of_sequences <- n_unique(newdata[[time_var]])
   object$n_sequences <- n_unique(newdata[[id_var]])
   n_obs <- sum(!is.na(newdata[, y, env = list(y = I(responses))])) / object$n_channels
@@ -201,7 +202,7 @@ update.mnhmm <- function(object, newdata, ...) {
     }),
     responses
   )
-  if (length(object$autoregression) > 0L && !identical(object$prior_y0, 0L)) {
+  if (length(object$autoregression) > 0L && !identical(object$prior_obs, 0L)) {
     object$W_X_B <- create_W_X_B(
       newdata, id_var, time_var, object$symbol_names, object$n_sequences, 
       emission_formula, object$n_states, object$X_B

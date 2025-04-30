@@ -83,10 +83,9 @@ return_msg <- function(code) {
   }
   if (code == 7) {
     msg <- paste0(
-      "NLopt terminated with generic error code -1. ", 
-      "Maximum absolute value of gradient was less than 1e-6 or relative ",
-      "change of log-likelihood less than ftol_rel so likely converged ",
-      "successfully."
+      "NLopt terminated with generic error code -1, ", 
+      "but the the relative or absolute change of the log-likelihood was ",
+      "smaller than the tolerances so likely converged successfully."
     )
   }
   paste0(x, msg)
@@ -106,7 +105,7 @@ split_mnhmm <- function(x) {
     z$boot$gamma_B <- lapply(x$boot$gamma_B, "[[", i)
     z$state_names <- x$state_names[[i]]
     z$n_clusters <- 1L
-    class(z) <- "nhmm"
+    class(z) <- c(if(inherits(x, "fanhmm")) "fanhmm", "nhmm")
     z
   })
   names(models) <- x$cluster_names
@@ -141,13 +140,14 @@ K <- function(X) {
   }
   out
 }
-#' Check if x is a list of length n consisting of lists
+#' Check if x is a list, or a list of length n consisting of lists
 #' @noRd
-is_list <- function(x, n) {
+is_list_of_lists <- function(x, n) {
   if (!is.list(x)) {
     return(FALSE)
   } else {
-    return(all(vapply(x, is.list, TRUE)) && length(x) == n)
+    if (n == 1) return(is.list(x))
+    return(all(vapply(x, is_list_of_lists, TRUE)) && length(x) == n)
   }
 }
 #' Check that x is stslist or list of length n consisting of stslist objects
