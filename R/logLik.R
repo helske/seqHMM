@@ -161,32 +161,3 @@ logLik.mnhmm <- function(object, partials = FALSE, ...) {
     df = df, nobs = nobs
   )
 }
-#' @rdname logLik_nhmm
-#' @export
-logLik.fanhmm <- function(object, partials = FALSE, ...) {
-  # Avoid warnings due to NSE
-  ll <- time <- id <- log_alpha <- NULL
-  df <- attr(object, "df")
-  nobs <- attr(object, "nobs")
-  if (partials || is.null(object$estimation_results$loglik)) {
-    ll <- Rcpp_loglik_fanhmm(
-      create_obs(object), object$sequence_lengths, object$n_symbols, 
-      object$X_pi, object$X_A, object$X_B, 
-      io(object$X_pi), io(object$X_A), io(object$X_B),
-      iv(object$X_A), iv(object$X_B),
-      tv(object$X_A), tv(object$X_B),
-      object$etas$eta_pi, object$etas$eta_A, object$etas$eta_B,
-      object$prior_obs, object$W_X_B
-    )
-    if (!is.null(object$estimation_results$lambda)) {
-      ll <- ll - 0.5 * object$estimation_results$lambda * sum(unlist(object$etas)^2) / object$n_sequences
-    }
-  } else {
-    ll <- object$estimation_results$loglik
-  }
-  structure(
-    if (partials) ll else sum(ll), 
-    class = "logLik", 
-    df = df, nobs = nobs
-  )
-}

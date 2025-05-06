@@ -64,7 +64,7 @@ void mfanhmm::update_B(const arma::uword i) {
         for (arma::uword d = 0; d < D; ++d) {
           if (!fixed_0) {
             B1(d, c).zeros();
-            B(d, c).slice(0).cols(0, M(c) - 1).zeros();
+            B(d, c).slice(0).zeros();
             for (arma::uword j = 0; j < prior_y.n_elem; ++j) {
               for (arma::uword s = 0; s < S; ++s) { // from states
                 B1(d, c).slice(j).row(s).cols(0, M(c) - 1) = softmax(
@@ -72,9 +72,10 @@ void mfanhmm::update_B(const arma::uword i) {
                 ).t();
               }
               B(d, c).slice(0) += B1(d, c).slice(j) * prior_y(j);
-              B1(d, c).col(M(c)).ones();
             }
+            B1(d, c).col(M(c)).ones();
             log_B1(d, c) = arma::log(B1(d, c));
+            B(d, c).slice(0).col(M(c)).ones();
           }
           for (arma::uword t = 1 - fixed_0; t < Ti(i); ++t) { // time
             for (arma::uword s = 0; s < S; ++s) { // from states

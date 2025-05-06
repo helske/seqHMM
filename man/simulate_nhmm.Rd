@@ -13,11 +13,11 @@ simulate_nhmm(
   id,
   time,
   coefs = NULL,
-  init_sd = 2
+  init_sd = 2 * is.null(coefs)
 )
 }
 \arguments{
-\item{n_states}{The number of hidden states.}
+\item{n_states}{An integer > 1 defining the number of hidden states.}
 
 \item{emission_formula}{of class \code{\link[=formula]{formula()}} for the
 state emission probabilities, or a list of such formulas in case of multiple
@@ -47,14 +47,14 @@ sequences.}
 
 \item{time}{Name of the time index variable in \code{data}.}
 
-\item{coefs}{Same as argument \code{inits} in \code{\link[=estimate_nhmm]{estimate_nhmm()}}. If \code{NULL}
+\item{coefs}{Same as argument \code{inits} in \code{\link[=estimate_nhmm]{estimate_nhmm()}}. If \code{NULL},
 (default), the model parameters are generated randomly. If you want to
 simulate new sequences based on an estimated model \code{fit}, you can use
 \code{coefs = fit$etas} and \code{init_sd = 0}.}
 
-\item{init_sd}{Standard deviation of the normal distribution used to generate
-random coefficient values. Default is \code{2}. Setting this to zero allows you
-to use the coefficients fixed in \code{coefs}.}
+\item{init_sd}{Standard deviation of the normal distribution used to
+generate random coefficients. Default is \code{2} when \code{coefs} is \code{NULL} and \code{0}
+otherwise.}
 }
 \value{
 A list with the model used in simulation as well as the simulated

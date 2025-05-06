@@ -148,7 +148,6 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     tv <- FALSE
     X_mean <- NULL
     R_inv <- NULL
-    feedback_terms <- character(0)
   } else {
     X <- stats::model.matrix.lm(
       formula, 
@@ -206,10 +205,6 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     X <- lapply(
       split(X, by = "id", keep.by = FALSE, verbose = FALSE), \(x) t(x)
     )
-    feedback_terms <- grep(
-      paste0("\\blag_", attr(formula, "responses"), "\\b", collapse = "|"),
-      coef_names
-    )
   }
   attr(X, "R_inv") <- R_inv
   attr(X, "X_mean") <- X_mean
@@ -217,7 +212,6 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
   attr(X, "iv") <- iv
   attr(X, "tv") <- tv
   attr(X, "icpt_only") <- icpt_only
-  attr(X, "feedback_terms") <- feedback_terms
   X
 }
 #' Create the Model Matrix based on NHMM Formulas
@@ -239,7 +233,6 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     tv <- FALSE
     X_mean <- NULL
     R_inv <- NULL
-    autoregression_terms <- character(0)
   } else {
     X <- stats::model.matrix.lm(
       formula, 
@@ -294,10 +287,6 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     X <- lapply(
       split(X, by = "id", keep.by = FALSE, verbose = FALSE), \(x) t(x)
     )
-    autoregression_terms <- grep(
-      paste0("\\blag_", attr(formula, "responses"), "\\b", collapse = "|"), 
-      coef_names
-    )
   }
   attr(X, "R_inv") <- R_inv
   attr(X, "X_mean") <- X_mean
@@ -305,7 +294,6 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
   attr(X, "iv") <- iv
   attr(X, "tv") <- tv
   attr(X, "icpt_only") <- icpt_only
-  attr(X, "autoregression_terms") <- autoregression_terms
   X
 }
 #' Create the design matrix for the emissions at first time point

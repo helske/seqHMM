@@ -3,14 +3,11 @@
 \name{logLik.nhmm}
 \alias{logLik.nhmm}
 \alias{logLik.mnhmm}
-\alias{logLik.fanhmm}
 \title{Log-likelihood of a Non-homogeneous Hidden Markov Model}
 \usage{
 \method{logLik}{nhmm}(object, partials = FALSE, ...)
 
 \method{logLik}{mnhmm}(object, partials = FALSE, ...)
-
-\method{logLik}{fanhmm}(object, partials = FALSE, ...)
 }
 \arguments{
 \item{object}{A hidden Markov model.}

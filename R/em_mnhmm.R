@@ -141,18 +141,16 @@ em_mnhmm <- function(model, inits, init_sd, restarts, lambda,
     )
   }
   model$etas$eta_pi <- drop(fit$eta_pi)
-  model$gammas$gamma_pi <- drop(eta_to_gamma_mat_field(model$etas$eta_pi))
+  model$gammas$gamma_pi <- drop(fit$gamma_pi)
   model$etas$eta_A <- drop(fit$eta_A)
-  model$gammas$gamma_A <- drop(eta_to_gamma_cube_field(model$etas$eta_A))
+  model$gammas$gamma_A <- drop(fit$gamma_A)
   model$etas$eta_B <- split(fit$eta_B, seq_len(D))
-  
-  model$gammas$gamma_B <- split(eta_to_gamma_cube_2d_field(model$etas$eta_B), seq_len(D))
+  model$gammas$gamma_B <- split(fit$gamma_B, seq_len(D))
   model$etas$eta_omega <- fit$eta_omega
-  model$gammas$gamma_omega <- eta_to_gamma_mat(model$etas$eta_omega)
+  model$gammas$gamma_omega <- fit$gamma_omega
   
   model$estimation_results <- list(
     loglik = fit$logLik,
-    penalty = fit$penalty_term,
     iterations = fit$iterations,
     return_code = fit$return_code,
     logliks_of_restarts = if(restarts > 0L) logliks else NULL, 

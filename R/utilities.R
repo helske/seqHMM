@@ -301,6 +301,6 @@ as_factor <- function(x) {
   if (is.factor(x)) {
     x
   } else {
-    factor(x, levels = x)
+    factor(x, levels = unique(x))
   }
 }

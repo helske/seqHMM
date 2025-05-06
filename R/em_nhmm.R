@@ -127,18 +127,17 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
     )
   }
   model$etas$eta_pi <- fit$eta_pi
-  model$gammas$gamma_pi <- eta_to_gamma_mat(model$etas$eta_pi)
+  model$gammas$gamma_pi <- fit$gamma_pi
   model$etas$eta_A <- fit$eta_A
-  model$gammas$gamma_A <- eta_to_gamma_cube(model$etas$eta_A)
+  model$gammas$gamma_A <- fit$gamma_A
   model$etas$eta_B <- fit$eta_B
-  model$gammas$gamma_B <- eta_to_gamma_cube_field(model$etas$eta_B)
+  model$gammas$gamma_B <- fit$gamma_B
   
   model$estimation_results <- list(
     loglik = fit$logLik,
-    penalty = fit$penalty_term,
     iterations = fit$iterations,
     return_code = fit$return_code,
-    logliks_of_restarts = if(restarts > 0L) logliks else NULL, 
+    logliks_of_restarts = if(restarts > 0L) logliks else NULL,
     return_codes_of_restarts = if(restarts > 0L) return_codes else NULL,
     all_solutions = all_solutions,
     f_rel_change = fit$relative_f_change,

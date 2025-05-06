@@ -53,7 +53,7 @@ void fanhmm::update_B(const arma::uword i) {
       if (tv_B(c)) {
         if (!fixed_0) {
           B1(c).zeros();
-          B(c).slice(0).cols(0, M(c) - 1).zeros();
+          B(c).slice(0).zeros();
           for (arma::uword j = 0; j < prior_y.n_elem; ++j) {
             for (arma::uword s = 0; s < S; ++s) { // from states
               B1(c).slice(j).row(s).cols(0, M(c) - 1) = softmax(
@@ -61,9 +61,10 @@ void fanhmm::update_B(const arma::uword i) {
               ).t();
             }
             B(c).slice(0) += B1(c).slice(j) * prior_y(j);
-            B1(c).col(M(c)).ones();
           }
+          B1(c).col(M(c)).ones();
           log_B1(c) = arma::log(B1(c));
+          B(c).slice(0).col(M(c)).ones();
         }
         for (arma::uword t = 1 - fixed_0; t < Ti(i); ++t) { // time
           for (arma::uword s = 0; s < S; ++s) { // from states
