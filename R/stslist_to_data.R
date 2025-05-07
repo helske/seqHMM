@@ -41,13 +41,16 @@ data_to_stslist <- function(x, id, time, responses, seqdef_args = NULL, ...) {
   names(sequences) <- responses
   colnames(x)[1:2] <- c("id", "time")
   if (!is.null(seqdef_args)) {
-    if (!is.list(seqdef_args)) seqdef_args <- list(seqdef_args)
+    C <- length(responses)
+    if (C == 1 & !is_list_of_lists(seqdef_args, 1L)) {
+      seqdef_args <- stats::setNames(list(seqdef_args), responses)
+    }
     stopifnot_(
-      is_list_of_lists(seqdef_args, length(responses)),
-      "Argument {.arg seqdef_args} should be a list, or a list of lists 
-        in case of multiple responses."
+      is_list_of_lists(seqdef_args, C) && responses %in% names(seqdef_args),
+      "Argument {.arg seqdef_args} should a list of lists of length {C}, with 
+      list element names matching the values in {.arg responses}.",
+      i = "In case of a single response, a non-nested list is also supported."
     )
-    names(seqdef_args) <- responses
   }
   for (y in responses) {
     wide_data <- dcast(x, id ~ time, value.var = y, drop = FALSE)
@@ -70,10 +73,12 @@ data_to_stslist <- function(x, id, time, responses, seqdef_args = NULL, ...) {
 #' @export
 stslist_to_data <- function(x, id, time, responses, ...) {
   stopifnot_(
-    !missing(responses) && checkmate::test_character(x = responses), 
+    !missing(responses) && checkmate::test_character(x = responses) || 
+      checkmate::test_factor(responses), 
     "Argument {.arg responses} must be a character vector defining the names of 
     the response variable(s)."
   )
+  responses <- as.character(responses)
   stopifnot_(
     length(responses) == n_unique(responses), 
     "Response names in {.arg responses} should be unique."

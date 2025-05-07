@@ -32,7 +32,7 @@ test_that("build_mnhmm returns object of class 'mnhmm'", {
   )
   expect_equal(
     cluster_names(model),
-    seq_len(d)
+    factor(seq_len(d))
   )
 })
 test_that("estimate_mnhmm returns object of class 'mnhmm'", {

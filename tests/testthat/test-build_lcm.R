@@ -39,7 +39,7 @@ test_that("build_lcm returns object of class 'mhmm'", {
   )
   expect_equal(
     cluster_names(model),
-    paste("Class", seq_len(k))
+    factor(paste("Class", seq_len(k)))
   )
 })
 test_that("build_lcm errors with incorrect dims", {

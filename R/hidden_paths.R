@@ -128,7 +128,7 @@ hidden_paths.mnhmm <- function(model, as_stslist = FALSE, ...) {
 #' @noRd
 create_mpp_data <- function(out, model, as_stslist = FALSE) {
   # avoid CRAN check warnings due to NSE
-  state <- NULL
+  state <- cluster <- NULL
   
   if (inherits(model, "nhmm") || inherits(model, "mnhmm")) {
     id <- model$id_variable

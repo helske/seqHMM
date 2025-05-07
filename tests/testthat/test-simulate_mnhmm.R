@@ -1,6 +1,6 @@
 test_that("simulate_mnhmm and coef works", {
   set.seed(1)
-  p <- 20
+  p <- 50
   n <- 10
   d <- data.frame(
     person = rep(1:p, each = n),
@@ -22,8 +22,8 @@ test_that("simulate_mnhmm and coef works", {
   )
   expect_equal(
     c(table(sim$states$state)),
-    c(`Cluster 1: State 1` = 45L, `Cluster 1: State 2` = 45L, `Cluster 2: State 1` = 28L, 
-      `Cluster 2: State 2` = 32L, `Cluster 3: State 1` = 22L, `Cluster 3: State 2` = 28L
+    c(`Cluster 1: State 1` = 88L, `Cluster 1: State 2` = 142L, `Cluster 2: State 1` = 140L, 
+      `Cluster 2: State 2` = 40L, `Cluster 3: State 1` = 46L, `Cluster 3: State 2` = 44L
     )
   )
   expect_error(

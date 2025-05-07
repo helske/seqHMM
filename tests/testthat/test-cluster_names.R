@@ -2,7 +2,7 @@
 test_that("'cluster_names' works for 'mhmm'", {
   expect_equal(
     cluster_names(mhmm_biofam),
-    c("Cluster 1", "Cluster 2", "Cluster 3")
+    factor(c("Cluster 1", "Cluster 2", "Cluster 3"))
   )
   expect_error(
     cluster_names(mhmm_biofam) <- letters[1:3],
@@ -10,7 +10,7 @@ test_that("'cluster_names' works for 'mhmm'", {
   )
   expect_equal(
     cluster_names(mhmm_biofam),
-    letters[1:3]
+    factor(letters[1:3])
   )
 })
 

@@ -46,6 +46,7 @@ state_names.mnhmm <- function(object) {
     length(value) == object$n_states,
     "Number of state names does not match with the number of states."
   )
+  value <- as_factor(value)
   object$state_names <- value
   names(object$initial_probs) <- value
   dimnames(object$transition_probs) <- list(from = value, to = value)
@@ -72,6 +73,7 @@ state_names.mnhmm <- function(object) {
       "Number of new state names for cluster {i} is not equal to the number of 
       hidden states."
     )
+    value[[i]] <- as_factor(value[[i]])
     object$state_names[[i]] <- value[[i]]
     names(object$initial_probs[[i]]) <- value[[i]]
     dimnames(object$transition_probs[[i]]) <- list(from = value[[i]], to = value[[i]])
@@ -92,7 +94,7 @@ state_names.mnhmm <- function(object) {
     length(value) == object$n_states,
     "Number of state names does not match with the number of states."
   )
-  object$state_names <- value
+  object$state_names <- as_factor(value)
   object
 }
 #' @rdname state_names
@@ -109,7 +111,7 @@ state_names.mnhmm <- function(object) {
       "Number of new state names for cluster {i} is not equal to the number of 
       hidden states."
     )
-    object$state_names[[i]] <- value[[i]]
+    object$state_names[[i]] <- as_factor(value[[i]])
   }
   object
 }

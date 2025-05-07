@@ -87,7 +87,7 @@ test_that("'hidden_paths' works for 'mnhmm'", {
   )
   expect_identical(
     c(table(out$state)), 
-    c(`State 1` = 1553L, `State 2` = 29365L, `State 3` = 1082L)
+    c(`State 1` = 14575L, `State 2` = 1515L, `State 3` = 15910L)
   )
   set.seed(1)
   expect_error(

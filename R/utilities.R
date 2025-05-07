@@ -140,15 +140,10 @@ K <- function(X) {
   }
   out
 }
-#' Check if x is a list, or a list of length n consisting of lists
+#' Check if x is a list or a list of length n consisting of lists
 #' @noRd
 is_list_of_lists <- function(x, n) {
-  if (!is.list(x)) {
-    return(FALSE)
-  } else {
-    if (n == 1) return(is.list(x))
-    return(all(vapply(x, is_list_of_lists, TRUE)) && length(x) == n)
-  }
+  is.list(x) && length(x) == n && all(vapply(x, is.list, TRUE))
 }
 #' Check that x is stslist or list of length n consisting of stslist objects
 #' @noRd

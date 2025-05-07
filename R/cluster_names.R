@@ -31,6 +31,7 @@ cluster_names.mnhmm <- function(object) {
     length(value) == object$n_clusters,
     "New cluster names should be a vector of length {object$n_clusters}."
   )
+  value <- as_factor(value)
   object$cluster_names <- value
   names(object$state_names) <- value
   names(object$etas$eta_pi) <- value
@@ -47,6 +48,7 @@ cluster_names.mnhmm <- function(object) {
     length(value) == object$n_clusters,
     "New cluster names should be a vector of length {object$n_clusters}."
   )
+  value <- as_factor(value)
   object$cluster_names <- value
   names(object$state_names) <- value
   colnames(object$coefficients) <- value

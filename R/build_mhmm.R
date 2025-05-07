@@ -356,7 +356,7 @@ build_mhmm <- function(observations,
       )
       cluster_names <- paste("Cluster", seq_len(n_clusters))
     }
-    cluster_names <- as_factor(cluster_names)
+    cluster_names <- cluster_names
     transition_probs <- 
       simulate_transition_probs(n_states = n_states, n_clusters = n_clusters,
                                 ...)
@@ -375,7 +375,6 @@ build_mhmm <- function(observations,
         state_names[[i]]
       )
       state_names[[i]] <- rownames(transition_probs[[i]])
-      state_names[[i]] <- as_factor(state_names[[i]])
       initial_probs[[i]] <- .check_initial_probs(
         initial_probs[[i]], n_states[i], state_names[[i]]
       )
@@ -385,6 +384,8 @@ build_mhmm <- function(observations,
       )
     }
   }
+  cluster_names <- as_factor(cluster_names)
+  state_names <- lapply(state_names, as_factor)
   names(state_names) <- cluster_names
   if (is.null(formula)) {
     formula <- formula(~ 1)

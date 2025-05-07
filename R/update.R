@@ -47,7 +47,7 @@ update.nhmm <- function(object, newdata, ...) {
       msg <- paste0(
         "The model contains lagged responses in emission formula and first time", 
         " point was fixed ({.arg prior_obs} = {.val fixed}). ",
-        " {.arg newdata} should contain the also this time point."
+        " {.arg newdata} should contain also this time point."
       )
     }
   } else {
@@ -150,7 +150,14 @@ update.mnhmm <- function(object, newdata, ...) {
       .idx <- newdata[, .I[-1], by = id_var]$V1
       newdata <- newdata[.idx]
       object$sequence_lengths <- object$sequence_lengths - 1L
+      msg <- paste0(
+        "The model contains lagged responses in emission formula and first time", 
+        " point was fixed ({.arg prior_obs} = {.val fixed}). ",
+        " {.arg newdata} should contain also this time point."
+      )
     }
+  } else {
+    msg <- NULL
   }
   times_old <- unique(
     object$data[[time_var]], 
