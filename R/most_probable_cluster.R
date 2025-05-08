@@ -51,7 +51,7 @@ most_probable_cluster <- function(x, type = "viterbi", hp = NULL) {
 #' Extract Posterior Cluster Probabilities
 #' 
 #' @param x An object of class `mhmm` or `mnhmm`.
-#' @return matrix of posterior cluster probabilities for each sequence and 
+#' @return a `data.frame` of posterior cluster probabilities for each sequence and 
 #' cluster.
 #' @export
 posterior_cluster_probabilities <- function(x) {
@@ -70,4 +70,6 @@ posterior_cluster_probabilities <- function(x) {
        by = list(id, cluster), 
        env = list(id = x$id_variable, time = x$time_variable)]
   }
+  pp[, cluster := factor(cluster, levels = x$cluster_names)]
+  pp[]
 }

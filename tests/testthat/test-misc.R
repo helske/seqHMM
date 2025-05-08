@@ -31,7 +31,7 @@ test_that("'cluster_names' work for 'mnhmm' objects", {
   )
   expect_equal(cluster_names(fit), factor(paste0("Cluster ", 1:2)))
   expect_error(cluster_names(fit) <- 1:2, NA)
-  expect_equal(cluster_names(fit), 1:2)
+  expect_equal(cluster_names(fit), factor(1:2))
 })
 
 
@@ -57,7 +57,8 @@ test_that("'state_names' work for 'mhmm' objects", {
   expect_error(state_names(mhmm_biofam) <- list(1:4, 1:4, 1:6), NA)
   expect_equal(
     state_names(mhmm_biofam), 
-    list(`Cluster 1` = 1:4, `Cluster 2` = 1:4, `Cluster 3` = 1:6)
+    list(`Cluster 1` = factor(1:4), `Cluster 2` = factor(1:4), 
+         `Cluster 3` = factor(1:6))
   )
 })
 

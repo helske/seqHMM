@@ -83,7 +83,7 @@ forward_backward.mhmm <- function(model, forward_only = FALSE, ...) {
     log_beta = if (forward_only) NULL else c(out$backward_probs),
     key = c("id", "time")
   )
-  d[, c("cluster", "state") := tstrsplit(state, ":", fixed = TRUE)]
+  d[, c("cluster", "state") := tstrsplit(state, ": ", fixed = TRUE)]
   setcolorder(d, c("id", "time", "cluster", 
                    setdiff(names(d), c("id", "time", "cluster"))))
 }

@@ -49,19 +49,23 @@ permute_states <- function(gammas_boot, gammas_mle) {
   gammas_boot
 }
 #' Permute clusters of bootstrap sample to match MLE
+#' This is based on matching the posterior cluster probabilities of the 
+#' original sample and model and the ones obtained by using the coefficients 
+#' from the bootstrap replicate
 #' @noRd
-permute_clusters <- function(model, pcp_mle) {
+permute_clusters <- function(fit, model, pcp_mle) {
+  model$gammas <- fit$gammas
   pcp <- matrix(
     posterior_cluster_probabilities(model)$probability, 
     ncol = model$n_clusters, byrow = TRUE
   )
   m <- cost_matrix_clusters(pcp, pcp_mle)
   perm <- RcppHungarian::HungarianSolver(m)$pairs[, 2]
-  model$gammas$gamma_omega[perm, , drop = FALSE]
-  model$gammas$gamma_pi <- model$gammas$gamma_pi[perm]
-  model$gammas$gamma_A <- model$gammas$gamma_A[perm]
-  model$gammas$gamma_B <- model$gammas$gamma_B[perm]
-  model
+  fit$gammas$gamma_omega[perm, , drop = FALSE]
+  fit$gammas$gamma_pi <- fit$gammas$gamma_pi[perm]
+  fit$gammas$gamma_A <- fit$gammas$gamma_A[perm]
+  fit$gammas$gamma_B <- fit$gammas$gamma_B[perm]
+  fit
 }
 #' Bootstrap Sampling of NHMM Coefficients
 #' 
@@ -247,7 +251,7 @@ bootstrap_coefs.mnhmm <- function(model, nsim,
           control_restart = list(), control_mstep = control_mstep
         )
         if (fit$estimation_results$return_code >= 0) {
-          fit <- permute_clusters(fit, pcp_mle)
+          fit <- permute_clusters(fit, model, pcp_mle)
           for (j in seq_len(D)) {
             out <- permute_states(
               lapply(fit$gammas[c("gamma_pi", "gamma_A", "gamma_B")], "[[", j), 
@@ -286,7 +290,7 @@ bootstrap_coefs.mnhmm <- function(model, nsim,
           control_restart = list(), control_mstep = control_mstep
         )
         if (fit$estimation_results$return_code >= 0) {
-          fit <- permute_clusters(fit, pcp_mle)
+          fit <- permute_clusters(fit, model, pcp_mle)
           for (j in seq_len(D)) {
             out <- permute_states(
               lapply(fit$gammas[c("gamma_pi", "gamma_A", "gamma_B")], "[[", j), 
