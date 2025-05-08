@@ -63,10 +63,10 @@ posterior_cluster_probabilities <- function(x) {
   )
   pp <- posterior_probs(x)
   if (inherits(x, "mhmm")) {
-    pp[time == min(time), list(probability = sum(probability)), 
+    pp <- pp[time == min(time), list(probability = sum(probability)), 
        by = c("id", "cluster")]
   } else {
-    pp[time == min(time), list(probability = sum(probability)), 
+    pp <- pp[time == min(time), list(probability = sum(probability)), 
        by = list(id, cluster), 
        env = list(id = x$id_variable, time = x$time_variable)]
   }

@@ -10,7 +10,7 @@ posterior_cluster_probabilities(x)
 \item{x}{An object of class \code{mhmm} or \code{mnhmm}.}
 }
 \value{
-matrix of posterior cluster probabilities for each sequence and
+a \code{data.frame} of posterior cluster probabilities for each sequence and
 cluster.
 }
 \description{
