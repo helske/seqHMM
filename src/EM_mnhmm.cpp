@@ -31,7 +31,8 @@ EM_mnhmm::EM_mnhmm(
   const double xtol_rel_m, 
   const arma::uword print_level_m,
   const double bound)
-  : model(model), Qs(Qs), Qm(Qm), Qd(Qd), lambda(lambda),
+  : model(model), fan_model(dynamic_cast<const mfanhmm*>(&model)), 
+    Qs(Qs), Qm(Qm), Qd(Qd), lambda(lambda),
     eta_pi(model.D), eta_A(model.D), eta_B(model.D, model.C), 
     eta_omega(Qd.t() * model.gamma_omega), E_pi(model.D),
     E_A(model.D, model.S), E_B(model.D, model.C), E_omega(model.D, model.N),
@@ -531,22 +532,22 @@ double EM_mnhmm::objective_B(const arma::vec& x, arma::vec& grad) {
   // Check if model is a fanhmm
   arma::uword J = 0;
   bool marginalize_y0 = false;
-  const mfanhmm* fan_model = dynamic_cast<const mfanhmm*>(&model);
-  bool is_fanhmm = (fan_model != nullptr);
-  if (is_fanhmm) {
+  if (fan_model) {
     J = fan_model->prior_y.n_elem;
     if (J > 1) {
       marginalize_y0 = true;
     }
   }
   arma::mat B1j(Mc, J);
+  arma::uword y;
   for (arma::uword i = 0; i < model.N; ++i) {
     if (!marginalize_y0 && model.iv_B(current_c) && !model.tv_B(current_c)) {
       B1 = softmax(gamma_Brow * model.X_B(current_c, i).col(0));
       log_B1 = log(B1);
     }
     if (marginalize_y0) {
-      if (model.obs(i)(current_c, 0) < Mc) {
+      y = model.obs(i)(current_c, 0);
+      if (y < Mc) {
         double e_b = E_B(current_d, current_c)(0, i, current_s);
         if (e_b > 0) {
           B1.zeros();
@@ -555,34 +556,35 @@ double EM_mnhmm::objective_B(const arma::vec& x, arma::vec& grad) {
             B1 += B1j.col(j) * fan_model->prior_y(j);
           }
           log_B1 = log(B1);
-          double val = e_b * log_B1(model.obs(i)(current_c, 0));
+          double val = e_b * log_B1(y);
           if (!std::isfinite(val)) {
             grad.zeros();
             return model.maxval;
           }
           value -= val;
           for (arma::uword j = 0; j < J; ++j) {
-            grad -= arma::vectorise(tQm * e_b  * (I.col(model.obs(i)(current_c, 0)) - B1j.col(j)) * 
+            grad -= arma::vectorise(tQm * e_b  * B1j(y, j) / B1(y) * (I.col(y) - B1j.col(j)) *
               fan_model->W_X_B(j, current_c, i).t() * fan_model->prior_y(j));
           }
         }
       }
     }
     for (arma::uword t = 0 + marginalize_y0; t < model.Ti(i); ++t) {
-      if (model.obs(i)(current_c, t) < Mc) {
+      arma::uword y = model.obs(i)(current_c, t);
+      if (y < Mc) {
         double e_b = E_B(current_d, current_c)(t, i, current_s);
         if (e_b > 0) {
           if (model.tv_B(current_c)) {
             B1 = softmax(gamma_Brow * model.X_B(current_c, i).col(t));
             log_B1 = log(B1);
           }
-          double val = e_b * log_B1(model.obs(i)(current_c, t));
+          double val = e_b * log_B1(y);
           if (!std::isfinite(val)) {
             grad.zeros();
             return model.maxval;
           }
           value -= val;
-          grad -= arma::vectorise(tQm * e_b  * (I.col(model.obs(i)(current_c, t)) - B1) * 
+          grad -= arma::vectorise(tQm * e_b  * (I.col(y) - B1) * 
             model.X_B(current_c, i).col(t).t());
         }
       }

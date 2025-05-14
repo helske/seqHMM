@@ -54,6 +54,7 @@ Rcpp::List Rcpp_EM_LBFGS_fanhmm(
       iv_A, iv_B, tv_A, tv_B, eta_to_gamma(eta_pi, Qs), 
       eta_to_gamma(eta_A, Qs), eta_to_gamma(eta_B, Qm), prior_y, W_X_B
   );
+
   EM_nhmm EM(
       model, Qs, Qm, lambda,
       maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level,

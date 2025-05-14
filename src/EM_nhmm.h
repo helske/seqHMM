@@ -2,6 +2,7 @@
 #define EM_NHMM_H
 
 #include "nhmm.h"
+#include "fanhmm.h"
 #include <nloptrAPI.h>
 
 class EM_nhmm {
@@ -80,6 +81,7 @@ private:
   
   // data
   nhmm& model;
+  const fanhmm* fan_model;
   const arma::mat Qs;
   const arma::field<arma::mat> Qm;
   const double lambda;
@@ -93,7 +95,6 @@ private:
   arma::mat E_pi;
   arma::field<arma::cube> E_A;
   arma::field<arma::cube> E_B;
-  
   arma::uword current_s = 0;
   arma::uword current_c = 0; 
   unsigned int mstep_iter = 0;

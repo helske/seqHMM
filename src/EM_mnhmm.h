@@ -2,6 +2,7 @@
 #define EM_MNHMM_H
 
 #include "mnhmm.h"
+#include "mfanhmm.h"
 #include "create_Q.h"
 #include <nloptrAPI.h>
 
@@ -89,6 +90,7 @@ private:
   
   // data
   mnhmm& model;
+  const mfanhmm* fan_model;
   const arma::mat Qs;
   const arma::field<arma::mat> Qm;
   const arma::mat Qd;

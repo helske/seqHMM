@@ -130,8 +130,8 @@ em_nhmm <- function(model, inits, init_sd, restarts, lambda,
   model$gammas$gamma_pi <- fit$gamma_pi
   model$etas$eta_A <- fit$eta_A
   model$gammas$gamma_A <- fit$gamma_A
-  model$etas$eta_B <- fit$eta_B
-  model$gammas$gamma_B <- fit$gamma_B
+  model$etas$eta_B <- drop(fit$eta_B)
+  model$gammas$gamma_B <- drop(fit$gamma_B)
   
   model$estimation_results <- list(
     loglik = fit$logLik,

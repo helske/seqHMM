@@ -425,8 +425,6 @@ Rcpp::List nhmm::log_objective(const arma::mat& Qs,
     if (iv_A || i == 0) {
       update_A(i);
     }
-    
-    
     if (arma::any(iv_B) || i == 0) {
       update_B(i);
     }
