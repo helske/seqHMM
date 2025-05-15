@@ -76,7 +76,9 @@ seq_data <- list(
   Parenthood = child_seq[1:10, ],
   Residence = left_seq[1:10, ]
 )
-stacked_sequence_plot(seq_data, sort_by = "start", sort_channel = "Original") & ggplot2::xlab("Age")
+stacked_sequence_plot(
+  seq_data, sort_by = "start", sort_channel = "Original"
+  ) & ggplot2::xlab("Age")
 @
 
 Visualizing multichannel data is not a straightforward task. The \texttt{TraMineR} package \citep{Gabadinho2011} provides nice plotting options and summaries for simple sequence data, but there are no easy options for multichannel data. Combining states into a single-channel representation often works well if the state space is small and states at each time point are either completely observed or completely missing. In other cases it can be preferable to preserve the multichannel structure. The \textit{stacked sequence plot} shows sequence data plotted separately for each channel (see Figure \ref{fig:seqplotMulti}). The order of the subjects is kept the same in each plot and the plots are stacked on top of each other. Since the time axes are horizontally aligned, comparing timing in different life domains should be relatively easy. This approach also protects the privacy of the subjects; even though all data are shown, combining information across channels for a single individual is difficult unless the number of subjects is small. State distribution plots can then be used to show information on the prevalence and timing of combined states on a more general level. 

@@ -19,8 +19,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% almost as usual
-\author{Satu Helske\\ Link\"oping University, Sweden\\ University of Oxford, UK\\ University of Jyv{\"a}skyl{\"a}, Finland \And
-        Jouni Helske\\ University of Turku, Finland, \\ Link\"oping University, Sweden\\ University of Jyv{\"a}skyl{\"a}, Finland}
+\author{Satu Helske\\ INVEST Research Flagship Centre \\ University of Turku, Finland \And 
+Jouni Helske\\ INVEST Research Flagship Centre \\ University of Turku, Finland}
 \title{Mixture Hidden Markov Models for Sequence Data: The \pkg{seqHMM} Package in \proglang{R}}
 
 %% for pretty printing and a nice hypersummary also set:
@@ -79,11 +79,11 @@ Good graphical presentations of data and models are useful during the whole anal
 
 <<setup, include=FALSE, cache=FALSE>>=
 library(knitr)
-opts_chunk$set(concordance = TRUE, tidy = FALSE)
+opts_chunk$set(concordance = TRUE, tidy = FALSE, dev = 'png')
 options(prompt = "R> ", continue = "+  ", width = 76, useFancyQuotes = FALSE)
 @
 
-This vignette is based on the corresponding paper at \emph{Journal of Statistical Software} \citep{JSS2019}, but the visualizations and corresponding codes are modified based on the major changes in \pkg{seqHMM} version 2.0.0.
+This vignette is based on the corresponding paper at \emph{Journal of Statistical Software} \citep{JSS2019}, but some of the figures, related codes and texts are updated due to the major changes in \pkg{seqHMM} version 2.0.0.
 
 \section{Introduction}
 
@@ -414,22 +414,6 @@ left_seq <- seqdef(
   cpal = c("lightblue", "red3")
 )
 @
-
-Old code before \pkg{seqHMM} version 2.0.0: 
-<<graphicalillustrations2old, fig.width=6.5, fig.height=3.7, dev.args=list(pointsize=10), fig.keep='last', cache=FALSE, message=FALSE, echo=FALSE, fig.cap='Stacked sequence plot of the first ten individuals in the \\code{biofam} data plotted with the \\code{ssplot} function. The top plot shows the original sequences, and the three bottom plots show the sequences in the separate channels for the same individuals. The sequences are in the same order in each plot, i.e., the same row always matches the same individual.', fig.align='center', eval = FALSE>>=
-ssplot(
-  list(
-    biofam_seq[1:10, ], marr_seq[1:10, ], child_seq[1:10, ],
-    left_seq[1:10, ]
-  ),
-  sortv = "from.start", sort.channel = 1, type = "I",
-  ylab = c("Original", "Marriage", "Parenthood", "Residence"),
-  xtlab = 15:30, xlab = "Age", title = "Ten first sequences",
-  title.n = FALSE, legend.prop = 0.63, ylab.pos = c(1, 1.5),
-  ncol.legend = c(3, 1, 1, 1)
-)
-@
-New code from version 2.0.0 onward:
 <<graphicalillustrations2, dev.args=list(pointsize=10), fig.keep='last', cache=FALSE, message=FALSE, echo=FALSE, fig.cap='Stacked sequence plot of the first ten individuals in the \\code{biofam} data plotted with the \\code{stacked\\_sequence\\_plot} function. The top plot shows the original sequences, and the three bottom plots show the sequences in the separate channels for the same individuals. The sequences are in the same order in each plot, i.e., the same row always matches the same individual.', fig.align='center'>>=
 p <- stacked_sequence_plot(
   list(
@@ -438,31 +422,26 @@ p <- stacked_sequence_plot(
     Parenthood = child_seq[1:10, ],
     Residence = left_seq[1:10, ]
   ),
-  sort_by = "start", sort.channel = "Original", type = "index")  + 
+  sort_by = "start", sort_channel = "Original", type = "index")  + 
   patchwork::plot_annotation(title = "Ten first sequences") &
   ggplot2::xlab("Age")
 p
 @
 The \code{stacked\_sequence\_plot} function is the simplest way of plotting multichannel sequence data in \pkg{seqHMM}. It can be used to illustrate state distributions or sequence index plots. The former is the default option, since index plots can take a lot of time and memory if data are large. Figure \ref{fig:plottingsequences} illustrates a default plot which the user can modify in many ways (see the code in Section \hyperlink{plottingd}{4.1}). More examples are shown in the documentation pages of the \code{stacked\_sequence\_plot} function and on the vignette "Visualization tools in the \texttt{seqHMM} package".
 
-<<plottingsequencesold, fig.width=5, fig.height=3, dev.args=list(pointsize=10), fig.cap="Stacked sequence plot of annual state distributions in the three-channel \\code{biofam} data. This is the default output of the \\code{ssplot} function. The labels for the channels are taken from the named list of state sequence objects, and the labels for the x axis ticks are taken from the column names of the first object.", fig.keep='last', fig.align='center', cache=FALSE, echo = FALSE, eval = FALSE>>=
-ssplot(list(
-  "Marriage" = marr_seq, "Parenthood" = child_seq,
-  "Residence" = left_seq
-))
-@
-
 <<plottingsequences, fig.cap="Stacked sequence plot of annual state distributions in the three-channel \\code{biofam} data. This is the default output of the \\code{stacked\\_sequence\\_plot} function. The labels for the channels are taken from the named list of state sequence objects, and the labels for the x axis ticks are taken from the column names of the first object.", fig.keep='last', fig.align='center', cache=FALSE, echo = FALSE, eval = TRUE>>=
-p <- stacked_sequence_plot(list(
-  "Marriage" = marr_seq, "Parenthood" = child_seq, "Residence" = left_seq
-))
+p <- stacked_sequence_plot(
+  list(
+    "Marriage" = marr_seq, "Parenthood" = child_seq, "Residence" = left_seq
+  )
+)
 p
 @
 
 
 \code{stacked_sequence_plot} has also argument \code{group}, which can be used to group sequences to separate subfigures. Figure \ref{fig:gridplot1} illustrates an example of such a plot showing sequence index plots for women and men (see the code in Section \hyperlink{plottinggrid}{4.1}). Sequences are ordered in a more meaningful order using multidimensional scaling scores of observations (computed from sequence dissimilarities).
 
-<<gridplot1, fig.width=5.5, fig.height=3.5, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Showing state distribution plots for women and men in the \\code{biofam} data.", fig.align='center', fig.keep='last', cache = FALSE, eval = TRUE, echo = FALSE>>=
+<<gridplot1, fig.width=5.5, fig.height=8.5, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Showing state distribution plots for women and men in the \\code{biofam} data.", fig.align='center', fig.keep='last', cache = FALSE, eval = TRUE, echo = FALSE>>=
 p <- stacked_sequence_plot(
   list(
     "Marriage" = marr_seq, "Parenthood" = child_seq, "Residence" = left_seq
@@ -470,43 +449,7 @@ p <- stacked_sequence_plot(
 p
 @
 
-% Another option is to define function arguments with the \code{ssp} function and then use previously saved arguments for plotting with a simple \code{plot} method. It is also possible to combine several \code{ssp} figures into one plot with the \code{gridplot} function. Figure \ref{fig:gridplot1} illustrates an example of such a plot showing sequence index plots for women and men (see the code in Section \hyperlink{plottinggrid}{4.1}). Sequences are ordered in a more meaningful order using multidimensional scaling scores of observations (computed from sequence dissimilarities). After defining the plot for one group, a similar plot for other groups is easily defined using the \code{update} function.
-
-% Deprecated code: 
-
-<<gridplot1old, fig.width=5.5, fig.height=3.5, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Showing state distribution plots for women and men in the \\code{biofam} data. Two figures were defined with the \\code{ssp} function and then combined into one figure with the \\code{gridplot} function.", fig.align='center', fig.keep='last', cache = FALSE, eval = FALSE, echo = FALSE>>=
-ssp_f <- ssp(
-  list(
-    marr_seq[biofam3c$covariates$sex == "woman", ],
-    child_seq[biofam3c$covariates$sex == "woman", ],
-    left_seq[biofam3c$covariates$sex == "woman", ]
-  ),
-  type = "I", sortv = "mds.obs", with.legend = FALSE, title = "Women",
-  ylab.pos = c(1, 2, 1), xtlab = 15:30, ylab = c(
-    "Married", "Children",
-    "Residence"
-  )
-)
-
-ssp_m <- update(ssp_f,
-  title = "Men",
-  x = list(
-    marr_seq[biofam3c$covariates$sex == "man", ],
-    child_seq[biofam3c$covariates$sex == "man", ],
-    left_seq[biofam3c$covariates$sex == "man", ]
-  )
-)
-
-gridplot(list(ssp_f, ssp_m),
-  ncol = 2, nrow = 2, byrow = TRUE,
-  legend.pos = "bottom", legend.pos2 = "top", row.prop = c(0.65, 0.35)
-)
-@
-
-
-% The \code{gridplot} function is useful for showing different features for the same subjects or the same features for different groups. The user has a lot of control over the layout, e.g., dimensions of the grid, widths and heights of the cells, and positions of the legends.
-
-We also provide a function \code{mc\_to\_sc\_data} for the easy conversion of multichannel sequence data into a single channel representation. Plotting combined data is often useful in addition to (or instead of) showing separate channels.
+We also provide a function \code{mc\_to\_sc\_data} for the easy conversion of multichannel sequence data into a single channel representation, as well as functions \code{stslist\_to\_data} and \ \code{data\_to\_stslist} to convert \code{TraMineR}s \code{stslist} objects to \code{data.frame} and vice verse. Plotting combined data is often useful in addition to (or instead of) showing separate channels.
 
 \subsection{Visualizing hidden Markov models}
 \label{seq:vizHMM}
@@ -557,7 +500,8 @@ data("hmm_biofam")
 For the easy visualization of the model structure and parameters, we propose plotting HMMs as directed graphs. Such graphs are easily called with the \code{plot} method, with an object of class \code{hmm} as an argument. Figure \ref{fig:plottingHMM} illustrates a five-state HMM. The code for producing the plot is shown in Section \hyperlink{code_plottingHMM}{4.4}.
 
 <<plottingHMM, out.width='\\linewidth', fig.height=3.5, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Illustrating a hidden Markov model as a directed graph. Pies represent five hidden states, with slices showing emission probabilities of combinations of observed states. States with emission probability less than 0.05 are combined into one slice. Edges show the transtion probabilities. Initial probabilities of hidden states are given below the pies.", fig.align='center', fig.keep='last', cache = FALSE>>=
-plot(hmm_biofam,
+plot(
+  hmm_biofam,
   vertex.size = 50, vertex.label.dist = 1.5,
   edge.curved = c(0, 0.6, -0.8, 0.6, 0, 0.6, 0), legend.prop = 0.3,
   combined.slice.label = "States with prob. < 0.05"
@@ -569,11 +513,10 @@ Hidden states are presented with pie charts as vertices (or nodes), and transiti
 A simple default plot is easy to call, but the user has a lot of control over the layout. Figure \ref{fig:graphicalillustrations5} illustrates another possible visualization of the same model. The code is shown in Section \hyperlink{code_graphicalillustrations5}{4.4}.
 
 <<graphicalillustrations5, out.width='\\linewidth', fig.height=3.5, dev.args=list(pointsize=10), echo=FALSE, fig.cap="Another version of the hidden Markov model of Figure 4 with a different layout and modified labels, legends, and colors. All observed states are shown.", fig.align='center', fig.keep='last', cache = FALSE>>=
-vertex_layout <- matrix(c(1, 2, 2, 3, 1, 0, 0.5, -0.5, 0, -1),
-  ncol = 2
-)
+vertex_layout <- matrix(c(1, 2, 2, 3, 1, 0, 0.5, -0.5, 0, -1), ncol = 2)
 
-plot(hmm_biofam,
+plot(
+  hmm_biofam,
   layout = vertex_layout, xlim = c(0.5, 3.5),
   ylim = c(-1.5, 1), rescale = FALSE, vertex.size = 50,
   vertex.label.pos = c("left", "top", "bottom", "right", "left"),
@@ -583,23 +526,19 @@ plot(hmm_biofam,
 )
 @
 
-The \code{stacked\_sequence\_plot} function (see Section \ref{sec:vizualizing}) also accepts an object of class \code{hmm}. The user can easily choose to plot observations, most probable paths of hidden states, or both. The function automatically computes hidden paths if the user does not provide them.
+The \code{stacked\_sequence\_plot} function (see Section \ref{sec:vizualizing}) also accepts an object of class \code{hmm} and \code{nhmm}. The user can easily choose to plot observations, most probable paths of hidden states, or both. The function automatically computes hidden paths if the user does not provide them.
 
 Figure \ref{fig:ssplotHMM} shows observed sequences with the most probable paths of hidden states given the model. Sequences are sorted according to multidimensional scaling scores computed from hidden paths. The code for creating the plot is shown in Section \hyperlink{ssplotHMM}{4.4}.
 
-<<ssplotHMMold, fig.width=5.5, fig.height=5.5, dev.args=list(pointsize=10), fig.cap="Using the \\code{ssplot} function for an \\code{hmm} object makes it easy to plot the observed sequences together with the most probable paths of hidden states given the model.", fig.align='center', fig.keep='last', cache = FALSE, echo = FALSE, eval = FALSE>>=
-ssplot(hmm_biofam,
-  plots = "both", type = "I", sortv = "mds.hidden",
-  title = "Observed and hidden state sequences", xtlab = 15:30,
-  xlab = "Age"
-)
-@
-
-<<ssplotHMM, fig.width=5.5, fig.height=5.5, dev.args=list(pointsize=10), fig.cap="Using the \\code{stacked\\_sequence\\_plot} function for an \\code{hmm} object makes it easy to plot the observed sequences together with the most probable paths of hidden states given the model.", fig.align='center', fig.keep='last', cache = FALSE, echo = FALSE>>=
-suppressMessages(p <- stacked_sequence_plot(hmm_biofam,
-  plots = "both", type = "index", sort_by = "mds") +
-  patchwork::plot_annotation("Observed and hidden state sequences") &
-  ggplot2::scale_x_discrete("Age", labels = 15:30)
+<<ssplotHMM, fig.width=5.5, fig.height=8.5, dev.args=list(pointsize=10), fig.cap="Using the \\code{stacked\\_sequence\\_plot} function for an \\code{hmm} object makes it easy to plot the observed sequences together with the most probable paths of hidden states given the model.", fig.align='center', fig.keep='last', cache = FALSE, echo = FALSE>>=
+suppressMessages(
+  p <- stacked_sequence_plot(
+    hmm_biofam,
+    plots = "both", type = "index", sort_by = "mds", 
+    sort_channel = "Hidden states"
+  ) +
+    patchwork::plot_annotation("Observed and hidden state sequences") &
+    ggplot2::scale_x_discrete("Age", labels = 15:30)
 )
 p
 @
@@ -633,21 +572,6 @@ We start by showing how to call the simple default plot of Figure \ref{fig:plott
 \hypertarget{plottingI}{}\subsubsection[Figure 1: Plotting sequences]{Figure \ref{fig:graphicalillustrations2}: Plotting sequences}
 
 Figure \ref{fig:graphicalillustrations2} with the whole sequences requires modifying more arguments. We call for sequence index plots (\code{type = "I"}) and sort sequences according to the first channel (the original sequences), starting from the beginning. We give labels to y and x axes and modify the positions of y labels. We give a title to the plot but omit the number of subjects, which by default is printed. We set the proportion of the plot given to legends and the number of columns in each legend.
-
-<<code_graphicalillustrations2, ref.label = 'graphicalillustrations2', echo=TRUE, eval = FALSE>>=
-@
-% 
-% 
-% \hypertarget{plottinggrid}{}\subsubsection[Figure 3: Plotting sequence data in a grid]{Figure \ref{fig:gridplot1}: Plotting sequence data in a grid}
-% 
-% For using the \code{gridplot} function, we first need to specify the \code{ssp} objects of the separate plots. Here we start by defining the first plot for women with the \code{ssp} function. It stores the features of the plot, but does not draw anything. We want to sort sequences according to multidimensional scaling scores. These are computed from optimal matching dissimilarities for observed sequences. Any dissimilarity method available in \code{TraMineR} can be used instead of the default (see the documentation of the \code{seqdef} function for more information). We want to use the same legends for the both plots, so we remove legends from the \code{ssp} objects.
-% 
-% Since we are going to plot to two similar figures, one for women and one for men, we can pass the first \code{ssp} object to the \code{update} function. This way we only need to define the changes and omit everything that is similar.
-% 
-% These two \code{ssp} objects are then passed on to the \code{gridplot} function. Here we make a $2\times 2$ grid, of which the bottom row is for the legends, but the function can also automatically determine the number of rows and columns and the positions of the legends.
-% 
-<<code_gridplot1, ref.label = 'gridplot1', echo=FALSE, eval = FALSE>>=
-@
 
 For more examples on visualization, see a supplementary vignette on CRAN \citep{Helske2017a}.
 
@@ -871,7 +795,7 @@ New colors are set from the ready-defined \code{colorpalette} data. The \pkg{seq
 
 \hypertarget{ssplotHMM}{}\subsubsection*{Figure \ref{fig:ssplotHMM}: \code{stacked\_sequence\_plot} for an HMM object}
 
-Plotting observed and hidden state sequences is easy with the \code{stacked\_sequence\_plot} function: the function accepts an \code{hmm} object instead of (a list of) \code{stslist}s. %If hidden state paths are not provided, the function automatically computes them when needed.
+Plotting observed and hidden state sequences is easy with the \code{stacked\_sequence\_plot} function: the function accepts an \code{hmm} object instead of (a list of) \code{stslist}s.
 
 <<code_ssplotHMM, ref.label = 'ssplotHMM', eval = FALSE, echo = TRUE>>=
 @

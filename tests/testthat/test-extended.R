@@ -5,7 +5,7 @@ test_that(
     skip_if_not(run_extended_tests)
     
     set.seed(123)
-    n_seq <- 1000
+    n_seq <- 5000
     t_seq <- 50
     pi <- list(c(0.6, 0.4), c(0.8, 0.2))
     omega = c(0.3, 0.7)
@@ -28,24 +28,25 @@ test_that(
       ),
       NA
     )
-    
+    set.seed(1)
     expect_error(
       fit_dnm <- estimate_mnhmm(
         n_states = 2, n_clusters = 2,
         data = sim$data, time = "time", id = "id", 
         emission_formula = y ~ 1, 
         inits = sim$model$etas, init_sd = 0.1,
-        method = "DNM", restarts = 100
+        method = "DNM", restarts = 50
       ),
       NA
     )
+    set.seed(1)
     expect_error(
       fit_em <- estimate_mnhmm(
         n_states = 2, n_clusters = 2,
         data = sim$data, time = "time", id = "id", 
         emission_formula = y ~ 1, 
         inits = sim$model$etas, init_sd = 0.1,
-        method = "EM", restarts = 100
+        method = "EM", restarts = 50
       ),
       NA
     )
@@ -60,17 +61,19 @@ test_that(
       ),
       NA
     )
+    set.seed(1)
     expect_error(
-      fit_old <- fit_model(
+      suppressWarnings(fit_old <- fit_model(
         init, 
-        control_em = list(restart = list(times = 100))
+        control_em = list(restart = list(times = 50))
       )$model
+      )
       ,
       NA
     )
     
-    expect_equal(logLik(fit_dnm), logLik(fit_em),tolerance = 0.1)
-    expect_equal(logLik(fit_dnm), logLik(fit_old),tolerance = 0.1)
+    expect_equal(logLik(fit_dnm), logLik(fit_em), tolerance = 0.1)
+    expect_equal(logLik(fit_dnm), logLik(fit_old), tolerance = 0.1)
     
     expect_error(coef_true <- coef(sim$model), NA)
     expect_error(coef_est <- coef(fit_dnm), NA)
