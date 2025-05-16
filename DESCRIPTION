@@ -11,23 +11,22 @@ Authors@R:
            family = "Helske",
            role = "aut",
            comment = c(ORCID = "0000-0003-0532-0153")))
-Description: Designed for estimating variants of hidden (latent) Markov models 
-    (HMMs), mixture HMMs, and non-homogeneous HMMs (NHMMs) for social sequence 
-    data and other categorical time series. Special cases include 
-    feedback-augmented NHMMs, Markov models without latent layer, mixture Markov 
-    models, and latent class models. The package supports
-    models for one or multiple subjects with one or multiple parallel sequences
-    (channels). External covariates can be added to explain cluster membership in
-    mixture models as well as initial, transition and emission probabilities in 
-    NHMMs. The package provides functions for evaluating and 
-    comparing models, as well as functions for visualizing of multichannel 
-    sequence data and HMMs. For NHMMs, methods for computing 
-    average causal effects and marginal state and emission probabilities are 
-    available. Models are estimated using maximum likelihood via the EM 
-    algorithm or direct numerical maximization with analytical gradients. 
-    Documentation is available via several vignettes, and Helske and Helske 
-    (2019, <doi:10.18637/jss.v088.i03>). For methodology behind the NHMMs,
-    see Helske (2025, <doi:10.48550/arXiv.2503.16014>).
+Description: Designed for estimating variants of hidden (latent) Markov models
+    (HMMs), mixture HMMs, and non-homogeneous HMMs (NHMMs) for social sequence
+    data and other categorical time series. Special cases include
+    feedback-augmented NHMMs, Markov models without latent layer, mixture
+    Markov models, and latent class models. The package supports models for one
+    or multiple subjects with one or multiple parallel sequences (channels).
+    External covariates can be added to explain cluster membership in mixture 
+    models as well as initial, transition and emission probabilities in NHMMs.
+    The package provides functions for evaluating and comparing models, as well
+    as functions for visualizing of multichannel sequence data and HMMs. For
+    NHMMs, methods for computing average causal effects and marginal state and
+    emission probabilities are available. Models are estimated using maximum
+    likelihood via the EM algorithm or direct numerical maximization with
+    analytical gradients. Documentation is available via several vignettes,
+    and Helske and Helske (2019, <doi:10.18637/jss.v088.i03>). For methodology
+    behind the NHMMs, see Helske (2025, <doi:10.48550/arXiv.2503.16014>).
 LazyData: true
 LinkingTo:
     nloptr,
