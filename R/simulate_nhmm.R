@@ -27,7 +27,8 @@
 #' @export
 simulate_nhmm <- function(
     n_states, emission_formula, initial_formula = ~1, transition_formula = ~1, 
-    data, id, time, coefs = NULL, init_sd = 2 * is.null(coefs)) {
+    data, id, time, coefs = NULL, init_sd = 2 * is.null(coefs), 
+    check_rank = NULL) {
   
   force(init_sd)
   stopifnot_(
@@ -58,8 +59,9 @@ simulate_nhmm <- function(
   }
   data <- .check_data(data, id, time, responses)
   for (y in responses) {
-    l <- levels(data[[y]])
-    data[, y := ifelse(is.na(y[1]), l[1], y[1]), by = id, env = list(y = y)]
+    l <- as.factor(levels(data[[y]]))[1]
+    data[, y := fifelse(is.na(y[1]), l, y[1]), by = id, env = list(y = y), 
+         showProgress = FALSE]
   }
   if (is.null(coefs)) {
     coefs <- list(
@@ -73,7 +75,8 @@ simulate_nhmm <- function(
   }
   model <- build_nhmm(
     n_states, emission_formula, initial_formula, transition_formula, 
-    data, id, time, coefs = coefs, scale = FALSE
+    data, id, time, coefs = coefs, scale = FALSE, 
+    check = check_rank
   )
   model$etas <- create_initial_values(coefs, model, init_sd)
   model$gammas$gamma_pi <- eta_to_gamma_mat(model$etas$eta_pi)
@@ -89,10 +92,18 @@ simulate_nhmm <- function(
       model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, 
       model$prior_obs, model$W_X_B, W$W_A, W$W_B
     )
-    idx <- data[, .I[-1], by = id, env = list(id = id)]$V1
+    if (identical(model$prior_obs, 0L)) {
+      .idx <- setdiff(
+        seq_row(data), 
+        cumsum(c(1, head(model$sequence_lengths + 1L, -1)))
+      ) 
+    } else {
+      .idx <- NULL
+    }
     for (i in seq_len(model$n_channels)) {
       y <- unlist(lapply(out$observations, \(y) y[i, ] + 1L))
-      set(data, i = idx, j = model$responses[i], value = model$symbol_names[[i]][y])
+      set(data, i = .idx, j = model$responses[i], 
+          value = model$symbol_names[[i]][y])
     }
   } else {
     out <- Rcpp_simulate_nhmm(
@@ -129,7 +140,7 @@ simulate_nhmm <- function(
   }
   if (!attr(model$X_A, "icpt_only")) {
     model$gammas$gamma_A <- gamma_to_gamma_std(
-      model$gammas$gamma_, solve(attr(model$X_A, "R_inv")), 
+      model$gammas$gamma_A, solve(attr(model$X_A, "R_inv")), 
       attr(model$X_A, "coef_names"), attr(model$X_A, "X_mean")
     )
     for (s in seq_len(n_states)) {

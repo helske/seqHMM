@@ -25,6 +25,7 @@ estimate_mnhmm(
   bound = Inf,
   control_restart = list(),
   control_mstep = list(),
+  check_rank = NULL,
   ...
 )
 }
@@ -103,6 +104,13 @@ Default is \verb{Inf´, i.e., no bounds. Note that he bounds are not enforced  f
 \item{control_restart}{Controls for restart steps, see details.}
 
 \item{control_mstep}{Controls for M-step of EM algorithm, see details.}
+
+\item{check_rank}{If \code{TRUE}, the rank of the design matrices are
+checked for identifiability issues. Default is \code{NULL}, in which case checks
+are performed only if the number of sequences is 1000 or less, as the QR
+decomposition quickly becomes computationally demanding. If check is not
+performed, a warning is given, which can be circumvented by explicitly
+using \code{check_rank = FALSE}.}
 
 \item{...}{Additional arguments to \code{\link[nloptr:nloptr]{nloptr::nloptr()}} and EM algorithm.
 See details.}

@@ -28,7 +28,7 @@ test_that("'posterior_probs' works for 'nhmm'", {
     fit <- estimate_nhmm(
       emission_formula = c(Marriage, Parenthood) ~ 1, 
       data = d, time = "time", id = "id", n_states = 5,
-      maxeval = 2, method = "DNM"
+      maxeval = 2, method = "DNM", check_rank = FALSE
     ),
     NA
   )
@@ -43,7 +43,7 @@ test_that("'posterior_probs' works for 'nhmm'", {
     fit <- estimate_nhmm(
       Marriage ~ 1, 
       data = d, time = "time", id = "id", n_states = 3,
-      maxeval = 1, method = "DNM"
+      maxeval = 1, method = "DNM", check_rank = FALSE
     ),
     NA
   )
@@ -68,7 +68,7 @@ test_that("'posterior_probs' works for 'mnhmm'", {
         hmm_biofam$channel_names, \(y) stats::as.formula(paste0(y, " ~ 1"))
       ), 
       data = d, time = "time", id = "id", n_states = 2, n_clusters = 2,
-      maxeval = 2, method = "EM-DNM"
+      maxeval = 2, method = "EM-DNM", check_rank = FALSE
     ),
     NA
   )
@@ -83,7 +83,7 @@ test_that("'posterior_probs' works for 'mnhmm'", {
     fit <- estimate_nhmm(
       Marriage ~ 1, 
       data = d, time = "time", id = "id", n_states = 3, n_clusters = 2,
-      maxeval = 1, method = "EM"
+      maxeval = 1, method = "EM", check_rank = FALSE
     ),
     NA
   )

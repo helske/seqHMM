@@ -156,7 +156,8 @@ check_formula <- function(f, responses, formula_type, data, id_var) {
       if (is.null(data[[lag_obs]])) {
         y1 <- data[[y]][1] # this value is not used anywhere
         data[, lag_obs := shift(y, type = "lag", fill = y1), by = id, 
-             env = list(id = id_var, y = y, lag_obs = lag_obs, y1 = y1)]
+             env = list(id = id_var, y = y, lag_obs = lag_obs, y1 = y1),
+             showProgress = FALSE]
       }
     }
     attr(f, "responses") <- vars

@@ -30,7 +30,8 @@ update.nhmm <- function(object, newdata, ...) {
   newdata <- .check_data(newdata, id_var, time_var, responses)
   newdata <- fill_time(newdata, id_var, time_var)
   object$sequence_lengths <- newdata[, .Ti[1], by = id_var, 
-                                     env = list(id_var = id_var)]$V1
+                                     env = list(id_var = id_var), 
+                                     showProgress = FALSE]$V1
   newdata[, .Ti := NULL]
   
   if (inherits(object, "fanhmm")) {
@@ -38,10 +39,14 @@ update.nhmm <- function(object, newdata, ...) {
       lag_obs <- paste0("lag_", y)
       y1 <- newdata[[y]][1] #the value is not used anywhere
       newdata[, lag_obs := shift(y, type = "lag", fill = y1), by = id, 
-              env = list(id = id_var, y = y, lag_obs = lag_obs, y1 = y1)]
+              env = list(id = id_var, y = y, lag_obs = lag_obs, y1 = y1), 
+              showProgress = FALSE]
     }
     if (length(object$autoregression) > 0L && identical(object$prior_obs, 0L)) {
-      .idx <- newdata[, .I[-1], by = id_var]$V1
+      .idx <- setdiff(
+        seq_row(newdata), 
+        cumsum(c(1, head(object$sequence_lengths, -1)))
+      )
       newdata <- newdata[.idx]
       object$sequence_lengths <- object$sequence_lengths - 1L
       msg <- paste0(
@@ -53,6 +58,7 @@ update.nhmm <- function(object, newdata, ...) {
   } else {
     msg <- NULL
   }
+  setdroplevels(newdata)
   times_old <- unique(
     object$data[[time_var]], 
     nmax = object$length_of_sequences
@@ -99,7 +105,7 @@ update.nhmm <- function(object, newdata, ...) {
     }),
     responses
   )
-  if (length(object$autoregression) > 0L && !identical(object$prior_obs, 0L)) {
+  if (inherits(object, "fanhmm") && !identical(object$prior_obs, 0L)) {
     object$W_X_B <- create_W_X_B(
       newdata, id_var, time_var, object$symbol_names, object$n_sequences, 
       emission_formula, object$n_states, object$X_B
@@ -137,17 +143,22 @@ update.mnhmm <- function(object, newdata, ...) {
   newdata <- .check_data(newdata, id_var, time_var, responses)
   newdata <- fill_time(newdata, id_var, time_var)
   object$sequence_lengths <- newdata[, .Ti[1], by = id_var, 
-                                     env = list(id_var = id_var)]$V1
+                                     env = list(id_var = id_var), 
+                                     showProgress = FALSE]$V1
   newdata[, .Ti := NULL]
   if (inherits(object, "fanhmm")) {
     for (y in responses) {
       lag_obs <- paste0("lag_", y)
       y1 <- newdata[[y]][1] #the value is not used anywhere
       newdata[, lag_obs := shift(y, type = "lag", fill = y1), by = id, 
-              env = list(id = id_var, y = y, lag_obs = lag_obs, y1 = y1)]
+              env = list(id = id_var, y = y, lag_obs = lag_obs, y1 = y1), 
+              showProgress = FALSE]
     }
     if (length(object$autoregression) > 0L && identical(object$prior_obs, 0L)) {
-      .idx <- newdata[, .I[-1], by = id_var]$V1
+      .idx <- setdiff(
+        seq_row(newdata), 
+        cumsum(c(1, head(object$sequence_lengths, -1)))
+      )
       newdata <- newdata[.idx]
       object$sequence_lengths <- object$sequence_lengths - 1L
       msg <- paste0(
@@ -159,6 +170,7 @@ update.mnhmm <- function(object, newdata, ...) {
   } else {
     msg <- NULL
   }
+  setdroplevels(newdata)
   times_old <- unique(
     object$data[[time_var]], 
     nmax = object$length_of_sequences

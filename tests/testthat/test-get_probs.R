@@ -16,7 +16,7 @@ test_that("'get_probs' and 'coef' works for multichannel 'nhmm'", {
         hmm_biofam[c("initial_probs", "transition_probs")], 
         list(emission_probs = hmm_biofam$emission_probs[1:2])
       ), 
-      maxeval = 1, method = "DNM"
+      maxeval = 1, method = "DNM", check_rank = FALSE
     ),
     NA
   )
@@ -46,7 +46,7 @@ test_that("'get_probs' and 'coef' works for single-channel 'nhmm'", {
   expect_error(
     fit <- estimate_nhmm(
       2, Marriage ~ Residence, data = d, time = age, id = id_var, 
-      maxeval = 1, method = "DNM"
+      maxeval = 1, method = "DNM", check_rank = FALSE
     ),
     NA
   )
@@ -75,7 +75,7 @@ test_that("'get_probs' and 'coef' works for multichannel 'mnhmm'", {
       emission_formula = c(Marriage, Parenthood, Residence) ~ 1,
       data = d, time = age, id = id_var, 
       n_states = 3, n_clusters = 2, maxeval = 1,
-      maxeval_em_dnm = 1
+      maxeval_em_dnm = 1, check_rank = FALSE
     ),
     NA
   )

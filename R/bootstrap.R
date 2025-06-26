@@ -17,12 +17,10 @@ bootstrap_model <- function(model, ids) {
   if (inherits(model, "mnhmm")) {
     model$X_omega[] <- model$X_omega[, idx]
   }
-  if (inherits(model, "fanhmm")) {
-    if (length(model$prior_obs) > 0L) {
-      for (i in seq_along(model$W_X_B)) {
-        for (j in seq_along(model$W_X_B[[1]])) {
-          model$W_X_B[[i]][[j]][] <- model$W_X_B[[i]][[j]][idx]
-        }
+  if (inherits(model, "fanhmm") & !identical(model$prior_obs, 0)) {
+    for (i in seq_along(model$W_X_B)) {
+      for (j in seq_along(model$W_X_B[[1]])) {
+        model$W_X_B[[i]][[j]][] <- model$W_X_B[[i]][[j]][idx]
       }
     }
   }
@@ -31,35 +29,57 @@ bootstrap_model <- function(model, ids) {
   )) / model$n_channels
   list(model = model, idx = idx)
 }
-#' Permute states of bootstrap sample to match MLE
-#' @noRd
-permute_states <- function(gammas_boot, gammas_mle) {
-  C <- length(gammas_mle$gamma_B)
+#' Permute the states of NHMM using Hungarian algorithm
+#' 
+#' This function finds the permutation (according to Hungarian algorithm) 
+#' of estimated model coefficients \eqn{\gamma} which best matches some
+#' reference values. The main purpose is to permute the bootstrap samples of 
+#' model coefficients to match as closely as possible to the maximum likelihood 
+#' estimates obtained from the original data.
+#' 
+#' The cost matrix in Hungarian algorithm is based on the sum of L2 norms of 
+#' the differences of estimated and reference values of \eqn{\pi}, \eqn{A} and 
+#' \eqn{B}.
+#' 
+#' This function is mostly meant for internal usage within the bootstrap 
+#' methods of `seqHMM`.
+#' 
+#' @param estimates A list \eqn{\gamma} coefficients as in `model$gammas`,
+#' where `model` is an {.cls nhmm} object.
+#' @param reference Another list of \eqn{\gamma} coefficients for which to match 
+#' the `estimates`.
+#' @return Permuted version of `estimates`, with added attribute `permutation` 
+#' which contains the permutations used to obtain for example the new 
+#' `gamma_pi` as `estimates$gamma_pi[perm, , drop = FALSE]`.
+#' @export
+permute_states <- function(estimates, reference) {
+  C <- length(reference$gamma_B)
   m <- cost_matrix(
-    gammas_boot$gamma_pi, gammas_mle$gamma_pi, 
-    gammas_boot$gamma_A, gammas_mle$gamma_A,
-    gammas_boot$gamma_B, gammas_mle$gamma_B
+    estimates$gamma_pi, reference$gamma_pi, 
+    estimates$gamma_A, reference$gamma_A,
+    estimates$gamma_B, reference$gamma_B
   )
   perm <- RcppHungarian::HungarianSolver(m)$pairs[, 2]
-  gammas_boot$gamma_pi <- gammas_boot$gamma_pi[perm, , drop = FALSE]
-  gammas_boot$gamma_A <- gammas_boot$gamma_A[perm, , perm, drop = FALSE]
+  estimates$gamma_pi <- estimates$gamma_pi[perm, , drop = FALSE]
+  estimates$gamma_A <- estimates$gamma_A[perm, , perm, drop = FALSE]
   for (c in seq_len(C)) {
-    gammas_boot$gamma_B[[c]] <- gammas_boot$gamma_B[[c]][, , perm, drop = FALSE]
+    estimates$gamma_B[[c]] <- estimates$gamma_B[[c]][, , perm, drop = FALSE]
   }
-  gammas_boot
+  attr(estimates, "permutation") <- perm
+  estimates
 }
 #' Permute clusters of bootstrap sample to match MLE
 #' This is based on matching the posterior cluster probabilities of the 
 #' original sample and model and the ones obtained by using the coefficients 
 #' from the bootstrap replicate
 #' @noRd
-permute_clusters <- function(fit, model, pcp_mle) {
+permute_clusters <- function(fit, model, pcp_reference) {
   model$gammas <- fit$gammas
   pcp <- matrix(
     posterior_cluster_probabilities(model)$probability, 
     ncol = model$n_clusters, byrow = TRUE
   )
-  m <- cost_matrix_clusters(pcp, pcp_mle)
+  m <- cost_matrix_clusters(pcp, pcp_reference)
   perm <- RcppHungarian::HungarianSolver(m)$pairs[, 2]
   fit$gammas$gamma_omega[perm, , drop = FALSE]
   fit$gammas$gamma_pi <- fit$gammas$gamma_pi[perm]

@@ -5,7 +5,8 @@ compute_z_marginals <- function(model, id_time, pp, cond, cluster = NULL) {
   x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]
   x <- pp[x, on = id_time, nomatch = 0L]
   cond <- c(cond, cluster, "state")
-  x[, list(probability = mean(probability)), by = cond]
+  x[, list(probability = mean(probability)), by = cond,
+    showProgress = FALSE]
 }
 compute_A_marginals <- function(model, id_time, pp, cond, cluster = NULL) {
   probability <- i.probability <- state_prob <- cols <- NULL
@@ -14,7 +15,8 @@ compute_A_marginals <- function(model, id_time, pp, cond, cluster = NULL) {
   x <- A[x, on = id_time, nomatch = 0L]
   x[pp, state_prob := i.probability, on = c(id_time, state_from = "state")]
   cond <- c(cond, cluster, "state_from", "state_to")
-  x[, list(probability = sum(probability * state_prob) / sum(state_prob)), by = cond]
+  x[, list(probability = sum(probability * state_prob) / sum(state_prob)), 
+    by = cond, showProgress = FALSE]
 }
 compute_y_and_B_marginals <- function(model, id_time, pp, cond, cluster = NULL) {
   probability <- i.probability <- state_prob <- cols <- NULL
@@ -25,9 +27,13 @@ compute_y_and_B_marginals <- function(model, id_time, pp, cond, cluster = NULL) 
     x_i <- B[[i]][x, on = id_time, nomatch = 0L]
     x_i[pp, state_prob := i.probability, on = c(id_time, "state")]
     cond_i <- c(cond, model$responses[i])
-    p_y[[i]] <- x_i[, list(probability = sum(probability * state_prob) / sum(state_prob)), by = cond_i]
+    p_y[[i]] <- x_i[, list(probability = sum(probability * state_prob) / 
+                             sum(state_prob)), by = cond_i,
+                    showProgress = FALSE]
     cond_i <- c(cluster, "state", cond_i)
-    p_B[[i]] <- x_i[, list(probability = sum(probability * state_prob) / sum(state_prob)), by = cond_i]
+    p_B[[i]] <- x_i[, list(probability = sum(probability * state_prob) / 
+                             sum(state_prob)), by = cond_i,
+                    showProgress = FALSE]
   }
   list(B = p_B, y = p_y)
 }

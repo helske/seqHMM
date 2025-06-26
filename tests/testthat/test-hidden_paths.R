@@ -36,7 +36,7 @@ test_that("'hidden_paths' works for 'nhmm'", {
       data = d, id = id, time = time,
       inits = hmm_biofam[
         c("initial_probs", "transition_probs", "emission_probs")
-      ], maxeval = 1, lambda = 1, method = "DNM"
+      ], maxeval = 1, lambda = 1, method = "DNM", check_rank = FALSE
     ),
     NA
   )
@@ -56,7 +56,7 @@ test_that("'hidden_paths' works for 'nhmm'", {
       emission_formula = Marriage ~ 1, n_states = 3,
       data = d, id = id, time = time,
       restarts = 2, maxeval = 1, method = "DNM",
-      control_restart = list(maxeval = 1)
+      control_restart = list(maxeval = 1), check_rank = FALSE
     ),
     NA
   )
@@ -77,7 +77,7 @@ test_that("'hidden_paths' works for 'mnhmm'", {
     fit <- estimate_mnhmm(
       emission_formula = y, n_states = 3,
       data = d, id = id, time = time, n_clusters = 2, maxeval = 1,
-      maxeval_em_dnm = 1
+      maxeval_em_dnm = 1, check_rank = FALSE
     ),
     NA
   )
@@ -95,7 +95,7 @@ test_that("'hidden_paths' works for 'mnhmm'", {
       Marriage ~ 1, n_states = 3,
       data = d, id = id, time = time, n_clusters = 2,
       restarts = 2, maxeval = 1, method = "DNM",
-      control_restart = list(maxeval = 1)
+      control_restart = list(maxeval = 1), check_rank = FALSE
     ),
     NA
   )

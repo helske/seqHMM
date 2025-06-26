@@ -41,10 +41,11 @@ most_probable_cluster <- function(x, type = "viterbi", hp = NULL) {
       )
     }
     if (inherits(x, "mnhmm")) id <- x$id_variable else id <- "id"
-    clusters <- hp[, .SD[1], by = id]$cluster
+    clusters <- hp[, .SD[1], by = id, showProgress = FALSE]$cluster
   } else {
     d <- posterior_cluster_probabilities(x)
-    clusters <- d[, .SD[which.max(probability)], by = id]$cluster
+    clusters <- d[, .SD[which.max(probability)], by = id, 
+                  showProgress = FALSE]$cluster
   }
   clusters
 }
@@ -64,11 +65,12 @@ posterior_cluster_probabilities <- function(x) {
   pp <- posterior_probs(x)
   if (inherits(x, "mhmm")) {
     pp <- pp[time == min(time), list(probability = sum(probability)), 
-       by = c("id", "cluster")]
+       by = c("id", "cluster"), showProgress = FALSE]
   } else {
     pp <- pp[time == min(time), list(probability = sum(probability)), 
        by = list(id, cluster), 
-       env = list(id = x$id_variable, time = x$time_variable)]
+       env = list(id = x$id_variable, time = x$time_variable), 
+       showProgress = FALSE]
   }
   pp[, cluster := factor(cluster, levels = x$cluster_names)]
   pp[]

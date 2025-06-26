@@ -32,7 +32,7 @@ test_that("'predict' works multichannel 'nhmm'", {
     fit <- estimate_nhmm(
       n_states = 3, emission_formula = c(Marriage, Parenthood) ~ Residence,
       data = d, time = age, id = id_var,
-      maxeval = 3, method = "DNM"
+      maxeval = 3, method = "DNM", check_rank = FALSE
     ),
     NA
   )

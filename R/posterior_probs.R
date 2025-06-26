@@ -24,7 +24,8 @@ posterior_probs.hmm <- function(model, ...) {
   # avoid CRAN check warning due to NSE
   time <- id <- ll <- probability <- log_alpha <- log_beta <- NULL
   out <- forward_backward(model)
-  out[, ll := logSumExp(log_alpha[time == time[.N]]), by = id]
+  out[, ll := logSumExp(log_alpha[time == time[.N]]), by = id, 
+      showProgress = FALSE]
   out[, probability := exp(log_alpha + log_beta - ll)][, -c("log_alpha", "log_beta", "ll")]
 }
 #' @rdname posterior_probs
@@ -33,7 +34,8 @@ posterior_probs.mhmm <- function(model, ...) {
   # avoid CRAN check warning due to NSE
   time <- id <- ll <- probability <- log_alpha <- log_beta <- NULL
   out <- forward_backward(model)
-  out[, ll := logSumExp(log_alpha[time == time[.N]]), by = id]
+  out[, ll := logSumExp(log_alpha[time == time[.N]]), by = id, 
+      showProgress = FALSE]
   out[, probability := exp(log_alpha + log_beta - ll)][, -c("log_alpha", "log_beta", "ll")]
 }
 #' @rdname posterior_probs
@@ -45,7 +47,8 @@ posterior_probs.nhmm <- function(model, ...) {
   time_var <- model$time_variable
   id_var <- model$id_variable
   out[, ll := logSumExp(log_alpha[time_var == time_var[.N]]), 
-      by = id_var, env = list(id_var = id_var, time_var = time_var)]
+      by = id_var, env = list(id_var = id_var, time_var = time_var), 
+      showProgress = FALSE]
   out[, probability := exp(log_alpha + log_beta - ll)]
   out[, -c("log_alpha", "log_beta", "ll")]
 }
@@ -58,7 +61,8 @@ posterior_probs.mnhmm <- function(model, ...) {
   time_var <- model$time_variable
   id_var <- model$id_variable
   out[, ll := logSumExp(log_alpha[time_var == time_var[.N]]), 
-      by = id_var, env = list(id_var = id_var, time_var = time_var)]
+      by = id_var, env = list(id_var = id_var, time_var = time_var), 
+      showProgress = FALSE]
   out[, probability := exp(log_alpha + log_beta - ll)]
   out[, -c("log_alpha", "log_beta", "ll")]
 }

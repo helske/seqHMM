@@ -7,12 +7,15 @@ predict_y_B <- function(x, newdata, response, cond) {
   set(newdata, j = "estimate", value = x)
   cond_all <- c(cond, "state", response)
   # Compute joint distribution P(Y_t, Z_t)
-  d <- newdata[, list(probability = mean(estimate)), by = cond_all]
+  d <- newdata[, list(probability = mean(estimate)), by = cond_all, 
+               showProgress = FALSE]
   setorderv(d, cond_all)
   out_y <- d[, list(probability = sum(probability)), 
-             by = c(response, cond)]
+             by = c(response, cond), 
+             showProgress = FALSE]
   out_B <- d[, "probability" := list(probability / sum(probability)), 
-             by = c("state", cond)]
+             by = c("state", cond),
+             showProgress = FALSE]
   
   list(y = out_y, B = out_B)
 }
@@ -22,12 +25,14 @@ predict_z_A <- function(x, newdata, cond) {
   set(newdata, j = "estimate", value = x)
   cond_all <- c(cond, "state_from", "state_to")
   # Compute joint distribution P(Z_t-1, Z_t)
-  d <- newdata[, list(probability = mean(estimate)), by = cond_all]
+  d <- newdata[, list(probability = mean(estimate)), by = cond_all,
+               showProgress = FALSE]
   setorderv(d, cond_all)
-  out_z <- d[, list(probability = sum(probability)), by = c("state_to", cond)]
+  out_z <- d[, list(probability = sum(probability)), by = c("state_to", cond),
+             showProgress = FALSE]
   out_A <- d[, "probability" := list(probability / sum(probability)), 
-             by = c("state_from", cond)]
-  
+             by = c("state_from", cond),
+             showProgress = FALSE]
   list(z = out_z, A = out_A)
 }
 
@@ -282,7 +287,7 @@ predict.nhmm <- function(
   dz1 <- dz2 <- NULL
   if (type_y || type_B) {
     for (y in responses) {
-      idx <- rep(seq_len(nrow(object$data)), each = S * M[y])
+      idx <- rep(seq_row(object$data), each = S * M[y])
       dy1[[y]] <- setDT(object$data, key = c(id, time))[
         idx, cols, env = list(cols = as.list(cond))
       ]
@@ -301,7 +306,7 @@ predict.nhmm <- function(
     }
   }
   if (type_z || type_A) {
-    idx <- rep(seq_len(nrow(object$data)), each = S * S)
+    idx <- rep(seq_row(object$data), each = S * S)
     dz1 <- setDT(object$data, key = c(id, time))[
       idx, cols, env = list(cols = as.list(cond))
     ]
@@ -515,7 +520,7 @@ predict.mnhmm <- function(
   states <- object$state_names[[1]]
   if (type_y || type_B) {
     for (y in responses) {
-      idx <- rep(seq_len(nrow(object$data)), each = S * M[y])
+      idx <- rep(seq_row(object$data), each = S * M[y])
       dy1[[y]] <- setDT(object$data, key = c(id, time))[
         idx, cols, env = list(cols = as.list(cond))
       ]
@@ -534,7 +539,7 @@ predict.mnhmm <- function(
     }
   }
   if (type_z || type_A) {
-    idx <- rep(seq_len(nrow(object$data)), each = S * S)
+    idx <- rep(seq_row(object$data), each = S * S)
     dz1 <- setDT(object$data, key = c(id, time))[
       idx, cols, env = list(cols = as.list(cond))
     ]

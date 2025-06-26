@@ -4,7 +4,7 @@ build_mnhmm <- function(
     n_states, n_clusters, emission_formula, initial_formula, 
     transition_formula, cluster_formula, data, id_var, time_var, 
     state_names = NULL, cluster_names = NULL, scale = TRUE,
-    prior_obs = "fixed", coefs = list()) {
+    prior_obs = "fixed", coefs = list(), check = NULL) {
   
   stopifnot_(
     !missing(n_clusters) && checkmate::test_int(x = n_clusters, lower = 2L), 
@@ -23,7 +23,7 @@ build_mnhmm <- function(
   model <- create_base_nhmm(
     data, id_var, time_var, n_states, state_names, 
     emission_formula, initial_formula, transition_formula, cluster_formula, 
-    cluster_names, scale = scale, prior_obs = prior_obs)
+    cluster_names, scale = scale, prior_obs = prior_obs, check = check)
   model$etas <- create_initial_values(coefs, model, 0)
   model$gammas$gamma_pi <- drop(eta_to_gamma_mat_field(model$etas$eta_pi))
   model$gammas$gamma_A <- drop(eta_to_gamma_cube_field(model$etas$eta_A))

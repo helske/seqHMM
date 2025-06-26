@@ -284,11 +284,14 @@
 }
 #' Checks that the design matrix is of full rank
 #' @noRd
-.check_identifiability <- function(X, type) {
+.check_identifiability <- function(X, type, qr_X = NULL) {
   n <- nrow(X)
   nc <- ncol(X)
+  if (is.null(qr_X)) {
+    qr_X <- qr(X)
+  }
   # Check if matrix is full rank
-  if (!identical(qr(X)$rank, min(n, nc))) {
+  if (!identical(qr_X$rank, min(n, nc))) {
     # Check for zero-only columns
     zero_col <- apply(X, 2L, \(x) all(x == 0))
     

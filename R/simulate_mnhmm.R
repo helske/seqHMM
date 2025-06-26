@@ -49,8 +49,9 @@ simulate_mnhmm <- function(
   }
   data <- .check_data(data, id, time, responses)
   for (y in responses) {
-    l <- levels(data[[y]])
-    data[, y := ifelse(is.na(y[1]), l[1], y[1]), by = id, env = list(y = y)]
+    l <- as.factor(levels(data[[y]]))
+    data[, y := fifelse(is.na(y[1]), l[1], y[1]), by = id, env = list(y = y), 
+         showProgress = FALSE]
   }
   cluster_names <- paste("Cluster", seq_len(n_clusters))
   if (is.null(coefs)) {
@@ -88,10 +89,18 @@ simulate_mnhmm <- function(
       model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, 
       model$gammas$gamma_omega, model$prior_obs, model$W_X_B, W$W_A, W$W_B
     )
-    idx <- data[, .I[-1], by = id, env = list(id = id)]$V1
+    if (identical(model$prior_obs, 0L)) {
+      .idx <- setdiff(
+        seq_row(data), 
+        cumsum(c(1, head(model$sequence_lengths + 1L, -1)))
+      ) 
+    } else {
+      .idx <- NULL
+    }
     for (i in seq_len(model$n_channels)) {
       y <- unlist(lapply(out$observations, \(y) y[i, ] + 1L))
-      set(data, i = idx, j = model$responses[i], value = model$symbol_names[[i]][y])
+      set(data, i = .idx, j = model$responses[i], 
+          value = model$symbol_names[[i]][y])
     }
   } else {
     out <- Rcpp_simulate_mnhmm(

@@ -1,3 +1,20 @@
+seqHMM 2.1.0
+==============
+
+  * Identifiability check via QR decomposition for the design matrices can now 
+  be controlled via argument `check_rank`. Default is `NULL`, which will 
+  evaluate as `TRUE` if the number of sequences is at most 1000. Also, even if 
+  checks are done, they now use precomputed QR instead of doing it again.
+  * Added dependency on package `collapse`, which resulted in much more 
+  efficient construction of non-homogeneous HMM objects.
+  * Removed `data.table` progress printing from internal functions. Because of 
+  this recent feature, `data.table` version requirement is increased.
+  * Fixed an issue with dropping the first time point in case where this lead 
+  to an unused factor level and subsequent error about multicollinearity.
+  * Fixed the error messages regarding the missing values in covariates.
+  * Fixed and error in `simulate_nhmm` due to missing character in accessing 
+  elements of initial values.
+  
 seqHMM 2.0.0
 ==============
   * Added support for non-homogeneous HMMs (NHMMs) where initial, transition, 

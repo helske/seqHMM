@@ -40,7 +40,8 @@ fill_time <- function(data, id_var, time_var) {
     tmp2 <- data[, 
                  list(.Ti = max(time_var)),
                  by = id_var, 
-                 env = list(id_var = id_var, time_var = time_var)
+                 env = list(id_var = id_var, time_var = time_var),
+                 showProgress = FALSE
     ]
     tmp <- tmp[
       tmp2, 

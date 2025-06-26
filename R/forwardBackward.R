@@ -133,7 +133,7 @@ forward_backward.nhmm <- function(model, forward_only = FALSE,  ...) {
   S <- model$n_states
   id <- model$id_variable
   time <- model$time_variable
-  d <- model$data[rep(seq_len(nrow(model$data)), each = S), 
+  d <- model$data[rep(seq_row(model$data), each = S), 
                   list(id, time), 
                   env = list(id = id, time = time, S = S)]
   n <- nrow(d)
@@ -195,7 +195,7 @@ forward_backward.mnhmm <- function(model, forward_only = FALSE,  ...) {
   DS <- D * S
   id <- model$id_variable
   time <- model$time_variable
-  d <- model$data[rep(seq_len(nrow(model$data)), each = DS), 
+  d <- model$data[rep(seq_row(model$data), each = DS), 
                   list(id, time), 
                   env = list(id = id, time = time, DS = DS)]
   n <- nrow(d)

@@ -13,7 +13,8 @@ simulate_nhmm(
   id,
   time,
   coefs = NULL,
-  init_sd = 2 * is.null(coefs)
+  init_sd = 2 * is.null(coefs),
+  check_rank = NULL
 )
 }
 \arguments{
@@ -55,6 +56,13 @@ simulate new sequences based on an estimated model \code{fit}, you can use
 \item{init_sd}{Standard deviation of the normal distribution used to
 generate random coefficients. Default is \code{2} when \code{coefs} is \code{NULL} and \code{0}
 otherwise.}
+
+\item{check_rank}{If \code{TRUE}, the rank of the design matrices are
+checked for identifiability issues. Default is \code{NULL}, in which case checks
+are performed only if the number of sequences is 1000 or less, as the QR
+decomposition quickly becomes computationally demanding. If check is not
+performed, a warning is given, which can be circumvented by explicitly
+using \code{check_rank = FALSE}.}
 }
 \value{
 A list with the model used in simulation as well as the simulated

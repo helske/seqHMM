@@ -1,18 +1,12 @@
 #' Does covariate values vary in time?
 #' @noRd
 tv_X <- function(X, cols) {
-  id <- NULL
-  any(vapply(cols, function(x) {
-    any(X[, uniqueN(x), by = id, env = list(id = "id", x = x)]$V1 > 1)
-  }, TRUE))
+  any(fndistinct(X[, cols, env = list(cols = I(cols))], g = X$id) > 1)
 }
 #' Does covariate values vary per ID?
 #' @noRd
 iv_X <- function(X, cols) {
-  time <- NULL
-  any(vapply(cols, function(x) {
-    any(X[, uniqueN(x), by = time, env = list(time = "time", x = x)]$V1 > 1)
-  }, TRUE))
+  any(fndistinct(X[, cols, env = list(cols = I(cols))], g = X$time) > 1)
 }
 
 #' Create the Model Matrix based on NHMM Formulas
@@ -29,7 +23,7 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
     X_mean <- NULL
     R_inv <- NULL
   } else {
-    data <- data[, .SD[1], by = id_var]
+    data <- data[, .SD[1], by = id_var, showProgress = FALSE]
     X <- stats::model.matrix.lm(
       formula, 
       data = data, 
@@ -43,11 +37,11 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
         "Use {.fn stats::complete.cases} to detect them, then fix or impute them.",
         paste0(
           "First missing value found for ID ",
-          "{data[missing_values[1], c(id_var)]}."
+          "{data[missing_values[1], id, env = list(id = id_var)]}."
         )
       )
     )
-    if (check) .check_identifiability(X, "cluster")
+    if (check && !scale && is.null(R_inv)) .check_identifiability(X, "cluster")
     coef_names <- colnames(X)
     cols <- which(coef_names != "(Intercept)")
     if (scale) {
@@ -55,6 +49,7 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
       X_mean <- attr(X_scaled, "scaled:center")
       if (is.null(R_inv)) {
         qr_out <- qr(X_scaled)
+        if (check) .check_identifiability(X_scaled, "cluster", qr_out)
         scale_n <- sqrt(nrow(X_scaled) - 1)
         R_inv <- solve(qr.R(qr_out)[, qr_out$pivot] / scale_n)
         X[, cols] <- qr.Q(qr_out) * scale_n
@@ -86,7 +81,7 @@ model_matrix_initial_formula <- function(formula, data, n_sequences, n_states,
     X_mean <- NULL
     R_inv <- NULL
   } else {
-    data <- data[, .SD[1], by = id_var]
+    data <- data[, .SD[1], by = id_var, showProgress = FALSE]
     X <- stats::model.matrix.lm(
       formula, 
       data = data, 
@@ -100,11 +95,11 @@ model_matrix_initial_formula <- function(formula, data, n_sequences, n_states,
         "Use {.fn stats::complete.cases} to detect them, then fix or impute them.",
         `x` = paste0(
           "First missing value found for ID ",
-          "{data[missing_values[1], c(id_var)]}."
+          "{data[missing_values[1], id, env = list(id = id_var)]}."
         )
       )
     )
-    if (check) .check_identifiability(X, "initial")
+    if (check && !scale && is.null(R_inv)) .check_identifiability(X, "initial")
     coef_names <- colnames(X)
     cols <- which(coef_names != "(Intercept)")
     if (scale) {
@@ -112,6 +107,7 @@ model_matrix_initial_formula <- function(formula, data, n_sequences, n_states,
       X_mean <- attr(X_scaled, "scaled:center")
       if (is.null(R_inv)) {
         qr_out <- qr(X_scaled)
+        if (check) .check_identifiability(X_scaled, "initial", qr_out)
         scale_n <- sqrt(nrow(X_scaled) - 1)
         R_inv <- solve(qr.R(qr_out)[, qr_out$pivot] / scale_n)
         X[, cols] <- qr.Q(qr_out) * scale_n
@@ -172,13 +168,13 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
           ),
           paste0(
             "First missing value found for ID ",
-            "{data[missing_values, c(id_var)][which(!z)[1]]} at time point ",
-            "{data[missing_values, c(time_var)][which(!z)[1]]}."
+            "{data[missing_values, id, env = list(id = id_var)][which(!z)[1]]} at time point ",
+            "{data[missing_values, time, env = list(time = time_var)][which(!z)[1]]}."
           )
         )
       )
     }
-    if (check) .check_identifiability(X[complete, ], "transition")
+    if (check && !scale && is.null(R_inv)) .check_identifiability(X[complete, ], "transition")
     coef_names <- colnames(X)
     cols <- which(coef_names != "(Intercept)")
     if (scale) {
@@ -186,6 +182,7 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
       X_mean <- attr(X_scaled, "scaled:center")
       if (is.null(R_inv)) {
         qr_out <- qr(X_scaled)
+        if (check) .check_identifiability(X_scaled, "transition", qr_out)
         scale_n <- sqrt(nrow(X_scaled) - 1)
         R_inv <- solve(qr.R(qr_out)[, qr_out$pivot] / scale_n)
         X[complete, cols] <- qr.Q(qr_out) * scale_n
@@ -202,9 +199,7 @@ model_matrix_transition_formula <- function(formula, data, n_sequences,
     tv <- tv_X(X, coef_names[cols])
     iv <- n_unique(sequence_lengths) != 1L || iv_X(X, coef_names[cols])
     X[, time := NULL]
-    X <- lapply(
-      split(X, by = "id", keep.by = FALSE, verbose = FALSE), \(x) t(x)
-    )
+    X <- lapply(rsplit(X, by = ~ id), \(x) t(qM(x)))
   }
   attr(X, "R_inv") <- R_inv
   attr(X, "X_mean") <- X_mean
@@ -254,13 +249,13 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
         ),
         paste0(
           "First missing value found for ID ",
-          "{data[missing_values, c(id_var)][which(!z)[1]]} at time point ",
-          "{data[missing_values, c(time_var)][which(!z)[1]]}."
+          "{data[missing_values, id, env = list(id = id_var)][which(!z)[1]]} at time point ",
+          "{data[missing_values, time, env = list(time = time_var)][which(!z)[1]]}."
         )
         )
       )
     }
-    if (check) .check_identifiability(X[complete, ], "emission")
+    if (check && !scale && is.null(R_inv)) .check_identifiability(X[complete, ], "emission")
     coef_names <- colnames(X)
     cols <- which(coef_names != "(Intercept)")
     if (scale) {
@@ -268,6 +263,7 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
       X_mean <- attr(X_scaled, "scaled:center")
       if (is.null(R_inv)) {
         qr_out <- qr(X_scaled)
+        if (check) .check_identifiability(X_scaled, "emission", qr_out)
         scale_n <- sqrt(nrow(X_scaled) - 1)
         R_inv <- solve(qr.R(qr_out)[, qr_out$pivot] / scale_n)
         X[complete, cols] <- qr.Q(qr_out) * scale_n
@@ -284,9 +280,7 @@ model_matrix_emission_formula <- function(formula, data, n_sequences,
     tv <- tv_X(X, coef_names[cols])
     iv <- n_unique(sequence_lengths) != 1L || iv_X(X, coef_names[cols])
     X[, time := NULL]
-    X <- lapply(
-      split(X, by = "id", keep.by = FALSE, verbose = FALSE), \(x) t(x)
-    )
+    X <- lapply(rsplit(X, by = ~ id), \(x) t(qM(x)))
   }
   attr(X, "R_inv") <- R_inv
   attr(X, "X_mean") <- X_mean
@@ -303,13 +297,14 @@ create_W_X_B <- function(data, id_var, time_var, symbol_names, n_sequences,
                          emission_formula, n_states, X_B) {
   new <- old <- NULL
   combs <- expand.grid(symbol_names)
-  idx <- data[, .I[1], by = id_var, env = list(id_var = id_var)]$V1
+  idx <- data[, .I[1], by = id_var, env = list(id_var = id_var),
+              showProgress = FALSE]$V1
   d <- data[idx]
   W_X_B <- vector("list", nrow(combs))
   responses <- names(symbol_names)
   M <- lengths(symbol_names)
   C <- length(responses)
-  for (i in seq_len(nrow(combs))) {
+  for (i in seq_row(combs)) {
     W_X_B[[i]] <- stats::setNames(vector("list", C), responses)
     for (y in responses) {
       set(d, j = paste0("lag_", y), value = combs[i, y])

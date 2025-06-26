@@ -120,6 +120,12 @@
 #' for M-step in intercept-only case with `lambda = 0`.
 #' @param control_restart Controls for restart steps, see details.
 #' @param control_mstep Controls for M-step of EM algorithm, see details.
+#' @param check_rank If `TRUE`, the rank of the design matrices are 
+#' checked for identifiability issues. Default is `NULL`, in which case checks 
+#' are performed only if the number of sequences is 1000 or less, as the QR 
+#' decomposition quickly becomes computationally demanding. If check is not 
+#' performed, a warning is given, which can be circumvented by explicitly 
+#' using `check_rank = FALSE`.
 #' @param ... Additional arguments to [nloptr::nloptr()] and EM algorithm. 
 #' See details.
 #' @return Object of class `nhmm` or `fanhmm`.
@@ -145,12 +151,13 @@ estimate_nhmm <- function(
     data, time, id, lambda = 0, prior_obs = "fixed", state_names = NULL, 
     inits = "random", init_sd = 2, restarts = 0L, 
     method = "EM-DNM", bound = Inf, control_restart = list(), 
-    control_mstep = list(), ...) {
+    control_mstep = list(), check_rank = NULL, ...) {
   
   call <- match.call()
   model <- build_nhmm(
     n_states, emission_formula, initial_formula, transition_formula, 
-    data, id, time, state_names, scale = TRUE, prior_obs
+    data, id, time, state_names, scale = TRUE, prior_obs, 
+    check = check_rank
   )
   control <- list(...)
   start_time <- proc.time()

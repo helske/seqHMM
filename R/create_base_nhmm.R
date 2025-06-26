@@ -3,7 +3,7 @@
 create_base_nhmm <- function(data, id_var, time_var, n_states, state_names, 
                              emission_formula, initial_formula, transition_formula, 
                              cluster_formula = NA, cluster_names = "", 
-                             scale = TRUE, prior_obs = "fixed") {
+                             scale = TRUE, prior_obs = "fixed", check = NULL) {
   
   # avoid CRAN check warnings due to NSE
   .Ti <- y <- NULL
@@ -98,7 +98,8 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
   data <- .check_data(data, id_var, time_var, responses)
   data <- fill_time(data, id_var, time_var)
   sequence_lengths <- data[, .Ti[1], by = id_var, 
-                           env = list(id_var = id_var)]$V1
+                           env = list(id_var = id_var),
+                           showProgress = FALSE]$V1
   data[, .Ti := NULL]
   symbol_names <- stats::setNames(
     lapply(responses, \(y) as_factor(levels(data[[y]]))), responses
@@ -129,7 +130,10 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
   if (fanhmm) {
     W_X_B <- list()
     if (length(autoregression) > 0L && identical(prior_obs, "fixed")) {
-      .idx <- data[, .I[-1], by = id_var, env = list(id_var = id_var)]$V1
+      .idx <- setdiff(
+        seq_row(data), 
+        cumsum(c(1, head(sequence_lengths, -1)))
+      )
       data <- data[.idx]
       sequence_lengths <- sequence_lengths - 1L
     } 
@@ -140,13 +144,26 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
   if (n_obs == 0) {
     warning_("Responses contain only missing values.")
   }
+  setdroplevels(data)
+  if (is.null(check)) {
+    check <- n_sequences <= 1000
+    if (!check) {
+      warning_(
+        c("Number of sequences is more than 1000, 
+          disabling the rank check of design matrices.",
+          i = "Explicitly use {.arg check_rank = TRUE} to 
+          avoid this warning.")
+      )
+    }
+  }
   X_pi <- model_matrix_initial_formula(
-    initial_formula, data, n_sequences, n_states, id_var, scale = scale
+    initial_formula, data, n_sequences, n_states, id_var, scale = scale, 
+    check = check
   )
   np_pi <- (n_states - 1L) * nrow(X_pi)
   X_A <- model_matrix_transition_formula(
     transition_formula, data, n_sequences, length_of_sequences, n_states, 
-    id_var, time_var, sequence_lengths, scale = scale
+    id_var, time_var, sequence_lengths, scale = scale, check = check
   )
   np_A <- n_states * (n_states - 1L) * nrow(X_A[[1]])
   attr(transition_formula, "responses") <- NULL
@@ -154,14 +171,15 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
   for (y in responses) {
     X_B[[y]] <- model_matrix_emission_formula(
       emission_formula[[y]], data, n_sequences, length_of_sequences, n_states, 
-      M[y], id_var, time_var, sequence_lengths, scale = scale
+      M[y], id_var, time_var, sequence_lengths, scale = scale, check = check
     )
     attr(emission_formula[[y]], "responses") <- NULL
   }
   np_B <- sum(n_states * (M - 1L) * vapply(X_B, \(x) nrow(x[[1]]), 1L))
   if (mixture) {
     X_omega <- model_matrix_cluster_formula(
-      cluster_formula, data, n_sequences, D, id_var, scale = scale
+      cluster_formula, data, n_sequences, D, id_var, scale = scale, 
+      check = check
     )
     np_omega <- (D - 1L) * nrow(X_omega)
   }

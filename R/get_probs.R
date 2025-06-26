@@ -70,7 +70,7 @@ get_transition_probs.nhmm <- function(model) {
   id <- model$id_variable
   time <- model$time_variable
   states <- model$state_names
-  d <- model$data[rep(seq_len(nrow(model$data)), each = S2), 
+  d <- model$data[rep(seq_row(model$data), each = S2), 
                   list(id, time), 
                   env = list(id = id, time = time, S2 = S^2)]
   n <- nrow(d)
@@ -129,7 +129,7 @@ get_emission_probs.nhmm <- function(model) {
   }
   for (i in seq_along(responses)) {
     y <- responses[i]
-    d <- model$data[rep(seq_len(nrow(model$data)), each = SM), 
+    d <- model$data[rep(seq_row(model$data), each = SM), 
                     list(id, time), 
                     env = list(id = id, time = time, SM = S * M[y])]
     n <- nrow(d)
