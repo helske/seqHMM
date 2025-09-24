@@ -27,7 +27,7 @@ bootstrap_coefs(model, ...)
 \arguments{
 \item{model}{An \code{nhmm} or \code{mnhmm} object.}
 
-\item{...}{Additional arguments to \code{\link[=estimate_nhmm]{estimate_nhmm()}} or \code{\link[=estimate_mnhmm]{estimate_mnhmm()}}.}
+\item{...}{Ignored.}
 
 \item{nsim}{number of bootstrap samples.}
 
@@ -39,18 +39,21 @@ on the model.}
 \item{append}{If \code{TRUE}, in case the model already contains
 bootstrap samples, new samples are appended to \code{model$boot}. If \code{FALSE}
 (default), old samples are discarded.}
-
-\item{method}{Estimation method used in bootstrapping. Defaults to \code{"EM-DNM"}.}
 }
 \value{
 The original model with additional element \code{model$boot}.
 }
 \description{
+The model estimation for each bootstrap sample uses the same method and
+tolerances as the original fit. If you want to change these, you can modify
+the elements of the input model such as \code{model$estimation_results$method}
+and \code{model$controls} before passing it to \code{bootstrap_coefs()}.
+}
+\details{
 It is possible to parallelize the bootstrap runs using the \code{future} package,
 e.g., by calling \code{future::plan(multisession, workers = 2)} before
 \code{bootstrap_coefs()}. See \code{\link[future:plan]{future::plan()}} for details.
-}
-\details{
+
 \code{bootstrap_coefs()} is compatible with \code{progressr} package, so you can use
 \code{progressr::with_progress(bootstrap_coefs(fit))} to track the progress of
 bootstrapping.

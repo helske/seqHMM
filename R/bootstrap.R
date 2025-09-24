@@ -89,6 +89,11 @@ permute_clusters <- function(fit, model, pcp_reference) {
 }
 #' Bootstrap Sampling of NHMM Coefficients
 #' 
+#' The model estimation for each bootstrap sample uses the same method and 
+#' tolerances as the original fit. If you want to change these, you can modify 
+#' the elements of the input model such as `model$estimation_results$method` 
+#' and `model$controls` before passing it to `bootstrap_coefs()`.
+#' 
 #' It is possible to parallelize the bootstrap runs using the `future` package, 
 #' e.g., by calling `future::plan(multisession, workers = 2)` before 
 #' `bootstrap_coefs()`. See [future::plan()] for details.
@@ -103,11 +108,10 @@ permute_clusters <- function(fit, model, pcp_reference) {
 #' whether nonparametric or parametric bootstrap should be used. The former samples 
 #' sequences with replacement, whereas the latter simulates new datasets based 
 #' on the model.
-#' @param method Estimation method used in bootstrapping. Defaults to `"EM-DNM"`.
 #' @param append If `TRUE`, in case the model already contains 
 #' bootstrap samples, new samples are appended to `model$boot`. If `FALSE` 
 #' (default), old samples are discarded.
-#' @param ... Additional arguments to [estimate_nhmm()] or [estimate_mnhmm()].
+#' @param ... Ignored.
 #' @return The original model with additional element `model$boot`.
 #' @rdname bootstrap
 #' @export
