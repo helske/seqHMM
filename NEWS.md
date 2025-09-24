@@ -221,7 +221,7 @@ seqHMM 1.0.6 (Release date: 2016-08-01)
   left_right = FALSE.
 * Adjusted reltol and maxeval values for EM algorithm. Now reltol is 1e-10
   (previously 1e-12), and the reltol and maxeval values for restarts are by
-  default taken from the initial EM algorithm (previosly reltol was 1e-8 and
+  default taken from the initial EM algorithm (previously reltol was 1e-8 and
   maxeval = 100 for restarts).
 * Fixed hidden states labels for ssp functions (previously always used the 
   default values).
@@ -234,7 +234,7 @@ Bug fixes:
 * Changing the missing.color argument did not work in legends of ssp, ssplot, and
   mssplot.
 * The mssplot function now works with unique hidden state names (problem
-  occured e.g. with latent class models).
+  occurred e.g. with latent class models).
 * The mssplot function with sortv = "mds.hidden" produced strange errors when
   plotting clusters with one hidden state. Now automatically uses "mds.obs" in
   such cases.

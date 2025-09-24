@@ -112,7 +112,7 @@ default value is 1. Values greater than 1 will place the title higher.}
 \item{with.legend}{Defines if and where the legend for the states is plotted.
 The default value \code{"auto"} (equivalent to \code{TRUE} and
 \code{"right"}) creates separate legends for each requested plot and
-positiones them on the right-hand side of the plot. Other possible values
+positions them on the right-hand side of the plot. Other possible values
 are \code{"bottom"},
 \code{"right.combined"}, and \code{"bottom.combined"}, of which the last
 two create a combined legend in the selected position. \code{FALSE} prints no legend.}

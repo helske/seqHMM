@@ -11,7 +11,7 @@
 #' exception is the first time point in FAN-HMM case: If the `emission_formula` 
 #' contains lagged responses, the response variable values at the first time 
 #' point are used to define the emissions at the second time point, and the 
-#' simulations are done from the second time point onwards. This matches the 
+#' simulations are done from the second time point onward. This matches the 
 #' case `prior_obs = "fixed"` in [estimate_nhmm()]. Note that compared to 
 #' `estimate_*` functions, unused factor levels are not automatically dropped 
 #' from `data`.

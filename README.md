@@ -10,7 +10,7 @@ The `seqHMM` package is designed for fitting hidden (latent) Markov models (HMMs
 
 The package supports models for one or multiple subjects with one or multiple parallel outcome sequences (channels). External covariates can be added to explain cluster membership in mixture models, and NHMMs and their variants support covariates in initial, transition and emission matrices as well.
 
-Maximum likelihood estimation via EM algorithm and direct numerical maximization with analytical gradients is supported. All main algorithms are written in C++. Parallel computation is available via OpenMP (pre-2.0.0 version models) and [`future`](https://future.futureverse.org/) (via parallel multistart estimation with random prior_obss).
+Maximum likelihood estimation via EM algorithm and direct numerical maximization with analytical gradients is supported. All main algorithms are written in C++. Parallel computation is available via OpenMP (pre-2.0.0 version models) and [`future`](https://future.futureverse.org/) (via parallel multistart estimation with random initial values).
 
 When using the package in publications, please cite:
 

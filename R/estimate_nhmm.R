@@ -12,7 +12,7 @@
 #' the model is initialized with fixed values for the first time point 
 #' (`prior_obs = "fixed"`), meaning that if the input data consists of 
 #' time points \eqn{t=1, 2, \ldots}, then the model is defined from \eqn{t=2} 
-#' onwards and the data on \eqn{t=1} is used only for defining the emission 
+#' onward and the data on \eqn{t=1} is used only for defining the emission 
 #' probabilities at \eqn{t=2}. Note that in this case also the initial state 
 #' probabilities correspond to \eqn{t=2}. 
 #' 

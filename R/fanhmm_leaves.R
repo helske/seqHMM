@@ -1,4 +1,4 @@
-#' A feedback-augmented non-homogeneuous hidden Markov Model for leaves data
+#' A feedback-augmented non-homogeneous hidden Markov Model for leaves data
 #'
 #' A FAN-HMM fitted for the`leaes` data.
 #'

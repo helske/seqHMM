@@ -8,7 +8,7 @@ permute_states(estimates, reference)
 }
 \arguments{
 \item{estimates}{A list \eqn{\gamma} coefficients as in \code{model$gammas},
-where \code{model} is an {.cls nhmm} object.}
+where \code{model} is an \code{nhmm} object.}
 
 \item{reference}{Another list of \eqn{\gamma} coefficients for which to match
 the \code{estimates}.}

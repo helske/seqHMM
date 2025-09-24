@@ -26,6 +26,7 @@
 #' @import Rcpp
 #' @importFrom Rcpp loadModule evalCpp
 #' @importFrom stats logLik vcov predict update coef nobs
+#' @importFrom utils head modifyList
 #' @importFrom TraMineR seqlegend
 #' @importFrom graphics par plot.new
 #' @importFrom ggplot2 ggplot aes geom_pointrange geom_ribbon geom_line facet_wrap

@@ -75,7 +75,7 @@
 #' @param with.legend Defines if and where the legend for the states is plotted.
 #'   The default value `"auto"` (equivalent to `TRUE` and
 #'   `"right"`) creates separate legends for each requested plot and
-#'   positiones them on the right-hand side of the plot. Other possible values
+#'   positions them on the right-hand side of the plot. Other possible values
 #'   are `"bottom"`,
 #'   `"right.combined"`, and `"bottom.combined"`, of which the last
 #'   two create a combined legend in the selected position. `FALSE` prints no legend.

@@ -1,6 +1,7 @@
 #' Functions for computing the marginal probabilities for `get_marginals`
 #' @noRd
 compute_z_marginals <- function(model, id_time, pp, cond, cluster = NULL) {
+  # avoid CRAN check warnings due to NSE
   probability <- cols <- NULL
   x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]
   x <- pp[x, on = id_time, nomatch = 0L]
@@ -9,6 +10,7 @@ compute_z_marginals <- function(model, id_time, pp, cond, cluster = NULL) {
     showProgress = FALSE]
 }
 compute_A_marginals <- function(model, id_time, pp, cond, cluster = NULL) {
+  # avoid CRAN check warnings due to NSE
   probability <- i.probability <- state_prob <- cols <- NULL
   A <- get_transition_probs(model)
   x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]
@@ -19,6 +21,7 @@ compute_A_marginals <- function(model, id_time, pp, cond, cluster = NULL) {
     by = cond, showProgress = FALSE]
 }
 compute_y_and_B_marginals <- function(model, id_time, pp, cond, cluster = NULL) {
+  # avoid CRAN check warnings due to NSE
   probability <- i.probability <- state_prob <- cols <- NULL
   B <- get_emission_probs(model)
   x <- model$data[, cols, env = list(cols = as.list(c(id_time, cond)))]

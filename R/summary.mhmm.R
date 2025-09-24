@@ -89,7 +89,7 @@ summary.mhmm <- function(
 #' @export
 #' @rdname print
 print.summary_mhmm <- function(x, digits = 3, ...) {
-  # to avoid NSE warnings
+  # avoid CRAN check warnings due to NSE
   probability <- cluster <- NULL
   
   if (exists("transition_probs", x)) {

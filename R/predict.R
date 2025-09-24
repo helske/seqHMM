@@ -205,6 +205,7 @@ predict.nhmm <- function(
     object, newdata, newdata2 = NULL, condition = NULL, 
     type = c("state", "response", "transition", "emission"),
     probs = c(0.025, 0.975), boot_idx = FALSE, ...) {
+  # avoid CRAN check warnings due to NSE
   cols <- NULL
   type <- try(match.arg(type, several.ok = TRUE), silent = TRUE)
   stopifnot_(

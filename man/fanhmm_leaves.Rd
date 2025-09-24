@@ -3,7 +3,7 @@
 \docType{data}
 \name{fanhmm_leaves}
 \alias{fanhmm_leaves}
-\title{A feedback-augmented non-homogeneuous hidden Markov Model for leaves data}
+\title{A feedback-augmented non-homogeneous hidden Markov Model for leaves data}
 \format{
 A model of class \code{fanhmm} with three hidden states
 }

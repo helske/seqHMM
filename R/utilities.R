@@ -238,6 +238,8 @@ intercept_only <- function(f) {
 #' 
 #' @noRd
 create_obs <- function(model) {
+  # avoid CRAN check warnings due to NSE
+  cols <- NULL
   id <- model$data[[model$id_variable]]
   obs <- qM(model$data[, cols, env = list(cols = I(model$responses))]) - 1L
   for (i in seq_len(ncol(obs))) {

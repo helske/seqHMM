@@ -18,7 +18,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
     checkmate::check_number(bound, lower = 0), 
     "Argument {.arg bound} must be a single non-negative {.cls numeric} value."
   )
-  control <- utils::modifyList(
+  control <- modifyList(
     list(
       ftol_rel = 1e-12,
       ftol_abs = 1e-12,
@@ -33,7 +33,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
     control
   )
   # By default, use the same values for restart as for the final optimization
-  control_restart <- utils::modifyList(
+  control_restart <- modifyList(
     control,
     control_restart
   )
@@ -44,7 +44,7 @@ fit_nhmm <- function(model, inits, init_sd, restarts, lambda, method,
       {.val {control_restart$algorithm}} for multistart.")
   )
   # Slightly looser tolerances for the M-step
-  control_mstep <- utils::modifyList(
+  control_mstep <- modifyList(
     list(
       ftol_rel = 1e-10,
       ftol_abs = 1e-10,

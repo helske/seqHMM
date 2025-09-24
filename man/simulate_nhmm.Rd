@@ -40,7 +40,7 @@ does not matter though, as they are replaced by the simulated values. The
 exception is the first time point in FAN-HMM case: If the \code{emission_formula}
 contains lagged responses, the response variable values at the first time
 point are used to define the emissions at the second time point, and the
-simulations are done from the second time point onwards. This matches the
+simulations are done from the second time point onward. This matches the
 case \code{prior_obs = "fixed"} in \code{\link[=estimate_nhmm]{estimate_nhmm()}}. Note that compared to
 \verb{estimate_*} functions, unused factor levels are not automatically dropped
 from \code{data}.}

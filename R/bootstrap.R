@@ -45,7 +45,7 @@ bootstrap_model <- function(model, ids) {
 #' methods of `seqHMM`.
 #' 
 #' @param estimates A list \eqn{\gamma} coefficients as in `model$gammas`,
-#' where `model` is an {.cls nhmm} object.
+#' where `model` is an `nhmm` object.
 #' @param reference Another list of \eqn{\gamma} coefficients for which to match 
 #' the `estimates`.
 #' @return Permuted version of `estimates`, with added attribute `permutation` 
