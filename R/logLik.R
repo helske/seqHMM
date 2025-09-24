@@ -8,14 +8,14 @@
 #' is 1.
 #' @param log_space Make computations using log-space instead of scaling for 
 #' greater numerical stability at the cost of decreased computational 
-#' performance. The default is `TRUE`.
+#' performance. The default is `FALSE`.
 #' @param ... Ignored.
 #' @return Log-likelihood of the hidden Markov model. This is an object of class
 #' `logLik` with attributes `nobs` and `df` inherited from the model object.
 #' @rdname logLik_hmm
 #' @export
 logLik.hmm <- function(object, partials = FALSE, threads = 1, 
-                       log_space = TRUE, ...) {
+                       log_space = FALSE, ...) {
   stopifnot_(
     checkmate::test_int(x = threads, lower = 1L), 
     "Argument {.arg threads} must be a single positive integer."
@@ -44,7 +44,7 @@ logLik.hmm <- function(object, partials = FALSE, threads = 1,
 #' @rdname logLik_hmm
 #' @export
 logLik.mhmm <- function(object, partials = FALSE, threads = 1, 
-                        log_space = TRUE, ...) {
+                        log_space = FALSE, ...) {
   stopifnot_(
     checkmate::test_int(x = threads, lower = 1L), 
     "Argument {.arg threads} must be a single positive integer."

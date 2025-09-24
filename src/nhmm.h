@@ -32,7 +32,7 @@ public:
   void update_pi(const arma::uword i);
   void update_A(const arma::uword i);
   virtual void update_B(const arma::uword i);
-  void update_log_py(const arma::uword i);
+  void update_py(const arma::uword i);
   Rcpp::List viterbi();
   arma::vec loglik();
   arma::field<arma::mat> forward();
@@ -69,13 +69,13 @@ public:
   arma::cube gamma_A;
   arma::field<arma::cube> gamma_B;
   
-  // pi, A, B, and log_p(y) of _one_ id we are currently working with
-  arma::mat log_py;
+  // pi, A, B, and p(y) of _one_ id we are currently working with
+  arma::mat py;
   arma::vec pi;
-  arma::vec log_pi;
   arma::cube A;
-  arma::cube log_A;
   arma::field<arma::cube> B;
+  arma::vec log_pi;
+  arma::cube log_A;
   arma::field<arma::cube> log_B;
   const double maxval;
   const double minval;
@@ -84,17 +84,16 @@ private:
   
   void gradient_pi(
       arma::mat& grad, 
-      arma::mat& tmpmat, 
-      const arma::mat& log_beta, 
-      const double ll, 
+      arma::vec& tmpvec, 
+      const arma::mat& beta, 
       const arma::uword i
   );
   void gradient_A(
       arma::mat& grad,
-      arma::mat& tmpmat,
-      const arma::mat& log_alpha, 
-      const arma::mat& log_beta, 
-      const double ll,
+      arma::vec& tmpvec1,
+      arma::vec& tmpvec2,
+      const arma::mat& alpha, 
+      const arma::mat& beta, 
       const arma::uword i, 
       const arma::uword t, 
       const arma::uword s
@@ -102,8 +101,7 @@ private:
   virtual void gradient_B_t1(
       arma::mat& grad, 
       arma::vec& tmpvec, 
-      const arma::mat& log_beta, 
-      const double ll, 
+      const arma::mat& beta, 
       const arma::uword i, 
       const arma::uword s, 
       const arma::uword c
@@ -111,9 +109,8 @@ private:
   void gradient_B(
       arma::mat& grad, 
       arma::vec& tmpvec, 
-      const arma::mat& log_alpha, 
-      const arma::mat& log_beta, 
-      const double ll, 
+      const arma::mat& alpha, 
+      const arma::mat& beta, 
       const arma::uword i, 
       const arma::uword s, 
       const arma::uword t, 

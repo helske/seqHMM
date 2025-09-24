@@ -46,15 +46,13 @@ private:
   void gradient_B_t1(
       arma::mat& grad,
       arma::vec& tmpvec,
-      const arma::mat& log_beta,
-      const double ll,
+      const arma::mat& beta,
       const arma::uword i,
       const arma::uword s,
       const arma::uword c
   ) override;
   
   arma::field<arma::cube> B1;
-  arma::field<arma::cube> log_B1;
 };
 
 #endif

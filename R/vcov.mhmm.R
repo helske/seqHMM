@@ -22,13 +22,13 @@
 #' @param threads Number of threads to use in parallel computing. Default is 1.
 #' @param log_space Make computations using log-space instead of scaling for greater
 #' numerical stability at cost of decreased computational performance. 
-#' Default is `TRUE`.
+#' Default is `FALSE`.
 #' @param ... Additional arguments to function `jacobian` of `numDeriv` package.
 #' @return Matrix containing the variance-covariance matrix of coefficients.
 #' @export
 #'
 vcov.mhmm <- function(object, conditional = TRUE, threads = 1, 
-                      log_space = TRUE, ...) {
+                      log_space = FALSE, ...) {
   if (conditional) {
     vcovm <- varcoef(object$coefficients, object$X)
   } else {

@@ -30,7 +30,8 @@ EM_mnhmm::EM_mnhmm(
   const double xtol_abs_m, 
   const double xtol_rel_m, 
   const arma::uword print_level_m,
-  const double bound)
+  const double bound,
+  const double tolg)
   : model(model), fan_model(dynamic_cast<const mfanhmm*>(&model)), 
     Qs(Qs), Qm(Qm), Qd(Qd), lambda(lambda),
     eta_pi(model.D), eta_A(model.D), eta_B(model.D, model.C), 
@@ -41,7 +42,7 @@ EM_mnhmm::EM_mnhmm(
     xtol_abs(xtol_abs), xtol_rel(xtol_rel), print_level(print_level),
     maxeval_m(maxeval_m), ftol_abs_m(ftol_abs_m), ftol_rel_m(ftol_rel_m), 
     xtol_abs_m(xtol_abs_m), xtol_rel_m(xtol_rel_m), print_level_m(print_level_m),
-    bound(bound)
+    bound(bound), tolg(tolg)
 {
   for (arma::uword d = 0; d < model.D; ++d) {
     eta_pi(d) = Qs.t() * model.gamma_pi(d);
@@ -120,37 +121,32 @@ Rcpp::List EM_mnhmm::mstep_error(int iter,
 }
 
 void EM_mnhmm::estep_pi(const arma::uword i, const arma::uword d, 
-                        const arma::vec& log_alpha, const arma::vec& log_beta, 
-                        const double ll, const double pcp) {
-  E_pi(d).col(i) = pcp * arma::exp(log_alpha + log_beta - ll);
-  // set minuscule values to zero in order to avoid numerical issues
-  E_pi(d).col(i).clean(model.minval);
+                        const arma::vec& alpha, const arma::vec& beta, 
+                        const double pcp, const double scale1) {
+  E_pi(d).col(i) = pcp * alpha % beta / scale1;
 }
 
 void EM_mnhmm::estep_A(const arma::uword i, const arma::uword d, 
-                       const arma::mat& log_alpha, const arma::mat& log_beta, 
-                       const double ll, const double pcp) {
+                       const arma::mat& alpha, const arma::mat& beta, 
+                       const double pcp) {
   
   for (arma::uword k = 0; k < model.S; ++k) { // from
     for (arma::uword j = 0; j < model.S; ++j) { // to
       for (arma::uword t = 0; t < (model.Ti(i) - 1); ++t) { // time
-        E_A(d, k)(j, i, t + 1) = pcp * exp(log_alpha(k, t) + 
-          model.log_A(d)(k, j, t + 1) + log_beta(j, t + 1) + 
-          model.log_py(j, t + 1, d) - ll);
+        E_A(d, k)(j, i, t + 1) = pcp * alpha(k, t) * model.A(d)(k, j, t + 1) * 
+          beta(j, t + 1) * model.py(j, t + 1, d);
       }
     }
-    // set minuscule values to zero in order to avoid numerical issues
-    E_A(d, k).col(i).clean(model.minval);
   }
 }
 
 void EM_mnhmm::estep_B(const arma::uword i, const arma::uword d, 
-                       const arma::mat& log_alpha, const arma::mat& log_beta, 
-                       const double ll, const double pcp) {
+                       const arma::mat& alpha, const arma::mat& beta, 
+                       const double pcp, const arma::vec& scales) {
   
   for (arma::uword k = 0; k < model.S; ++k) { // state
     for (arma::uword t = 0; t < model.Ti(i); ++t) { // time
-      double pp = exp(log_alpha(k, t) + log_beta(k, t) - ll);
+      double pp = alpha(k, t) * beta(k, t) / scales(t);
       for (arma::uword c = 0; c < model.C; ++c) { // channel
         if (model.obs(i)(c, t) < model.M(c) && pp > model.minval) {
           E_B(d, c)(t, i, k) = pcp * pp;
@@ -164,8 +160,6 @@ void EM_mnhmm::estep_B(const arma::uword i, const arma::uword d,
 void EM_mnhmm::estep_omega(const arma::uword i, const arma::vec& likelihood) {
   
   E_omega.col(i) = likelihood;
-  // set minuscule values to zero in order to avoid numerical issues
-  E_omega.col(i).clean(model.minval);
 }
 
 void EM_mnhmm::mstep_pi() {
@@ -173,8 +167,11 @@ void EM_mnhmm::mstep_pi() {
   mstep_return_code = 0;
   // Use closed form solution
   if (model.icpt_only_pi && lambda < 1e-12) {
+    arma::vec tmp(model.S);
     for (arma::uword d = 0; d < model.D; ++d) {
-      eta_pi(d) = Qs.t() * log(arma::sum(E_pi(d), 1) + arma::datum::eps);
+      tmp = arma::sum(E_pi(d), 1);
+      tmp.clamp(std::numeric_limits<double>::min(), arma::datum::inf);
+      eta_pi(d) = Qs.t() * log(tmp);
       if (!eta_pi(d).is_finite()) {
         mstep_return_code = -100;
         return;
@@ -232,7 +229,8 @@ void EM_mnhmm::mstep_A() {
         for (arma::uword k = 0; k < model.S; ++k) { //to
           tmp(k) = arma::accu(E_A(d, s).row(k));
         }
-        eta_A(d).slice(s).col(0) = Qs.t() * log(tmp + arma::datum::eps);
+        tmp.clamp(std::numeric_limits<double>::min(), arma::datum::inf);
+        eta_A(d).slice(s).col(0) = Qs.t() * log(tmp);
         if (!eta_A(d).slice(s).col(0).is_finite()) {
           mstep_return_code = -200;
           return;
@@ -300,7 +298,8 @@ void EM_mnhmm::mstep_B() {
               }
             }
           }
-          eta_B(d, c).slice(s).col(0) = Qm(c).t() * log(tmp + arma::datum::eps);
+          tmp.clamp(std::numeric_limits<double>::min(), arma::datum::inf);
+          eta_B(d, c).slice(s).col(0) = Qm(c).t() * log(tmp);
           if (!eta_B(d, c).slice(s).col(0).is_finite()) {
             mstep_return_code = -300;
             return;
@@ -358,7 +357,9 @@ void EM_mnhmm::mstep_omega() {
   mstep_return_code = 0;
   // Use closed form solution
   if (model.icpt_only_omega && lambda < 1e-12) {
-    eta_omega = Qd.t() * log(arma::sum(E_omega, 1) + arma::datum::eps);
+    arma::vec tmp = arma::sum(E_omega, 1);
+    tmp.clamp(std::numeric_limits<double>::min(), arma::datum::inf);
+    eta_omega = Qd.t() * log(tmp);
     if (!eta_omega.is_finite()) {
       mstep_return_code = -400;
       return;
@@ -437,23 +438,15 @@ double EM_mnhmm::objective_pi(const arma::vec& x, arma::vec& grad) {
   model.gamma_pi(current_d) = sum_to_zero(eta_pi(current_d), Qs);
   grad.zeros();
   arma::mat tQs = Qs.t();
-  arma::uvec idx(model.S);
   for (arma::uword i = 0; i < model.N; ++i) {
     if (!model.icpt_only_pi || i == 0) {
       model.update_pi(i);
     }
     const arma::vec& counts = E_pi(current_d).col(i);
-    idx = arma::find(counts);
-    if (idx.n_elem > 0) {
-      double sum_epi = arma::accu(counts.rows(idx));
-      double val = arma::dot(counts.rows(idx), model.log_pi(current_d).rows(idx));
-      if (!std::isfinite(val)) {
-        grad.zeros();
-        return model.maxval;
-      }
-      value -= val;
-      grad -= arma::vectorise(tQs * (counts - sum_epi * model.pi(current_d)) * model.X_pi.col(i).t());
-    }
+    double sum_epi = arma::accu(counts);
+    double val = arma::dot(counts, model.log_pi(current_d));
+    value -= val;
+    grad -= arma::vectorise(tQs * (counts - sum_epi * model.pi(current_d)) * model.X_pi.col(i).t());
   }
   value += 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
   value /= model.N;
@@ -473,7 +466,6 @@ double EM_mnhmm::objective_A(const arma::vec& x, arma::vec& grad) {
   arma::vec A1(model.S);
   arma::vec log_A1(model.S);
   grad.zeros();
-  arma::uvec idx(model.S);
   if (!model.iv_A && !model.tv_A) {
     A1 = softmax(gamma_Arow * model.X_A(0).col(0));
     log_A1 = log(A1);
@@ -486,21 +478,14 @@ double EM_mnhmm::objective_A(const arma::vec& x, arma::vec& grad) {
     }
     for (arma::uword t = 1; t < model.Ti(i); ++t) {
       const arma::vec& counts = E_A(current_d, current_s).slice(t).col(i);
-      idx = arma::find(counts);
-      if (idx.n_elem > 0) {
-        if (model.tv_A) {
-          A1 = softmax(gamma_Arow * model.X_A(i).col(t));
-          log_A1 = log(A1);
-        }
-        double sum_ea = arma::accu(counts.rows(idx));
-        double val = arma::dot(counts.rows(idx), log_A1.rows(idx));
-        if (!std::isfinite(val)) {
-          grad.zeros();
-          return model.maxval;
-        }
-        value -= val;
-        grad -= arma::vectorise(tQs * (counts - sum_ea * A1) * model.X_A(i).col(t).t());
+      if (model.tv_A) {
+        A1 = softmax(gamma_Arow * model.X_A(i).col(t));
+        log_A1 = log(A1);
       }
+      double sum_ea = arma::accu(counts);
+      double val = arma::dot(counts, log_A1);
+      value -= val;
+      grad -= arma::vectorise(tQs * (counts - sum_ea * A1) * model.X_A(i).col(t).t());
     }
   }
   value += 0.5 * lambda * std::pow(arma::norm(x, 2), 2);
@@ -557,10 +542,6 @@ double EM_mnhmm::objective_B(const arma::vec& x, arma::vec& grad) {
           }
           log_B1 = log(B1);
           double val = e_b * log_B1(y);
-          if (!std::isfinite(val)) {
-            grad.zeros();
-            return model.maxval;
-          }
           value -= val;
           for (arma::uword j = 0; j < J; ++j) {
             grad -= arma::vectorise(tQm * e_b  * B1j(y, j) / B1(y) * (I.col(y) - B1j.col(j)) *
@@ -579,10 +560,6 @@ double EM_mnhmm::objective_B(const arma::vec& x, arma::vec& grad) {
             log_B1 = log(B1);
           }
           double val = e_b * log_B1(y);
-          if (!std::isfinite(val)) {
-            grad.zeros();
-            return model.maxval;
-          }
           value -= val;
           grad -= arma::vectorise(tQm * e_b  * (I.col(y) - B1) * 
             model.X_B(current_c, i).col(t).t());
@@ -608,18 +585,12 @@ double EM_mnhmm::objective_omega(const arma::vec& x, arma::vec& grad) {
   model.gamma_omega = sum_to_zero(eta_omega, Qd);
   grad.zeros();
   arma::mat tQd = Qd.t();
-  arma::uvec idx(model.D);
   for (arma::uword i = 0; i < model.N; ++i) {
     if (!model.icpt_only_omega || i == 0) {
       model.update_omega(i);
     }
     const arma::vec& counts = E_omega.col(i);
-    idx = arma::find(counts);
-    double val = arma::dot(counts.rows(idx), model.log_omega.rows(idx));
-    if (!std::isfinite(val)) {
-      grad.zeros();
-      return model.maxval;
-    }
+    double val = arma::dot(counts, model.log_omega);
     value -= val;
     grad -= arma::vectorise(tQd * (counts - model.omega) * model.X_omega.col(i).t());
   }
@@ -653,6 +624,7 @@ Rcpp::List EM_mnhmm::run() {
   nlopt_set_lower_bounds1(opt_pi, -bound);
   nlopt_set_upper_bounds1(opt_pi, bound);
   nlopt_set_vector_storage(opt_pi, 10);
+  // nlopt_set_param(opt_pi, "tolg", tolg);
   
   opt_A = nlopt_create(NLOPT_LD_LBFGS, eta_A(0).slice(0).n_elem);
   nlopt_set_xtol_abs1(opt_A, xtol_abs_m);
@@ -663,6 +635,7 @@ Rcpp::List EM_mnhmm::run() {
   nlopt_set_lower_bounds1(opt_A, -bound);
   nlopt_set_upper_bounds1(opt_A, bound);
   nlopt_set_vector_storage(opt_A, 10);
+  // nlopt_set_param(opt_A, "tolg", tolg);
   
   for (arma::uword c = 0; c < model.C; ++c) {
     opt_B[c] = nlopt_create(NLOPT_LD_LBFGS, eta_B(0, c).slice(0).n_elem);
@@ -674,6 +647,7 @@ Rcpp::List EM_mnhmm::run() {
     nlopt_set_lower_bounds1(opt_B[c], -bound);
     nlopt_set_upper_bounds1(opt_B[c], bound);
     nlopt_set_vector_storage(opt_B[c], 10);
+    // nlopt_set_param(opt_B[c], "tolg", tolg);
   }
   opt_omega = nlopt_create(NLOPT_LD_LBFGS, eta_omega.n_elem);
   nlopt_set_xtol_abs1(opt_omega, xtol_abs_m);
@@ -684,6 +658,7 @@ Rcpp::List EM_mnhmm::run() {
   nlopt_set_lower_bounds1(opt_omega, -bound);
   nlopt_set_upper_bounds1(opt_omega, bound);
   nlopt_set_vector_storage(opt_omega, 10);
+  // nlopt_set_param(opt_omega, "tolg", tolg);
   
   arma::rowvec new_pars(n_omega + model.D * (n_pi + n_A + n_B));
   arma::rowvec pars(n_omega + model.D * (n_pi + n_A + n_B));
@@ -712,8 +687,9 @@ Rcpp::List EM_mnhmm::run() {
   arma::uword iter = 0;
   double ll_new;
   double ll;
-  arma::cube log_alpha(model.S, model.Ti(0), model.D);
-  arma::cube log_beta(model.S, model.Ti(0), model.D);
+  arma::cube alpha(model.S, model.Ti.max(), model.D);
+  arma::cube beta(model.S, model.Ti.max(), model.D);
+  arma::mat scales(model.Ti.max(), model.D);
   arma::vec loglik(model.N);
   arma::vec loglik_i(model.D);
   arma::vec lls(model.D);
@@ -731,23 +707,25 @@ Rcpp::List EM_mnhmm::run() {
     if (!model.icpt_only_omega || i == 0) {
       model.update_omega(i);
     }
-    model.update_log_py(i);
-    log_alpha = arma::cube(model.S, model.Ti(i), model.D);
-    log_beta = arma::cube(model.S, model.Ti(i), model.D);
+    model.update_py(i);
     for (arma::uword d = 0; d < model.D; ++d) {
-      univariate_forward(
-        log_alpha.slice(d), model.log_pi(d), model.log_A(d), model.log_py.slice(d)
+      arma::subview_col<double> scales_col = scales.col(d);
+      loglik_i(d) = univariate_forward(
+        alpha.slice(d), scales_col, model.pi(d), model.A(d), 
+        model.py.slice(d), model.Ti(i)
       );
-      univariate_backward(log_beta.slice(d), model.log_A(d), model.log_py.slice(d));
-      loglik_i(d) = logSumExp(log_alpha.slice(d).col(model.Ti(i) - 1));
+      univariate_backward(
+        beta.slice(d), scales.col(d), model.A(d), 
+        model.py.slice(d), model.Ti(i)
+      );
     }
     lls = model.log_omega + loglik_i;
     loglik(i) = logSumExp(lls);
     lls = arma::exp(lls - loglik(i));
     for (arma::uword d = 0; d < model.D; ++d) {
-      estep_pi(i, d, log_alpha.slice(d).col(0), log_beta.slice(d).col(0), loglik_i(d), lls(d));
-      estep_A(i, d, log_alpha.slice(d), log_beta.slice(d), loglik_i(d), lls(d));
-      estep_B(i, d, log_alpha.slice(d), log_beta.slice(d), loglik_i(d), lls(d));
+      estep_pi(i, d, alpha.slice(d).col(0), beta.slice(d).col(0), lls(d), scales(0, d));
+      estep_A(i, d, alpha.slice(d), beta.slice(d), lls(d));
+      estep_B(i, d, alpha.slice(d), beta.slice(d), lls(d), scales.col(d));
     }
     estep_omega(i, lls);
   }
@@ -824,23 +802,25 @@ Rcpp::List EM_mnhmm::run() {
       if (!model.icpt_only_omega || i == 0) {
         model.update_omega(i);
       }
-      model.update_log_py(i);
-      log_alpha = arma::cube(model.S, model.Ti(i), model.D);
-      log_beta = arma::cube(model.S, model.Ti(i), model.D);
+      model.update_py(i);
       for (arma::uword d = 0; d < model.D; ++d) {
-        univariate_forward(
-          log_alpha.slice(d), model.log_pi(d), model.log_A(d), model.log_py.slice(d)
+        arma::subview_col<double> scales_col = scales.col(d);
+        loglik_i(d) = univariate_forward(
+          alpha.slice(d), scales_col, model.pi(d), model.A(d), model.py.slice(d), 
+          model.Ti(i)
         );
-        univariate_backward(log_beta.slice(d), model.log_A(d), model.log_py.slice(d));
-        loglik_i(d) = logSumExp(log_alpha.slice(d).col(model.Ti(i) - 1));
+        univariate_backward(
+          beta.slice(d), scales.col(d), model.A(d), 
+          model.py.slice(d), model.Ti(i)
+        );
       }
       lls = model.log_omega + loglik_i;
       loglik(i) = logSumExp(lls);
       lls = arma::exp(lls - loglik(i));
       for (arma::uword d = 0; d < model.D; ++d) {
-        estep_pi(i, d, log_alpha.slice(d).col(0), log_beta.slice(d).col(0), loglik_i(d), lls(d));
-        estep_A(i, d, log_alpha.slice(d), log_beta.slice(d), loglik_i(d), lls(d));
-        estep_B(i, d, log_alpha.slice(d), log_beta.slice(d), loglik_i(d), lls(d));
+        estep_pi(i, d, alpha.slice(d).col(0), beta.slice(d).col(0), lls(d), scales(0, d));
+        estep_A(i, d, alpha.slice(d), beta.slice(d), lls(d));
+        estep_B(i, d, alpha.slice(d), beta.slice(d), lls(d), scales.col(d));
       }
       estep_omega(i, lls);
     }

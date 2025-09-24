@@ -21,10 +21,11 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
   control <- utils::modifyList(
     list(
       ftol_rel = 1e-12,
-      ftol_abs = 1e-8,
-      xtol_rel = 1e-6,
-      xtol_abs = 1e-6,
-      maxeval = 1e4,
+      ftol_abs = 1e-12,
+      xtol_rel = 0,
+      xtol_abs = 0,
+      tolg = 1e-12,
+      maxeval = 1e5,
       print_level = 0,
       algorithm = "NLOPT_LD_LBFGS",
       maxeval_em_dnm = 100
@@ -42,13 +43,15 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
       "Found algorithm {.val {control$algorithm}} for final optimization and 
       {.val {control_restart$algorithm}} for multistart.")
   )
+  # Slightly looser tolerances for the M-step
   control_mstep <- utils::modifyList(
     list(
-      ftol_rel = 1e-8,
-      ftol_abs = 1e-6,
-      xtol_rel = 1e-4,
-      xtol_abs = 1e-4,
-      maxeval = 100,
+      ftol_rel = 1e-10,
+      ftol_abs = 1e-10,
+      xtol_rel = 0,
+      xtol_abs = 0,
+      tolg = 1e-10,
+      maxeval = 1000,
       print_level = 0
     ),
     control_mstep

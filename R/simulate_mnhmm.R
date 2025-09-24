@@ -19,7 +19,7 @@
 simulate_mnhmm <- function(
     n_states, n_clusters, emission_formula, initial_formula = ~1, 
     transition_formula = ~1, cluster_formula = ~ 1, data, id, time, 
-    coefs = NULL, init_sd = 2 * is.null(coefs)) {
+    coefs = NULL, init_sd = 2 * is.null(coefs), check_rank = NULL) {
   force(init_sd)
   stopifnot_(
     !missing(data),
@@ -68,7 +68,8 @@ simulate_mnhmm <- function(
   }
   model <- build_mnhmm(
     n_states, n_clusters, emission_formula, initial_formula, transition_formula, 
-    cluster_formula, data, id, time, coefs = coefs, scale = FALSE
+    cluster_formula, data, id, time, coefs = coefs, scale = FALSE, 
+    check = check_rank, drop_levels = FALSE
   )
   model$etas <- create_initial_values(coefs, model, init_sd)
   model$gammas$gamma_pi <- drop(eta_to_gamma_mat_field(model$etas$eta_pi))
@@ -123,14 +124,16 @@ simulate_mnhmm <- function(
     model$data[, list(id, time), env = list(id = id, time = time)], 
     state = state_names[unlist(out$states) + 1L]
   )
-  attr(model$X_pi, "X_mean") <- TRUE
-  attr(model$X_A, "X_mean") <- TRUE
-  attr(model$X_B, "X_mean") <- TRUE  
   attr(model$X_omega, "X_mean") <- TRUE
-  attr(model$X_pi, "R_inv") <- NULL
-  attr(model$X_A, "R_inv") <- NULL
-  attr(model$X_B, "R_inv") <- NULL
   attr(model$X_omega, "R_inv") <- NULL
+  attr(model$X_pi, "X_mean") <- TRUE
+  attr(model$X_pi, "R_inv") <- NULL
+  attr(model$X_A, "X_mean") <- TRUE
+  attr(model$X_A, "R_inv") <- NULL
+  for (i in seq_along(responses)) {
+    attr(model$X_B[[i]], "X_mean") <- TRUE
+    attr(model$X_B[[i]], "R_inv") <- NULL
+  }
   model <- update(model, data)
   tQs <- t(create_Q(n_states))
   if (!attr(model$X_pi, "icpt_only")) {

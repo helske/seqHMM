@@ -45,92 +45,110 @@ nhmm::nhmm(
   gamma_pi(gamma_pi),
   gamma_A(gamma_A),
   gamma_B(gamma_B),
-  log_py(S, Ti(0)),
+  py(S, Ti.max()),
   pi(S),
-  log_pi(S),
-  A(S, S, Ti(0)),
-  log_A(S, S, Ti(0)),
+  A(S, S, Ti.max()),
   B(C),
+  log_pi(S),
+  log_A(S, S, Ti.max()),
   log_B(C),
   maxval(maxval),
   minval(
     (minval < 0)  ? std::pow(arma::datum::eps, 2.0/3.0) : minval
   ){
   for (arma::uword c = 0; c < C; ++c) {
-    B(c) = arma::cube(S, M(c) + 1, Ti(0));
-    log_B(c) = arma::cube(S, M(c) + 1, Ti(0));
+    B(c) = arma::cube(S, M(c) + 1, Ti.max());
+    log_B(c) = arma::cube(S, M(c) + 1, Ti.max());
   }
 }
 
 void nhmm::update_pi(const arma::uword i) {
   if (icpt_only_pi) {
+    log_pi = log_softmax(gamma_pi.col(0));
     pi = softmax(gamma_pi.col(0));
   } else {
-    pi = softmax(gamma_pi * X_pi.col(i));
+    arma::vec tmp = gamma_pi * X_pi.col(i);
+    log_pi = log_softmax(tmp);
+    pi = softmax(tmp);
   }
-  log_pi = arma::log(pi);
 }
 void nhmm::update_A(const arma::uword i) {
-  A = arma::cube(S, S, Ti(i));
+  arma::mat log_Atmp(S, S);
   arma::mat Atmp(S, S);
   if (icpt_only_A) {
     for (arma::uword s = 0; s < S; ++s) { // from states
-      Atmp.col(s) = softmax(gamma_A.slice(s).col(0));
+      Atmp.col(s) = gamma_A.slice(s).col(0);
+      log_Atmp.col(s) = log_softmax(Atmp.col(s));
+      Atmp.col(s) = softmax(Atmp.col(s));
     }
+    log_A.each_slice() = log_Atmp.t();
     A.each_slice() = Atmp.t();
   } else {
     if (tv_A) {
       for (arma::uword t = 0; t < Ti(i); ++t) { // time
         for (arma::uword s = 0; s < S; ++s) { // from states
-          Atmp.col(s) = softmax(gamma_A.slice(s) * X_A(i).col(t));
+          Atmp.col(s) = gamma_A.slice(s) * X_A(i).col(t);
+          log_Atmp.col(s) = log_softmax(Atmp.col(s));
+          Atmp.col(s) = softmax(Atmp.col(s));
         }
+        log_A.slice(t) = log_Atmp.t();
         A.slice(t) = Atmp.t();
       }
     } else {
       for (arma::uword s = 0; s < S; ++s) { // from states
-        Atmp.col(s) = softmax(gamma_A.slice(s) * X_A(i).col(0));
+        Atmp.col(s) = gamma_A.slice(s) * X_A(i).col(0);
+        log_Atmp.col(s) = log_softmax(Atmp.col(s));
+        Atmp.col(s) = softmax(Atmp.col(s));
       }
+      log_A.each_slice() = log_Atmp.t();
       A.each_slice() = Atmp.t();
     }
   }
-  log_A = arma::log(A);
 }
 void nhmm::update_B(const arma::uword i) {
   for (arma::uword c = 0; c < C; ++c) {
-    B(c) = arma::cube(S, M(c) + 1, Ti(i));
     arma::mat Btmp(M(c) + 1, S, arma::fill::ones);
+    arma::mat log_Btmp(M(c) + 1, S, arma::fill::zeros);
     if (icpt_only_B(c)) {
       for (arma::uword s = 0; s < S; ++s) { // from states
         Btmp.col(s).rows(0, M(c) - 1) = softmax(
           gamma_B(c).slice(s).col(0)
         );
+        log_Btmp.col(s).rows(0, M(c) - 1) = log_softmax(
+          gamma_B(c).slice(s).col(0)
+        );
       }
+      log_B(c).each_slice() = log_Btmp.t();
       B(c).each_slice() = Btmp.t();
+      
     } else {
       if (tv_B(c)) {
         for (arma::uword t = 0; t < Ti(i); ++t) { // time
           for (arma::uword s = 0; s < S; ++s) { // from states
-            Btmp.col(s).rows(0, M(c) - 1) = softmax(gamma_B(c).slice(s) * X_B(c, i).col(t));
+            Btmp.col(s).rows(0, M(c) - 1) = gamma_B(c).slice(s) * X_B(c, i).col(t);
+            log_Btmp.col(s).rows(0, M(c) - 1) = log_softmax(Btmp.col(s).rows(0, M(c) - 1));
+            Btmp.col(s).rows(0, M(c) - 1) = softmax(Btmp.col(s).rows(0, M(c) - 1));
           }
+          log_B(c).slice(t) = log_Btmp.t();
           B(c).slice(t) = Btmp.t();
         }
       } else {
         for (arma::uword s = 0; s < S; ++s) { // from states
-          Btmp.col(s).rows(0, M(c) - 1) = softmax(
-            gamma_B(c).slice(s) * X_B(c, i).col(0)
-          );
+          Btmp.col(s).rows(0, M(c) - 1) = gamma_B(c).slice(s) * X_B(c, i).col(0);
+          log_Btmp.col(s).rows(0, M(c) - 1) = log_softmax(Btmp.col(s).rows(0, M(c) - 1));
+          Btmp.col(s).rows(0, M(c) - 1) = softmax(Btmp.col(s).rows(0, M(c) - 1));
         }
+        log_B(c).each_slice() = log_Btmp.t();
         B(c).each_slice() = Btmp.t();
       }
     }
-    log_B(c) = arma::log(B(c));
   }
 }
-void nhmm::update_log_py(const arma::uword i) {
-  log_py = arma::mat(S, Ti(i), arma::fill::zeros);
+void nhmm::update_py(const arma::uword i) {
+  py.ones();
   for (arma::uword t = 0; t < Ti(i); ++t) {
     for (arma::uword c = 0; c < C; ++c) {
-      log_py.col(t) += log_B(c).slice(t).col(obs(i)(c, t));
+      py.col(t) %= B(c).slice(t).col(obs(i)(c, t));
     }
   }
 }
@@ -149,8 +167,10 @@ Rcpp::List nhmm::viterbi() {
     if (arma::any(iv_B) || i == 0) {
       update_B(i);
     }
-    update_log_py(i);
-    logp(i) = univariate_viterbi(q(i), log_pi, log_A, log_py);
+    update_py(i);
+    logp(i) = univariate_viterbi(
+      q(i), log_pi, log_A, arma::log(py.cols(0, Ti(i) - 1))
+    );
   }
   return Rcpp::List::create(
     Rcpp::Named("q") = Rcpp::wrap(q), 
@@ -158,8 +178,7 @@ Rcpp::List nhmm::viterbi() {
   );
 }
 arma::vec nhmm::loglik() {
-  arma::vec log_alpha(S);
-  arma::vec log_alpha_new(S);
+  arma::vec alpha(S);
   arma::vec ll(N);
   for (arma::uword i = 0; i < N; ++i) {
     if (!icpt_only_pi || i == 0) {
@@ -171,17 +190,17 @@ arma::vec nhmm::loglik() {
     if (arma::any(iv_B) || i == 0) {
       update_B(i);
     }
-    update_log_py(i);
-    log_alpha = log_pi + log_py.col(0);
+    update_py(i);
+    alpha = pi % py.col(0);
+    double c = 1.0 / arma::accu(alpha);
+    alpha *= c;
+    ll(i) = -std::log(c);
     for (arma::uword t = 1; t < Ti(i); ++t) {
-      for (arma::uword s = 0; s < S; ++s) {
-        log_alpha_new(s) = logSumExp(
-          log_alpha + log_A.slice(t).col(s) + log_py(s, t)
-        );
-      }
-      log_alpha = log_alpha_new;
+      alpha = A.slice(t).t() * alpha % py.col(t);
+      c = 1.0 / arma::accu(alpha);
+      alpha *= c;
+      ll(i) -= std::log(c);
     }
-    ll(i) = logSumExp(log_alpha);
   }
   return ll;
 }
@@ -199,8 +218,11 @@ arma::field<arma::mat> nhmm::forward() {
     if (arma::any(iv_B) || i == 0) {
       update_B(i);
     }
-    update_log_py(i);
-    univariate_forward(log_alpha(i), log_pi, log_A, log_py);
+    update_py(i);
+    univariate_forward_logspace(
+      log_alpha(i), log_pi, log_A, 
+      arma::log(py.cols(0, Ti(i) - 1))
+    );
   }
   return log_alpha;
 }
@@ -218,8 +240,10 @@ arma::field<arma::mat>  nhmm::backward() {
     if (arma::any(iv_B) || i == 0) {
       update_B(i);
     }
-    update_log_py(i);
-    univariate_backward(log_beta(i),log_A, log_py);
+    update_py(i);
+    univariate_backward_logspace(
+      log_beta(i), log_A, arma::log(py.cols(0, Ti(i) - 1))
+    );
   }
   return log_beta;
 }
@@ -319,85 +343,78 @@ Rcpp::List nhmm::simulate() {
 }
 void nhmm::gradient_pi(
     arma::mat& grad, 
-    arma::mat& tmpmat, 
-    const arma::mat& log_beta,
-    const double ll,
+    arma::vec& tmpvec, 
+    const arma::mat& beta,
     const arma::uword i) {
-  
-  tmpmat = -pi * pi.t();
-  tmpmat.diag() += pi;
-  grad += tmpmat * exp(log_py.col(0) + log_beta.col(0) - ll) * X_pi.col(i).t();
+  tmpvec = py.col(0) % beta.col(0);
+  grad += (pi % tmpvec - pi * arma::dot(pi, tmpvec)) * X_pi.col(i).t();
 }
 
 void nhmm::gradient_A(
     arma::mat& grad, 
-    arma::mat& tmpmat,
-    const arma::mat& log_alpha, 
-    const arma::mat& log_beta, 
-    const double ll,  
+    arma::vec& tmpvec1,
+    arma::vec& tmpvec2,
+    const arma::mat& alpha, 
+    const arma::mat& beta, 
     const arma::uword i,
     const arma::uword t, 
     const arma::uword s) {
   
-  tmpmat = -A.slice(t).row(s).t() * A.slice(t).row(s);
-  tmpmat.diag() += A.slice(t).row(s);
-  grad += tmpmat * exp(log_alpha(s, t - 1) + log_py.col(t) + 
-    log_beta.col(t) - ll) * X_A(i).col(t).t();
+  tmpvec1 = A.slice(t).row(s).t();
+  tmpvec2 = py.col(t) % beta.col(t) * alpha(s, t - 1);
+  grad += (tmpvec1 %tmpvec2 - tmpvec1 * arma::dot(tmpvec1, tmpvec2)) * X_A(i).col(t).t();
 }
 
 void nhmm::gradient_B_t1(
     arma::mat& grad, 
     arma::vec& tmpvec, 
-    const arma::mat& log_beta, 
-    const double ll, 
+    const arma::mat& beta, 
     const arma::uword i, 
     const arma::uword s, 
     const arma::uword c) {
   
-  arma::uword C = M.n_elem;
-  arma::rowvec Brow = B(c).slice(0).row(s).cols(0, M(c) - 1);
-  arma::uword idx = obs(i)(c, 0);
-  double brow = Brow(idx);
+  arma::subview_row<double> Brow = B(c).slice(0).row(s).cols(0, M(c) - 1);
+  const arma::uword idx = obs(i)(c, 0);
+  const double brow = Brow(idx);
   tmpvec = -Brow.t() * brow;
   tmpvec(idx) += brow;
-  double logpy = 0;
+  double pyx = 1.0;
   for (arma::uword cc = 0; cc < C; ++cc) {
     if (cc != c) {
-      logpy += log_B(cc)(s, obs(i)(cc, 0), 0);
+      pyx *= B(cc)(s, obs(i)(cc, 0), 0);
     }
   }
-  grad += exp(log_pi(s) + logpy + log_beta(s, 0) - ll) * tmpvec * 
-    X_B(c, i).col(0).t();
+  grad += pi(s) * pyx * beta(s, 0) * tmpvec * X_B(c, i).col(0).t();
 }
+
 void nhmm::gradient_B(
     arma::mat& grad, 
     arma::vec& tmpvec, 
-    const arma::mat& log_alpha, 
-    const arma::mat& log_beta, 
-    const double ll,
+    const arma::mat& alpha, 
+    const arma::mat& beta, 
     const arma::uword i, 
     const arma::uword s,
     const arma::uword t,
     const arma::uword c) {
   
-  arma::uword C = M.n_elem;
-  arma::rowvec Brow = B(c).slice(t).row(s).cols(0, M(c) - 1);
-  arma::uword idx = obs(i)(c, t);
-  double brow = Brow(idx);
+  arma::subview_row<double> Brow = B(c).slice(t).row(s).cols(0, M(c) - 1);
+  const arma::uword idx = obs(i)(c, t);
+  const double brow = Brow(idx);
   tmpvec = -Brow.t() * brow;
   tmpvec(idx) += brow;
-  double logpy = 0;
+  double pyx = 1.0;
   for (arma::uword cc = 0; cc < C; ++cc) {
     if (cc != c) {
-      logpy += log_B(cc)(s, obs(i)(cc, t), t);
+      pyx *= B(cc)(s, obs(i)(cc, t), t);
     }
   }
-  grad += arma::accu(exp(log_alpha.col(t - 1) + log_A.slice(t).col(s) + 
-    logpy + log_beta(s, t) - ll)) * tmpvec * X_B(c, i).col(t).t();
+  
+  grad += arma::dot(alpha.col(t - 1), A.slice(t).col(s)) * beta(s, t) * 
+    pyx * tmpvec * X_B(c, i).col(t).t();
 }
 Rcpp::List nhmm::log_objective(const arma::mat& Qs, 
                                const arma::field<arma::mat>& Qm) {
- 
+  
   arma::mat grad_pi(S, X_pi.n_rows, arma::fill::zeros);
   arma::cube grad_A(S, X_A(0).n_rows, S, arma::fill::zeros);
   arma::field<arma::cube> grad_B(C);
@@ -410,14 +427,16 @@ Rcpp::List nhmm::log_objective(const arma::mat& Qs,
   for (arma::uword c = 0; c < C; ++c) {
     grad_B2(c) = arma::cube(M(c) - 1, X_B(c, 0).n_rows, S, arma::fill::zeros);
   }
-  arma::mat tmpmat(S, S);
-  arma::field<arma::vec> tmpvec(C);
+  arma::vec tmpvecS1(S);
+  arma::vec tmpvecS2(S);
+  arma::field<arma::vec> tmpvecM(C);
   for (arma::uword c = 0; c < C; ++c) {
-    tmpvec(c) = arma::vec(M(c));
+    tmpvecM(c) = arma::vec(M(c));
   }
   arma::vec loglik(N);
-  arma::mat log_alpha(S, Ti(0));
-  arma::mat log_beta(S, Ti(0));
+  arma::mat alpha(S, Ti.max());
+  arma::mat beta(S, Ti.max());
+  arma::vec scales(Ti.max());
   for (arma::uword i = 0; i < N; ++i) {
     if (!icpt_only_pi || i == 0) {
       update_pi(i);
@@ -428,13 +447,10 @@ Rcpp::List nhmm::log_objective(const arma::mat& Qs,
     if (arma::any(iv_B) || i == 0) {
       update_B(i);
     }
-    update_log_py(i);
-    log_alpha = arma::mat(S, Ti(i));
-    log_beta = arma::mat(S, Ti(i));
-    univariate_forward(log_alpha, log_pi, log_A, log_py);
-    univariate_backward(log_beta, log_A, log_py);
-    double ll = logSumExp(log_alpha.col(Ti(i) - 1));
-    if (!std::isfinite(ll)) {
+    update_py(i);
+    loglik(i) = univariate_forward(alpha, scales, pi, A, py, Ti(i));
+    univariate_backward(beta, scales, A, py, Ti(i));
+    if (!std::isfinite(loglik(i))) {
       return Rcpp::List::create(
         Rcpp::Named("loglik") = -maxval,
         Rcpp::Named("gradient_pi") = Rcpp::wrap(grad_pi2),
@@ -442,30 +458,27 @@ Rcpp::List nhmm::log_objective(const arma::mat& Qs,
         Rcpp::Named("gradient_B") = Rcpp::wrap(grad_B2)
       );
     }
-    loglik(i) = ll;
     // gradient wrt gamma_pi
-    gradient_pi(grad_pi, tmpmat, log_beta, ll, i);
+    gradient_pi(grad_pi, tmpvecS1, beta, i);
     // gradient wrt gamma_A
     for (arma::uword t = 1; t < Ti(i); ++t) {
       for (arma::uword s = 0; s < S; ++s) {
         gradient_A(
-          grad_A.slice(s), tmpmat, log_alpha, log_beta, ll, i, t, s
+          grad_A.slice(s), tmpvecS1, tmpvecS2, alpha, beta, i, t, s
         );
       }
     }
-   
     for (arma::uword c = 0; c < C; ++c) {
       for (arma::uword s = 0; s < S; ++s) {
         if (obs(i)(c, 0) < M(c)) {
           gradient_B_t1(
-            grad_B(c).slice(s), tmpvec(c), log_beta, ll, i, s, c
+            grad_B(c).slice(s), tmpvecM(c), beta, i, s, c
           );
         }
         for (arma::uword t = 1; t < Ti(i); ++t) {
           if (obs(i)(c, t) < M(c)) {
             gradient_B(
-              grad_B(c).slice(s), tmpvec(c), log_alpha, log_beta,
-              ll, i, s, t, c
+              grad_B(c).slice(s), tmpvecM(c), alpha, beta, i, s, t, c
             );
           }
         }

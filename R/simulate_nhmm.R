@@ -12,7 +12,9 @@
 #' contains lagged responses, the response variable values at the first time 
 #' point are used to define the emissions at the second time point, and the 
 #' simulations are done from the second time point onwards. This matches the 
-#' case `prior_obs = "fixed"` in [estimate_nhmm()].
+#' case `prior_obs = "fixed"` in [estimate_nhmm()]. Note that compared to 
+#' `estimate_*` functions, unused factor levels are not automatically dropped 
+#' from `data`.
 #' @param coefs Same as argument `inits` in [estimate_nhmm()]. If `NULL`,
 #' (default), the model parameters are generated randomly. If you want to 
 #' simulate new sequences based on an estimated model `fit`, you can use 
@@ -76,7 +78,7 @@ simulate_nhmm <- function(
   model <- build_nhmm(
     n_states, emission_formula, initial_formula, transition_formula, 
     data, id, time, coefs = coefs, scale = FALSE, 
-    check = check_rank
+    check = check_rank, drop_levels = FALSE
   )
   model$etas <- create_initial_values(coefs, model, init_sd)
   model$gammas$gamma_pi <- eta_to_gamma_mat(model$etas$eta_pi)
@@ -124,11 +126,13 @@ simulate_nhmm <- function(
   )
   
   attr(model$X_pi, "X_mean") <- TRUE
-  attr(model$X_A, "X_mean") <- TRUE
-  attr(model$X_B, "X_mean") <- TRUE
   attr(model$X_pi, "R_inv") <- NULL
+  attr(model$X_A, "X_mean") <- TRUE
   attr(model$X_A, "R_inv") <- NULL
-  attr(model$X_B, "R_inv") <- NULL
+  for (i in seq_along(responses)) {
+    attr(model$X_B[[i]], "X_mean") <- TRUE
+    attr(model$X_B[[i]], "R_inv") <- NULL
+  }
   model <- update(model, data)
   tQs <- t(create_Q(n_states))
   if (!attr(model$X_pi, "icpt_only")) {

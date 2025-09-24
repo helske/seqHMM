@@ -3,7 +3,8 @@
 create_base_nhmm <- function(data, id_var, time_var, n_states, state_names, 
                              emission_formula, initial_formula, transition_formula, 
                              cluster_formula = NA, cluster_names = "", 
-                             scale = TRUE, prior_obs = "fixed", check = NULL) {
+                             scale = TRUE, prior_obs = "fixed", check = NULL, 
+                             drop_levels = TRUE) {
   
   # avoid CRAN check warnings due to NSE
   .Ti <- y <- NULL
@@ -144,14 +145,16 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
   if (n_obs == 0) {
     warning_("Responses contain only missing values.")
   }
-  setdroplevels(data)
+  if (drop_levels) {
+    setdroplevels(data)
+  }
   if (is.null(check)) {
     check <- n_sequences <= 1000
     if (!check) {
       warning_(
         c("Number of sequences is more than 1000, 
           disabling the rank check of design matrices.",
-          i = "Explicitly use {.arg check_rank = TRUE} to 
+          i = "Explicitly use {.arg check_rank = FALSE} to 
           avoid this warning.")
       )
     }

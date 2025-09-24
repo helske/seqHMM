@@ -30,6 +30,7 @@ predict_z_A <- function(x, newdata, cond) {
   setorderv(d, cond_all)
   out_z <- d[, list(probability = sum(probability)), by = c("state_to", cond),
              showProgress = FALSE]
+  setnames(out_z, "state_to", "state")
   out_A <- d[, "probability" := list(probability / sum(probability)), 
              by = c("state_from", cond),
              showProgress = FALSE]

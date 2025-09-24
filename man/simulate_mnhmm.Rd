@@ -15,7 +15,8 @@ simulate_mnhmm(
   id,
   time,
   coefs = NULL,
-  init_sd = 2 * is.null(coefs)
+  init_sd = 2 * is.null(coefs),
+  check_rank = NULL
 )
 }
 \arguments{
@@ -46,7 +47,9 @@ exception is the first time point in FAN-HMM case: If the \code{emission_formula
 contains lagged responses, the response variable values at the first time
 point are used to define the emissions at the second time point, and the
 simulations are done from the second time point onwards. This matches the
-case \code{prior_obs = "fixed"} in \code{\link[=estimate_nhmm]{estimate_nhmm()}}.}
+case \code{prior_obs = "fixed"} in \code{\link[=estimate_nhmm]{estimate_nhmm()}}. Note that compared to
+\verb{estimate_*} functions, unused factor levels are not automatically dropped
+from \code{data}.}
 
 \item{id}{Name of the id variable in \code{data} identifying different
 sequences.}
@@ -61,6 +64,13 @@ simulate new sequences based on an estimated model \code{fit}, you can use
 \item{init_sd}{Standard deviation of the normal distribution used to
 generate random coefficients. Default is \code{2} when \code{coefs} is \code{NULL} and \code{0}
 otherwise.}
+
+\item{check_rank}{If \code{TRUE}, the rank of the design matrices are
+checked for identifiability issues. Default is \code{NULL}, in which case checks
+are performed only if the number of sequences is 1000 or less, as the QR
+decomposition quickly becomes computationally demanding. If check is not
+performed, a warning is given, which can be circumvented by explicitly
+using \code{check_rank = FALSE}.}
 }
 \value{
 A list with the model used in simulation as well as the simulated

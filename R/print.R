@@ -12,16 +12,16 @@
 print.hmm <- function(x, digits = 3, ...) {
   if (x$n_channels == 1) {
     if (attr(x, "type") == "mm") {
-      cat("Markov model: \n")
+      cat("\nMarkov model: \n")
       cat("\nNumber of sequences:", x$n_sequences)
       cat("\nNumber of time points:", x$length_of_sequences)
       cat("\nNumber of observed symbols:", paste(x$n_symbols, collapse = ", "))
       print.listof(list(
-        "Initial probabilities" = x$initial_probs,
+        "\nInitial probabilities" = x$initial_probs,
         "Transition probabilities" = x$transition_probs
       ), digits = digits, ...)
     } else {
-      cat("Hidden Markov model: \n")
+      cat("\nHidden Markov model: \n")
       cat("\nNumber of sequences:", x$n_sequences)
       cat("\nNumber of time points:", x$length_of_sequences)
       cat("\nNumber of observed symbols:", paste(x$n_symbols, collapse = ", "))
@@ -33,12 +33,13 @@ print.hmm <- function(x, digits = 3, ...) {
       ), digits = digits, ...)
     }
   } else {
-    cat("Hidden Markov model: \n")
+    cat("\nHidden Markov model: \n")
     cat("\nNumber of sequences:", x$n_sequences)
     cat("\nNumber of time points:", x$length_of_sequences)
     cat("\nNumber of observation channels:", x$n_channels)
     cat("\nNumber of observed symbols:", paste(x$n_symbols, collapse = ", "))
     cat("\nNumber of hidden states:", x$n_states, "\n")
+    cat("\n")
     print.listof(list("Initial probabilities" = x$initial_probs), digits = digits, ...)
     cat("\n")
     print.listof(list("Transition probabilities" = x$transition_probs), digits = digits, ...)

@@ -5,9 +5,9 @@
 \alias{logLik.mhmm}
 \title{Log-likelihood of a Hidden Markov Model}
 \usage{
-\method{logLik}{hmm}(object, partials = FALSE, threads = 1, log_space = TRUE, ...)
+\method{logLik}{hmm}(object, partials = FALSE, threads = 1, log_space = FALSE, ...)
 
-\method{logLik}{mhmm}(object, partials = FALSE, threads = 1, log_space = TRUE, ...)
+\method{logLik}{mhmm}(object, partials = FALSE, threads = 1, log_space = FALSE, ...)
 }
 \arguments{
 \item{object}{A hidden Markov model.}
@@ -21,7 +21,7 @@ is 1.}
 
 \item{log_space}{Make computations using log-space instead of scaling for
 greater numerical stability at the cost of decreased computational
-performance. The default is \code{TRUE}.}
+performance. The default is \code{FALSE}.}
 
 \item{...}{Ignored.}
 }

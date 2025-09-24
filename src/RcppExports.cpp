@@ -12,8 +12,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // Rcpp_EM_LBFGS_fanhmm
-Rcpp::List Rcpp_EM_LBFGS_fanhmm(const arma::field<arma::umat>& obs, const arma::uvec& Ti, const arma::uvec& M, const arma::mat& X_pi, const arma::field<arma::mat>& X_A, const Rcpp::List& X_B, const bool icpt_only_pi, const bool icpt_only_A, const arma::uvec& icpt_only_B, const bool iv_A, const arma::uvec& iv_B, const bool tv_A, const arma::uvec& tv_B, const arma::mat& eta_pi, const arma::cube& eta_A, const arma::field<arma::cube>& eta_B, const arma::vec& prior_y, const Rcpp::List& W_X_B, const double lambda, const arma::uword maxeval, const double ftol_abs, const double ftol_rel, const double xtol_abs, const double xtol_rel, const arma::uword print_level, const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m, const double bound);
-RcppExport SEXP _seqHMM_Rcpp_EM_LBFGS_fanhmm(SEXP obsSEXP, SEXP TiSEXP, SEXP MSEXP, SEXP X_piSEXP, SEXP X_ASEXP, SEXP X_BSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP eta_piSEXP, SEXP eta_ASEXP, SEXP eta_BSEXP, SEXP prior_ySEXP, SEXP W_X_BSEXP, SEXP lambdaSEXP, SEXP maxevalSEXP, SEXP ftol_absSEXP, SEXP ftol_relSEXP, SEXP xtol_absSEXP, SEXP xtol_relSEXP, SEXP print_levelSEXP, SEXP maxeval_mSEXP, SEXP ftol_abs_mSEXP, SEXP ftol_rel_mSEXP, SEXP xtol_abs_mSEXP, SEXP xtol_rel_mSEXP, SEXP print_level_mSEXP, SEXP boundSEXP) {
+Rcpp::List Rcpp_EM_LBFGS_fanhmm(const arma::field<arma::umat>& obs, const arma::uvec& Ti, const arma::uvec& M, const arma::mat& X_pi, const arma::field<arma::mat>& X_A, const Rcpp::List& X_B, const bool icpt_only_pi, const bool icpt_only_A, const arma::uvec& icpt_only_B, const bool iv_A, const arma::uvec& iv_B, const bool tv_A, const arma::uvec& tv_B, const arma::mat& eta_pi, const arma::cube& eta_A, const arma::field<arma::cube>& eta_B, const arma::vec& prior_y, const Rcpp::List& W_X_B, const double lambda, const arma::uword maxeval, const double ftol_abs, const double ftol_rel, const double xtol_abs, const double xtol_rel, const arma::uword print_level, const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m, const double bound, const double tolg);
+RcppExport SEXP _seqHMM_Rcpp_EM_LBFGS_fanhmm(SEXP obsSEXP, SEXP TiSEXP, SEXP MSEXP, SEXP X_piSEXP, SEXP X_ASEXP, SEXP X_BSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP eta_piSEXP, SEXP eta_ASEXP, SEXP eta_BSEXP, SEXP prior_ySEXP, SEXP W_X_BSEXP, SEXP lambdaSEXP, SEXP maxevalSEXP, SEXP ftol_absSEXP, SEXP ftol_relSEXP, SEXP xtol_absSEXP, SEXP xtol_relSEXP, SEXP print_levelSEXP, SEXP maxeval_mSEXP, SEXP ftol_abs_mSEXP, SEXP ftol_rel_mSEXP, SEXP xtol_abs_mSEXP, SEXP xtol_rel_mSEXP, SEXP print_level_mSEXP, SEXP boundSEXP, SEXP tolgSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -49,13 +49,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double >::type xtol_rel_m(xtol_rel_mSEXP);
     Rcpp::traits::input_parameter< const arma::uword >::type print_level_m(print_level_mSEXP);
     Rcpp::traits::input_parameter< const double >::type bound(boundSEXP);
-    rcpp_result_gen = Rcpp::wrap(Rcpp_EM_LBFGS_fanhmm(obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, prior_y, W_X_B, lambda, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, bound));
+    Rcpp::traits::input_parameter< const double >::type tolg(tolgSEXP);
+    rcpp_result_gen = Rcpp::wrap(Rcpp_EM_LBFGS_fanhmm(obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, prior_y, W_X_B, lambda, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, bound, tolg));
     return rcpp_result_gen;
 END_RCPP
 }
 // Rcpp_EM_LBFGS_mfanhmm
-Rcpp::List Rcpp_EM_LBFGS_mfanhmm(const arma::field<arma::umat>& obs, const arma::uvec& Ti, const arma::uvec& M, const arma::mat& X_pi, const arma::field<arma::mat>& X_A, const Rcpp::List& X_B, const arma::mat& X_omega, const bool icpt_only_pi, const bool icpt_only_A, const arma::uvec& icpt_only_B, const bool icpt_only_omega, const bool iv_A, const arma::uvec& iv_B, const bool tv_A, const arma::uvec& tv_B, const arma::field<arma::mat>& eta_pi, const arma::field<arma::cube>& eta_A, const Rcpp::List& eta_B, const arma::mat& eta_omega, const arma::vec& prior_y, const Rcpp::List& W_X_B, const double lambda, const arma::uword maxeval, const double ftol_abs, const double ftol_rel, const double xtol_abs, const double xtol_rel, const arma::uword print_level, const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m, const double bound);
-RcppExport SEXP _seqHMM_Rcpp_EM_LBFGS_mfanhmm(SEXP obsSEXP, SEXP TiSEXP, SEXP MSEXP, SEXP X_piSEXP, SEXP X_ASEXP, SEXP X_BSEXP, SEXP X_omegaSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP icpt_only_omegaSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP eta_piSEXP, SEXP eta_ASEXP, SEXP eta_BSEXP, SEXP eta_omegaSEXP, SEXP prior_ySEXP, SEXP W_X_BSEXP, SEXP lambdaSEXP, SEXP maxevalSEXP, SEXP ftol_absSEXP, SEXP ftol_relSEXP, SEXP xtol_absSEXP, SEXP xtol_relSEXP, SEXP print_levelSEXP, SEXP maxeval_mSEXP, SEXP ftol_abs_mSEXP, SEXP ftol_rel_mSEXP, SEXP xtol_abs_mSEXP, SEXP xtol_rel_mSEXP, SEXP print_level_mSEXP, SEXP boundSEXP) {
+Rcpp::List Rcpp_EM_LBFGS_mfanhmm(const arma::field<arma::umat>& obs, const arma::uvec& Ti, const arma::uvec& M, const arma::mat& X_pi, const arma::field<arma::mat>& X_A, const Rcpp::List& X_B, const arma::mat& X_omega, const bool icpt_only_pi, const bool icpt_only_A, const arma::uvec& icpt_only_B, const bool icpt_only_omega, const bool iv_A, const arma::uvec& iv_B, const bool tv_A, const arma::uvec& tv_B, const arma::field<arma::mat>& eta_pi, const arma::field<arma::cube>& eta_A, const Rcpp::List& eta_B, const arma::mat& eta_omega, const arma::vec& prior_y, const Rcpp::List& W_X_B, const double lambda, const arma::uword maxeval, const double ftol_abs, const double ftol_rel, const double xtol_abs, const double xtol_rel, const arma::uword print_level, const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m, const double bound, const double tolg);
+RcppExport SEXP _seqHMM_Rcpp_EM_LBFGS_mfanhmm(SEXP obsSEXP, SEXP TiSEXP, SEXP MSEXP, SEXP X_piSEXP, SEXP X_ASEXP, SEXP X_BSEXP, SEXP X_omegaSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP icpt_only_omegaSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP eta_piSEXP, SEXP eta_ASEXP, SEXP eta_BSEXP, SEXP eta_omegaSEXP, SEXP prior_ySEXP, SEXP W_X_BSEXP, SEXP lambdaSEXP, SEXP maxevalSEXP, SEXP ftol_absSEXP, SEXP ftol_relSEXP, SEXP xtol_absSEXP, SEXP xtol_relSEXP, SEXP print_levelSEXP, SEXP maxeval_mSEXP, SEXP ftol_abs_mSEXP, SEXP ftol_rel_mSEXP, SEXP xtol_abs_mSEXP, SEXP xtol_rel_mSEXP, SEXP print_level_mSEXP, SEXP boundSEXP, SEXP tolgSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -94,13 +95,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double >::type xtol_rel_m(xtol_rel_mSEXP);
     Rcpp::traits::input_parameter< const arma::uword >::type print_level_m(print_level_mSEXP);
     Rcpp::traits::input_parameter< const double >::type bound(boundSEXP);
-    rcpp_result_gen = Rcpp::wrap(Rcpp_EM_LBFGS_mfanhmm(obs, Ti, M, X_pi, X_A, X_B, X_omega, icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, eta_omega, prior_y, W_X_B, lambda, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, bound));
+    Rcpp::traits::input_parameter< const double >::type tolg(tolgSEXP);
+    rcpp_result_gen = Rcpp::wrap(Rcpp_EM_LBFGS_mfanhmm(obs, Ti, M, X_pi, X_A, X_B, X_omega, icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, eta_omega, prior_y, W_X_B, lambda, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, bound, tolg));
     return rcpp_result_gen;
 END_RCPP
 }
 // Rcpp_EM_LBFGS_mnhmm
-Rcpp::List Rcpp_EM_LBFGS_mnhmm(const arma::field<arma::umat>& obs, const arma::uvec& Ti, const arma::uvec& M, const arma::mat& X_pi, const arma::field<arma::mat>& X_A, const Rcpp::List& X_B, const arma::mat& X_omega, const bool icpt_only_pi, const bool icpt_only_A, const arma::uvec& icpt_only_B, const bool icpt_only_omega, const bool iv_A, const arma::uvec& iv_B, const bool tv_A, const arma::uvec& tv_B, const arma::field<arma::mat>& eta_pi, const arma::field<arma::cube>& eta_A, const Rcpp::List& eta_B, const arma::mat& eta_omega, const double lambda, const arma::uword maxeval, const double ftol_abs, const double ftol_rel, const double xtol_abs, const double xtol_rel, const arma::uword print_level, const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m, const double bound);
-RcppExport SEXP _seqHMM_Rcpp_EM_LBFGS_mnhmm(SEXP obsSEXP, SEXP TiSEXP, SEXP MSEXP, SEXP X_piSEXP, SEXP X_ASEXP, SEXP X_BSEXP, SEXP X_omegaSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP icpt_only_omegaSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP eta_piSEXP, SEXP eta_ASEXP, SEXP eta_BSEXP, SEXP eta_omegaSEXP, SEXP lambdaSEXP, SEXP maxevalSEXP, SEXP ftol_absSEXP, SEXP ftol_relSEXP, SEXP xtol_absSEXP, SEXP xtol_relSEXP, SEXP print_levelSEXP, SEXP maxeval_mSEXP, SEXP ftol_abs_mSEXP, SEXP ftol_rel_mSEXP, SEXP xtol_abs_mSEXP, SEXP xtol_rel_mSEXP, SEXP print_level_mSEXP, SEXP boundSEXP) {
+Rcpp::List Rcpp_EM_LBFGS_mnhmm(const arma::field<arma::umat>& obs, const arma::uvec& Ti, const arma::uvec& M, const arma::mat& X_pi, const arma::field<arma::mat>& X_A, const Rcpp::List& X_B, const arma::mat& X_omega, const bool icpt_only_pi, const bool icpt_only_A, const arma::uvec& icpt_only_B, const bool icpt_only_omega, const bool iv_A, const arma::uvec& iv_B, const bool tv_A, const arma::uvec& tv_B, const arma::field<arma::mat>& eta_pi, const arma::field<arma::cube>& eta_A, const Rcpp::List& eta_B, const arma::mat& eta_omega, const double lambda, const arma::uword maxeval, const double ftol_abs, const double ftol_rel, const double xtol_abs, const double xtol_rel, const arma::uword print_level, const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m, const double bound, const double tolg);
+RcppExport SEXP _seqHMM_Rcpp_EM_LBFGS_mnhmm(SEXP obsSEXP, SEXP TiSEXP, SEXP MSEXP, SEXP X_piSEXP, SEXP X_ASEXP, SEXP X_BSEXP, SEXP X_omegaSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP icpt_only_omegaSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP eta_piSEXP, SEXP eta_ASEXP, SEXP eta_BSEXP, SEXP eta_omegaSEXP, SEXP lambdaSEXP, SEXP maxevalSEXP, SEXP ftol_absSEXP, SEXP ftol_relSEXP, SEXP xtol_absSEXP, SEXP xtol_relSEXP, SEXP print_levelSEXP, SEXP maxeval_mSEXP, SEXP ftol_abs_mSEXP, SEXP ftol_rel_mSEXP, SEXP xtol_abs_mSEXP, SEXP xtol_rel_mSEXP, SEXP print_level_mSEXP, SEXP boundSEXP, SEXP tolgSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -137,13 +139,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double >::type xtol_rel_m(xtol_rel_mSEXP);
     Rcpp::traits::input_parameter< const arma::uword >::type print_level_m(print_level_mSEXP);
     Rcpp::traits::input_parameter< const double >::type bound(boundSEXP);
-    rcpp_result_gen = Rcpp::wrap(Rcpp_EM_LBFGS_mnhmm(obs, Ti, M, X_pi, X_A, X_B, X_omega, icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, eta_omega, lambda, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, bound));
+    Rcpp::traits::input_parameter< const double >::type tolg(tolgSEXP);
+    rcpp_result_gen = Rcpp::wrap(Rcpp_EM_LBFGS_mnhmm(obs, Ti, M, X_pi, X_A, X_B, X_omega, icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, eta_omega, lambda, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, bound, tolg));
     return rcpp_result_gen;
 END_RCPP
 }
 // Rcpp_EM_LBFGS_nhmm
-Rcpp::List Rcpp_EM_LBFGS_nhmm(const arma::field<arma::umat>& obs, const arma::uvec& Ti, const arma::uvec& M, const arma::mat& X_pi, const arma::field<arma::mat>& X_A, const Rcpp::List& X_B, const bool icpt_only_pi, const bool icpt_only_A, const arma::uvec& icpt_only_B, const bool iv_A, const arma::uvec& iv_B, const bool tv_A, const arma::uvec& tv_B, const arma::mat& eta_pi, const arma::cube& eta_A, const arma::field<arma::cube>& eta_B, const double lambda, const arma::uword maxeval, const double ftol_abs, const double ftol_rel, const double xtol_abs, const double xtol_rel, const arma::uword print_level, const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m, const double bound);
-RcppExport SEXP _seqHMM_Rcpp_EM_LBFGS_nhmm(SEXP obsSEXP, SEXP TiSEXP, SEXP MSEXP, SEXP X_piSEXP, SEXP X_ASEXP, SEXP X_BSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP eta_piSEXP, SEXP eta_ASEXP, SEXP eta_BSEXP, SEXP lambdaSEXP, SEXP maxevalSEXP, SEXP ftol_absSEXP, SEXP ftol_relSEXP, SEXP xtol_absSEXP, SEXP xtol_relSEXP, SEXP print_levelSEXP, SEXP maxeval_mSEXP, SEXP ftol_abs_mSEXP, SEXP ftol_rel_mSEXP, SEXP xtol_abs_mSEXP, SEXP xtol_rel_mSEXP, SEXP print_level_mSEXP, SEXP boundSEXP) {
+Rcpp::List Rcpp_EM_LBFGS_nhmm(const arma::field<arma::umat>& obs, const arma::uvec& Ti, const arma::uvec& M, const arma::mat& X_pi, const arma::field<arma::mat>& X_A, const Rcpp::List& X_B, const bool icpt_only_pi, const bool icpt_only_A, const arma::uvec& icpt_only_B, const bool iv_A, const arma::uvec& iv_B, const bool tv_A, const arma::uvec& tv_B, const arma::mat& eta_pi, const arma::cube& eta_A, const arma::field<arma::cube>& eta_B, const double lambda, const arma::uword maxeval, const double ftol_abs, const double ftol_rel, const double xtol_abs, const double xtol_rel, const arma::uword print_level, const arma::uword maxeval_m, const double ftol_abs_m, const double ftol_rel_m, const double xtol_abs_m, const double xtol_rel_m, const arma::uword print_level_m, const double bound, const double tolg);
+RcppExport SEXP _seqHMM_Rcpp_EM_LBFGS_nhmm(SEXP obsSEXP, SEXP TiSEXP, SEXP MSEXP, SEXP X_piSEXP, SEXP X_ASEXP, SEXP X_BSEXP, SEXP icpt_only_piSEXP, SEXP icpt_only_ASEXP, SEXP icpt_only_BSEXP, SEXP iv_ASEXP, SEXP iv_BSEXP, SEXP tv_ASEXP, SEXP tv_BSEXP, SEXP eta_piSEXP, SEXP eta_ASEXP, SEXP eta_BSEXP, SEXP lambdaSEXP, SEXP maxevalSEXP, SEXP ftol_absSEXP, SEXP ftol_relSEXP, SEXP xtol_absSEXP, SEXP xtol_relSEXP, SEXP print_levelSEXP, SEXP maxeval_mSEXP, SEXP ftol_abs_mSEXP, SEXP ftol_rel_mSEXP, SEXP xtol_abs_mSEXP, SEXP xtol_rel_mSEXP, SEXP print_level_mSEXP, SEXP boundSEXP, SEXP tolgSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -177,7 +180,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double >::type xtol_rel_m(xtol_rel_mSEXP);
     Rcpp::traits::input_parameter< const arma::uword >::type print_level_m(print_level_mSEXP);
     Rcpp::traits::input_parameter< const double >::type bound(boundSEXP);
-    rcpp_result_gen = Rcpp::wrap(Rcpp_EM_LBFGS_nhmm(obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, lambda, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, bound));
+    Rcpp::traits::input_parameter< const double >::type tolg(tolgSEXP);
+    rcpp_result_gen = Rcpp::wrap(Rcpp_EM_LBFGS_nhmm(obs, Ti, M, X_pi, X_A, X_B, icpt_only_pi, icpt_only_A, icpt_only_B, iv_A, iv_B, tv_A, tv_B, eta_pi, eta_A, eta_B, lambda, maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level, maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, bound, tolg));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -1487,6 +1491,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// log_softmax
+arma::vec log_softmax(const arma::vec& x);
+RcppExport SEXP _seqHMM_log_softmax(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(log_softmax(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // softmax
 arma::vec softmax(const arma::vec& x);
 RcppExport SEXP _seqHMM_softmax(SEXP xSEXP) {
@@ -1500,10 +1515,10 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_seqHMM_Rcpp_EM_LBFGS_fanhmm", (DL_FUNC) &_seqHMM_Rcpp_EM_LBFGS_fanhmm, 32},
-    {"_seqHMM_Rcpp_EM_LBFGS_mfanhmm", (DL_FUNC) &_seqHMM_Rcpp_EM_LBFGS_mfanhmm, 35},
-    {"_seqHMM_Rcpp_EM_LBFGS_mnhmm", (DL_FUNC) &_seqHMM_Rcpp_EM_LBFGS_mnhmm, 33},
-    {"_seqHMM_Rcpp_EM_LBFGS_nhmm", (DL_FUNC) &_seqHMM_Rcpp_EM_LBFGS_nhmm, 30},
+    {"_seqHMM_Rcpp_EM_LBFGS_fanhmm", (DL_FUNC) &_seqHMM_Rcpp_EM_LBFGS_fanhmm, 33},
+    {"_seqHMM_Rcpp_EM_LBFGS_mfanhmm", (DL_FUNC) &_seqHMM_Rcpp_EM_LBFGS_mfanhmm, 36},
+    {"_seqHMM_Rcpp_EM_LBFGS_mnhmm", (DL_FUNC) &_seqHMM_Rcpp_EM_LBFGS_mnhmm, 34},
+    {"_seqHMM_Rcpp_EM_LBFGS_nhmm", (DL_FUNC) &_seqHMM_Rcpp_EM_LBFGS_nhmm, 31},
     {"_seqHMM_Rcpp_backward_fanhmm", (DL_FUNC) &_seqHMM_Rcpp_backward_fanhmm, 18},
     {"_seqHMM_Rcpp_backward_mfanhmm", (DL_FUNC) &_seqHMM_Rcpp_backward_mfanhmm, 21},
     {"_seqHMM_Rcpp_backward_mnhmm", (DL_FUNC) &_seqHMM_Rcpp_backward_mnhmm, 19},
@@ -1565,6 +1580,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_seqHMM_varcoef", (DL_FUNC) &_seqHMM_varcoef, 2},
     {"_seqHMM_viterbi", (DL_FUNC) &_seqHMM_viterbi, 4},
     {"_seqHMM_viterbix", (DL_FUNC) &_seqHMM_viterbix, 7},
+    {"_seqHMM_log_softmax", (DL_FUNC) &_seqHMM_log_softmax, 1},
     {"_seqHMM_softmax", (DL_FUNC) &_seqHMM_softmax, 1},
     {NULL, NULL, 0}
 };

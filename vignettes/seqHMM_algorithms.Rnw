@@ -89,7 +89,7 @@ c_{i(t+1)} &= 1 / \sum_{s=1}^S \alpha_{i(t+1)}(s),\\
 \end{equation*}
   \item Termination: Compute the log-likelihood \\
   \begin{equation*}
-\textrm{log} P(Y_i|\mathcal{M})= -\sum_{t=1}^T c_{it}
+\textrm{log} P(Y_i|\mathcal{M})= -\sum_{t=1}^T \log(c_{it})
 \end{equation*}
   \end{enumerate}
 

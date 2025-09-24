@@ -38,7 +38,8 @@ Rcpp::List Rcpp_EM_LBFGS_mnhmm(
     const double xtol_abs_m, 
     const double xtol_rel_m, 
     const arma::uword print_level_m,
-    const double bound) {
+    const double bound,
+    const double tolg) {
   
   arma::uword S = eta_A(0).n_slices;
   arma::uword C = obs(0).n_rows;
@@ -62,7 +63,7 @@ Rcpp::List Rcpp_EM_LBFGS_mnhmm(
       model, Qs, Qm, Qd, lambda,
       maxeval, ftol_abs, ftol_rel, xtol_abs, xtol_rel, print_level,
       maxeval_m, ftol_abs_m, ftol_rel_m, xtol_abs_m, xtol_rel_m, print_level_m, 
-      bound
+      bound, tolg
   );
   return EM.run();
 }

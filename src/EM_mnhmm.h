@@ -26,7 +26,8 @@ public:
            const double xtol_abs_m, 
            const double xtol_rel_m, 
            const arma::uword print_level_m,
-           const double bound
+           const double bound,
+           const double tolg
   );
   ~EM_mnhmm();
   Rcpp::List run();
@@ -50,26 +51,25 @@ private:
   void estep_pi(
       const arma::uword i, 
       const arma::uword d, 
-      const arma::vec& log_alpha, 
-      const arma::vec& log_beta, 
-      const double ll,
-      const double omega
+      const arma::vec& alpha, 
+      const arma::vec& beta, 
+      const double pcp,
+      const double scale
   );
   void estep_A(
       const arma::uword i, 
       const arma::uword d, 
-      const arma::mat& log_alpha, 
-      const arma::mat& log_beta, 
-      const double ll,
-      const double omega
+      const arma::mat& alpha, 
+      const arma::mat& beta, 
+      const double pcp
   );
   void estep_B(
       const arma::uword i, 
       const arma::uword d, 
-      const arma::mat& log_alpha, 
-      const arma::mat& log_beta, 
-      const double ll,
-      const double omega
+      const arma::mat& alpha, 
+      const arma::mat& beta, 
+      const double pcp,
+      const arma::vec& scales
   );
   
   void estep_omega(const arma::uword i, const arma::vec& likelihood);
@@ -131,6 +131,7 @@ private:
   const double xtol_rel_m; 
   const arma::uword print_level_m;
   const double bound;
+  const double tolg;
   
   double last_val = std::numeric_limits<double>::infinity();
   double abs_change = 0;

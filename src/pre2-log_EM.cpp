@@ -120,7 +120,7 @@ Rcpp::List log_EM(const arma::mat& transition_, const arma::cube& emission_,
     double tmp = sum(ll);
     change = (tmp - sumlogLik) / (std::abs(sumlogLik) + 0.1);
     sumlogLik = tmp;
-    if (!arma::is_finite(sumlogLik)) {
+    if (!std::isfinite(sumlogLik)) {
       return Rcpp::List::create(Rcpp::Named("error") = 6);
     }
     if (trace > 1) {
@@ -287,7 +287,7 @@ Rcpp::List log_EMx(const arma::mat& transition_, const arma::cube& emission_,
     double tmp = sum(ll);
     change = (tmp - sumlogLik) / (std::abs(sumlogLik) + 0.1);
     sumlogLik = tmp;
-    if (!arma::is_finite(sumlogLik)) {
+    if (!std::isfinite(sumlogLik)) {
       return Rcpp::List::create(Rcpp::Named("error") = 6);
     }
     if (trace > 1) {

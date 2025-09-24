@@ -4,5 +4,6 @@
 #include "config.h"
 
 arma::vec softmax(const arma::vec& x);
+arma::vec log_softmax(const arma::vec& x);
 
 #endif

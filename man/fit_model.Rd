@@ -16,7 +16,7 @@ fit_model(
   lb,
   ub,
   threads = 1,
-  log_space = TRUE,
+  log_space = FALSE,
   constraints = NULL,
   fixed_inits = NULL,
   fixed_emissions = NULL,
@@ -110,7 +110,7 @@ is \code{1}.}
 
 \item{log_space}{Make computations using log-space instead of scaling for
 greater numerical stability at a cost of decreased computational performance.
-The default is \code{TRUE}.}
+The default is \code{FALSE} (but was \code{TRUE} in 2.0.0 version of the package).}
 
 \item{constraints}{Integer vector defining equality constraints for emission
 distributions. Not supported for EM algorithm. See details.}

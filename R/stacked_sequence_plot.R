@@ -77,7 +77,7 @@ stacked_sequence_plot <- function(
   )
   
   if (inherits(x, c("hmm", "nhmm", "mhmm", "mnhmm"))) {
-    n <- x$length_of_sequences
+    n <- x$n_sequences
     if (is.null(group) && inherits(x, c("mhmm", "mnhmm"))) {
       hp <- hidden_paths(x)
       group <- factor(
@@ -177,6 +177,15 @@ stacked_sequence_plot <- function(
     sort_by <- NULL
   }
   if (identical(group, NA)) group <- NULL
+  if (!is.null(group)) {
+    stopifnot_(
+      length(group) == n,
+      "Argument {.arg group} should be a `NULL`, `NA`, or a vector of length {n}."
+    )
+    if (!missing(ids)) {
+      group <- group[ids]
+    }
+  }
   if (n_channels == 1) {
     if (type == "distribution") {
       p <- ggseqplot::ggseqdplot(y, group = group, ...) + 

@@ -1,5 +1,11 @@
 // softmax
 #include "softmax.h"
+#include "logsumexp.h"
+
+// [[Rcpp::export]]
+arma::vec log_softmax(const arma::vec& x) {
+  return x - logSumExp(x);
+}
 
 // This version is recommended in
 // Pierre Blanchard, Desmond J Higham, Nicholas J Higham (2021). 

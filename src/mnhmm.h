@@ -34,7 +34,7 @@ public:
   void update_A(const arma::uword i);
   virtual void update_B(const arma::uword i);
   void update_omega(const arma::uword i);
-  void update_log_py(const arma::uword i);
+  void update_py(const arma::uword i);
   Rcpp::List viterbi();
   arma::vec loglik();
   arma::field<arma::mat> forward();
@@ -76,14 +76,14 @@ public:
   arma::mat gamma_omega;
   
   // pi, A, B, omega, and log_p(y) of _one_ id we are currently working with
-  arma::cube log_py;
+  arma::cube py;
   arma::field<arma::vec> pi;
-  arma::field<arma::vec> log_pi;
   arma::field<arma::cube> A;
-  arma::field<arma::cube> log_A;
   arma::field<arma::cube> B;
-  arma::field<arma::cube> log_B;
   arma::vec omega;
+  arma::field<arma::vec> log_pi;
+  arma::field<arma::cube> log_A;
+  arma::field<arma::cube> log_B;
   arma::vec log_omega;
   
   const double maxval;
@@ -92,25 +92,24 @@ public:
 private:
   void gradient_omega(
       arma::mat& grad, 
-      arma::mat& tmpmat,
-      const arma::vec& loglik_i, 
-      const arma::vec& loglik, 
+      const arma::vec& pcp, 
       const arma::uword i
   );
   void gradient_pi(
       arma::mat& grad, 
-      arma::mat& tmpmat,
-      const arma::cube& log_beta, 
-      const arma::vec& loglik, 
+      arma::vec& tmpvec,
+      const arma::vec& pcp,
+      const arma::mat& beta, 
       const arma::uword i,
       const arma::uword d
   );
   void gradient_A(
       arma::mat& grad, 
-      arma::mat& tmpmat,
-      const arma::cube& log_alpha, 
-      const arma::cube& log_beta, 
-      const arma::vec& loglik, 
+      arma::vec& tmpvec1,
+      arma::vec& tmpvec2,
+      const arma::vec& pcp,
+      const arma::mat& alpha, 
+      const arma::mat& beta, 
       const arma::uword i, 
       const arma::uword t, 
       const arma::uword s, 
@@ -119,8 +118,8 @@ private:
   virtual void gradient_B_t1(
       arma::mat& grad, 
       arma::vec& tmpvec,
-      const arma::cube& log_beta, 
-      const arma::vec& loglik, 
+      const arma::vec& pcp,
+      const arma::mat& beta, 
       const arma::uword i, 
       const arma::uword s, 
       const arma::uword c, 
@@ -129,9 +128,9 @@ private:
   void gradient_B(
       arma::mat& grad, 
       arma::vec& tmpvec, 
-      const arma::cube& log_alpha, 
-      const arma::cube& log_beta, 
-      const arma::vec& loglik, 
+      const arma::vec& pcp,
+      const arma::mat& alpha, 
+      const arma::mat& beta, 
       const arma::uword i, 
       const arma::uword s, 
       const arma::uword t, 

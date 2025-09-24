@@ -4,7 +4,7 @@
 \alias{vcov.mhmm}
 \title{Variance-Covariance Matrix for Coefficients of Covariates of Mixture Hidden Markov Model}
 \usage{
-\method{vcov}{mhmm}(object, conditional = TRUE, threads = 1, log_space = TRUE, ...)
+\method{vcov}{mhmm}(object, conditional = TRUE, threads = 1, log_space = FALSE, ...)
 }
 \arguments{
 \item{object}{Object of class \code{mhmm}.}
@@ -16,7 +16,7 @@ computed conditional on other model parameters. See details.}
 
 \item{log_space}{Make computations using log-space instead of scaling for greater
 numerical stability at cost of decreased computational performance.
-Default is \code{TRUE}.}
+Default is \code{FALSE}.}
 
 \item{...}{Additional arguments to function \code{jacobian} of \code{numDeriv} package.}
 }

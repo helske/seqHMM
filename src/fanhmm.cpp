@@ -31,10 +31,9 @@ fanhmm::fanhmm(
     icpt_only_B, iv_A, iv_B, tv_A, tv_B, gamma_pi, gamma_A, gamma_B, 
     maxval, minval), prior_y(prior_y), fixed_0(prior_y.n_elem == 1),
     W_X_B(fixed_0 ? arma::field<arma::vec>() : veclist_to_3d_field(W_X_B)),
-    B1(C), log_B1(C) {
+    B1(C) {
   for (arma::uword c = 0; c < C; ++c) {
     B1(c) = arma::cube(S, M(c) + 1, prior_y.n_elem);
-    log_B1(c) = arma::cube(S, M(c) + 1, prior_y.n_elem);
   }
 }
 void fanhmm::update_B(const arma::uword i) {
@@ -48,7 +47,6 @@ void fanhmm::update_B(const arma::uword i) {
         );
       }
       B(c).each_slice() = Btmp.t();
-      log_B(c) = arma::log(B(c));
     } else {
       if (tv_B(c)) {
         if (!fixed_0) {
@@ -63,7 +61,6 @@ void fanhmm::update_B(const arma::uword i) {
             B(c).slice(0) += B1(c).slice(j) * prior_y(j);
           }
           B1(c).col(M(c)).ones();
-          log_B1(c) = arma::log(B1(c));
           B(c).slice(0).col(M(c)).ones();
         }
         for (arma::uword t = 1 - fixed_0; t < Ti(i); ++t) { // time
@@ -80,7 +77,6 @@ void fanhmm::update_B(const arma::uword i) {
         }
         B(c).each_slice() = Btmp.t();
       }
-      log_B(c) = arma::log(B(c));
     }
   }
 }
@@ -255,8 +251,7 @@ Rcpp::List fanhmm::simulate(
 void fanhmm::gradient_B_t1(
     arma::mat& grad,
     arma::vec& tmpvec,
-    const arma::mat& log_beta,
-    const double ll,
+    const arma::mat& beta,
     const arma::uword i,
     const arma::uword s,
     const arma::uword c) {
@@ -264,33 +259,30 @@ void fanhmm::gradient_B_t1(
   arma::uword C = M.n_elem;
   arma::rowvec Brow(M(c));
   arma::uword idx = obs(i)(c, 0);
+  double tmp = pi(s) * beta(s, 0);
   if (!fixed_0) {
-    double tmp = log_pi(s) + log_beta(s, 0) - ll;
     for (arma::uword j = 0; j < prior_y.n_elem; ++j) {
       Brow = B1(c).slice(j).row(s).cols(0, M(c) - 1);
       double brow = Brow(idx);
       tmpvec = -Brow.t() * brow;
       tmpvec(idx) += brow;
-      double logpy = 0;
       for (arma::uword cc = 0; cc < C; ++cc) {
         if (cc != c) {
-          logpy += log_B1(cc)(s, obs(i)(cc, 0), j);
+          tmp *= B1(cc)(s, obs(i)(cc, 0), j);
         }
       }
-      grad += exp(tmp + logpy) * tmpvec * W_X_B(j, c, i).t() * prior_y(j);
+      grad += tmp * tmpvec * W_X_B(j, c, i).t() * prior_y(j);
     }
   } else {
     Brow = B(c).slice(0).row(s).cols(0, M(c) - 1);
     double brow = Brow(idx);
     tmpvec = -Brow.t() * brow;
     tmpvec(idx) += brow;
-    double logpy = 0;
     for (arma::uword cc = 0; cc < C; ++cc) {
       if (cc != c) {
-        logpy += log_B(cc)(s, obs(i)(cc, 0), 0);
+        tmp *= B(cc)(s, obs(i)(cc, 0), 0);
       }
     }
-    grad += exp(log_pi(s) + logpy + log_beta(s, 0) - ll) * tmpvec *
-      X_B(c, i).col(0).t();
+    grad += tmp * tmpvec * X_B(c, i).col(0).t();
   }
 }

@@ -75,7 +75,7 @@
 #' is `1`.
 #' @param log_space Make computations using log-space instead of scaling for 
 #' greater numerical stability at a cost of decreased computational performance. 
-#' The default is `TRUE`.
+#' The default is `FALSE` (but was `TRUE` in 2.0.0 version of the package).
 #' @param constraints Integer vector defining equality constraints for emission 
 #' distributions. Not supported for EM algorithm. See details.
 #' @param fixed_inits Can be used to fix some of the probabilities to their 
@@ -584,7 +584,7 @@
 fit_model <- function(
     model, em_step = TRUE, global_step = FALSE, local_step = FALSE,
     control_em = list(), control_global = list(), control_local = list(), lb, ub, threads = 1,
-    log_space = TRUE, constraints = NULL, fixed_inits = NULL,
+    log_space = FALSE, constraints = NULL, fixed_inits = NULL,
     fixed_emissions = NULL, fixed_transitions = NULL, ...) {
   
   stopifnot_(
