@@ -48,12 +48,11 @@ sequences for sorting. Default is to sort by the first channel in the data.
 If \code{sort_by = "mds"}, all channels are used for defining the sorting.}
 
 \item{dist_method}{The metric to be used for computing the distances of the
-sequences if multidimensional scaling is used for sorting. One of \code{"OM"}
-(optimal matching, the default), \code{"LCP"} (longest common prefix), \code{"RLCP"}
-(reversed LCP, i.e. longest common suffix), \code{"LCS"} (longest common
-subsequence), \code{"HAM"} (Hamming distance), and \code{"DHD"} (dynamic Hamming
-distance). Transition rates are used for defining substitution costs if
-needed. See \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}} for more information on the metrics.}
+sequences if multidimensional scaling is used for sorting. Default is \code{"OM"}
+(optimal matching). For other more information and other options, see
+\code{\link[TraMineR:seqdist]{TraMineR::seqdist()}}. Transition rates are used for defining substitution
+costs if  needed. Note that not all methods are available for sorting
+multichannel data.}
 
 \item{group}{Variable used for grouping the sequences in each channel, which
 is passed to \code{\link[ggseqplot:ggseqiplot]{ggseqplot::ggseqiplot()}} and \code{\link[ggseqplot:ggseqdplot]{ggseqplot::ggseqdplot()}}. By

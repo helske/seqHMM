@@ -28,12 +28,11 @@
 #' sequences for sorting. Default is to sort by the first channel in the data. 
 #' If `sort_by = "mds"`, all channels are used for defining the sorting.
 #' @param dist_method The metric to be used for computing the distances of the
-#' sequences if multidimensional scaling is used for sorting. One of `"OM"`
-#' (optimal matching, the default), `"LCP"` (longest common prefix), `"RLCP"`
-#' (reversed LCP, i.e. longest common suffix), `"LCS"` (longest common
-#' subsequence), `"HAM"` (Hamming distance), and `"DHD"` (dynamic Hamming 
-#' distance). Transition rates are used for defining substitution costs if 
-#' needed. See [TraMineR::seqdef()] for more information on the metrics.
+#' sequences if multidimensional scaling is used for sorting. Default is `"OM"`
+#' (optimal matching). For other more information and other options, see 
+#' [TraMineR::seqdist()]. Transition rates are used for defining substitution 
+#' costs if  needed. Note that not all methods are available for sorting 
+#' multichannel data.
 #' @param group Variable used for grouping the sequences in each channel, which 
 #' is passed to [ggseqplot::ggseqiplot()] and [ggseqplot::ggseqdplot()]. By 
 #' default, no grouping is done, except for mixture models where the grouping 
