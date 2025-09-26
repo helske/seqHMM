@@ -241,7 +241,7 @@ coef.mnhmm <- function(object, probs = NULL, ...) {
       gamma <- lapply(boot_gamma_B, \(x) {
         lapply(x, \(j) j[[i]])
       })
-      q_B <- fast_quantiles(matrix(unlist(boot_gamma_B), ncol = nsim), probs)
+      q_B <- fast_quantiles(matrix(unlist(gamma), ncol = nsim), probs)
       gamma_B[[responses[i]]][, (p) := data.table(q_B)]
     }
     boot_gamma_omega <- lapply(

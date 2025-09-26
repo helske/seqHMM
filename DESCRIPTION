@@ -1,6 +1,6 @@
 Package: seqHMM
 Title: Mixture Hidden Markov Models for Social Sequence Data and Other Multivariate, Multichannel Categorical Time Series
-Version: 2.1.0
+Version: 2.1.1
 Authors@R: 
     c(person(given = "Jouni",
            family = "Helske",

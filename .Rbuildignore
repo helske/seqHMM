@@ -19,3 +19,4 @@ vignettes/jss.cls
 ^.covrignore
 ^\.covrignore$
 ^data-raw$
+^CRAN-SUBMISSION$
