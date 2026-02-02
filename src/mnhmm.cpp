@@ -32,6 +32,7 @@ mnhmm::mnhmm(
   :
   obs(obs),
   Ti(Ti),
+  T_max(Ti.max()),
   M(M),
   N(obs.n_elem),
   C(obs(0).n_rows),
@@ -53,7 +54,7 @@ mnhmm::mnhmm(
   gamma_A(gamma_A),
   gamma_B(gamma_B),
   gamma_omega(gamma_omega),
-  py(S, Ti.max(), D),
+  py(S, T_max, D),
   pi(D),
   A(D),
   B(D, C),
@@ -69,14 +70,14 @@ mnhmm::mnhmm(
 {
   for (arma::uword d = 0; d < D; ++d) {
     pi(d) = arma::vec(S);
-    A(d) = arma::cube(S, S, Ti.max());
+    A(d) = arma::cube(S, S, T_max);
     for (arma::uword c = 0; c < C; ++c) {
-      B(d, c) = arma::cube(S, M(c) + 1, Ti.max());
+      B(d, c) = arma::cube(S, M(c) + 1, T_max);
     }
     log_pi(d) = arma::vec(S);
-    log_A(d) = arma::cube(S, S, Ti.max());
+    log_A(d) = arma::cube(S, S, T_max);
     for (arma::uword c = 0; c < C; ++c) {
-      log_B(d, c) = arma::cube(S, M(c) + 1, Ti.max());
+      log_B(d, c) = arma::cube(S, M(c) + 1, T_max);
     }
   }
 }
@@ -322,6 +323,51 @@ arma::field<arma::mat> mnhmm::backward() {
   }
   return log_beta;
 }
+arma::field<arma::mat> mnhmm::posterior_probs() {
+  arma::field<arma::mat> probs(N);
+  arma::mat alpha(D * S, T_max);
+  arma::mat beta(D * S, T_max);
+  arma::mat scales(T_max, D);
+  arma::vec loglik_i(D);
+  for (arma::uword i = 0; i < N; ++i) {
+    if (!icpt_only_pi || i == 0) {
+      update_pi(i);
+    }
+    if (iv_A || i == 0) {
+      update_A(i);
+    }
+    if (arma::any(iv_B) || i == 0) {
+      update_B(i);
+    }
+    if (!icpt_only_omega || i == 0) {
+      update_omega(i);
+    }
+    update_py(i);
+    for (arma::uword d = 0; d < D; ++d) {
+      arma::subview<double> submat_alpha = alpha.rows(d * S, (d + 1) * S - 1);
+      arma::subview_col<double> scales_d = scales.col(d);
+      loglik_i(d) = univariate_forward(
+        submat_alpha, scales_d, pi(d), A(d), py.slice(d), Ti(i)
+      );
+      arma::subview<double> submat_beta = beta.rows(d * S, (d + 1) * S - 1);
+      univariate_backward(submat_beta, scales.col(d), A(d), py.slice(d), Ti(i));
+    }
+    // Posterior cluster probabilities P(d | y_{1:T})
+    arma::vec lls = log_omega + loglik_i;
+    double ll = logSumExp(lls);
+    arma::vec pcp = arma::exp(lls - ll);
+    // Posterior state probs: pcp(d) * alpha * beta / scales(t, d)
+    probs(i) = arma::mat(D * S, Ti(i));
+    for (arma::uword d = 0; d < D; ++d) {
+      for (arma::uword t = 0; t < Ti(i); ++t) {
+        probs(i).col(t).rows(d * S, (d + 1) * S - 1) = 
+          pcp(d) * alpha.col(t).rows(d * S, (d + 1) * S - 1) % 
+          beta.col(t).rows(d * S, (d + 1) * S - 1) / scales(t, d);
+      }
+    }
+  }
+  return probs;
+}
 Rcpp::List mnhmm::predict() {
   
   // these are P(z_t, y_t | data up to time t excluding y_t)
@@ -539,9 +585,9 @@ Rcpp::List mnhmm::log_objective(const arma::mat& Qs,
   arma::field<arma::cube> grad_B2(C, D);
   arma::vec loglik(N);
   arma::vec loglik_i(D);
-  arma::cube alpha(S, Ti.max(), D);
-  arma::cube beta(S, Ti.max(), D);
-  arma::vec scales(Ti.max());
+  arma::cube alpha(S, T_max, D);
+  arma::cube beta(S, T_max, D);
+  arma::vec scales(T_max);
   for (arma::uword d = 0; d < D; ++d) {
     grad_pi2(d) = arma::mat(S - 1, X_pi.n_rows, arma::fill::zeros);
     grad_A2(d) = arma::cube(S - 1, X_A(0).n_rows, S, arma::fill::zeros);

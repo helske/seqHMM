@@ -39,6 +39,7 @@ public:
   arma::vec loglik();
   arma::field<arma::mat> forward();
   arma::field<arma::mat> backward();
+  arma::field<arma::mat> posterior_probs();
   Rcpp::List predict();
   Rcpp::List simulate();
   Rcpp::List log_objective(
@@ -50,6 +51,7 @@ public:
   // data
   const arma::field<arma::umat>& obs;
   const arma::uvec& Ti;
+  const arma::uword T_max;
   const arma::uvec& M;
   const arma::uword N;
   const arma::uword C;

@@ -28,6 +28,7 @@ nhmm::nhmm(
   :
   obs(obs),
   Ti(Ti),
+  T_max(Ti.max()),
   M(M),
   N(obs.n_elem),
   C(obs(0).n_rows),
@@ -45,20 +46,20 @@ nhmm::nhmm(
   gamma_pi(gamma_pi),
   gamma_A(gamma_A),
   gamma_B(gamma_B),
-  py(S, Ti.max()),
+  py(S, T_max),
   pi(S),
-  A(S, S, Ti.max()),
+  A(S, S, T_max),
   B(C),
   log_pi(S),
-  log_A(S, S, Ti.max()),
+  log_A(S, S, T_max),
   log_B(C),
   maxval(maxval),
   minval(
     (minval < 0)  ? std::pow(arma::datum::eps, 2.0/3.0) : minval
   ){
   for (arma::uword c = 0; c < C; ++c) {
-    B(c) = arma::cube(S, M(c) + 1, Ti.max());
-    log_B(c) = arma::cube(S, M(c) + 1, Ti.max());
+    B(c) = arma::cube(S, M(c) + 1, T_max);
+    log_B(c) = arma::cube(S, M(c) + 1, T_max);
   }
 }
 
@@ -247,7 +248,31 @@ arma::field<arma::mat>  nhmm::backward() {
   }
   return log_beta;
 }
-
+arma::field<arma::mat> nhmm::posterior_probs() {
+  arma::field<arma::mat> probs(N);
+  arma::mat alpha(S, T_max);
+  arma::mat beta(S, T_max);
+  arma::vec scales(T_max);
+  for (arma::uword i = 0; i < N; ++i) {
+    if (!icpt_only_pi || i == 0) {
+      update_pi(i);
+    }
+    if (iv_A || i == 0) {
+      update_A(i);
+    }
+    if (arma::any(iv_B) || i == 0) {
+      update_B(i);
+    }
+    update_py(i);
+    univariate_forward(alpha, scales, pi, A, py, Ti(i));
+    univariate_backward(beta, scales, A, py, Ti(i));
+    // Posterior probs: alpha * beta / scales(t) at each time t
+    for (arma::uword t = 0; t < Ti(i); ++t) {
+      probs(i).col(t) = alpha.col(t) % beta.col(t) / scales(t);
+    }
+  }
+  return probs;
+}
 Rcpp::List nhmm::predict() {
   
   // these are P(z_t, y_t | data up to time t excluding y_t)
@@ -434,9 +459,9 @@ Rcpp::List nhmm::log_objective(const arma::mat& Qs,
     tmpvecM(c) = arma::vec(M(c));
   }
   arma::vec loglik(N);
-  arma::mat alpha(S, Ti.max());
-  arma::mat beta(S, Ti.max());
-  arma::vec scales(Ti.max());
+  arma::mat alpha(S, T_max);
+  arma::mat beta(S, T_max);
+  arma::vec scales(T_max);
   for (arma::uword i = 0; i < N; ++i) {
     if (!icpt_only_pi || i == 0) {
       update_pi(i);

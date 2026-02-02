@@ -45,11 +45,11 @@ EM_nhmm::EM_nhmm(
     bound(bound), tolg(tolg)
 {
   for (arma::uword s = 0; s < model.S; ++s) {
-    E_A(s) = arma::cube(model.S, model.N, model.Ti.max(), arma::fill::zeros);
+    E_A(s) = arma::cube(model.S, model.N, model.T_max, arma::fill::zeros);
     eta_A.slice(s) = Qs.t() * model.gamma_A.slice(s);
   }
   for (arma::uword c = 0; c < model.C; ++c) {
-    E_B(c) = arma::cube(model.Ti.max(), model.N, model.S, arma::fill::zeros);
+    E_B(c) = arma::cube(model.T_max, model.N, model.S, arma::fill::zeros);
     eta_B(c) = arma::cube(model.M(c) - 1, model.X_B(c, 0).n_rows, model.S);
     for (arma::uword s = 0; s < model.S; ++s) {
       eta_B(c).slice(s) = Qm(c).t() * model.gamma_B(c).slice(s);
@@ -551,9 +551,9 @@ Rcpp::List EM_nhmm::run() {
   arma::uword iter = 0;
   double ll_new;
   double ll = 0;
-  arma::mat alpha(model.S, model.Ti.max());
-  arma::mat beta(model.S, model.Ti.max());
-  arma::vec scales(model.Ti.max());
+  arma::mat alpha(model.S, model.T_max);
+  arma::mat beta(model.S, model.T_max);
+  arma::vec scales(model.T_max);
   // Initial log-likelihood
   for (arma::uword i = 0; i < model.N; ++i) {
     if (!model.icpt_only_pi || i == 0) {

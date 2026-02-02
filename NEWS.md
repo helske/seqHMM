@@ -2,6 +2,8 @@ seqHMM 2.1.1
 ==============
   * Fixed a bug in `coef.mnhmm` which resulted an error on extracting 
   confidence intervals for emission probabilities.
+  * Fixed mnhmm example in `estimate_mnhmm` documentation.
+  * Improved the performance of `posterior_probs`.
 
 seqHMM 2.1.0
 ==============

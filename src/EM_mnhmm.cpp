@@ -50,14 +50,14 @@ EM_mnhmm::EM_mnhmm(
     E_pi(d) = arma::mat(model.S, model.N);
     for (arma::uword s = 0; s < model.S; ++s) {
       eta_A(d).slice(s) = Qs.t() * model.gamma_A(d).slice(s);
-      E_A(d, s) = arma::cube(model.S, model.N, model.Ti.max(), arma::fill::zeros);
+      E_A(d, s) = arma::cube(model.S, model.N, model.T_max, arma::fill::zeros);
     }
     for (arma::uword c = 0; c < model.C; ++c) {
       eta_B(d, c) = arma::cube(model.M(c) - 1, model.X_B(c, 0).n_rows, model.S);
       for (arma::uword s = 0; s < model.S; ++s) {
         eta_B(d, c).slice(s) = Qm(c).t() * model.gamma_B(d, c).slice(s);
       }
-      E_B(d, c) = arma::cube(model.Ti.max(), model.N, model.S, arma::fill::zeros);
+      E_B(d, c) = arma::cube(model.T_max, model.N, model.S, arma::fill::zeros);
     }
   }
 }
@@ -687,9 +687,9 @@ Rcpp::List EM_mnhmm::run() {
   arma::uword iter = 0;
   double ll_new;
   double ll;
-  arma::cube alpha(model.S, model.Ti.max(), model.D);
-  arma::cube beta(model.S, model.Ti.max(), model.D);
-  arma::mat scales(model.Ti.max(), model.D);
+  arma::cube alpha(model.S, model.T_max, model.D);
+  arma::cube beta(model.S, model.T_max, model.D);
+  arma::mat scales(model.T_max, model.D);
   arma::vec loglik(model.N);
   arma::vec loglik_i(model.D);
   arma::vec lls(model.D);
