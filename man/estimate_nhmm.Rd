@@ -16,7 +16,7 @@ estimate_nhmm(
   prior_obs = "fixed",
   state_names = NULL,
   inits = "random",
-  init_sd = 2,
+  init_sd = NULL,
   restarts = 0L,
   method = "EM-DNM",
   bound = Inf,
@@ -72,8 +72,8 @@ components \code{initial_probs}, \code{emission_probs}, and \code{transition_pro
 can also be mixed, i.e. you can give only \code{initial_probs} and \code{eta_A}.}
 
 \item{init_sd}{Standard deviation of the normal distribution used to generate
-random initial values. Default is \code{2}. If you want to fix the initial values
-of the regression coefficients to zero, use \code{init_sd = 0}.}
+random initial values. If initial values are given and \code{restart = 0}, then
+by default \code{init_sd} is set to zero. Otherwise the default is \code{2}.}
 
 \item{restarts}{Number of times to run optimization using random starting
 values (in addition to the final run). Default is 0.}
@@ -87,7 +87,8 @@ then switches to L-BFGS (but other algorithms of NLopt can be used).}
 \item{bound}{Positive value defining the hard lower and upper bounds for the
 working parameters \eqn{\eta}, which are used to avoid extreme probabilities and
 corresponding numerical issues especially in the M-step of EM algorithm.
-Default is \verb{Inf´, i.e., no bounds. Note that he bounds are not enforced  for M-step in intercept-only case with }lambda = 0`.}
+Default is \code{Inf}, i.e., no bounds. Note that the bounds are not enforced
+for M-step in intercept-only case with \code{lambda = 0}.}
 
 \item{control_restart}{Controls for restart steps, see details.}
 
@@ -156,10 +157,10 @@ is less than \code{1e-8} or the relative or absolute change of the working
 parameters eta is less than \code{1e-6}. These can be changed
 by passing arguments \code{ftol_rel}, \code{ftol_abs}, \code{xtol_rel}, and \code{xtol_abs}
 via \code{...}. These, as well as, \code{maxeval} (maximum number of iterations,
-1e4 by default), and \code{print_level} (default is \code{0}, no console output,
+1e5 by default), and \code{print_level} (default is \code{0}, no console output,
 larger values are more verbose), are used by the chosen main optimization
 method. The number of initial EM iterations in \code{EM-DNM} can be set using
-argument \code{maxeval_em_dnm} (default is 100), and algorithm for direct
+argument \code{maxeval_em_dnm} (default is 1000), and algorithm for direct
 numerical optimization can be defined using argument \code{algorithm}
 (see \code{\link[nloptr:nloptr]{nloptr::nloptr()}} for possible options).
 

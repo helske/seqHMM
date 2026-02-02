@@ -48,10 +48,10 @@
 #' parameters eta is less than `1e-6`. These can be changed
 #' by passing arguments `ftol_rel`, `ftol_abs`, `xtol_rel`, and `xtol_abs` 
 #' via `...`. These, as well as, `maxeval` (maximum number of iterations, 
-#' 1e4 by default), and `print_level` (default is `0`, no console output, 
+#' 1e5 by default), and `print_level` (default is `0`, no console output, 
 #' larger values are more verbose), are used by the chosen main optimization 
 #' method. The number of initial EM iterations in `EM-DNM` can be set using 
-#' argument `maxeval_em_dnm` (default is 100), and algorithm for direct
+#' argument `maxeval_em_dnm` (default is 1000), and algorithm for direct
 #' numerical optimization can be defined using argument `algorithm` 
 #' (see [nloptr::nloptr()] for possible options).
 #' 
@@ -116,7 +116,7 @@
 #' @param bound Positive value defining the hard lower and upper bounds for the 
 #' working parameters \eqn{\eta}, which are used to avoid extreme probabilities and 
 #' corresponding numerical issues especially in the M-step of EM algorithm. 
-#' Default is `Inf´, i.e., no bounds. Note that he bounds are not enforced 
+#' Default is `Inf`, i.e., no bounds. Note that the bounds are not enforced 
 #' for M-step in intercept-only case with `lambda = 0`.
 #' @param control_restart Controls for restart steps, see details.
 #' @param control_mstep Controls for M-step of EM algorithm, see details.

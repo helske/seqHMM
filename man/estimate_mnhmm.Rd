@@ -19,7 +19,7 @@ estimate_mnhmm(
   state_names = NULL,
   cluster_names = NULL,
   inits = "random",
-  init_sd = 2,
+  init_sd = NULL,
   restarts = 0L,
   method = "EM-DNM",
   bound = Inf,
@@ -84,8 +84,8 @@ probabilities using list components \code{initial_probs}, \code{emission_probs},
 can give only \code{initial_probs} and \code{eta_A}.}
 
 \item{init_sd}{Standard deviation of the normal distribution used to generate
-random initial values. Default is \code{2}. If you want to fix the initial values
-of the regression coefficients to zero, use \code{init_sd = 0}.}
+random initial values. If initial values are given and \code{restart = 0}, then
+by default \code{init_sd} is set to zero. Otherwise the default is \code{2}.}
 
 \item{restarts}{Number of times to run optimization using random starting
 values (in addition to the final run). Default is 0.}
@@ -99,7 +99,8 @@ then switches to L-BFGS (but other algorithms of NLopt can be used).}
 \item{bound}{Positive value defining the hard lower and upper bounds for the
 working parameters \eqn{\eta}, which are used to avoid extreme probabilities and
 corresponding numerical issues especially in the M-step of EM algorithm.
-Default is \verb{Inf´, i.e., no bounds. Note that he bounds are not enforced  for M-step in intercept-only case with }lambda = 0`.}
+Default is \code{Inf}, i.e., no bounds. Note that the bounds are not enforced
+for M-step in intercept-only case with \code{lambda = 0}.}
 
 \item{control_restart}{Controls for restart steps, see details.}
 
