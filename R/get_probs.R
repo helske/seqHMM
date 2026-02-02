@@ -40,7 +40,7 @@ get_initial_probs.nhmm <- function(model) {
     key = "id"
   )
   setnames(d, "id", model$id_variable)
-  d
+  d[]
 }
 #' @rdname initial_probs
 #' @export

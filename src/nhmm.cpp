@@ -267,6 +267,7 @@ arma::field<arma::mat> nhmm::posterior_probs() {
     univariate_forward(alpha, scales, pi, A, py, Ti(i));
     univariate_backward(beta, scales, A, py, Ti(i));
     // Posterior probs: alpha * beta / scales(t) at each time t
+    probs(i) = arma::mat(S, Ti(i));
     for (arma::uword t = 0; t < Ti(i); ++t) {
       probs(i).col(t) = alpha.col(t) % beta.col(t) / scales(t);
     }
