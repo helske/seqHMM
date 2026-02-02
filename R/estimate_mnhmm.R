@@ -44,11 +44,18 @@ estimate_mnhmm <- function(
     n_states, n_clusters, emission_formula, initial_formula = ~1, 
     transition_formula = ~1, cluster_formula = ~1,
     data, time, id, lambda = 0, prior_obs = "fixed", state_names = NULL, 
-    cluster_names = NULL, inits = "random", init_sd = 2, restarts = 0L, 
+    cluster_names = NULL, inits = "random", init_sd = NULL, restarts = 0L, 
     method = "EM-DNM", bound = Inf, control_restart = list(), 
     control_mstep = list(), check_rank = NULL, ...) {
   
   call <- match.call()
+  if (is.null(init_sd)) {
+    if (!identical(inits, "random") && restarts == 0L) {
+      init_sd <- 0
+    } else {
+      init_sd <- 2
+    }
+  }
   model <- build_mnhmm(
     n_states, n_clusters, emission_formula, initial_formula, 
     transition_formula, cluster_formula, data, id, time, 

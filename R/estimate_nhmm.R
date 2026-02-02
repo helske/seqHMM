@@ -97,8 +97,8 @@
 #' components `initial_probs`, `emission_probs`, and `transition_probs`. These 
 #' can also be mixed, i.e. you can give only `initial_probs` and `eta_A`.
 #' @param init_sd Standard deviation of the normal distribution used to generate
-#' random initial values. Default is `2`. If you want to fix the initial values 
-#' of the regression coefficients to zero, use `init_sd = 0`.
+#' random initial values. If initial values are given and `restart = 0`, then 
+#' by default `init_sd` is set to zero. Otherwise the default is `2`.
 #' @param restarts Number of times to run optimization using random starting 
 #' values (in addition to the final run). Default is 0.
 #' @param lambda Penalization factor `lambda` for penalized log-likelihood, where the 
@@ -149,11 +149,18 @@ estimate_nhmm <- function(
     n_states, emission_formula, initial_formula = ~1, 
     transition_formula = ~1, 
     data, time, id, lambda = 0, prior_obs = "fixed", state_names = NULL, 
-    inits = "random", init_sd = 2, restarts = 0L, 
+    inits = "random", init_sd = NULL, restarts = 0L, 
     method = "EM-DNM", bound = Inf, control_restart = list(), 
     control_mstep = list(), check_rank = NULL, ...) {
   
   call <- match.call()
+  if (is.null(init_sd)) {
+    if (!identical(inits, "random") && restarts == 0L) {
+      init_sd <- 0
+    } else {
+      init_sd <- 2
+    }
+  }
   model <- build_nhmm(
     n_states, emission_formula, initial_formula, transition_formula, 
     data, id, time, state_names, scale = TRUE, prior_obs, 
