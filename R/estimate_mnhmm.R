@@ -33,7 +33,7 @@
 #' fit <- estimate_mnhmm(n_states = 3, n_clusters = 2,
 #'   data = d, time = "time", id = "id", 
 #'   cluster_formula = ~ male + catholic + gcse5eq + Grammar + 
-#'     funemp + fmpr + livboth + Belfast +
+#'     funemp + fmpr + livboth +
 #'   N.Eastern + Southern + S.Eastern + Western,
 #'   emission_formula = activity ~ male + catholic + gcse5eq,
 #'   initial_formula = ~ 1, 
