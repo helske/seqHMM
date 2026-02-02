@@ -27,9 +27,9 @@ double forward(
     arma::mat& alpha, 
     arma::vec& scales,  
     const arma::vec& pi,
-     const arma::cube& A,
-               const arma::mat& py,
-               const arma::uword T);
+    const arma::cube& A,
+    const arma::mat& py,
+    const arma::uword T);
 
 template<typename submat, typename subvec>
 double univariate_forward(
@@ -51,9 +51,8 @@ double univariate_forward(
     alpha.col(t) = A.slice(t).t() * alpha.col(t - 1) % py.col(t);
     x = arma::accu(alpha.col(t));
     ll += std::log(x);
-    inv_x = 1.0 / x;
-    alpha.col(t) *= inv_x;
-    scales(t) = inv_x;
+    scales(t) = 1.0 / x;
+    alpha.col(t) *= scales(t);
   }
   return ll;
 }
