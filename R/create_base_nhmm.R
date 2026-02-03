@@ -147,6 +147,7 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
   }
   if (drop_levels) {
     setdroplevels(data)
+    setkeyv(data, c(id_var, time_var))
   }
   if (is.null(check)) {
     check <- n_sequences <= 1000
@@ -160,8 +161,8 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
     }
   }
   X_pi <- model_matrix_initial_formula(
-    initial_formula, data, n_sequences, n_states, id_var, scale = scale, 
-    check = check
+    initial_formula, data, n_sequences, n_states, id_var,
+    scale = scale, check = check
   )
   np_pi <- (n_states - 1L) * nrow(X_pi)
   X_A <- model_matrix_transition_formula(
@@ -174,7 +175,8 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
   for (y in responses) {
     X_B[[y]] <- model_matrix_emission_formula(
       emission_formula[[y]], data, n_sequences, length_of_sequences, n_states, 
-      M[y], id_var, time_var, sequence_lengths, scale = scale, check = check
+      M[y], id_var, time_var, sequence_lengths, scale = scale, 
+      check = check
     )
     attr(emission_formula[[y]], "responses") <- NULL
   }
@@ -185,6 +187,10 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
       check = check
     )
     np_omega <- (D - 1L) * nrow(X_omega)
+    K_omega <- nrow(X_omega)
+  } else {
+    X_omega <- cluster_formula <- K_omega <- NULL
+    np_omega <- 0
   }
   if (length(autoregression) > 0L && !identical(prior_obs, "fixed")) {
     stopifnot_(
@@ -204,10 +210,11 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
     }
     prior_obs <- c(joint_probability(prior_obs))
     W_X_B <- create_W_X_B(
-      data, id_var, time_var, symbol_names, n_sequences, emission_formula, 
-      n_states, X_B
+      data, id_var, time_var, symbol_names, n_sequences, 
+      emission_formula, n_states, X_B
     )
   } else {
+    W_X_B <- NULL
     prior_obs <- 0L
   }
   
@@ -219,11 +226,11 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
       X_pi = X_pi, 
       X_A = X_A, 
       X_B = X_B,
-      X_omega = if (mixture) X_omega else NULL,
+      X_omega = X_omega,
       initial_formula = initial_formula, 
       transition_formula = transition_formula,
       emission_formula = emission_formula,
-      cluster_formula = if (mixture) cluster_formula else NULL,
+      cluster_formula = cluster_formula,
       state_names = state_names,
       symbol_names = symbol_names,
       cluster_names = cluster_names,
@@ -237,19 +244,19 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
       K_pi = nrow(X_pi),
       K_A = nrow(X_A[[1]]),
       K_B = vapply(X_B, \(x) nrow(x[[1]]), 1L),
-      K_omega = if (mixture) nrow(X_omega) else NULL,
+      K_omega = K_omega,
       data = data,
       feedback = feedback,
       autoregression = autoregression,
-      W_X_B = if (fanhmm) W_X_B,
-      prior_obs = if (fanhmm) prior_obs
+      W_X_B = W_X_B,
+      prior_obs = prior_obs
     ),
     class = c(if (fanhmm) "fanhmm", ifelse(D > 1, "mnhmm", "nhmm")),
     nobs = n_obs,
-    df = D * (np_pi + np_A + np_B) + if (mixture) np_omega else 0,
+    df = D * (np_pi + np_A + np_B) + np_omega,
     np_pi = D * np_pi,
     np_A = D * np_A,
     np_B = D * np_B,
-    np_omega = if (mixture) np_omega else 0
+    np_omega = np_omega
   )
 }

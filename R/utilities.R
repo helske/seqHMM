@@ -112,6 +112,7 @@ split_mnhmm <- function(x) {
   models
 }
 
+# Intercept-only formula?
 io <- function(X) {
   out <- attr(X, "icpt_only")
   if (is.null(out)) { 
@@ -119,6 +120,7 @@ io <- function(X) {
   }
   out
 }
+# covariates vary by id?
 iv <- function(X) {
   out <- attr(X, "iv")
   if (is.null(out)) { 
@@ -126,6 +128,7 @@ iv <- function(X) {
   }
   out
 }
+# covariates vary by time?
 tv <- function(X) {
   out <- attr(X, "tv")
   if (is.null(out)) { 

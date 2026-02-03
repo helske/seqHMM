@@ -10,16 +10,21 @@
 \usage{
 get_emission_probs(model, ...)
 
-\method{get_emission_probs}{nhmm}(model)
+\method{get_emission_probs}{nhmm}(model, ids = NULL, ...)
 
-\method{get_emission_probs}{mnhmm}(model)
+\method{get_emission_probs}{mnhmm}(model, ids = NULL, ...)
 
-\method{get_emission_probs}{hmm}(model)
+\method{get_emission_probs}{hmm}(model, ...)
 
-\method{get_emission_probs}{mhmm}(model)
+\method{get_emission_probs}{mhmm}(model, ...)
 }
 \arguments{
 \item{model}{A hidden Markov model.}
+
+\item{ids}{Optional vector of sequence IDs. If \code{NULL} (the default),
+probabilities are computed for all sequences in the data, unless the
+probabilities are equal for all sequences, i.e., covariates do not depend on
+ID.}
 }
 \description{
 Extract the Emission Probabilities of Hidden Markov Model

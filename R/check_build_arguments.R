@@ -42,6 +42,7 @@
   }
   data <- data.table(data, key = c(id_var, time_var))
   data[, id_var := as_factor(id_var), env = list(id_var = id_var)]
+  setkeyv(data, c(id_var, time_var))
   data
 }
 

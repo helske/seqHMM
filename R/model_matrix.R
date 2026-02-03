@@ -29,6 +29,7 @@ model_matrix_cluster_formula <- function(formula, data, n_sequences, n_clusters,
       data = data, 
       na.action = stats::na.pass
     )
+    rownames(X) <- unique(data[[id_var]])
     missing_values <- which(!stats::complete.cases(X))
     stopifnot_(
       length(missing_values) == 0L,
@@ -87,6 +88,7 @@ model_matrix_initial_formula <- function(formula, data, n_sequences, n_states,
       data = data, 
       na.action = stats::na.pass
     )
+    rownames(X) <- unique(data[[id_var]])
     missing_values <- which(!stats::complete.cases(X))
     stopifnot_(
       length(missing_values) == 0L,

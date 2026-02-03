@@ -8,15 +8,20 @@
 \usage{
 get_cluster_probs(model, ...)
 
-\method{get_cluster_probs}{mnhmm}(model, type = "prior")
+\method{get_cluster_probs}{mnhmm}(model, type = "prior", ids = NULL, ...)
 
-\method{get_cluster_probs}{mhmm}(model, type = "prior")
+\method{get_cluster_probs}{mhmm}(model, type = "prior", ...)
 }
 \arguments{
 \item{model}{A hidden Markov model.}
 
 \item{type}{Character string indicating the type of cluster probabilities.
 Either \code{"prior"} (the default), or \code{"posterior"}. See details.}
+
+\item{ids}{Optional vector of sequence IDs. If \code{NULL} (the default),
+probabilities are computed for all sequences in the data, unless the
+probabilities are equal for all sequences, i.e., covariates do not depend on
+ID.}
 }
 \description{
 Prior cluster probability refers to the probability of sequence \eqn{i}
