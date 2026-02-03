@@ -46,7 +46,7 @@ data_to_stslist <- function(x, id, time, responses, seqdef_args = NULL, ...) {
       seqdef_args <- stats::setNames(list(seqdef_args), responses)
     }
     stopifnot_(
-      is_list_of_lists(seqdef_args, C) && responses %in% names(seqdef_args),
+      is_list_of_lists(seqdef_args, C) && all(responses %in% names(seqdef_args)),
       "Argument {.arg seqdef_args} should a list of lists of length {C}, with 
       list element names matching the values in {.arg responses}.",
       i = "In case of a single response, a non-nested list is also supported."
