@@ -44,8 +44,8 @@ most_probable_cluster <- function(x, type = "viterbi", hp = NULL) {
     clusters <- hp[, .SD[1], by = id, showProgress = FALSE]$cluster
   } else {
     d <- posterior_cluster_probabilities(x)
-    clusters <- d[, .SD[which.max(probability)], by = id, 
-                  showProgress = FALSE]$cluster
+    clusters <- d[d[, .I[which.max(probability)], by = id, 
+        showProgress = FALSE]$V1]$cluster
   }
   clusters
 }

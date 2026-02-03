@@ -8,8 +8,8 @@ summary.mnhmm <- function(object, ...) {
   probability <- id <- cluster <- NULL
   prior_cp <- get_cluster_probs(object, type = "prior")
   post_cp <-  get_cluster_probs(object, type = "posterior")
-  mpc <- post_cp[, .SD[which.max(probability)], by = id, 
-                         showProgress = FALSE]$cluster
+  mpc <- post_cp[post_cp[, .I[which.max(probability)], by = id, 
+                         showProgress = FALSE]$V1]$cluster
   clProbs <- matrix(NA, nrow = object$n_clusters, ncol = object$n_clusters)
   rownames(clProbs) <- colnames(clProbs) <- object$cluster_names
   for (i in object$cluster_names) {
