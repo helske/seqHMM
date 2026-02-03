@@ -8,7 +8,7 @@
 \alias{get_emission_probs.mhmm}
 \title{Extract the Emission Probabilities of Hidden Markov Model}
 \usage{
-get_emission_probs(model)
+get_emission_probs(model, ...)
 
 \method{get_emission_probs}{nhmm}(model)
 

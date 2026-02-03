@@ -8,7 +8,7 @@
 \alias{get_transition_probs.mhmm}
 \title{Extract the State Transition Probabilities of Hidden Markov Model}
 \usage{
-get_transition_probs(model)
+get_transition_probs(model, ...)
 
 \method{get_transition_probs}{nhmm}(model)
 

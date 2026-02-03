@@ -1,23 +1,21 @@
-
-
 #' @rdname initial_probs
 #' @export
-get_initial_probs <- function(model) {
+get_initial_probs <- function(model, ...) {
   UseMethod("get_initial_probs", model)
 }
 #' @rdname transition_probs
 #' @export
-get_transition_probs <- function(model) {
+get_transition_probs <- function(model, ...) {
   UseMethod("get_transition_probs", model)
 }
 #' @rdname emission_probs
 #' @export
-get_emission_probs <- function(model) {
+get_emission_probs <- function(model, ...) {
   UseMethod("get_emission_probs", model)
 }
 #' @rdname cluster_probs
 #' @export
-get_cluster_probs <- function(model) {
+get_cluster_probs <- function(model, ...) {
   UseMethod("get_cluster_probs", model)
 }
 #' Extract the Initial State Probabilities of Hidden Markov Model
@@ -181,11 +179,29 @@ get_emission_probs.mhmm <- function(model) {
 }
 #' Extract the Prior Cluster Probabilities of MHMM or MNHMM
 #' 
+#' Prior cluster probability refers to the probability of sequence \eqn{i}
+#' belonging to cluster \eqn{k} without conditioning on the observed sequence,
+#' i.e., \eqn{P(i \in M_k | X_i)}, where \eqn{M_k} is cluster \eqn{k} and 
+#' \eqn{X_i} are the covariates for individual \eqn{i}. The posterior cluster
+#' probability refers to the probability of sequence \eqn{i} belonging to
+#' cluster \eqn{k} given the observed sequence, i.e., 
+#' \eqn{P(i \in M_k | y_i, X_i)}, where \eqn{y_i} is the observed sequence for 
+#' individual \eqn{i}.
+#' 
 #' @inheritParams get_initial_probs.nhmm
 #' @rdname cluster_probs
-#' @export
+#' @param type Character string indicating the type of cluster probabilities. 
+#' Either `"prior"` (the default), or `"posterior"`. See details.
+#' 
 #' @seealso [posterior_cluster_probabilities()].
-get_cluster_probs.mnhmm <- function(model) {
+get_cluster_probs.mnhmm <- function(model, type = "prior") {
+  stopifnot_(
+    checkmate::test_choice(type, choices = c("prior", "posterior")), 
+    "Argument {.arg type} must be either 'prior' or 'posterior'."
+  )
+  if (type == "posterior") {
+    return(posterior_cluster_probabilities(model))
+  }
   ids <- unique(model$data[[model$id_variable]])
   if (io(model$X_omega)) {
     X <- model$X_omega[, 1L, drop = FALSE]
@@ -205,7 +221,14 @@ get_cluster_probs.mnhmm <- function(model) {
 }
 #' @rdname cluster_probs
 #' @export
-get_cluster_probs.mhmm <- function(model) {
+get_cluster_probs.mhmm <- function(model, type = "prior") {
+  stopifnot_(
+    checkmate::test_choice(type, choices = c("prior", "posterior")), 
+    "Argument {.arg type} must be either 'prior' or 'posterior'."
+  )
+  if (type == "posterior") {
+    return(posterior_cluster_probabilities(model))
+  }
   pr <- exp(model$X %*% model$coefficients)
   prior_cluster_probabilities <- pr / rowSums(pr)
   if (model$n_channels == 1L) {

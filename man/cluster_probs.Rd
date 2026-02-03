@@ -6,17 +6,27 @@
 \alias{get_cluster_probs.mhmm}
 \title{Extract the Prior Cluster Probabilities of MHMM or MNHMM}
 \usage{
-get_cluster_probs(model)
+get_cluster_probs(model, ...)
 
-\method{get_cluster_probs}{mnhmm}(model)
+\method{get_cluster_probs}{mnhmm}(model, type = "prior")
 
-\method{get_cluster_probs}{mhmm}(model)
+\method{get_cluster_probs}{mhmm}(model, type = "prior")
 }
 \arguments{
 \item{model}{A hidden Markov model.}
+
+\item{type}{Character string indicating the type of cluster probabilities.
+Either \code{"prior"} (the default), or \code{"posterior"}. See details.}
 }
 \description{
-Extract the Prior Cluster Probabilities of MHMM or MNHMM
+Prior cluster probability refers to the probability of sequence \eqn{i}
+belonging to cluster \eqn{k} without conditioning on the observed sequence,
+i.e., \eqn{P(i \in M_k | X_i)}, where \eqn{M_k} is cluster \eqn{k} and
+\eqn{X_i} are the covariates for individual \eqn{i}. The posterior cluster
+probability refers to the probability of sequence \eqn{i} belonging to
+cluster \eqn{k} given the observed sequence, i.e.,
+\eqn{P(i \in M_k | y_i, X_i)}, where \eqn{y_i} is the observed sequence for
+individual \eqn{i}.
 }
 \seealso{
 \code{\link[=posterior_cluster_probabilities]{posterior_cluster_probabilities()}}.

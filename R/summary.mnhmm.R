@@ -5,18 +5,16 @@
 #' @param ... Ignored
 summary.mnhmm <- function(object, ...) {
   cf <- coef(object)
-  pr <- exp(object$X_omega %*% object$gammas$gamma_omega)
-  prior_cluster_probabilities <- pr / rowSums(pr)
-  pcp <- posterior_cluster_probabilities(object)
-  mpc <- factor(
-    apply(pcp, 1, which.max),
-    levels = 1:object$n_clusters, labels = object$cluster_names
-  )
+  probability <- id <- cluster <- NULL
+  prior_cp <- get_cluster_probs(object, type = "prior")
+  post_cp <-  get_cluster_probs(object, type = "posterior")
+  mpc <- post_cp[, .SD[which.max(probability)], by = id, 
+                         showProgress = FALSE]$cluster
   clProbs <- matrix(NA, nrow = object$n_clusters, ncol = object$n_clusters)
   rownames(clProbs) <- colnames(clProbs) <- object$cluster_names
-  for (i in 1:object$n_clusters) {
-    for (j in 1:object$n_clusters) {
-      clProbs[i, j] <- mean(pcp[mpc == object$cluster_names[i], j])
+  for (i in object$cluster_names) {
+    for (j in object$cluster_names) {
+      clProbs[j, i] <- mean(post_cp[cluster == i][mpc == j, probability])
     }
   }
   ll <- logLik(object)
@@ -25,8 +23,8 @@ summary.mnhmm <- function(object, ...) {
     logLik = ll, BIC = stats::BIC(ll),
     coefficients = cf,
     most_probable_cluster = mpc,
-    prior_cluster_probabilities = prior_cluster_probabilities,
-    posterior_cluster_probabilities = pcp,
+    prior_cluster_probabilities = prior_cp,
+    posterior_cluster_probabilities = post_cp,
     classification_table = clProbs
   )
   class(out) <- "summary_mnhmm"
@@ -54,7 +52,7 @@ print.summary_mnhmm <- function(x, digits = 3, ...) {
     ),
     nrow = 2, byrow = TRUE
   )
-  colnames(cl) <- cluster_names
+  colnames(cl) <- names(tbl)
   rownames(cl) <- c("count", "proportion")
   cat("Most probable clusters :\n")
   print.default(cl, quote = FALSE, print.gap = 2, right = TRUE)

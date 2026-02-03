@@ -45,19 +45,17 @@
 summary.mhmm <- function(
     object, parameters = FALSE, conditional_se = TRUE, ...) {
   # avoid CRAN check warning due to NSE
+  cf <- coef(object)
   probability <- id <- cluster <- NULL
-  pcp <- posterior_cluster_probabilities(object)
-  pr <- exp(object$X %*% object$coefficients)
-  prior_cluster_probabilities <- data.table(
-    pcp[, 1:2], 
-    probability = c(t(pr / rowSums(pr)))
-  )
-  mpc <- pcp[, .SD[which.max(probability)], by = id]$cluster
+  prior_cp <- get_cluster_probs(object, type = "prior")
+  post_cp <-  get_cluster_probs(object, type = "posterior")
+  mpc <- post_cp[, .SD[which.max(probability)], by = id, 
+                 showProgress = FALSE]$cluster
   clProbs <- matrix(NA, nrow = object$n_clusters, ncol = object$n_clusters)
   rownames(clProbs) <- colnames(clProbs) <- object$cluster_names
   for (i in object$cluster_names) {
     for (j in object$cluster_names) {
-      clProbs[j, i] <- mean(pcp[cluster == i][mpc == j, probability])
+      clProbs[j, i] <- mean(post_cp[cluster == i][mpc == j, probability])
     }
   }
   ll <- logLik(object)
@@ -66,8 +64,8 @@ summary.mhmm <- function(
       logLik = ll, BIC = stats::BIC(ll), most_probable_cluster = mpc,
       coefficients = object$coefficients, 
       vcov = vcov(object, conditional_se, ...),
-      prior_cluster_probabilities = prior_cluster_probabilities,
-      posterior_cluster_probabilities = pcp,
+      prior_cluster_probabilities = prior_cp,
+      posterior_cluster_probabilities = post_cp,
       classification_table = clProbs
     )
   } else {
@@ -78,8 +76,8 @@ summary.mhmm <- function(
       logLik = ll, BIC = stats::BIC(ll), most_probable_cluster = mpc,
       coefficients = object$coefficients, 
       vcov = vcov(object, conditional_se, ...),
-      prior_cluster_probabilities = prior_cluster_probabilities,
-      posterior_cluster_probabilities = pcp,
+      prior_cluster_probabilities = prior_cp,
+      posterior_cluster_probabilities = post_cp,
       classification_table = clProbs
     )
   }
