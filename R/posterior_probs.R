@@ -84,7 +84,7 @@ posterior_probs.mnhmm <- function(model, ...) {
       io(model$X_pi), io(model$X_A), io(model$X_B), io(model$X_omega),
       iv(model$X_A), iv(model$X_B), tv(model$X_A), tv(model$X_B),
       model$gammas$gamma_pi, model$gammas$gamma_A, model$gammas$gamma_B, 
-      model$gammas$gamma_omega
+      model$gammas$gamma_omega, model$prior_obs, model$W_X_B
     )
   } else {
     pp <- Rcpp_posterior_probs_mnhmm(
