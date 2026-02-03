@@ -8,7 +8,7 @@
 #' @export
 #' @param model Mixture hidden Markov model of class `mhmm`.
 #'
-#' @return List with components of class `hmm`.
+#' @return List with elements of class `hmm`.
 #'
 #' @seealso [build_mhmm()] and [fit_model()]
 #' for building and fitting MHMMs; and [mhmm_biofam()] for

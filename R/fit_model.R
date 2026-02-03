@@ -3,7 +3,7 @@
 #'
 #' Function `fit_model` estimates the parameters of mixture hidden
 #' Markov models and its restricted variants using maximum likelihood.
-#' Initial values for estimation are taken from the corresponding components
+#' Initial values for estimation are taken from the corresponding elements
 #' of the model with preservation of original zero probabilities.
 #'
 #' @export
@@ -27,7 +27,7 @@
 #' * `reltol`\cr Relative tolerance for convergence defined as 
 #'   \eqn{(logLik_new - logLik_old)/(abs(logLik_old) + 0.1)}. The default is 1e-10.
 #' * `restart`\cr A list containing options for possible EM restarts with the
-#'   following components:
+#'   following elements:
 #'   * `times`\cr Number of restarts of the EM algorithm using random initial 
 #'     values. The default is `0`, i.e. no restarts.
 #'   * `transition`\cr Logical. Should the original transition probabilities be 

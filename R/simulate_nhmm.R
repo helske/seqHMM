@@ -23,9 +23,10 @@
 #' generate random coefficients. Default is `2` when `coefs` is `NULL` and `0` 
 #' otherwise.
 #' @inheritParams estimate_nhmm
-#'
-#' @return A list with the model used in simulation as well as the simulated 
-#' hidden state sequences.
+#' @return A list with elements 
+#' * `model`: A `nhmm` model object corresponding the simulations.
+#' * `states`: A `data.table` containing the simulated hidden states.
+#' * `data`: A `data.table` of original data filled with simulated observations.
 #' @export
 simulate_nhmm <- function(
     n_states, emission_formula, initial_formula = ~1, transition_formula = ~1, 

@@ -11,7 +11,7 @@ separate_mhmm(model)
 \item{model}{Mixture hidden Markov model of class \code{mhmm}.}
 }
 \value{
-List with components of class \code{hmm}.
+List with elements of class \code{hmm}.
 }
 \description{
 The \code{separate_mhmm} function reorganizes the parameters of a \code{mhmm} object

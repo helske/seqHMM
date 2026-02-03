@@ -65,10 +65,10 @@ is \code{NULL} (the default), numbered states are used.}
 
 \item{inits}{If \code{inits = "random"} (default), random initial values are
 used. Otherwise \code{inits} should be list of initial values. If coefficients
-are given using list components \code{eta_pi}, \code{eta_A}, \code{eta_B},
+are given using list elements \code{eta_pi}, \code{eta_A}, \code{eta_B},
 these are used as is, alternatively initial values can be given in terms of
 the initial state, transition, and emission probabilities using list
-components \code{initial_probs}, \code{emission_probs}, and \code{transition_probs}. These
+elements \code{initial_probs}, \code{emission_probs}, and \code{transition_probs}. These
 can also be mixed, i.e. you can give only \code{initial_probs} and \code{eta_A}.}
 
 \item{init_sd}{Standard deviation of the normal distribution used to generate

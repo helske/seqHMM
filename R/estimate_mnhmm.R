@@ -11,10 +11,10 @@
 #' @param cluster_formula of class [formula()] for the mixture probabilities.
 #' @param inits If `inits = "random"` (default), random initial values are 
 #' used. Otherwise `inits` should be list of initial values. If coefficients 
-#' are given using list components `eta_pi`, `eta_A`, `eta_B`, 
+#' are given using list elements `eta_pi`, `eta_A`, `eta_B`, 
 #' and `eta_omega`, these are used as is, alternatively initial values 
 #' can be given in terms of the initial state, transition, emission, and mixture 
-#' probabilities using list components `initial_probs`, `emission_probs`, 
+#' probabilities using list elements `initial_probs`, `emission_probs`, 
 #' `transition_probs`, and `cluster_probs`. These can also be mixed, i.e. you 
 #' can give only `initial_probs` and `eta_A`.
 #' @param cluster_names A vector of optional labels for the clusters. If this

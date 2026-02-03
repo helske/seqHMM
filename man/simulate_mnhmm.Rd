@@ -73,8 +73,12 @@ performed, a warning is given, which can be circumvented by explicitly
 using \code{check_rank = FALSE}.}
 }
 \value{
-A list with the model used in simulation as well as the simulated
-hidden state sequences.
+A list with elements
+\itemize{
+\item \code{model}: A \code{nhmm} model object corresponding the simulations.
+\item \code{states}: A \code{data.table} containing the simulated hidden states.
+\item \code{data}: A \code{data.table} of original data filled with simulated observations.
+}
 }
 \description{
 Simulate sequences of observed and hidden states given the parameters of a

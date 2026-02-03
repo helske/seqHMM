@@ -76,10 +76,10 @@ is \code{NULL} (the default), numbered clusters are used.}
 
 \item{inits}{If \code{inits = "random"} (default), random initial values are
 used. Otherwise \code{inits} should be list of initial values. If coefficients
-are given using list components \code{eta_pi}, \code{eta_A}, \code{eta_B},
+are given using list elements \code{eta_pi}, \code{eta_A}, \code{eta_B},
 and \code{eta_omega}, these are used as is, alternatively initial values
 can be given in terms of the initial state, transition, emission, and mixture
-probabilities using list components \code{initial_probs}, \code{emission_probs},
+probabilities using list elements \code{initial_probs}, \code{emission_probs},
 \code{transition_probs}, and \code{cluster_probs}. These can also be mixed, i.e. you
 can give only \code{initial_probs} and \code{eta_A}.}
 

@@ -91,10 +91,10 @@
 #' is `NULL` (the default), numbered states are used.
 #' @param inits If `inits = "random"` (default), random initial values are 
 #' used. Otherwise `inits` should be list of initial values. If coefficients 
-#' are given using list components `eta_pi`, `eta_A`, `eta_B`, 
+#' are given using list elements `eta_pi`, `eta_A`, `eta_B`, 
 #' these are used as is, alternatively initial values can be given in terms of 
 #' the initial state, transition, and emission probabilities using list 
-#' components `initial_probs`, `emission_probs`, and `transition_probs`. These 
+#' elements `initial_probs`, `emission_probs`, and `transition_probs`. These 
 #' can also be mixed, i.e. you can give only `initial_probs` and `eta_A`.
 #' @param init_sd Standard deviation of the normal distribution used to generate
 #' random initial values. If initial values are given and `restart = 0`, then 
