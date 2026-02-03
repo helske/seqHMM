@@ -114,10 +114,16 @@ get_marginals <- function(model, probs = NULL, condition = NULL,
   }
   if (weighting == "forward") {
     pp <- forward_backward(model, forward_only = TRUE)
-    setnames(pp, "log_alpha", "probability")
+    pp[, probability := exp(log_alpha - max(log_alpha)), by = c(id, time)]
+    pp[, probability := probability / sum(probability), by = c(id, time)]
+    pp[, log_alpha := NULL]
   }
   if (weighting == "none") {
-    pp[, probability := 1L]
+    pp <- model$data[rep(seq_row(model$data), each = S), 
+                     list(id, time), 
+                     env = list(id = id, time = time, S = S)]
+    set(pp, j = "state", value = rep_len(model$state_names, nrow(pp)))
+    set(pp, j = "probability", value = 1 / S)
   }
   id_time <- c(model$id_variable, model$time_variable)
   out_state <- out_A <- out_obs <- out_B <- NULL
@@ -173,7 +179,9 @@ get_marginals <- function(model, probs = NULL, condition = NULL,
       }
       if (weighting == "forward") {
         pp <- forward_backward(model, forward_only = TRUE)
-        setnames(pp, "log_alpha", "probability")
+        pp[, probability := exp(log_alpha - max(log_alpha)), by = c(id, time)]
+        pp[, probability := probability / sum(probability), by = c(id, time)]
+        pp[, log_alpha := NULL]
       }
       if (compute_z) {
         boot_state[, i] <- compute_z_marginals(
