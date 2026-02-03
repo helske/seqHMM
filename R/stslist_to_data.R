@@ -15,6 +15,21 @@
 #' @param ... Ignored
 #' @rdname data_to_stslist
 #' @export
+#' @examples
+#' # Convert multichannel stslist to long format data.table
+#' biofam_seqs <- mhmm_biofam$observations # list of three stslist objects
+#' d <- stslist_to_data(
+#'   biofam_seqs, id = "Individual", time = "Age",
+#'   responses = c("Marriage", "Children", "Residence")
+#' )
+#' head(d)
+#' 
+#' # Convert back to stslist
+#' biofam_seqs2 <- data_to_stslist(
+#'   d, id = "Individual", time = "Age", 
+#'   responses = c("Marriage", "Children", "Residence")
+#' )
+#' all.equal(biofam_seqs, biofam_seqs2, check.attributes = FALSE)
 data_to_stslist <- function(x, id, time, responses, seqdef_args = NULL, ...) {
   
   stopifnot_(

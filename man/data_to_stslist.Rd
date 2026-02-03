@@ -7,7 +7,7 @@
 \usage{
 data_to_stslist(x, id, time, responses, seqdef_args = NULL, ...)
 
-stslist_to_data(x, id, time, responses, ...)
+stslist_to_data(x, id = "id", time = "time", responses, ...)
 }
 \arguments{
 \item{x}{For \code{data_to_stslist}, a \code{data.frame} type of object in long format,
@@ -31,4 +31,20 @@ lists. Ignored in \code{stslist_to_data}.}
 }
 \description{
 Transform TraMineR's state sequence object to data.table and vice versa
+}
+\examples{
+# Convert multichannel stslist to long format data.table
+biofam_seqs <- mhmm_biofam$observations # list of three stslist objects
+d <- stslist_to_data(
+  biofam_seqs, id = "Individual", time = "Age",
+  responses = c("Marriage", "Children", "Residence")
+)
+head(d)
+
+# Convert back to stslist
+biofam_seqs2 <- data_to_stslist(
+  d, id = "Individual", time = "Age", 
+  responses = c("Marriage", "Children", "Residence")
+)
+all.equal(biofam_seqs, biofam_seqs2, check.attributes = FALSE)
 }
