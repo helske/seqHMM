@@ -157,13 +157,23 @@ get_marginals <- function(model, probs = NULL, condition = NULL,
       )
     )
     nsim <- length(model$boot$gamma_pi)
-    boot_state <- matrix(0, nrow(out_state), nsim * compute_z)
-    boot_A <- matrix(0, nrow(out_A), nsim * compute_A)
-    boot_obs <- vector("list", model$n_channels)
-    boot_B <- vector("list", model$n_channels)
-    for (i in seq_len(model$n_channels)) {
-      boot_B[[i]] <- matrix(0, nrow(out_B[[i]]), nsim * compute_B)
-      boot_obs[[i]] <- matrix(0, nrow(out_obs[[i]]), nsim * compute_y)
+    if (compute_z) {
+      boot_state <- matrix(0, nrow(out_state), nsim)
+    }
+    if (compute_A) {
+      boot_A <- matrix(0, nrow(out_A), nsim)
+    }
+    if (compute_B) {
+      boot_B <- vector("list", model$n_channels)
+      for (i in seq_len(model$n_channels)) {
+        boot_B[[i]] <- matrix(0, nrow(out_B[[i]]), nsim)
+      }
+    }
+    if (compute_y) {
+      boot_obs <- vector("list", model$n_channels)
+      for (i in seq_len(model$n_channels)) {
+        boot_obs[[i]] <- matrix(0, nrow(out_obs[[i]]), nsim * compute_y)
+      }
     }
     tQs <- t(create_Q(model$n_states))
     tQm <- lapply(model$n_symbols, \(i) t(create_Q(i)))
