@@ -71,7 +71,7 @@ data_to_stslist <- function(x, id, time, responses, seqdef_args = NULL, ...) {
 }
 #' @rdname data_to_stslist
 #' @export
-stslist_to_data <- function(x, id, time, responses, ...) {
+stslist_to_data <- function(x, id = "id", time = "time", responses, ...) {
   stopifnot_(
     !missing(responses) && checkmate::test_character(x = responses) || 
       checkmate::test_factor(responses), 
