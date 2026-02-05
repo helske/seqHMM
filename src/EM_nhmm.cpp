@@ -337,7 +337,6 @@ double EM_nhmm::objective_pi(const arma::vec& x, arma::vec& grad) {
   eta_pi = arma::mat(x.memptr(), model.S - 1, model.X_pi.n_rows);
   model.gamma_pi = sum_to_zero(eta_pi, Qs);
   arma::mat tQs = Qs.t();
-  arma::vec log_pi(model.S);
   grad.zeros();
   for (arma::uword i = 0; i < model.N; ++i) {
     if (!model.icpt_only_pi || i == 0) {

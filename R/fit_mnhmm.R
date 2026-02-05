@@ -2,9 +2,9 @@
 #'
 #' @noRd
 fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method, 
-                      bound, control, control_restart, control_mstep, 
-                      save_all_solutions = FALSE) {
+                      bound, control, control_restart, control_mstep) {
   
+  save_all_solutions <- control$save_all_solutions %||% FALSE
   stopifnot_(
     checkmate::test_int(x = restarts, lower = 0L), 
     "Argument {.arg restarts} must be a single integer."
