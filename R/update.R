@@ -4,12 +4,12 @@
 #' The responses, model formulae and estimated coefficients are not altered.
 #' @param object An object of class `nhmm` or `mnhmm`.
 #' @param newdata A data frame containing the new covariate values.
-#' @param drop_levels if `TRUE` (default), drops unused factor levels from 
-#' `newdata` before creating design matrices.
+#' @param drop_levels if `TRUE`, drops unused factor levels from 
+#' `newdata` before creating design matrices. The default is `FALSE`.
 #' @param ... Ignored.
 #' @rdname update_nhmm
 #' @export
-update.nhmm <- function(object, newdata, drop_levels = TRUE, ...) {
+update.nhmm <- function(object, newdata, drop_levels = FALSE, ...) {
   # avoid CRAN check warning due to NSE
   .Ti <- y <- id <- NULL
   initial_formula <- object$initial_formula
@@ -120,7 +120,7 @@ update.nhmm <- function(object, newdata, drop_levels = TRUE, ...) {
 }
 #' @rdname update_nhmm
 #' @export
-update.mnhmm <- function(object, newdata, drop_levels = TRUE, ...) {
+update.mnhmm <- function(object, newdata, drop_levels = FALSE, ...) {
   # avoid CRAN check warning due to NSE
   .Ti <- y <- id <- NULL
   cluster_formula <- object$cluster_formula
