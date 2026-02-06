@@ -190,12 +190,11 @@ void EM_mnhmm::mstep_pi() {
   for (arma::uword d = 0; d < model.D; ++d) {
     current_d = d;
     arma::vec x(eta_pi(d).memptr(), eta_pi(d).n_elem, false, true);
-    double ll = objective_pi(x, grad);
-    last_val = std::numeric_limits<double>::infinity();
+    last_val = objective_pi(x, grad);
     abs_change = 0;
     rel_change = 0;
     mstep_iter = 0;
-    if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
+    if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(last_val)) {
       return_code = 1; // already converged (L-BFGS gradient tolerance)
     } else {
       return_code = nlopt_optimize(opt_pi, x.memptr(), &minf);
@@ -245,19 +244,17 @@ void EM_mnhmm::mstep_A() {
   nlopt_set_min_objective(opt_A, objective_A_wrapper, this);
   double minf;
   int return_code;
-  double ll;
   arma::vec grad(eta_A(0).slice(0).n_elem);
   for (arma::uword d = 0; d < model.D; ++d) {
     current_d = d;
     for (arma::uword s = 0; s < model.S; ++s) {
       current_s = s;
       arma::vec x(eta_A(d).slice(s).memptr(), eta_A(d).slice(s).n_elem, false, true);
-      ll = objective_A(x, grad);
-      last_val = std::numeric_limits<double>::infinity();
+      last_val = objective_A(x, grad);
       abs_change = 0;
       rel_change = 0;
       mstep_iter = 0;
-      if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
+      if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(last_val)) {
         return_code = 1; // already converged (L-BFGS gradient tolerance)
       } else {
         return_code = nlopt_optimize(opt_A, x.memptr(), &minf);
@@ -321,12 +318,11 @@ void EM_mnhmm::mstep_B() {
       for (arma::uword s = 0; s < model.S; ++s) {
         current_s = s;
         arma::vec x(eta_B(d, c).slice(s).memptr(), eta_B(d, c).slice(s).n_elem, false, true);
-        ll = objective_B(x, grad);
-        last_val = std::numeric_limits<double>::infinity();
+        last_val = objective_B(x, grad);
         abs_change = 0;
         rel_change = 0;
         mstep_iter = 0;
-        if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
+        if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(last_val)) {
           return_code = 1; // already converged (L-BFGS gradient tolerance)
         } else {
           return_code = nlopt_optimize(opt_B[c], x.memptr(), &minf);
@@ -374,14 +370,12 @@ void EM_mnhmm::mstep_omega() {
   
   double minf;
   int return_code;
-  double ll;
   arma::vec grad(eta_omega.n_elem);
-  ll = objective_omega(x, grad);
-  last_val = std::numeric_limits<double>::infinity();
+  last_val = objective_omega(x, grad);
   abs_change = 0;
   rel_change = 0;
   mstep_iter = 0;
-  if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(ll)) {
+  if (arma::norm(grad, "inf") < 1e-8 && std::isfinite(last_val)) {
     return_code = 1; // already converged (L-BFGS gradient tolerance)
   } else {
     return_code = nlopt_optimize(opt_omega, x.memptr(), &minf);
@@ -405,37 +399,57 @@ void EM_mnhmm::mstep_omega() {
 double EM_mnhmm::objective_pi_wrapper(unsigned n, const double* x, double* grad, void* data) {
   auto* self = static_cast<EM_mnhmm*>(data);
   arma::vec x_vec(const_cast<double*>(x), n, false, true);
-  arma::vec grad_vec(grad, n, false, true);
-  return self->objective_pi(x_vec, grad_vec);
+  if (grad) {
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_pi(x_vec, grad_vec);
+  } else {
+    arma::vec grad_dummy(n);
+    return self->objective_pi(x_vec, grad_dummy);
+  }
 }
-
 double EM_mnhmm::objective_A_wrapper(unsigned n, const double* x, double* grad, void* data) {
   auto* self = static_cast<EM_mnhmm*>(data);
   arma::vec x_vec(const_cast<double*>(x), n, false, true);
-  arma::vec grad_vec(grad, n, false, true);
-  return self->objective_A(x_vec, grad_vec);
+  if (grad) {
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_A(x_vec, grad_vec);
+  } else {
+    arma::vec grad_dummy(n);
+    return self->objective_A(x_vec, grad_dummy);
+  }
 }
-
 double EM_mnhmm::objective_B_wrapper(unsigned n, const double* x, double* grad, void* data) {
   auto* self = static_cast<EM_mnhmm*>(data);
   arma::vec x_vec(const_cast<double*>(x), n, false, true);
-  arma::vec grad_vec(grad, n, false, true);
-  return self->objective_B(x_vec, grad_vec);
+  if (grad) {
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_B(x_vec, grad_vec);
+  } else {
+    arma::vec grad_dummy(n);
+    return self->objective_B(x_vec, grad_dummy);
+  }
 }
-
 double EM_mnhmm::objective_omega_wrapper(unsigned n, const double* x, double* grad, void* data) {
   auto* self = static_cast<EM_mnhmm*>(data);
   arma::vec x_vec(const_cast<double*>(x), n, false, true);
-  arma::vec grad_vec(grad, n, false, true);
-  return self->objective_omega(x_vec, grad_vec);
+  if (grad) {
+    arma::vec grad_vec(grad, n, false, true);
+    return self->objective_omega(x_vec, grad_vec);
+  } else {
+    arma::vec grad_dummy(n);
+    return self->objective_omega(x_vec, grad_dummy);
+  }
 }
 
 double EM_mnhmm::objective_pi(const arma::vec& x, arma::vec& grad) {
   
   mstep_iter++;
   double value = 0;
-  eta_pi(current_d) = arma::mat(x.memptr(), model.S - 1, model.X_pi.n_rows);
-  model.gamma_pi(current_d) = sum_to_zero(eta_pi(current_d), Qs);
+  arma::mat eta(
+      const_cast<double*>(x.memptr()),
+      model.S - 1, model.X_pi.n_rows, false, true
+  );
+  model.gamma_pi(current_d) = sum_to_zero(eta, Qs);
   grad.zeros();
   arma::mat tQs = Qs.t();
   for (arma::uword i = 0; i < model.N; ++i) {
@@ -452,8 +466,8 @@ double EM_mnhmm::objective_pi(const arma::vec& x, arma::vec& grad) {
   value /= model.N;
   grad += lambda * x;
   grad /= model.N;
-  abs_change = value - last_val;
-  rel_change = std::abs(abs_change) / (std::abs(last_val) + 1e-12);
+  abs_change = std::abs(value - last_val);
+  rel_change = abs_change / (std::abs(last_val) + 1e-12);
   last_val = value;
   return value;
 }
@@ -461,8 +475,11 @@ double EM_mnhmm::objective_pi(const arma::vec& x, arma::vec& grad) {
 double EM_mnhmm::objective_A(const arma::vec& x, arma::vec& grad) {
   mstep_iter++;
   double value = 0;
-  arma::mat eta_Arow = arma::mat(x.memptr(), model.S - 1, model.X_A(0).n_rows);
-  arma::mat gamma_Arow = sum_to_zero(eta_Arow, Qs);
+  arma::mat eta(
+      const_cast<double*>(x.memptr()), 
+      model.S - 1, model.X_A(0).n_rows, false, true
+  );
+  arma::mat gamma_Arow = sum_to_zero(eta, Qs);
   arma::vec A1(model.S);
   arma::vec log_A1(model.S);
   grad.zeros();
@@ -492,8 +509,8 @@ double EM_mnhmm::objective_A(const arma::vec& x, arma::vec& grad) {
   value /= model.N;
   grad += lambda * x;
   grad /= model.N;
-  abs_change = value - last_val;
-  rel_change = std::abs(abs_change) / (std::abs(last_val) + 1e-12);
+  abs_change = std::abs(value - last_val);
+  rel_change = abs_change / (std::abs(last_val) + 1e-12);
   last_val = value;
   return value;
 }
@@ -502,8 +519,11 @@ double EM_mnhmm::objective_B(const arma::vec& x, arma::vec& grad) {
   mstep_iter++;
   double value = 0;
   arma::uword Mc = model.M(current_c);
-  arma::mat eta_Brow = arma::mat(x.memptr(), Mc - 1, model.X_B(current_c, 0).n_rows);
-  arma::mat gamma_Brow = sum_to_zero(eta_Brow, Qm(current_c));
+  arma::mat eta(
+      const_cast<double*>(x.memptr()), 
+      Mc - 1, model.X_B(current_c, 0).n_rows, false, true
+  );
+  arma::mat gamma_Brow = sum_to_zero(eta, Qm(current_c));
   arma::vec B1(Mc);
   arma::vec log_B1(Mc);
   grad.zeros();
@@ -571,8 +591,8 @@ double EM_mnhmm::objective_B(const arma::vec& x, arma::vec& grad) {
   value /= model.N;
   grad += lambda * x;
   grad /= model.N;
-  abs_change = value - last_val;
-  rel_change = std::abs(abs_change) / (std::abs(last_val) + 1e-12);
+  abs_change = std::abs(value - last_val);
+  rel_change = abs_change / (std::abs(last_val) + 1e-12);
   last_val = value;
   return value;
 }
@@ -581,8 +601,11 @@ double EM_mnhmm::objective_omega(const arma::vec& x, arma::vec& grad) {
   
   mstep_iter++;
   double value = 0;
-  eta_omega = arma::mat(x.memptr(), model.D - 1, model.X_omega.n_rows);
-  model.gamma_omega = sum_to_zero(eta_omega, Qd);
+  arma::mat eta(
+      const_cast<double*>(x.memptr()),
+      model.D - 1, model.X_omega.n_rows, false, true
+  );
+  model.gamma_omega = sum_to_zero(eta, Qd);
   grad.zeros();
   arma::mat tQd = Qd.t();
   for (arma::uword i = 0; i < model.N; ++i) {
@@ -598,8 +621,8 @@ double EM_mnhmm::objective_omega(const arma::vec& x, arma::vec& grad) {
   value /= model.N;
   grad += lambda * x;
   grad /= model.N;
-  abs_change = value - last_val;
-  rel_change = std::abs(abs_change) / (std::abs(last_val) + 1e-12);
+  abs_change = std::abs(value - last_val);
+  rel_change = abs_change / (std::abs(last_val) + 1e-12);
   last_val = value;
   return value;
 }
