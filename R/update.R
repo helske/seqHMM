@@ -86,25 +86,19 @@ update.nhmm <- function(object, newdata, drop_levels = FALSE, ...) {
   attr(object, "nobs") <- n_obs
   
   object$X_pi <- model_matrix_initial_formula(
-    initial_formula, newdata, object$n_sequences,
-    object$n_states, id_var,
-    X_mean = attr(object$X_pi, "X_mean"), check = FALSE, 
-    scale = TRUE, R_inv = attr(object$X_pi, "R_inv")
+    initial_formula, newdata, object$n_sequences, id_var, TRUE, 
+    attr(object$X_pi, "X_mean"), R_inv = attr(object$X_pi, "R_inv"), FALSE
   )
   object$X_A <- model_matrix_transition_formula(
-    transition_formula, newdata, object$n_sequences, object$length_of_sequences,
-    object$n_states, id_var, time_var, object$sequence_lengths,
-    X_mean = attr(object$X_A, "X_mean"), check = FALSE, 
-    scale = TRUE, R_inv = attr(object$X_A, "R_inv")
+    transition_formula, newdata, object$sequence_lengths, id_var, time_var,
+    TRUE, attr(object$X_A, "X_mean"), attr(object$X_A, "R_inv"), FALSE
   )
   object$X_B <- stats::setNames(
     lapply(responses, \(y) {
       model_matrix_emission_formula(
-        emission_formula[[y]], newdata, object$n_sequences, 
-        object$length_of_sequences, object$n_states, 
-        object$n_symbols[y], id_var, time_var, object$sequence_lengths, 
-        X_mean = attr(object$X_B[[y]], "X_mean"), check = FALSE, 
-        scale = TRUE, R_inv = attr(object$X_B[[y]], "R_inv")
+        emission_formula[[y]], newdata, object$sequence_lengths, id_var, 
+        time_var, TRUE, attr(object$X_B[[y]], "X_mean"), 
+        attr(object$X_B[[y]], "R_inv"), FALSE
       )
     }),
     responses
@@ -112,7 +106,7 @@ update.nhmm <- function(object, newdata, drop_levels = FALSE, ...) {
   if (inherits(object, "fanhmm") && !identical(object$prior_obs, 0L)) {
     object$W_X_B <- create_W_X_B(
       newdata, id_var, time_var, object$symbol_names, object$n_sequences, 
-      emission_formula, object$n_states, object$X_B
+      emission_formula, object$X_B
     )
   }
   object$data <- newdata
@@ -199,30 +193,23 @@ update.mnhmm <- function(object, newdata, drop_levels = FALSE, ...) {
   attr(object, "nobs") <- n_obs
   
   object$X_omega <- model_matrix_cluster_formula(
-    cluster_formula, newdata, object$n_sequences, object$n_clusters,
-    id_var, X_mean = attr(object$X_omega, "X_mean"), check = FALSE, 
-    scale = TRUE, R_inv = attr(object$X_omega, "R_inv")
+    cluster_formula, newdata, object$n_sequences, object$n_clusters, id_var, 
+    TRUE, attr(object$X_omega, "X_mean"), attr(object$X_omega, "R_inv"), FALSE
   )
   object$X_pi <- model_matrix_initial_formula(
-    initial_formula, newdata, object$n_sequences, object$n_states, 
-    id_var, X_mean = attr(object$X_pi, "X_mean"), check = FALSE, 
-    scale = TRUE, R_inv = attr(object$X_pi, "R_inv")
+    initial_formula, newdata, object$n_sequences, id_var, TRUE, 
+    attr(object$X_pi, "X_mean"), attr(object$X_pi, "R_inv"), FALSE
   )
   object$X_A <- model_matrix_transition_formula(
-    transition_formula, newdata, object$n_sequences, 
-    object$length_of_sequences, object$n_states, id_var, time_var, 
-    object$sequence_lengths,
-    X_mean = attr(object$X_A, "X_mean"), check = FALSE, 
-    scale = TRUE, R_inv = attr(object$X_A, "R_inv")
+    transition_formula, newdata, object$sequence_lengths, id_var, time_var, 
+    TRUE, attr(object$X_A, "X_mean"), attr(object$X_A, "R_inv"), FALSE
   )
   object$X_B <- stats::setNames(
     lapply(responses, \(y) {
       model_matrix_emission_formula(
-        emission_formula[[y]], newdata, object$n_sequences, 
-        object$length_of_sequences, object$n_states, 
-        object$n_symbols[y], id_var, time_var, object$sequence_lengths, 
-        X_mean = attr(object$X_B[[y]], "X_mean"), check = FALSE, 
-        scale = TRUE, R_inv = attr(object$X_B[[y]], "R_inv")
+        emission_formula[[y]], newdata, object$sequence_lengths, id_var, 
+        time_var, TRUE, attr(object$X_B[[y]], "X_mean"), 
+        attr(object$X_B[[y]], "R_inv"), FALSE
       )
     }),
     responses
@@ -230,7 +217,7 @@ update.mnhmm <- function(object, newdata, drop_levels = FALSE, ...) {
   if (length(object$autoregression) > 0L && !identical(object$prior_obs, 0L)) {
     object$W_X_B <- create_W_X_B(
       newdata, id_var, time_var, object$symbol_names, object$n_sequences, 
-      emission_formula, object$n_states, object$X_B
+      emission_formula, object$X_B
     )
   }
   object$data <- newdata
@@ -259,21 +246,16 @@ update_W_for_fanhmm <- function(object) {
       set(newdata, j = paste0("lag_", responses[j]), value = y[i, j])
     }
     W_A[[i]] <- model_matrix_transition_formula(
-      transition_formula, newdata, object$n_sequences, 
-      object$length_of_sequences, object$n_states, object$id_variable, 
-      object$time_variable, object$sequence_lengths,
-      X_mean = attr(object$X_A, "X_mean"), check = FALSE, 
-      scale = TRUE, R_inv = attr(object$X_A, "R_inv")
+      transition_formula, newdata, object$sequence_lengths, object$id_variable, 
+      object$time_variable, TRUE, attr(object$X_A, "X_mean"), 
+      attr(object$X_A, "R_inv"), FALSE
     )
     W_B[[i]] <- vector("list", C)
     for (j in seq_len(C)) {
       W_B[[i]][[j]] <- model_matrix_emission_formula(
-        emission_formula[[j]], newdata, object$n_sequences, 
-        object$length_of_sequences, object$n_states, object$n_symbols[[j]], 
-        object$id_variable, object$time_variable, 
-        object$sequence_lengths,
-        X_mean = attr(object$X_B[[j]], "X_mean"), check = FALSE, 
-        scale = TRUE, R_inv = attr(object$X_B[[j]], "R_inv")
+        emission_formula[[j]], newdata, object$sequence_lengths, 
+        object$id_variable, object$time_variable, TRUE, 
+        attr(object$X_B[[j]], "X_mean"), attr(object$X_B[[j]], "R_inv"), FALSE
       )
     }
   }

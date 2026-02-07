@@ -127,7 +127,7 @@ stslist_to_data <- function(x, id = "id", time = "time", responses, ...) {
           "numeric. Replacing them with integers."
         )
       )
-      timenames <- seq_len(ncol(x[[1]]))
+      timenames <- seq_col(x[[1]])
     }
   }
   stopifnot_(

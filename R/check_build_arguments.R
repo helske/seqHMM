@@ -110,7 +110,7 @@
             "numeric. Replacing them with integers."
           )
         )
-        timenames <- seq_len(ncol(x[[1]]))
+        timenames <- seq_col(x[[1]])
       }
     }
     stopifnot_(
@@ -143,7 +143,7 @@
             "numeric. Replacing them with integers."
           )
         )
-        timenames <- seq_len(ncol(x))
+        timenames <- seq_col(x)
       }
     }
     stopifnot_(

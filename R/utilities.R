@@ -245,7 +245,7 @@ create_obs <- function(model) {
   cols <- NULL
   id <- model$data[[model$id_variable]]
   obs <- qM(model$data[, cols, env = list(cols = I(model$responses))]) - 1L
-  for (i in seq_len(ncol(obs))) {
+  for (i in seq_col(obs)) {
     obs[is.na(obs[, i]), i] <- model$n_symbols[i]
   }
   lapply(rsplit(obs, fl = id), \(y) t(y))

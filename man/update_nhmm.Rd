@@ -5,17 +5,17 @@
 \alias{update.mnhmm}
 \title{Update Covariate Values of NHMM}
 \usage{
-\method{update}{nhmm}(object, newdata, drop_levels = TRUE, ...)
+\method{update}{nhmm}(object, newdata, drop_levels = FALSE, ...)
 
-\method{update}{mnhmm}(object, newdata, drop_levels = TRUE, ...)
+\method{update}{mnhmm}(object, newdata, drop_levels = FALSE, ...)
 }
 \arguments{
 \item{object}{An object of class \code{nhmm} or \code{mnhmm}.}
 
 \item{newdata}{A data frame containing the new covariate values.}
 
-\item{drop_levels}{if \code{TRUE} (default), drops unused factor levels from
-\code{newdata} before creating design matrices.}
+\item{drop_levels}{if \code{TRUE}, drops unused factor levels from
+\code{newdata} before creating design matrices. The default is \code{FALSE}.}
 
 \item{...}{Ignored.}
 }

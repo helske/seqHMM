@@ -161,22 +161,20 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
     }
   }
   X_pi <- model_matrix_initial_formula(
-    initial_formula, data, n_sequences, n_states, id_var,
-    scale = scale, check = check
+    initial_formula, data, n_sequences, id_var, scale = scale, check = check
   )
   np_pi <- (n_states - 1L) * nrow(X_pi)
   X_A <- model_matrix_transition_formula(
-    transition_formula, data, n_sequences, length_of_sequences, n_states, 
-    id_var, time_var, sequence_lengths, scale = scale, check = check
+    transition_formula, data, sequence_lengths, id_var, time_var,
+    scale = scale, check = check
   )
   np_A <- n_states * (n_states - 1L) * nrow(X_A[[1]])
   attr(transition_formula, "responses") <- NULL
   X_B <- stats::setNames(vector("list", C), responses)
   for (y in responses) {
     X_B[[y]] <- model_matrix_emission_formula(
-      emission_formula[[y]], data, n_sequences, length_of_sequences, n_states, 
-      M[y], id_var, time_var, sequence_lengths, scale = scale, 
-      check = check
+      emission_formula[[y]], data, sequence_lengths, id_var, time_var, 
+      scale = scale, check = check
     )
     attr(emission_formula[[y]], "responses") <- NULL
   }
@@ -211,7 +209,7 @@ create_base_nhmm <- function(data, id_var, time_var, n_states, state_names,
     prior_obs <- c(joint_probability(prior_obs))
     W_X_B <- create_W_X_B(
       data, id_var, time_var, symbol_names, n_sequences, 
-      emission_formula, n_states, X_B
+      emission_formula, X_B
     )
   } else {
     W_X_B <- NULL

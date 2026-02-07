@@ -41,11 +41,11 @@ NULL
 #' @format A `data.table` with 9281 rows and 9 variables
 #' @references
 #' Helske S, Helske J, Chapman SN, Kotimäki S, Salin M, and Tikka S (2024). 
-#' Heterogeneous workplace peer effects in fathers’ parental leave uptake in Finland. 
-#' doi: 10.31235/osf.io/p3chf
+#' Heterogeneous workplace peer effects in fathers’ parental leave uptake in 
+#' Finland. doi: 10.31235/osf.io/p3chf
 #' 
-#' Helske J (2025). Feedback-augmented Non-homogeneous Hidden Markov Models for Longitudinal Causal Inference.
-#' ArXiv preprint. doi:10.48550/arXiv.2503.16014
+#' Helske J (2025). Feedback-augmented Non-homogeneous Hidden Markov Models for 
+#' Longitudinal Causal Inference. ArXiv preprint. doi:10.48550/arXiv.2503.16014
 #' 
 #' @docType data
 #' @keywords datasets
