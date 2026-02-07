@@ -106,6 +106,9 @@ get_marginals <- function(model, probs = NULL, condition = NULL,
       )
     }
   }
+  id <- model$id_variable
+  time <- model$time_variable
+  S <- model$n_states
   if (!is.null(newdata)) {
     model <- update(model, newdata)
   }
@@ -114,8 +117,10 @@ get_marginals <- function(model, probs = NULL, condition = NULL,
   }
   if (weighting == "forward") {
     pp <- forward_backward(model, forward_only = TRUE)
-    pp[, probability := exp(log_alpha - max(log_alpha)), by = c(id, time)]
-    pp[, probability := probability / sum(probability), by = c(id, time)]
+    pp[, probability := exp(log_alpha - max(log_alpha)), by = list(id, time), 
+       env = list(id = id, time = time)]
+    pp[, probability := probability / sum(probability), by = list(id, time), 
+       env = list(id = id, time = time)]
     pp[, log_alpha := NULL]
   }
   if (weighting == "none") {
@@ -189,8 +194,10 @@ get_marginals <- function(model, probs = NULL, condition = NULL,
       }
       if (weighting == "forward") {
         pp <- forward_backward(model, forward_only = TRUE)
-        pp[, probability := exp(log_alpha - max(log_alpha)), by = c(id, time)]
-        pp[, probability := probability / sum(probability), by = c(id, time)]
+        pp[, probability := exp(log_alpha - max(log_alpha)), by = list(id, time), 
+           env = list(id = id, time = time)]
+        pp[, probability := probability / sum(probability), by = list(id, time), 
+           env = list(id = id, time = time)]
         pp[, log_alpha := NULL]
       }
       if (compute_z) {
@@ -240,5 +247,10 @@ get_marginals <- function(model, probs = NULL, condition = NULL,
       }
     }
   }
-  list(states = out_state, responses = out_obs, transitions = out_A, emissions = out_B)
+  list(
+    states = out_state, 
+    responses = out_obs, 
+    transitions = out_A,
+    emissions = out_B
+  )
 }
