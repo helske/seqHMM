@@ -36,7 +36,7 @@ get_initial_probs.nhmm <- function(model, ids = NULL, ...) {
       "The following IDs are not present in the model data: 
       {paste(missing_ids, collapse = ', ')}."
     )
-    ids <- as.factor(ids, levels = levels(model$data[[model$id_variable]]))
+    ids <- factor(ids, levels = levels(model$data[[model$id_variable]]))
   } else {
     ids <- unique(model$data[[model$id_variable]])
   }
@@ -92,7 +92,7 @@ get_transition_probs.nhmm <- function(model, ids = NULL, ...) {
       "The following IDs are not present in the model data: 
       {paste(missing_ids, collapse = ', ')}."
     )
-    ids <- as.factor(ids, levels = levels(model$data[[id]]))
+    ids <- factor(ids, levels = levels(model$data[[id]]))
   } else {
     ids <- unique(model$data[[id]])
   }
@@ -160,7 +160,7 @@ get_emission_probs.nhmm <- function(model, ids = NULL, ...) {
       "The following IDs are not present in the model data: 
       {paste(missing_ids, collapse = ', ')}."
     )
-    ids <- as.factor(ids, levels = levels(model$data[[id]]))
+    ids <- factor(ids, levels = levels(model$data[[id]]))
   } else {
     ids <- unique(model$data[[id]])
   }
@@ -257,7 +257,7 @@ get_cluster_probs.mnhmm <- function(model, type = "prior", ids = NULL, ...) {
       "The following IDs are not present in the model data: 
       {paste(missing_ids, collapse = ', ')}."
     )
-    ids <- as.factor(ids, levels = levels(model$data[[model$id_variable]]))
+    ids <- factor(ids, levels = levels(model$data[[model$id_variable]]))
   } else {
     ids <- unique(model$data[[model$id]])
   }
