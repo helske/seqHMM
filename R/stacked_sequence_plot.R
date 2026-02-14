@@ -163,12 +163,11 @@ stacked_sequence_plot <- function(
     }
   }
   if (missing(sort_channel)) sort_channel <- channel_names[1]
+  x_msg <- cli::cli_vec(channel_names, style = list('vec-last' = ' or '))
   stopifnot_(
     sort_channel %in% channel_names || sort_channel %in% seq_len(n_channels),
-    paste0("{.arg sort_channel} should be either ",
-           "{cli::cli_vec(channel_names, style = list('vec-last' = ' or '))}, ",
-           "or integer between 1 and {n_channels}."
-    )
+    "{.arg sort_channel} should be either {.val {x_msg}}, 
+    or integer between 1 and {n_channels}."
   )
   if (n_channels > 1) names(y) <- channel_names
   if (type == "index" & length(sort_by) == 1) {
