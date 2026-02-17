@@ -62,7 +62,7 @@ simulate_nhmm <- function(
   }
   data <- .check_data(data, id, time, responses)
   for (y in responses) {
-    l <- as.factor(levels(data[[y]]))[1]
+    l <- as_factor(levels(data[[y]]))[1]
     data[, y := fifelse(is.na(y[1]), l, y[1]), by = id, env = list(y = y), 
          showProgress = FALSE]
   }

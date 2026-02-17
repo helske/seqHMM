@@ -51,7 +51,7 @@
 #' 1e5 by default), and `print_level` (default is `0`, no console output, 
 #' larger values are more verbose), are used by the chosen main optimization 
 #' method. The number of initial EM iterations in `EM-DNM` can be set using 
-#' argument `maxeval_em_dnm` (default is 1000), and algorithm for direct
+#' argument `maxeval_em_dnm` (default is 100), and algorithm for direct
 #' numerical optimization can be defined using argument `algorithm` 
 #' (see [nloptr::nloptr()] for possible options).
 #' 
@@ -64,11 +64,19 @@
 #' default values are `ftol_rel = 1e-10`, and `maxeval = 1000`, and otherwise 
 #' identical to previous defaults above.
 #' 
+#' By default, EM algorithm uses SQUAREM acceleration (Varadhan and Roland, 
+#' 2008) to improve the convergence speed near optimum. This can be turned of 
+#' by using control argument `use_squarem = FALSE`.
+#' 
 #' @references 
-#' Helske, J (2025). Feedback-augmented Non-homogeneous Hidden Markov Models for 
+#' Helske J (2025). Feedback-augmented Non-homogeneous Hidden Markov Models for 
 #' Longitudinal Causal Inference. arXiv preprint. <doi:10.48550/arXiv.2503.16014>.
 #' 
-#' Johnson, SG. The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt.
+#' Johnson SG. The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt.
+#' 
+#' Varadhan R and Roland C (2008). Simple and Globally Convergent Methods for 
+#' Accelerating the Convergence of Any EM Algorithm. Scandinavian Journal of 
+#' Statistics, 35: 335-353. <doi:10.1111/j.1467-9469.2007.00585.x>
 #' 
 #' @param n_states An integer > 1 defining the number of hidden states.
 #' @param initial_formula of class [formula()] for the

@@ -245,7 +245,7 @@ get_emission_probs.mhmm <- function(model, ...) {
 get_cluster_probs.mnhmm <- function(model, type = "prior", ids = NULL, ...) {
   stopifnot_(
     checkmate::test_choice(type, choices = c("prior", "posterior")), 
-    "Argument {.arg type} must be either 'prior' or 'posterior'."
+    "Argument {.arg type} must be either {.val 'prior'} or {.val 'posterior'}."
   )
   if (type == "posterior") {
     return(posterior_cluster_probabilities(model)[ids, ])

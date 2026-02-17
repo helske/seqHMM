@@ -17,23 +17,31 @@ public:
     const double ftol_rel, 
     const double xtol_abs, 
     const double xtol_rel, 
-    const arma::uword print_level,
+    const int print_level,
     const arma::uword maxeval_m, 
     const double ftol_abs_m, 
     const double ftol_rel_m, 
     const double xtol_abs_m, 
     const double xtol_rel_m, 
-    const arma::uword print_level_m,
+    const int print_level_m,
     const double bound,
     const double tolg);
   ~EM_nhmm();
-  Rcpp::List run();
+  Rcpp::List run(const bool use_squarem);
   
 private:
+  
   // functions
+  void me_step(
+      double& ll_new, arma::vec& theta_new, 
+      arma::mat& alpha, arma::mat& beta, arma::vec& scales
+  );
+  
   void update_gamma_pi();
   void update_gamma_A();
   void update_gamma_B();
+  void eta_to_theta(arma::vec& theta);
+  void theta_to_eta(const arma::vec& theta);
   
   Rcpp::List mstep_error(
       int iter, 
@@ -95,6 +103,11 @@ private:
   arma::mat E_pi;
   arma::field<arma::cube> E_A;
   arma::field<arma::cube> E_B;
+  
+  // auxiliary stuff
+  double last_val = std::numeric_limits<double>::infinity();
+  double abs_change = 0;
+  double rel_change = 0;
   arma::uword current_s = 0;
   arma::uword current_c = 0; 
   unsigned int mstep_iter = 0;
@@ -103,24 +116,21 @@ private:
   nlopt_opt opt_A = nullptr;
   std::vector<nlopt_opt> opt_B;
   
+  // tolerances and optimization settings
   const arma::uword maxeval; 
   const double ftol_abs; 
   const double ftol_rel; 
   const double xtol_abs; 
   const double xtol_rel; 
-  const arma::uword print_level;
+  const int print_level;
   const arma::uword maxeval_m; 
   const double ftol_abs_m; 
   const double ftol_rel_m; 
   const double xtol_abs_m; 
   const double xtol_rel_m; 
-  const arma::uword print_level_m;
+  const int print_level_m;
   const double bound;
   const double tolg;
-  
-  double last_val = std::numeric_limits<double>::infinity();
-  double abs_change = 0;
-  double rel_change = 0;
 };
 
 #endif

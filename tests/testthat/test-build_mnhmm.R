@@ -40,7 +40,7 @@ test_that("estimate_mnhmm returns object of class 'mnhmm'", {
     fit <- estimate_mnhmm(
       s, d, emission_formula = y ~ z, initial_formula = ~ x, 
       transition_formula = ~ z, cluster_formula = ~ x,
-      data = data, time = "time", id = "id", maxeval = 1,
+      data = data, time = "time", id = "id", maxeval = 2, lambda = 0.1,
       method = "EM"),
     NA
   )

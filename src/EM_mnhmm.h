@@ -19,26 +19,33 @@ public:
            const double ftol_rel, 
            const double xtol_abs, 
            const double xtol_rel, 
-           const arma::uword print_level,
+           const int print_level,
            const arma::uword maxeval_m, 
            const double ftol_abs_m, 
            const double ftol_rel_m, 
            const double xtol_abs_m, 
            const double xtol_rel_m, 
-           const arma::uword print_level_m,
+           const int print_level_m,
            const double bound,
            const double tolg
   );
   ~EM_mnhmm();
-  Rcpp::List run();
+  Rcpp::List run(const bool use_squarem);
   
 private:
+  
   // functions
+  void me_step(
+      double& ll_new, arma::vec& theta_new, 
+      arma::cube& alpha, arma::cube& beta, arma::mat& scales
+  );
   
   void update_gamma_pi();
   void update_gamma_A();
   void update_gamma_B();
   void update_gamma_omega();
+  void eta_to_theta(arma::vec& theta);
+  void theta_to_eta(const arma::vec& theta);
   
   Rcpp::List mstep_error(
       int iter, 
@@ -108,6 +115,10 @@ private:
   arma::field<arma::cube> E_B;
   arma::mat E_omega;
   
+  // auxiliary stuff
+  double last_val = std::numeric_limits<double>::infinity();
+  double abs_change = 0;
+  double rel_change = 0;
   arma::uword current_s = 0;
   arma::uword current_c = 0; 
   arma::uword current_d = 0;
@@ -118,24 +129,21 @@ private:
   std::vector<nlopt_opt> opt_B;
   nlopt_opt opt_omega = nullptr;
   
+  // tolerances and optimization settings
   const arma::uword maxeval; 
   const double ftol_abs; 
   const double ftol_rel; 
   const double xtol_abs; 
   const double xtol_rel; 
-  const arma::uword print_level;
+  const int print_level;
   const arma::uword maxeval_m; 
   const double ftol_abs_m; 
   const double ftol_rel_m; 
   const double xtol_abs_m; 
   const double xtol_rel_m; 
-  const arma::uword print_level_m;
+  const int print_level_m;
   const double bound;
   const double tolg;
-  
-  double last_val = std::numeric_limits<double>::infinity();
-  double abs_change = 0;
-  double rel_change = 0;
   
 };
 

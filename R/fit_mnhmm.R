@@ -28,7 +28,8 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
       maxeval = 1e5,
       print_level = 0,
       algorithm = "NLOPT_LD_LBFGS",
-      maxeval_em_dnm = 100
+      maxeval_em_dnm = 100,
+      use_squarem = TRUE
     ),
     control
   )
@@ -51,7 +52,7 @@ fit_mnhmm <- function(model, inits, init_sd, restarts, lambda, method,
       xtol_rel = 0,
       xtol_abs = 0,
       tolg = 1e-10,
-      maxeval = 1000,
+      maxeval = 100,
       print_level = 0
     ),
     control_mstep

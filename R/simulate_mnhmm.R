@@ -51,7 +51,7 @@ simulate_mnhmm <- function(
   }
   data <- .check_data(data, id, time, responses)
   for (y in responses) {
-    l <- as.factor(levels(data[[y]]))
+    l <- as_factor(levels(data[[y]]))
     data[, y := fifelse(is.na(y[1]), l[1], y[1]), by = id, env = list(y = y), 
          showProgress = FALSE]
   }

@@ -55,11 +55,14 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda,
           iv_A, iv_B, tv_A, tv_B, 
           eta_pi, eta_A, eta_B, eta_omega, 
           model$prior_obs, model$W_X_B, lambda,
-          control_restart$maxeval_em_dnm, control_restart$ftol_abs, control_restart$ftol_rel,
-          control_restart$xtol_abs, control_restart$xtol_rel, control_restart$print_level, 
+          control_restart$maxeval_em_dnm, control_restart$ftol_abs, 
+          control_restart$ftol_rel,
+          control_restart$xtol_abs, control_restart$xtol_rel, 
+          control_restart$print_level, 
           control_mstep$maxeval, control_mstep$ftol_abs, control_mstep$ftol_rel,
           control_mstep$xtol_abs, control_mstep$xtol_rel, 
-          control_mstep$print_level, bound, control_mstep$tolg
+          control_mstep$print_level, bound, control_mstep$tolg, 
+          control_restart$use_squarem
         )
       } else {
         fit <- Rcpp_EM_LBFGS_mnhmm(
@@ -67,11 +70,14 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda,
           icpt_only_pi, icpt_only_A, icpt_only_B, icpt_only_omega, 
           iv_A, iv_B, tv_A, tv_B, 
           eta_pi, eta_A, eta_B, eta_omega, lambda,
-          control_restart$maxeval_em_dnm, control_restart$ftol_abs, control_restart$ftol_rel,
-          control_restart$xtol_abs, control_restart$xtol_rel, control_restart$print_level, 
+          control_restart$maxeval_em_dnm, control_restart$ftol_abs, 
+          control_restart$ftol_rel,
+          control_restart$xtol_abs, control_restart$xtol_rel, 
+          control_restart$print_level, 
           control_mstep$maxeval, control_mstep$ftol_abs, control_mstep$ftol_rel,
           control_mstep$xtol_abs, control_mstep$xtol_rel, 
-          control_mstep$print_level, bound, control_mstep$tolg
+          control_mstep$print_level, bound, control_mstep$tolg, 
+          control_restart$use_squarem
         )
       }
       em_return_code <- fit$return_code
@@ -142,7 +148,8 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda,
         control$xtol_abs, control$xtol_rel, control$print_level, 
         control_mstep$maxeval, control_mstep$ftol_abs, control_mstep$ftol_rel,
         control_mstep$xtol_abs, control_mstep$xtol_rel, 
-        control_mstep$print_level, bound, control_mstep$tolg
+        control_mstep$print_level, bound, control_mstep$tolg, 
+        control$use_squarem
       )
     } else {
       fit <- Rcpp_EM_LBFGS_mnhmm(
@@ -154,7 +161,8 @@ em_dnm_mnhmm <- function(model, inits, init_sd, restarts, lambda,
         control$xtol_abs, control$xtol_rel, control$print_level, 
         control_mstep$maxeval, control_mstep$ftol_abs, control_mstep$ftol_rel,
         control_mstep$xtol_abs, control_mstep$xtol_rel, 
-        control_mstep$print_level, bound, control_mstep$tolg
+        control_mstep$print_level, bound, control_mstep$tolg, 
+        control$use_squarem
       )
     }
     em_return_code <- fit$return_code

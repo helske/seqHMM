@@ -1,5 +1,7 @@
-seqHMM 2.1.1
+seqHMM 2.2.0
 ==============
+  * EM algorithm for NHMMs now supports SQUAREM acceleration 
+  (Varadhan and Roland, 2008).
   * Fixed a bug in `coef.mnhmm` which resulted an error on extracting 
   confidence intervals for emission probabilities.
   * Fixed mnhmm example in `estimate_mnhmm` documentation.
