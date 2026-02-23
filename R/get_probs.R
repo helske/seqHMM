@@ -24,11 +24,13 @@ get_cluster_probs <- function(model, ...) {
 #' probabilities are computed for all sequences in the data, unless the 
 #' probabilities are equal for all sequences, i.e., covariates do not depend on 
 #' ID.
+#' @param ... Ignored.
 #' @return A `data.table` containing the initial state probabilities for each
 #' sequence defined by `ids`.
 #' @rdname initial_probs
 #' @export
 get_initial_probs.nhmm <- function(model, ids = NULL, ...) {
+  id <- model$id_variable
   if (!is.null(ids)) {
     missing_ids <- setdiff(ids, unique(model$data[[id]]))
     stopifnot_(
@@ -36,9 +38,9 @@ get_initial_probs.nhmm <- function(model, ids = NULL, ...) {
       "The following IDs are not present in the model data: 
       {paste(missing_ids, collapse = ', ')}."
     )
-    ids <- factor(ids, levels = levels(model$data[[model$id_variable]]))
+    ids <- factor(ids, levels = levels(model$data[[id]]))
   } else {
-    ids <- unique(model$data[[model$id_variable]])
+    ids <- unique(model$data[[id]])
   }
   if (io(model$X_pi)) {
     X <- model$X_pi[, 1L, drop = FALSE]

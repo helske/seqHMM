@@ -15,6 +15,8 @@ get_cluster_probs(model, ...)
 \arguments{
 \item{model}{A hidden Markov model.}
 
+\item{...}{Ignored.}
+
 \item{type}{Character string indicating the type of cluster probabilities.
 Either \code{"prior"} (the default), or \code{"posterior"}. See details.}
 

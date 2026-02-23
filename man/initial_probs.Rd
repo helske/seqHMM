@@ -21,6 +21,8 @@ get_initial_probs(model, ...)
 \arguments{
 \item{model}{A hidden Markov model.}
 
+\item{...}{Ignored.}
+
 \item{ids}{Optional vector of sequence IDs. If \code{NULL} (the default),
 probabilities are computed for all sequences in the data, unless the
 probabilities are equal for all sequences, i.e., covariates do not depend on

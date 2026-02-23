@@ -46,12 +46,18 @@ data_to_stslist <- function(x, id, time, responses, seqdef_args = NULL, ...) {
     responses <- x$responses
     x <- x$data[, c(x$id_variable, x$time_variable)]
   } else {
+    stopifnot_(
+      checkmate::test_data_frame(x),
+      "Argument {.arg x} should be an object of class {.cls data.frame}, 
+      {.cls nhmm}, or {.cls mnhmm}."
+    )
     cols <- c(id, time, responses)
     x <- as.data.table(x)
     x[, (responses) := lapply(.SD, as.factor), .SDcols = responses]
     x <- .check_data(x, id, time, responses)[, cols, env = list(cols = I(cols))]
     x <- fill_time(x, id, time)
   }
+  setdroplevels(x)
   sequences <- vector("list", length(responses))
   names(sequences) <- responses
   colnames(x)[1:2] <- c("id", "time")

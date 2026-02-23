@@ -160,7 +160,7 @@ via \code{...}. These, as well as, \code{maxeval} (maximum number of iterations,
 1e5 by default), and \code{print_level} (default is \code{0}, no console output,
 larger values are more verbose), are used by the chosen main optimization
 method. The number of initial EM iterations in \code{EM-DNM} can be set using
-argument \code{maxeval_em_dnm} (default is 1000), and algorithm for direct
+argument \code{maxeval_em_dnm} (default is 100), and algorithm for direct
 numerical optimization can be defined using argument \code{algorithm}
 (see \code{\link[nloptr:nloptr]{nloptr::nloptr()}} for possible options).
 
@@ -172,6 +172,10 @@ Additionally, same options can be defined separately for the M-step of EM
 algorithm via list \code{control_mstep}. For \code{control_mstep}, the
 default values are \code{ftol_rel = 1e-10}, and \code{maxeval = 1000}, and otherwise
 identical to previous defaults above.
+
+By default, EM algorithm uses SQUAREM acceleration (Varadhan and Roland,
+2008) to improve the convergence speed near optimum. This can be turned of
+by using control argument \code{use_squarem = FALSE}.
 }
 \examples{
 data("mvad", package = "TraMineR")
@@ -190,8 +194,12 @@ fit <- estimate_nhmm(n_states = 3,
 }
 }
 \references{
-Helske, J (2025). Feedback-augmented Non-homogeneous Hidden Markov Models for
+Helske J (2025). Feedback-augmented Non-homogeneous Hidden Markov Models for
 Longitudinal Causal Inference. arXiv preprint. \url{doi:10.48550/arXiv.2503.16014}.
 
-Johnson, SG. The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt.
+Johnson SG. The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt.
+
+Varadhan R and Roland C (2008). Simple and Globally Convergent Methods for
+Accelerating the Convergence of Any EM Algorithm. Scandinavian Journal of
+Statistics, 35: 335-353. \url{doi:10.1111/j.1467-9469.2007.00585.x}
 }

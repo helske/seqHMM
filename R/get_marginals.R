@@ -79,7 +79,7 @@ get_marginals <- function(model, probs = NULL, condition = NULL,
                           weighting = c("posterior", "forward", "none")) {
   
   # avoid CRAN check warnings due to NSE
-  time <- probability <- NULL
+  time <- probability <- log_alpha <- NULL
   stopifnot_(
     inherits(model, c("nhmm", "mnhmm")),
     "Argument {.arg model} must be an object of class {.cls nhmm} or {.cls mnhmm}."
