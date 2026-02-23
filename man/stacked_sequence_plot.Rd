@@ -7,7 +7,7 @@ Paths from Hidden Markov Models}
 \usage{
 stacked_sequence_plot(
   x,
-  plots = "obs",
+  plots = "observations",
   type = "distribution",
   ids,
   sort_by = "none",
@@ -23,10 +23,11 @@ stacked_sequence_plot(
 or \code{mnhmm}, a sequence object of class \code{stslist} (created with the
 \code{\link[TraMineR:seqdef]{TraMineR::seqdef()}} function) or a list of \code{stslist} objects.}
 
-\item{plots}{What to plot. One of \code{"obs"} for observations (the default),
-\code{"hidden_paths"} for most probable paths of hidden states,
-or \code{"both"} for observations and hidden paths together. Latter two options
-are only possible for model objects.}
+\item{plots}{What to plot. One of \code{"observations"} for observations
+(the default), \code{"hidden states"} (or \code{"hidden_paths"}, for the
+backward compatibility) for most probable paths of hidden states, or
+\code{"both"} for observations and hidden paths together. Latter two options are
+only possible for cases whe \code{x} is a hidden Markov model.}
 
 \item{type}{The type of the plot. Available types are \code{"index"} for sequence
 index plots and \code{"distribution"} for state distribution plots (the default).
