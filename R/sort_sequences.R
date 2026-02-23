@@ -11,16 +11,22 @@
 #' @param dist_method A character string specifying the distance method to use 
 #' when sorting by the multidimensional scaling. Passed to 
 #' [TraMineR::seqdist()], or [TraMineR::seqMD()] in the multichannel case.
+#' @return Sorted version of the input, with additional attribute `ordering` 
+#' indicating the indices used to sort the data, i.e., 
+#' `output = input[ordering, ]`.
 #' @export
 sort_sequences <- function(
     x, sort_by = "start", sort_channel = 1, dist_method = "OM") {
   
-  if (identical(sort_by, "none")) return(x)
   n_channels <- if(inherits(x, "stslist")) 1 else length(x)
   if (n_channels == 1) {
     n <- nrow(x)
   } else {
     n <- nrow(x[[1]])
+  }
+  if (identical(sort_by, "none")) {
+    attr(x, "ordering") <- seq_len(n)
+    return(x)
   }
   sl <- length(sort_by)
   sort_by <- try(
@@ -72,5 +78,6 @@ sort_sequences <- function(
       x[[i]] <- x[[i]][ordering, ]
     }
   }
+  attr(x, "ordering") <- ordering
   x
 }

@@ -173,10 +173,6 @@ stacked_sequence_plot <- function(
     or integer between 1 and {n_channels}."
   )
   if (n_channels > 1) names(y) <- channel_names
-  if (type == "index" & length(sort_by) == 1) {
-    y <- sort_sequences(y, sort_by, sort_channel, dist_method)
-    sort_by <- NULL
-  }
   if (identical(group, NA)) group <- NULL
   if (!is.null(group)) {
     stopifnot_(
@@ -185,6 +181,13 @@ stacked_sequence_plot <- function(
     )
     if (!missing(ids)) {
       group <- group[ids]
+    }
+  }
+  if (type == "index" && length(sort_by) == 1) {
+    y <- sort_sequences(y, sort_by, sort_channel, dist_method)
+    sort_by <- NULL
+    if (!is.null(group)) {
+      group <- group[attr(y, "ordering")]
     }
   }
   if (n_channels == 1) {

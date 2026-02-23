@@ -22,6 +22,11 @@ defining the sorting).}
 when sorting by the multidimensional scaling. Passed to
 \code{\link[TraMineR:seqdist]{TraMineR::seqdist()}}, or \code{\link[TraMineR:seqMD]{TraMineR::seqMD()}} in the multichannel case.}
 }
+\value{
+Sorted version of the input, with additional attribute \code{ordering}
+indicating the indices used to sort the data, i.e.,
+\code{output = input[ordering, ]}.
+}
 \description{
 Sort sequences in a sequence object
 }
