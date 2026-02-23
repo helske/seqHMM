@@ -145,7 +145,10 @@ possible to parallelize these runs using the \code{future} package, e.g., by
 calling \code{future::plan(multisession, workers = 2)} before \code{estimate_nhmm()}.
 See \code{\link[future:plan]{future::plan()}} for details. This is compatible with \code{progressr}
 package, so you can use \code{\link[progressr:with_progress]{progressr::with_progress()}} to track the progress
-of these multiple runs.
+of these multiple runs. Using argument \code{save_all_solutions = TRUE} allows to
+save the optimization results of all restarts, which is mostly useful for
+debugging purposes or if you are interested in seeing how much the parameter
+estimates vary due to variation in initial values.
 
 During the estimation, the log-likelihood is scaled by the number of
 non-missing observations (\code{nobs(model)}), and the the covariate data is

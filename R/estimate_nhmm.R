@@ -36,7 +36,10 @@
 #' calling `future::plan(multisession, workers = 2)` before `estimate_nhmm()`.
 #' See [future::plan()] for details. This is compatible with `progressr` 
 #' package, so you can use [progressr::with_progress()] to track the progress 
-#' of these multiple runs.
+#' of these multiple runs. Using argument `save_all_solutions = TRUE` allows to 
+#' save the optimization results of all restarts, which is mostly useful for 
+#' debugging purposes or if you are interested in seeing how much the parameter 
+#' estimates vary due to variation in initial values.
 #' 
 #' During the estimation, the log-likelihood is scaled by the number of 
 #' non-missing observations (`nobs(model)`), and the the covariate data is 
