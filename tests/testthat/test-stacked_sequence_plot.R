@@ -3,7 +3,7 @@ test_that("'stacked_sequence_plot' works", {
   
   expect_error(
     stacked_sequence_plot(leaves, plots = "abc"),
-    "Argument `plots` must be \"obs\", \"hidden_paths\", or \"both\"."
+    "Argument `plots` must be \"observations\", \"hidden states\", or \"both\"."
   )
   expect_error(
     stacked_sequence_plot(leaves),
