@@ -2,10 +2,24 @@ seqHMM 2.2.0
 ==============
   * EM algorithm for NHMMs now supports SQUAREM acceleration 
   (Varadhan and Roland, 2008).
+  * Exposed argument `save_all_solutions` in `estimate_nhmm` and 
+  `estimate_mnhmm` for saving solutions from all restarts.
+  * Changed the options of the `plots` argument options of 
+  `stacked_sequence_plot` to `observations` and `hidden states`. 
+  * Added an argument `ids` for `get_*_probs` functions.
+  * `estimate_nhmm` and `estimate_mnhmm` now set `init_sd=0` if `restart=0` and 
+  user has provided initial values.
+  * Added default values for `id` and `time` for `stslist_to_data`.
+  * Fixed the forward weighting in `get_marginals`.
+  * Improved the performance of `posterior_probs`.
+  * Improved the performance of `summary_mnhmm` and computation of posterior 
+  cluster probabilities in general.
+  * Improved the performance of creating the design matrices in model building.
   * Fixed a bug in `coef.mnhmm` which resulted an error on extracting 
   confidence intervals for emission probabilities.
   * Fixed mnhmm example in `estimate_mnhmm` documentation.
-  * Improved the performance of `posterior_probs`.
+  * Fixed a memory leak in the M-step of initial probabilities of NHMMs.
+  
 
 seqHMM 2.1.0
 ==============
