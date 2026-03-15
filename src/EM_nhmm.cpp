@@ -787,7 +787,7 @@ Rcpp::List EM_nhmm::run(const bool use_squarem) {
           E_B = E_B_;
         }
       }
-      if (abs(a - stepmax) < 1e-8) {
+      if (std::abs(a - stepmax) < 1e-8) {
        stepmax = 4 * stepmax; // increase maximum stepsize 
       }
     } else {
