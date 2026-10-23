@@ -249,9 +249,6 @@ get_cluster_probs.mnhmm <- function(model, type = "prior", ids = NULL, ...) {
     checkmate::test_choice(type, choices = c("prior", "posterior")), 
     "Argument {.arg type} must be either {.val 'prior'} or {.val 'posterior'}."
   )
-  if (type == "posterior") {
-    return(posterior_cluster_probabilities(model)[ids, ])
-  }
   if (!is.null(ids)) {
     missing_ids <- setdiff(ids, unique(model$data[[model$id_variable]]))
     stopifnot_(
@@ -262,6 +259,9 @@ get_cluster_probs.mnhmm <- function(model, type = "prior", ids = NULL, ...) {
     ids <- factor(ids, levels = levels(model$data[[model$id_variable]]))
   } else {
     ids <- unique(model$data[[model$id]])
+  }
+  if (type == "posterior") {
+    return(posterior_cluster_probabilities(model)[ids, ])
   }
   if (io(model$X_omega)) {
     X <- model$X_omega[, 1L, drop = FALSE]

@@ -231,7 +231,7 @@ stacked_sequence_plot <- function(
           ggplot2::xlab("Time")
       }
     }
-    p <- patchwork::wrap_plots(p, ncol = 1, ...)
+    p <- patchwork::wrap_plots(p, ...)
   }
   p
 }

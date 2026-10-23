@@ -26,7 +26,7 @@ most_probable_cluster <- function(x, type = "viterbi", hp = NULL) {
     if (is.null(hp)) {
       hp <- hidden_paths(x)
     } else {
-      if (inherits(x, "mhmm")) {
+      if (inherits(x, "mnhmm")) {
         id <- x$id_variable
         time <- x$time_variable
       } else {

@@ -1,3 +1,7 @@
+seqHMM 2.2.1
+  * Removed hardcoded `ncol = 1` for `patchwork::wrap_plots()` insde 
+  `stacked_sequence_plot`.
+  
 seqHMM 2.2.0
 ==============
   * EM algorithm for NHMMs now supports SQUAREM acceleration 
